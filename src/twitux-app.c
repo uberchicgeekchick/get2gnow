@@ -20,6 +20,7 @@
  *
  * Authors: Brian Pepple <bpepple@fedoraproject.org>
  *			Daniel Morales <daniminas@gmail.com>
+ *			Kaity G. B. <KaityGB@uberChicGeekChick.Com>
  */
 
 #include <config.h>

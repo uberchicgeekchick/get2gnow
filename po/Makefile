@@ -10,9 +10,11 @@
 #   instead of PACKAGE and to look for po2tbl in ./ not in intl/
 #
 # - Modified by jacob berkman <jacob@ximian.com> to install
-#   Makefile.in.in and po2tbl.sed.in for use with glib-gettextize
+#   Makefile.in and po2tbl.sed.in for use with glib-gettextize
 #
 # - Modified by Rodney Dawes <dobey.pwns@gmail.com> for use with intltool
+#
+#	Modified by Kaity G. B. <KaityGB-at-uberChicGeekChick.Com> to correct printf syntax errors.
 #
 # We have the following line for use by intltoolize:
 # INTLTOOL_MAKEFILE
@@ -58,11 +60,12 @@ PO_LINGUAS=$(shell if test -r $(srcdir)/LINGUAS; then grep -v "^\#" $(srcdir)/LI
 
 USER_LINGUAS=$(shell if test -n "$(LINGUAS)"; then LLINGUAS="$(LINGUAS)"; ALINGUAS="$(ALL_LINGUAS)"; for lang in $$LLINGUAS; do if test -n "`grep ^$$lang$$ $(srcdir)/LINGUAS 2>/dev/null`" -o -n "`echo $$ALINGUAS|tr ' ' '\n'|grep ^$$lang$$`"; then printf "$$lang "; fi; done; fi)
 
-USE_LINGUAS=$(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "$$lang "; done)
+USE_LINGUAS=$(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "%s " $$lang; done)
 
-POFILES=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.po "; done)
+POFILES=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "%%s.po " $$lang; done)
+CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "%%s.gmo" $$lang; done)
 
-DISTFILES = ChangeLog Makefile.in.in POTFILES.in $(POFILES)
+DISTFILES = ChangeLog Makefile.in POTFILES.in $(POFILES)
 EXTRA_DISTFILES = POTFILES.skip Makevars LINGUAS
 
 POTFILES = \
@@ -73,7 +76,7 @@ POTFILES = \
 	../data/prefs_dlg.xml \
 	../data/send_message_dlg.xml \
 	../data/spell_dlg.xml \
-	../data/twitux.desktop.in.in \
+	../data/twitux.desktop.in \
 	../data/twitux.schemas.in \
 	../src/twitux-about.c \
 	../src/twitux-app.c \
@@ -86,8 +89,6 @@ POTFILES = \
 	../src/twitux-spell.c \
 	../src/twitux-spell-dialog.c \
 	../src/twitux-ui-utils.c
-
-CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)
 
 .SUFFIXES:
 .SUFFIXES: .po .pox .gmo .mo .msg .cat
@@ -111,6 +112,7 @@ CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$l
 all: all-yes
 
 all-yes: $(CATALOGS)
+
 all-no:
 
 $(GETTEXT_PACKAGE).pot: $(POTFILES)
@@ -180,7 +182,7 @@ distclean: clean
 maintainer-clean: distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
-	rm -f Makefile.in.in
+	rm -f Makefile.in
 
 distdir = ../$(PACKAGE)-$(VERSION)/$(subdir)
 dist distdir: $(DISTFILES)
@@ -226,7 +228,7 @@ Makefile POTFILES: stamp-it
 	  $(MAKE) stamp-it; \
 	fi
 
-stamp-it: Makefile.in.in $(top_builddir)/config.status POTFILES.in
+stamp-it: Makefile.in $(top_builddir)/config.status POTFILES.in
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/Makefile.in CONFIG_HEADERS= CONFIG_LINKS= \
 	       $(SHELL) ./config.status

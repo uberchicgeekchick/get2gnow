@@ -1,3 +1,27 @@
+2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+
+	* src/twitux-app.c ( twitux_app_set_image & twitux_app_expand_message )
+	* src/twitux-tweet-list.c ( tweet_list_changed_cb )
+		I plugged some large memory leaks by unreferencing
+		GdkPixbuf(s) used for Twitter avatars.
+
+	* src/twitux-app.c ( twitux_app_set_image & twitux_app_expand_message )
+	* src/twitux-tweet-list.c ( tweet_list_setup_view )
+		I wrote resizing code to stop large images from bloating
+		Twitux's tweet list.  I have also added code to keep the tweet
+		list avatar column at a fixed width.
+
+	* po/Makefile ( clean & dist distdirs )
+		I corrected the sh commands that find gettext .po, .gmo, & etc
+		files.  Now po/Makefile's clean & beyond will now work.  Most
+		importantly make clean will now work.
+
+	* data/Makefile
+	* data/Makefile.in
+		I fixed the references to Makefile.in.in &
+		twitux-desktop.in.in to point to tho correct .in files &
+		removed the duplicate files.
+
 2009-01-31  Daniel Morales  <daniminas@gmail.com>
 
 	* src/twitux-network.c: Bugfix to Add/Remove friends methods,

@@ -579,7 +579,7 @@ msgstr ""
 # it will set INTLLIBS to the libraries needed for use of gettext
 # and AC_DEFINE() HAVE_GETTEXT and ENABLE_NLS. (The shell variable
 # gt_cv_have_gettext will be set to "yes".) It will also call AC_SUBST()
-# on various variables needed by the Makefile.in.in installed by 
+# on various variables needed by the Makefile.in installed by 
 # glib-gettextize.
 dnl
 glib_DEFUN([GLIB_GNU_GETTEXT],

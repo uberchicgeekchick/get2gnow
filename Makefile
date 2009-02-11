@@ -250,7 +250,11 @@ sysconfdir = ${prefix}/etc
 target_alias = 
 top_builddir = .
 top_srcdir = .
-SUBDIRS = data libtwitux src po $(am__append_1)
+SUBDIRS = data \
+		libtwitux \
+		src \
+		po \
+		$(am__append_1)
 INTLTOOL = \
 	intltool-extract.in 	\
 	intltool-merge.in 	\

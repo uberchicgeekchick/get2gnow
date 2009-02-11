@@ -34,7 +34,7 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = data
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/twitux.desktop.in.in
+	$(srcdir)/twitux.desktop.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gnome-doc-utils.m4 \
 	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/configure.in
@@ -239,8 +239,8 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 desktopdir = $(datadir)/applications
-desktop_in_files = twitux.desktop.in.in
-desktop_DATA = $(desktop_in_files:.desktop.in.in=.desktop)
+desktop_in_files = twitux.desktop.in
+desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
 schemasdir = $(GCONF_SCHEMA_FILE_DIR)
 schemas_in_files = twitux.schemas.in
 schemas_DATA = $(schemas_in_files:.schemas.in=.schemas)
@@ -302,7 +302,7 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-twitux.desktop.in: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in.in
+twitux.desktop.in: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:

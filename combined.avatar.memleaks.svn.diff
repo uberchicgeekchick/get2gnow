@@ -1,8 +1,31 @@
+Index: AUTHORS
+===================================================================
+--- AUTHORS	(revision 371)
++++ AUTHORS	(working copy)
+@@ -7,7 +7,10 @@
+ 
+  * Brian Pepple  <bpepple@fedoraproject.org>
+ 
++--- Direct Messaging, Avatar size/message scrolling, memory leaks patches/fixes.
+ 
++ * Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
++
+ --- Translators:
+ 
+  * Swedish - Daniel Nylander <po@danielnylander.se>
 Index: src/twitux-app.c
 ===================================================================
---- src/twitux-app.c	(revision 369)
+--- src/twitux-app.c	(revision 371)
 +++ src/twitux-app.c	(working copy)
-@@ -1467,7 +1467,10 @@
+@@ -20,6 +20,7 @@
+  *
+  * Authors: Brian Pepple <bpepple@fedoraproject.org>
+  *			Daniel Morales <daniminas@gmail.com>
++ *			Kaity G. B. <KaityGB@uberChicGeekChick.Com>
+  */
+ 
+ #include <config.h>
+@@ -1467,7 +1468,10 @@
                        GtkTreeIter  iter)
  {
  	GtkListStore *store;
@@ -14,7 +37,7 @@ Index: src/twitux-app.c
  	GError		 *error = NULL;
  
  	pixbuf = gdk_pixbuf_new_from_file (file, &error);
-@@ -1478,11 +1481,15 @@
+@@ -1478,11 +1482,15 @@
  		g_error_free (error);
  		return;
  	}
@@ -33,7 +56,7 @@ Index: src/twitux-app.c
  }
  
  void
-@@ -1493,6 +1500,7 @@
+@@ -1493,6 +1501,7 @@
  {
  	TwituxAppPriv *priv;
  	gchar 		  *title_text;
@@ -41,7 +64,7 @@ Index: src/twitux-app.c
  	
  	priv = GET_PRIV (app);
  
-@@ -1503,7 +1511,12 @@
+@@ -1503,7 +1512,12 @@
  	g_free (title_text);
  	
  	if (pixbuf) {
@@ -57,9 +80,17 @@ Index: src/twitux-app.c
  	gtk_widget_show (priv->expand_box);
 Index: src/twitux-tweet-list.c
 ===================================================================
---- src/twitux-tweet-list.c	(revision 369)
+--- src/twitux-tweet-list.c	(revision 371)
 +++ src/twitux-tweet-list.c	(working copy)
-@@ -147,36 +147,31 @@
+@@ -19,6 +19,7 @@
+  *
+  * Authors: Brian Pepple <bpepple@fedoraproject.org>
+  *			Daniel Morales <daniminas@gmail.com>
++ *			Kaity G. B. <KaityGB@uberChicGeekChick.Com>
+  */
+ 
+ #include "config.h"
+@@ -147,36 +148,31 @@
  
  	priv = GET_PRIV (list);
  	
@@ -120,7 +151,7 @@ Index: src/twitux-tweet-list.c
  	gtk_tree_view_append_column (GTK_TREE_VIEW (list), tweet_column);
  	
  	priv->text_column = tweet_column;
-@@ -220,10 +215,11 @@
+@@ -220,10 +216,11 @@
  						-1);
  
  	twitux_app_expand_message (name, date, tweet, pixbuf);
