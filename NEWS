@@ -1,0 +1,54 @@
+NEW in 0.69:
+==============
+- Display messages in notification, not count of tweets. (Thomas Thurman)
+- Use https, not http api. (Evan McClain)
+- Fix incorrect pluralising of relative time. (Deskin Miller)
+- Fixed #1998551, the double-escaping of < and >. (Mike Lundy)
+- Fixed #1961611, character count behavior. (Brian Pepple)
+
+NEW in 0.68:
+==============
+- Fixed #1963695, Save avatars a little more sensibly. (Brian Pepple)
+- Use Enchant, instead of ASpell. (Brian Pepple)
+- Add option to have sound notication when new tweets arrive . (Brian Pepple)
+- Add help (Brian Pepple)
+
+NEW in 0.65:
+==============
+- Add support for Online Accounts Service (Marina Zhurakhinskaya, Colin Walters)
+  * More info about OAS can be found here: https://fedoraproject.org/wiki/Features/OnlineAccountsService
+- Fixed #2122886, Fix date parsing on other than C/POSIX locale (Hiroshi Miura)
+- Fixed #2083410, have textview in send message dialog get focus.
+- Fixed #1961570, time issue w/ "1 hour" & "1 minute". (Derick Rethans)
+- add Japanese translation (Hiroshi Miura)
+
+NEW in 0.62:
+==============
+- Fixed #1927666, timeline date bug. (Daniel Morales)
+- Convert to GtkBuilder, and drop glade requirement. (Brian Pepple, Daniel Morales)
+
+NEW in 0.61:
+==============
+- Fixed #1882842, port to libsoup 2.4 api. (Dan Winship, Brian Pepple)
+- Fixed #1887777, minimize to tray, instead of quitting when hitting 'X' on main window. (Brian Pepple)
+- Fixed #1897030, thread system is not yet initialized (Daniel Morales)
+- Fixed word wrap in list view (Daniel Morales)
+- Port to gio from gnomevfs. (Brian Pepple)
+- Drop gnome requirements for now. (Brian Pepple)
+- Cleaned up code to quite some compiler warnings. (Brian Pepple)
+- Added preference: show Fullnames or Usernames (Daniel Morales)
+- Added double click shortcut on tweet list to reply tweets (Daniel Morales)
+- Post 'from twitux' on Twitter web (Daniel Morales)
+
+NEW in 0.60:
+==============
+- Fixed #1778008, Main window does not resize. (Daniel Morales)
+- Fixed #1773179, UI doesn't remember position. (Daniel Morales)
+- Fixed #1775052, add spell checking support. (Brian Pepple)
+- Fixed #1775053, add NetworkManager support. (Brian Pepple)
+- Fixed #1777286, option to log in on start up. (Brian Pepple)
+- Added gnome-keyring support. (Brian Pepple)
+- Removed trademarked icons, and replaced with icon with CC license. (Brian Pepple)
+- Install theme friendly icons. (Brian Pepple)
+- Simplify the support of a new language for translators. (Brian Pepple)
+- Major rewrite of client. (Brian Pepple, Daniel Morales)

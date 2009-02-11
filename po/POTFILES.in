@@ -1,0 +1,25 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+[encoding: UTF-8]
+[type: gettext/glade]data/add_friend_dlg.xml
+[type: gettext/glade]data/account_dlg.xml
+[type: gettext/glade]data/lists_dlg.xml
+[type: gettext/glade]data/main_window.xml
+[type: gettext/glade]data/prefs_dlg.xml
+[type: gettext/glade]data/send_message_dlg.xml
+[type: gettext/glade]data/spell_dlg.xml
+data/twitux.desktop.in.in
+data/twitux.schemas.in
+
+src/twitux-about.c
+src/twitux-app.c
+src/twitux-hint.c
+src/twitux-main.c
+src/twitux-network.c
+src/twitux-parser.c
+src/twitux-preferences.c
+src/twitux-send-message-dialog.c
+src/twitux-spell.c
+src/twitux-spell-dialog.c
+src/twitux-ui-utils.c
+

@@ -1,0 +1,355 @@
+# Swedish translation for twitux.
+# Copyright (C) 2007 Free Software Foundation, Inc.
+# This file is distributed under the same license as the twitux package.
+# Daniel Nylander <po@danielnylander.se>, 2007.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: twitux\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-08-13 09:03-0300\n"
+"PO-Revision-Date: 2007-08-02 14:52-0300\n"
+"Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
+"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/callbacks.c:199
+#, fuzzy
+msgid "Ok, logged out."
+msgstr "Ok, inloggad."
+
+#: ../src/callbacks.c:232
+msgid "Ok, new home timeline saved."
+msgstr "Ok, ny hemtidslinje sparad."
+
+#: ../src/callbacks.c:603
+#, fuzzy
+msgid "Compressing URL..."
+msgstr "Ansluter..."
+
+#: ../src/callbacks.c:644 ../src/gui.c:301
+msgid "What are you doing?"
+msgstr "Vad gör du?"
+
+#. Atrasos de horas respecto al servo
+#: ../src/common.c:211
+msgid "1 second ago"
+msgstr "1 sekund sedan"
+
+#: ../src/common.c:216
+msgid "1 minute ago"
+msgstr "1 minut sedan"
+
+#: ../src/common.c:220
+#, c-format
+msgid "%i seconds ago"
+msgstr "%i sekunder sedan"
+
+#: ../src/common.c:228
+msgid "1 hour ago"
+msgstr "1 timme sedan"
+
+#: ../src/common.c:232
+#, c-format
+msgid "%i minutes ago"
+msgstr "%i minuter sedan"
+
+#: ../src/common.c:240
+msgid "1 day ago"
+msgstr "1 dygn sedan"
+
+#: ../src/common.c:244
+#, c-format
+msgid "%i hours ago"
+msgstr "%i timmar sedan"
+
+#: ../src/common.c:252
+msgid "1 month ago"
+msgstr "1 månad sedan"
+
+#: ../src/common.c:256
+#, c-format
+msgid "%i days ago"
+msgstr "%i dygn sedan"
+
+#: ../src/common.c:260
+#, c-format
+msgid "%i months ago"
+msgstr "%i månader sedan"
+
+#. Menu Twitter
+#: ../src/gui.c:289
+msgid "_Twitter"
+msgstr "_Twitter"
+
+#: ../src/gui.c:306
+msgid "Send a direct message..."
+msgstr "Skicka ett direktmeddelande..."
+
+#: ../src/gui.c:312
+msgid "Set as home timeline"
+msgstr "Ställ in som hemtidslinje"
+
+#. Menu ver
+#: ../src/gui.c:331
+msgid "_View"
+msgstr ""
+
+#: ../src/gui.c:335
+msgid "Home timeline"
+msgstr "Hemtidslinje"
+
+#: ../src/gui.c:339
+msgid "Public timeline"
+msgstr "Publik tidslinje"
+
+#: ../src/gui.c:343
+msgid "Friends timeline"
+msgstr "Vännernas tidslinje"
+
+#. Sub menu amigos
+#: ../src/gui.c:351
+msgid "Friends"
+msgstr "Vänner"
+
+#: ../src/gui.c:358
+msgid "Direct messages"
+msgstr "Direktmeddelanden"
+
+#: ../src/gui.c:363
+msgid "Replies"
+msgstr "Svar"
+
+#: ../src/gui.c:368
+msgid "My timeline"
+msgstr "Min tidslinje"
+
+#. Submenu opciones avanzadas
+#: ../src/gui.c:376
+msgid "Set advanced options"
+msgstr ""
+
+#: ../src/gui.c:380
+#, fuzzy
+msgid "Expand messages"
+msgstr "Skickar meddelande..."
+
+#: ../src/gui.c:383
+msgid "Show gui notifications"
+msgstr ""
+
+#: ../src/gui.c:386
+#, fuzzy
+msgid "Auto reload timelines"
+msgstr "Vännernas tidslinje"
+
+#: ../src/gui.c:391
+msgid "Status bar"
+msgstr "Statusrad"
+
+#. Menu ayuda
+#: ../src/gui.c:395
+msgid "H_elp"
+msgstr "H_jälp"
+
+#: ../src/gui.c:402
+msgid "Report bugs..."
+msgstr "Rapportera fel..."
+
+#: ../src/gui.c:507
+#, c-format
+msgid "%s - Log in"
+msgstr "%s - Logga in"
+
+#: ../src/gui.c:557
+msgid "<b>Username or e-mail:</b>"
+msgstr "<b>Användarnamn eller e-post:</b>"
+
+#: ../src/gui.c:571
+msgid "<b>Password:</b>"
+msgstr "<b>Lösenord:</b>"
+
+#: ../src/gui.c:586
+msgid "Remember user data"
+msgstr "Kom ihåg användardata"
+
+#: ../src/gui.c:592
+msgid "Twitter login"
+msgstr "Twitter-inloggning"
+
+#: ../src/gui.c:612
+msgid ""
+"This program is free software; you can redistribute it \n"
+"and/or modify it under the terms of the GNU General Public License\n"
+"as published by the Free Software Foundation; either version 2 of\n"
+"the License, or (at your option) any later version.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details. You should have\n"
+"received a copy of the GNU General Public License along with\n"
+"this program; if not, write to the Free Software Foundation, Inc., \n"
+"59 Temple Place, Suite 330, \n"
+"Boston, MA  02111-1307  USA"
+msgstr ""
+
+#: ../src/gui.c:633
+msgid "A Twitter client for the Gnome desktop"
+msgstr "En Twitter-klient för Gnome-skrivbordet"
+
+#: ../src/gui.c:636
+msgid "Visit Twitux web site"
+msgstr "Besök Twitux webbplats"
+
+#: ../src/gui.c:638
+msgid "translator-credits"
+msgstr "Daniel Nylander <po@danielnylander.se>"
+
+#: ../src/gui.c:663
+#, c-format
+msgid "%s - What are you doing?"
+msgstr "%s - Vad gör du?"
+
+#: ../src/gui.c:706
+msgid "<b>What are you doing?</b>"
+msgstr "<b>Vad gör du?</b>"
+
+#: ../src/gui.c:755
+#, c-format
+msgid "%s - Send a direct message"
+msgstr "%s - Skicka ett direktmeddelande"
+
+#: ../src/gui.c:798
+msgid "<b>Select a friend:</b>"
+msgstr "<b>Välj en vän:</b>"
+
+#: ../src/gui.c:807
+msgid "<b>Write the message:</b>"
+msgstr "<b>Skriv meddelandet:</b>"
+
+#: ../src/gui.c:854
+msgid "Url to tinyze:"
+msgstr ""
+
+#: ../src/gui.c:869
+msgid "Ok"
+msgstr ""
+
+#: ../src/network.c:75
+msgid "Loading: Direct messages..."
+msgstr "Läser in: Direktmeddelanden..."
+
+#: ../src/network.c:92
+msgid "Loading: Timeline..."
+msgstr "Läser in: Tidslinje..."
+
+#: ../src/network.c:148
+msgid "Conecting..."
+msgstr "Ansluter..."
+
+#: ../src/network.c:172
+msgid "Sending status..."
+msgstr "Skickar status..."
+
+#: ../src/network.c:196
+msgid "Sending message..."
+msgstr "Skickar meddelande..."
+
+#: ../src/network.c:214
+msgid "Ok, displaying direct messages."
+msgstr "Ok, visar direktmeddelanden."
+
+#: ../src/network.c:222
+msgid "Messages parser error."
+msgstr "Tolkningsfel i meddelanden."
+
+#: ../src/network.c:256
+msgid "Ok, connected :)"
+msgstr "Ok, ansluten :)"
+
+#: ../src/network.c:270
+msgid "Friends parser error."
+msgstr "Tolkningsfel i vänner."
+
+#: ../src/network.c:290
+msgid "Ok, parsing..."
+msgstr "Ok, tolkar..."
+
+#: ../src/network.c:301
+msgid "Ok, timeline loaded."
+msgstr "Ok, tidslinje inläst."
+
+#: ../src/network.c:305
+msgid "Timeline parser error."
+msgstr "Tolkningsfel i tidslinje."
+
+#: ../src/network.c:332
+msgid "Fail, wrong response."
+msgstr ""
+
+#: ../src/network.c:379
+msgid "Ok, status sent! :)"
+msgstr "Ok, status skickad! :)"
+
+#: ../src/network.c:398
+msgid "Ok, message sent! :)"
+msgstr "Ok, meddelande skickat! :)"
+
+#: ../src/network.c:531
+msgid "Stopped."
+msgstr "Stoppad."
+
+#: ../src/network.c:537
+msgid "Access denied. Please login."
+msgstr "Åtkomst nekad. Logga in."
+
+#: ../src/network.c:543
+msgid "HTTP communication error."
+msgstr "HTTP-kommunikationsfel."
+
+#: ../src/twitter.c:476
+#, c-format
+msgid "you have %i new tweet(s) to read!"
+msgstr ""
+
+#~ msgid "No config"
+#~ msgstr "Ingen konfiguration"
+
+#~ msgid "Cannot save the configuration"
+#~ msgstr "Kan inte spara konfigurationen"
+
+#~ msgid "Loading image: %s: %s\n"
+#~ msgstr "Läser in bild: %s: %s\n"
+
+#~ msgid "Parser:unknown user node %s => %s"
+#~ msgstr "Tolkare:okänd användarnod %s => %s"
+
+#~ msgid "Parser:unknown status node: %s => %s"
+#~ msgstr "Tolkare:okänd statusnod: %s => %s"
+
+#~ msgid "Parser:parsear_direct_message:unknown node: %s => %s"
+#~ msgstr "Tolkare:parsear_direct_message:okänd nod: %s => %s"
+
+#~ msgid "Parser:parsear_statuses:unknown node: %s"
+#~ msgstr "Tolkare:parsear_statuses:okänd nod: %s"
+
+#~ msgid "Parser:parsear_direct_messages:unknown node: %s"
+#~ msgstr "Tolkare:parsear_direct_messages:okänd nod: %s"
+
+#~ msgid "Parser:parsear_users:unknown node: %s"
+#~ msgstr "Tolkare:parsear_users:okänd nod: %s"
+
+#~ msgid "parser_twitter:file not exists: %s"
+#~ msgstr "parser_twitter:filen finns inte: %s"
+
+#~ msgid "parser_twitter:xmlReadFile: %s"
+#~ msgstr "parser_twitter:xmlReadFile: %s"
+
+#~ msgid "parser_twitter:xmlDocGetRootElement: %s"
+#~ msgstr "parser_twitter:xmlDocGetRootElement: %s"
+
+#~ msgid "parser_twitter:unknown parser"
+#~ msgstr "parser_twitter:okänd tolkare"

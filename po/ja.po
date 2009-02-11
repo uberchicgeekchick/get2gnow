@@ -1,0 +1,626 @@
+# Japanese translation of twitux
+# Copyright (C) 2008, package writer
+# This file is distributed under the same license as the twitux package.
+# Hiroshi Miura <miura@da-cha.org>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: twitux 0.62\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-09-22 21:45+0900\n"
+"PO-Revision-Date: 2008-09-22 22:29+0900\n"
+"Last-Translator: Hiroshi Miura <miura@da-cha.org>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/add_friend_dlg.xml.h:1
+msgid "Add a friend"
+msgstr "友人の追加"
+
+#: ../data/add_friend_dlg.xml.h:2 ../data/account_dlg.xml.h:5
+msgid "_Username:"
+msgstr "ユーザ名(_U)"
+
+#: ../data/account_dlg.xml.h:1
+msgid "Automatic Login?"
+msgstr "自動ログイン有効？"
+
+#: ../data/account_dlg.xml.h:2
+msgid "Show Password"
+msgstr "パスワード表示"
+
+#: ../data/account_dlg.xml.h:3
+msgid "Twitter Account"
+msgstr "Twitterアカウント"
+
+#: ../data/account_dlg.xml.h:4
+msgid "_Password:"
+msgstr "パスワード(_P)"
+
+#: ../data/lists_dlg.xml.h:1
+msgid "Following"
+msgstr "フォロー"
+
+#: ../data/lists_dlg.xml.h:2
+msgid "Name"
+msgstr "名前"
+
+#: ../data/lists_dlg.xml.h:3
+msgid "User"
+msgstr "ユーザ"
+
+#: ../data/lists_dlg.xml.h:4
+msgid "Users settings"
+msgstr "ユーザ設定"
+
+#: ../data/lists_dlg.xml.h:5
+msgid "gtk-close"
+msgstr ""
+
+#: ../data/lists_dlg.xml.h:6
+msgid "gtk-remove"
+msgstr ""
+
+#: ../data/main_window.xml.h:1
+msgid "Add a friend..."
+msgstr "友人の追加..."
+
+#: ../data/main_window.xml.h:2
+msgid "Direct Messages"
+msgstr "ダイレクト送信"
+
+#: ../data/main_window.xml.h:3
+msgid "Direct Replies"
+msgstr "ダイレクト返信"
+
+#: ../data/main_window.xml.h:4 ../src/twitux-preferences.c:428
+msgid "Friends"
+msgstr "友人"
+
+#: ../data/main_window.xml.h:5
+msgid "Friends Timeline"
+msgstr "友人のつぶやき"
+
+#: ../data/main_window.xml.h:6
+msgid "My Timeline"
+msgstr "自分のつぶやき"
+
+#: ../data/main_window.xml.h:7
+msgid "New Message"
+msgstr "新しいメッセージ"
+
+#: ../data/main_window.xml.h:8
+msgid "Public Timeline"
+msgstr "公開されたメッセージ"
+
+#: ../data/main_window.xml.h:9
+msgid "Send Direct Message"
+msgstr "ダイレクトメッセージ送信"
+
+#: ../data/main_window.xml.h:10 ../data/twitux.desktop.in.in.h:2
+#: ../src/twitux-main.c:46 ../src/twitux-preferences.c:430
+msgid "Twitux"
+msgstr ""
+
+#: ../data/main_window.xml.h:11
+msgid "Twitux Timeline"
+msgstr "Twituxタイムライン"
+
+#: ../data/main_window.xml.h:12
+msgid "_Account"
+msgstr "アカウント(_A)"
+
+#: ../data/main_window.xml.h:13
+msgid "_Help"
+msgstr "ヘルプ(_H)"
+
+#: ../data/main_window.xml.h:14
+msgid "_Settings"
+msgstr "設定(_S)"
+
+#: ../data/main_window.xml.h:15
+msgid "_Twitter"
+msgstr ""
+
+#: ../data/main_window.xml.h:16
+msgid "_View"
+msgstr "表示(_V)"
+
+#: ../data/main_window.xml.h:17
+msgid "gtk-about"
+msgstr ""
+
+#: ../data/main_window.xml.h:18
+msgid "gtk-preferences"
+msgstr ""
+
+#: ../data/main_window.xml.h:19
+msgid "gtk-quit"
+msgstr ""
+
+#: ../data/prefs_dlg.xml.h:1
+msgid "<b>General</b>"
+msgstr "<b>一般設定</b>"
+
+#: ../data/prefs_dlg.xml.h:2
+msgid "<b>Languages</b>"
+msgstr "<b>言語</b>"
+
+#: ../data/prefs_dlg.xml.h:3
+msgid "<b>Options</b>"
+msgstr "<b>オプション</b>"
+
+#: ../data/prefs_dlg.xml.h:4
+msgid "<b>Timelines</b>"
+msgstr "<b>タイムライン</b>"
+
+#: ../data/prefs_dlg.xml.h:5
+msgid ""
+"<small>The list of languages reflects only the languages for which you have "
+"a dictionary installed.</small>"
+msgstr ""
+"<small>この言語のリストには、辞書をインストールしたものだけが表示されています。</small>"
+
+#: ../data/prefs_dlg.xml.h:6
+msgid "Default _Timeline:"
+msgstr "デフォルトのタイムライン(_T)"
+
+#: ../data/prefs_dlg.xml.h:7
+msgid "General"
+msgstr "一般"
+
+#: ../data/prefs_dlg.xml.h:8
+msgid "Preferences"
+msgstr "設定"
+
+#: ../data/prefs_dlg.xml.h:9
+msgid "Spell Checking"
+msgstr "スペルチェック"
+
+#: ../data/prefs_dlg.xml.h:10
+msgid ""
+"This will show the full status message of the item selected in the list view."
+msgstr ""
+"一覧で選択したアイテムのすべての状況メッセージを表示します。"
+
+#: ../data/prefs_dlg.xml.h:11
+msgid "_Display notifications when message recieved"
+msgstr "メッセージを受け取ったら通知を表示する(_D)"
+
+#: ../data/prefs_dlg.xml.h:12
+msgid "_Enable spell checking"
+msgstr "スペルチェック有効(_E)"
+
+#: ../data/prefs_dlg.xml.h:13
+msgid "_Expand messages"
+msgstr "メッセージの展開(_E)"
+
+#: ../data/prefs_dlg.xml.h:14
+msgid "_Retrieve every:"
+msgstr "受信間隔(_R):"
+
+#: ../data/prefs_dlg.xml.h:15
+msgid "_Show user names instead real names"
+msgstr "ユーザ名を実際の名前の代わりに表示(_S)"
+
+#: ../data/send_message_dlg.xml.h:1
+msgid "<span size=\"small\">Characters Available: 160</span>"
+msgstr ""
+
+#: ../data/send_message_dlg.xml.h:2
+msgid "Choose a friend:"
+msgstr "友人の選択:"
+
+#: ../data/send_message_dlg.xml.h:3
+msgid "Send Message"
+msgstr "メッセージ送信"
+
+#: ../data/send_message_dlg.xml.h:4
+msgid "_Send"
+msgstr "送信(_S)"
+
+#: ../data/spell_dlg.xml.h:1
+msgid "Spell Checker"
+msgstr "スペルチェッカー"
+
+#: ../data/spell_dlg.xml.h:2
+msgid "Suggestions for the word:"
+msgstr "修正単語の候補:"
+
+#: ../data/spell_dlg.xml.h:3
+msgid "_Replace"
+msgstr "置き換え(_R)"
+
+#: ../data/tray_menu.xml.h:1
+msgid "_New Message"
+msgstr "新しいメッセージ(_N)"
+
+#: ../data/tray_menu.xml.h:2
+msgid "_Show Twitux"
+msgstr "Twituxを表示(_S)"
+
+#: ../data/twitux.desktop.in.in.h:1
+msgid "A Twitter client"
+msgstr "Twitterクライアント"
+
+#: ../data/twitux.schemas.in.h:1
+msgid ""
+"Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
+msgstr ""
+"スペルチェッカーで使う言語を、カンマ区切りリストでいれる(例： en, fr, nl)"
+
+#: ../data/twitux.schemas.in.h:2
+msgid "Enable spell checking"
+msgstr "スペルチェックを有効にする"
+
+#: ../data/twitux.schemas.in.h:3
+msgid "Enable spell checking."
+msgstr "スペルチェック有効。"
+
+#: ../data/twitux.schemas.in.h:4
+msgid "Expand messages"
+msgstr "メッセージの展開"
+
+#: ../data/twitux.schemas.in.h:5
+msgid "Hide main window"
+msgstr "メインウインドウを隠す"
+
+#: ../data/twitux.schemas.in.h:6
+msgid "Hide the main window."
+msgstr "メインウインドウを隠す"
+
+#: ../data/twitux.schemas.in.h:7
+msgid "Log automatically into Twitter"
+msgstr "自動的にTwitterにログイン"
+
+#: ../data/twitux.schemas.in.h:8
+msgid "Log automatically into Twitter."
+msgstr "自動的にTwitterにログイン"
+
+#: ../data/twitux.schemas.in.h:9
+msgid "Main window X position"
+msgstr "メインウインドウのX位置"
+
+#: ../data/twitux.schemas.in.h:10
+msgid "Main window X position."
+msgstr "メインウインドウのX位置"
+
+#: ../data/twitux.schemas.in.h:11
+msgid "Main window Y position"
+msgstr "メインウインドウのY位置"
+
+#: ../data/twitux.schemas.in.h:12
+msgid "Main window Y position."
+msgstr "メインウインドウのY位置"
+
+#: ../data/twitux.schemas.in.h:13
+msgid "Main window height"
+msgstr "メインウインドウの高さ"
+
+#: ../data/twitux.schemas.in.h:14
+msgid "Main window height."
+msgstr "メインウインドウの高さ"
+
+#: ../data/twitux.schemas.in.h:15
+msgid "Main window width"
+msgstr "メインウインドウの幅"
+
+#: ../data/twitux.schemas.in.h:16
+msgid "Main window width."
+msgstr "メインウインドウの幅"
+
+#: ../data/twitux.schemas.in.h:17
+msgid "Minutes between timeline retrievals"
+msgstr "タイムラインを取り寄せる時間間隔（分）"
+
+#: ../data/twitux.schemas.in.h:18
+msgid ""
+"Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
+"60"
+msgstr ""
+"タイムラインを取り寄せる間隔を分で設定。可能な値は、3, 5, 15, 30, 60のいずれか"
+
+#: ../data/twitux.schemas.in.h:19
+msgid "Show hint about closing the main window"
+msgstr ""
+"メインウインドウを閉じるときにヒントを表示"
+
+#: ../data/twitux.schemas.in.h:20
+msgid "Show notification of new Twitter messages"
+msgstr "新しいTwitterメッセージの通知を表示する"
+
+#: ../data/twitux.schemas.in.h:21
+msgid "Show notification of new Twitter messages."
+msgstr "新しいTwitterメッセージの通知を表示する。"
+
+#: ../data/twitux.schemas.in.h:22
+msgid "Show user names instead real names"
+msgstr "実際の名前の代わりにユーザ名を表示"
+
+#: ../data/twitux.schemas.in.h:23
+msgid "Show user names instead real names."
+msgstr "実際の名前の代わりにユーザ名を表示"
+
+#: ../data/twitux.schemas.in.h:24
+msgid "Spell checking languages"
+msgstr "スペルチェックを行う言語"
+
+#: ../data/twitux.schemas.in.h:25
+msgid "Twitter password"
+msgstr "Twitterパスワード"
+
+#: ../data/twitux.schemas.in.h:26
+msgid "Twitter username"
+msgstr "Twitterユーザ名"
+
+#: ../data/twitux.schemas.in.h:27
+msgid "User's Twitter account password."
+msgstr ""
+
+#: ../data/twitux.schemas.in.h:28
+msgid "User's Twitter account username."
+msgstr ""
+
+#: ../data/twitux.schemas.in.h:29
+msgid "User's home timeline"
+msgstr ""
+
+#: ../data/twitux.schemas.in.h:30
+msgid "User's home timeline."
+msgstr ""
+
+#: ../data/twitux.schemas.in.h:31
+msgid ""
+"Whether or not to show the message dialog about closing the main window with "
+"the 'x' button in the title bar."
+msgstr ""
+
+#: ../src/twitux-about.c:43
+msgid ""
+"Twitux is free software; you can redistribute it and/or modify it under the "
+"terms of the GNU General Public License as published by the Free Software "
+"Foundation; either version 2 of the License, or (at your option) any later "
+"version."
+msgstr ""
+
+#: ../src/twitux-about.c:47
+msgid ""
+"Twitux is distributed in the hope that it will be useful, but WITHOUT ANY "
+"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
+"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more "
+"details."
+msgstr ""
+
+#: ../src/twitux-about.c:51
+msgid ""
+"You should have received a copy of the GNU Lesser General Public License "
+"along with this library; if not, write to the Free Software Foundation, "
+"Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA."
+msgstr ""
+
+#: ../src/twitux-about.c:80
+msgid "A GNOME client for Twitter."
+msgstr "TwitterのGNOMEクライアント"
+
+#: ../src/twitux-about.c:81
+msgid "Copyright © 2007-2008 Daniel Morales"
+msgstr ""
+
+#: ../src/twitux-about.c:83
+msgid "translator-credits"
+msgstr "Hiroshi Miura , 三浦広志 <miura@da-cha.org>"
+
+#: ../src/twitux-app.c:407
+msgid "Twitux is still running, it is just hidden."
+msgstr "Twituxは実行し続けますが、隠されます。"
+
+#: ../src/twitux-app.c:408
+msgid "Click on the notification area icon to show Twitux."
+msgstr "Twituxを表示するには通知エリアのアイコンをクリックしてください。"
+
+#: ../src/twitux-app.c:418
+msgid "You were about to quit!"
+msgstr "終了しようとしています！"
+
+#: ../src/twitux-app.c:419
+msgid ""
+"Since no system or notification tray has been found, this action would "
+"normally quit Twitux.\n"
+"\n"
+"This is just a reminder, from now on, Twitux will quit when performing this "
+"action unless you uncheck the option below."
+msgstr ""
+"システムないしは通知トレーが見つからなかったため、いったん正常終了します。\n"
+"\n"
+"これは現状報告で、あなたが以下のオプションをオフにするまで、このアクション"
+"によりアプリケーションの終了が引き起こされます。"
+
+#: ../src/twitux-app.c:1080
+msgid "tweets"
+msgstr ""
+
+#: ../src/twitux-app.c:1082
+msgid "tweet"
+msgstr ""
+
+#: ../src/twitux-app.c:1085
+#, c-format
+msgid "You have %i new %s."
+msgstr ""
+
+#: ../src/twitux-hint.c:89
+msgid "Do not show this again"
+msgstr "再度表示しない。"
+
+#: ../src/twitux-network.c:225
+msgid "Connecting..."
+msgstr "接続..."
+
+#. UI
+#: ../src/twitux-network.c:282 ../src/twitux-network.c:298
+msgid "Loading timeline..."
+msgstr "タイムラインのロード..."
+
+#: ../src/twitux-network.c:501
+msgid "Access denied."
+msgstr "アクセス拒否。"
+
+#: ../src/twitux-network.c:504
+msgid "HTTP communication error."
+msgstr "HTTP通信エラー"
+
+#: ../src/twitux-network.c:507
+msgid "Internal server error."
+msgstr "サーバ内部エラー"
+
+#: ../src/twitux-network.c:510
+msgid "Stopped"
+msgstr "停止"
+
+#: ../src/twitux-network.c:540
+msgid "Failed to save cache file."
+msgstr "キャッシュファイルの保存失敗。"
+
+#: ../src/twitux-network.c:612
+msgid "Could not retrieve password from keyring."
+msgstr "キーリングからパスワードの取得ができませんでした。"
+
+#: ../src/twitux-network.c:657
+msgid "Status Sent"
+msgstr "状況送信完了"
+
+#: ../src/twitux-network.c:672
+msgid "Message Sent"
+msgstr "メッセージ送信完了"
+
+#: ../src/twitux-network.c:717
+msgid "Timeline Loaded"
+msgstr "タイムラインのロード完了"
+
+#: ../src/twitux-network.c:725
+msgid "Timeline Parser Error."
+msgstr "タイムラインのパースエラー"
+
+#: ../src/twitux-network.c:772
+msgid "Users parser error."
+msgstr "ユーザ一覧のパースエラー"
+
+#: ../src/twitux-network.c:835
+msgid "Friend Added"
+msgstr "友人の追加"
+
+#: ../src/twitux-network.c:837
+msgid "Failed to add user"
+msgstr "ユーザ追加の失敗"
+
+#: ../src/twitux-network.c:854
+msgid "Friend Removed"
+msgstr "友人の削除"
+
+#: ../src/twitux-network.c:856
+msgid "Failed to remove user"
+msgstr "ユーザの削除失敗"
+
+#. UI
+#: ../src/twitux-network.c:905
+msgid "Reloading timeline..."
+msgstr "タイムラインの再ロード..."
+
+#: ../src/twitux-parser.c:437
+msgid "1 second ago"
+msgstr "１秒前"
+
+#: ../src/twitux-parser.c:441
+msgid "1 minute ago"
+msgstr "１分前"
+
+#: ../src/twitux-parser.c:443
+#, c-format
+msgid "%i seconds ago"
+msgstr "%i 秒前"
+
+#: ../src/twitux-parser.c:448
+msgid "1 hour ago"
+msgstr "１時間前"
+
+#: ../src/twitux-parser.c:450
+#, c-format
+msgid "%i minutes ago"
+msgstr "%i 分前"
+
+#: ../src/twitux-parser.c:455
+msgid "1 day ago"
+msgstr "一日前"
+
+#: ../src/twitux-parser.c:457
+#, c-format
+msgid "%i hours ago"
+msgstr "%i 時間前"
+
+#: ../src/twitux-parser.c:462
+msgid "1 month ago"
+msgstr "一ヶ月前"
+
+#: ../src/twitux-parser.c:464
+#, c-format
+msgid "%i days ago"
+msgstr "%i 日前"
+
+#: ../src/twitux-parser.c:466
+#, c-format
+msgid "%i months ago"
+msgstr "%i か月前"
+
+#: ../src/twitux-preferences.c:66
+msgid "3 minutes"
+msgstr "３分間ごと"
+
+#: ../src/twitux-preferences.c:67
+msgid "5 minutes"
+msgstr "５分間ごと"
+
+#: ../src/twitux-preferences.c:68
+msgid "15 minutes"
+msgstr "１５分間ごと"
+
+#: ../src/twitux-preferences.c:69
+msgid "30 minutes"
+msgstr "３０分間ごと"
+
+#: ../src/twitux-preferences.c:70
+msgid "hour"
+msgstr "１時間ごと"
+
+#: ../src/twitux-preferences.c:215
+msgid "Language"
+msgstr "言語"
+
+#: ../src/twitux-preferences.c:427
+msgid "Public"
+msgstr "公開"
+
+#: ../src/twitux-preferences.c:429
+msgid "Mine"
+msgstr "自分"
+
+#. Set the label
+#: ../src/twitux-send-message-dialog.c:163
+#: ../src/twitux-send-message-dialog.c:345
+msgid "Characters Available"
+msgstr "のこり利用可能文字数"
+
+#: ../src/twitux-send-message-dialog.c:488
+msgid "_Check Word Spelling..."
+msgstr "スペルチェック開始...(_C)"
+
+#: ../src/twitux-spell-dialog.c:93
+msgid "Word"
+msgstr "語"
+
+#: ../src/twitux-spell-dialog.c:264
+msgid "Suggestions for the word"
+msgstr "修正候補"
+
+ 	  	 

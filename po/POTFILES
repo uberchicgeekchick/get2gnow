@@ -1,0 +1,20 @@
+	../data/add_friend_dlg.xml \
+	../data/account_dlg.xml \
+	../data/lists_dlg.xml \
+	../data/main_window.xml \
+	../data/prefs_dlg.xml \
+	../data/send_message_dlg.xml \
+	../data/spell_dlg.xml \
+	../data/twitux.desktop.in.in \
+	../data/twitux.schemas.in \
+	../src/twitux-about.c \
+	../src/twitux-app.c \
+	../src/twitux-hint.c \
+	../src/twitux-main.c \
+	../src/twitux-network.c \
+	../src/twitux-parser.c \
+	../src/twitux-preferences.c \
+	../src/twitux-send-message-dialog.c \
+	../src/twitux-spell.c \
+	../src/twitux-spell-dialog.c \
+	../src/twitux-ui-utils.c

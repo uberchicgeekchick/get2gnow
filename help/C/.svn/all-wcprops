@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svnroot/twitux/!svn/ver/342/trunk/help/C
+END
+legal.xml
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svnroot/twitux/!svn/ver/295/trunk/help/C/legal.xml
+END
+twitux.xml
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svnroot/twitux/!svn/ver/342/trunk/help/C/twitux.xml
+END
+twitux-C.omf
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/twitux/!svn/ver/295/trunk/help/C/twitux-C.omf
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/twitux/!svn/ver/295/trunk/help/C/Makefile.am
+END

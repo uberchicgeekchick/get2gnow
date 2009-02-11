@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+_Name=Twitux
+_Comment=A Twitter client
+Exec=twitux
+Icon=twitux
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=GTK;Network;
+

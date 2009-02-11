@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svnroot/twitux/!svn/ver/337/trunk/libtwitux
+END
+twitux-keyring.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svnroot/twitux/!svn/ver/337/trunk/libtwitux/twitux-keyring.h
+END
+twitux-avatar.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/twitux/!svn/ver/203/trunk/libtwitux/twitux-avatar.c
+END
+twitux-paths.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/twitux/!svn/ver/292/trunk/libtwitux/twitux-paths.c
+END
+twitux-xml.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/twitux/!svn/ver/337/trunk/libtwitux/twitux-xml.c
+END
+twitux-avatar.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/twitux/!svn/ver/203/trunk/libtwitux/twitux-avatar.h
+END
+twitux-paths.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/twitux/!svn/ver/292/trunk/libtwitux/twitux-paths.h
+END
+twitux-conf.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/twitux/!svn/ver/209/trunk/libtwitux/twitux-conf.c
+END
+twitux-xml.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/twitux/!svn/ver/337/trunk/libtwitux/twitux-xml.h
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/twitux/!svn/ver/298/trunk/libtwitux/Makefile.am
+END
+twitux-debug.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/twitux/!svn/ver/209/trunk/libtwitux/twitux-debug.c
+END
+twitux-keyring.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svnroot/twitux/!svn/ver/226/trunk/libtwitux/twitux-keyring.c
+END
+twitux-conf.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/twitux/!svn/ver/203/trunk/libtwitux/twitux-conf.h
+END
+twitux-debug.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/twitux/!svn/ver/203/trunk/libtwitux/twitux-debug.h
+END

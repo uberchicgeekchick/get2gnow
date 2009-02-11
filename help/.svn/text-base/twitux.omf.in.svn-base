@@ -1,0 +1,9 @@
+<?xml version="1.0" standalone="no"?>
+<omf>
+  <resource>
+    <subject category="GNOME|Applications|Internet"/>
+    <type>user's guide</type>
+    <relation seriesid="0feaf6bd-0768-7724-07f1-6c20eae543c310"/>
+    <rights type="GNU FDL" license.version="1.1" holder="Brian Pepple"/>
+  </resource>
+</omf>

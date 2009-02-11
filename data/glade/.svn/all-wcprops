@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svnroot/twitux/!svn/ver/369/trunk/data/glade
+END
+account_dialog.glade
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/twitux/!svn/ver/328/trunk/data/glade/account_dialog.glade
+END
+main_window.glade
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/twitux/!svn/ver/333/trunk/data/glade/main_window.glade
+END
+send_message_dialog.glade
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/twitux/!svn/ver/268/trunk/data/glade/send_message_dialog.glade
+END
+lists_dialog.glade
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/twitux/!svn/ver/301/trunk/data/glade/lists_dialog.glade
+END
+add_friend_dialog.glade
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/twitux/!svn/ver/266/trunk/data/glade/add_friend_dialog.glade
+END
+spell_dialog.glade
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/twitux/!svn/ver/266/trunk/data/glade/spell_dialog.glade
+END
+preferences_dialog.glade
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/twitux/!svn/ver/369/trunk/data/glade/preferences_dialog.glade
+END

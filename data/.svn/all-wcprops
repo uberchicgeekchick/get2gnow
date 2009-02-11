@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svnroot/twitux/!svn/ver/369/trunk/data
+END
+account_dlg.xml
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svnroot/twitux/!svn/ver/328/trunk/data/account_dlg.xml
+END
+send_message_dlg.xml
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/twitux/!svn/ver/267/trunk/data/send_message_dlg.xml
+END
+twitux.svg
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svnroot/twitux/!svn/ver/149/trunk/data/twitux.svg
+END
+lists_dlg.xml
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/twitux/!svn/ver/302/trunk/data/lists_dlg.xml
+END
+add_friend_dlg.xml
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/twitux/!svn/ver/265/trunk/data/add_friend_dlg.xml
+END
+prefs_dlg.xml
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/twitux/!svn/ver/369/trunk/data/prefs_dlg.xml
+END
+spell_dlg.xml
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/twitux/!svn/ver/265/trunk/data/spell_dlg.xml
+END
+twitux.desktop.in.in
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/twitux/!svn/ver/327/trunk/data/twitux.desktop.in.in
+END
+twitux.png
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svnroot/twitux/!svn/ver/149/trunk/data/twitux.png
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svnroot/twitux/!svn/ver/334/trunk/data/Makefile.am
+END
+main_window.xml
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svnroot/twitux/!svn/ver/333/trunk/data/main_window.xml
+END
+twitux.schemas.in
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/twitux/!svn/ver/335/trunk/data/twitux.schemas.in
+END
