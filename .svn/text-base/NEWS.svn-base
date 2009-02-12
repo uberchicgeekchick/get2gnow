@@ -1,3 +1,7 @@
+New in 0.x:
+=============
+- Fixed #2587341, avatar size and memory leak. (Patch provided by Kaity G. B.)
+
 NEW in 0.69:
 ==============
 - Display messages in notification, not count of tweets. (Thomas Thurman)

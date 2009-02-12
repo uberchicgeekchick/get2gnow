@@ -1467,11 +1467,7 @@ void
 twitux_app_set_image (const gchar *file,
                       GtkTreeIter  iter)
 {
-	GtkListStore *store;
-	/* By Kaity G. B. <uberChick-at-uberChicGeekChick.Com>		*
-	 *	2009-01-30:Begin fixed sized avatar patch; part 2.1.	*/
 	GdkPixbuf	 *pixbuf, *resized;
-	/* End fixed sized avatar patch; part 2.1.			 */
 	GError		 *error = NULL;
 
 	pixbuf = gdk_pixbuf_new_from_file (file, &error);
@@ -1482,15 +1478,11 @@ twitux_app_set_image (const gchar *file,
 		g_error_free (error);
 		return;
 	}
-	/* By Kaity G. B. <uberChick-at-uberChicGeekChick.Com>		*
-	 *	2009-01-30:Begin fixed sized avatar patch; part 2.2.	*/
+
 	resized = gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
-	/* End fixed sized avatar patch; part 2.2.			 */
 
-	store = twitux_tweet_list_get_store ();
-
-	gtk_list_store_set (store, &iter, PIXBUF_AVATAR, resized, -1);
-	g_object_unref(pixbuf);//memory clean-up: Kaity G. B.
+	gtk_list_store_set ( (twitux_tweet_list_get_store()) , &iter, PIXBUF_AVATAR, resized, -1);
+	g_object_unref(pixbuf);
 }
 
 void
@@ -1512,12 +1504,9 @@ twitux_app_expand_message (const gchar *name,
 	g_free (title_text);
 	
 	if (pixbuf) {
-		/* By Kaity G. B. <uberChick-at-uberChicGeekChick.Com>		*
-		 *	2009-01-30:Begin fixed sized avatar patch; part 3.	*/
 		resized = gdk_pixbuf_scale_simple( pixbuf, 73, 73, GDK_INTERP_BILINEAR );
-		/* End fixed sized avatar patch; part 3.			 */
-		gtk_image_set_from_pixbuf (GTK_IMAGE (priv->expand_image), resized);
-		g_object_unref(resized);//memory clean-up: Kaity G. B.
+		gtk_image_set_from_pixbuf(GTK_IMAGE (priv->expand_image), resized);
+		g_object_unref(resized);
 	}
 	
 	gtk_widget_show (priv->expand_box);

@@ -40,6 +40,7 @@ install_sh = $(SHELL) /projects/gtk/twitux/install-sh
 # Automake >= 1.8 provides /bin/mkdir -p.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
+distdir = ../$(PACKAGE)-$(VERSION)/$(subdir)
 
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
@@ -54,9 +55,9 @@ GENPOT   = INTLTOOL_EXTRACT=$(INTLTOOL_EXTRACT) srcdir=$(srcdir) $(INTLTOOL_UPDA
 
 ALL_LINGUAS = 
 
-PO_LINGUAS=$(shell if test -r $(srcdir)/LINGUAS; then grep -v "^\#" $(srcdir)/LINGUAS; fi)
+PO_LINGUAS=$(shell export GREP_OPTIONS=""; if test -r $(srcdir)/LINGUAS; then /usr/bin/grep -v "^\#" $(srcdir)/LINGUAS; fi)
 
-USER_LINGUAS=$(shell if test -n "$(LINGUAS)"; then LLINGUAS="$(LINGUAS)"; ALINGUAS="$(ALL_LINGUAS)"; for lang in $$LLINGUAS; do if test -n "`grep ^$$lang$$ $(srcdir)/LINGUAS 2>/dev/null`" -o -n "`echo $$ALINGUAS|tr ' ' '\n'|grep ^$$lang$$`"; then printf "$$lang "; fi; done; fi)
+USER_LINGUAS=$(shell export GREP_OPTIONS=""; if test -n "$(LINGUAS)"; then LLINGUAS="$(LINGUAS)"; ALINGUAS="$(ALL_LINGUAS)"; for lang in $$LLINGUAS; do if test -n "`/usr/bin/grep ^$$lang$$ $(srcdir)/LINGUAS 2>/dev/null`" -o -n "`echo $$ALINGUAS | tr ' ' '\n' | /usr/bin/grep ^$$lang$$`"; then printf "$$lang "; fi; done; fi)
 
 USE_LINGUAS=$(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "$$lang "; done)
 
@@ -117,8 +118,11 @@ $(GETTEXT_PACKAGE).pot: $(POTFILES)
 	$(GENPOT)
 
 install: install-data
+
 install-data: install-data-yes
+
 install-data-no: all
+
 install-data-yes: all
 	linguas="$(USE_LINGUAS)"; \
 	for lang in $$linguas; do \
@@ -182,7 +186,6 @@ maintainer-clean: distclean
 	@echo "it deletes files that may require special tools to rebuild."
 	rm -f Makefile.in
 
-distdir = ../$(PACKAGE)-$(VERSION)/$(subdir)
 dist distdir: $(DISTFILES)
 	dists="$(DISTFILES)"; \
 	extra_dists="$(EXTRA_DISTFILES)"; \

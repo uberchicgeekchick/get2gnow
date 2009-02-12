@@ -1467,7 +1467,7 @@ twitux_app_set_image (const gchar *file,
                       GtkTreeIter  iter)
 {
 	GtkListStore *store;
-	GdkPixbuf	 *pixbuf;
+	GdkPixbuf	 *pixbuf, *resized;
 	GError		 *error = NULL;
 
 	pixbuf = gdk_pixbuf_new_from_file (file, &error);
@@ -1478,11 +1478,12 @@ twitux_app_set_image (const gchar *file,
 		g_error_free (error);
 		return;
 	}
-	
-	store = twitux_tweet_list_get_store ();
 
-	gtk_list_store_set (store, &iter,
-						PIXBUF_AVATAR, pixbuf, -1);
+	resized = gdk_pixbuf_scale_simple(pixbuf, 48, 48, GDK_INTERP_BILINEAR);
+
+	store = twitux_tweet_list_get_store ();
+	gtk_list_store_set (store, &iter, PIXBUF_AVATAR, resized, -1);
+	g_object_unref(pixbuf);
 }
 
 void
@@ -1493,6 +1494,7 @@ twitux_app_expand_message (const gchar *name,
 {
 	TwituxAppPriv *priv;
 	gchar 		  *title_text;
+	GdkPixbuf	*resized;
 	
 	priv = GET_PRIV (app);
 
@@ -1503,7 +1505,9 @@ twitux_app_expand_message (const gchar *name,
 	g_free (title_text);
 	
 	if (pixbuf) {
-		gtk_image_set_from_pixbuf (GTK_IMAGE (priv->expand_image), pixbuf);
+		resized = gdk_pixbuf_scale_simple(pixbuf, 73, 73, GDK_INTERP_BILINEAR);
+		gtk_image_set_from_pixbuf (GTK_IMAGE (priv->expand_image), resized);
+		g_object_unref(resized);
 	}
 	
 	gtk_widget_show (priv->expand_box);

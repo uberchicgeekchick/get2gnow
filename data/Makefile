@@ -302,7 +302,7 @@ $(top_srcdir)/configure: # $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): # $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-twitux.desktop.in: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in
+twitux.desktop: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:

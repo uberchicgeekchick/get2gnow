@@ -441,7 +441,7 @@ do
     "default-1") CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
-    "data/twitux.desktop.in") CONFIG_FILES="$CONFIG_FILES data/twitux.desktop.in" ;;
+    "data/twitux.desktop") CONFIG_FILES="$CONFIG_FILES data/twitux.desktop" ;;
     "help/Makefile") CONFIG_FILES="$CONFIG_FILES help/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "libtwitux/Makefile") CONFIG_FILES="$CONFIG_FILES libtwitux/Makefile" ;;

@@ -7,8 +7,8 @@ https://twitux.svn.sourceforge.net/svnroot/twitux
 
 
 
-2009-02-01T21:52:15.632326Z
-369
+2009-02-12T02:44:09.161253Z
+372
 bpepple
 
 
@@ -23,7 +23,7 @@ svn:special svn:externals svn:needs-lock
 
 
 
-incomplete
+
 173491b7-f633-0410-8172-fe9180b9e4a8
 
 m4
@@ -31,7 +31,7 @@ dir
 
 AUTHORS
 file
-371
+
 
 
 
@@ -65,7 +65,7 @@ bpepple
 
 configure.in
 file
-371
+
 
 
 
@@ -97,6 +97,9 @@ bpepple
 
 5490
 
+src
+dir
+
 ChangeLog
 file
 
@@ -109,9 +112,6 @@ c29a79df42f59d226bcac6c1812f5cfb
 372
 bpepple
 
-src
-dir
-
 help
 dir
 
@@ -120,7 +120,7 @@ dir
 
 README
 file
-371
+
 
 
 
@@ -154,7 +154,7 @@ bpepple
 
 TODO
 file
-371
+
 
 
 
@@ -188,7 +188,7 @@ bpepple
 
 COPYING
 file
-371
+
 
 
 
@@ -220,9 +220,12 @@ puntouy
 
 18002
 
+data
+dir
+
 Makefile.am
 file
-371
+
 
 
 
@@ -254,12 +257,9 @@ bpepple
 
 638
 
-data
-dir
-
 autogen.sh
 file
-371
+
 
 
 
@@ -293,14 +293,14 @@ puntouy
 
 NEWS
 file
-371
 
 
 
-2009-01-27T07:00:35.000000Z
-8ea5e2e63bbbd07e5d9127e3fea0f099
-2009-01-22T02:36:34.075503Z
-357
+
+2009-02-12T07:08:28.000000Z
+6b7b93febe840f8db1c43e169f03f5a8
+2009-02-12T02:44:09.161253Z
+372
 bpepple
 
 
@@ -323,7 +323,7 @@ bpepple
 
 
 
-2553
+2659
 
 po
 dir

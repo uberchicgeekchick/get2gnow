@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 38
-/svnroot/twitux/!svn/ver/368/trunk/src
+/svnroot/twitux/!svn/ver/372/trunk/src
 END
 twitux-parser.c
 K 25
@@ -93,17 +93,17 @@ svn:wc:ra_dav:version-url
 V 53
 /svnroot/twitux/!svn/ver/346/trunk/src/twitux-label.c
 END
+twitux-app.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svnroot/twitux/!svn/ver/372/trunk/src/twitux-app.c
+END
 twitux-ui-utils.h
 K 25
 svn:wc:ra_dav:version-url
 V 56
 /svnroot/twitux/!svn/ver/337/trunk/src/twitux-ui-utils.h
-END
-twitux-app.c
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/svnroot/twitux/!svn/ver/362/trunk/src/twitux-app.c
 END
 twitux-spell-dialog.h
 K 25
@@ -129,17 +129,17 @@ svn:wc:ra_dav:version-url
 V 55
 /svnroot/twitux/!svn/ver/368/trunk/src/twitux-network.c
 END
-twitux-geometry.c
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svnroot/twitux/!svn/ver/219/trunk/src/twitux-geometry.c
-END
 twitux-lists-dialog.c
 K 25
 svn:wc:ra_dav:version-url
 V 60
 /svnroot/twitux/!svn/ver/337/trunk/src/twitux-lists-dialog.c
+END
+twitux-geometry.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/twitux/!svn/ver/219/trunk/src/twitux-geometry.c
 END
 twitux-dbus.c
 K 25
@@ -153,23 +153,23 @@ svn:wc:ra_dav:version-url
 V 55
 /svnroot/twitux/!svn/ver/348/trunk/src/twitux-network.h
 END
-twitux-geometry.h
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svnroot/twitux/!svn/ver/337/trunk/src/twitux-geometry.h
-END
 twitux-lists-dialog.h
 K 25
 svn:wc:ra_dav:version-url
 V 60
 /svnroot/twitux/!svn/ver/337/trunk/src/twitux-lists-dialog.h
 END
+twitux-geometry.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/twitux/!svn/ver/337/trunk/src/twitux-geometry.h
+END
 twitux-tweet-list.c
 K 25
 svn:wc:ra_dav:version-url
 V 58
-/svnroot/twitux/!svn/ver/337/trunk/src/twitux-tweet-list.c
+/svnroot/twitux/!svn/ver/372/trunk/src/twitux-tweet-list.c
 END
 twitux-dbus.h
 K 25

@@ -7,9 +7,9 @@ https://twitux.svn.sourceforge.net/svnroot/twitux
 
 
 
-2009-02-01T00:24:14.772663Z
-368
-puntouy
+2009-02-12T02:44:09.161253Z
+372
+bpepple
 
 
 svn:special svn:externals svn:needs-lock
@@ -23,12 +23,12 @@ svn:special svn:externals svn:needs-lock
 
 
 
-incomplete
+
 173491b7-f633-0410-8172-fe9180b9e4a8
 
 twitux-parser.c
 file
-371
+
 
 
 
@@ -62,7 +62,7 @@ bpepple
 
 twitux-account-dialog.h
 file
-371
+
 
 
 
@@ -96,7 +96,7 @@ bpepple
 
 twitux-preferences.c
 file
-371
+
 
 
 
@@ -130,7 +130,7 @@ bpepple
 
 twitux-parser.h
 file
-371
+
 
 
 
@@ -164,7 +164,7 @@ bpepple
 
 twitux-hint.c
 file
-371
+
 
 
 
@@ -198,7 +198,7 @@ bpepple
 
 twitux-preferences.h
 file
-371
+
 
 
 
@@ -232,7 +232,7 @@ bpepple
 
 twitux-hint.h
 file
-371
+
 
 
 
@@ -266,7 +266,7 @@ bpepple
 
 twitux.h
 file
-371
+
 
 
 
@@ -300,7 +300,7 @@ bpepple
 
 twitux-send-message-dialog.c
 file
-371
+
 
 
 
@@ -334,7 +334,7 @@ bpepple
 
 twitux-about.c
 file
-371
+
 
 
 
@@ -368,7 +368,7 @@ bpepple
 
 twitux-ui-utils.c
 file
-371
+
 
 
 
@@ -402,7 +402,7 @@ bpepple
 
 twitux-spell-dialog.c
 file
-371
+
 
 
 
@@ -436,7 +436,7 @@ bpepple
 
 twitux-send-message-dialog.h
 file
-371
+
 
 
 
@@ -470,7 +470,7 @@ bpepple
 
 twitux-about.h
 file
-371
+
 
 
 
@@ -504,7 +504,7 @@ bpepple
 
 twitux-label.c
 file
-371
+
 
 
 
@@ -536,9 +536,21 @@ bpepple
 
 4870
 
+twitux-app.c
+file
+
+
+
+
+
+a37c250e815d69a49a40d5691d472658
+2009-02-12T02:44:09.161253Z
+372
+bpepple
+
 twitux-ui-utils.h
 file
-371
+
 
 
 
@@ -570,43 +582,9 @@ bpepple
 
 1343
 
-twitux-app.c
-file
-371
-
-
-
-2009-01-27T07:00:35.000000Z
-91e0424ff749f4fc93a7ed94f2ecd5fe
-2009-01-25T02:41:24.503095Z
-362
-bpepple
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-39789
-
 twitux-spell-dialog.h
 file
-371
+
 
 
 
@@ -640,7 +618,7 @@ bpepple
 
 twitux-label.h
 file
-371
+
 
 
 
@@ -674,7 +652,7 @@ bpepple
 
 twitux-app.h
 file
-371
+
 
 
 
@@ -708,7 +686,7 @@ bpepple
 
 twitux-network.c
 file
-371
+
 
 
 
@@ -740,43 +718,9 @@ puntouy
 
 19755
 
-twitux-geometry.c
-file
-371
-
-
-
-2009-01-27T07:00:35.000000Z
-5bcdae54f823e27b45b42b23e970a3b6
-2008-01-02T03:14:44.923264Z
-219
-bpepple
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2709
-
 twitux-lists-dialog.c
 file
-371
+
 
 
 
@@ -808,9 +752,43 @@ bpepple
 
 4895
 
+twitux-geometry.c
+file
+
+
+
+
+2009-01-27T07:00:35.000000Z
+5bcdae54f823e27b45b42b23e970a3b6
+2008-01-02T03:14:44.923264Z
+219
+bpepple
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2709
+
 twitux-dbus.c
 file
-371
+
 
 
 
@@ -844,7 +822,7 @@ bpepple
 
 twitux-network.h
 file
-371
+
 
 
 
@@ -876,43 +854,9 @@ bpepple
 
 3049
 
-twitux-geometry.h
-file
-371
-
-
-
-2009-01-27T07:00:35.000000Z
-00096f1c8ca86120acd6cc2d40ed7079
-2008-12-07T22:21:30.081911Z
-337
-bpepple
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1264
-
 twitux-lists-dialog.h
 file
-371
+
 
 
 
@@ -944,14 +888,14 @@ bpepple
 
 1138
 
-twitux-tweet-list.c
+twitux-geometry.h
 file
-371
+
 
 
 
 2009-01-27T07:00:35.000000Z
-0f7d8bf9120e751061cf0bb25c93a707
+00096f1c8ca86120acd6cc2d40ed7079
 2008-12-07T22:21:30.081911Z
 337
 bpepple
@@ -976,11 +920,23 @@ bpepple
 
 
 
-7886
+1264
+
+twitux-tweet-list.c
+file
+
+
+
+
+
+d6b3713d16ee6a82c42cc21533229e84
+2009-02-12T02:44:09.161253Z
+372
+bpepple
 
 twitux-dbus.h
 file
-371
+
 
 
 
@@ -1014,7 +970,7 @@ bpepple
 
 twitux-tweet-list.h
 file
-371
+
 
 
 
@@ -1048,7 +1004,7 @@ bpepple
 
 twitux-spell.c
 file
-371
+
 
 
 
@@ -1082,7 +1038,7 @@ bpepple
 
 twitux-spell.h
 file
-371
+
 
 
 
@@ -1116,7 +1072,7 @@ puntouy
 
 twitux-main.c
 file
-371
+
 
 
 
@@ -1150,7 +1106,7 @@ bpepple
 
 twitux-add-dialog.c
 file
-371
+
 
 
 
@@ -1184,7 +1140,7 @@ bpepple
 
 Makefile.am
 file
-371
+
 
 
 
@@ -1218,7 +1174,7 @@ bpepple
 
 twitux-account-dialog.c
 file
-371
+
 
 
 
@@ -1252,7 +1208,7 @@ bpepple
 
 twitux-add-dialog.h
 file
-371
+
 
 
 

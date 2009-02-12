@@ -1,13 +1,25 @@
 2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
 
+	* po/Makefile.in: PO_LINGUAS & USER_LINGUAS 
+		I added export GREP_OPTIONS=""; to both shell execs so it
+		actually finds files in the format it expects.
+	
+	* data/Makefile.in: twitux.desktop
+		changed:
+		twitux.desktop.in: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in.in
+		to
+		twitux.desktop: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in
+	
+	* help/twitux-omf.in: depricated.
+
+2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+
 	* configure: ac_config_files
 		I modified them so they look for 'po/Makefile' and
 		'data/twitux.desktop' correctly an will fall back to the
 		correct '.in' when needed.
 
-	* po/Makefile: clean & dist distdirs
 	* po/Makefile.in: clean & dist distdirs
-	* po/Makefile.am: clean & dist distdirs
 		I corrected the sh commands that find gettext .po, .gmo, & etc
 		files.  Now po/Makefile's clean & beyond will now work.  Most
 		importantly make clean will now work.
@@ -18,7 +30,6 @@
 		only a duplicate of twitux.desktop.in.  They now correctly
 		look for twitux.desktop.in
 
-	* data/Makefile: .PRECIOUS: Makefile and multiple varibles
 	* data/Makefile.am: .PRECIOUS: Makefile and multiple varibles
 	* data/Makefile.in: .PRECIOUS: Makefile and multiple varibles
 		I changed references to Makefile.in.in &
