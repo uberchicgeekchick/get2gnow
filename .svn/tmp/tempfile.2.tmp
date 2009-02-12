@@ -1,3 +1,4 @@
+<<<<<<< .mine
 2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
 
 	* configure: ac_config_files
@@ -43,6 +44,15 @@
 		tweet list avatar column at a fixed width.
 
 
+=======
+2009-02-11  Brian Pepple  <bpepple@fedoraproject.org>
+
+	* src/twitux-app.c:
+	* src/twitux-tweet-list.c:
+	Plug a leak with some pixbufs, and set the size of
+	avatar pixbuf.  (Patch provided by Kaity G. B.)
+
+>>>>>>> .r372
 2009-01-31  Daniel Morales  <daniminas@gmail.com>
 
 	* src/twitux-network.c: Bugfix to Add/Remove friends methods,

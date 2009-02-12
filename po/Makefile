@@ -14,8 +14,6 @@
 #
 # - Modified by Rodney Dawes <dobey.pwns@gmail.com> for use with intltool
 #
-#	Modified by Kaity G. B. <KaityGB-at-uberChicGeekChick.Com> to correct printf syntax errors.
-#
 # We have the following line for use by intltoolize:
 # INTLTOOL_MAKEFILE
 
@@ -34,11 +32,11 @@ prefix = /usr
 exec_prefix = ${prefix}
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
-libdir = /usr/lib64
+libdir = ${exec_prefix}/lib
 DATADIRNAME = share
 itlocaledir = $(prefix)/$(DATADIRNAME)/locale
 subdir = po
-install_sh = $(SHELL) /programs/src/twitux/install-sh
+install_sh = $(SHELL) /projects/gtk/twitux/install-sh
 # Automake >= 1.8 provides /bin/mkdir -p.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
@@ -60,10 +58,9 @@ PO_LINGUAS=$(shell if test -r $(srcdir)/LINGUAS; then grep -v "^\#" $(srcdir)/LI
 
 USER_LINGUAS=$(shell if test -n "$(LINGUAS)"; then LLINGUAS="$(LINGUAS)"; ALINGUAS="$(ALL_LINGUAS)"; for lang in $$LLINGUAS; do if test -n "`grep ^$$lang$$ $(srcdir)/LINGUAS 2>/dev/null`" -o -n "`echo $$ALINGUAS|tr ' ' '\n'|grep ^$$lang$$`"; then printf "$$lang "; fi; done; fi)
 
-USE_LINGUAS=$(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "%s " $$lang; done)
+USE_LINGUAS=$(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "$$lang "; done)
 
-POFILES=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "%%s.po " $$lang; done)
-CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "%%s.gmo" $$lang; done)
+POFILES=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.po "; done)
 
 DISTFILES = ChangeLog Makefile.in POTFILES.in $(POFILES)
 EXTRA_DISTFILES = POTFILES.skip Makevars LINGUAS
@@ -90,6 +87,8 @@ POTFILES = \
 	../src/twitux-spell-dialog.c \
 	../src/twitux-ui-utils.c
 
+CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)
+
 .SUFFIXES:
 .SUFFIXES: .po .pox .gmo .mo .msg .cat
 
@@ -112,7 +111,6 @@ POTFILES = \
 all: all-yes
 
 all-yes: $(CATALOGS)
-
 all-no:
 
 $(GETTEXT_PACKAGE).pot: $(POTFILES)

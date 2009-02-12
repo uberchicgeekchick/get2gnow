@@ -14,6 +14,8 @@
 ## M4sh Initialization.  ##
 ## --------------------- ##
 
+export GREP_OPTIONS=""
+
 # Be more Bourne compatible
 DUALCASE=1; export DUALCASE # for MKS sh
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
@@ -25331,7 +25333,7 @@ echo "${ECHO_T}$LINGUAS" >&6; }
 	< $srcdir/po/POTFILES.in > po/POTFILES
 
 
-ac_config_files="$ac_config_files Makefile data/Makefile data/twitux.desktop.in help/Makefile src/Makefile libtwitux/Makefile po/Makefile.in"
+ac_config_files="$ac_config_files Makefile data/Makefile data/twitux.desktop help/Makefile src/Makefile libtwitux/Makefile po/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

@@ -1,3 +1,10 @@
+2009-02-11  Brian Pepple  <bpepple@fedoraproject.org>
+
+	* src/twitux-app.c:
+	* src/twitux-tweet-list.c:
+	Plug a leak with some pixbufs, and set the size of
+	avatar pixbuf.  (Patch provided by Kaity G. B.)
+
 2009-01-31  Daniel Morales  <daniminas@gmail.com>
 
 	* src/twitux-network.c: Bugfix to Add/Remove friends methods,
