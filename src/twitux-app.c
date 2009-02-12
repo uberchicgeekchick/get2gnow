@@ -1470,19 +1470,17 @@ twitux_app_set_image (const gchar *file,
 	GdkPixbuf	 *pixbuf, *resized;
 	GError		 *error = NULL;
 
-	pixbuf = gdk_pixbuf_new_from_file (file, &error);
-
-	if (!pixbuf){
-		twitux_debug (DEBUG_DOMAIN_SETUP, "Image error: %s: %s",
-					  file, error->message);
-		g_error_free (error);
+	if( !(pixbuf=gdk_pixbuf_new_from_file(file, &error)) ){
+		twitux_debug(DEBUG_DOMAIN_SETUP, "Image error: %s: %s", file, error->message);
+		g_error_free(error);
 		return;
 	}
 
-	resized = gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
+	resized=gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
 
-	gtk_list_store_set ( (twitux_tweet_list_get_store()) , &iter, PIXBUF_AVATAR, resized, -1);
+	gtk_list_store_set( (twitux_tweet_list_get_store()) , &iter, PIXBUF_AVATAR, resized, -1);
 	g_object_unref(pixbuf);
+	g_error_free(error);
 }
 
 void
@@ -1504,10 +1502,11 @@ twitux_app_expand_message (const gchar *name,
 	g_free (title_text);
 	
 	if (pixbuf) {
-		resized = gdk_pixbuf_scale_simple( pixbuf, 73, 73, GDK_INTERP_BILINEAR );
+		resized=gdk_pixbuf_scale_simple( pixbuf, 73, 73, GDK_INTERP_BILINEAR );
 		gtk_image_set_from_pixbuf(GTK_IMAGE (priv->expand_image), resized);
 		g_object_unref(resized);
 	}
 	
 	gtk_widget_show (priv->expand_box);
+	g_object_unref(priv);
 }

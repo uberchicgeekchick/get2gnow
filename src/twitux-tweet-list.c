@@ -165,9 +165,9 @@ tweet_list_setup_view (TwituxTweetList *list)
 	gtk_tree_view_append_column(GTK_TREE_VIEW (list), avatar_column);
 	
 	renderer = gtk_cell_renderer_text_new();
-	tweet_column = gtk_tree_view_column_new_with_attributes (NULL, renderer, "markup", STRING_TEXT, NULL);
-	gtk_tree_view_column_set_sizing (tweet_column, GTK_TREE_VIEW_COLUMN_FIXED);
-	g_object_set (renderer, "ypad", 0,"xpad", 50, "yalign", 0.0,"wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	tweet_column = gtk_tree_view_column_new_with_attributes(NULL, renderer, "markup", STRING_TEXT, NULL);
+	gtk_tree_view_column_set_sizing(tweet_column, GTK_TREE_VIEW_COLUMN_FIXED);
+	g_object_set(renderer, "ypad", 0,"xpad", 50, "yalign", 0.0,"wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (list), tweet_column);
 	
 	priv->text_column = tweet_column;
