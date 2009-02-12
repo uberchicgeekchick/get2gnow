@@ -5,7 +5,7 @@
 	../data/prefs_dlg.xml \
 	../data/send_message_dlg.xml \
 	../data/spell_dlg.xml \
-	../data/twitux.desktop.in.in \
+	../data/twitux.desktop.in \
 	../data/twitux.schemas.in \
 	../src/twitux-about.c \
 	../src/twitux-app.c \

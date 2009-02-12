@@ -99,7 +99,7 @@ msgstr "公開されたメッセージ"
 msgid "Send Direct Message"
 msgstr "ダイレクトメッセージ送信"
 
-#: ../data/main_window.xml.h:10 ../data/twitux.desktop.in.in.h:2
+#: ../data/main_window.xml.h:10 ../data/twitux.desktop.in.h:2
 #: ../src/twitux-main.c:46 ../src/twitux-preferences.c:430
 msgid "Twitux"
 msgstr ""
@@ -241,7 +241,7 @@ msgstr "新しいメッセージ(_N)"
 msgid "_Show Twitux"
 msgstr "Twituxを表示(_S)"
 
-#: ../data/twitux.desktop.in.in.h:1
+#: ../data/twitux.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Twitterクライアント"
 

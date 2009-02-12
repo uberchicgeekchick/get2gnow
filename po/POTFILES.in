@@ -8,7 +8,7 @@
 [type: gettext/glade]data/prefs_dlg.xml
 [type: gettext/glade]data/send_message_dlg.xml
 [type: gettext/glade]data/spell_dlg.xml
-data/twitux.desktop.in.in
+data/twitux.desktop.in
 data/twitux.schemas.in
 
 src/twitux-about.c

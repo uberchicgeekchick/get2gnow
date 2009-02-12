@@ -1,26 +1,42 @@
 2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
 
-	* src/twitux-app.c ( twitux_app_set_image & twitux_app_expand_message )
-	* src/twitux-tweet-list.c ( tweet_list_changed_cb )
-		I plugged some large memory leaks by unreferencing
-		GdkPixbuf(s) used for Twitter avatars.
-
-	* src/twitux-app.c ( twitux_app_set_image & twitux_app_expand_message )
-	* src/twitux-tweet-list.c ( tweet_list_setup_view )
-		I wrote resizing code to stop large images from bloating
-		Twitux's tweet list.  I have also added code to keep the tweet
-		list avatar column at a fixed width.
-
-	* po/Makefile ( clean & dist distdirs )
+	* po/Makefile: clean & dist distdirs
+	* po/Makefile.in: clean & dist distdirs
+	* po/Makefile.am: clean & dist distdirs
 		I corrected the sh commands that find gettext .po, .gmo, & etc
 		files.  Now po/Makefile's clean & beyond will now work.  Most
 		importantly make clean will now work.
+	
+	* po/POFILES: twitux.desktop.in.in
+	* po/POFILES.in: twitux.desktop.in.in
+		These were both referencing twitux.desktop.in.in which was
+		only a duplicate of twitux.desktop.in.  They now correctly
+		look for twitux.desktop.in
 
-	* data/Makefile
-	* data/Makefile.in
-		I fixed the references to Makefile.in.in &
-		twitux-desktop.in.in to point to tho correct .in files &
-		removed the duplicate files.
+	* data/Makefile: .PRECIOUS: Makefile and multiple varibles
+	* data/Makefile.am: .PRECIOUS: Makefile and multiple varibles
+	* data/Makefile.in: .PRECIOUS: Makefile and multiple varibles
+		I changed references to Makefile.in.in &
+		twitux-desktop.in.in to point to Makefile.in &
+		twitux.desktop.in respectfully.  I also removed the unnead
+		'.in.in' files.
+
+2009-02-09  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+
+	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
+	* src/twitux-tweet-list.c: tweet_list_changed_cb
+		I plugged some large memory leaks by unreferencing
+		GdkPixbuf(s) & various other gobjects used my Twitux for
+		Twitter's avatars.
+
+2009-02-06  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+
+	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
+	* src/twitux-tweet-list.c: tweet_list_setup_view
+		I wrote resizing code to stop large images from bloating
+		Twitux's tweet list.  I have also added code to keep the
+		tweet list avatar column at a fixed width.
+
 
 2009-01-31  Daniel Morales  <daniminas@gmail.com>
 

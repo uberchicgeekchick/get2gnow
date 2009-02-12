@@ -138,7 +138,7 @@ msgstr "Isto mostrará a situação da mensagem do item selecionado na lista atu
 msgid "Twitter Account"
 msgstr "Conta Twitter"
 
-#: ../data/main.glade.h:30 ../data/twitux.desktop.in.in.h:2
+#: ../data/main.glade.h:30 ../data/twitux.desktop.in.h:2
 #: ../src/twitux-main.c:46 ../src/twitux-preferences.c:416
 msgid "Twitux"
 msgstr "Twitux"
@@ -227,7 +227,7 @@ msgstr "gtk-preferences"
 msgid "gtk-quit"
 msgstr "gtk-quit"
 
-#: ../data/twitux.desktop.in.in.h:1
+#: ../data/twitux.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Um cliente Twitter"
 
