@@ -8,7 +8,7 @@ Index: AUTHORS
  
 +--- Various fixes, patches, & improvements
  
-+ * Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
++ * Kaity G. B. <uberChicGeekChick@openSUSE.us>
 +
  --- Translators:
  
@@ -19,7 +19,7 @@ Index: ChangeLog
 +++ ChangeLog	(working copy)
 @@ -1,10 +1,59 @@
 -2009-02-11  Brian Pepple  <bpepple@fedoraproject.org>
-+2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
++2009-02-11  Kaity G. B. <uberChicGeekChick@openSUSE.us>
  
 -	* src/twitux-app.c:
 -	* src/twitux-tweet-list.c:
@@ -37,7 +37,7 @@ Index: ChangeLog
 +	
 +	* help/twitux-omf.in: depricated.
  
-+2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
++2009-02-11  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 +
 +	* configure: ac_config_files
 +		I modified them so they look for 'po/Makefile' and
@@ -62,7 +62,7 @@ Index: ChangeLog
 +		twitux.desktop.in respectfully.  I also removed the unnead
 +		'.in.in' files.
 +
-+2009-02-09  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
++2009-02-09  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 +
 +	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
 +	* src/twitux-tweet-list.c: tweet_list_changed_cb
@@ -70,7 +70,7 @@ Index: ChangeLog
 +		GdkPixbuf(s) & various other gobjects used my Twitux for
 +		Twitter's avatars.
 +
-+2009-02-06  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
++2009-02-06  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 +
 +	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
 +	* src/twitux-tweet-list.c: tweet_list_setup_view
@@ -90,7 +90,7 @@ Index: src/twitux-app.c
   *
   * Authors: Brian Pepple <bpepple@fedoraproject.org>
   *			Daniel Morales <daniminas@gmail.com>
-+ *			Kaity G. B. <KaityGB@uberChicGeekChick.Com>
++ *			Kaity G. B. <uberChicGeekChick@openSUSE.us>
   */
  
  #include <config.h>
@@ -147,7 +147,7 @@ Index: src/twitux-tweet-list.c
   *
   * Authors: Brian Pepple <bpepple@fedoraproject.org>
   *			Daniel Morales <daniminas@gmail.com>
-+ *			Kaity G. B. <KaityGB@uberChicGeekChick.Com>
++ *			Kaity G. B. <uberChicGeekChick@openSUSE.us>
   */
  
  #include "config.h"

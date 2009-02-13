@@ -19,7 +19,7 @@
  *
  * Authors: Brian Pepple <bpepple@fedoraproject.org>
  *			Daniel Morales <daniminas@gmail.com>
- *			Kaity G. B. <KaityGB@uberChicGeekChick.Com>
+ *			Kaity G. B. <uberChicGeekChick@openSUSE.us>
  */
 
 #include "config.h"

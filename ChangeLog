@@ -1,4 +1,4 @@
-2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+2009-02-11  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 
 	* po/Makefile.in: PO_LINGUAS & USER_LINGUAS 
 		I added export GREP_OPTIONS=""; to both shell execs so it
@@ -12,7 +12,7 @@
 	
 	* help/twitux-omf.in: depricated.
 
-2009-02-11  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+2009-02-11  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 
 	* configure: ac_config_files
 		I modified them so they look for 'po/Makefile' and
@@ -37,7 +37,7 @@
 		twitux.desktop.in respectfully.  I also removed the unnead
 		'.in.in' files.
 
-2009-02-09  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+2009-02-09  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 
 	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
 	* src/twitux-tweet-list.c: tweet_list_changed_cb
@@ -45,7 +45,7 @@
 		GdkPixbuf(s) & various other gobjects used my Twitux for
 		Twitter's avatars.
 
-2009-02-06  Kaity G. B. <KaityGB-at-uberChicGeekChick.Com>
+2009-02-06  Kaity G. B. <uberChicGeekChick@openSUSE.us>
 
 	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
 	* src/twitux-tweet-list.c: tweet_list_setup_view
