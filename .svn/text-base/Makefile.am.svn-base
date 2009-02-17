@@ -4,11 +4,6 @@ if ENABLE_SK
 SUBDIRS += help
 endif
 
-INTLTOOL = 			\
-	intltool-extract.in 	\
-	intltool-merge.in 	\
-	intltool-update.in
-
 EXTRA_DIST = 			\
 	ChangeLog               \
 	README                  \
@@ -16,13 +11,9 @@ EXTRA_DIST = 			\
 	NEWS			\
 	xmldocs.make		\
 	omf.make		\
-	gnome-doc-utils.make	\
-	$(INTLTOOL)
+	gnome-doc-utils.make
 
 DISTCLEANFILES = 		\
-	intltool-extract	\
-	intltool-merge		\
-	intltool-update		\
 	gnome-doc-utils.make
 
 DISTCHECK_CONFIGURE_FLAGS =	\

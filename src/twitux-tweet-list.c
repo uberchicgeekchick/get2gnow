@@ -19,7 +19,6 @@
  *
  * Authors: Brian Pepple <bpepple@fedoraproject.org>
  *			Daniel Morales <daniminas@gmail.com>
- *			Kaity G. B. <uberChicGeekChick@openSUSE.us>
  */
 
 #include "config.h"
@@ -153,21 +152,33 @@ tweet_list_setup_view (TwituxTweetList *list)
 				 "reorderable", FALSE,
 				 "headers-visible", FALSE,
 				 NULL);
-	
+
 	renderer = gtk_cell_renderer_pixbuf_new();
-	gtk_cell_renderer_set_fixed_size(renderer, 48, 48);
-	avatar_column=gtk_tree_view_column_new_with_attributes(
-				NULL, renderer,"pixbuf", PIXBUF_AVATAR, NULL
-			);
-	gtk_tree_view_column_set_sizing(avatar_column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_min_width(avatar_column, 48);
-	gtk_tree_view_column_set_fixed_width(avatar_column, 48);
-	gtk_tree_view_append_column(GTK_TREE_VIEW (list), avatar_column);
+	gtk_cell_renderer_set_fixed_size (renderer, 48, 48);
+	avatar_column =
+		gtk_tree_view_column_new_with_attributes (NULL,
+												  renderer,
+												  "pixbuf", PIXBUF_AVATAR,
+												  NULL);
+	gtk_tree_view_column_set_sizing (avatar_column, GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_min_width (avatar_column, 48);
+	gtk_tree_view_column_set_fixed_width (avatar_column, 48);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (list),
+								 avatar_column);
 	
 	renderer = gtk_cell_renderer_text_new();
-	tweet_column = gtk_tree_view_column_new_with_attributes(NULL, renderer, "markup", STRING_TEXT, NULL);
-	gtk_tree_view_column_set_sizing(tweet_column, GTK_TREE_VIEW_COLUMN_FIXED);
-	g_object_set(renderer, "ypad", 0,"xpad", 50, "yalign", 0.0,"wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	tweet_column =
+		gtk_tree_view_column_new_with_attributes (NULL,
+												  renderer,
+												  "markup", STRING_TEXT,
+												  NULL);
+	gtk_tree_view_column_set_sizing ( tweet_column, GTK_TREE_VIEW_COLUMN_FIXED);
+	g_object_set (renderer,
+				  "ypad", 0,
+				  "xpad", 5,
+				  "yalign", 0.0,
+				  "wrap-mode", PANGO_WRAP_WORD_CHAR,
+				  NULL);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (list), tweet_column);
 	
 	priv->text_column = tweet_column;
@@ -201,7 +212,7 @@ tweet_list_changed_cb (GtkWidget *widget,
 	
 	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
 		return;
-
+	
 	gtk_tree_model_get (GTK_TREE_MODEL (priv->store),
 						&iter,
 						STRING_AUTHOR, &name,
@@ -209,7 +220,7 @@ tweet_list_changed_cb (GtkWidget *widget,
 						STRING_DATE, &date,
 						PIXBUF_AVATAR, &pixbuf,
 						-1);
-
+	
 	twitux_app_expand_message (name, date, tweet, pixbuf);
 	
 	g_free (name);

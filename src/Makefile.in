@@ -68,7 +68,7 @@ am_twitux_OBJECTS = $(am__objects_1) twitux-main.$(OBJEXT) \
 	twitux-parser.$(OBJEXT) twitux-preferences.$(OBJEXT) \
 	twitux-send-message-dialog.$(OBJEXT) twitux-spell.$(OBJEXT) \
 	twitux-spell-dialog.$(OBJEXT) twitux-ui-utils.$(OBJEXT) \
-	twitux-lists-dialog.$(OBJEXT) twitux-tweet-list.$(OBJEXT) \
+	twitux-lists-dialog.$(OBJEXT) twitux-tweet-list.$(OBJEXT)
 twitux_OBJECTS = $(am_twitux_OBJECTS)
 am__DEPENDENCIES_1 =
 twitux_DEPENDENCIES = $(top_builddir)/libtwitux/libtwitux.la \
@@ -291,7 +291,6 @@ twitux_SOURCES = \
 	twitux-network.c		twitux-network.h		\
 	twitux-parser.c			twitux-parser.h			\
 	twitux-preferences.c		twitux-preferences.h		\
-	twitux-url-encoding.c		twitux-url-encoding.h		\
 	twitux-send-message-dialog.c	twitux-send-message-dialog.h	\
 	twitux-spell.c			twitux-spell.h			\
 	twitux-spell-dialog.c		twitux-spell-dialog.h		\

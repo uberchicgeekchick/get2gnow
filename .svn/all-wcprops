@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 34
-/svnroot/twitux/!svn/ver/372/trunk
+/svnroot/twitux/!svn/ver/373/trunk
 END
 AUTHORS
 K 25
@@ -25,7 +25,7 @@ ChangeLog
 K 25
 svn:wc:ra_dav:version-url
 V 44
-/svnroot/twitux/!svn/ver/372/trunk/ChangeLog
+/svnroot/twitux/!svn/ver/373/trunk/ChangeLog
 END
 COPYING
 K 25
@@ -37,7 +37,7 @@ Makefile.am
 K 25
 svn:wc:ra_dav:version-url
 V 46
-/svnroot/twitux/!svn/ver/333/trunk/Makefile.am
+/svnroot/twitux/!svn/ver/373/trunk/Makefile.am
 END
 autogen.sh
 K 25

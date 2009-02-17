@@ -56,6 +56,7 @@ typedef struct
 	gchar		*id;
 } TwituxStatus;
 
+static gchar * url_decode_tweet(gchar *tweet);
 static TwituxUser	*parser_twitux_node_user   (xmlNode     *a_node);
 static TwituxStatus	*parser_twitux_node_status (xmlNode     *a_node);
 static xmlDoc       *parser_twitux_parse       (const char  *data,
@@ -67,7 +68,45 @@ static gboolean      display_notification      (gpointer     tweet);
 /* id of the newest tweet showed */
 static gint			last_id = 0;
 
-static xmlDoc*
+static gchar * url_decode_tweet(gchar *tweet){
+	g_return_val_if_fail( tweet != NULL, NULL );
+	g_return_val_if_fail( *tweet != '\0', NULL );
+	
+	GString *decoded_tweet=g_string_new(NULL);
+	while(*tweet) {
+		unsigned char c=*tweet++;
+		if(c!='&'){
+			g_string_append_c(decoded_tweet, c);
+			continue;
+		}
+		
+		GString *hex_string=g_string_new(NULL);
+		while( ((c=++*tweet)!=';')&&*tweet){
+			if( ((c=='0')||(c=='#')) && g_string_equal( hex_string, NULL ) )
+				continue;
+			
+			g_string_append_c(hex_string, c);
+		}
+
+		c=*tweet++;	
+		if( (g_str_equal(hex_string, "amp")) ){
+			g_string_append_c(decoded_tweet, '&');
+			g_string_free(hex_string, TRUE);
+		}else{
+			gchar *end=NULL;
+			gint64 ascii = g_ascii_strtoll(
+					g_string_free(hex_string, FALSE),
+					&end,
+					16);
+			g_string_append_c(decoded_tweet, (gchar)ascii);
+			ascii=0;
+		}
+	}
+	
+	return g_string_free(decoded_tweet, FALSE);
+}//url_decode_tweet
+	
+	static xmlDoc*
 parser_twitux_parse (const char  *data,
 					 gssize       length,
 					 xmlNode    **first_element)
@@ -246,11 +285,14 @@ twitux_parser_timeline (const gchar *data,
 
 			/* Create string for text column */
 			datetime = parser_convert_time (status->created_at);
-			tweet = g_strconcat ("<b>",
+			tweet = url_decode_tweet(
+							g_strconcat ("<b>",
 								 (show_username ? status->user->screen_name:status->user->name),
 								 "</b> - ", datetime, "\n",
 								 "<small>", status->text, "</small>",
-								 NULL);
+								 NULL
+							)
+						);
 			
 			if (sid > last_id && show_notification) {
 				if (multiple_new_tweets != TRUE) {
