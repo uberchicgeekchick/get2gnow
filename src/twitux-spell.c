@@ -128,7 +128,7 @@ spell_iso_codes_parse_start_tag (GMarkupParseContext  *ctx,
 static void
 spell_iso_code_names_init (void)
 {
-	GError *err = NULL;
+	GError *error = NULL;
 	gchar  *buf;
 	gsize   buf_len;
 
@@ -139,7 +139,7 @@ spell_iso_code_names_init (void)
 	bind_textdomain_codeset ("iso_639", "UTF-8");
 
 	/* FIXME: We should read this in chunks and pass to the parser. */
-	if (g_file_get_contents (ISO_CODES_DATADIR "/iso_639.xml", &buf, &buf_len, &err)) {
+	if (g_file_get_contents (ISO_CODES_DATADIR "/iso_639.xml", &buf, &buf_len, &error)) {
 		GMarkupParseContext *ctx;
 		GMarkupParser        parser = {
 			spell_iso_codes_parse_start_tag,
@@ -147,19 +147,19 @@ spell_iso_code_names_init (void)
 		};
 
 		ctx = g_markup_parse_context_new (&parser, 0, NULL, NULL);
-		if (!g_markup_parse_context_parse (ctx, buf, buf_len, &err)) {
+		if (!g_markup_parse_context_parse (ctx, buf, buf_len, &error)) {
 			g_warning ("Failed to parse '%s': %s",
 					   ISO_CODES_DATADIR"/iso_639.xml",
-					   err->message);
-			g_error_free (err);
+					   error->message);
+			if(error) g_error_free (error);
 		}
 
 		g_markup_parse_context_free (ctx);
 		g_free (buf);
 	} else {
 		g_warning ("Failed to load '%s': %s",
-				ISO_CODES_DATADIR"/iso_639.xml", err->message);
-		g_error_free (err);
+				ISO_CODES_DATADIR"/iso_639.xml", error->message);
+		if(error) g_error_free (error);
 	}
 }
 

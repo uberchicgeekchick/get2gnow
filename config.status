@@ -590,9 +590,9 @@ s,@AMDEPBACKSLASH@,|#_!!_#|\\,g
 s,@CCDEPMODE@,|#_!!_#|depmode=gcc3,g
 s,@am__fastdepCC_TRUE@,|#_!!_#|,g
 s,@am__fastdepCC_FALSE@,|#_!!_#|#,g
-s,@SED@,|#_!!_#|/usr/bin/sed,g
-s,@GREP@,|#_!!_#|/usr/bin/grep,g
-s,@EGREP@,|#_!!_#|/usr/bin/grep -E,g
+s,@SED@,|#_!!_#|/bin/sed,g
+s,@GREP@,|#_!!_#|/bin/grep,g
+s,@EGREP@,|#_!!_#|/bin/grep -E,g
 s,@LN_S@,|#_!!_#|ln -s,g
 s,@ECHO@,|#_!!_#|echo,g
 s,@AR@,|#_!!_#|ar,g

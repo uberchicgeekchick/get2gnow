@@ -93,16 +93,16 @@ void
 twitux_help_show (GtkWindow *parent)
 {
 	GdkScreen *screen;
-	GError    *err = NULL;
+	GError    *error = NULL;
 
 	screen = gtk_widget_get_screen (GTK_WIDGET (parent));
 
 	gtk_show_uri (screen,
 				  "ghelp:twitux",
 				  gtk_get_current_event_time (),
-				  &err);
+				  &error);
 
-	if (err != NULL) {
+	if (error != NULL) {
 		GtkWidget *w;
 
 		w =	gtk_message_dialog_new (GTK_WINDOW (parent),
@@ -112,12 +112,12 @@ twitux_help_show (GtkWindow *parent)
 									_("Unable to open help file"));
 
 		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (w),
-												  "%s", err->message);
+												  "%s", error->message);
 
 		g_signal_connect (w, "response",
 						  G_CALLBACK (gtk_widget_destroy),
 						  NULL);
 		gtk_window_present (GTK_WINDOW (w));
-		g_error_free (err);
+		if(error) g_error_free (error);
 	}
 }

@@ -105,9 +105,11 @@ tweet_list_finalize (GObject *object)
 
 	priv = GET_PRIV (object);
 
-	g_object_unref (priv->store);
+	if(priv->store)
+		g_object_unref (priv->store);
 
 	G_OBJECT_CLASS (twitux_tweet_list_parent_class)->finalize (object);
+	g_object_unref( object );
 }
 
 static void

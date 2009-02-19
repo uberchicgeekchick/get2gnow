@@ -138,8 +138,7 @@ message_setup (GtkWindow  *parent)
 	twitux_debug (DEBUG_DOMAIN_SETUP, "Initialising message dialog");
 
 	/* Get widgets */
-	ui =
-		twitux_xml_get_file (XML_FILE,
+	ui = twitux_xml_get_file (XML_FILE,
 							 "send_message_dialog", &priv->dialog,
 							 "send_message_textview", &priv->textview,
 							 "char_label", &priv->label,

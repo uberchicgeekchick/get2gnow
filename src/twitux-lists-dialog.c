@@ -170,7 +170,7 @@ twitux_lists_dialog_show (GtkWindow *parent)
 						"following_list", "row-activated", list_follower_activated_cb,
 						NULL);
 
-	g_object_unref (ui);
+	gtk_widget_destroy (ui);
 
 	/* Set the parent */
 	g_object_add_weak_pointer (G_OBJECT (lists->dialog), (gpointer) &lists);

@@ -97,9 +97,6 @@ bpepple
 
 5490
 
-src
-dir
-
 ChangeLog
 file
 
@@ -111,6 +108,9 @@ file
 2009-02-14T00:21:23.487247Z
 373
 bpepple
+
+src
+dir
 
 help
 dir
@@ -220,9 +220,6 @@ puntouy
 
 18002
 
-data
-dir
-
 Makefile.am
 file
 
@@ -256,6 +253,9 @@ bpepple
 
 
 481
+
+data
+dir
 
 autogen.sh
 file

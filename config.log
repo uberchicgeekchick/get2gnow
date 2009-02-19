@@ -27,16 +27,8 @@ uname -v = #1 SMP 2008-12-04 18:10:04 +0100
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
 
-PATH: /uberChick/bin
-PATH: /usr/local/bin
-PATH: /usr/bin
 PATH: /bin
-PATH: /usr/X11R6/bin
-PATH: /usr/bin/X11
-PATH: /usr/games
-PATH: /usr/lib/mit/bin
-PATH: /usr/lib/mit/sbin
-PATH: .
+PATH: /usr/bin
 PATH: /bin
 PATH: /usr/bin
 PATH: /usr/local/bin
@@ -44,78 +36,6 @@ PATH: /sbin
 PATH: /usr/sbin
 PATH: /usr/local/sbin
 PATH: /etc/init.d
-PATH: /programs/GTK-PHP-IDE/bin
-PATH: /projects/games/engines/Raydium/raydium/bin
-PATH: .
-PATH: /projects/gtk/Alacast/bin
-PATH: /projects/gtk/Alacast/bin/scripts
-PATH: .
-PATH: /projects/console/Alacast/bin
-PATH: .
-PATH: /projects/console/tcsh-dev
-PATH: /projects/console/tcsh-dev/scripts
-PATH: /projects/console/tcsh-dev/helpers
-PATH: /projects/console/tcsh-dev/helpers/rm
-PATH: /projects/console/tcsh-dev/permissions
-PATH: /projects/console/tcsh-dev/setenv
-PATH: /projects/console/tcsh-dev/game-dev
-PATH: /projects/console/tcsh-dev/game-dev/engines
-PATH: /projects/console/tcsh-dev/sudo
-PATH: /projects/console/tcsh-dev/devel
-PATH: /projects/console/tcsh-dev/tcshrc
-PATH: /projects/console/tcsh-dev/media-organization
-PATH: /projects/console/tcsh-dev/media-organization/gPodder
-PATH: /projects/console/tcsh-dev/media-organization/podnovel-helpers
-PATH: /projects/console/tcsh-dev/convert
-PATH: /projects/console/tcsh-dev/xml-parsers
-PATH: /projects/console/tcsh-dev/session-handlers
-PATH: /projects/console/tcsh-dev/backup
-PATH: /programs/bin
-PATH: /programs/Mozilla/Firefox3/32bit/Nightly
-PATH: /programs/Mozilla/Firefox3/32bit/Stable
-PATH: /programs/Mozilla/Thunderbird3/32bit/Nightly
-PATH: /programs/Mozilla/Thunderbird3/32bit/Stable
-PATH: /programs/gizmo-project-3.1.0.79
-PATH: /programs/carrier-2.5.0
-PATH: /programs/skype_static-2.0.0.72-oss
-PATH: /programs/ion/3-20080825/bin
-PATH: /programs/linphone/3.0-cvs/2008-09-11/bin
-PATH: /programs/Adobe/Reader8/bin/
-PATH: .
-PATH: /bin
-PATH: /usr/bin
-PATH: /usr/local/bin
-PATH: /sbin
-PATH: /usr/sbin
-PATH: /usr/local/sbin
-PATH: /etc/init.d
-PATH: /programs/GTK-PHP-IDE/bin
-PATH: /projects/games/engines/Raydium/raydium/bin
-PATH: .
-PATH: /projects/gtk/Alacast/bin
-PATH: /projects/gtk/Alacast/bin/scripts
-PATH: .
-PATH: /projects/console/Alacast/bin
-PATH: .
-PATH: /projects/console/tcsh-dev
-PATH: /projects/console/tcsh-dev/scripts
-PATH: /projects/console/tcsh-dev/helpers
-PATH: /projects/console/tcsh-dev/helpers/rm
-PATH: /projects/console/tcsh-dev/permissions
-PATH: /projects/console/tcsh-dev/setenv
-PATH: /projects/console/tcsh-dev/game-dev
-PATH: /projects/console/tcsh-dev/game-dev/engines
-PATH: /projects/console/tcsh-dev/sudo
-PATH: /projects/console/tcsh-dev/devel
-PATH: /projects/console/tcsh-dev/tcshrc
-PATH: /projects/console/tcsh-dev/media-organization
-PATH: /projects/console/tcsh-dev/media-organization/gPodder
-PATH: /projects/console/tcsh-dev/media-organization/podnovel-helpers
-PATH: /projects/console/tcsh-dev/convert
-PATH: /projects/console/tcsh-dev/xml-parsers
-PATH: /projects/console/tcsh-dev/session-handlers
-PATH: /projects/console/tcsh-dev/backup
-PATH: .
 PATH: /programs/GTK-PHP-IDE/bin
 PATH: /projects/games/engines/Raydium/raydium/bin
 PATH: .
@@ -142,6 +62,15 @@ PATH: /projects/console/tcsh-dev/media-organization/podnovel-helpers
 PATH: /projects/console/tcsh-dev/convert
 PATH: /projects/console/tcsh-dev/xml-parsers
 PATH: /projects/console/tcsh-dev/backup
+PATH: /programs/bin
+PATH: /programs/Mozilla/Firefox3/64bit
+PATH: /programs/Mozilla/Thunderbird3/64bit
+PATH: /programs/gizmo-project-3.1.0.79
+PATH: /programs/carrier-2.5.0
+PATH: /programs/skype_static-2.0.0.72-oss
+PATH: /programs/ion/3-20080825/bin
+PATH: /programs/linphone/3.0-cvs/2008-09-11/bin
+PATH: .
 
 
 ## ----------- ##
@@ -155,7 +84,7 @@ configure:2240: result: yes
 configure:2268: checking for a thread-safe mkdir -p
 configure:2307: result: /bin/mkdir -p
 configure:2320: checking for gawk
-configure:2336: found /usr/bin/gawk
+configure:2336: found /bin/gawk
 configure:2347: result: gawk
 configure:2358: checking whether make sets $(MAKE)
 configure:2379: result: yes
@@ -221,11 +150,11 @@ configure:3709: result: none needed
 configure:3729: checking dependency style of gcc
 configure:3820: result: gcc3
 configure:3835: checking for a sed that does not truncate output
-configure:3891: result: /usr/bin/sed
+configure:3891: result: /bin/sed
 configure:3894: checking for grep that handles long lines and -e
-configure:3968: result: /usr/bin/grep
+configure:3968: result: /bin/grep
 configure:3973: checking for egrep
-configure:4051: result: /usr/bin/grep -E
+configure:4051: result: /bin/grep -E
 configure:4067: checking for ld used by gcc
 configure:4134: result: /usr/x86_64-suse-linux/bin/ld
 configure:4143: checking if the linker (/usr/x86_64-suse-linux/bin/ld) is GNU ld
@@ -932,10 +861,10 @@ ac_cv_header_sys_types_h=yes
 ac_cv_header_unistd_h=yes
 ac_cv_host=x86_64-suse-linux-gnu
 ac_cv_objext=o
-ac_cv_path_EGREP='/usr/bin/grep -E'
+ac_cv_path_EGREP='/bin/grep -E'
 ac_cv_path_GCONFTOOL=/usr/bin/gconftool-2
 ac_cv_path_GMSGFMT=/usr/bin/msgfmt
-ac_cv_path_GREP=/usr/bin/grep
+ac_cv_path_GREP=/bin/grep
 ac_cv_path_INTLTOOL_EXTRACT=/usr/bin/intltool-extract
 ac_cv_path_INTLTOOL_MERGE=/usr/bin/intltool-merge
 ac_cv_path_INTLTOOL_PERL=/usr/bin/perl
@@ -978,7 +907,7 @@ lt_cv_objdir=.libs
 lt_cv_path_LD=/usr/x86_64-suse-linux/bin/ld
 lt_cv_path_LDCXX='/usr/x86_64-suse-linux/bin/ld -m elf_x86_64'
 lt_cv_path_NM='/usr/bin/nm -B'
-lt_cv_path_SED=/usr/bin/sed
+lt_cv_path_SED=/bin/sed
 lt_cv_prog_compiler_c_o=yes
 lt_cv_prog_compiler_c_o_CXX=yes
 lt_cv_prog_compiler_pic_works=yes
@@ -1050,7 +979,7 @@ ECHO='echo'
 ECHO_C=''
 ECHO_N='-n'
 ECHO_T=''
-EGREP='/usr/bin/grep -E'
+EGREP='/bin/grep -E'
 ENABLE_SK_FALSE='#'
 ENABLE_SK_TRUE=''
 ENCHANT_CFLAGS='-I/usr/include/enchant -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include  '
@@ -1073,7 +1002,7 @@ GMSGFMT='/usr/bin/msgfmt'
 GNOME_KEYRING_CFLAGS='-I/usr/include/gnome-keyring-1 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include  '
 GNOME_KEYRING_LIBS='-lgnome-keyring -lglib-2.0  '
 GOBJECT_QUERY='gobject-query'
-GREP='/usr/bin/grep'
+GREP='/bin/grep'
 HAVE_DBUS_FALSE='#'
 HAVE_DBUS_TRUE=''
 HAVE_ENCHANT_FALSE='#'
@@ -1143,7 +1072,7 @@ POSUB='po'
 PO_IN_DATADIR_FALSE=''
 PO_IN_DATADIR_TRUE=''
 RANLIB='ranlib'
-SED='/usr/bin/sed'
+SED='/bin/sed'
 SET_MAKE=''
 SHELL='/bin/sh'
 STRIP='strip'
