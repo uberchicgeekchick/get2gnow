@@ -18,6 +18,7 @@
  * Boston, MA 02110-1301, USA.
  *
  * Authors: Daniel Morales <daniminas@gmail.com>
+ * 		Kaity G. B. <uberChick@uberChicGeekChick.Com>
  *
  */
 
@@ -88,6 +89,10 @@ static void network_cb_on_auth		(SoupSession           *session,
 									 SoupAuth              *auth,
 									 gboolean               retrying,
 									 gpointer               data);
+gint network_i_know_my_abc_s(gconstpointer a, gconstpointer b);
+static void network_make_users_list(gboolean friends);
+GList *all_users=NULL;
+gboolean fetching=FALSE;
 
 /* Autoreload timeout functions */
 static gboolean 	network_timeout			(gpointer user_data);
@@ -347,14 +352,22 @@ GList *
 twitux_network_get_friends (void)
 {
 	gboolean friends = TRUE;
+	SoupMessage *msg;
+	gint page=0;
 
 	if (user_friends)
 		return user_friends;
 	
-	network_get_data (TWITUX_API_FOLLOWING,
-					  network_cb_on_users,
-					  GINT_TO_POINTER(friends));
-	
+	all_users=NULL;
+	fetching=TRUE;
+	while(fetching){
+		page++;
+		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", TWITUX_API_FOLLOWING, page)) );
+		soup_session_send_message(soup_connection, msg);
+		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(friends));
+	}
+	network_make_users_list( friends );
+
 	return NULL;
 }
 
@@ -368,13 +381,21 @@ GList *
 twitux_network_get_followers (void)
 {
 	gboolean friends = FALSE;
+	SoupMessage *msg;
+	gint page=0;
 
 	if (user_followers)
 		return user_followers;
 
-	network_get_data (TWITUX_API_FOLLOWERS,
-					  network_cb_on_users,
-					  GINT_TO_POINTER(friends));
+	all_users=NULL;
+	fetching=TRUE;
+	while(fetching){
+		page++;
+		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", TWITUX_API_FOLLOWING, page)) );
+		soup_session_send_message(soup_connection, msg);
+		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(friends));
+	}
+	network_make_users_list( friends );
 
 	return NULL;
 }
@@ -680,7 +701,6 @@ network_cb_on_timeline (SoupSession *session,
 		g_free (new_timeline);
 }
 
-
 /* On get user followers */
 static void
 network_cb_on_users (SoupSession *session,
@@ -689,31 +709,47 @@ network_cb_on_users (SoupSession *session,
 {
 	gboolean  friends = GPOINTER_TO_INT(user_data);
 	GList    *users;
-		
+	
 	twitux_debug (DEBUG_DOMAIN,
 				  "Users response: %i",msg->status_code);
 	
 	/* Check response */
-	if (!network_check_http (msg->status_code))
+	if (!network_check_http (msg->status_code)){
+		fetching=FALSE;
 		return;
+	}
 
 	/* parse user list */
 	twitux_debug (DEBUG_DOMAIN, "Parsing user list");
+	if(! (users=twitux_parser_users_list(msg->response_body->data, msg->response_body->length)) ) {
+		fetching=FALSE;
+		return;
+	}
+	if(!all_users)
+		all_users=users;
+	else
+		all_users=g_list_concat(all_users, users);
+}
 
-	users = twitux_parser_users_list (msg->response_body->data,
-									  msg->response_body->length);
+
+static void
+network_make_users_list( gboolean friends ){
+	if(!all_users){
+		twitux_app_set_statusbar_msg (_("Users parser error."));
+		return;
+	}
+
+	all_users=g_list_sort(all_users, (GCompareFunc) strcmp);
 
 	/* check if it ok, and if it is a followers or following list */
-	if (users && friends){
+	if (friends){
 		/* Friends retrived */
-		user_friends = users;
+		user_friends = all_users;
 		twitux_lists_dialog_load_lists (user_friends);
-	} else if (users){
-		/* Followers list retrived */
-		user_followers = users;
-		twitux_message_set_followers (user_followers);
 	} else {
-		twitux_app_set_statusbar_msg (_("Users parser error."));
+		/* Followers list retrived */
+		user_followers = all_users;
+		twitux_message_set_followers (user_followers);
 	}
 }
 

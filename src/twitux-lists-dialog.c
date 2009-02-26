@@ -16,6 +16,10 @@
  * License along with this library; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
  * Boston, MA 02110-1301, USA.
+ *
+ * Authors: Daniel Morales <daniminas@gmail.com>
+ * 		Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ *
  */
 
 #include "config.h"
@@ -184,10 +188,6 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	if (users){
 		twitux_lists_dialog_load_lists (users);
 	} else {
-		GdkCursor *cursor;
-		/* Disable window while retrieving lists */
-		cursor = gdk_cursor_new (GDK_WATCH);
-		gdk_window_set_cursor (GTK_WIDGET (lists->dialog)->window, cursor);
-		gtk_widget_set_sensitive (lists->dialog, FALSE);
+		gtk_widget_set_sensitive (lists->dialog, TRUE);
 	}
 }

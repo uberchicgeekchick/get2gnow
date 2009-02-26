@@ -19,6 +19,8 @@
  *
  * Authors: Brian Pepple <bpepple@fedoraproject.org>
  *			Daniel Morales <daniminas@gmail.com>
+ *			Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ *
  */
 
 #include "config.h"

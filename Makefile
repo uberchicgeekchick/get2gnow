@@ -82,11 +82,11 @@ AUTOMAKE = ${SHELL} /projects/gtk/twitux/missing --run automake-1.10
 AWK = gawk
 CATALOGS = 
 CATOBJEXT = .gmo
-CC = gcc
+CC = /usr/bin/gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
-CPP = gcc -E
-CPPFLAGS = 
+CFLAGS = -std=gnu99 -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include
+CPP = /usr/bin/cpp
+CPPFLAGS = -I/usr/include
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
@@ -158,9 +158,9 @@ INTLTOOL_UPDATE = /usr/bin/intltool-update
 INTLTOOL_XAM_RULE = %.xam:       %.xml.in       $(INTLTOOL_MERGE) $(wildcard $(top_srcdir)/po/*.po) ; LC_ALL=C $(INTLTOOL_MERGE) -x -u -c $(top_builddir)/po/.intltool-merge-cache $(top_srcdir)/po $< $@
 INTLTOOL_XML_NOMERGE_RULE = %.xml:       %.xml.in       $(INTLTOOL_MERGE) ; LC_ALL=C $(INTLTOOL_MERGE) -x -u /tmp $< $@
 INTLTOOL_XML_RULE = %.xml:       %.xml.in       $(INTLTOOL_MERGE) $(wildcard $(top_srcdir)/po/*.po) ; LC_ALL=C $(INTLTOOL_MERGE) -x -u -c $(top_builddir)/po/.intltool-merge-cache $(top_srcdir)/po $< $@
-LDFLAGS = 
+LDFLAGS = -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib
 LIBOBJS = 
-LIBS = 
+LIBS = -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIBTWITUX_CFLAGS = -DORBIT2=1 -pthread -I/usr/include/libxml2 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/gtk-2.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/gconf/2 -I/usr/include/orbit-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gnome-keyring-1  
 LIBTWITUX_LIBS = -lxml2 -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lz -lfontconfig -lgmodule-2.0 -lgobject-2.0 -lgconf-2 -lgnome-keyring -lglib-2.0  
@@ -203,7 +203,7 @@ abs_builddir = /projects/gtk/twitux
 abs_srcdir = /projects/gtk/twitux
 abs_top_builddir = /projects/gtk/twitux
 abs_top_srcdir = /projects/gtk/twitux
-ac_ct_CC = gcc
+ac_ct_CC = /usr/bin/gcc
 ac_ct_CXX = g++
 ac_ct_F77 = 
 am__include = include

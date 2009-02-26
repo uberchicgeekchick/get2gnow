@@ -82,13 +82,13 @@ AR="ar"
 AR_FLAGS="cru"
 
 # A C compiler.
-LTCC="gcc"
+LTCC="/usr/bin/gcc"
 
 # LTCC compiler flags.
-LTCFLAGS="-g -O2"
+LTCFLAGS="-std=gnu99 -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include"
 
 # A language-specific compiler.
-CC="gcc"
+CC="/usr/bin/gcc"
 
 # Is the compiler the GNU C compiler?
 with_gcc=yes
@@ -7350,10 +7350,10 @@ AR="ar"
 AR_FLAGS="cru"
 
 # A C compiler.
-LTCC="gcc"
+LTCC="/usr/bin/gcc"
 
 # LTCC compiler flags.
-LTCFLAGS="-g -O2"
+LTCFLAGS="-std=gnu99 -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include"
 
 # A language-specific compiler.
 CC="g++"
@@ -7510,11 +7510,11 @@ postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The directories searched by this compiler when creating a shared
 # library
-compiler_lib_search_dirs="/usr/lib64/gcc/x86_64-suse-linux/4.3 /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../lib64 /lib/../lib64 /usr/lib/../lib64 /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib /usr/lib64/gcc/x86_64-suse-linux/4.3/../../.."
+compiler_lib_search_dirs="/lib64 /usr/lib64 /usr/lib /lib /usr/lib64/gcc/x86_64-suse-linux/4.3 /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../lib64 /lib/../lib64 /usr/lib/../lib64 /usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib /usr/lib64/gcc/x86_64-suse-linux/4.3/../../.."
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/usr/lib64/gcc/x86_64-suse-linux/4.3 -L/usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib -L/usr/lib64/gcc/x86_64-suse-linux/4.3/../../.."
+compiler_lib_search_path="-L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -L/usr/lib64/gcc/x86_64-suse-linux/4.3 -L/usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-suse-linux/4.3/../../../../x86_64-suse-linux/lib -L/usr/lib64/gcc/x86_64-suse-linux/4.3/../../.."
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method="pass_all"

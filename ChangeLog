@@ -1,4 +1,21 @@
-2009-02-11  Kaity G. B. <uberChicGeekChick@openSUSE.us>
+2009-02-26  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
+	* src/twitux-network.c:	rewrote: twitux_network_get_friends &
+		twitux_network_get_followers.
+		created make_users_list.
+		
+		I have fixed Twitux so it now loads all of the user's
+		friends/followers for when sending a direct message or when
+		selecting to view a specific friends statuses.
+		
+	* src/twitux-lists-dialog.c: twitux_lists_dialog_show
+		I removed the code that was changing the cursor to a busy
+		cursor.  It was disabling the friends list only after friends
+		list was loaded.  so they'd all appear there but could not be
+		clicked on. The window would have to be closed than re-opened
+		to actually access all friends.
+
+2009-02-11  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* po/Makefile.in: PO_LINGUAS & USER_LINGUAS 
 		I added export GREP_OPTIONS=""; to both shell execs so it
@@ -12,7 +29,7 @@
 	
 	* help/twitux-omf.in: depricated.
 
-2009-02-11  Kaity G. B. <uberChicGeekChick@openSUSE.us>
+2009-02-11  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* configure: ac_config_files
 		I modified them so they look for 'po/Makefile' and
@@ -37,7 +54,7 @@
 		twitux.desktop.in respectfully.  I also removed the unnead
 		'.in.in' files.
 
-2009-02-09  Kaity G. B. <uberChicGeekChick@openSUSE.us>
+2009-02-09  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
 	* src/twitux-tweet-list.c: tweet_list_changed_cb
@@ -45,7 +62,7 @@
 		GdkPixbuf(s) & various other gobjects used my Twitux for
 		Twitter's avatars.
 
-2009-02-06  Kaity G. B. <uberChicGeekChick@openSUSE.us>
+2009-02-06  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
 	* src/twitux-tweet-list.c: tweet_list_setup_view
