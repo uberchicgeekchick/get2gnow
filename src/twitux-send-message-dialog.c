@@ -189,8 +189,6 @@ message_setup (GtkWindow  *parent)
 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (priv->friends_combo),
 									renderer, "text", 0, NULL);
 
-	gtk_widget_grab_focus(GTK_WIDGET (priv->textview));
-	
 	/* Show the dialog */
 	gtk_widget_show (GTK_WIDGET (priv->dialog));
 }
@@ -261,23 +259,35 @@ twitux_message_show_friends (gboolean show_friends)
 	TwituxMsgDialogPriv *priv = GET_PRIV (dialog);
 	priv->show_friends = show_friends;
 
-	if (show_friends){
-		GList *followers;
-		gtk_widget_show (priv->friends_combo);
-		gtk_widget_show (priv->friends_label);
-		
-		/* Let's populate the combobox */
-		followers = twitux_network_get_followers ();
-		if (followers){
-			twitux_debug (DEBUG_DOMAIN_SETUP, "Loaded previous followers list");
-			twitux_message_set_followers (followers);
-		} else {
-			twitux_debug (DEBUG_DOMAIN_SETUP, "Fetching followers...");
-		}
+	if(!show_friends){
+		gtk_widget_hide (priv->friends_combo);
+		gtk_widget_hide (priv->friends_label);
+		gtk_widget_grab_focus(GTK_WIDGET(priv->textview));
 		return;
 	}
-	gtk_widget_hide (priv->friends_combo);
-	gtk_widget_hide (priv->friends_label);
+	
+	GList *followers;
+	GdkCursor *cursor;
+		
+	gtk_widget_show (priv->friends_combo);
+	gtk_widget_show (priv->friends_label);
+
+	cursor=gdk_cursor_new(GDK_WATCH);
+	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, cursor);
+	gtk_widget_set_sensitive(priv, FALSE);
+
+	/* Let's populate the combobox */
+	followers = twitux_network_get_followers ();
+	if (followers){
+		twitux_debug (DEBUG_DOMAIN_SETUP, "Loaded previous followers list");
+		twitux_message_set_followers (followers);
+	} else {
+		twitux_debug (DEBUG_DOMAIN_SETUP, "Fetching followers...");
+	}
+	
+	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, NULL);
+	gtk_widget_set_sensitive(priv, TRUE);
+	gtk_widget_grab_focus(GTK_WIDGET(priv->friends_combo));
 }
 
 void

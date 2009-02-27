@@ -25,6 +25,7 @@
 #include <config.h>
 #include <string.h>
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
@@ -89,8 +90,9 @@ static void network_cb_on_auth		(SoupSession           *session,
 									 SoupAuth              *auth,
 									 gboolean               retrying,
 									 gpointer               data);
-gint network_i_know_my_abc_s(gconstpointer a, gconstpointer b);
-static void network_make_users_list(gboolean friends);
+GList *twitux_network_get_users_glist(gboolean get_friends);
+static int twitux_network_strcmp(const char *a, const char *b);
+static void twitux_network_make_users_list(gboolean friends);
 GList *all_users=NULL;
 gboolean fetching=FALSE;
 
@@ -351,24 +353,7 @@ twitux_network_get_user (const gchar *username)
 GList *
 twitux_network_get_friends (void)
 {
-	gboolean friends = TRUE;
-	SoupMessage *msg;
-	gint page=0;
-
-	if (user_friends)
-		return user_friends;
-	
-	all_users=NULL;
-	fetching=TRUE;
-	while(fetching){
-		page++;
-		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", TWITUX_API_FOLLOWING, page)) );
-		soup_session_send_message(soup_connection, msg);
-		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(friends));
-	}
-	network_make_users_list( friends );
-
-	return NULL;
+	return twitux_network_get_users_glist(TRUE);
 }
 
 
@@ -380,24 +365,35 @@ twitux_network_get_friends (void)
 GList *
 twitux_network_get_followers (void)
 {
-	gboolean friends = FALSE;
+	return twitux_network_get_users_glist(FALSE);
+}
+
+GList *twitux_network_get_users_glist(gboolean get_friends){
 	SoupMessage *msg;
 	gint page=0;
 
-	if (user_followers)
+	if(get_friends && user_friends)
+		return user_friends;
+	else if( user_followers )
 		return user_followers;
 
 	all_users=NULL;
 	fetching=TRUE;
 	while(fetching){
 		page++;
-		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", TWITUX_API_FOLLOWING, page)) );
+		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?TWITUX_API_FOLLOWING:TWITUX_API_FOLLOWERS), page)) );
 		soup_session_send_message(soup_connection, msg);
-		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(friends));
+		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(get_friends));
 	}
-	network_make_users_list( friends );
+	twitux_network_make_users_list( get_friends );
 
 	return NULL;
+}
+
+
+static int
+twitux_network_strcmp(const char *a, const char *b){
+	return strcmp(a,b);
 }
 
 
@@ -725,6 +721,9 @@ network_cb_on_users (SoupSession *session,
 		fetching=FALSE;
 		return;
 	}
+	
+	users=g_list_sort(users, (GCompareFunc) twitux_network_strcmp);
+	
 	if(!all_users)
 		all_users=users;
 	else
@@ -733,13 +732,13 @@ network_cb_on_users (SoupSession *session,
 
 
 static void
-network_make_users_list( gboolean friends ){
+twitux_network_make_users_list( gboolean friends ){
 	if(!all_users){
 		twitux_app_set_statusbar_msg (_("Users parser error."));
 		return;
 	}
 
-	all_users=g_list_sort(all_users, (GCompareFunc) strcmp);
+	all_users=g_list_sort(all_users, (GCompareFunc) twitux_network_strcmp);
 
 	/* check if it ok, and if it is a followers or following list */
 	if (friends){

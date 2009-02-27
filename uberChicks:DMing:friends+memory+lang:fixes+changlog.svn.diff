@@ -27,6 +27,66 @@ Index: src/twitux-send-message-dialog.c
  							 "send_message_dialog", &priv->dialog,
  							 "send_message_textview", &priv->textview,
  							 "char_label", &priv->label,
+@@ -190,8 +189,6 @@
+ 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (priv->friends_combo),
+ 									renderer, "text", 0, NULL);
+ 
+-	gtk_widget_grab_focus(GTK_WIDGET (priv->textview));
+-	
+ 	/* Show the dialog */
+ 	gtk_widget_show (GTK_WIDGET (priv->dialog));
+ }
+@@ -262,23 +259,35 @@
+ 	TwituxMsgDialogPriv *priv = GET_PRIV (dialog);
+ 	priv->show_friends = show_friends;
+ 
+-	if (show_friends){
+-		GList *followers;
+-		gtk_widget_show (priv->friends_combo);
+-		gtk_widget_show (priv->friends_label);
+-		
+-		/* Let's populate the combobox */
+-		followers = twitux_network_get_followers ();
+-		if (followers){
+-			twitux_debug (DEBUG_DOMAIN_SETUP, "Loaded previous followers list");
+-			twitux_message_set_followers (followers);
+-		} else {
+-			twitux_debug (DEBUG_DOMAIN_SETUP, "Fetching followers...");
+-		}
++	if(!show_friends){
++		gtk_widget_hide (priv->friends_combo);
++		gtk_widget_hide (priv->friends_label);
++		gtk_widget_grab_focus(GTK_WIDGET(priv->textview));
+ 		return;
+ 	}
+-	gtk_widget_hide (priv->friends_combo);
+-	gtk_widget_hide (priv->friends_label);
++	
++	GList *followers;
++	GdkCursor *cursor;
++		
++	gtk_widget_show (priv->friends_combo);
++	gtk_widget_show (priv->friends_label);
++
++	cursor=gdk_cursor_new(GDK_WATCH);
++	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, cursor);
++	gtk_widget_set_sensitive(priv, FALSE);
++
++	/* Let's populate the combobox */
++	followers = twitux_network_get_followers ();
++	if (followers){
++		twitux_debug (DEBUG_DOMAIN_SETUP, "Loaded previous followers list");
++		twitux_message_set_followers (followers);
++	} else {
++		twitux_debug (DEBUG_DOMAIN_SETUP, "Fetching followers...");
++	}
++	
++	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, NULL);
++	gtk_widget_set_sensitive(priv, TRUE);
++	gtk_widget_grab_focus(GTK_WIDGET(priv->friends_combo));
+ }
+ 
+ void
 Index: src/twitux-ui-utils.c
 ===================================================================
 --- src/twitux-ui-utils.c	(revision 376)
@@ -129,7 +189,7 @@ Index: src/twitux-network.c
 ===================================================================
 --- src/twitux-network.c	(revision 376)
 +++ src/twitux-network.c	(working copy)
-@@ -18,6 +18,7 @@
+@@ -18,12 +18,14 @@
   * Boston, MA 02110-1301, USA.
   *
   * Authors: Daniel Morales <daniminas@gmail.com>
@@ -137,52 +197,59 @@ Index: src/twitux-network.c
   *
   */
  
-@@ -88,6 +89,10 @@
+ #include <config.h>
+ #include <string.h>
+ #include <glib/gi18n.h>
++#include <glib/gprintf.h>
+ #include <gtk/gtk.h>
+ #include <libsoup/soup.h>
+ 
+@@ -88,6 +90,11 @@
  									 SoupAuth              *auth,
  									 gboolean               retrying,
  									 gpointer               data);
-+gint network_i_know_my_abc_s(gconstpointer a, gconstpointer b);
-+static void network_make_users_list(gboolean friends);
++GList *twitux_network_get_users_glist(gboolean get_friends);
++static int twitux_network_strcmp(const char *a, const char *b);
++static void twitux_network_make_users_list(gboolean friends);
 +GList *all_users=NULL;
 +gboolean fetching=FALSE;
  
  /* Autoreload timeout functions */
  static gboolean 	network_timeout			(gpointer user_data);
-@@ -347,14 +352,22 @@
+@@ -346,16 +353,7 @@
+ GList *
  twitux_network_get_friends (void)
  {
- 	gboolean friends = TRUE;
-+	SoupMessage *msg;
-+	gint page=0;
- 
- 	if (user_friends)
- 		return user_friends;
- 	
+-	gboolean friends = TRUE;
+-
+-	if (user_friends)
+-		return user_friends;
+-	
 -	network_get_data (TWITUX_API_FOLLOWING,
 -					  network_cb_on_users,
 -					  GINT_TO_POINTER(friends));
 -	
-+	all_users=NULL;
-+	fetching=TRUE;
-+	while(fetching){
-+		page++;
-+		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", TWITUX_API_FOLLOWING, page)) );
-+		soup_session_send_message(soup_connection, msg);
-+		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(friends));
-+	}
-+	network_make_users_list( friends );
-+
- 	return NULL;
+-	return NULL;
++	return twitux_network_get_users_glist(TRUE);
  }
  
-@@ -368,13 +381,21 @@
+ 
+@@ -367,19 +365,38 @@
+ GList *
  twitux_network_get_followers (void)
  {
- 	gboolean friends = FALSE;
+-	gboolean friends = FALSE;
++	return twitux_network_get_users_glist(FALSE);
++}
+ 
+-	if (user_followers)
++GList *twitux_network_get_users_glist(gboolean get_friends){
 +	SoupMessage *msg;
 +	gint page=0;
- 
- 	if (user_followers)
++
++	if(get_friends && user_friends)
++		return user_friends;
++	else if( user_followers )
  		return user_followers;
  
 -	network_get_data (TWITUX_API_FOLLOWERS,
@@ -192,15 +259,26 @@ Index: src/twitux-network.c
 +	fetching=TRUE;
 +	while(fetching){
 +		page++;
-+		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", TWITUX_API_FOLLOWING, page)) );
++		msg = soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?TWITUX_API_FOLLOWING:TWITUX_API_FOLLOWERS), page)) );
 +		soup_session_send_message(soup_connection, msg);
-+		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(friends));
++		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(get_friends));
 +	}
-+	network_make_users_list( friends );
++	twitux_network_make_users_list( get_friends );
  
  	return NULL;
  }
-@@ -680,7 +701,6 @@
+ 
+ 
++static int
++twitux_network_strcmp(const char *a, const char *b){
++	return strcmp(a,b);
++}
++
++
+ /* Get an image from servers */
+ void
+ twitux_network_get_image (const gchar  *url_image,
+@@ -680,7 +697,6 @@
  		g_free (new_timeline);
  }
  
@@ -208,7 +286,7 @@ Index: src/twitux-network.c
  /* On get user followers */
  static void
  network_cb_on_users (SoupSession *session,
-@@ -689,31 +709,47 @@
+@@ -689,31 +705,50 @@
  {
  	gboolean  friends = GPOINTER_TO_INT(user_data);
  	GList    *users;
@@ -230,6 +308,9 @@ Index: src/twitux-network.c
 +		fetching=FALSE;
 +		return;
 +	}
++	
++	users=g_list_sort(users, (GCompareFunc) twitux_network_strcmp);
++	
 +	if(!all_users)
 +		all_users=users;
 +	else
@@ -240,13 +321,13 @@ Index: src/twitux-network.c
 -									  msg->response_body->length);
  
 +static void
-+network_make_users_list( gboolean friends ){
++twitux_network_make_users_list( gboolean friends ){
 +	if(!all_users){
 +		twitux_app_set_statusbar_msg (_("Users parser error."));
 +		return;
 +	}
 +
-+	all_users=g_list_sort(all_users, (GCompareFunc) strcmp);
++	all_users=g_list_sort(all_users, (GCompareFunc) twitux_network_strcmp);
 +
  	/* check if it ok, and if it is a followers or following list */
 -	if (users && friends){
@@ -281,7 +362,25 @@ Index: src/twitux-lists-dialog.c
   */
  
  #include "config.h"
-@@ -170,7 +174,7 @@
+@@ -144,13 +148,14 @@
+ void
+ twitux_lists_dialog_show (GtkWindow *parent)
+ {
+-	GtkBuilder *ui;
+-	GList      *users;
+-
+ 	if (lists) {
+ 		gtk_window_present (GTK_WINDOW (lists->dialog));
+ 		return;
+ 	}
++	
++	GtkBuilder *ui;
++	GList      *users;
++	GdkCursor *cursor;
+ 
+ 	lists = g_new0 (TwituxLists, 1);
+ 
+@@ -170,7 +175,7 @@
  						"following_list", "row-activated", list_follower_activated_cb,
  						NULL);
  
@@ -290,17 +389,32 @@ Index: src/twitux-lists-dialog.c
  
  	/* Set the parent */
  	g_object_add_weak_pointer (G_OBJECT (lists->dialog), (gpointer) &lists);
-@@ -184,10 +188,6 @@
- 	if (users){
- 		twitux_lists_dialog_load_lists (users);
- 	} else {
+@@ -178,16 +183,16 @@
+ 
+ 	/* Now that we're done setting up, let's show the widget */
+ 	gtk_widget_show (lists->dialog);
++	
++	cursor=gdk_cursor_new(GDK_WATCH);
++	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, cursor);
++	gtk_widget_set_sensitive(lists->dialog, FALSE);
+ 
+ 	/* Load lists */
+-	users = twitux_network_get_friends ();
+-	if (users){
+-		twitux_lists_dialog_load_lists (users);
+-	} else {
 -		GdkCursor *cursor;
 -		/* Disable window while retrieving lists */
 -		cursor = gdk_cursor_new (GDK_WATCH);
 -		gdk_window_set_cursor (GTK_WIDGET (lists->dialog)->window, cursor);
 -		gtk_widget_set_sensitive (lists->dialog, FALSE);
-+		gtk_widget_set_sensitive (lists->dialog, TRUE);
- 	}
+-	}
++	users = twitux_network_get_friends();
++	if(users)
++		twitux_lists_dialog_load_lists(users);
++	
++	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, NULL);
++	gtk_widget_set_sensitive(lists->dialog, TRUE);
  }
 Index: src/twitux-tweet-list.c
 ===================================================================
@@ -419,12 +533,42 @@ Index: ChangeLog
 ===================================================================
 --- ChangeLog	(revision 376)
 +++ ChangeLog	(working copy)
-@@ -1,15 +1,76 @@
+@@ -1,15 +1,101 @@
 -2009-02-13  Brian Pepple  <bpepple@fedoraproject.org>
 +2009-02-26  Kaity G. B. <uberChick@uberChicGeekChick.Com>
  
 -	* Makefile.am:
 -	Remove intltool-* from Makefile.am to make it work with newer intltool.
++	* src/twitux-lists-dialog.c: twitux_lists_dialog_show
++		As I mentioned in my previous ChangeLog entry about this
++		method it was not setting & resetting the dialog's WATCH
++		cursor.  I have now fixed it so that it locks the dialog until
++		the list loads & than resets the pointer.  It now works by
++		locking the dialog, setting the busy cursor, displaying and/or
++		loading the list, than resetting the cursor and re-enabling
++		the window.
+ 
+-2009-02-11  Brian Pepple  <bpepple@fedoraproject.org>
++	* src/twitux-send-message-dialog.c: message_setup
++		I stopped this method from setting focus when loading the
++		dialog so the correct focus can be set depending on whether a
++		"What are you doing?" status update or direct messaging is
++		being sent.
++	
++	* src/twitux-send-message-dialog.c: twitux_message_show_friends
++		I optimized this method and its code so its much easier to
++		read & understand what is going on.  More over I have added
++		calls to 'gtk_widget_grab_focus' so that when a status update
++		is being typed then the textview is auto-focused.  When a
++		direct message is being sent than the drop-down list of
++		friends recieves focus by default.
+ 
+-	* src/twitux-app.c:
+-	* src/twitux-tweet-list.c:
+-	Plug a leak with some pixbufs, and set the size of
+-	avatar pixbuf.  (Patch provided by Kaity G. B.)
++2009-02-25  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ 
 +	* src/twitux-network.c:	rewrote: twitux_network_get_friends &
 +		twitux_network_get_followers.
 +		created make_users_list.
@@ -439,14 +583,9 @@ Index: ChangeLog
 +		list was loaded.  so they'd all appear there but could not be
 +		clicked on. The window would have to be closed than re-opened
 +		to actually access all friends.
- 
--2009-02-11  Brian Pepple  <bpepple@fedoraproject.org>
++
 +2009-02-11  Kaity G. B. <uberChick@uberChicGeekChick.Com>
- 
--	* src/twitux-app.c:
--	* src/twitux-tweet-list.c:
--	Plug a leak with some pixbufs, and set the size of
--	avatar pixbuf.  (Patch provided by Kaity G. B.)
++
 +	* po/Makefile.in: PO_LINGUAS & USER_LINGUAS 
 +		I added export GREP_OPTIONS=""; to both shell execs so it
 +		actually finds files in the format it expects.
@@ -458,7 +597,7 @@ Index: ChangeLog
 +		twitux.desktop: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in
 +	
 +	* help/twitux-omf.in: depricated.
- 
++
 +2009-02-11  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 +
 +	* configure: ac_config_files

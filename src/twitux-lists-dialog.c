@@ -148,13 +148,14 @@ twitux_lists_dialog_load_lists (GList *users)
 void
 twitux_lists_dialog_show (GtkWindow *parent)
 {
-	GtkBuilder *ui;
-	GList      *users;
-
 	if (lists) {
 		gtk_window_present (GTK_WINDOW (lists->dialog));
 		return;
 	}
+	
+	GtkBuilder *ui;
+	GList      *users;
+	GdkCursor *cursor;
 
 	lists = g_new0 (TwituxLists, 1);
 
@@ -182,12 +183,16 @@ twitux_lists_dialog_show (GtkWindow *parent)
 
 	/* Now that we're done setting up, let's show the widget */
 	gtk_widget_show (lists->dialog);
+	
+	cursor=gdk_cursor_new(GDK_WATCH);
+	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, cursor);
+	gtk_widget_set_sensitive(lists->dialog, FALSE);
 
 	/* Load lists */
-	users = twitux_network_get_friends ();
-	if (users){
-		twitux_lists_dialog_load_lists (users);
-	} else {
-		gtk_widget_set_sensitive (lists->dialog, TRUE);
-	}
+	users = twitux_network_get_friends();
+	if(users)
+		twitux_lists_dialog_load_lists(users);
+	
+	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, NULL);
+	gtk_widget_set_sensitive(lists->dialog, TRUE);
 }

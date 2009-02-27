@@ -1,5 +1,30 @@
 2009-02-26  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
+	* src/twitux-lists-dialog.c: twitux_lists_dialog_show
+		As I mentioned in my previous ChangeLog entry about this
+		method it was not setting & resetting the dialog's WATCH
+		cursor.  I have now fixed it so that it locks the dialog until
+		the list loads & than resets the pointer.  It now works by
+		locking the dialog, setting the busy cursor, displaying and/or
+		loading the list, than resetting the cursor and re-enabling
+		the window.
+
+	* src/twitux-send-message-dialog.c: message_setup
+		I stopped this method from setting focus when loading the
+		dialog so the correct focus can be set depending on whether a
+		"What are you doing?" status update or direct messaging is
+		being sent.
+	
+	* src/twitux-send-message-dialog.c: twitux_message_show_friends
+		I optimized this method and its code so its much easier to
+		read & understand what is going on.  More over I have added
+		calls to 'gtk_widget_grab_focus' so that when a status update
+		is being typed then the textview is auto-focused.  When a
+		direct message is being sent than the drop-down list of
+		friends recieves focus by default.
+
+2009-02-25  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
 	* src/twitux-network.c:	rewrote: twitux_network_get_friends &
 		twitux_network_get_followers.
 		created make_users_list.
