@@ -1497,7 +1497,7 @@ twitux_app_expand_message (const gchar *name,
 	priv = GET_PRIV (app);
 
 	title_text = g_strdup_printf ("<b>%s</b> - %s", name, date);
-		
+	
 	twitux_label_set_text (TWITUX_LABEL (priv->expand_label), tweet);
 	gtk_label_set_markup (GTK_LABEL (priv->expand_title), title_text);
 	g_free (title_text);
@@ -1505,7 +1505,6 @@ twitux_app_expand_message (const gchar *name,
 	if (pixbuf) {
 		resized=gdk_pixbuf_scale_simple( pixbuf, 73, 73, GDK_INTERP_BILINEAR );
 		gtk_image_set_from_pixbuf(GTK_IMAGE (priv->expand_image), resized);
-		//g_object_unref(pixbuf);
 		g_object_unref(resized);
 	}
 	

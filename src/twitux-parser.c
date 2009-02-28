@@ -196,11 +196,11 @@ twitux_parser_timeline (const gchar *data,
 	/* Count new tweets */
 	gboolean         show_notification = (last_id > 0);
 	gint             lastTweet = 0;
-    /*
+	/*
 	 * On multiple tweet updates we only want to 
 	 * play the sound notification once.
 	 */
-    gboolean         multiple_new_tweets = FALSE;
+	gboolean         multiple_new_tweets = FALSE;
 
 	gboolean         show_username;
 	gint             tweet_display_delay = 0;
@@ -268,7 +268,7 @@ twitux_parser_timeline (const gchar *data,
 			gtk_list_store_append (store, &iter);
 			gtk_list_store_set (store, &iter,
 								STRING_TEXT, tweet,
-								STRING_AUTHOR, status->user->name,
+								STRING_AUTHOR, (show_username ? status->user->screen_name:status->user->name),
 								STRING_DATE, datetime,
 								STRING_TWEET, status->text,
 								STRING_USER, status->user->screen_name,

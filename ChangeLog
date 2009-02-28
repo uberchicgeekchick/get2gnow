@@ -1,3 +1,11 @@
+2009-02-27  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
+	* src/twitux-parser.c: twitux_parser_timeline
+		I changed what is saved in the GtkListStore so that the user
+		preference for displaying user name vs screen name effects
+		what is displayed when the tweet is expanded so now the same
+		is shown in the timeline and expanded message.
+
 2009-02-26  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* src/twitux-lists-dialog.c: twitux_lists_dialog_show
