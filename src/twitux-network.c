@@ -91,7 +91,7 @@ static void network_cb_on_auth		(SoupSession           *session,
 									 gboolean               retrying,
 									 gpointer               data);
 GList *twitux_network_get_users_glist(gboolean get_friends);
-static int twitux_network_strcmp(const char *a, const char *b);
+static int twitux_network_sort_users(TwituxUser *a, TwituxUser *b);
 static void twitux_network_make_users_list(gboolean friends);
 GList *all_users=NULL;
 gboolean fetching=FALSE;
@@ -392,8 +392,8 @@ GList *twitux_network_get_users_glist(gboolean get_friends){
 
 
 static int
-twitux_network_strcmp(const char *a, const char *b){
-	return strcmp(a,b);
+twitux_network_sort_users(TwituxUser *a, TwituxUser *b){
+	return g_strcmp0(a->name,b->name);
 }
 
 
@@ -722,7 +722,7 @@ network_cb_on_users (SoupSession *session,
 		return;
 	}
 	
-	users=g_list_sort(users, (GCompareFunc) twitux_network_strcmp);
+	users=g_list_sort(users, (GCompareFunc) twitux_network_sort_users);
 	
 	if(!all_users)
 		all_users=users;
@@ -738,7 +738,7 @@ twitux_network_make_users_list( gboolean friends ){
 		return;
 	}
 
-	all_users=g_list_sort(all_users, (GCompareFunc) twitux_network_strcmp);
+	all_users=g_list_sort(all_users, (GCompareFunc) twitux_network_sort_users);
 
 	/* check if it ok, and if it is a followers or following list */
 	if (friends){

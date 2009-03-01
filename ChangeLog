@@ -1,3 +1,16 @@
+2009-02-29  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
+	* src/twitux-network.c: twitux_network_sort_users
+		I have added this so lists of friends and followers are now
+		sorted alphabetically so friends can easily be found when
+		sending direct messages or viewing their status.
+	
+	* src/twitux-network.c: twitux_network_make_users_list
+				& network_cb_on_users
+		Both methods now sort the GList they create by calling the
+		above method, twitux_network_sort_users, using GTK's
+		g_list_sort method.
+	
 2009-02-27  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* src/twitux-parser.c: twitux_parser_timeline
