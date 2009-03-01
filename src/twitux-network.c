@@ -393,7 +393,7 @@ GList *twitux_network_get_users_glist(gboolean get_friends){
 
 static int
 twitux_network_sort_users(TwituxUser *a, TwituxUser *b){
-	return g_strcmp0(a->name,b->name);
+	return g_strcmp0(a->screen_name,b->screen_name);
 }
 
 
@@ -409,11 +409,10 @@ twitux_network_get_image (const gchar  *url_image,
 
 	/* save using the filename */
 	image_name = strrchr (url_image, '/');
-	if (image_name && image_name[1] != '\0') {
+	if (image_name && image_name[1] != '\0')
 		image_name++;
-	} else {
+	else
 		image_name = "twitux_unknown_image";
-	}
 
 	image_file = g_build_filename (g_get_home_dir(), ".gnome2",
 								   TWITUX_CACHE_IMAGES,
@@ -433,8 +432,9 @@ twitux_network_get_image (const gchar  *url_image,
 
 	g_free (image_file);
 
-	/* Note: 'image' will be freed in 'network_cb_on_image' */
 	network_get_data (url_image, network_cb_on_image, image);
+	g_free (image->src);
+	g_free (image);
 }
 
 
@@ -568,16 +568,14 @@ network_parser_free_lists ()
 		g_list_foreach (user_friends, network_free_user_list_each, NULL);
 		g_list_free (user_friends);
 		user_friends = NULL;
-		twitux_debug (DEBUG_DOMAIN,
-					  "Friends freed");
+		twitux_debug (DEBUG_DOMAIN, "Friends freed");
 	}
 
 	if (user_followers) {
 		g_list_foreach (user_followers, network_free_user_list_each, NULL);
 		g_list_free (user_followers);
 		user_followers = NULL;
-		twitux_debug (DEBUG_DOMAIN,
-					  "Followers freed");
+		twitux_debug (DEBUG_DOMAIN, "Followers freed");
 	}
 }
 
@@ -704,7 +702,6 @@ network_cb_on_users (SoupSession *session,
 					 gpointer     user_data)
 {
 	gboolean  friends = GPOINTER_TO_INT(user_data);
-	GList    *users;
 	
 	twitux_debug (DEBUG_DOMAIN,
 				  "Users response: %i",msg->status_code);
@@ -717,12 +714,11 @@ network_cb_on_users (SoupSession *session,
 
 	/* parse user list */
 	twitux_debug (DEBUG_DOMAIN, "Parsing user list");
+	GList    *users;
 	if(! (users=twitux_parser_users_list(msg->response_body->data, msg->response_body->length)) ) {
 		fetching=FALSE;
 		return;
 	}
-	
-	users=g_list_sort(users, (GCompareFunc) twitux_network_sort_users);
 	
 	if(!all_users)
 		all_users=users;
@@ -741,15 +737,15 @@ twitux_network_make_users_list( gboolean friends ){
 	all_users=g_list_sort(all_users, (GCompareFunc) twitux_network_sort_users);
 
 	/* check if it ok, and if it is a followers or following list */
-	if (friends){
-		/* Friends retrived */
-		user_friends = all_users;
-		twitux_lists_dialog_load_lists (user_friends);
-	} else {
+	if (!friends){
 		/* Followers list retrived */
 		user_followers = all_users;
-		twitux_message_set_followers (user_followers);
+		twitux_message_set_followers(user_followers);
+		return;
 	}
+	/* Friends retrived */
+	user_friends = all_users;
+	twitux_lists_dialog_load_lists(user_friends);
 }
 
 

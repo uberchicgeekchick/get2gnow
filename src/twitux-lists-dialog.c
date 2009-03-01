@@ -139,10 +139,6 @@ twitux_lists_dialog_load_lists (GList *users)
 							FOLLOWER_POINTER, user,
 							-1);
 	}
-
-	/* Enable window */
-	gdk_window_set_cursor (GTK_WIDGET (lists->dialog)->window, NULL);
-	gtk_widget_set_sensitive (GTK_WIDGET (lists->dialog), TRUE);
 }
 
 void
