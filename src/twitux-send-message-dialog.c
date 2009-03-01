@@ -160,14 +160,16 @@ message_setup (GtkWindow  *parent)
 
 	/* Set the label */
 	standard_msg = _("Characters Available");
-	character_count =
-		g_markup_printf_escaped ("<span size=\"small\">%s: %i</span>",
-								 standard_msg, MAX_CHARACTER_COUNT);
+	character_count = g_markup_printf_escaped ("<span size=\"small\">%s: %i</span>", standard_msg, MAX_CHARACTER_COUNT);
 	gtk_label_set_markup (GTK_LABEL (priv->label), character_count);
 	g_free (character_count);
 
 	/* Connect the signal to the textview */
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (priv->textview));
+
+	/* For spell checking from when the keyboard's 'context menu' key is pressed.
+	 * g_signal_connect(buffer, "context-menu", G_CALLBACK(), dialog);
+	 */
 	g_signal_connect (buffer,
 					  "changed",
 					  G_CALLBACK (message_text_buffer_changed_cb),
