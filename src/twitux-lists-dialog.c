@@ -24,9 +24,12 @@
 
 #include "config.h"
 
+#include <glib/gi18n.h>
+
 #include <libtwitux/twitux-xml.h>
 
 #include "twitux.h"
+#include "twitux-app.h"
 #include "twitux-lists-dialog.h"
 #include "twitux-add-dialog.h"
 #include "twitux-network.h"
@@ -171,7 +174,7 @@ twitux_lists_dialog_show (GtkWindow *parent)
 						"following_list", "row-activated", list_follower_activated_cb,
 						NULL);
 
-	gtk_widget_destroy (ui);
+	g_object_unref(ui);
 
 	/* Set the parent */
 	g_object_add_weak_pointer (G_OBJECT (lists->dialog), (gpointer) &lists);
@@ -180,6 +183,7 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	/* Now that we're done setting up, let's show the widget */
 	gtk_widget_show (lists->dialog);
 	
+	twitux_app_set_statusbar_msg(_("Please wait while your followers are being loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, cursor);
 	gtk_widget_set_sensitive(lists->dialog, FALSE);
@@ -191,4 +195,5 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	
 	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, NULL);
 	gtk_widget_set_sensitive(lists->dialog, TRUE);
+	twitux_app_set_statusbar_msg(NULL);
 }

@@ -276,9 +276,10 @@ twitux_message_show_friends (gboolean show_friends)
 	gtk_widget_show (priv->friends_combo);
 	gtk_widget_show (priv->friends_label);
 
+	twitux_app_set_statusbar_msg(_("Please wait while your friends are being loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, cursor);
-	gtk_widget_set_sensitive(priv, FALSE);
+	gdk_window_set_cursor(GTK_WIDGET(priv->dialog), cursor);
+	gtk_widget_set_sensitive(priv->dialog, FALSE);
 
 	/* Let's populate the combobox */
 	followers = twitux_network_get_followers ();
@@ -289,8 +290,9 @@ twitux_message_show_friends (gboolean show_friends)
 		twitux_debug (DEBUG_DOMAIN_SETUP, "Fetching followers...");
 	}
 	
-	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, NULL);
-	gtk_widget_set_sensitive(priv, TRUE);
+	gdk_window_set_cursor(GTK_WIDGET(priv->dialog), NULL);
+	gtk_widget_set_sensitive(priv->dialog, TRUE);
+	twitux_app_set_statusbar_msg(NULL);
 	gtk_widget_grab_focus(GTK_WIDGET(priv->friends_combo));
 	g_object_unref(priv);
 }

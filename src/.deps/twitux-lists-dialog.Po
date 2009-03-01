@@ -1,12 +1,5 @@
 twitux-lists-dialog.o: twitux-lists-dialog.c ../config.h \
-  ../libtwitux/twitux-xml.h /usr/include/gtk-2.0/gtk/gtk.h \
-  /usr/include/gtk-2.0/gdk/gdk.h \
-  /usr/include/gtk-2.0/gdk/gdkapplaunchcontext.h \
-  /usr/include/glib-2.0/gio/gio.h /usr/include/glib-2.0/gio/giotypes.h \
-  /usr/include/glib-2.0/gio/gioenums.h \
-  /usr/include/glib-2.0/glib-object.h \
-  /usr/include/glib-2.0/gobject/gboxed.h \
-  /usr/include/glib-2.0/gobject/gtype.h /usr/include/glib-2.0/glib.h \
+  /usr/include/glib-2.0/glib/gi18n.h /usr/include/glib-2.0/glib.h \
   /usr/include/glib-2.0/glib/galloca.h \
   /usr/include/glib-2.0/glib/gtypes.h \
   /usr/lib64/glib-2.0/include/glibconfig.h \
@@ -65,7 +58,19 @@ twitux-lists-dialog.o: twitux-lists-dialog.c ../config.h \
   /usr/include/glib-2.0/glib/gtestutils.h \
   /usr/include/glib-2.0/glib/gthreadpool.h \
   /usr/include/glib-2.0/glib/gtimer.h /usr/include/glib-2.0/glib/gtree.h \
-  /usr/include/glib-2.0/glib/gurifuncs.h \
+  /usr/include/glib-2.0/glib/gurifuncs.h /usr/include/libintl.h \
+  /usr/include/locale.h /usr/include/bits/locale.h /usr/include/string.h \
+  /usr/include/bits/string.h /usr/include/bits/string2.h \
+  /usr/include/endian.h /usr/include/bits/endian.h \
+  /usr/include/bits/byteswap.h /usr/include/stdlib.h \
+  ../libtwitux/twitux-xml.h /usr/include/gtk-2.0/gtk/gtk.h \
+  /usr/include/gtk-2.0/gdk/gdk.h \
+  /usr/include/gtk-2.0/gdk/gdkapplaunchcontext.h \
+  /usr/include/glib-2.0/gio/gio.h /usr/include/glib-2.0/gio/giotypes.h \
+  /usr/include/glib-2.0/gio/gioenums.h \
+  /usr/include/glib-2.0/glib-object.h \
+  /usr/include/glib-2.0/gobject/gboxed.h \
+  /usr/include/glib-2.0/gobject/gtype.h \
   /usr/include/glib-2.0/gobject/genums.h \
   /usr/include/glib-2.0/gobject/gobject.h \
   /usr/include/glib-2.0/gobject/gvalue.h \
@@ -392,30 +397,13 @@ twitux-lists-dialog.o: twitux-lists-dialog.c ../config.h \
   /usr/include/gtk-2.0/gtk/gtkoldeditable.h \
   /usr/include/gtk-2.0/gtk/gtkoptionmenu.h \
   /usr/include/gtk-2.0/gtk/gtkpreview.h \
-  /usr/include/gtk-2.0/gtk/gtktipsquery.h twitux.h twitux-lists-dialog.h \
-  twitux-add-dialog.h twitux-network.h twitux-parser.h
+  /usr/include/gtk-2.0/gtk/gtktipsquery.h twitux.h twitux-app.h \
+  ../libtwitux/twitux-paths.h twitux-parser.h twitux-lists-dialog.h \
+  twitux-add-dialog.h twitux-network.h
 
 ../config.h:
 
-../libtwitux/twitux-xml.h:
-
-/usr/include/gtk-2.0/gtk/gtk.h:
-
-/usr/include/gtk-2.0/gdk/gdk.h:
-
-/usr/include/gtk-2.0/gdk/gdkapplaunchcontext.h:
-
-/usr/include/glib-2.0/gio/gio.h:
-
-/usr/include/glib-2.0/gio/giotypes.h:
-
-/usr/include/glib-2.0/gio/gioenums.h:
-
-/usr/include/glib-2.0/glib-object.h:
-
-/usr/include/glib-2.0/gobject/gboxed.h:
-
-/usr/include/glib-2.0/gobject/gtype.h:
+/usr/include/glib-2.0/glib/gi18n.h:
 
 /usr/include/glib-2.0/glib.h:
 
@@ -584,6 +572,46 @@ twitux-lists-dialog.o: twitux-lists-dialog.c ../config.h \
 /usr/include/glib-2.0/glib/gtree.h:
 
 /usr/include/glib-2.0/glib/gurifuncs.h:
+
+/usr/include/libintl.h:
+
+/usr/include/locale.h:
+
+/usr/include/bits/locale.h:
+
+/usr/include/string.h:
+
+/usr/include/bits/string.h:
+
+/usr/include/bits/string2.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/stdlib.h:
+
+../libtwitux/twitux-xml.h:
+
+/usr/include/gtk-2.0/gtk/gtk.h:
+
+/usr/include/gtk-2.0/gdk/gdk.h:
+
+/usr/include/gtk-2.0/gdk/gdkapplaunchcontext.h:
+
+/usr/include/glib-2.0/gio/gio.h:
+
+/usr/include/glib-2.0/gio/giotypes.h:
+
+/usr/include/glib-2.0/gio/gioenums.h:
+
+/usr/include/glib-2.0/glib-object.h:
+
+/usr/include/glib-2.0/gobject/gboxed.h:
+
+/usr/include/glib-2.0/gobject/gtype.h:
 
 /usr/include/glib-2.0/gobject/genums.h:
 
@@ -1299,10 +1327,14 @@ twitux-lists-dialog.o: twitux-lists-dialog.c ../config.h \
 
 twitux.h:
 
+twitux-app.h:
+
+../libtwitux/twitux-paths.h:
+
+twitux-parser.h:
+
 twitux-lists-dialog.h:
 
 twitux-add-dialog.h:
 
 twitux-network.h:
-
-twitux-parser.h:
