@@ -31,12 +31,14 @@
 #include <string.h>
 
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 
 #include <libtwitux/twitux-conf.h>
 #include <libtwitux/twitux-debug.h>
 #include <libtwitux/twitux-xml.h>
 
 #include "twitux.h"
+#include "twitux-app.h"
 #include "twitux-send-message-dialog.h"
 #include "twitux-spell.h"
 #include "twitux-spell-dialog.h"
@@ -197,17 +199,10 @@ message_setup (GtkWindow  *parent)
 void
 twitux_send_message_dialog_show (GtkWindow *parent)
 {
-	TwituxMsgDialogPriv   *priv;
+	if(dialog)
+		return gtk_window_present(GTK_WINDOW( (GET_PRIV(dialog))->dialog));
 	
-	if (dialog){
-		priv = GET_PRIV (dialog);
-		gtk_window_present (GTK_WINDOW (priv->dialog));
-		g_object_unref(priv);
-		return;
-	}
-
 	g_object_new (TWITUX_TYPE_MESSAGE, NULL);
-
 	message_setup (parent);
 }
 
@@ -278,19 +273,15 @@ twitux_message_show_friends (gboolean show_friends)
 
 	twitux_app_set_statusbar_msg(_("Please wait while your friends are being loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(GTK_WIDGET(priv->dialog), cursor);
+	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, cursor);
 	gtk_widget_set_sensitive(priv->dialog, FALSE);
 
 	/* Let's populate the combobox */
-	followers = twitux_network_get_followers ();
-	if (followers){
-		twitux_debug (DEBUG_DOMAIN_SETUP, "Loaded previous followers list");
-		twitux_message_set_followers (followers);
-	} else {
-		twitux_debug (DEBUG_DOMAIN_SETUP, "Fetching followers...");
-	}
+	twitux_debug (DEBUG_DOMAIN_SETUP, "Loading followers...");
+	if( (followers=twitux_network_get_followers()) )
+		twitux_message_set_followers(followers);
 	
-	gdk_window_set_cursor(GTK_WIDGET(priv->dialog), NULL);
+	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, NULL);
 	gtk_widget_set_sensitive(priv->dialog, TRUE);
 	twitux_app_set_statusbar_msg(NULL);
 	gtk_widget_grab_focus(GTK_WIDGET(priv->friends_combo));
@@ -379,14 +370,10 @@ static void
 message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
                                 TwituxMsgDialog  *dialog)
 {
-	TwituxMsgDialogPriv   *priv;
-	GtkTextIter            start;
-	GtkTextIter            end;
-	gchar                 *str;
+	GtkTextIter            start, end;
 	gboolean               spell_checker = FALSE;
-
-	priv = GET_PRIV (dialog);
-
+	TwituxMsgDialogPriv *priv=GET_PRIV(dialog);
+	
 	message_set_characters_available (buffer, dialog);
 
 	twitux_conf_get_bool (twitux_conf_get (),
@@ -398,14 +385,11 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 	if (!spell_checker) {
 		gtk_text_buffer_get_end_iter (buffer, &end);
 		gtk_text_buffer_remove_tag_by_name (buffer, "misspelled", &start, &end);
-		g_object_unref(priv);
 		return;
 	}
 
-	if (!twitux_spell_supported ()) {
-		g_object_unref(priv);
+	if (!twitux_spell_supported ())
 		return;
-	}
 
 	while (TRUE) {
 		gboolean correct = FALSE;
@@ -413,39 +397,35 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 		/* if at start */
 		if (gtk_text_iter_is_start (&start)) {
 			end = start;
-
-			if (!gtk_text_iter_forward_word_end (&end)) {
-				/* no whole word yet */
+			
+			/* no whole word yet */
+			if (!gtk_text_iter_forward_word_end (&end))
 				break;
-			}
 		} else {
-			if (!gtk_text_iter_forward_word_end (&end)) {
-				/* must be the end of the buffer */
+			/* must be the end of the buffer */
+			if (!gtk_text_iter_forward_word_end (&end))
 				break;
-			}
-
+			
 			start = end;
 			gtk_text_iter_backward_word_start (&start);
 		}
 
-		str = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+		gchar *str=gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
 		/* spell check string */
 		correct = twitux_spell_check (str);
 
-		if (!correct) {
-			gtk_text_buffer_apply_tag_by_name (buffer, "misspelled",
-											   &start, &end);
-		} else {
-			gtk_text_buffer_remove_tag_by_name (buffer, "misspelled",
-												&start, &end);
-		}
+		if(!correct)
+			gtk_text_buffer_apply_tag_by_name (buffer, "misspelled", &start, &end);
+		else
+			gtk_text_buffer_remove_tag_by_name (buffer, "misspelled", &start, &end);
 
 		g_free (str);
 
 		/* set the start iter to the end iters position */
 		start = end;
 	}
+	
 	g_object_unref(priv);
 }
 
@@ -489,10 +469,8 @@ message_text_populate_popup_cb (GtkTextView        *view,
 										&start, &end, FALSE);
 	}
 
-	if (G_STR_EMPTY (str)) {
-		g_object_unref(priv);
+	if (G_STR_EMPTY (str))
 		return;
-	}
 
 	message_spell = message_spell_new (priv->textview, str, start, end);
 
@@ -554,17 +532,17 @@ message_response_cb (GtkWidget          *widget,
 					 gint                response,
 					 TwituxMsgDialog    *dialog)
 {
-	TwituxMsgDialogPriv   *priv;
-
+	//gtk_widget_destroy(widget);
 	if (response != GTK_RESPONSE_OK) {
 		gtk_widget_destroy (widget);
-		g_object_unref(priv);
 		return;
 	}
 
 	GtkTextBuffer  *buffer;
 	GtkTextIter     start_iter;
 	GtkTextIter     end_iter;
+
+	TwituxMsgDialogPriv   *priv;
 
 	priv = GET_PRIV (dialog);
 	
@@ -574,7 +552,7 @@ message_response_cb (GtkWidget          *widget,
 	gtk_text_buffer_get_start_iter (buffer, &start_iter);
 	gtk_text_buffer_get_end_iter (buffer, &end_iter);
 	
-	if(!gtk_text_iter_equal (&start_iter, &end_iter)) {
+	if(gtk_text_iter_equal(&start_iter, &end_iter)) {
 		gtk_widget_destroy(widget);
 		g_object_unref(priv);
 		return;
@@ -588,6 +566,7 @@ message_response_cb (GtkWidget          *widget,
 	
 	if(!priv->show_friends) {
 		/* Post a tweet */
+		gtk_widget_destroy(widget);
 		twitux_network_post_status (good_msg);
 		g_free (good_msg);
 		g_object_unref(priv);
@@ -609,22 +588,16 @@ message_response_cb (GtkWidget          *widget,
 		twitux_network_send_message (to_user, good_msg);
 		g_free (to_user);
 	}
-	g_object_unref(priv);
 	g_free (good_msg);
 	gtk_widget_destroy (widget);
+	g_object_unref(priv);
 }
 
 static void
 message_destroy_cb (GtkWidget         *widget,
 					TwituxMsgDialog   *dialoga)
 {
-	TwituxMsgDialogPriv *priv;
-
-	priv = GET_PRIV (dialog);
-
 	/* Add any clean-up code here */
-	
-	g_object_unref(priv);
 	g_object_unref (dialog);
 	dialog = NULL;
 }

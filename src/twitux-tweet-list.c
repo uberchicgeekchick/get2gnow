@@ -177,31 +177,29 @@ static void
 tweet_list_changed_cb (GtkWidget *widget,
                        gpointer   user_data)
 {
+	gboolean expand;
+	twitux_conf_get_bool(twitux_conf_get (),
+						TWITUX_PREFS_UI_EXPAND_MESSAGES,
+						&expand);
+	if(!expand)
+		return;
+	
 	TwituxTweetList     *t;
 	TwituxTweetListPriv *priv;
 	GtkTreeSelection    *sel;
 	GtkTreeIter          iter;
 	GdkPixbuf           *pixbuf;
 	gchar               *name, *tweet, *date;
-	gboolean             expand;
 
 	t = TWITUX_TWEET_LIST (user_data);
 	priv = GET_PRIV (t);
 
-	twitux_conf_get_bool (twitux_conf_get (),
-						  TWITUX_PREFS_UI_EXPAND_MESSAGES,
-						  &expand);
-
-	if(!expand){
-		g_object_unref(priv);
-		return;
-	}
-	
 	/* Get selected Iter */
 	sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
 	
 	if (!gtk_tree_selection_get_selected (sel, NULL, &iter)){
 		g_object_unref(priv);
+		g_object_unref(t);
 		return;
 	}
 	
@@ -219,7 +217,9 @@ tweet_list_changed_cb (GtkWidget *widget,
 	g_free(tweet);
 	g_free(date);
 	g_object_unref(pixbuf);
+	
 	g_object_unref(priv);
+	g_object_unref(t);
 }
 
 static void
@@ -268,6 +268,7 @@ tweet_list_activated_cb (GtkTreeView       *tree_view,
 
 	g_free(user);
 	g_free(message);
+	
 	g_object_unref(t);
 	g_object_unref(priv);
 }

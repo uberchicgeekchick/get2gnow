@@ -14,18 +14,6 @@
 		All subversion trails are now removed.  I have to fork but I
 		merge in others code especially if mine is unwanted.
 	
-	* src/twitux-tweet-list.c, src/twitux-app.c &
-	src/twitux-send-message-dialog.c: [unrefernced *many* priv objects]
-		In all of these source files the macro GET_PRIV returns a
-		gobject container of many other gobjects.  I have unreferenced
-		all of the used instances of priv.  These do need improved so
-		a custum macro, or method, needs to be used to unreference
-		each object in the container object than the object itself.
-		But at least at this point there is a lot less memory used &
-		the foot print doesn't bloat as fast.  I'm sure there are many
-		other similar situations.  Slowly I am plugging the memory
-		leaks.
-
 	* src/twitux-app.c: removed unused objects.
 		There were 3 methods where priv objects were being defined and
 		initialized but never used.  So that's gone.

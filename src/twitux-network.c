@@ -25,7 +25,6 @@
 #include <config.h>
 #include <string.h>
 #include <glib/gi18n.h>
-#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
@@ -455,8 +454,6 @@ twitux_network_get_image (const gchar  *url_image,
 	g_free (image_file);
 
 	network_get_data (url_image, network_cb_on_image, image);
-	g_free (image->src);
-	g_free (image);
 }
 
 

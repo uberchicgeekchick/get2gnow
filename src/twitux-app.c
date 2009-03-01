@@ -398,18 +398,21 @@ on_account_disabled (DBusGProxy *accounts,
 
 	priv = GET_PRIV (app);
 
-	if (!priv->account || strcmp (opath, g_strdup (dbus_g_proxy_get_path (priv->account))) != 0)
+	if (!priv->account || strcmp (opath, g_strdup (dbus_g_proxy_get_path (priv->account))) != 0){
+		g_object_unref(priv);
 		return;
+	}
 
-	g_object_unref(priv);
 	
 	if (!request_accounts (app, &error)) {
 		g_warning ("Failed to get accounts: %s", error->message);
 		g_clear_error (&error);
+		g_object_unref(priv);
 		return;
 	}
 
 	reconnect (app);
+	g_object_unref(priv);
 }
 
 static void
@@ -425,15 +428,18 @@ on_account_enabled (DBusGProxy *accounts,
 
 	if (!account) {
 	        g_warning("Could not get an account object for opath: %s", opath);
-		g_clear_error(&error);
+		g_error_free (error);
 		return;
 	}
 
 	if (!update_account(account, app, &error)) {
 		g_printerr ("failed to update an account that got enabled: %s", error->message);
+		g_error_free (error);
 		return;
 	}
-
+	if(error)
+		g_error_free (error);
+	
 	reconnect (app);
 }
 	
@@ -622,7 +628,6 @@ app_setup (void)
 
 	if (login) 
 		app_login (app);
-	
 	g_object_unref(priv);
 }
 
@@ -630,7 +635,6 @@ static void
 main_window_destroy_cb (GtkWidget *window, TwituxApp *app)
 {
 	/* Add any clean-up code here */
-
 #ifdef DEBUG_QUIT
 	gtk_main_quit();
 #else
@@ -659,7 +663,6 @@ main_window_delete_event_cb (GtkWidget *window,
 		return TRUE;
 	}
 	
-	g_object_unref(priv);
 	if (twitux_hint_dialog_show (TWITUX_PREFS_HINTS_CLOSE_MAIN_WINDOW,
 								_("You were about to quit!"),
 								_("Since no system or notification tray has been "
@@ -674,6 +677,7 @@ main_window_delete_event_cb (GtkWidget *window,
 		 * question we are about to ask, since this behaviour
 		 * is new.
 		 */
+		g_object_unref(priv);
 		return TRUE;
 	}
 
@@ -683,6 +687,7 @@ main_window_delete_event_cb (GtkWidget *window,
 	 * So we just quit.
 	 */
 
+	g_object_unref(priv);
 	return FALSE;
 }
 
@@ -758,11 +763,10 @@ twitux_app_set_visibility (gboolean visible)
 						  TWITUX_PREFS_UI_MAIN_WINDOW_HIDDEN,
 						  !visible);
 
-	if (visible) {
-		twitux_window_present (GTK_WINDOW (window), TRUE);
-	} else {
+	if(!visible)
 		gtk_widget_hide (window);
-	}
+	else
+		twitux_window_present (GTK_WINDOW (window), TRUE);
 }
 
 static void
@@ -788,8 +792,8 @@ app_new_message_cb (GtkWidget *widget,
 	priv = GET_PRIV (app);
 
 	twitux_send_message_dialog_show (GTK_WINDOW (priv->window));
-	g_object_unref(priv);
 	twitux_message_show_friends (FALSE);
+	g_object_unref(priv);
 }
 
 static void
@@ -801,8 +805,8 @@ app_send_direct_message_cb (GtkWidget *widget,
 	priv = GET_PRIV (app);
 
 	twitux_send_message_dialog_show (GTK_WINDOW (priv->window));
-	g_object_unref(priv);
 	twitux_message_show_friends (TRUE);
+	g_object_unref(priv);
 }
 
 static void
@@ -1136,8 +1140,8 @@ configure_event_timeout_cb (GtkWidget *widget)
 
 	priv->size_timeout_id = 0;
 
-	g_object_unref(priv);
 	
+	g_object_unref(priv);
 	return FALSE;
 }
 
@@ -1396,8 +1400,8 @@ twitux_app_state_on_connection (gboolean connected)
 	for (l = priv->widgets_disconnected; l; l = l->next)
 		g_object_set (l->data, "sensitive", !connected, NULL);
 	
-	g_object_unref(priv);
 	g_list_free(l);
+	g_object_unref(priv);
 }
 
 GtkWidget *
@@ -1453,26 +1457,27 @@ twitux_app_notify (gchar *msg)
 						  TWITUX_PREFS_UI_NOTIFICATION,
 						  &notify);
 
-	if (notify) {
-		NotifyNotification *notification;
-		GError             *error = NULL;
+	if (!notify)
+		return;
+	NotifyNotification *notification;
+	GError             *error = NULL;
 
-		notification = notify_notification_new (PACKAGE_NAME,
-												msg,
-												"twitux",
-												NULL);
+	notification = notify_notification_new (PACKAGE_NAME,
+										msg,
+										"twitux",
+										NULL);
 
-		notify_notification_set_timeout (notification, 8 * 1000);
-		notify_notification_show (notification, &error);
+	notify_notification_set_timeout (notification, 8 * 1000);
+	notify_notification_show (notification, &error);
+	g_object_unref (G_OBJECT (notification));
 
-		if (error) {
-			twitux_debug (DEBUG_DOMAIN_SETUP,
-						  "Error displaying notification: %s",
-						  error->message);
-			g_error_free (error);
-		}
-		g_object_unref (G_OBJECT (notification));
-	}
+	if(!error)
+		return;
+	
+	twitux_debug (DEBUG_DOMAIN_SETUP,
+				  "Error displaying notification: %s",
+				  error->message);
+	g_error_free (error);
 }
 
 void
