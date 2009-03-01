@@ -191,6 +191,7 @@ message_setup (GtkWindow  *parent)
 
 	/* Show the dialog */
 	gtk_widget_show (GTK_WIDGET (priv->dialog));
+	g_object_unref(priv);
 }
 
 void
@@ -201,6 +202,7 @@ twitux_send_message_dialog_show (GtkWindow *parent)
 	if (dialog){
 		priv = GET_PRIV (dialog);
 		gtk_window_present (GTK_WINDOW (priv->dialog));
+		g_object_unref(priv);
 		return;
 	}
 
@@ -251,6 +253,7 @@ twitux_message_set_followers (GList *followers)
 							0, user->screen_name,
 							-1);
 	}
+	g_object_unref(priv);
 }
 
 void
@@ -263,6 +266,7 @@ twitux_message_show_friends (gboolean show_friends)
 		gtk_widget_hide (priv->friends_combo);
 		gtk_widget_hide (priv->friends_label);
 		gtk_widget_grab_focus(GTK_WIDGET(priv->textview));
+		g_object_unref(priv);
 		return;
 	}
 	
@@ -288,6 +292,7 @@ twitux_message_show_friends (gboolean show_friends)
 	gdk_window_set_cursor(GTK_WIDGET(priv->dialog)->window, NULL);
 	gtk_widget_set_sensitive(priv, TRUE);
 	gtk_widget_grab_focus(GTK_WIDGET(priv->friends_combo));
+	g_object_unref(priv);
 }
 
 void
@@ -301,6 +306,7 @@ twitux_message_set_message (const gchar *message)
 	gtk_text_buffer_set_text (buffer, message, -1);
 
 	gtk_window_set_focus (GTK_WINDOW (priv->dialog), priv->textview);
+	g_object_unref(priv);
 }
 
 static gchar *
@@ -364,6 +370,7 @@ message_set_characters_available (GtkTextBuffer     *buffer,
 
 	gtk_label_set_markup (GTK_LABEL (priv->label), character_count);
 	g_free (character_count);
+	g_object_unref(priv);
 }
 
 static void
@@ -389,10 +396,12 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 	if (!spell_checker) {
 		gtk_text_buffer_get_end_iter (buffer, &end);
 		gtk_text_buffer_remove_tag_by_name (buffer, "misspelled", &start, &end);
+		g_object_unref(priv);
 		return;
 	}
 
 	if (!twitux_spell_supported ()) {
+		g_object_unref(priv);
 		return;
 	}
 
@@ -435,6 +444,7 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 		/* set the start iter to the end iters position */
 		start = end;
 	}
+	g_object_unref(priv);
 }
 
 static void
@@ -478,6 +488,7 @@ message_text_populate_popup_cb (GtkTextView        *view,
 	}
 
 	if (G_STR_EMPTY (str)) {
+		g_object_unref(priv);
 		return;
 	}
 
@@ -498,6 +509,7 @@ message_text_populate_popup_cb (GtkTextView        *view,
 					  message_spell);
 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
 	gtk_widget_show (item);
+	g_object_unref(priv);
 }
 
 static void
@@ -542,52 +554,61 @@ message_response_cb (GtkWidget          *widget,
 {
 	TwituxMsgDialogPriv   *priv;
 
-	if (response == GTK_RESPONSE_OK) {	  
-		GtkTextBuffer  *buffer;
-		GtkTextIter     start_iter;
-		GtkTextIter     end_iter;
-
-		priv = GET_PRIV (dialog);
-
-		twitux_debug (DEBUG_DOMAIN_SETUP, "Posting message to Twitter");
-
-		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (priv->textview));
-		gtk_text_buffer_get_start_iter (buffer, &start_iter);
-		gtk_text_buffer_get_end_iter (buffer, &end_iter);
-
-		if (!gtk_text_iter_equal (&start_iter, &end_iter)) {
-				gchar          *text;
-				gchar          *good_msg;
-
-				text = gtk_text_buffer_get_text (buffer, &start_iter, &end_iter, TRUE);
-				good_msg = url_encode_message (text);
-				
-				if (priv->show_friends)
-				{
-					GtkTreeIter   iter;
-					gchar        *to_user;
-					GtkComboBox  *combo = GTK_COMBO_BOX (priv->friends_combo);
-					GtkTreeModel *model = gtk_combo_box_get_model (combo);
-					/* Send a direct message  */
-					if (gtk_combo_box_get_active_iter (combo, &iter)){
-						/* Get friend username */
-						gtk_tree_model_get (model,
-											&iter,
-											0, &to_user,
-											-1);
-						/* Send the message */
-						twitux_network_send_message (to_user, good_msg);
-						g_free (to_user);
-					}
-				} else {
-					/* Post a tweet */
-					twitux_network_post_status (good_msg);
-				}
-
-				g_free (text);
-				g_free (good_msg);
-		}
+	if (response != GTK_RESPONSE_OK) {
+		gtk_widget_destroy (widget);
+		g_object_unref(priv);
+		return;
 	}
+
+	GtkTextBuffer  *buffer;
+	GtkTextIter     start_iter;
+	GtkTextIter     end_iter;
+
+	priv = GET_PRIV (dialog);
+	
+	twitux_debug (DEBUG_DOMAIN_SETUP, "Posting message to Twitter");
+	
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (priv->textview));
+	gtk_text_buffer_get_start_iter (buffer, &start_iter);
+	gtk_text_buffer_get_end_iter (buffer, &end_iter);
+	
+	if(!gtk_text_iter_equal (&start_iter, &end_iter)) {
+		gtk_widget_destroy(widget);
+		g_object_unref(priv);
+		return;
+	}
+	gchar          *text;
+	gchar          *good_msg;
+		
+	text = gtk_text_buffer_get_text (buffer, &start_iter, &end_iter, TRUE);
+	good_msg = url_encode_message (text);
+	g_free(text);
+	
+	if(!priv->show_friends) {
+		/* Post a tweet */
+		twitux_network_post_status (good_msg);
+		g_free (good_msg);
+		g_object_unref(priv);
+		return;
+	}
+	
+	GtkTreeIter   iter;
+	gchar        *to_user;
+	GtkComboBox  *combo = GTK_COMBO_BOX (priv->friends_combo);
+	GtkTreeModel *model = gtk_combo_box_get_model (combo);
+	/* Send a direct message  */
+	if (gtk_combo_box_get_active_iter (combo, &iter)){
+		/* Get friend username */
+		gtk_tree_model_get (model,
+					&iter,
+					0, &to_user,
+					-1);
+		/* Send the message */
+		twitux_network_send_message (to_user, good_msg);
+		g_free (to_user);
+	}
+	g_object_unref(priv);
+	g_free (good_msg);
 	gtk_widget_destroy (widget);
 }
 
@@ -601,6 +622,7 @@ message_destroy_cb (GtkWidget         *widget,
 
 	/* Add any clean-up code here */
 	
+	g_object_unref(priv);
 	g_object_unref (dialog);
 	dialog = NULL;
 }

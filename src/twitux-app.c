@@ -232,6 +232,7 @@ twitux_app_init (TwituxApp *singleton_app)
 	priv->widgets_connected = NULL;
 	priv->widgets_disconnected = NULL;
 	priv->group = NULL;
+	g_object_unref(priv);
 }
 
 static void
@@ -258,6 +259,7 @@ app_finalize (GObject *object)
 	twitux_conf_shutdown ();
 	
 	G_OBJECT_CLASS (twitux_app_parent_class)->finalize (object);
+	g_object_unref(priv);
 }
 
 static void
@@ -270,8 +272,9 @@ static void
 on_accounts_destroy (DBusGProxy *proxy, TwituxApp *app)
 {
 	TwituxAppPriv *priv = GET_PRIV (app);
-    priv->account = NULL;
+	priv->account = NULL;
 	priv->accounts_service = NULL;
+	g_object_unref(priv);
 }
 
 static void
@@ -315,36 +318,31 @@ update_account (DBusGProxy  *account,
 
 	priv = GET_PRIV (app);
 
-    /* the account is changing */
-    if (priv->account && strcmp (g_strdup (dbus_g_proxy_get_path (account)),
-								 g_strdup (dbus_g_proxy_get_path (priv->account))) != 0) {
-	    g_object_unref (priv->account);
-        priv->account = NULL;
-    }
+	/* the account is changing */
+	if (!priv->account) {
+		priv->account = account;
+		dbus_g_proxy_add_signal (priv->account, "Changed", G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal (priv->account, "Changed", G_CALLBACK (on_account_changed), app, NULL);
+	}else if( (strcmp( (g_strdup( (dbus_g_proxy_get_path(account)) )), (g_strdup( (dbus_g_proxy_get_path(priv->account)) )) )) != 0 ) {
+		g_object_unref(priv->account);
+		priv->account=NULL;
+	}
   
-    if (!priv->account) {
-        priv->account = account;
-        dbus_g_proxy_add_signal (priv->account,
-								 "Changed",
-								 G_TYPE_INVALID);
-		dbus_g_proxy_connect_signal (priv->account,
-									 "Changed",
-									 G_CALLBACK (on_account_changed),
-									 app, NULL);
-    }
 
-    /* The username should normally never change on an existing account, but let's update
-       it in any case. Since we are only interested in the enabled account,
-       and are connected to an account disabled signal, we don't need to check the 
-       enabled flag here. */		
-    if (!dbus_g_proxy_call (priv->account,
-						    "GetUsername",
-							error,
-							G_TYPE_INVALID,
-							G_TYPE_STRING,
-							&username,
-							G_TYPE_INVALID))
-        return FALSE;
+	/* The username should normally never change on an existing account, but let's update
+	 * it in any case. Since we are only interested in the enabled account,
+	 * and are connected to an account disabled signal, we don't need to check the
+	 * enabled flag here. */
+	if (!dbus_g_proxy_call(priv->account,
+						"GetUsername",
+						error,
+						G_TYPE_INVALID,
+						G_TYPE_STRING,
+						&username,
+						G_TYPE_INVALID)){
+		g_object_unref(priv);
+        	return FALSE;
+	}
 
 	if (!dbus_g_proxy_call (priv->account,
 							"GetPassword",
@@ -352,12 +350,15 @@ update_account (DBusGProxy  *account,
 							G_TYPE_INVALID,
 							G_TYPE_STRING,
 							&password,
-							G_TYPE_INVALID))
-        return FALSE;
+							G_TYPE_INVALID)){
+		g_object_unref(priv);
+		return FALSE;
+	}
 
-    priv->username = username;
-	priv->password = password;
-    return TRUE;
+	priv->username=username;
+	priv->password=password;
+	g_object_unref(priv);
+	return TRUE;
 }               
 
 static void
@@ -369,18 +370,22 @@ on_account_changed (DBusGProxy *account,
 
 	priv = GET_PRIV (app);
 
-    /* we shouldn't be getting a signal about an account that is no longer current, 
-       but let's do these checks just in case */
-    if (!priv->account || strcmp (g_strdup (dbus_g_proxy_get_path (account)),
-								  g_strdup (dbus_g_proxy_get_path (priv->account))) != 0)
+	/* we shouldn't be getting a signal about an account that is no longer current, 
+	 * but let's do these checks just in case */
+	if (!priv->account || strcmp (g_strdup (dbus_g_proxy_get_path (account)),
+								  g_strdup (dbus_g_proxy_get_path (priv->account))) != 0){
+		g_object_unref(priv);
 		return;
+	}
 
-    if (!update_account(account, app, &error)) {
-        g_printerr ("failed to update an account that changed: %s", error->message);
-        return; 
-    }
+	if (!update_account(account, app, &error)) {
+		g_printerr ("failed to update an account that changed: %s", error->message);
+		g_object_unref(priv);
+		return; 
+	}
 
-	reconnect (app);
+	reconnect(app);
+	g_object_unref(priv);
 }
 
 static void
@@ -396,6 +401,8 @@ on_account_disabled (DBusGProxy *accounts,
 	if (!priv->account || strcmp (opath, g_strdup (dbus_g_proxy_get_path (priv->account))) != 0)
 		return;
 
+	g_object_unref(priv);
+	
 	if (!request_accounts (app, &error)) {
 		g_warning ("Failed to get accounts: %s", error->message);
 		g_clear_error (&error);
@@ -411,28 +418,21 @@ on_account_enabled (DBusGProxy *accounts,
 					TwituxApp  *app)
 {
 	GError *error = NULL;
-	TwituxAppPriv *priv;
-	priv = GET_PRIV (app);
-	    
-    DBusGProxy *account;
+	
+	DBusGProxy *account;
 
-    account = dbus_g_proxy_new_for_name_owner (dbus_g_bus_get (DBUS_BUS_SESSION, NULL),
-											   "org.gnome.OnlineAccounts",
-											   opath,
-											   "org.gnome.OnlineAccounts", 
-                                               &error);
+	account = dbus_g_proxy_new_for_name_owner (dbus_g_bus_get (DBUS_BUS_SESSION, NULL), "org.gnome.OnlineAccounts", opath, "org.gnome.OnlineAccounts", &error);
 
-    if (!account) {
-        g_warning ("Could not get an account object for opath: %s",
-				   opath);
-		g_clear_error (&error);
+	if (!account) {
+	        g_warning("Could not get an account object for opath: %s", opath);
+		g_clear_error(&error);
 		return;
 	}
 
-    if (!update_account(account, app, &error)) {
-        g_printerr ("failed to update an account that got enabled: %s", error->message);
-        return; 
-    }
+	if (!update_account(account, app, &error)) {
+		g_printerr ("failed to update an account that got enabled: %s", error->message);
+		return;
+	}
 
 	reconnect (app);
 }
@@ -449,9 +449,9 @@ app_setup (void)
 	gboolean          login;
 	gboolean		  hidden;
 
-    GError           *error = NULL;
-    guint32           result;
-    DBusGProxy       *session_bus;
+	GError           *error = NULL;
+	guint32           result;
+	DBusGProxy       *session_bus;
 
 	twitux_debug (DEBUG_DOMAIN_SETUP, "Beginning....");
 
@@ -479,7 +479,7 @@ app_setup (void)
 	/* Set group for menu radio actions */
 	app_set_radio_group (app, ui);
 
-    /* Grab the conf object */
+	/* Grab the conf object */
 	conf = twitux_conf_get ();
 
 	/*
@@ -529,56 +529,55 @@ app_setup (void)
 	twitux_dbus_nm_init ();
 #endif
 
-    priv->accounts_service = NULL;
+	priv->accounts_service = NULL;
 
-    session_bus = dbus_g_proxy_new_for_name (dbus_g_bus_get (DBUS_BUS_SESSION, NULL),
+	session_bus = dbus_g_proxy_new_for_name (dbus_g_bus_get (DBUS_BUS_SESSION, NULL),
                                              "org.freedesktop.DBus",
                                              "/org/freedesktop/DBus",
                                              "org.freedesktop.DBus");
 
-    if (dbus_g_proxy_call (session_bus, "StartServiceByName", &error,
-                           G_TYPE_STRING, "org.gnome.OnlineAccounts", 
-                           G_TYPE_UINT, 0, G_TYPE_INVALID, 
-                           G_TYPE_UINT, &result, G_TYPE_INVALID)) {
-	    priv->accounts_service =
+	if (dbus_g_proxy_call (session_bus, "StartServiceByName", &error,
+				G_TYPE_STRING, "org.gnome.OnlineAccounts",
+				G_TYPE_UINT, 0, G_TYPE_INVALID,
+				G_TYPE_UINT, &result, G_TYPE_INVALID))
+		priv->accounts_service =
 			dbus_g_proxy_new_for_name (dbus_g_bus_get (DBUS_BUS_SESSION, NULL),
 									   "org.gnome.OnlineAccounts",
 									   "/onlineaccounts",
 									   "org.gnome.OnlineAccounts");
-    }
 
 	if (priv->accounts_service) {
 		g_signal_connect (priv->accounts_service, "destroy",
-						  G_CALLBACK (on_accounts_destroy), app); 
-	    dbus_g_proxy_call (priv->accounts_service,
-						   "EnsureAccountType",
-						   &error,
-						   G_TYPE_STRING, TYPE_TWITTER,
-                           G_TYPE_STRING, "Twitter",
-                           G_TYPE_STRING, "Twitter username",
-                           G_TYPE_STRING, "http://twitter.com",
-						   G_TYPE_INVALID);
+						G_CALLBACK (on_accounts_destroy), app); 
+		dbus_g_proxy_call (priv->accounts_service,
+						"EnsureAccountType",
+						&error,
+						G_TYPE_STRING, TYPE_TWITTER,
+						G_TYPE_STRING, "Twitter",
+						G_TYPE_STRING, "Twitter username",
+						G_TYPE_STRING, "http://twitter.com",
+						G_TYPE_INVALID);
 		dbus_g_proxy_add_signal (priv->accounts_service,
-								 "AccountDisabled",
-								 DBUS_TYPE_G_OBJECT_PATH,
-								 G_TYPE_INVALID);
+						"AccountDisabled",
+						DBUS_TYPE_G_OBJECT_PATH,
+						G_TYPE_INVALID);
 		dbus_g_proxy_add_signal (priv->accounts_service,
-								 "AccountEnabled",
-								 DBUS_TYPE_G_OBJECT_PATH,
-								 G_TYPE_INVALID);
+						"AccountEnabled",
+						DBUS_TYPE_G_OBJECT_PATH,
+						G_TYPE_INVALID);
 		dbus_g_proxy_connect_signal (priv->accounts_service,
-									 "AccountDisabled",
-									 G_CALLBACK (on_account_disabled),
-									 app, NULL);
+						"AccountDisabled",
+						G_CALLBACK (on_account_disabled),
+						app, NULL);
 		dbus_g_proxy_connect_signal (priv->accounts_service,
-									 "AccountEnabled",
-									 G_CALLBACK (on_account_enabled),
-									 app, NULL);
+							"AccountEnabled",
+							G_CALLBACK (on_account_enabled),
+							app, NULL);
 	}
 
 	/* Set-up the notification area */
 	twitux_debug (DEBUG_DOMAIN_SETUP,
-				  "Configuring notification area widget...");
+			"Configuring notification area widget...");
 	app_status_icon_create_menu ();
 	app_status_icon_create ();
 	
@@ -611,32 +610,29 @@ app_setup (void)
 						  &hidden);
 	
 	/* Ok, set the window state based on the gconf value */				  
-	if (hidden) {
-		gtk_widget_hide (priv->window);
-	} else {
-		gtk_widget_show (priv->window);
-	}
+	if(!hidden)
+		gtk_widget_show(priv->window);
+	else
+		gtk_widget_hide(priv->window);
 
 	/*Check to see if we should automatically login */
-	twitux_conf_get_bool (conf,
+	twitux_conf_get_bool(conf,
 						  TWITUX_PREFS_AUTH_AUTO_LOGIN,
 						  &login);
 
 	if (login) 
 		app_login (app);
+	
+	g_object_unref(priv);
 }
 
 static void
 main_window_destroy_cb (GtkWidget *window, TwituxApp *app)
 {
-	TwituxAppPriv *priv;
-
-	priv = GET_PRIV (app);
-
 	/* Add any clean-up code here */
 
 #ifdef DEBUG_QUIT
-	gtk_main_quit ();
+	gtk_main_quit();
 #else
 	exit (0);
 #endif
@@ -648,7 +644,6 @@ main_window_delete_event_cb (GtkWidget *window,
 							 TwituxApp *app)
 {
 	TwituxAppPriv *priv;
-
 	priv = GET_PRIV (app);
 
 	if (gtk_status_icon_is_embedded (priv->status_icon)) {
@@ -660,9 +655,11 @@ main_window_delete_event_cb (GtkWidget *window,
 		
 		twitux_app_set_visibility (FALSE);
 
+		g_object_unref(priv);
 		return TRUE;
 	}
 	
+	g_object_unref(priv);
 	if (twitux_hint_dialog_show (TWITUX_PREFS_HINTS_CLOSE_MAIN_WINDOW,
 								_("You were about to quit!"),
 								_("Since no system or notification tray has been "
@@ -713,6 +710,7 @@ app_set_radio_group (TwituxApp  *app,
 		gtk_radio_action_set_group (w, priv->group);
 		priv->group = gtk_radio_action_get_group (w);
 	}
+	g_object_unref(priv);
 }
 
 static void
@@ -746,6 +744,7 @@ twitux_app_toggle_visibility (void)
 	twitux_conf_set_bool (twitux_conf_get (),
 						  TWITUX_PREFS_UI_MAIN_WINDOW_HIDDEN,
 						  visible);
+	g_object_unref(priv);
 }
 
 void
@@ -789,6 +788,7 @@ app_new_message_cb (GtkWidget *widget,
 	priv = GET_PRIV (app);
 
 	twitux_send_message_dialog_show (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 	twitux_message_show_friends (FALSE);
 }
 
@@ -801,6 +801,7 @@ app_send_direct_message_cb (GtkWidget *widget,
 	priv = GET_PRIV (app);
 
 	twitux_send_message_dialog_show (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 	twitux_message_show_friends (TRUE);
 }
 
@@ -813,6 +814,7 @@ app_quit_cb (GtkWidget  *widget,
 	priv = GET_PRIV (app);
 
 	gtk_widget_destroy (priv->window);
+	g_object_unref(priv);
 }
 
 static void
@@ -833,6 +835,7 @@ app_public_timeline_cb (GtkRadioAction *action,
 
 	if (priv->menu_public == current)
 		twitux_network_get_timeline (TWITUX_API_TIMELINE_PUBLIC);
+	g_object_unref(priv);
 }
 
 static void
@@ -846,6 +849,7 @@ app_friends_timeline_cb (GtkRadioAction *action,
 
 	if (priv->menu_friends == current) 
 		twitux_network_get_timeline (TWITUX_API_TIMELINE_FRIENDS);
+	g_object_unref(priv);
 }
 
 static void
@@ -859,6 +863,7 @@ app_mine_timeline_cb (GtkRadioAction *action,
 
 	if (priv->menu_mine == current)
 		twitux_network_get_user (NULL);
+	g_object_unref(priv);
 }
 
 static void
@@ -872,6 +877,7 @@ app_view_direct_messages_cb (GtkRadioAction *action,
 
 	if (priv->menu_direct_messages == current)
 		twitux_network_get_timeline (TWITUX_API_DIRECT_MESSAGES);
+	g_object_unref(priv);
 }
 
 static void
@@ -885,6 +891,7 @@ app_view_direct_replies_cb (GtkRadioAction *action,
 
 	if (priv->menu_direct_replies == current) 
 		twitux_network_get_timeline (TWITUX_API_REPLIES);
+	g_object_unref(priv);
 }
 
 static void
@@ -898,6 +905,7 @@ app_twitux_timeline_cb (GtkRadioAction *action,
 
 	if (priv->menu_twitux == current)
 		twitux_network_get_timeline (TWITUX_API_TIMELINE_TWITUX);
+	g_object_unref(priv);
 }
 
 static void
@@ -905,10 +913,9 @@ app_twitux_view_friends_cb (GtkAction *action,
 							TwituxApp *app)
 {
 	TwituxAppPriv *priv;
-
 	priv = GET_PRIV (app);
-
 	twitux_lists_dialog_show (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 }
 
 static char**
@@ -927,17 +934,18 @@ app_account_cb (GtkWidget *widget,
 
 	priv = GET_PRIV (app);
 
-	if (priv->accounts_service) {
-		dbus_g_proxy_call_no_reply (priv->accounts_service,
-									"OpenAccountsDialogWithTypes",
-									G_TYPE_STRV, 
-									get_account_set_request (app),
-                                    G_TYPE_UINT, 
-                                    gtk_get_current_event_time(),   
-									G_TYPE_INVALID);
-	} else {
+	if (priv->accounts_service)
+		dbus_g_proxy_call_no_reply(priv->accounts_service,
+						"OpenAccountsDialogWithTypes",
+						G_TYPE_STRV,
+						get_account_set_request (app),
+	    					G_TYPE_UINT,
+	    					gtk_get_current_event_time(),
+						G_TYPE_INVALID);
+	else
 		twitux_account_dialog_show (GTK_WINDOW (priv->window));
-	}
+	
+	g_object_unref(priv);
 }
 
 static void
@@ -945,10 +953,9 @@ app_preferences_cb (GtkWidget *widget,
 					TwituxApp *app)
 {
 	TwituxAppPriv *priv;
-
 	priv = GET_PRIV (app);
-
 	twitux_preferences_dialog_show (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 }
 
 static void
@@ -960,6 +967,7 @@ app_about_cb (GtkWidget *widget,
 	priv = GET_PRIV (app);
 
 	twitux_about_dialog_new (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 }
 
 static void
@@ -971,6 +979,7 @@ app_help_contents_cb (GtkWidget *widget,
 	priv = GET_PRIV (app);
 
 	twitux_help_show (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 }
 
 static void
@@ -982,6 +991,7 @@ app_add_friend_cb (GtkAction *item,
 	priv = GET_PRIV (app);
 
 	twitux_add_dialog_show (GTK_WINDOW (priv->window));
+	g_object_unref(priv);
 }
 
 static void
@@ -1025,6 +1035,7 @@ app_status_icon_popup_menu_cb (GtkStatusIcon *status_icon,
 					priv->status_icon,
 					button,
 					activate_time);
+	g_object_unref(priv);
 }
 
 static void
@@ -1071,6 +1082,7 @@ app_status_icon_create_menu (void)
 	gtk_menu_shell_append (GTK_MENU_SHELL (priv->popup_menu), w);
 	w = gtk_action_create_menu_item (quit);
 	gtk_menu_shell_append (GTK_MENU_SHELL (priv->popup_menu), w);
+	g_object_unref(priv);
 }
 
 static void
@@ -1092,21 +1104,20 @@ app_status_icon_create (void)
 					  app);
 
 	gtk_status_icon_set_visible (priv->status_icon, TRUE);
+	g_object_unref(priv);
 }
 
 void
 twitux_app_create (void)
 {
 	g_object_new (TWITUX_TYPE_APP, NULL);
-
 	app_setup ();
 }
 
 TwituxApp *
 twitux_app_get (void)
 {
-	g_assert (app != NULL);
-	
+	g_assert(app != NULL);
 	return app;
 }
  
@@ -1125,6 +1136,8 @@ configure_event_timeout_cb (GtkWidget *widget)
 
 	priv->size_timeout_id = 0;
 
+	g_object_unref(priv);
+	
 	return FALSE;
 }
 
@@ -1137,15 +1150,14 @@ app_window_configure_event_cb (GtkWidget         *widget,
 
 	priv = GET_PRIV (app);
 
-	if (priv->size_timeout_id) {
+	if (priv->size_timeout_id)
 		g_source_remove (priv->size_timeout_id);
-	}
 
-	priv->size_timeout_id =
-		g_timeout_add (500,
+	priv->size_timeout_id = g_timeout_add (500,
 					   (GSourceFunc) configure_event_timeout_cb,
 					   widget);
 
+	g_object_unref(priv);
 	return FALSE;
 }
 
@@ -1157,25 +1169,24 @@ request_accounts (TwituxApp  *app,
 	guint           i;
 	GPtrArray      *accounts = NULL;
 	char          **accountset;
-    gboolean        succeeded = TRUE;
+	gboolean        succeeded = TRUE;
 
 	priv = GET_PRIV (app);
 
 	accountset = get_account_set_request (app);
 
-	if (!G_STR_EMPTY (priv->username)){
+	if (!G_STR_EMPTY (priv->username))
 		g_free (priv->username);
-	}
+	
 	priv->username = NULL;
 
-	if (!G_STR_EMPTY (priv->password)) {
+	if (!G_STR_EMPTY (priv->password))
 		g_free (priv->password);
-	}
 	priv->password = NULL;
 
-    if (priv->account) 
-        g_object_unref (priv->account);
-    priv->account = NULL;
+	if (priv->account)
+		g_object_unref (priv->account);
+	priv->account = NULL;
  
 	if (!dbus_g_proxy_call (priv->accounts_service,
 							"GetEnabledAccountsWithTypes",
@@ -1185,13 +1196,16 @@ request_accounts (TwituxApp  *app,
 							G_TYPE_INVALID,
 							dbus_g_type_get_collection ("GPtrArray", DBUS_TYPE_G_PROXY),
 							&accounts,
-							G_TYPE_INVALID))
+							G_TYPE_INVALID)){
+		g_object_unref(priv);
 		return FALSE;
+	}
 
 	/* We only use the first account */
-	for (i = 0; i < accounts->len && i == 0; i++) {
-        succeeded = update_account((DBusGProxy*)g_ptr_array_index (accounts, i), app, error);
-	}
+	for (i = 0; i < accounts->len && i == 0; i++)
+	        succeeded = update_account((DBusGProxy*)g_ptr_array_index (accounts, i), app, error);
+	
+	g_object_unref(priv);
 	return succeeded;
 }
 
@@ -1205,33 +1219,33 @@ request_username_password (TwituxApp *a)
 
 	conf = twitux_conf_get ();
 
-	if (!priv->accounts_service) {
-		g_free (priv->username);
-		priv->username = NULL;
-		twitux_conf_get_string (conf,
-								TWITUX_PREFS_AUTH_USER_ID,
-								&priv->username);
-		g_free (priv->password);
-#ifdef HAVE_GNOME_KEYRING
-		priv->password = NULL;
-		if (G_STR_EMPTY (priv->username)) {
-			priv->password = NULL;
-		} else {
-			if (!(twitux_keyring_get_password (priv->username, &priv->password))) {
-				priv->password = NULL;
-			}
-		}
-#else
-		twitux_conf_get_string (conf,
-								TWITUX_PREFS_AUTH_PASSWORD,
-								&priv->password);
-#endif
-	} else {
+	if(priv->accounts_service){ 
 		GError *error = NULL;
-		if (!request_accounts (a, &error)) {
+		if(!request_accounts(a, &error))
 			g_printerr ("failed to get accounts: %s", error->message);
-		}
+		
+		g_object_unref(priv);
+		return;
 	}
+
+	g_free (priv->username);
+	priv->username = NULL;
+	twitux_conf_get_string (conf,
+				TWITUX_PREFS_AUTH_USER_ID,
+				&priv->username);
+	g_free (priv->password);
+#ifdef HAVE_GNOME_KEYRING
+	priv->password = NULL;
+	if (G_STR_EMPTY (priv->username))
+		priv->password = NULL;
+	else if (!(twitux_keyring_get_password (priv->username, &priv->password)))
+		priv->password = NULL;
+#else
+	twitux_conf_get_string (conf,
+				TWITUX_PREFS_AUTH_PASSWORD,
+				&priv->password);
+#endif
+	g_object_unref(priv);
 }
 
 static void
@@ -1246,21 +1260,21 @@ app_login (TwituxApp *a)
 	 * Don't try to connect if we have
 	 * Network Manager state and we are NOT connected.
 	 */
-	if (twitux_dbus_nm_get_state (&connected) && !connected) {
+	if (twitux_dbus_nm_get_state (&connected) && !connected)
 		return;
-	}
 #endif
 	
 	priv = GET_PRIV (a);
 
 	request_username_password (a);
 
-	if (G_STR_EMPTY (priv->username) || G_STR_EMPTY (priv->password)) {
+	if (G_STR_EMPTY (priv->username) || G_STR_EMPTY (priv->password))
 		app_account_cb (NULL, a);
-	} else {
+	else {
 		twitux_network_login (priv->username, priv->password);
 		app_retrieve_default_timeline ();
 	}
+	g_object_unref(priv);
 }
 
 /*
@@ -1270,15 +1284,14 @@ app_login (TwituxApp *a)
 static void
 app_set_default_timeline (TwituxApp *app, gchar *timeline)
 {
-	TwituxAppPriv *priv;
-
-	priv = GET_PRIV (app);
-
 	/* This shouldn't happen, but just in case */
 	if (G_STR_EMPTY (timeline)) {
 		g_warning ("Default timeline in not set");
 		return;
 	}
+
+	TwituxAppPriv *priv;
+	priv = GET_PRIV (app);
 
 	if (strcmp (timeline, TWITUX_API_TIMELINE_FRIENDS) == 0) {
 		gtk_radio_action_set_current_value (priv->menu_friends,	1);
@@ -1289,19 +1302,17 @@ app_set_default_timeline (TwituxApp *app, gchar *timeline)
 	} else if (strcmp (timeline, TWITUX_API_TIMELINE_TWITUX) == 0) {
 		gtk_radio_action_set_current_value (priv->menu_twitux, 1);
 	} else {
-		/* Let's fallback to friends timeline */
+		// Let's fallback to friends timeline
 		gtk_radio_action_set_current_value (priv->menu_friends,	1);
 	}
+	g_object_unref(priv);
 }
 
 /* Function to retrieve the users default timeline */
 static void
 app_retrieve_default_timeline (void)
 {
-	TwituxAppPriv *priv;
-	gchar         *timeline;
-
-	priv = GET_PRIV (app);
+	gchar         *timeline=NULL;
 
 	twitux_conf_get_string (twitux_conf_get (),
 							TWITUX_PREFS_TWEETS_HOME_TIMELINE,
@@ -1353,13 +1364,13 @@ app_connection_items_setup (TwituxApp  *app,
 		"twitter_connect"
 	};
 
-	priv = GET_PRIV (app);
-
 	for (i = 0, list = NULL; i < G_N_ELEMENTS (widgets_connected); i++) {
 		w = gtk_builder_get_object (ui, widgets_connected[i]);
 		list = g_list_prepend (list, w);
 	}
 
+	priv = GET_PRIV (app);
+	
 	priv->widgets_connected = list;
 
 	for (i = 0, list = NULL; i < G_N_ELEMENTS (widgets_disconnected); i++) {
@@ -1368,6 +1379,7 @@ app_connection_items_setup (TwituxApp  *app,
 	}
 
 	priv->widgets_disconnected = list;
+	g_object_unref(priv);
 }
 
 void
@@ -1375,26 +1387,23 @@ twitux_app_state_on_connection (gboolean connected)
 {
 	TwituxAppPriv *priv;
 	GList         *l;
-
+	
 	priv = GET_PRIV (app);
-
-	for (l = priv->widgets_connected; l; l = l->next) {
+	
+	for (l = priv->widgets_connected; l; l = l->next)
 		g_object_set (l->data, "sensitive", connected, NULL);
-	}
-
-	for (l = priv->widgets_disconnected; l; l = l->next) {
+	
+	for (l = priv->widgets_disconnected; l; l = l->next)
 		g_object_set (l->data, "sensitive", !connected, NULL);
-	}
+	
+	g_object_unref(priv);
+	g_list_free(l);
 }
 
 GtkWidget *
 twitux_app_get_window (void)
 {
-	TwituxAppPriv *priv;
-
-	priv = GET_PRIV (app);
-	
-	return priv->window;
+	return ( (GET_PRIV(app))->window );
 }
 
 void
@@ -1405,12 +1414,15 @@ twitux_app_set_statusbar_msg (gchar *message)
 	priv = GET_PRIV (app);
 
 	/* Avoid some warnings */
-	if (!priv->statusbar || !GTK_IS_STATUSBAR (priv->statusbar))
+	if (!priv->statusbar || !GTK_IS_STATUSBAR (priv->statusbar)){
+		g_object_unref(priv);
 		return;
+	}
 
 	/* conext ID will be always 1 */
 	gtk_statusbar_pop (GTK_STATUSBAR (priv->statusbar), 1);
 	gtk_statusbar_push (GTK_STATUSBAR (priv->statusbar), 1, message);
+	g_object_unref(priv);
 }
 
 void

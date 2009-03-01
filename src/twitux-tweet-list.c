@@ -71,33 +71,34 @@ twitux_tweet_list_class_init (TwituxTweetListClass *klass)
 
 	object_class->finalize = tweet_list_finalize;
 
-	g_type_class_add_private (object_class, sizeof (TwituxTweetListPriv));
+	g_type_class_add_private(object_class, sizeof (TwituxTweetListPriv));
 }
 
 static void
-twitux_tweet_list_init (TwituxTweetList *tweet)
+twitux_tweet_list_init(TwituxTweetList *tweet)
 {
 	TwituxTweetListPriv *priv;
 
-	list = tweet;
+	list=tweet;
 
-	priv = GET_PRIV (list);
+	priv=GET_PRIV(list);
 
-	tweet_list_create_model (list);
-	tweet_list_setup_view (list);
+	tweet_list_create_model(list);
+	tweet_list_setup_view(list);
 
-	g_signal_connect (tweet,
+	g_signal_connect (list,
 					  "size_allocate",
-					  G_CALLBACK (tweet_list_size_cb),
-					  tweet);
-	g_signal_connect (tweet,
+					  G_CALLBACK(tweet_list_size_cb),
+					  list);
+	g_signal_connect (list,
 					  "cursor-changed",
-					  G_CALLBACK (tweet_list_changed_cb),
-					  tweet);
-	g_signal_connect (tweet,
+					  G_CALLBACK(tweet_list_changed_cb),
+					  list);
+	g_signal_connect (list,
 					  "row-activated",
-					  G_CALLBACK (tweet_list_activated_cb),
-					  tweet);
+					  G_CALLBACK(tweet_list_activated_cb),
+					  list);
+	g_object_unref(priv);
 }
 
 static void
@@ -105,13 +106,14 @@ tweet_list_finalize (GObject *object)
 {
 	TwituxTweetListPriv *priv;
 
-	priv = GET_PRIV (object);
+	priv=GET_PRIV(object);
 
 	if(priv->store)
-		g_object_unref (priv->store);
+		g_object_unref(priv->store);
 
-	G_OBJECT_CLASS (twitux_tweet_list_parent_class)->finalize (object);
-	g_object_unref( object );
+	G_OBJECT_CLASS(twitux_tweet_list_parent_class)->finalize(object);
+	g_object_unref(object);
+	g_object_unref(priv);
 }
 
 static void
@@ -120,14 +122,12 @@ tweet_list_create_model (TwituxTweetList *list)
 	TwituxTweetListPriv *priv;
 	GtkTreeModel        *model;
 
-	priv = GET_PRIV (list);
+	priv = GET_PRIV(list);
 
-	if (priv->store) {
+	if(priv->store)
 		g_object_unref (priv->store);
-	}
 
-	priv->store =
-		gtk_list_store_new (N_COLUMNS,
+	priv->store=gtk_list_store_new (N_COLUMNS,
 							GDK_TYPE_PIXBUF,  /* Avatar pixbuf */
 							G_TYPE_STRING,    /* Display string */
 							G_TYPE_STRING,    /* Author name string */
@@ -136,9 +136,10 @@ tweet_list_create_model (TwituxTweetList *list)
 							G_TYPE_STRING);   /* Username string */
 
 	/* save normal model */
-	model = GTK_TREE_MODEL (priv->store);
+	model=GTK_TREE_MODEL(priv->store);
 
-	gtk_tree_view_set_model (GTK_TREE_VIEW (list), model);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(list), model);
+	g_object_unref(priv);
 }
 
 static void
@@ -149,44 +150,27 @@ tweet_list_setup_view (TwituxTweetList *list)
 	GtkTreeViewColumn	*avatar_column;
 	GtkTreeViewColumn   *tweet_column;
 
-	priv = GET_PRIV (list);
+	priv=GET_PRIV(list);
 	
-	g_object_set(list,
-				 "rules-hint", TRUE,
-				 "reorderable", FALSE,
-				 "headers-visible", FALSE,
-				 NULL);
+	g_object_set(list, "rules-hint", TRUE, "reorderable", FALSE, "headers-visible", FALSE, NULL);
 
-	renderer = gtk_cell_renderer_pixbuf_new();
-	gtk_cell_renderer_set_fixed_size (renderer, 48, 48);
-	avatar_column =
-		gtk_tree_view_column_new_with_attributes (NULL,
-												  renderer,
-												  "pixbuf", PIXBUF_AVATAR,
-												  NULL);
-	gtk_tree_view_column_set_sizing (avatar_column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_min_width (avatar_column, 48);
-	gtk_tree_view_column_set_fixed_width (avatar_column, 48);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (list),
-								 avatar_column);
+	renderer=gtk_cell_renderer_pixbuf_new();
+	gtk_cell_renderer_set_fixed_size( renderer, 48, 48 );
+	avatar_column = gtk_tree_view_column_new_with_attributes( NULL, renderer, "pixbuf", PIXBUF_AVATAR, NULL);
+	gtk_tree_view_column_set_sizing( avatar_column, GTK_TREE_VIEW_COLUMN_FIXED );
+	gtk_tree_view_column_set_min_width( avatar_column, 48 );
+	gtk_tree_view_column_set_fixed_width( avatar_column, 48 );
+	gtk_tree_view_append_column( GTK_TREE_VIEW( list ), avatar_column );
 	
-	renderer = gtk_cell_renderer_text_new();
-	tweet_column =
-		gtk_tree_view_column_new_with_attributes (NULL,
-												  renderer,
-												  "markup", STRING_TEXT,
-												  NULL);
-	gtk_tree_view_column_set_sizing ( tweet_column, GTK_TREE_VIEW_COLUMN_FIXED);
-	g_object_set (renderer,
-				  "ypad", 0,
-				  "xpad", 5,
-				  "yalign", 0.0,
-				  "wrap-mode", PANGO_WRAP_WORD_CHAR,
-				  NULL);
-	gtk_tree_view_append_column (GTK_TREE_VIEW (list), tweet_column);
+	renderer=gtk_cell_renderer_text_new();
+	tweet_column = gtk_tree_view_column_new_with_attributes( NULL, renderer, "markup", STRING_TEXT, NULL );
+	gtk_tree_view_column_set_sizing( tweet_column, GTK_TREE_VIEW_COLUMN_FIXED );
+	g_object_set( renderer, "ypad", 0, "xpad", 5, "yalign", 0.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
+	gtk_tree_view_append_column( GTK_TREE_VIEW( list ), tweet_column );
 	
-	priv->text_column = tweet_column;
-	priv->text_renderer = renderer;
+	priv->text_column=tweet_column;
+	priv->text_renderer=renderer;
+	g_object_unref(priv);
 }
 
 static void
@@ -208,16 +192,20 @@ tweet_list_changed_cb (GtkWidget *widget,
 						  TWITUX_PREFS_UI_EXPAND_MESSAGES,
 						  &expand);
 
-	if (!expand)
+	if(!expand){
+		g_object_unref(priv);
 		return;
+	}
 	
 	/* Get selected Iter */
 	sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
 	
-	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
+	if (!gtk_tree_selection_get_selected (sel, NULL, &iter)){
+		g_object_unref(priv);
 		return;
+	}
 	
-	gtk_tree_model_get (GTK_TREE_MODEL (priv->store),
+	gtk_tree_model_get(GTK_TREE_MODEL (priv->store),
 						&iter,
 						STRING_AUTHOR, &name,
 						STRING_TWEET, &tweet,
@@ -225,12 +213,13 @@ tweet_list_changed_cb (GtkWidget *widget,
 						PIXBUF_AVATAR, &pixbuf,
 						-1);
 	
-	twitux_app_expand_message (name, date, tweet, pixbuf);
+	twitux_app_expand_message(name, date, tweet, pixbuf);
 	
-	g_free (name);
-	g_free (tweet);
-	g_free (date);
+	g_free(name);
+	g_free(tweet);
+	g_free(date);
 	g_object_unref(pixbuf);
+	g_object_unref(priv);
 }
 
 static void
@@ -240,16 +229,12 @@ tweet_list_size_cb (GtkWidget     *widget,
 {
 	TwituxTweetList     *t;
 	TwituxTweetListPriv *priv;
-	gint                 w;
 
-	t = TWITUX_TWEET_LIST (user_data);	
-	priv = GET_PRIV (t);
+	t=TWITUX_TWEET_LIST(user_data);	
+	priv=GET_PRIV(t);
 
-	w = gtk_tree_view_column_get_width (priv->text_column);
-
-	g_object_set (priv->text_renderer,
-				  "wrap-width", w-10,
-				  NULL);
+	g_object_set(priv->text_renderer, "wrap-width", ( (gtk_tree_view_column_get_width(priv->text_column))-10), NULL);
+	g_object_unref(priv);
 }
 
 static void
@@ -281,22 +266,16 @@ tweet_list_activated_cb (GtkTreeView       *tree_view,
 	twitux_message_show_friends (FALSE);
 	twitux_message_set_message (message);
 
-	g_free (user);
-	g_free (message);
+	g_free(user);
+	g_free(message);
+	g_object_unref(t);
+	g_object_unref(priv);
 }
 
-TwituxTweetList *
-twitux_tweet_list_new (void)
-{
+TwituxTweetList *twitux_tweet_list_new(void){
 	return g_object_new (TWITUX_TYPE_TWEET_LIST, NULL);
 }
 
-GtkListStore *
-twitux_tweet_list_get_store (void)
-{
-	TwituxTweetListPriv *priv;
-	
-	priv = GET_PRIV (list);
-	
-	return priv->store;
+GtkListStore *twitux_tweet_list_get_store(void){
+	return ( (GET_PRIV(list))->store);
 }
