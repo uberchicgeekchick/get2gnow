@@ -195,7 +195,7 @@ message_setup (GtkWindow  *parent)
 
 	/* Show the dialog */
 	gtk_widget_show (GTK_WIDGET (priv->dialog));
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 void
@@ -250,7 +250,7 @@ twitux_message_set_followers (GList *followers)
 							0, user->screen_name,
 							-1);
 	}
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 void
@@ -263,7 +263,7 @@ twitux_message_show_friends (gboolean show_friends)
 		gtk_widget_hide (priv->friends_combo);
 		gtk_widget_hide (priv->friends_label);
 		gtk_widget_grab_focus(GTK_WIDGET(priv->textview));
-		g_object_unref(priv);
+		//g_object_unref(priv);
 		return;
 	}
 	
@@ -287,7 +287,7 @@ twitux_message_show_friends (gboolean show_friends)
 	gtk_widget_set_sensitive(priv->dialog, TRUE);
 	twitux_app_set_statusbar_msg(NULL);
 	gtk_widget_grab_focus(GTK_WIDGET(priv->friends_combo));
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 void
@@ -301,7 +301,7 @@ twitux_message_set_message (const gchar *message)
 	gtk_text_buffer_set_text (buffer, message, -1);
 
 	gtk_window_set_focus (GTK_WINDOW (priv->dialog), priv->textview);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static gchar *
@@ -365,7 +365,7 @@ message_set_characters_available (GtkTextBuffer     *buffer,
 
 	gtk_label_set_markup (GTK_LABEL (priv->label), character_count);
 	g_free (character_count);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -428,7 +428,7 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 		start = end;
 	}
 	
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -491,7 +491,7 @@ message_text_populate_popup_cb (GtkTextView        *view,
 					  message_spell);
 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
 	gtk_widget_show (item);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -556,7 +556,7 @@ message_response_cb (GtkWidget          *widget,
 	
 	if(gtk_text_iter_equal(&start_iter, &end_iter)) {
 		gtk_widget_destroy(widget);
-		g_object_unref(priv);
+		//g_object_unref(priv);
 		return;
 	}
 	gchar          *text;
@@ -571,7 +571,7 @@ message_response_cb (GtkWidget          *widget,
 		gtk_widget_destroy(widget);
 		twitux_network_post_status (good_msg);
 		g_free (good_msg);
-		g_object_unref(priv);
+		//g_object_unref(priv);
 		return;
 	}
 	
@@ -592,7 +592,7 @@ message_response_cb (GtkWidget          *widget,
 	}
 	g_free (good_msg);
 	gtk_widget_destroy (widget);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void

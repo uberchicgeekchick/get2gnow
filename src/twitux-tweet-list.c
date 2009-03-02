@@ -98,7 +98,7 @@ twitux_tweet_list_init(TwituxTweetList *tweet)
 					  "row-activated",
 					  G_CALLBACK(tweet_list_activated_cb),
 					  list);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -113,7 +113,7 @@ tweet_list_finalize (GObject *object)
 
 	G_OBJECT_CLASS(twitux_tweet_list_parent_class)->finalize(object);
 	g_object_unref(object);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -139,7 +139,7 @@ tweet_list_create_model (TwituxTweetList *list)
 	model=GTK_TREE_MODEL(priv->store);
 
 	gtk_tree_view_set_model(GTK_TREE_VIEW(list), model);
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -170,7 +170,7 @@ tweet_list_setup_view (TwituxTweetList *list)
 	
 	priv->text_column=tweet_column;
 	priv->text_renderer=renderer;
-	g_object_unref(priv);
+	//g_object_unref(priv);
 }
 
 static void
@@ -198,8 +198,8 @@ tweet_list_changed_cb (GtkWidget *widget,
 	sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
 	
 	if (!gtk_tree_selection_get_selected (sel, NULL, &iter)){
-		g_object_unref(priv);
-		g_object_unref(t);
+		//g_object_unref(priv);
+		//g_object_unref(t);
 		return;
 	}
 	
@@ -218,8 +218,8 @@ tweet_list_changed_cb (GtkWidget *widget,
 	g_free(date);
 	g_object_unref(pixbuf);
 	
-	g_object_unref(priv);
-	g_object_unref(t);
+	//g_object_unref(priv);
+	////g_object_unref(t);
 }
 
 static void
@@ -234,7 +234,8 @@ tweet_list_size_cb (GtkWidget     *widget,
 	priv=GET_PRIV(t);
 
 	g_object_set(priv->text_renderer, "wrap-width", ( (gtk_tree_view_column_get_width(priv->text_column))-10), NULL);
-	g_object_unref(priv);
+	//g_object_unref(priv);
+	//g_object_unref(t);
 }
 
 static void
@@ -269,8 +270,8 @@ tweet_list_activated_cb (GtkTreeView       *tree_view,
 	g_free(user);
 	g_free(message);
 	
-	g_object_unref(t);
-	g_object_unref(priv);
+	//g_object_unref(t);
+	//g_object_unref(priv);
 }
 
 TwituxTweetList *twitux_tweet_list_new(void){
@@ -278,5 +279,5 @@ TwituxTweetList *twitux_tweet_list_new(void){
 }
 
 GtkListStore *twitux_tweet_list_get_store(void){
-	return ( (GET_PRIV(list))->store);
+	return ( GET_PRIV(list)->store );
 }
