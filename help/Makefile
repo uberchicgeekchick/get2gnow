@@ -87,7 +87,7 @@ CPPFLAGS = -I/usr/include
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
+CXXFLAGS = -std=gnu++0x -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include
 CYGPATH_W = echo
 DATADIRNAME = share
 DBUS_CFLAGS = -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include  
@@ -192,7 +192,7 @@ TWITUX_LIBS = -L/usr/lib -L/lib64 -lsexy -lxml2 -lcanberra-gtk -lcanberra -lsoup
 USE_NLS = yes
 VERSION = 0.69
 WARN_CFLAGS = -Wall -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wno-sign-compare 
-WARN_CXXFLAGS = -g -O2 -Wall -Wno-unused 
+WARN_CXXFLAGS = -std=gnu++0x -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include -Wall -Wno-unused 
 XGETTEXT = /usr/bin/xgettext
 abs_builddir = /projects/gtk/twitux/help
 abs_srcdir = /projects/gtk/twitux/help
