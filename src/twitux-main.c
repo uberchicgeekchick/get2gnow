@@ -24,6 +24,7 @@
 #include <config.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 
 #include <libnotify/notify.h>
 
@@ -33,43 +34,44 @@
 #include "twitux-network.h"
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
 	gchar *localedir;
+	gboolean notifing=FALSE;
 
-	localedir = twitux_paths_get_locale_path ();
-	bindtextdomain (GETTEXT_PACKAGE, localedir);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
-	g_free (localedir);
+	localedir = twitux_paths_get_locale_path();
+	bindtextdomain(GETTEXT_PACKAGE, localedir);
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	textdomain(GETTEXT_PACKAGE);
+	g_free(localedir);
 
-	g_set_application_name (_("Twitux"));
+	g_set_application_name(_("Twitux"));
 
-	if (!g_thread_supported ()) g_thread_init (NULL);
+	if(!g_thread_supported()) g_thread_init(NULL);
 
-	gtk_init (&argc, &argv);
+	gtk_init(&argc, &argv);
 
-	gtk_window_set_default_icon_name ("twitux");
+	gtk_window_set_default_icon_name("twitux");
 
 	/* Start the network */
-	twitux_network_new ();
+	twitux_network_new();
 
 	/* Start libnotify */
-	notify_init ("twitux");
+	notifing=notify_init("twitux");
 
 	/* Create the ui */
-	twitux_app_create ();
+	twitux_app_create();
 
-	gtk_main ();
-
+	gtk_main();
+	
 	/* Close libnotify */
-	notify_uninit ();
+	if(notifing) notify_uninit();
 
 	/* Close the network */
-	twitux_network_close ();
+	twitux_network_close();
 
 	/* Clean up the ui */
-	g_object_unref (twitux_app_get ());
+	g_object_unref(twitux_app_get());
 
 	return 0;
 }

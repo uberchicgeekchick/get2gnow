@@ -373,7 +373,7 @@ GList *twitux_network_get_users_glist(gboolean get_friends){
 
 	if(get_friends && user_friends)
 		return user_friends;
-	else if(user_followers)
+	else if(!get_friends && user_followers)
 		return user_followers;
 
 	all_users=NULL;

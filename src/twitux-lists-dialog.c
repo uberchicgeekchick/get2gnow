@@ -147,13 +147,11 @@ twitux_lists_dialog_load_lists (GList *users)
 void
 twitux_lists_dialog_show (GtkWindow *parent)
 {
-	if (lists) {
-		gtk_window_present (GTK_WINDOW (lists->dialog));
-		return;
-	}
+	if (lists) 
+		return gtk_window_present (GTK_WINDOW (lists->dialog));
 	
 	GtkBuilder *ui;
-	GList      *users;
+	GList      *friends;
 	GdkCursor *cursor;
 
 	lists = g_new0 (TwituxLists, 1);
@@ -183,17 +181,16 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	/* Now that we're done setting up, let's show the widget */
 	gtk_widget_show (lists->dialog);
 	
-	twitux_app_set_statusbar_msg(_("Please wait while your followers are being loaded."));
+	twitux_app_set_statusbar_msg(_("Please wait while the list of every one you\'re following is loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, cursor);
 	gtk_widget_set_sensitive(lists->dialog, FALSE);
 
 	/* Load lists */
-	users = twitux_network_get_friends();
-	if(users)
-		twitux_lists_dialog_load_lists(users);
+	if( (friends=twitux_network_get_friends()) )
+		twitux_lists_dialog_load_lists(friends);
 	
 	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, NULL);
 	gtk_widget_set_sensitive(lists->dialog, TRUE);
-	twitux_app_set_statusbar_msg(NULL);
+	twitux_app_set_statusbar_msg("");
 }

@@ -397,7 +397,8 @@ twitux-main.o: twitux-main.c ../config.h /usr/include/gtk-2.0/gtk/gtk.h \
   /usr/include/bits/string.h /usr/include/bits/string2.h \
   /usr/include/endian.h /usr/include/bits/endian.h \
   /usr/include/bits/byteswap.h /usr/include/stdlib.h \
-  /usr/include/libnotify/notify.h /usr/include/libnotify/notification.h \
+  /usr/include/glib-2.0/glib/gprintf.h /usr/include/libnotify/notify.h \
+  /usr/include/libnotify/notification.h \
   /usr/include/libnotify/notify-enum-types.h ../libtwitux/twitux-paths.h \
   twitux-app.h twitux-parser.h twitux-network.h
 
@@ -1322,6 +1323,8 @@ twitux-main.o: twitux-main.c ../config.h /usr/include/gtk-2.0/gtk/gtk.h \
 /usr/include/bits/byteswap.h:
 
 /usr/include/stdlib.h:
+
+/usr/include/glib-2.0/glib/gprintf.h:
 
 /usr/include/libnotify/notify.h:
 
