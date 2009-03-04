@@ -31,7 +31,6 @@
 #include <string.h>
 
 #include <glib/gi18n.h>
-#include <glib/gprintf.h>
 
 #include <libtwitux/twitux-conf.h>
 #include <libtwitux/twitux-debug.h>

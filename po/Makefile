@@ -36,7 +36,7 @@ libdir = ${exec_prefix}/lib
 DATADIRNAME = share
 itlocaledir = $(prefix)/$(DATADIRNAME)/locale
 subdir = po
-install_sh = $(SHELL) /projects/gtk/twitux/install-sh
+install_sh = $(SHELL) /projects/gtk/g-greet/install-sh
 # Automake >= 1.8 provides /bin/mkdir -p.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
@@ -178,13 +178,13 @@ mostlyclean:
 clean: mostlyclean
 
 distclean: clean
-	rm -f Makefile Makefile.in POTFILES stamp-it
+	rm -f Makefile POTFILES stamp-it
 	rm -f *.mo *.msg *.cat *.cat.m *.gmo
 
 maintainer-clean: distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
-	rm -f Makefile.in
+	#rm -f Makefile.in
 
 dist distdir: $(DISTFILES)
 	dists="$(DISTFILES)"; \

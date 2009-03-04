@@ -31,7 +31,6 @@
 #include <string.h> /* for g_memmove - memmove */
 
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
 #include <glib/gi18n.h>
 
 #include <libxml/parser.h>

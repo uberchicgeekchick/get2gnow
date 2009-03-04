@@ -1,6 +1,6 @@
-AC_INIT([Twitux], [0.69], [http://sourceforge.net/tracker/?func=add&group_id=198704&atid=966542], [twitux])
+AC_INIT([g-greet], [0.1.0], [https://www.github.com/uberchicgeekchick/g-greet], [g-greet])
 AC_PREREQ(2.59)
-AC_COPYRIGHT([Copyright (C) 2007-2009 Daniel Morales])
+AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
 AC_CONFIG_SRCDIR([src/twitux-main.c])
 AC_CONFIG_HEADERS(config.h)

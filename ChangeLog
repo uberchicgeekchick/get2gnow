@@ -1,6 +1,19 @@
+2009-03-03  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
+	* src/{?}-network.c: network_get_image
+		the system was using the basename of friends avatar urls for
+		the name of the images that were being saved.  So I've added
+		the friend's profile id as a prefix of the image name. I also
+		changed it so that all image strings are automatically null
+		terminated so the old checks were safly removed to improve
+		efficancy.
+
+	* src/{?}-parser.c & src/{?}-send-message-dialog.c:
+		I removed unneeded #includes.
+
 2009-03-01  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* ./*: forked from twitux.
+	* ./*: forked from {?}.
 		The changes below where submitted but most where not accepted
 		& again the fact that I'm an artist & those programming are
 		standard ignorant, arogant, engineer wanna be types.
@@ -9,31 +22,31 @@
 		join & contribute to existing OSS projects & the open source
 		community.
 
-	* directories: ./.svn, ./src/.svn, ./libtwitux/.svn, ./data/.svn,
+	* directories: ./.svn, ./src/.svn, ./lib{?}/.svn, ./data/.svn,
 	./data/glade/.svn, ./po/.svn, ./help/.svn, ./help/C/.svn
 		All subversion trails are now removed.  I have to fork but I
 		merge in others code especially if mine is unwanted.
 	
-	* src/twitux-app.c: removed unused objects.
+	* src/{?}-app.c: removed unused objects.
 		There were 3 methods where priv objects were being defined and
 		initialized but never used.  So that's gone.
 
 2009-02-29  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* src/twitux-network.c: twitux_network_sort_users
+	* src/{?}-network.c: {?}_network_sort_users
 		I have added this so lists of friends and followers are now
 		sorted alphabetically so friends can easily be found when
 		sending direct messages or viewing their status.
 	
-	* src/twitux-network.c: twitux_network_make_users_list
+	* src/{?}-network.c: {?}_network_make_users_list
 				& network_cb_on_users
 		Both methods now sort the GList they create by calling the
-		above method, twitux_network_sort_users, using GTK's
+		above method, {?}_network_sort_users, using GTK's
 		g_list_sort method.
 	
 2009-02-27  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* src/twitux-parser.c: twitux_parser_timeline
+	* src/{?}-parser.c: {?}_parser_timeline
 		I changed what is saved in the GtkListStore so that the user
 		preference for displaying user name vs screen name effects
 		what is displayed when the tweet is expanded so now the same
@@ -41,7 +54,7 @@
 
 2009-02-26  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* src/twitux-lists-dialog.c: twitux_lists_dialog_show
+	* src/{?}-lists-dialog.c: {?}_lists_dialog_show
 		As I mentioned in my previous ChangeLog entry about this
 		method it was not setting & resetting the dialog's WATCH
 		cursor.  I have now fixed it so that it locks the dialog until
@@ -50,13 +63,13 @@
 		loading the list, than resetting the cursor and re-enabling
 		the window.
 
-	* src/twitux-send-message-dialog.c: message_setup
+	* src/{?}-send-message-dialog.c: message_setup
 		I stopped this method from setting focus when loading the
 		dialog so the correct focus can be set depending on whether a
 		"What are you doing?" status update or direct messaging is
 		being sent.
 	
-	* src/twitux-send-message-dialog.c: twitux_message_show_friends
+	* src/{?}-send-message-dialog.c: {?}_message_show_friends
 		I optimized this method and its code so its much easier to
 		read & understand what is going on.  More over I have added
 		calls to 'gtk_widget_grab_focus' so that when a status update
@@ -66,15 +79,15 @@
 
 2009-02-25  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* src/twitux-network.c:	rewrote: twitux_network_get_friends &
-		twitux_network_get_followers.
+	* src/{?}-network.c:	rewrote: {?}_network_get_friends &
+		{?}_network_get_followers.
 		created make_users_list.
 		
 		I have fixed Twitux so it now loads all of the user's
 		friends/followers for when sending a direct message or when
 		selecting to view a specific friends statuses.
 		
-	* src/twitux-lists-dialog.c: twitux_lists_dialog_show
+	* src/{?}-lists-dialog.c: {?}_lists_dialog_show
 		I removed the code that was changing the cursor to a busy
 		cursor.  It was disabling the friends list only after friends
 		list was loaded.  so they'd all appear there but could not be
@@ -88,19 +101,19 @@
 		I added export GREP_OPTIONS=""; to both shell execs so it
 		actually finds files in the format it expects.
 	
-	* data/Makefile.in: twitux.desktop
+	* data/Makefile.in: {?}.desktop
 		changed:
-		twitux.desktop.in: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in.in
+		{?}.desktop.in: $(top_builddir)/config.status $(srcdir)/{?}.desktop.in.in
 		to
-		twitux.desktop: $(top_builddir)/config.status $(srcdir)/twitux.desktop.in
+		{?}.desktop: $(top_builddir)/config.status $(srcdir)/{?}.desktop.in
 	
-	* help/twitux-omf.in: depricated.
+	* help/{?}-omf.in: depricated.
 
 2009-02-11  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* configure: ac_config_files
 		I modified them so they look for 'po/Makefile' and
-		'data/twitux.desktop' correctly an will fall back to the
+		'data/{?}.desktop' correctly an will fall back to the
 		correct '.in' when needed.
 
 	* po/Makefile.in: clean & dist distdirs
@@ -108,37 +121,37 @@
 		files.  Now po/Makefile's clean & beyond will now work.  Most
 		importantly make clean will now work.
 	
-	* po/POFILES: twitux.desktop.in.in
-	* po/POFILES.in: twitux.desktop.in.in
-		These were both referencing twitux.desktop.in.in which was
-		only a duplicate of twitux.desktop.in.  They now correctly
-		look for twitux.desktop.in
+	* po/POFILES: {?}.desktop.in.in
+	* po/POFILES.in: {?}.desktop.in.in
+		These were both referencing {?}.desktop.in.in which was
+		only a duplicate of {?}.desktop.in.  They now correctly
+		look for {?}.desktop.in
 
 	* data/Makefile.am: .PRECIOUS: Makefile and multiple varibles
 	* data/Makefile.in: .PRECIOUS: Makefile and multiple varibles
 		I changed references to Makefile.in.in &
-		twitux-desktop.in.in to point to Makefile.in &
-		twitux.desktop.in respectfully.  I also removed the unnead
+		{?}-desktop.in.in to point to Makefile.in &
+		{?}.desktop.in respectfully.  I also removed the unnead
 		'.in.in' files.
 
 2009-02-09  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
-	* src/twitux-tweet-list.c: tweet_list_changed_cb
+	* src/{?}-app.c: {?}_app_set_image & {?}_app_expand_message
+	* src/{?}-tweet-list.c: tweet_list_changed_cb
 		I plugged some large memory leaks by unreferencing
 		GdkPixbuf(s) & various other gobjects used my Twitux for
 		Twitter's avatars.
 
 2009-02-06  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* src/twitux-app.c: twitux_app_set_image & twitux_app_expand_message
-	* src/twitux-tweet-list.c: tweet_list_setup_view
+	* src/{?}-app.c: {?}_app_set_image & {?}_app_expand_message
+	* src/{?}-tweet-list.c: tweet_list_setup_view
 		I wrote resizing code to stop large images from bloating
 		Twitux's tweet list.  I have also added code to keep the
 		tweet list avatar column at a fixed width.
 
-[previous notes on where twitux came from can be found in the original
-project's changelog - why it was forked can be read at:
+[previous notes on where {?} came from can be found in Twitux's changelog,
+Twitux is the project {?} was forked from.  Why {?} was forked can be read at:
 	http://sourceforge.net/tracker2/index.php?func=detail&aid=2648731&group_id=198704&atid=966544
 which is what happened when I tried to submit my 2nd patch to the orginal
 project.]

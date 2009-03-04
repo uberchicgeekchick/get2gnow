@@ -394,10 +394,8 @@ twitux-parser.o: twitux-parser.c ../config.h /usr/include/time.h \
   /usr/include/gtk-2.0/gtk/gtkoptionmenu.h \
   /usr/include/gtk-2.0/gtk/gtkpreview.h \
   /usr/include/gtk-2.0/gtk/gtktipsquery.h \
-  /usr/include/glib-2.0/glib/gstdio.h \
-  /usr/include/glib-2.0/glib/gprintf.h /usr/include/sys/stat.h \
-  /usr/include/bits/stat.h /usr/include/glib-2.0/glib/gi18n.h \
-  /usr/include/libintl.h /usr/include/locale.h /usr/include/bits/locale.h \
+  /usr/include/glib-2.0/glib/gi18n.h /usr/include/libintl.h \
+  /usr/include/locale.h /usr/include/bits/locale.h \
   /usr/include/libxml2/libxml/parser.h \
   /usr/include/libxml2/libxml/xmlversion.h \
   /usr/include/libxml2/libxml/xmlexports.h \
@@ -1325,14 +1323,6 @@ twitux-parser.o: twitux-parser.c ../config.h /usr/include/time.h \
 /usr/include/gtk-2.0/gtk/gtkpreview.h:
 
 /usr/include/gtk-2.0/gtk/gtktipsquery.h:
-
-/usr/include/glib-2.0/glib/gstdio.h:
-
-/usr/include/glib-2.0/glib/gprintf.h:
-
-/usr/include/sys/stat.h:
-
-/usr/include/bits/stat.h:
 
 /usr/include/glib-2.0/glib/gi18n.h:
 

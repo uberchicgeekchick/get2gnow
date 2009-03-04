@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * Copyright (C) 2007-2009 Daniel Morales <daniminas@gmail.com>
  *
@@ -72,9 +72,6 @@ static void network_cb_on_message	(SoupSession           *session,
 static void network_cb_on_timeline	(SoupSession           *session,
 									 SoupMessage           *msg,
 									 gpointer               user_data);
-static void network_cb_on_users	    (SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
 static void network_cb_on_image		(SoupSession           *session,
 									 SoupMessage           *msg,
 									 gpointer               user_data);
@@ -90,10 +87,10 @@ static void network_cb_on_auth		(SoupSession           *session,
 									 gboolean               retrying,
 									 gpointer               data);
 GList *twitux_network_get_users_glist(gboolean get_friends);
+static gboolean network_get_users_page(SoupMessage *msg );
 static int twitux_network_sort_users(TwituxUser *a, TwituxUser *b);
 static void twitux_network_make_users_list(gboolean friends);
 GList *all_users=NULL;
-gboolean fetching=FALSE;
 
 /* Autoreload timeout functions */
 static gboolean 	network_timeout			(gpointer user_data);
@@ -349,10 +346,8 @@ twitux_network_get_user (const gchar *username)
  * 		NULL: Friends will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-GList *
-twitux_network_get_friends (void)
-{
-	return twitux_network_get_users_glist((gboolean)TRUE);
+GList *twitux_network_get_friends (void){
+	return ( user_friends ? user_friends : twitux_network_get_users_glist((gboolean)TRUE) );
 }
 
 
@@ -361,28 +356,21 @@ twitux_network_get_friends (void)
  * 		NULL: Followers will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-GList *
-twitux_network_get_followers (void)
-{
-	return twitux_network_get_users_glist((gboolean)FALSE);
+GList *twitux_network_get_followers (void){
+	return ( user_followers ? user_followers : twitux_network_get_users_glist((gboolean)FALSE) );
 }
 
 GList *twitux_network_get_users_glist(gboolean get_friends){
 	SoupMessage *msg;
 	gint page=0;
 
-	if(get_friends && user_friends)
-		return user_friends;
-	else if(!get_friends && user_followers)
-		return user_followers;
-
 	all_users=NULL;
-	fetching=TRUE;
+	gboolean fetching=TRUE;
 	while(fetching){
 		page++;
 		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?TWITUX_API_FOLLOWING:TWITUX_API_FOLLOWERS), page)) );
 		soup_session_send_message(soup_connection, msg);
-		network_cb_on_users(soup_connection, msg, GINT_TO_POINTER(get_friends));
+		fetching=network_get_users_page(msg);
 	}
 	twitux_network_make_users_list(get_friends);
 
@@ -390,14 +378,34 @@ GList *twitux_network_get_users_glist(gboolean get_friends){
 }
 
 
-static int
-twitux_network_sort_users(TwituxUser *a, TwituxUser *b){
+static gboolean network_get_users_page(SoupMessage *msg){
+	twitux_debug(DEBUG_DOMAIN, "Users response: %i",msg->status_code);
+	
+	/* Check response */
+	if (!network_check_http(msg->status_code))
+		return (gboolean)FALSE;
+
+	/* parse user list */
+	twitux_debug(DEBUG_DOMAIN, "Parsing user list");
+	GList *users;
+	if(! (users=twitux_parser_users_list(msg->response_body->data, msg->response_body->length)) )
+		return (gboolean)FALSE;
+	
+	if(!all_users)
+		all_users=users;
+	else
+		all_users=g_list_concat(all_users, users);
+	
+	return TRUE;
+}
+
+
+static int twitux_network_sort_users(TwituxUser *a, TwituxUser *b){
 	return g_strcmp0(a->screen_name,b->screen_name);
 }
 
 
-static void
-twitux_network_make_users_list( gboolean friends ){
+static void twitux_network_make_users_list( gboolean friends ){
 	if(!all_users){
 		twitux_app_set_statusbar_msg (_("Users parser error."));
 		return;
@@ -419,41 +427,38 @@ twitux_network_make_users_list( gboolean friends ){
 
 
 /* Get an image from servers */
-void
-twitux_network_get_image (const gchar  *url_image,
-						  GtkTreeIter   iter)
-{
-	gchar	*image_file;
-	gchar   *image_name;
-
+void twitux_network_get_image (const gchar  *url_image, GtkTreeIter   iter){
+	gchar *image_file, **image_name_info;
+	
 	TwituxImage *image;
-
+	
 	/* save using the filename */
-	image_name = strrchr (url_image, '/');
-	if (image_name && image_name[1] != '\0')
-		image_name++;
+	image_name_info=g_strsplit(url_image, (const gchar *)"/", 7);
+	if( image_name_info[5] && image_name_info[6] )
+		image_file=g_strconcat(image_name_info[5], "_", image_name_info[6], NULL);
 	else
-		image_name = "twitux_unknown_image";
-
-	image_file = g_build_filename (g_get_home_dir(), ".gnome2",
-								   TWITUX_CACHE_IMAGES,
-								   image_name, NULL);
-
-	/* check if image already exists */
-	if (g_file_test (image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) {		
+		image_file="twitux_unknown_image";
+	
+	if(image_name_info)
+		g_strfreev(image_name_info);
+	
+	image_file=g_build_filename( g_get_home_dir(), ".gnome2", TWITUX_CACHE_IMAGES, image_file, NULL );
+	
+	/* TODO: fix - check if image already exists */
+	if (g_file_test(image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) {		
 		/* Set image from file here */
-		twitux_app_set_image (image_file, iter);
-		g_free (image_file);
+		twitux_app_set_image(image_file, iter);
+		g_free(image_file);
 		return;
 	}
 
-	image = g_new0 (TwituxImage, 1);
-	image->src  = g_strdup (image_file);
-	image->iter = iter;
-
-	g_free (image_file);
-
-	network_get_data (url_image, network_cb_on_image, image);
+	image=g_new0(TwituxImage, 1);
+	image->src=g_strdup(image_file);
+	image->iter=iter;
+	
+	g_free(image_file);
+	
+	network_get_data(url_image, network_cb_on_image, image);
 }
 
 
@@ -712,37 +717,6 @@ network_cb_on_timeline (SoupSession *session,
 
 	if (new_timeline)
 		g_free (new_timeline);
-}
-
-/* On get user followers */
-static void
-network_cb_on_users (SoupSession *session,
-					 SoupMessage *msg,
-					 gpointer     user_data)
-{
-	gboolean  friends = GPOINTER_TO_INT(user_data);
-	
-	twitux_debug (DEBUG_DOMAIN,
-				  "Users response: %i",msg->status_code);
-	
-	/* Check response */
-	if (!network_check_http (msg->status_code)){
-		fetching=FALSE;
-		return;
-	}
-
-	/* parse user list */
-	twitux_debug (DEBUG_DOMAIN, "Parsing user list");
-	GList    *users;
-	if(! (users=twitux_parser_users_list(msg->response_body->data, msg->response_body->length)) ) {
-		fetching=FALSE;
-		return;
-	}
-	
-	if(!all_users)
-		all_users=users;
-	else
-		all_users=g_list_concat(all_users, users);
 }
 
 
