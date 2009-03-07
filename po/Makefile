@@ -229,7 +229,7 @@ Makefile POTFILES: stamp-it
 	  $(MAKE) stamp-it; \
 	fi
 
-stamp-it: Makefile $(top_builddir)/config.status POTFILES
+stamp-it: $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/Makefile CONFIG_HEADERS= CONFIG_LINKS= \
 	       $(SHELL) ./config.status

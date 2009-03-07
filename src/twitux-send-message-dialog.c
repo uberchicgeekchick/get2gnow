@@ -80,9 +80,6 @@ static void message_set_characters_available     (GtkTextBuffer        *buffer,
 												  TwituxMsgDialog      *dialog);
 static void message_text_buffer_changed_cb       (GtkTextBuffer        *buffer,
 											      TwituxMsgDialog      *dialog);
-static void message_text_populate_popup_cb       (GtkTextView          *view,
-												  GtkMenu              *menu,
-												  TwituxMsgDialog      *dialog);
 static void message_text_check_word_spelling_cb  (GtkMenuItem          *menuitem,
 												  TwituxMessageSpell   *message_spell);
 static TwituxMessageSpell *message_spell_new     (GtkWidget            *window,
@@ -95,6 +92,9 @@ static void message_destroy_cb                   (GtkWidget            *widget,
 static void message_response_cb                  (GtkWidget            *widget,
 												  gint                  response,
 												  TwituxMsgDialog      *dialog);
+
+static void message_text_populate_popup_cb(GtkTextView *view, GtkMenu *menu, TwituxMsgDialog *dialog);
+
 
 static TwituxMsgDialog  *dialog = NULL;
 static 	TwituxMsgDialogPriv *dialog_priv=NULL;
@@ -360,7 +360,7 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 	gboolean               spell_checker = FALSE;
 	
 	message_set_characters_available (buffer, dialog);
-
+	gtk_text_buffer_begin_user_action( buffer );
 	twitux_conf_get_bool (twitux_conf_get (),
 						  TWITUX_PREFS_UI_SPELL,
 						  &spell_checker);
@@ -370,11 +370,14 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 	if (!spell_checker) {
 		gtk_text_buffer_get_end_iter (buffer, &end);
 		gtk_text_buffer_remove_tag_by_name (buffer, "misspelled", &start, &end);
+		gtk_text_buffer_end_user_action( buffer );	
 		return;
 	}
 
-	if (!twitux_spell_supported ())
+	if (!twitux_spell_supported ()){
+		gtk_text_buffer_end_user_action( buffer );	
 		return;
+	}
 
 	while (TRUE) {
 		gboolean correct = FALSE;
@@ -410,47 +413,42 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 		/* set the start iter to the end iters position */
 		start = end;
 	}
-	
+	gtk_text_buffer_end_user_action( buffer );	
 }
 
-static void
-message_text_populate_popup_cb (GtkTextView        *view,
-								GtkMenu            *menu,
-								TwituxMsgDialog    *dialog)
-{
-	GtkTextBuffer         *buffer;
-	GtkTextTagTable       *table;
-	GtkTextTag            *tag;
-	gint                   x,y;
-	GtkTextIter            iter, start, end;
-	GtkWidget             *item;
-	gchar                 *str = NULL;
-	TwituxMessageSpell    *message_spell;
+static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu, TwituxMsgDialog *dialog ){
+	GtkTextBuffer *buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(dialog_priv->textview));
+	GtkTextTagTable *table=gtk_text_buffer_get_tag_table(buffer);
+	GtkTextTag *tag=gtk_text_tag_table_lookup(table, "misspelled");
+	gint x,y;
+	GtkTextIter pointer_iter, cursor_iter, iter, start, end;
+	GtkWidget *item;
+	gchar *str=NULL;
+	TwituxMessageSpell *message_spell;
 
-		/* Add the spell check menu item */
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (dialog_priv->textview));
-	table = gtk_text_buffer_get_tag_table (buffer);
-
-	tag = gtk_text_tag_table_lookup (table, "misspelled");
-
-	gtk_widget_get_pointer (GTK_WIDGET (view), &x, &y);
-
-	gtk_text_view_window_to_buffer_coords (GTK_TEXT_VIEW (view),
-										   GTK_TEXT_WINDOW_WIDGET,
-										   x, y,
-										   &x, &y);
-
-	gtk_text_view_get_iter_at_location (GTK_TEXT_VIEW (view), &iter, x, y);
-
+	/* Find where the cursor's location, ie where you're typing. */
+	GtkTextMark *cursor_position=gtk_text_buffer_get_insert( buffer );
+	gtk_text_buffer_get_iter_at_mark( buffer, &cursor_iter, cursor_position );
+	
+	/* Find where the mouse pointer is at. */
+	gtk_widget_get_pointer( (GTK_WIDGET( view )), &x, &y );
+	gtk_text_view_window_to_buffer_coords( (GTK_TEXT_VIEW( view )), GTK_TEXT_WINDOW_WIDGET, x, y, &x, &y );
+	gtk_text_view_get_iter_at_location( (GTK_TEXT_VIEW( view )), &pointer_iter, x, y );
+	
+	/* TODO trigger this when button2 is click or the context menu key is pressed. */
+	/* The pointer is located in a different location than the cursor. */
+	/*if( (gtk_text_iter_compare(&pointer_iter, &cursor_iter)) ){
+		gtk_text_buffer_select_range( buffer, &pointer_iter, &pointer_iter );
+		gtk_text_buffer_get_iter_at_mark( buffer, &cursor_iter, cursor_position );
+	}*/
+	iter=cursor_iter;
+	
 	start = end = iter;
 
-	if (gtk_text_iter_backward_to_tag_toggle (&start, tag) &&
-		gtk_text_iter_forward_to_tag_toggle (&end, tag)) {
-		str = gtk_text_buffer_get_text (buffer,
-										&start, &end, FALSE);
-	}
+	if( (gtk_text_iter_backward_to_tag_toggle( &start, tag )) && (gtk_text_iter_forward_to_tag_toggle( &end, tag )) )
+		str=gtk_text_buffer_get_text( buffer, &start, &end, FALSE );
 
-	if (G_STR_EMPTY (str))
+	if( (G_STR_EMPTY(str)) )
 		return;
 
 	message_spell = message_spell_new (dialog_priv->textview, str, start, end);
@@ -469,7 +467,7 @@ message_text_populate_popup_cb (GtkTextView        *view,
 					  G_CALLBACK (message_text_check_word_spelling_cb),
 					  message_spell);
 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
-	gtk_widget_show (item);
+	gtk_widget_show(item);
 }
 
 static void

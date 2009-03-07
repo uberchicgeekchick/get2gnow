@@ -1,3 +1,14 @@
+2009-03-06  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
+	* po/Makefile.in: stamp-it
+		removed circular references to Makefile & POTFILES caused
+		because 'make POTFILES: stamp-it' supersedes 'make stamp-it'.
+	
+	* src/{?}-send-message-dialog.c: message_text_populate_popup_cb
+		I changed where the dialog's textview iter is polled from so
+		spell checking is invoked both when button2 and the keyboard's
+		'context menu key' is pressed.
+
 2009-03-03  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* src/{?}-network.c: network_get_image
