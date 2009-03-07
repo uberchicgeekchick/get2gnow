@@ -96,6 +96,7 @@ static void message_response_cb                  (GtkWidget            *widget,
 static void message_text_populate_popup_cb(GtkTextView *view, GtkMenu *menu, TwituxMsgDialog *dialog);
 
 
+static GtkTextBuffer *undo_buffer=NULL;
 static TwituxMsgDialog  *dialog = NULL;
 static 	TwituxMsgDialogPriv *dialog_priv=NULL;
 G_DEFINE_TYPE (TwituxMsgDialog, twitux_message, G_TYPE_OBJECT);
@@ -114,14 +115,14 @@ static void
 twitux_message_init(TwituxMsgDialog *singleton_message)
 {
 	dialog=singleton_message;
-	dialog_priv=GET_PRIV(dialog);
+	dialog_priv=GET_PRIV( dialog );
 }
 
 static void
 message_finalize (GObject *object)
 {	
-	G_OBJECT_CLASS (twitux_message_parent_class)->finalize (object);
-	dialog_priv=GET_PRIV(dialog);
+	G_OBJECT_CLASS (twitux_message_parent_class)->finalize( object );
+	dialog_priv=GET_PRIV( dialog );
 }
 
 static void
@@ -198,11 +199,20 @@ message_setup (GtkWindow  *parent)
 void
 twitux_send_message_dialog_show (GtkWindow *parent)
 {
-	if(dialog)
-		return gtk_window_present(GTK_WINDOW( (GET_PRIV(dialog))->dialog));
+	if(dialog){
+		if(!dialog_priv)
+			dialog_priv=GET_PRIV(dialog);
+		undo_buffer=gtk_text_view_get_buffer( (GTK_TEXT_VIEW( dialog_priv->textview )) );
+		gtk_text_buffer_begin_user_action( undo_buffer );
+		return gtk_window_present( (GTK_WINDOW( dialog_priv->dialog )) );
+	}
 	
 	g_object_new (TWITUX_TYPE_MESSAGE, NULL);
 	message_setup (parent);
+	if(!dialog_priv)
+		dialog_priv=GET_PRIV(dialog);
+	undo_buffer=gtk_text_view_get_buffer( (GTK_TEXT_VIEW( dialog_priv->textview )) );
+	gtk_text_buffer_begin_user_action( undo_buffer );
 }
 
 void
@@ -211,12 +221,10 @@ twitux_message_correct_word (GtkWidget   *textview,
 							 GtkTextIter  end,
 							 const gchar *new_word)
 {
-	GtkTextBuffer *buffer;
-
 	g_return_if_fail (textview != NULL);
 	g_return_if_fail (new_word != NULL);
 
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
+	GtkTextBuffer *buffer=gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
 
 	gtk_text_buffer_delete (buffer, &start, &end);
 	gtk_text_buffer_insert (buffer, &start,
@@ -360,7 +368,6 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 	gboolean               spell_checker = FALSE;
 	
 	message_set_characters_available (buffer, dialog);
-	gtk_text_buffer_begin_user_action( buffer );
 	twitux_conf_get_bool (twitux_conf_get (),
 						  TWITUX_PREFS_UI_SPELL,
 						  &spell_checker);
@@ -370,14 +377,11 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 	if (!spell_checker) {
 		gtk_text_buffer_get_end_iter (buffer, &end);
 		gtk_text_buffer_remove_tag_by_name (buffer, "misspelled", &start, &end);
-		gtk_text_buffer_end_user_action( buffer );	
 		return;
 	}
 
-	if (!twitux_spell_supported ()){
-		gtk_text_buffer_end_user_action( buffer );	
+	if (!twitux_spell_supported ())
 		return;
-	}
 
 	while (TRUE) {
 		gboolean correct = FALSE;
@@ -399,7 +403,9 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 		}
 
 		gchar *str=gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-
+		
+		gtk_text_buffer_begin_user_action( undo_buffer );
+		
 		/* spell check string */
 		correct = twitux_spell_check (str);
 
@@ -413,7 +419,6 @@ message_text_buffer_changed_cb (GtkTextBuffer    *buffer,
 		/* set the start iter to the end iters position */
 		start = end;
 	}
-	gtk_text_buffer_end_user_action( buffer );	
 }
 
 static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu, TwituxMsgDialog *dialog ){
@@ -570,6 +575,8 @@ message_destroy_cb (GtkWidget         *widget,
 					TwituxMsgDialog   *dialoga)
 {
 	/* Add any clean-up code here */
+	gtk_text_buffer_end_user_action( undo_buffer );	
+	undo_buffer=NULL;
 	g_object_unref (dialog);
 	dialog = NULL;
 }
