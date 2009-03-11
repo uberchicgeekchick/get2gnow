@@ -33,7 +33,6 @@ G_BEGIN_DECLS
 #define TWITUX_API_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
 #define TWITUX_API_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
 #define TWITUX_API_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
-#define TWITUX_API_TIMELINE_TWITUX	"https://twitter.com/statuses/user_timeline/twitux.xml"
 
 /* Twitux GConf Keys */
 #define TWITUX_PREFS_PATH "/apps/twitux"

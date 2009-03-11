@@ -106,13 +106,6 @@
           </object>
         </child>
         <child>
-          <object class="GtkRadioAction" id="view_twitux_timeline">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_twitux_timeline</property>
-            <property name="label" translatable="yes">Twitux Timeline</property>
-          </object>
-        </child>
-        <child>
           <object class="GtkRadioAction" id="view_direct_messages">
             <property name="group">view_public_timeline</property>
             <property name="name">view_direct_messages</property>
@@ -177,7 +170,6 @@
           <menuitem action="view_public_timeline"/>
           <menuitem action="view_friends_timeline"/>
           <menuitem action="view_my_timeline"/>
-          <menuitem action="view_twitux_timeline"/>
           <menuitem action="view_direct_messages"/>
           <menuitem action="view_direct_replies"/>
           <separator/>

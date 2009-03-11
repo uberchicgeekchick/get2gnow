@@ -436,7 +436,6 @@ preferences_timeline_setup (TwituxPrefs *prefs)
 		TWITUX_API_TIMELINE_PUBLIC, N_("Public"),
 		TWITUX_API_TIMELINE_FRIENDS, N_("Friends"),
 		TWITUX_API_TIMELINE_MY, N_("Mine"),
-		TWITUX_API_TIMELINE_TWITUX, N_("Twitux"),
 		NULL
 	};
 

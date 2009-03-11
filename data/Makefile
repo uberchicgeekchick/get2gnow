@@ -255,9 +255,9 @@ glade_DATA = \
 	lists_dlg.xml
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
-icon_DATA = twitux.png
+icon_DATA = greet-tweet-know.png
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
-svgicon_DATA = twitux.svg
+svgicon_DATA = greet-tweet-know.svg
 EXTRA_DIST = \
 	$(glade_DATA)		\
 	$(icon_DATA)		\

@@ -57,9 +57,7 @@ static void about_dialog_activate_link_cb( GtkAboutDialog *about, const gchar *l
 		g_warning("Couldn't show URL: '%s'", link );
 }
 
-void
-twitux_about_dialog_new (GtkWindow *parent)
-{
+void about_dialog_new (GtkWindow *parent){
 	gchar *license_trans;
 
 	gtk_about_dialog_set_url_hook (about_dialog_activate_link_cb, NULL, NULL);

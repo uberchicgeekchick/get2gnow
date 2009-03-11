@@ -172,9 +172,6 @@ static void     app_view_direct_messages_cb(GtkRadioAction        *action,
 static void     app_view_direct_replies_cb(GtkRadioAction        *action,
 												  GtkRadioAction        *current,
 												  TwituxApp             *app);
-static void     app_twitux_timeline_cb(GtkRadioAction        *action,
-												  GtkRadioAction        *current,
-												  TwituxApp             *app);
 static void     app_twitux_view_friends_cb(GtkAction             *action,
 												  TwituxApp             *app);
 static void     app_about_cb(GtkWidget             *window,
@@ -449,7 +446,6 @@ app_setup(void)
 							  "view_public_timeline", &app_priv->menu_public,
 							  "view_friends_timeline", &app_priv->menu_friends,
 							  "view_my_timeline", &app_priv->menu_mine,
-							  "view_twitux_timeline", &app_priv->menu_twitux,
 							  "view_direct_messages", &app_priv->menu_direct_messages,
 							  "view_direct_replies", &app_priv->menu_direct_replies,
 							  "view_friends", &app_priv->view_friends,
@@ -494,7 +490,6 @@ app_setup(void)
 						"view_my_timeline", "changed", app_mine_timeline_cb,
 						"view_direct_messages", "changed", app_view_direct_messages_cb,
 						"view_direct_replies", "changed", app_view_direct_replies_cb,
-						"view_twitux_timeline", "changed", app_twitux_timeline_cb,
 						"help_contents", "activate", app_help_contents_cb,
 						"view_friends", "activate", app_twitux_view_friends_cb,
 						"help_about", "activate", app_about_cb,
@@ -673,7 +668,6 @@ app_set_radio_group(TwituxApp  *app,
 		"view_public_timeline",
 		"view_friends_timeline",
 		"view_my_timeline",
-		"view_twitux_timeline",
 		"view_direct_messages",
 		"view_direct_replies"
 	};
@@ -840,17 +834,6 @@ app_view_direct_replies_cb(GtkRadioAction *action,
 }
 
 static void
-app_twitux_timeline_cb(GtkRadioAction *action, 	 
-						GtkRadioAction *current,
-						TwituxApp      *app)
-{
-	
-	
-	if(app_priv->menu_twitux == current)
-		twitux_network_get_timeline(TWITUX_API_TIMELINE_TWITUX);
-}
-
-static void
 app_twitux_view_friends_cb(GtkAction *action,
 							TwituxApp *app)
 {
@@ -891,13 +874,8 @@ app_preferences_cb(GtkWidget *widget,
 			twitux_preferences_dialog_show(GTK_WINDOW(app_priv->window));
 }
 
-static void
-app_about_cb(GtkWidget *widget,
-			  TwituxApp *app)
-{
-	
-	
-	twitux_about_dialog_new(GTK_WINDOW(app_priv->window));
+static void app_about_cb(GtkWidget *widget, TwituxApp *app){
+	about_dialog_new(GTK_WINDOW(app_priv->window));
 }
 
 static void
@@ -1198,9 +1176,6 @@ app_set_default_timeline(TwituxApp *app, gchar *timeline)
 	
 	if( !(strcmp( timeline, TWITUX_API_TIMELINE_MY )) )
 		return gtk_radio_action_set_current_value(app_priv->menu_mine, 1);
-	
-	if( !(strcmp(timeline, TWITUX_API_TIMELINE_TWITUX)) )
-		return gtk_radio_action_set_current_value(app_priv->menu_twitux, 1);
 	
 	/* Let's fallback to friends timeline */
 	gtk_radio_action_set_current_value(app_priv->menu_friends,	1);
