@@ -32,11 +32,11 @@ prefix = /usr
 exec_prefix = ${prefix}
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
-libdir = ${exec_prefix}/lib
+libdir = /usr/lib64
 DATADIRNAME = share
 itlocaledir = $(prefix)/$(DATADIRNAME)/locale
 subdir = po
-install_sh = $(SHELL) /projects/gtk/g-greet/install-sh
+install_sh = $(SHELL) /projects/gtk/greet-tweet-know/install-sh
 # Automake >= 1.8 provides /bin/mkdir -p.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
@@ -76,7 +76,7 @@ POTFILES = \
 	../data/spell_dlg.xml \
 	../data/twitux.desktop.in \
 	../data/twitux.schemas.in \
-	../src/twitux-about.c \
+	../src/about.c \
 	../src/twitux-app.c \
 	../src/twitux-hint.c \
 	../src/twitux-main.c \

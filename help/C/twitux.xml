@@ -5,7 +5,7 @@
   <!ENTITY appversion "0.68">
   <!ENTITY manrevision "2.1">
   <!ENTITY date "December 2008">
-  <!ENTITY app "Twitux">
+  <!ENTITY app "Greet-Tweet-Know">
 ]>
 <!-- 
       (Do not remove this comment block.)
@@ -22,8 +22,8 @@
     <title>&app; Manual V&manrevision;</title>       
 
     <copyright>
-      <year>2008</year>
-      <holder>Brian Pepple</holder>
+      <year>2009</year>
+      <holder>Kaity G. B.</holder>
     </copyright>
     
 <!-- translators: uncomment this:
@@ -48,11 +48,11 @@
 
     <authorgroup> 
       <author role="maintainer">
-	        <firstname>Brian</firstname>
-	        <surname>Pepple</surname>
+	        <firstname>Kaity</firstname>
+	        <surname>G. B.</surname>
 	        <affiliation>
-	                <orgname>Fedora Project</orgname>
-	                <address> <email>bpepple@fedoraproject.org</email> </address>
+	                <orgname>Dystonia DREAMS</orgname>
+	                <address> <email>uberChick@uberChicGeekChick.Com</email> </address>
 	        </affiliation>
       </author>
       
@@ -90,8 +90,8 @@
                 <revnumber>&app; Manual V&manrevision;</revnumber>
 		<date>&date;</date>
 		<revdescription>
-		        <para role="author">Brian Pepple
-			<email>bpepple@fedoraproject.org</email>
+		        <para role="author">Kaity G. B.
+			<email>uberChick@uberChicGeekChick.Com</email>
 			</para>
 			<para role="publisher">GNOME Documentation Project</para>
 		</revdescription>
@@ -100,8 +100,8 @@
                 <revnumber>&app; Manual V2.0</revnumber>
 		<date>April 2008</date>
 		<revdescription>
-		        <para role="author">Brian Pepple
-			<email>bpepple@fedoraproject.org</email>
+		        <para role="author">Kaity G. B.
+			<email>uberChick@uberChicGeekChick.Com</email>
 			</para>
 			<para role="publisher">GNOME Documentation Project</para>
 		</revdescription>
@@ -194,10 +194,10 @@
     		<listitem>
     		  <para>Choose 
     		    <menuchoice>
-    		      <guisubmenu>Internet</guisubmenu>
-    		      <guimenuitem>Twitux</guimenuitem>
-    		    </menuchoice>.
-                  </para>
+  		      <guisubmenu>Internet</guisubmenu>
+    		      <guimenuitem>Greet-Tweet-Know</guimenuitem>
+	    		</menuchoice>
+			</para>
     		</listitem>
     	</varlistentry>
     	<varlistentry>
@@ -540,10 +540,10 @@
       manual, this is the place to put it. Alternatively, you can put this information in the title page.-->
   <sect1 id="twitux-about"> 
     <title>About &app;</title> 
-    <para> &app; was written by Brian Pepple and Daniel Morales.
+    <para> &app; was written by Kaity G. B.
       To find more information about
       &app;, please visit the 
-      <ulink url="http://twitux.sourceforge.net/" type="http">&app; Developer
+      <ulink url="http://www.github.com/uberchicgeekchick/greet-tweet-know/" type="http">&app; Developer
 	Page</ulink>.
     </para>
     <para>

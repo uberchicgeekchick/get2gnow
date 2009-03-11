@@ -339,7 +339,7 @@ msgstr "Linhas de tempo do usuário"
 msgid "User's home timeline."
 msgstr "Linhas de tempo do usuário."
 
-#: ../src/twitux-about.c:43
+#: ../src/about.c:43
 msgid ""
 "Twitux is free software; you can redistribute it and/or modify it under the "
 "terms of the GNU General Public License as published by the Free Software "
@@ -351,7 +351,7 @@ msgstr ""
 "Foundation; quer pela versão 2 da Licença, ou (opcionalmente) qulaquer "
 "versão posterior."
 
-#: ../src/twitux-about.c:47
+#: ../src/about.c:47
 msgid ""
 "Twitux is distributed in the hope that it will be useful, but WITHOUT ANY "
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
@@ -363,7 +363,7 @@ msgstr ""
 "PARA PROPÓSITOS PARTICULARES.  Veja a Licença Pública Geral GNU para mais "
 "detalhes."
 
-#: ../src/twitux-about.c:51
+#: ../src/about.c:51
 msgid ""
 "You should have received a copy of the GNU Lesser General Public License "
 "along with this library; if not, write to the Free Software Foundation, "
@@ -372,15 +372,15 @@ msgstr "Você deve ter recebido uma cópia da GNU Lesser General Public License 
 "juntamente com esta biblioteca, se não, escreva para a Free Software "
 "Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA."
 
-#: ../src/twitux-about.c:84
+#: ../src/about.c:84
 msgid "A GNOME client for Twitter."
 msgstr "Um cliente GNOME para Twitter."
 
-#: ../src/twitux-about.c:85
+#: ../src/about.c:85
 msgid "Copyright © 2007 Daniel Morales"
 msgstr "Copyright © 2007 Daniel Morales"
 
-#: ../src/twitux-about.c:87
+#: ../src/about.c:87
 msgid "translator-credits"
 msgstr "Neto Cury <netocury@gmail.com>"
 

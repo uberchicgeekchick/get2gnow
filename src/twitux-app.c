@@ -41,7 +41,7 @@
 #endif
 
 #include "twitux.h"
-#include "twitux-about.h"
+#include "about.h"
 #include "twitux-account-dialog.h"
 #include "twitux-add-dialog.h"
 #include "twitux-app.h"

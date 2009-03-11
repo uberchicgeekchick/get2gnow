@@ -18,7 +18,7 @@ twitux_SOURCES = 							\
 	$(dbus_sources)							\
 	twitux.h							\
 	twitux-main.c							\
-	twitux-about.c			twitux-about.h			\
+	about.c			about.h			\
 	twitux-account-dialog.c 	twitux-account-dialog.h		\
 	twitux-add-dialog.c 		twitux-add-dialog.h		\
 	twitux-app.c			twitux-app.h			\

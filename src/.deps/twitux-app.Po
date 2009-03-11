@@ -409,7 +409,7 @@ twitux-app.o: twitux-app.c ../config.h /usr/include/sys/stat.h \
   /usr/include/libnotify/notify-enum-types.h ../libtwitux/twitux-debug.h \
   ../libtwitux/twitux-conf.h ../libtwitux/twitux-paths.h \
   ../libtwitux/twitux-xml.h ../libtwitux/twitux-keyring.h twitux.h \
-  twitux-about.h twitux-account-dialog.h twitux-add-dialog.h twitux-app.h \
+  about.h twitux-account-dialog.h twitux-add-dialog.h twitux-app.h \
   twitux-parser.h twitux-geometry.h twitux-hint.h twitux-label.h \
   /usr/include/libsexy/sexy-url-label.h twitux-network.h \
   twitux-preferences.h twitux-send-message-dialog.h twitux-lists-dialog.h \
@@ -1386,7 +1386,7 @@ twitux-app.o: twitux-app.c ../config.h /usr/include/sys/stat.h \
 
 twitux.h:
 
-twitux-about.h:
+about.h:
 
 twitux-account-dialog.h:
 

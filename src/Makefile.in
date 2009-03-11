@@ -47,7 +47,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__twitux_SOURCES_DIST = twitux-dbus.c twitux-dbus.h twitux.h \
-	twitux-main.c twitux-about.c twitux-about.h \
+	twitux-main.c about.c about.h \
 	twitux-account-dialog.c twitux-account-dialog.h \
 	twitux-add-dialog.c twitux-add-dialog.h twitux-app.c \
 	twitux-app.h twitux-geometry.c twitux-geometry.h twitux-hint.c \
@@ -61,7 +61,7 @@ am__twitux_SOURCES_DIST = twitux-dbus.c twitux-dbus.h twitux.h \
 	twitux-tweet-list.c twitux-tweet-list.h
 @HAVE_DBUS_TRUE@am__objects_1 = twitux-dbus.$(OBJEXT)
 am_twitux_OBJECTS = $(am__objects_1) twitux-main.$(OBJEXT) \
-	twitux-about.$(OBJEXT) twitux-account-dialog.$(OBJEXT) \
+	about.$(OBJEXT) twitux-account-dialog.$(OBJEXT) \
 	twitux-add-dialog.$(OBJEXT) twitux-app.$(OBJEXT) \
 	twitux-geometry.$(OBJEXT) twitux-hint.$(OBJEXT) \
 	twitux-label.$(OBJEXT) twitux-network.$(OBJEXT) \
@@ -281,7 +281,7 @@ twitux_SOURCES = \
 	$(dbus_sources)							\
 	twitux.h							\
 	twitux-main.c							\
-	twitux-about.c			twitux-about.h			\
+	about.c			about.h			\
 	twitux-account-dialog.c 	twitux-account-dialog.h		\
 	twitux-add-dialog.c 		twitux-add-dialog.h		\
 	twitux-app.c			twitux-app.h			\
@@ -374,7 +374,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/twitux-about.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/twitux-account-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/twitux-add-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/twitux-app.Po@am__quote@

@@ -69,13 +69,13 @@ CONFIG_CLEAN_FILES =
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /projects/gtk/g-greet/missing --run aclocal-1.10
+ACLOCAL = ${SHELL} /projects/gtk/greet-tweet-know/missing --run aclocal-1.10
 ALL_LINGUAS = 
-AMTAR = ${SHELL} /projects/gtk/g-greet/missing --run tar
+AMTAR = ${SHELL} /projects/gtk/greet-tweet-know/missing --run tar
 AR = ar
-AUTOCONF = ${SHELL} /projects/gtk/g-greet/missing --run autoconf
-AUTOHEADER = ${SHELL} /projects/gtk/g-greet/missing --run autoheader
-AUTOMAKE = ${SHELL} /projects/gtk/g-greet/missing --run automake-1.10
+AUTOCONF = ${SHELL} /projects/gtk/greet-tweet-know/missing --run autoconf
+AUTOHEADER = ${SHELL} /projects/gtk/greet-tweet-know/missing --run autoheader
+AUTOMAKE = ${SHELL} /projects/gtk/greet-tweet-know/missing --run automake-1.10
 AWK = gawk
 CATALOGS = 
 CATOBJEXT = .gmo
@@ -162,7 +162,7 @@ LIBTWITUX_LIBS = -lxml2 -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangof
 LN_S = ln -s
 LTLIBOBJS = 
 MAINT = #
-MAKEINFO = ${SHELL} /projects/gtk/g-greet/missing --run makeinfo
+MAKEINFO = ${SHELL} /projects/gtk/greet-tweet-know/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 MSGFMT = /usr/bin/msgfmt
 MSGFMT_OPTS = -c
@@ -194,10 +194,10 @@ VERSION = 0.69
 WARN_CFLAGS = -Wall -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wno-sign-compare 
 WARN_CXXFLAGS = -std=gnu++0x -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include -Wall -Wno-unused 
 XGETTEXT = /usr/bin/xgettext
-abs_builddir = /projects/gtk/g-greet/help
-abs_srcdir = /projects/gtk/g-greet/help
-abs_top_builddir = /projects/gtk/g-greet
-abs_top_srcdir = /projects/gtk/g-greet
+abs_builddir = /projects/gtk/greet-tweet-know/help
+abs_srcdir = /projects/gtk/greet-tweet-know/help
+abs_top_builddir = /projects/gtk/greet-tweet-know
+abs_top_srcdir = /projects/gtk/greet-tweet-know
 ac_ct_CC = /usr/bin/gcc
 ac_ct_CXX = g++
 ac_ct_F77 = 
@@ -226,8 +226,8 @@ host_vendor = suse
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = $(SHELL) /projects/gtk/g-greet/install-sh
-libdir = ${exec_prefix}/lib
+install_sh = $(SHELL) /projects/gtk/greet-tweet-know/install-sh
+libdir = /usr/lib64
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
@@ -251,7 +251,7 @@ _DOC_REAL_LINGUAS = $(if $(filter environment,$(origin LINGUAS)),		\
 	$(filter $(LINGUAS),$(DOC_LINGUAS)),					\
 	$(DOC_LINGUAS))
 
-_DOC_ABS_SRCDIR = /projects/gtk/g-greet/help
+_DOC_ABS_SRCDIR = /projects/gtk/greet-tweet-know/help
 _ENABLE_SK = true
 
 ################################################################################

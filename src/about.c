@@ -23,18 +23,17 @@
 #include <gio/gio.h>
 #include <glib/gi18n.h>
 
-#include "twitux-about.h"
+#include "about.h"
 
-#define WEB_SITE "https://sourceforge.net/projects/twitux/"
+#define WEB_SITE "https://www.github.com/uberchicgeekchick/greet-tweet-know/"
 
 const gchar *authors[] = {
-	"Daniel Morales <daniminas@gmail.com>",
-	"Brian Pepple <bpepple@fedoraproject.org>",
+	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
 	NULL
 };
 
 const gchar *artists[] = {
-	"Architetto Francesco Rollandin",
+	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
 	NULL
 };
 
@@ -53,14 +52,9 @@ const gchar *license[] = {
    	   "Boston, MA 02110-1301, USA.")
 };
 
-static void
-about_dialog_activate_link_cb (GtkAboutDialog *about,
-							   const gchar    *link,
-							   gpointer        data)
-{
-	if (g_app_info_launch_default_for_uri (link, NULL, NULL) == FALSE) {
-		g_warning ("Couldn't show URL: '%s'", link);
-	}
+static void about_dialog_activate_link_cb( GtkAboutDialog *about, const gchar *link, gpointer data ){
+	if( g_app_info_launch_default_for_uri(link, NULL, NULL) == FALSE )
+		g_warning("Couldn't show URL: '%s'", link );
 }
 
 void
@@ -77,14 +71,14 @@ twitux_about_dialog_new (GtkWindow *parent)
 						   "authors", authors,
 						   "artists", artists,
 						   "comments", _("A GNOME client for Twitter."),
-						   "copyright", _("Copyright \xc2\xa9 2007-2009 Daniel Morales"),
+						   "copyright", _("Copyright \xc2\xa9 2009 Kaity G. B."),
 						   "license", license_trans,
 						   "translator-credits", _("translator-credits"),
 						   "version", PACKAGE_VERSION,
 						   "website", WEB_SITE,
 						   "wrap-license", TRUE,
-						   "logo-icon-name", "twitux",
+						   "logo-icon-name", "greet-tweet-know",
 						   NULL);
 
-	g_free (license_trans);
+	g_free(license_trans);
 }
