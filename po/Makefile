@@ -17,9 +17,9 @@
 # We have the following line for use by intltoolize:
 # INTLTOOL_MAKEFILE
 
-GETTEXT_PACKAGE = twitux
-PACKAGE = twitux
-VERSION = 0.69
+GETTEXT_PACKAGE = greet-tweet-know
+PACKAGE = greet-tweet-know
+VERSION = 0.1.0.1
 
 SHELL = /bin/sh
 
@@ -74,19 +74,19 @@ POTFILES = \
 	../data/prefs_dlg.xml \
 	../data/send_message_dlg.xml \
 	../data/spell_dlg.xml \
-	../data/twitux.desktop.in \
-	../data/twitux.schemas.in \
+	../data/greet-tweet-know.desktop.in \
+	../data/greet-tweet-know.schemas.in \
 	../src/about.c \
-	../src/twitux-app.c \
-	../src/twitux-hint.c \
-	../src/twitux-main.c \
-	../src/twitux-network.c \
-	../src/twitux-parser.c \
-	../src/twitux-preferences.c \
-	../src/twitux-send-message-dialog.c \
-	../src/twitux-spell.c \
-	../src/twitux-spell-dialog.c \
-	../src/twitux-ui-utils.c
+	../src/app.c \
+	../src/hint.c \
+	../src/main.c \
+	../src/network.c \
+	../src/parser.c \
+	../src/preferences.c \
+	../src/send-message-dialog.c \
+	../src/spell.c \
+	../src/spell-dialog.c \
+	../src/ui-utils.c
 
 CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)
 

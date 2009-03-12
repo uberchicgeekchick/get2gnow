@@ -1,4 +1,4 @@
-SUBDIRS = data libtwitux src po
+SUBDIRS = data src po
 
 if ENABLE_SK
 SUBDIRS += help

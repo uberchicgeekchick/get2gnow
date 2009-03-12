@@ -1,14 +1,14 @@
 desktopdir 	 = $(datadir)/applications
-desktop_in_files = twitux.desktop.in
+desktop_in_files = greet-tweet-know.desktop.in
 desktop_DATA 	 = $(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
 schemasdir	 = $(GCONF_SCHEMA_FILE_DIR)
-schemas_in_files = twitux.schemas.in
+schemas_in_files = greet-tweet-know.schemas.in
 schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 @INTLTOOL_SCHEMAS_RULE@
 
-gladedir = $(datadir)/twitux
+gladedir = $(datadir)/greet-tweet-know
 glade_DATA = 				\
 	add_friend_dlg.xml		\
 	account_dlg.xml			\

@@ -14,9 +14,9 @@
 
 
 
-pkgdatadir = $(datadir)/twitux
-pkglibdir = $(libdir)/twitux
-pkgincludedir = $(includedir)/twitux
+pkgdatadir = $(datadir)/greet-tweet-know
+pkglibdir = $(libdir)/greet-tweet-know
+pkgincludedir = $(includedir)/greet-tweet-know
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -61,7 +61,7 @@ RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = data libtwitux src po help
+DIST_SUBDIRS = data src po help
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -116,7 +116,7 @@ FFLAGS =
 GCONFTOOL = /usr/bin/gconftool-2
 GCONF_SCHEMA_CONFIG_SOURCE = xml::/etc/gconf/gconf.xml.schemas
 GCONF_SCHEMA_FILE_DIR = $(sysconfdir)/gconf/schemas
-GETTEXT_PACKAGE = twitux
+GETTEXT_PACKAGE = greet-tweet-know
 GLIB_CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include  
 GLIB_GENMARSHAL = glib-genmarshal
 GLIB_LIBS = -lglib-2.0  
@@ -162,8 +162,8 @@ LDFLAGS = -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib
 LIBOBJS = 
 LIBS = -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIBTWITUX_CFLAGS = -DORBIT2=1 -pthread -I/usr/include/libxml2 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/gtk-2.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/gconf/2 -I/usr/include/orbit-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gnome-keyring-1  
-LIBTWITUX_LIBS = -lxml2 -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lz -lfontconfig -lgmodule-2.0 -lgobject-2.0 -lgconf-2 -lgnome-keyring -lglib-2.0  
+LIBTWITUX_CFLAGS = @LIBTWITUX_CFLAGS@
+LIBTWITUX_LIBS = @LIBTWITUX_LIBS@
 LN_S = ln -s
 LTLIBOBJS = 
 MAINT = #
@@ -175,12 +175,12 @@ MSGMERGE = /usr/bin/msgmerge
 NMEDIT = 
 OBJEXT = o
 OMF_DIR = ${datadir}/omf
-PACKAGE = twitux
-PACKAGE_BUGREPORT = http://sourceforge.net/tracker/?func=add&group_id=198704&atid=966542
-PACKAGE_NAME = Twitux
-PACKAGE_STRING = Twitux 0.69
-PACKAGE_TARNAME = twitux
-PACKAGE_VERSION = 0.69
+PACKAGE = greet-tweet-know
+PACKAGE_BUGREPORT = https://www.github.com/uberchicgeekchick/greet-tweet-know
+PACKAGE_NAME = Greet-Tweet-Know
+PACKAGE_STRING = Greet-Tweet-Know 0.1.0.1
+PACKAGE_TARNAME = greet-tweet-know
+PACKAGE_VERSION = 0.1.0.1
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 POFILES = 
@@ -192,10 +192,10 @@ SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip
-TWITUX_CFLAGS = -D_REENTRANT -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/gtk-2.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/libxml2 -I/usr/include/libsoup-2.4 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include  
-TWITUX_LIBS = -L/usr/lib -L/lib64 -lsexy -lxml2 -lcanberra-gtk -lcanberra -lsoup-2.4 -lnotify -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lz -lfontconfig -lgmodule-2.0 -ldbus-glib-1 -ldbus-1 -lgobject-2.0 -lglib-2.0  
+TWITUX_CFLAGS = @TWITUX_CFLAGS@
+TWITUX_LIBS = @TWITUX_LIBS@
 USE_NLS = yes
-VERSION = 0.69
+VERSION = 0.1.0.1
 WARN_CFLAGS = -Wall -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wno-sign-compare 
 WARN_CXXFLAGS = -std=gnu++0x -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include -Wall -Wno-unused 
 XGETTEXT = /usr/bin/xgettext
@@ -250,7 +250,7 @@ sysconfdir = ${prefix}/etc
 target_alias = 
 top_builddir = .
 top_srcdir = .
-SUBDIRS = data libtwitux src po $(am__append_1)
+SUBDIRS = data src po $(am__append_1)
 INTLTOOL = \
 	intltool-extract.in 	\
 	intltool-merge.in 	\

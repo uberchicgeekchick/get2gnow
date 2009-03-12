@@ -5,7 +5,7 @@
 #define ENABLE_NLS 1
 
 /* Gettext package name */
-#define GETTEXT_PACKAGE "twitux"
+#define GETTEXT_PACKAGE "greet-tweet-know"
 
 /* Enable additional debugging at the expense of performance and size */
 /* #undef GNOME_ENABLE_DEBUG */
@@ -68,25 +68,25 @@
 #define ISO_CODES_PREFIX "/usr"
 
 /* Name of package */
-#define PACKAGE "twitux"
+#define PACKAGE "greet-tweet-know"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "http://sourceforge.net/tracker/?func=add&group_id=198704&atid=966542"
+#define PACKAGE_BUGREPORT "https://www.github.com/uberchicgeekchick/greet-tweet-know"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "Twitux"
+#define PACKAGE_NAME "Greet-Tweet-Know"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Twitux 0.69"
+#define PACKAGE_STRING "Greet-Tweet-Know 0.1.0.1"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "twitux"
+#define PACKAGE_TARNAME "greet-tweet-know"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.69"
+#define PACKAGE_VERSION "0.1.0.1"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.69"
+#define VERSION "0.1.0.1"

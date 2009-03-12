@@ -15,9 +15,9 @@
 
 
 
-pkgdatadir = $(datadir)/twitux
-pkglibdir = $(libdir)/twitux
-pkgincludedir = $(includedir)/twitux
+pkgdatadir = $(datadir)/greet-tweet-know
+pkglibdir = $(libdir)/greet-tweet-know
+pkgincludedir = $(includedir)/greet-tweet-know
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
@@ -32,7 +32,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-suse-linux-gnu
 host_triplet = x86_64-suse-linux-gnu
-bin_PROGRAMS = twitux$(EXEEXT)
+bin_PROGRAMS = greet-tweet-know$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -46,33 +46,56 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am__twitux_SOURCES_DIST = twitux-dbus.c twitux-dbus.h twitux.h \
-	twitux-main.c about.c about.h \
-	twitux-account-dialog.c twitux-account-dialog.h \
-	twitux-add-dialog.c twitux-add-dialog.h twitux-app.c \
-	twitux-app.h twitux-geometry.c twitux-geometry.h twitux-hint.c \
-	twitux-hint.h twitux-label.c twitux-label.h twitux-network.c \
-	twitux-network.h twitux-parser.c twitux-parser.h \
-	twitux-preferences.c twitux-preferences.h \
-	twitux-send-message-dialog.c twitux-send-message-dialog.h \
-	twitux-spell.c twitux-spell.h twitux-spell-dialog.c \
-	twitux-spell-dialog.h twitux-ui-utils.c twitux-ui-utils.h \
-	twitux-lists-dialog.c twitux-lists-dialog.h \
-	twitux-tweet-list.c twitux-tweet-list.h
-am__objects_1 = twitux-dbus.$(OBJEXT)
-am_twitux_OBJECTS = $(am__objects_1) twitux-main.$(OBJEXT) \
-	about.$(OBJEXT) twitux-account-dialog.$(OBJEXT) \
-	twitux-add-dialog.$(OBJEXT) twitux-app.$(OBJEXT) \
-	twitux-geometry.$(OBJEXT) twitux-hint.$(OBJEXT) \
-	twitux-label.$(OBJEXT) twitux-network.$(OBJEXT) \
-	twitux-parser.$(OBJEXT) twitux-preferences.$(OBJEXT) \
-	twitux-send-message-dialog.$(OBJEXT) twitux-spell.$(OBJEXT) \
-	twitux-spell-dialog.$(OBJEXT) twitux-ui-utils.$(OBJEXT) \
-	twitux-lists-dialog.$(OBJEXT) twitux-tweet-list.$(OBJEXT)
-twitux_OBJECTS = $(am_twitux_OBJECTS)
-am__DEPENDENCIES_1 =
-twitux_DEPENDENCIES = $(top_builddir)/libtwitux/libtwitux.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__greet_tweet_know_SOURCES_DIST = \
+	gconf.c			gconf.h			\
+	debug.c			debug.h			\
+	paths.c			paths.h			\
+	glade.c			glade.h			\
+	keyring.c		keyring.h		\
+	dbus.c			dbus.h			\
+	main.c			main.h			\
+	about.c			about.h			\
+	account-dialog.c	account-dialog.h	\
+	add-dialog.c		add-dialog.h		\
+	app.c			app.h			\
+	geometry.c		geometry.h		\
+	hint.c			hint.h			\
+	label.c			label.h			\
+	network.c		network.h		\
+	parser.c		parser.h		\
+	preferences.c		preferences.h		\
+	send-message-dialog.c	send-message-dialog.h	\
+	spell.c			spell.h			\
+	spell-dialog.c		spell-dialog.h		\
+	ui-utils.c		ui-utils.h		\
+	lists-dialog.c		lists-dialog.h		\
+	tweet-list.c		tweet-list.h
+am__objects_1 = keyring.$(OBJEXT)
+am__objects_2 = dbus.$(OBJEXT)
+greet_tweet_know_OBJECTS =		\
+	gconf.$(OBJEXT)		\
+	debug.$(OBJEXT)		\
+	paths.$(OBJEXT)		\
+	glade.$(OBJEXT)		\
+	$(am__objects_1)	\
+	$(am__objects_2)	\
+	main.$(OBJEXT)		\
+	about.$(OBJEXT)		\
+	account-dialog.$(OBJEXT) \
+	add-dialog.$(OBJEXT)		\
+	app.$(OBJEXT) \
+	geometry.$(OBJEXT)		\
+	hint.$(OBJEXT) \
+	label.$(OBJEXT)		\
+	network.$(OBJEXT) \
+	parser.$(OBJEXT)		\
+	preferences.$(OBJEXT) \
+	send-message-dialog.$(OBJEXT)		\
+	spell.$(OBJEXT) \
+	spell-dialog.$(OBJEXT)		\
+	ui-utils.$(OBJEXT) \
+	lists-dialog.$(OBJEXT)		\
+	tweet-list.$(OBJEXT)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -85,8 +108,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(twitux_SOURCES)
-DIST_SOURCES = $(am__twitux_SOURCES_DIST)
+SOURCES = $(greet_tweet_know_SOURCES)
+DIST_SOURCES = $(am__greet_tweet_know_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -132,7 +155,7 @@ FFLAGS =
 GCONFTOOL = /usr/bin/gconftool-2
 GCONF_SCHEMA_CONFIG_SOURCE = xml::/etc/gconf/gconf.xml.schemas
 GCONF_SCHEMA_FILE_DIR = $(sysconfdir)/gconf/schemas
-GETTEXT_PACKAGE = twitux
+GETTEXT_PACKAGE = greet-tweet-know
 GLIB_CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include  
 GLIB_GENMARSHAL = glib-genmarshal
 GLIB_LIBS = -lglib-2.0  
@@ -178,8 +201,8 @@ LDFLAGS = -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib
 LIBOBJS = 
 LIBS = -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIBTWITUX_CFLAGS = -DORBIT2=1 -pthread -I/usr/include/libxml2 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/gtk-2.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/gconf/2 -I/usr/include/orbit-2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/gnome-keyring-1  
-LIBTWITUX_LIBS = -lxml2 -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lz -lfontconfig -lgmodule-2.0 -lgobject-2.0 -lgconf-2 -lgnome-keyring -lglib-2.0  
+LIBGREET_TWEET_KNOW_CFLAGS = 
+LIBGREET_TWEET_KNOW_LIBS = 
 LN_S = ln -s
 LTLIBOBJS = 
 MAINT = #
@@ -191,12 +214,12 @@ MSGMERGE = /usr/bin/msgmerge
 NMEDIT = 
 OBJEXT = o
 OMF_DIR = ${datadir}/omf
-PACKAGE = twitux
-PACKAGE_BUGREPORT = http://sourceforge.net/tracker/?func=add&group_id=198704&atid=966542
-PACKAGE_NAME = Twitux
-PACKAGE_STRING = Twitux 0.69
-PACKAGE_TARNAME = twitux
-PACKAGE_VERSION = 0.69
+PACKAGE = greet-tweet-know
+PACKAGE_BUGREPORT = https://www.github.com/uberchicgeekchick/greet-tweet-know
+PACKAGE_NAME = Greet-Tweet-Know
+PACKAGE_STRING = Greet-Tweet-Know 0.1.0.1
+PACKAGE_TARNAME = greet-tweet-know
+PACKAGE_VERSION = 0.1.0.1
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
 POFILES = 
@@ -208,10 +231,10 @@ SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip
-TWITUX_CFLAGS = -D_REENTRANT -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/gtk-2.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/libxml2 -I/usr/include/libsoup-2.4 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include  
-TWITUX_LIBS = -L/usr/lib -L/lib64 -lsexy -lxml2 -lcanberra-gtk -lcanberra -lsoup-2.4 -lnotify -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lz -lfontconfig -lgmodule-2.0 -ldbus-glib-1 -ldbus-1 -lgobject-2.0 -lglib-2.0  
+GREET_TWEET_KNOW_CFLAGS = -D_REENTRANT -DORBIT2=1 -pthread -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/gtk-2.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/libxml2 -I/usr/include/libsoup-2.4 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/libglade-2.0 -I/usr/include/gconf/2 -I/usr/include/orbit-2.0 -I/usr/include/gnome-keyring-1  
+GREET_TWEET_KNOW_LIBS = -L/usr/lib -L/lib64 -lsexy -lsoup-2.4 -lnotify -lglade-2.0 -lcanberra-gtk -lcanberra -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lgdk_pixbuf-2.0 -lpangocairo-1.0 -lcairo -lpango-1.0 -lfreetype -lz -lfontconfig -lgmodule-2.0 -lxml2 -lgconf-2 -lgnome-keyring -ldbus-glib-1 -ldbus-1 -lgobject-2.0 -lglib-2.0  
 USE_NLS = yes
-VERSION = 0.69
+VERSION = 0.1.0.1
 WARN_CFLAGS = -Wall -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wno-sign-compare 
 WARN_CXXFLAGS = -std=gnu++0x -Wall -Wextra -Wformat=2 -Wswitch-default -Wswitch-enum -O3 -L/lib64 -L/usr/lib64 -L/usr/lib -L/lib -I/usr/include -Wall -Wno-unused 
 XGETTEXT = /usr/bin/xgettext
@@ -272,35 +295,40 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLIBDIR=\""$(libdir)"\"			\
-	$(TWITUX_CFLAGS)				\
+	-DLOCALEDIR=\""$(localedir)"\"		\
+	$(GREET_TWEET_KNOW_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
 
-dbus_sources = twitux-dbus.c twitux-dbus.h
-twitux_SOURCES = \
-	$(dbus_sources)							\
-	twitux.h							\
-	twitux-main.c							\
+dbus_sources = dbus.c dbus.h
+keyring_sources = keyring.c keyring.h
+greet_tweet_know_SOURCES = \
+	$(dbus_sources)					\
+	$(keyring)					\
+	gconf.c			gconf.h			\
+	debug.c			debug.h			\
+	paths.c			paths.h			\
+	glade.c			glade.h			\
+	main.c			main.h			\
 	about.c			about.h			\
-	twitux-account-dialog.c 	twitux-account-dialog.h		\
-	twitux-add-dialog.c 		twitux-add-dialog.h		\
-	twitux-app.c			twitux-app.h			\
-	twitux-geometry.c		twitux-geometry.h		\
-	twitux-hint.c			twitux-hint.h			\
-	twitux-label.c			twitux-label.h			\
-	twitux-network.c		twitux-network.h		\
-	twitux-parser.c			twitux-parser.h			\
-	twitux-preferences.c		twitux-preferences.h		\
-	twitux-send-message-dialog.c	twitux-send-message-dialog.h	\
-	twitux-spell.c			twitux-spell.h			\
-	twitux-spell-dialog.c		twitux-spell-dialog.h		\
-	twitux-ui-utils.c		twitux-ui-utils.h		\
-	twitux-lists-dialog.c		twitux-lists-dialog.h		\
-	twitux-tweet-list.c		twitux-tweet-list.h
+	account-dialog.c 	account-dialog.h	\
+	add-dialog.c 		add-dialog.h		\
+	app.c			app.h			\
+	geometry.c		geometry.h		\
+	hint.c			hint.h			\
+	label.c			label.h			\
+	network.c		network.h		\
+	parser.c		parser.h		\
+	preferences.c		preferences.h		\
+	send-message-dialog.c	send-message-dialog.h	\
+	spell.c			spell.h			\
+	spell-dialog.c		spell-dialog.h		\
+	ui-utils.c		ui-utils.h		\
+	lists-dialog.c		lists-dialog.h		\
+	tweet-list.c		tweet-list.h
 
-twitux_LDADD = \
-	$(top_builddir)/libtwitux/libtwitux.la		\
-	$(TWITUX_LIBS)					\
+greet_tweet_know_LDADD = \
+	$(GREET_TWEET_KNOW_LIBS)					\
 	$(ENCHANT_LIBS)
 
 all: all-am
@@ -364,9 +392,10 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-twitux$(EXEEXT): $(twitux_OBJECTS) $(twitux_DEPENDENCIES) 
-	@rm -f twitux$(EXEEXT)
-	$(LINK) $(twitux_OBJECTS) $(twitux_LDADD) $(LIBS)
+
+greet-tweet-know$(EXEEXT): $(greet_tweet_know_OBJECTS) 
+	@rm -f greet_tweet_know$(EXEEXT)
+	$(LINK) $(greet_tweet_know_OBJECTS) $(greet_tweet_know_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -375,23 +404,23 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/about.Po
-include ./$(DEPDIR)/twitux-account-dialog.Po
-include ./$(DEPDIR)/twitux-add-dialog.Po
-include ./$(DEPDIR)/twitux-app.Po
-include ./$(DEPDIR)/twitux-dbus.Po
-include ./$(DEPDIR)/twitux-geometry.Po
-include ./$(DEPDIR)/twitux-hint.Po
-include ./$(DEPDIR)/twitux-label.Po
-include ./$(DEPDIR)/twitux-lists-dialog.Po
-include ./$(DEPDIR)/twitux-main.Po
-include ./$(DEPDIR)/twitux-network.Po
-include ./$(DEPDIR)/twitux-parser.Po
-include ./$(DEPDIR)/twitux-preferences.Po
-include ./$(DEPDIR)/twitux-send-message-dialog.Po
-include ./$(DEPDIR)/twitux-spell-dialog.Po
-include ./$(DEPDIR)/twitux-spell.Po
-include ./$(DEPDIR)/twitux-tweet-list.Po
-include ./$(DEPDIR)/twitux-ui-utils.Po
+include ./$(DEPDIR)/account-dialog.Po
+include ./$(DEPDIR)/add-dialog.Po
+include ./$(DEPDIR)/app.Po
+include ./$(DEPDIR)/dbus.Po
+include ./$(DEPDIR)/geometry.Po
+include ./$(DEPDIR)/hint.Po
+include ./$(DEPDIR)/label.Po
+include ./$(DEPDIR)/lists-dialog.Po
+include ./$(DEPDIR)/main.Po
+include ./$(DEPDIR)/network.Po
+include ./$(DEPDIR)/parser.Po
+include ./$(DEPDIR)/preferences.Po
+include ./$(DEPDIR)/send-message-dialog.Po
+include ./$(DEPDIR)/spell-dialog.Po
+include ./$(DEPDIR)/spell.Po
+include ./$(DEPDIR)/tweet-list.Po
+include ./$(DEPDIR)/ui-utils.Po
 
 .c.o:
 	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -495,7 +524,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(bin_PROGRAMS)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \

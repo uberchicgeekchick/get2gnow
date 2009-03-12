@@ -103,12 +103,12 @@ msgstr "Enviar Mensajes Directos"
 
 #: ../data/main_window.xml.h:10 ../data/twitux.desktop.in.h:2
 #: ../src/twitux-main.c:46 ../src/twitux-preferences.c:430
-msgid "Twitux"
-msgstr "Twitux"
+msgid "Greet-Tweet-Know"
+msgstr "Greet-Tweet-Know"
 
 #: ../data/main_window.xml.h:11
-msgid "Twitux Timeline"
-msgstr "Twitux Timeline"
+msgid "Greet-Tweet-Know Timeline"
+msgstr "Greet-Tweet-Know Timeline"
 
 #: ../data/main_window.xml.h:12
 msgid "_Account"
@@ -240,8 +240,8 @@ msgid "_New Message"
 msgstr "_Nuevo Mensaje"
 
 #: ../data/tray_menu.xml.h:2
-msgid "_Show Twitux"
-msgstr "_Mostrar Twitux"
+msgid "_Show Greet-Tweet-Know"
+msgstr "_Mostrar Greet-Tweet-Know"
 
 #: ../data/twitux.desktop.in.h:1
 msgid "A Twitter client"
@@ -378,7 +378,7 @@ msgstr ""
 
 #: ../src/about.c:43
 msgid ""
-"Twitux is free software; you can redistribute it and/or modify it under the "
+"Greet-Tweet-Know is free software; you can redistribute it and/or modify it under the "
 "terms of the GNU General Public License as published by the Free Software "
 "Foundation; either version 2 of the License, or (at your option) any later "
 "version."
@@ -386,7 +386,7 @@ msgstr ""
 
 #: ../src/about.c:47
 msgid ""
-"Twitux is distributed in the hope that it will be useful, but WITHOUT ANY "
+"Greet-Tweet-Know is distributed in the hope that it will be useful, but WITHOUT ANY "
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
 "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more "
 "details."
@@ -412,12 +412,12 @@ msgid "translator-credits"
 msgstr "Daniel Morales <daniminas@gmail.com>"
 
 #: ../src/twitux-app.c:407
-msgid "Twitux is still running, it is just hidden."
-msgstr "Twitux ahún se está ejecutando, solo está oculto."
+msgid "Greet-Tweet-Know is still running, it is just hidden."
+msgstr "Greet-Tweet-Know ahún se está ejecutando, solo está oculto."
 
 #: ../src/twitux-app.c:408
-msgid "Click on the notification area icon to show Twitux."
-msgstr "Click en el ícono de la bandeja del sistema para mostrar Twitux."
+msgid "Click on the notification area icon to show Greet-Tweet-Know."
+msgstr "Click en el ícono de la bandeja del sistema para mostrar Greet-Tweet-Know."
 
 #: ../src/twitux-app.c:418
 msgid "You were about to quit!"
@@ -426,9 +426,9 @@ msgstr ""
 #: ../src/twitux-app.c:419
 msgid ""
 "Since no system or notification tray has been found, this action would "
-"normally quit Twitux.\n"
+"normally quit Greet-Tweet-Know.\n"
 "\n"
-"This is just a reminder, from now on, Twitux will quit when performing this "
+"This is just a reminder, from now on, Greet-Tweet-Know will quit when performing this "
 "action unless you uncheck the option below."
 msgstr ""
 

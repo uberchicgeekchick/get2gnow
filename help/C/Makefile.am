@@ -1,7 +1,7 @@
 figdir = figures
-docname = twitux
+docname = greet-tweet-know
 lang = C
-omffile = twitux-C.omf
+omffile = greet-tweet-know-C.omf
 entities = legal.xml
 
 include $(top_srcdir)/xmldocs.make

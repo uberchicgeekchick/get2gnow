@@ -186,7 +186,7 @@
     <property name="width_request">230</property>
     <property name="height_request">320</property>
     <property name="visible">True</property>
-    <property name="title" translatable="yes">Twitux</property>
+    <property name="title" translatable="yes">Greet-Tweet-Know</property>
     <property name="type">GTK_WINDOW_TOPLEVEL</property>
     <property name="window_position">GTK_WIN_POS_NONE</property>
     <property name="modal">False</property>

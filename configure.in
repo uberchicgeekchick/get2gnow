@@ -1,8 +1,8 @@
-AC_INIT([g-greet], [0.1.0], [https://www.github.com/uberchicgeekchick/g-greet], [g-greet])
+AC_INIT([g-greet], [0.1.0.1], [https://www.github.com/uberchicgeekchick/greet-tweet-know], [greet-tweet-know])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
-AC_CONFIG_SRCDIR([src/twitux-main.c])
+AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-bzip2])
@@ -34,6 +34,7 @@ dnl Library Dependencies, uses pkg-config to detect correct version, etc
 dnl
 dnl -----------------------------------------------------------
 
+LIBGLADE_REQUIRED=0.23
 LIBXML_REQUIRED=2.6.16
 GLIB_REQUIRED=2.15.0
 GTK_REQUIRED=2.14.0
@@ -103,34 +104,25 @@ AM_CONDITIONAL(HAVE_GNOME_KEYRING, test x$have_gnome_keyring = xyes)
 dnl -----------------------------------------------------------
 dnl Pkg-Config dependency checks
 dnl -----------------------------------------------------------
-PKG_CHECK_MODULES(LIBTWITUX,
-[
-	libxml-2.0 >= $LIBXML_REQUIRED
-	glib-2.0 >= $GLIB_REQUIRED
-	gtk+-2.0 >= $GTK_REQUIRED
-	gobject-2.0
-	gconf-2.0 >= $GCONF_REQUIRED
-	$gnome_keyring_pkgconfig
-])
-
-AC_SUBST(LIBTWITUX_CFLAGS)
-AC_SUBST(LIBTWITUX_LIBS)
-
-
-PKG_CHECK_MODULES(TWITUX,
+PKG_CHECK_MODULES(GREET_TWEET_KNOW,
 [
 	libsexy
+	libsoup-2.4
+	libnotify
+	libglade-2.0 >= $LIBGLADE_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gio-2.0 >= $LIBGIO_REQUIRED
 	libcanberra-gtk >= $LIBCANBERRA_REQUIRED
-	libsoup-2.4
-	libnotify
+	libxml-2.0 >= $LIBXML_REQUIRED
+	gobject-2.0
+	gconf-2.0 >= $GCONF_REQUIRED
+	$gnome_keyring_pkgconfig
 	$iso_codes_pkgconfig
 	$dbus_pkgconfig
 ])
-AC_SUBST(TWITUX_CFLAGS)
-AC_SUBST(TWITUX_LIBS)
+AC_SUBST(GREET_TWEET_KNOW_CFLAGS)
+AC_SUBST(GREET_TWEET_KNOW_LIBS)
 
 dnl -----------------------------------------------------------
 dnl Enchant
@@ -173,7 +165,7 @@ AM_CONDITIONAL(HAVE_ENCHANT, test "x$have_enchant" = "xyes")
 dnl -----------------------------------------------------------
 dnl Language Support
 dnl -----------------------------------------------------------
-GETTEXT_PACKAGE=twitux
+GETTEXT_PACKAGE=greet-tweet-know
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[Gettext package name])
 
@@ -182,10 +174,9 @@ AM_GLIB_GNU_GETTEXT
 AC_OUTPUT([
 Makefile
 data/Makefile
-data/twitux.desktop.in
+data/greet-tweet-know.desktop.in
 help/Makefile
 src/Makefile
-libtwitux/Makefile
 po/Makefile.in
 ])
 
