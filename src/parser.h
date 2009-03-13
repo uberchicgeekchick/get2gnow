@@ -20,8 +20,8 @@
  * Authors: Daniel Morales <daniminas@gmail.com>
  *
  */
-#ifndef __TWITUX_PARSER_H__
-#define __TWITUX_PARSER_H__
+#ifndef __PARSER_H__
+#define __PARSER_H__
 
 #include <gtk/gtk.h>
 
@@ -33,16 +33,16 @@ typedef struct {
 
 
 /* Returns a liststore for the main treeview to show tweets */
-gboolean twitux_parser_timeline (const gchar *data, 
+gboolean parser_timeline (const gchar *data, 
 								 gssize       length);
 
 /* Returns a Glist with friends. Can be used to 
    build the friends menu, on direct messages dialog, etc.. */
-GList *twitux_parser_users_list (const gchar *data,
+GList *parser_users_list (const gchar *data,
 								 gssize       length);
 
 /* Parse a xml user node. Ex: add/del users responses */
-TwituxUser *twitux_parser_single_user (const gchar *data,
+TwituxUser *parser_single_user (const gchar *data,
 									   gssize       length);
 
 /* To free a User struct */
@@ -51,4 +51,4 @@ void parser_free_user (TwituxUser *user);
 /* Restet the ID of the last tweet showed */
 void parser_reset_lastid (void);
 
-#endif /*  __TWITUX_PARSER_H__ */
+#endif /*  __PARSER_H__ */

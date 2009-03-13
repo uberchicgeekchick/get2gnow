@@ -40,7 +40,7 @@ hint_dialog_response_cb (GtkWidget *widget,
 	user_data = g_object_get_data (G_OBJECT (widget), "user_data");
 
 	hide_hint = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton));
-	twitux_conf_set_bool (twitux_conf_get (), conf_path, !hide_hint);
+	conf_set_bool (conf_get (), conf_path, !hide_hint);
 
 	gtk_widget_destroy (widget);
 
@@ -50,7 +50,7 @@ hint_dialog_response_cb (GtkWidget *widget,
 }
 
 gboolean
-twitux_hint_dialog_show (const gchar         *conf_path,
+hint_dialog_show (const gchar         *conf_path,
 						 const gchar         *message1,
 						 const gchar         *message2,
 						 GtkWindow           *parent,
@@ -66,7 +66,7 @@ twitux_hint_dialog_show (const gchar         *conf_path,
 	g_return_val_if_fail (conf_path != NULL, FALSE);
 	g_return_val_if_fail (message1 != NULL, FALSE);
 
-	ok = twitux_conf_get_bool (twitux_conf_get (),
+	ok = conf_get_bool (conf_get (),
 							   conf_path,
 							   &show_hint);
 
@@ -105,14 +105,14 @@ twitux_hint_dialog_show (const gchar         *conf_path,
 }
 
 gboolean 
-twitux_hint_show (const gchar         *conf_path,
+hint_show (const gchar         *conf_path,
 				  const gchar         *message1,
 				  const gchar         *message2,
 				  GtkWindow           *parent,
 				  GFunc                func,
 				  gpointer             user_data)
 {
-	return twitux_hint_dialog_show (conf_path,
+	return hint_dialog_show (conf_path,
 									message1, message2,
 									parent,
 									func, user_data);

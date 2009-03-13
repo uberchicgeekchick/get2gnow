@@ -18,16 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __TWITUX_UI_UTILS_H__
-#define __TWITUX_UI_UTILS_H__
+#ifndef __UI_UTILS_H__
+#define __UI_UTILS_H__
 
 #include <gtk/gtk.h>
 
 /* Windows */
-gboolean     twitux_window_get_is_visible          (GtkWindow        *window);
-gboolean     twitux_window_get_is_present          (GtkWindow        *window);
-void         twitux_window_present                 (GtkWindow        *window,
+gboolean     window_get_is_visible          (GtkWindow        *window);
+gboolean     window_get_is_present          (GtkWindow        *window);
+void         window_present                 (GtkWindow        *window,
 													gboolean          steal_focus);
-void         twitux_help_show                      (GtkWindow        *parent);
+void         help_show                      (GtkWindow        *parent);
 
-#endif /*  __TWITUX_UI_UTILS_H__ */
+#endif /*  __UI_UTILS_H__ */

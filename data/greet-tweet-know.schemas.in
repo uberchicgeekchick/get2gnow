@@ -2,9 +2,9 @@
   <schemalist>
     
     <schema>
-       <key>/schemas/apps/twitux/auth/user_id</key>
-       <applyto>/apps/twitux/auth/user_id</applyto>
-       <owner>twitux</owner>
+       <key>/schemas/apps/greet-tweet-know/auth/user_id</key>
+       <applyto>/apps/greet-tweet-know/auth/user_id</applyto>
+       <owner>greet-tweet-know</owner>
        <type>string</type>
        <default></default>
        <locale name="C">
@@ -14,9 +14,9 @@
     </schema>
 
     <schema>
-       <key>/schemas/apps/twitux/auth/password</key>
-       <applyto>/apps/twitux/auth/password</applyto>
-       <owner>twitux</owner>
+       <key>/schemas/apps/greet-tweet-know/auth/password</key>
+       <applyto>/apps/greet-tweet-know/auth/password</applyto>
+       <owner>greet-tweet-know</owner>
        <type>string</type>
        <default></default>
        <locale name="C">
@@ -26,9 +26,9 @@
     </schema>
     
     <schema>
-    	<key>/schemas/apps/twitux/auth/auto_login</key>
-    	<applyto>/apps/twitux/auth/auto_login</applyto>
-    	<owner>twitux</owner>
+    	<key>/schemas/apps/greet-tweet-know/auth/auto_login</key>
+    	<applyto>/apps/greet-tweet-know/auth/auto_login</applyto>
+    	<owner>greet-tweet-know</owner>
     	<type>bool</type>
     	<default>true</default>
     	<locale name="C">
@@ -38,9 +38,9 @@
     </schema>
 
     <schema>
-    	<key>/schemas/apps/twitux/tweets/names</key>
-    	<applyto>/apps/twitux/tweets/names</applyto>
-    	<owner>twitux</owner>
+    	<key>/schemas/apps/greet-tweet-know/tweets/names</key>
+    	<applyto>/apps/greet-tweet-know/tweets/names</applyto>
+    	<owner>greet-tweet-know</owner>
     	<type>bool</type>
     	<default>true</default>
     	<locale name="C">
@@ -50,9 +50,9 @@
     </schema>
 
     <schema>
-    	<key>/schemas/apps/twitux/tweets/home_timeline</key>
-    	<applyto>/apps/twitux/tweets/home_timeline</applyto>
-    	<owner>twitux</owner>
+    	<key>/schemas/apps/greet-tweet-know/tweets/home_timeline</key>
+    	<applyto>/apps/greet-tweet-know/tweets/home_timeline</applyto>
+    	<owner>greet-tweet-know</owner>
     	<type>string</type>
     	<default>http://twitter.com/statuses/friends_timeline.xml</default>
     	<locale name="C">
@@ -62,9 +62,9 @@
     </schema>
     
     <schema>
-    	<key>/schemas/apps/twitux/tweets/reload_timeline</key>
-    	<applyto>/apps/twitux/tweets/reload_timeline</applyto>
-    	<owner>twitux</owner>
+    	<key>/schemas/apps/greet-tweet-know/tweets/reload_timeline</key>
+    	<applyto>/apps/greet-tweet-know/tweets/reload_timeline</applyto>
+    	<owner>greet-tweet-know</owner>
     	<type>int</type>
     	<default>5</default>
     	<locale name="C">
@@ -74,9 +74,9 @@
     </schema>
 
     <schema>
-	<key>/schemas/apps/twitux/ui/main_window_height</key>
-	<applyto>/apps/twitux/ui/main_window_height</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_height</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_height</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>int</type>
 	<default>0</default>
 	<locale name="C">
@@ -86,9 +86,9 @@
      </schema>
 
      <schema>
-	<key>/schemas/apps/twitux/ui/main_window_width</key>
-	<applyto>/apps/twitux/ui/main_window_width</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_width</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_width</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>int</type>
 	<default>0</default>
 	<locale name="C">
@@ -98,9 +98,9 @@
      </schema>
 
      <schema>
-	<key>/schemas/apps/twitux/ui/main_window_pos_x</key>
-	<applyto>/apps/twitux/ui/main_window_pos_x</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_pos_x</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_pos_x</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>int</type>
 	<default>0</default>
 	<locale name="C">
@@ -110,9 +110,9 @@
      </schema>
 
      <schema>
-	<key>/schemas/apps/twitux/ui/main_window_pos_y</key>
-	<applyto>/apps/twitux/ui/main_window_pos_y</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_pos_y</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_pos_y</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>int</type>
 	<default>0</default>
 	<locale name="C">
@@ -122,9 +122,9 @@
      </schema>
      
      <schema>
-       <key>/schemas/apps/twitux/ui/main_window_hidden</key>
-       <applyto>/apps/twitux/ui/main_window_hidden</applyto>
-       <owner>twitux</owner>
+       <key>/schemas/apps/greet-tweet-know/ui/main_window_hidden</key>
+       <applyto>/apps/greet-tweet-know/ui/main_window_hidden</applyto>
+       <owner>greet-tweet-know</owner>
        <type>bool</type>
        <default>false</default>
        <locale name="C">
@@ -134,9 +134,9 @@
     </schema>
      
      <schema>
-	<key>/schemas/apps/twitux/ui/expand_messages</key>
-	<applyto>/apps/twitux/ui/expand_messages</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/expand_messages</key>
+	<applyto>/apps/greet-tweet-know/ui/expand_messages</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>bool</type>
 	<default>false</default>
 	<locale name="C">
@@ -146,9 +146,9 @@
      </schema>
      
      <schema>
-	<key>/schemas/apps/twitux/ui/notify</key>
-	<applyto>/apps/twitux/ui/notify</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/notify</key>
+	<applyto>/apps/greet-tweet-know/ui/notify</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>bool</type>
 	<default>false</default>
 	<locale name="C">
@@ -158,9 +158,9 @@
      </schema>
 
      <schema>
-	<key>/schemas/apps/twitux/ui/sound</key>
-	<applyto>/apps/twitux/ui/sound</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/sound</key>
+	<applyto>/apps/greet-tweet-know/ui/sound</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>bool</type>
 	<default>false</default>
 	<locale name="C">
@@ -170,9 +170,9 @@
      </schema>
 
      <schema>
-      <key>/schemas/apps/twitux/ui/spell_checker_languages</key>
-      <applyto>/apps/twitux/ui/spell_checker_languages</applyto>
-      <owner>twitux</owner>
+      <key>/schemas/apps/greet-tweet-know/ui/spell_checker_languages</key>
+      <applyto>/apps/greet-tweet-know/ui/spell_checker_languages</applyto>
+      <owner>greet-tweet-know</owner>
       <type>string</type>
       <default>en</default>
       <locale name="C">
@@ -184,9 +184,9 @@
      </schema>
 
      <schema>
-	<key>/schemas/apps/twitux/ui/spell</key>
-	<applyto>/apps/twitux/ui/spell</applyto>
-	<owner>twitux</owner>
+	<key>/schemas/apps/greet-tweet-know/ui/spell</key>
+	<applyto>/apps/greet-tweet-know/ui/spell</applyto>
+	<owner>greet-tweet-know</owner>
 	<type>bool</type>
 	<default>false</default>
 	<locale name="C">
@@ -196,9 +196,9 @@
      </schema>
      
      <schema>
-      <key>/schemas/apps/twitux/hints/close_main_window</key>
-      <applyto>/apps/twitux/hints/close_main_window</applyto>
-      <owner>twitux</owner>
+      <key>/schemas/apps/greet-tweet-know/hints/close_main_window</key>
+      <applyto>/apps/greet-tweet-know/hints/close_main_window</applyto>
+      <owner>greet-tweet-know</owner>
       <type>bool</type>
       <default>true</default>
       <locale name="C">

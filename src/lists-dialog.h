@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __TWITUX_FRIENDS_DIALOG_H__
-#define __TWITUX_FRIENDS_DIALOG_H__
+#ifndef __FRIENDS_DIALOG_H__
+#define __FRIENDS_DIALOG_H__
 
 #include <glib.h>
 #include <gtk/gtk.h>
 
-void twitux_lists_dialog_show       (GtkWindow *parent);
-void twitux_lists_dialog_load_lists (GList     *users);
+void lists_dialog_show       (GtkWindow *parent);
+void lists_dialog_load_lists (GList     *users);
 
-#endif /* __TWITUX_FRIENDS_DIALOG_H__ */
+#endif /* __FRIENDS_DIALOG_H__ */

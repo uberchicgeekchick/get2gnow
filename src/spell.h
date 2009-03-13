@@ -22,19 +22,19 @@
  *          Brian Pepple <bpepple@fedoraproject.org>
  */
 
-#ifndef __TWITUX_SPELL_H__
-#define __TWITUX_SPELL_H__
+#ifndef __SPELL_H__
+#define __SPELL_H__
 
 G_BEGIN_DECLS
 
-gboolean     twitux_spell_supported           (void);
-const gchar *twitux_spell_get_language_name   (const gchar *code);
-GList       *twitux_spell_get_language_codes  (void);
-void         twitux_spell_free_language_codes (GList       *codes);
-gboolean     twitux_spell_check               (const gchar *word);
-GList *      twitux_spell_get_suggestions     (const gchar *word);
-void         twitux_spell_free_suggestions    (GList       *suggestions);
+gboolean     spell_supported           (void);
+const gchar *spell_get_language_name   (const gchar *code);
+GList       *spell_get_language_codes  (void);
+void         spell_free_language_codes (GList       *codes);
+gboolean     spell_check               (const gchar *word);
+GList *      spell_get_suggestions     (const gchar *word);
+void         spell_free_suggestions    (GList       *suggestions);
 
 G_END_DECLS
 
-#endif /* __TWITUX_SPELL_H__ */
+#endif /* __SPELL_H__ */

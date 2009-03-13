@@ -32,29 +32,29 @@
 #include "label.h"
 #include "network.h"
 
-static void   twitux_label_class_init   (TwituxLabelClass *clas);
-static void   twitux_label_init         (TwituxLabel      *label);
-static void   twitux_label_finalize     (GObject          *object);
+static void   label_class_init   (TwituxLabelClass *clas);
+static void   label_init         (TwituxLabel      *label);
+static void   label_finalize     (GObject          *object);
 
 static void  label_url_activated_cb     (GtkWidget        *url_label,
                                          gchar            *url,
                                          gpointer          user_data);
 static char* label_msg_get_string       (const char       * message);
 
-G_DEFINE_TYPE (TwituxLabel, twitux_label, SEXY_TYPE_URL_LABEL);
+G_DEFINE_TYPE (TwituxLabel, label, SEXY_TYPE_URL_LABEL);
 
 static void
-twitux_label_class_init (TwituxLabelClass *clas)
+label_class_init (TwituxLabelClass *clas)
 {
 	GObjectClass   *object_class = G_OBJECT_CLASS (clas);
 
 	/* Add private */
 
-	object_class->finalize = twitux_label_finalize;
+	object_class->finalize = label_finalize;
 }
 
 static void
-twitux_label_init (TwituxLabel *label)
+label_init (TwituxLabel *label)
 {
 	gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
 	
@@ -72,7 +72,7 @@ twitux_label_init (TwituxLabel *label)
 }
 
 static void
-twitux_label_finalize (GObject *object)
+label_finalize (GObject *object)
 {
 	/* Cleanup code */
 }
@@ -88,13 +88,13 @@ label_url_activated_cb  (GtkWidget *url_label,
 }
 
 GtkWidget *
-twitux_label_new (void)
+label_new (void)
 {
-	return g_object_new (TWITUX_TYPE_LABEL, NULL);
+	return g_object_new (TYPE_LABEL, NULL);
 }
 
 void
-twitux_label_set_text (TwituxLabel  *nav,
+label_set_text (TwituxLabel  *nav,
 					   const gchar  *text)
 {
 	gchar *parsed_text;

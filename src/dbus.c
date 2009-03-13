@@ -84,7 +84,7 @@ dbus_nm_state_cb (DBusGProxy *proxy,
 				  guint       state,
 				  gpointer    user_data)
 {
-	twitux_debug (DEBUG_DOMAIN, "New network state:'%s'",
+	debug (DEBUG_DOMAIN, "New network state:'%s'",
 				  dbus_nm_state_to_string (state));
 
 	switch (state) {
@@ -92,10 +92,10 @@ dbus_nm_state_cb (DBusGProxy *proxy,
 	case NM_STATE_DISCONNECTED:
 	case NM_STATE_CONNECTING:
 	case NM_STATE_UNKNOWN:
-		twitux_app_state_on_connection (FALSE);
+		app_state_on_connection (FALSE);
 		break;
 	case NM_STATE_CONNECTED:
-		twitux_app_state_on_connection (TRUE);
+		app_state_on_connection (TRUE);
 		break;
 	default:
 		break;
@@ -105,7 +105,7 @@ dbus_nm_state_cb (DBusGProxy *proxy,
 static gboolean
 dbus_nm_proxy_restart_timeout_cb (gpointer user_data)
 {
-	if (twitux_dbus_nm_init ()) {
+	if (dbus_nm_init ()) {
 		nm_proxy_restart_timeout_id = 0;
 		return FALSE;
 	}
@@ -137,7 +137,7 @@ dbus_nm_proxy_notify_cb (gpointer  data,
 }
 
 void
-twitux_dbus_nm_finalize (void)
+dbus_nm_finalize (void)
 {
 	if (nm_proxy) {
 		g_object_weak_unref (G_OBJECT (nm_proxy), dbus_nm_proxy_notify_cb, NULL);
@@ -146,7 +146,7 @@ twitux_dbus_nm_finalize (void)
 }
 
 gboolean
-twitux_dbus_nm_init (void)
+dbus_nm_init (void)
 {
 	DBusGConnection *bus;
 	DBusConnection  *conn;
@@ -155,7 +155,7 @@ twitux_dbus_nm_init (void)
 		return TRUE;
 	}
 
-	twitux_debug (DEBUG_DOMAIN, "Initialising Network Manager proxy");
+	debug (DEBUG_DOMAIN, "Initialising Network Manager proxy");
 
 	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
 	if (!bus) {
@@ -192,7 +192,7 @@ twitux_dbus_nm_init (void)
 }
 
 gboolean
-twitux_dbus_nm_get_state (gboolean *connected)
+dbus_nm_get_state (gboolean *connected)
 {
 	GError  *error = NULL;
 	guint32  state;
@@ -208,19 +208,19 @@ twitux_dbus_nm_get_state (gboolean *connected)
 	}
 
 	/* Make sure we have set up Network Manager connections */
-	if (!twitux_dbus_nm_init ()) {
+	if (!dbus_nm_init ()) {
 		return FALSE;
 	}
 
 	if (!dbus_g_proxy_call (nm_proxy, "state", &error,
 							G_TYPE_INVALID,
 							G_TYPE_UINT, &state, G_TYPE_INVALID)) {
-		twitux_debug (DEBUG_DOMAIN, "Failed to complete 'state' request. %s",
+		debug (DEBUG_DOMAIN, "Failed to complete 'state' request. %s",
 					  error->message);
 		return FALSE;
 	}
 
-	twitux_debug (DEBUG_DOMAIN, "Current network state:'%s'",
+	debug (DEBUG_DOMAIN, "Current network state:'%s'",
 				  dbus_nm_state_to_string (state));
 
 	if (connected) {

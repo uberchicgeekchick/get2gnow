@@ -19,20 +19,20 @@
  *
  */
  
-#ifndef __TWITUX_HINT_H__
-#define __TWITUX_HINT_H__
+#ifndef __HINT_H__
+#define __HINT_H__
 
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-gboolean   twitux_hint_dialog_show	(const gchar         *conf_path,
+gboolean   hint_dialog_show	(const gchar         *conf_path,
 									 const gchar         *message1,
 									 const gchar         *message2,
 									 GtkWindow           *parent,
 									 GFunc                func,
 									 gpointer             user_data);
-gboolean   twitux_hint_show			(const gchar         *conf_path,
+gboolean   hint_show			(const gchar         *conf_path,
 									 const gchar         *message1,
 									 const gchar         *message2,
 									 GtkWindow           *parent,
@@ -41,4 +41,4 @@ gboolean   twitux_hint_show			(const gchar         *conf_path,
 
 G_END_DECLS
 
-#endif /* __TWITUX_HINT_H__ */
+#endif /* __HINT_H__ */

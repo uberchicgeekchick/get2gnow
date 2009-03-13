@@ -10306,8 +10306,8 @@ m4trace:configure.in:106: -1- PKG_CHECK_MODULES([LIBTWITUX], [
 	gconf-2.0 >= $GCONF_REQUIRED
 	$gnome_keyring_pkgconfig
 ])
-m4trace:configure.in:106: -1- m4_pattern_allow([^LIBTWITUX_CFLAGS$])
-m4trace:configure.in:106: -1- m4_pattern_allow([^LIBTWITUX_LIBS$])
+m4trace:configure.in:106: -1- m4_pattern_allow([^LIBGREET_TWEET_KNOW_CFLAGS$])
+m4trace:configure.in:106: -1- m4_pattern_allow([^LIBGREET_TWEET_KNOW_LIBS$])
 m4trace:configure.in:106: -1- PKG_CHECK_EXISTS([
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -10315,7 +10315,7 @@ m4trace:configure.in:106: -1- PKG_CHECK_EXISTS([
 	gobject-2.0
 	gconf-2.0 >= $GCONF_REQUIRED
 	$gnome_keyring_pkgconfig
-], [pkg_cv_[]LIBTWITUX_CFLAGS=`$PKG_CONFIG --[]cflags "
+], [pkg_cv_[]LIBGREET_TWEET_KNOW_CFLAGS=`$PKG_CONFIG --[]cflags "
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -10330,7 +10330,7 @@ m4trace:configure.in:106: -1- PKG_CHECK_EXISTS([
 	gobject-2.0
 	gconf-2.0 >= $GCONF_REQUIRED
 	$gnome_keyring_pkgconfig
-], [pkg_cv_[]LIBTWITUX_LIBS=`$PKG_CONFIG --[]libs "
+], [pkg_cv_[]LIBGREET_TWEET_KNOW_LIBS=`$PKG_CONFIG --[]libs "
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -10339,8 +10339,8 @@ m4trace:configure.in:106: -1- PKG_CHECK_EXISTS([
 	$gnome_keyring_pkgconfig
 " 2>/dev/null`], [pkg_failed=yes])
 m4trace:configure.in:106: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.in:116: -1- m4_pattern_allow([^LIBTWITUX_CFLAGS$])
-m4trace:configure.in:117: -1- m4_pattern_allow([^LIBTWITUX_LIBS$])
+m4trace:configure.in:116: -1- m4_pattern_allow([^LIBGREET_TWEET_KNOW_CFLAGS$])
+m4trace:configure.in:117: -1- m4_pattern_allow([^LIBGREET_TWEET_KNOW_LIBS$])
 m4trace:configure.in:120: -1- PKG_CHECK_MODULES([TWITUX], [
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -10352,8 +10352,8 @@ m4trace:configure.in:120: -1- PKG_CHECK_MODULES([TWITUX], [
 	$iso_codes_pkgconfig
 	$dbus_pkgconfig
 ])
-m4trace:configure.in:120: -1- m4_pattern_allow([^TWITUX_CFLAGS$])
-m4trace:configure.in:120: -1- m4_pattern_allow([^TWITUX_LIBS$])
+m4trace:configure.in:120: -1- m4_pattern_allow([^GREET_TWEET_KNOW_CFLAGS$])
+m4trace:configure.in:120: -1- m4_pattern_allow([^GREET_TWEET_KNOW_LIBS$])
 m4trace:configure.in:120: -1- PKG_CHECK_EXISTS([
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -10364,7 +10364,7 @@ m4trace:configure.in:120: -1- PKG_CHECK_EXISTS([
 	libnotify
 	$iso_codes_pkgconfig
 	$dbus_pkgconfig
-], [pkg_cv_[]TWITUX_CFLAGS=`$PKG_CONFIG --[]cflags "
+], [pkg_cv_[]GREET_TWEET_KNOW_CFLAGS=`$PKG_CONFIG --[]cflags "
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -10385,7 +10385,7 @@ m4trace:configure.in:120: -1- PKG_CHECK_EXISTS([
 	libnotify
 	$iso_codes_pkgconfig
 	$dbus_pkgconfig
-], [pkg_cv_[]TWITUX_LIBS=`$PKG_CONFIG --[]libs "
+], [pkg_cv_[]GREET_TWEET_KNOW_LIBS=`$PKG_CONFIG --[]libs "
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -10397,8 +10397,8 @@ m4trace:configure.in:120: -1- PKG_CHECK_EXISTS([
 	$dbus_pkgconfig
 " 2>/dev/null`], [pkg_failed=yes])
 m4trace:configure.in:120: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.in:132: -1- m4_pattern_allow([^TWITUX_CFLAGS$])
-m4trace:configure.in:133: -1- m4_pattern_allow([^TWITUX_LIBS$])
+m4trace:configure.in:132: -1- m4_pattern_allow([^GREET_TWEET_KNOW_CFLAGS$])
+m4trace:configure.in:133: -1- m4_pattern_allow([^GREET_TWEET_KNOW_LIBS$])
 m4trace:configure.in:144: -1- PKG_CHECK_MODULES([ENCHANT], [
       enchant >= $ENCHANT_REQUIRED,
       iso-codes >= $ISO_CODES_REQUIRED

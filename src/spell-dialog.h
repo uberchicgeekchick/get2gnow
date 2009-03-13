@@ -22,16 +22,16 @@
  *			Brian Pepple <bpepple@fedoraproject.org>
  */
 
-#ifndef __TWITUX_SPELL_DIALOG_H__
-#define __TWITUX_SPELL_DIALOG_H__
+#ifndef __SPELL_DIALOG_H__
+#define __SPELL_DIALOG_H__
 
 G_BEGIN_DECLS
 
-void twitux_spell_dialog_show (GtkWidget   *window,
+void spell_dialog_show (GtkWidget   *window,
 							   GtkTextIter  start,
 							   GtkTextIter  end,
 							   const gchar *word);
 
 G_END_DECLS
 
-#endif /* __TWITUX_SPELL_DIALOG_H__ */
+#endif /* __SPELL_DIALOG_H__ */

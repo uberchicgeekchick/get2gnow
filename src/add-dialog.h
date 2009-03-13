@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __TWITUX_ADD_DIALOG_H__
-#define __TWITUX_ADD_DIALOG_H__
+#ifndef __ADD_DIALOG_H__
+#define __ADD_DIALOG_H__
 
 #include <gtk/gtk.h>
 
-void twitux_add_dialog_show (GtkWindow *parent);
+void add_dialog_show (GtkWindow *parent);
 
-#endif /* __TWITUX_ADD_DIALOG_H__ */
+#endif /* __ADD_DIALOG_H__ */

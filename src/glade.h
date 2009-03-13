@@ -19,19 +19,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __TWITUX_XML_H__
-#define __TWITUX_XML_H__
+#ifndef __GLADE_H__
+#define __GLADE_H__
 
 #include <gtk/gtk.h>
 
-GtkBuilder *twitux_xml_get_file (const gchar *filename,
+GtkBuilder *glade_get_file (const gchar *filename,
                                  const gchar *first_widget,
                                  ...);
 
-void        twitux_xml_connect  (GtkBuilder  *gui,
+void        glade_connect  (GtkBuilder  *gui,
                                  gpointer     user_data,
                                  gchar       *first_widget,
                                  ...);
 
-#endif /*  __TWITUX_XML_H__ */
+#endif /*  __GLADE_H__ */
 

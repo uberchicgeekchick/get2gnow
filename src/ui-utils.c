@@ -41,7 +41,7 @@ window_get_is_on_current_workspace (GtkWindow *window)
 
 /* Checks if the window is visible as in visible on the current workspace. */
 gboolean
-twitux_window_get_is_visible (GtkWindow *window)
+window_get_is_visible (GtkWindow *window)
 {
 	gboolean visible;
 
@@ -56,7 +56,7 @@ twitux_window_get_is_visible (GtkWindow *window)
 
 /* Takes care of moving the window to the current workspace. */
 void
-twitux_window_present (GtkWindow *window,
+window_present (GtkWindow *window,
 					   gboolean   steal_focus)
 {
 	gboolean visible;
@@ -90,7 +90,7 @@ twitux_window_present (GtkWindow *window,
 }
 
 void
-twitux_help_show (GtkWindow *parent)
+help_show (GtkWindow *parent)
 {
 	GdkScreen *screen;
 	GError    *error = NULL;

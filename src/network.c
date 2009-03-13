@@ -42,7 +42,7 @@
 #include "lists-dialog.h"
 
 #define DEBUG_DOMAIN	  "Network"
-#define TWITUX_HEADER_URL "https://twitux.sourceforge.net/client.xml"
+#define HEADER_URL "https://twitux.sourceforge.net/client.xml"
 
 typedef struct {
 	gchar        *src;
@@ -86,10 +86,10 @@ static void network_cb_on_auth		(SoupSession           *session,
 									 SoupAuth              *auth,
 									 gboolean               retrying,
 									 gpointer               data);
-GList *twitux_network_get_users_glist(gboolean get_friends);
+GList *network_get_users_glist(gboolean get_friends);
 static gboolean network_get_users_page(SoupMessage *msg );
-static int twitux_network_sort_users(TwituxUser *a, TwituxUser *b);
-static void twitux_network_make_users_list(gboolean friends);
+static int network_sort_users(TwituxUser *a, TwituxUser *b);
+static void network_make_users_list(gboolean friends);
 GList *all_users=NULL;
 
 /* Autoreload timeout functions */
@@ -107,14 +107,14 @@ static gchar                *global_password = NULL;
 
 /* This function must be called at startup */
 void
-twitux_network_new (void)
+network_new (void)
 {
 	TwituxConf	*conf;
 	gboolean	check_proxy = FALSE;
  
 	/* Close previous networking */
 	if (soup_connection) {
-		twitux_network_close ();
+		network_close ();
 	}
 
 	/* Async connections */
@@ -122,12 +122,12 @@ twitux_network_new (void)
 														   8,
 														   NULL);
 
-	twitux_debug (DEBUG_DOMAIN, "Libsoup (re)started");
+	debug (DEBUG_DOMAIN, "Libsoup (re)started");
 
 	/* Set the proxy, if configuration is set */
-	conf = twitux_conf_get ();
-	twitux_conf_get_bool (conf,
-						  TWITUX_PROXY_USE,
+	conf = conf_get ();
+	conf_get_bool (conf,
+						  PROXY_USE,
 						  &check_proxy);
 
 	if (check_proxy) {
@@ -135,30 +135,30 @@ twitux_network_new (void)
 		gint port;
 
 		/* Get proxy */
-		twitux_conf_get_string (conf,
-								TWITUX_PROXY_HOST,
+		conf_get_string (conf,
+								PROXY_HOST,
 								&server);
-		twitux_conf_get_int (conf,
-							 TWITUX_PROXY_PORT,
+		conf_get_int (conf,
+							 PROXY_PORT,
 							 &port);
 
 		if (server && server[0]) {
 			SoupURI *suri;
 
 			check_proxy = FALSE;
-			twitux_conf_get_bool (conf,
-								  TWITUX_PROXY_USE_AUTH,
+			conf_get_bool (conf,
+								  PROXY_USE_AUTH,
 								  &check_proxy);
 
 			/* Get proxy auth data */
 			if (check_proxy) {
 				char *user, *password;
 
-				twitux_conf_get_string (conf,
-										TWITUX_PROXY_USER,
+				conf_get_string (conf,
+										PROXY_USER,
 										&user);
-				twitux_conf_get_string (conf,
-										TWITUX_PROXY_PASS,
+				conf_get_string (conf,
+										PROXY_PASS,
 										&password);
 
 				proxy_uri = g_strdup_printf ("http://%s:%s@%s:%d",
@@ -174,7 +174,7 @@ twitux_network_new (void)
 											 server, port);
 			}
 
-			twitux_debug (DEBUG_DOMAIN, "Proxy uri: %s",
+			debug (DEBUG_DOMAIN, "Proxy uri: %s",
 						  proxy_uri);
 
 			/* Setup proxy info */
@@ -194,10 +194,10 @@ twitux_network_new (void)
 
 /* Cancels requests, and unref libsoup. */
 void
-twitux_network_close (void)
+network_close (void)
 {
 	/* Close all connections */
-	twitux_network_stop ();
+	network_stop ();
 
 	network_parser_free_lists ();
 
@@ -208,15 +208,15 @@ twitux_network_close (void)
 		current_timeline = NULL;
 	}
 
-	twitux_debug (DEBUG_DOMAIN, "Libsoup closed");
+	debug (DEBUG_DOMAIN, "Libsoup closed");
 }
 
 
 /* Cancels all pending requests in session. */
 void
-twitux_network_stop	(void)
+network_stop	(void)
 {
-	twitux_debug (DEBUG_DOMAIN,"Cancelled all connections");
+	debug (DEBUG_DOMAIN,"Cancelled all connections");
 
 	soup_session_abort (soup_connection);
 }
@@ -224,16 +224,16 @@ twitux_network_stop	(void)
 
 /* Login in Twitter */
 void
-twitux_network_login (const char *username, const char *password)
+network_login (const char *username, const char *password)
 {
-	twitux_debug (DEBUG_DOMAIN, "Begin login.. ");
+	debug (DEBUG_DOMAIN, "Begin login.. ");
 
 	g_free (global_username);
 	global_username = g_strdup (username);
 	g_free (global_password);
 	global_password = g_strdup (password);
 
-	twitux_app_set_statusbar_msg (_("Connecting..."));
+	app_set_statusbar_msg (_("Connecting..."));
 
 	/* HTTP Basic Authentication */
 	g_signal_connect (soup_connection,
@@ -242,28 +242,28 @@ twitux_network_login (const char *username, const char *password)
 					  NULL);
 
 	/* Verify cedentials */
-	network_get_data (TWITUX_API_LOGIN, network_cb_on_login, NULL);
+	network_get_data (API_LOGIN, network_cb_on_login, NULL);
 }
 
 
 /* Logout current user */
-void twitux_network_logout (void)
+void network_logout (void)
 {
-	twitux_network_new ();
+	network_new ();
 	
-	twitux_debug (DEBUG_DOMAIN, "Logout");
+	debug (DEBUG_DOMAIN, "Logout");
 }
 
 
 /* Post a new tweet - text must be Url encoded */
 void
-twitux_network_post_status (const gchar *text)
+network_post_status (const gchar *text)
 {
 	gchar *formdata;
 
 	formdata = g_strdup_printf ("source=twitux&status=%s", text);
 
-	network_post_data (TWITUX_API_POST_STATUS,
+	network_post_data (API_POST_STATUS,
 					   formdata,
 					   network_cb_on_post,
 					   NULL);
@@ -272,27 +272,27 @@ twitux_network_post_status (const gchar *text)
 
 /* Send a direct message to a follower - text must be Url encoded  */
 void
-twitux_network_send_message (const gchar *friend,
+network_send_message (const gchar *friend,
 							 const gchar *text)
 {
 	gchar *formdata;
 
 	formdata = g_strdup_printf ( "user=%s&text=%s", friend, text);
 	
-	network_post_data (TWITUX_API_SEND_MESSAGE,
+	network_post_data (API_SEND_MESSAGE,
 					   formdata,
 					   network_cb_on_message,
 					   NULL);
 }
 
 void
-twitux_network_refresh (void)
+network_refresh (void)
 {
 	if (!current_timeline || processing)
 		return;
 
 	/* UI */
-	twitux_app_set_statusbar_msg (_("Loading timeline..."));
+	app_set_statusbar_msg (_("Loading timeline..."));
 
 	processing = TRUE;
 	network_get_data (current_timeline, network_cb_on_timeline, NULL);
@@ -300,7 +300,7 @@ twitux_network_refresh (void)
 
 /* Get and parse a timeline */
 void
-twitux_network_get_timeline (const gchar *url_timeline)
+network_get_timeline (const gchar *url_timeline)
 {
 	if (processing)
 		return;
@@ -308,7 +308,7 @@ twitux_network_get_timeline (const gchar *url_timeline)
 	parser_reset_lastid ();
 
 	/* UI */
-	twitux_app_set_statusbar_msg (_("Loading timeline..."));
+	app_set_statusbar_msg (_("Loading timeline..."));
 
 	processing = TRUE;
 	network_get_data (url_timeline, network_cb_on_timeline, g_strdup(url_timeline));
@@ -316,24 +316,24 @@ twitux_network_get_timeline (const gchar *url_timeline)
 
 /* Get a user timeline */
 void
-twitux_network_get_user (const gchar *username)
+network_get_user (const gchar *username)
 {
 	gchar *user_timeline;
 	gchar *user_id;
 
 	if (!username){
-		twitux_conf_get_string (twitux_conf_get (),
-								TWITUX_PREFS_AUTH_USER_ID,
+		conf_get_string (conf_get (),
+								PREFS_AUTH_USER_ID,
 								&user_id);
 	} else {
 		user_id = g_strdup (username);
 	}
 
 	if(!G_STR_EMPTY (user_id)) {
-		user_timeline = g_strdup_printf (TWITUX_API_TIMELINE_USER,
+		user_timeline = g_strdup_printf (API_TIMELINE_USER,
 										 user_id);
 	
-		twitux_network_get_timeline (user_timeline);
+		network_get_timeline (user_timeline);
 		g_free (user_timeline);
 	}
 
@@ -346,8 +346,8 @@ twitux_network_get_user (const gchar *username)
  * 		NULL: Friends will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-GList *twitux_network_get_friends (void){
-	return ( user_friends ? user_friends : twitux_network_get_users_glist((gboolean)TRUE) );
+GList *network_get_friends (void){
+	return ( user_friends ? user_friends : network_get_users_glist((gboolean)TRUE) );
 }
 
 
@@ -356,11 +356,11 @@ GList *twitux_network_get_friends (void){
  * 		NULL: Followers will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-GList *twitux_network_get_followers (void){
-	return ( user_followers ? user_followers : twitux_network_get_users_glist((gboolean)FALSE) );
+GList *network_get_followers (void){
+	return ( user_followers ? user_followers : network_get_users_glist((gboolean)FALSE) );
 }
 
-GList *twitux_network_get_users_glist(gboolean get_friends){
+GList *network_get_users_glist(gboolean get_friends){
 	SoupMessage *msg;
 	gint page=0;
 
@@ -368,27 +368,27 @@ GList *twitux_network_get_users_glist(gboolean get_friends){
 	gboolean fetching=TRUE;
 	while(fetching){
 		page++;
-		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?TWITUX_API_FOLLOWING:TWITUX_API_FOLLOWERS), page)) );
+		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_FOLLOWING:API_FOLLOWERS), page)) );
 		soup_session_send_message(soup_connection, msg);
 		fetching=network_get_users_page(msg);
 	}
-	twitux_network_make_users_list(get_friends);
+	network_make_users_list(get_friends);
 
 	return NULL;
 }
 
 
 static gboolean network_get_users_page(SoupMessage *msg){
-	twitux_debug(DEBUG_DOMAIN, "Users response: %i",msg->status_code);
+	debug(DEBUG_DOMAIN, "Users response: %i",msg->status_code);
 	
 	/* Check response */
 	if (!network_check_http(msg->status_code))
 		return (gboolean)FALSE;
 
 	/* parse user list */
-	twitux_debug(DEBUG_DOMAIN, "Parsing user list");
+	debug(DEBUG_DOMAIN, "Parsing user list");
 	GList *users;
-	if(! (users=twitux_parser_users_list(msg->response_body->data, msg->response_body->length)) )
+	if(! (users=parser_users_list(msg->response_body->data, msg->response_body->length)) )
 		return (gboolean)FALSE;
 	
 	if(!all_users)
@@ -400,34 +400,34 @@ static gboolean network_get_users_page(SoupMessage *msg){
 }
 
 
-static int twitux_network_sort_users(TwituxUser *a, TwituxUser *b){
+static int network_sort_users(TwituxUser *a, TwituxUser *b){
 	return g_strcmp0(a->screen_name,b->screen_name);
 }
 
 
-static void twitux_network_make_users_list( gboolean friends ){
+static void network_make_users_list( gboolean friends ){
 	if(!all_users){
-		twitux_app_set_statusbar_msg (_("Users parser error."));
+		app_set_statusbar_msg (_("Users parser error."));
 		return;
 	}
 	
-	all_users=g_list_sort(all_users, (GCompareFunc) twitux_network_sort_users);
+	all_users=g_list_sort(all_users, (GCompareFunc) network_sort_users);
 	
 	/* check if it ok, and if it is a followers or following list */
 	if (!friends){
 		/* Followers list retrived */
 		user_followers = all_users;
-		twitux_message_set_followers(user_followers);
+		message_set_followers(user_followers);
 		return;
 	}
 	/* Friends retrived */
 	user_friends = all_users;
-	twitux_lists_dialog_load_lists(user_friends);
+	lists_dialog_load_lists(user_friends);
 }
 
 
 /* Get an image from servers */
-void twitux_network_get_image (const gchar  *url_image, GtkTreeIter   iter){
+void network_get_image (const gchar  *url_image, GtkTreeIter   iter){
 	gchar *image_file, **image_name_info;
 	
 	TwituxImage *image;
@@ -437,17 +437,17 @@ void twitux_network_get_image (const gchar  *url_image, GtkTreeIter   iter){
 	if( image_name_info[5] && image_name_info[6] )
 		image_file=g_strconcat(image_name_info[5], "_", image_name_info[6], NULL);
 	else
-		image_file="twitux_unknown_image";
+		image_file="unknown_image";
 	
 	if(image_name_info)
 		g_strfreev(image_name_info);
 	
-	image_file=g_build_filename( g_get_home_dir(), ".gnome2", TWITUX_CACHE_IMAGES, image_file, NULL );
+	image_file=g_build_filename( g_get_home_dir(), ".gnome2", CACHE_IMAGES, image_file, NULL );
 	
 	/* TODO: fix - check if image already exists */
 	if (g_file_test(image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) {		
 		/* Set image from file here */
-		twitux_app_set_image(image_file, iter);
+		app_set_image(image_file, iter);
 		g_free(image_file);
 		return;
 	}
@@ -465,14 +465,14 @@ void twitux_network_get_image (const gchar  *url_image, GtkTreeIter   iter){
 
 /* Add a user to follow */
 void
-twitux_network_add_user (const gchar *username)
+network_add_user (const gchar *username)
 {
 	gchar *url;
 	
 	if (G_STR_EMPTY (username))
 		return;
 	
-	url = g_strdup_printf (TWITUX_API_FOLLOWING_ADD, username);
+	url = g_strdup_printf (API_FOLLOWING_ADD, username);
 
 	network_post_data (url, NULL, network_cb_on_add, NULL);
 
@@ -482,14 +482,14 @@ twitux_network_add_user (const gchar *username)
 
 /* Add a user to follow */
 void
-twitux_network_del_user (TwituxUser *user)
+network_del_user (TwituxUser *user)
 {
 	gchar *url;
 	
 	if (!user || !user->screen_name)
 		return;
 	
-	url = g_strdup_printf (TWITUX_API_FOLLOWING_DEL, user->screen_name);
+	url = g_strdup_printf (API_FOLLOWING_DEL, user->screen_name);
 
 	network_post_data (url, NULL, network_cb_on_del, user);
 
@@ -505,7 +505,7 @@ network_get_data (const gchar           *url,
 {
 	SoupMessage *msg;
 
-	twitux_debug (DEBUG_DOMAIN, "Get: %s",url);
+	debug (DEBUG_DOMAIN, "Get: %s",url);
 
 	msg = soup_message_new ( "GET", url );
 
@@ -522,7 +522,7 @@ network_post_data (const gchar           *url,
 {
 	SoupMessage *msg;
 
-	twitux_debug (DEBUG_DOMAIN, "Post: %s",url);
+	debug (DEBUG_DOMAIN, "Post: %s",url);
 
 	msg = soup_message_new ("POST", url);
 	
@@ -531,7 +531,7 @@ network_post_data (const gchar           *url,
 	soup_message_headers_append (msg->request_headers,
 								 "X-Twitter-Client-Version", PACKAGE_VERSION);
 	soup_message_headers_append (msg->request_headers,
-								 "X-Twitter-Client-URL", TWITUX_HEADER_URL);
+								 "X-Twitter-Client-URL", HEADER_URL);
 
 	if (formdata)
 	{
@@ -551,16 +551,16 @@ static gboolean
 network_check_http (gint status_code)
 {
 	if (status_code == 401) {
-		twitux_app_set_statusbar_msg (_("Access denied."));
+		app_set_statusbar_msg (_("Access denied."));
 
 	} else if (SOUP_STATUS_IS_CLIENT_ERROR (status_code)) {
-		twitux_app_set_statusbar_msg (_("HTTP communication error."));
+		app_set_statusbar_msg (_("HTTP communication error."));
 
 	} else if(SOUP_STATUS_IS_SERVER_ERROR (status_code)) {
-		twitux_app_set_statusbar_msg (_("Internal server error."));
+		app_set_statusbar_msg (_("Internal server error."));
 
 	} else if (!SOUP_STATUS_IS_SUCCESSFUL (status_code)) {
-		twitux_app_set_statusbar_msg (_("Stopped"));
+		app_set_statusbar_msg (_("Stopped"));
 
 	} else {
 		return TRUE;
@@ -592,14 +592,14 @@ network_parser_free_lists ()
 		g_list_foreach (user_friends, network_free_user_list_each, NULL);
 		g_list_free (user_friends);
 		user_friends = NULL;
-		twitux_debug (DEBUG_DOMAIN, "Friends freed");
+		debug (DEBUG_DOMAIN, "Friends freed");
 	}
 
 	if (user_followers) {
 		g_list_foreach (user_followers, network_free_user_list_each, NULL);
 		g_list_free (user_followers);
 		user_followers = NULL;
-		twitux_debug (DEBUG_DOMAIN, "Followers freed");
+		debug (DEBUG_DOMAIN, "Followers freed");
 	}
 }
 
@@ -631,15 +631,15 @@ network_cb_on_login (SoupSession *session,
 					 SoupMessage *msg,
 					 gpointer     user_data)
 {
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Login response: %i",msg->status_code);
 
 	if (network_check_http (msg->status_code)) {
-		twitux_app_state_on_connection (TRUE);
+		app_state_on_connection (TRUE);
 		return;
 	}
 
-	twitux_app_state_on_connection (FALSE);
+	app_state_on_connection (FALSE);
 }
 
 
@@ -650,10 +650,10 @@ network_cb_on_post (SoupSession *session,
 					gpointer     user_data)
 {
 	if (network_check_http (msg->status_code)) {
-		twitux_app_set_statusbar_msg (_("Status Sent"));
+		app_set_statusbar_msg (_("Status Sent"));
 	}
 	
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Tweet response: %i",msg->status_code);
 }
 
@@ -665,10 +665,10 @@ network_cb_on_message (SoupSession *session,
 					   gpointer     user_data)
 {
 	if (network_check_http (msg->status_code)) {
-		twitux_app_set_statusbar_msg (_("Message Sent"));
+		app_set_statusbar_msg (_("Message Sent"));
 	}
 
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Message response: %i",msg->status_code);
 }
 
@@ -685,7 +685,7 @@ network_cb_on_timeline (SoupSession *session,
 		new_timeline = (gchar *)user_data;
 	}
 
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Timeline response: %i",msg->status_code);
 
 	processing = FALSE;
@@ -700,11 +700,11 @@ network_cb_on_timeline (SoupSession *session,
 		return;
 	}
 
-	twitux_debug (DEBUG_DOMAIN, "Parsing timeline");
+	debug (DEBUG_DOMAIN, "Parsing timeline");
 
 	/* Parse and set ListStore */
-	if (twitux_parser_timeline (msg->response_body->data, msg->response_body->length)) {
-		twitux_app_set_statusbar_msg (_("Timeline Loaded"));
+	if (parser_timeline (msg->response_body->data, msg->response_body->length)) {
+		app_set_statusbar_msg (_("Timeline Loaded"));
 
 		if (new_timeline){
 			if (current_timeline)
@@ -712,7 +712,7 @@ network_cb_on_timeline (SoupSession *session,
 			current_timeline = g_strdup (new_timeline);
 		}
 	} else {
-		twitux_app_set_statusbar_msg (_("Timeline Parser Error."));
+		app_set_statusbar_msg (_("Timeline Parser Error."));
 	}
 
 	if (new_timeline)
@@ -728,7 +728,7 @@ network_cb_on_image (SoupSession *session,
 {
 	TwituxImage *image = (TwituxImage *)user_data;
 
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Image response: %i", msg->status_code);
 
 	/* check response */
@@ -739,7 +739,7 @@ network_cb_on_image (SoupSession *session,
 								 msg->response_body->length,
 								 NULL)) {
 			/* Set image from file here (image_file) */
-			twitux_app_set_image (image->src,image->iter);
+			app_set_image (image->src,image->iter);
 		}
 	}
 
@@ -756,7 +756,7 @@ network_cb_on_add (SoupSession *session,
 {
 	TwituxUser *user;
 
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Add user response: %i", msg->status_code);
 	
 	/* Check response */
@@ -764,16 +764,16 @@ network_cb_on_add (SoupSession *session,
 		return;
 
 	/* parse new user */
-	twitux_debug (DEBUG_DOMAIN, "Parsing new user");
+	debug (DEBUG_DOMAIN, "Parsing new user");
 
-	user = twitux_parser_single_user (msg->response_body->data,
+	user = parser_single_user (msg->response_body->data,
 									  msg->response_body->length);
 
 	if (user) {
 		user_friends = g_list_append ( user_friends, user );
-		twitux_app_set_statusbar_msg (_("Friend Added"));
+		app_set_statusbar_msg (_("Friend Added"));
 	} else {
-		twitux_app_set_statusbar_msg (_("Failed to add user"));
+		app_set_statusbar_msg (_("Failed to add user"));
 	}
 }
 
@@ -784,13 +784,13 @@ network_cb_on_del (SoupSession *session,
 				   SoupMessage *msg,
 				   gpointer     user_data)
 {
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Delete user response: %i", msg->status_code);
 
 	if (network_check_http (msg->status_code)) {		
-		twitux_app_set_statusbar_msg (_("Friend Removed"));
+		app_set_statusbar_msg (_("Friend Removed"));
 	} else {
-		twitux_app_set_statusbar_msg (_("Failed to remove user"));
+		app_set_statusbar_msg (_("Failed to remove user"));
 	}
 	
 	if (user_data) {
@@ -807,14 +807,14 @@ network_timeout_new (void)
 	guint reload_time;
 
 	if (timeout_id) {
-		twitux_debug (DEBUG_DOMAIN,
+		debug (DEBUG_DOMAIN,
 					  "Stopping timeout id: %i", timeout_id);
 
 		g_source_remove (timeout_id);
 	}
 
-	twitux_conf_get_int (twitux_conf_get (),
-						 TWITUX_PREFS_TWEETS_RELOAD_TIMELINES,
+	conf_get_int (conf_get (),
+						 PREFS_TWEETS_RELOAD_TIMELINES,
 						 &minutes);
 
 	/* The timeline reload interval shouldn't be less than 3 minutes */
@@ -829,7 +829,7 @@ network_timeout_new (void)
 								network_timeout,
 								NULL);
 
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Starting timeout id: %i", timeout_id);
 }
 
@@ -840,9 +840,9 @@ network_timeout (gpointer user_data)
 		return FALSE;
 
 	/* UI */
-	twitux_app_set_statusbar_msg (_("Reloading timeline..."));
+	app_set_statusbar_msg (_("Reloading timeline..."));
 
-	twitux_debug (DEBUG_DOMAIN,
+	debug (DEBUG_DOMAIN,
 				  "Auto reloading. Timeout: %i", timeout_id);
 
 	processing = TRUE;

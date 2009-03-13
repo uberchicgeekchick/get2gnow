@@ -37,7 +37,7 @@
 #define DEBUG_DOMAIN "TweetList"
 
 #define GET_PRIV(obj)           \
-	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TWITUX_TYPE_TWEET_LIST, TwituxTweetListPriv))
+	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TwituxTweetListPriv))
 
 struct _TwituxTweetListPriv {
 	GtkListStore      *store;
@@ -46,8 +46,8 @@ struct _TwituxTweetListPriv {
 	GtkCellRenderer   *text_renderer;
 };
 
-static void   twitux_tweet_list_class_init(TwituxTweetListClass *klass);
-static void   twitux_tweet_list_init(TwituxTweetList      *tweet);
+static void   tweet_list_class_init(TwituxTweetListClass *klass);
+static void   tweet_list_init(TwituxTweetList      *tweet);
 static void   tweet_list_finalize(GObject              *obj);
 static void   tweet_list_create_model(TwituxTweetList      *list);
 static void   tweet_list_setup_view(TwituxTweetList      *list);
@@ -63,10 +63,10 @@ static void   tweet_list_activated_cb(GtkTreeView          *tree_view,
 static TwituxTweetList *list = NULL;
 static TwituxTweetListPriv *list_priv=NULL;
 
-G_DEFINE_TYPE(TwituxTweetList, twitux_tweet_list, GTK_TYPE_TREE_VIEW);
+G_DEFINE_TYPE(TwituxTweetList, tweet_list, GTK_TYPE_TREE_VIEW);
 
 static void
-twitux_tweet_list_class_init(TwituxTweetListClass *klass)
+tweet_list_class_init(TwituxTweetListClass *klass)
 {
 	GObjectClass   *object_class = G_OBJECT_CLASS(klass);
 
@@ -76,7 +76,7 @@ twitux_tweet_list_class_init(TwituxTweetListClass *klass)
 }
 
 static void
-twitux_tweet_list_init(TwituxTweetList *tweet)
+tweet_list_init(TwituxTweetList *tweet)
 {
 	
 	list=tweet;
@@ -110,7 +110,7 @@ tweet_list_finalize(GObject *object)
 	if(list_priv->store)
 		g_object_unref(list_priv->store);
 
-	G_OBJECT_CLASS(twitux_tweet_list_parent_class)->finalize(object);
+	G_OBJECT_CLASS(tweet_list_parent_class)->finalize(object);
 	g_object_unref(object);
 	//g_object_unref(priv);
 }
@@ -173,8 +173,8 @@ tweet_list_changed_cb(GtkWidget *widget,
                        gpointer   user_data)
 {
 	gboolean expand;
-	twitux_conf_get_bool(twitux_conf_get(),
-						TWITUX_PREFS_UI_EXPAND_MESSAGES,
+	conf_get_bool(conf_get(),
+						PREFS_UI_EXPAND_MESSAGES,
 						&expand);
 	if(!expand)
 		return;
@@ -185,7 +185,7 @@ tweet_list_changed_cb(GtkWidget *widget,
 	GdkPixbuf           *pixbuf;
 	gchar               *name, *tweet, *date;
 
-	t = TWITUX_TWEET_LIST(user_data);
+	t = TWEET_LIST(user_data);
 	
 	/* Get selected Iter */
 	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
@@ -201,7 +201,7 @@ tweet_list_changed_cb(GtkWidget *widget,
 						PIXBUF_AVATAR, &pixbuf,
 						-1);
 	
-	twitux_app_expand_message(name, date, tweet, pixbuf);
+	app_expand_message(name, date, tweet, pixbuf);
 	
 	g_free(name);
 	g_free(tweet);
@@ -216,7 +216,7 @@ tweet_list_size_cb(GtkWidget     *widget,
 {
 	TwituxTweetList     *t;
 	
-	t=TWITUX_TWEET_LIST(user_data);	
+	t=TWEET_LIST(user_data);	
 	
 	g_object_set(list_priv->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(list_priv->text_column))-10), NULL);
 }
@@ -231,7 +231,7 @@ tweet_list_activated_cb(GtkTreeView       *tree_view,
 	gchar               *friend=NULL;
 	GtkTreeIter          iter;
 
-	t = TWITUX_TWEET_LIST(friends_tweet);
+	t = TWEET_LIST(friends_tweet);
 
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(list_priv->store),
 							 &iter,
@@ -242,17 +242,17 @@ tweet_list_activated_cb(GtkTreeView       *tree_view,
 						STRING_USER, &friend,
 						-1);
 
-	twitux_send_message_dialog_show(NULL);
-	twitux_message_show_friends(FALSE);
-	twitux_message_set_message( (g_strdup_printf("@%s ", friend)) );
+	send_message_dialog_show(NULL);
+	message_show_friends(FALSE);
+	message_set_message( (g_strdup_printf("@%s ", friend)) );
 
 	g_free(friend);
 }
 
-TwituxTweetList *twitux_tweet_list_new(void){
-	return g_object_new(TWITUX_TYPE_TWEET_LIST, NULL);
+TwituxTweetList *tweet_list_new(void){
+	return g_object_new(TYPE_TWEET_LIST, NULL);
 }
 
-GtkListStore *twitux_tweet_list_get_store(void){
+GtkListStore *tweet_list_get_store(void){
 	return list_priv->store;
 }

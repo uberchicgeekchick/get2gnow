@@ -38,7 +38,7 @@ main(int argc, char *argv[])
 	gchar *localedir;
 	gboolean notifing=FALSE;
 
-	localedir = twitux_paths_get_locale_path();
+	localedir = paths_get_locale_path();
 	bindtextdomain(GETTEXT_PACKAGE, localedir);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
@@ -53,13 +53,13 @@ main(int argc, char *argv[])
 	gtk_window_set_default_icon_name("greet-tweet-know");
 
 	/* Start the network */
-	twitux_network_new();
+	network_new();
 
 	/* Start libnotify */
 	notifing=notify_init("greet-tweet-know");
 
 	/* Create the ui */
-	twitux_app_create();
+	app_create();
 
 	gtk_main();
 	
@@ -67,10 +67,10 @@ main(int argc, char *argv[])
 	if(notifing) notify_uninit();
 
 	/* Close the network */
-	twitux_network_close();
+	network_close();
 
 	/* Clean up the ui */
-	g_object_unref(twitux_app_get());
+	g_object_unref(app_get());
 
 	return 0;
 }

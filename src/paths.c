@@ -28,15 +28,15 @@
 #define GREET_TWEET_KNOW "greet-tweet-know"
 
 gchar *
-twitux_paths_get_xml_path (const gchar *filename)
+paths_get_glade_path (const gchar *filename)
 {
 	return g_build_filename( DATADIR, GREET_TWEET_KNOW, filename, NULL );
 }
 
-gchar *twitux_paths_get_image_path( const gchar *filename ){
+gchar *paths_get_image_path( const gchar *filename ){
 	return g_build_filename( DATADIR, GREET_TWEET_KNOW, filename, NULL );
 }
 
-gchar *twitux_paths_get_locale_path(){
+gchar *paths_get_locale_path(){
 	return g_strdup( LOCALEDIR );
 }

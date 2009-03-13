@@ -31,7 +31,7 @@
 #include <glib/gprintf.h>
 
 /*
- * Set TWITUX_DEBUG to a colon/comma/space separated list of domains, or "all"
+ * Set DEBUG to a colon/comma/space separated list of domains, or "all"
  * to get all debug output.
  */
 
@@ -49,7 +49,7 @@ debug_init (void)
 		const gchar *env;
 		gint         i;
 
-		env = g_getenv ("TWITUX_DEBUG");
+		env = g_getenv ("DEBUG");
 
 		if (env) {
 			debug_strv = g_strsplit_set (env, ":, ", 0);
@@ -68,7 +68,7 @@ debug_init (void)
 }
 
 void
-twitux_debug_impl (const gchar *domain, const gchar *msg, ...)
+debug_impl (const gchar *domain, const gchar *msg, ...)
 {
 	gint i;
 

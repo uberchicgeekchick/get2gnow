@@ -119,21 +119,21 @@ avatar_pixbuf_roundify (GdkPixbuf *pixbuf)
 }
 
 GType
-twitux_avatar_get_gtype (void)
+avatar_get_gtype (void)
 {
 	static GType type_id = 0;
 
 	if (!type_id) {
 		type_id = g_boxed_type_register_static ("TwituxAvatar",
-												(GBoxedCopyFunc) twitux_avatar_ref,
-												(GBoxedFreeFunc) twitux_avatar_unref);
+												(GBoxedCopyFunc) avatar_ref,
+												(GBoxedFreeFunc) avatar_unref);
 	}
 
 	return type_id;
 }
 
 TwituxAvatar *
-twitux_avatar_new (guchar *data,
+avatar_new (guchar *data,
 				   gsize   len,
 				   gchar  *format)
 {
@@ -214,7 +214,7 @@ avatar_create_pixbuf (TwituxAvatar *avatar, gint size)
 }
 
 GdkPixbuf *
-twitux_avatar_get_pixbuf (TwituxAvatar *avatar)
+avatar_get_pixbuf (TwituxAvatar *avatar)
 {
 	g_return_val_if_fail (avatar != NULL, NULL);
 
@@ -226,13 +226,13 @@ twitux_avatar_get_pixbuf (TwituxAvatar *avatar)
 }
 
 GdkPixbuf *
-twitux_avatar_create_pixbuf_with_size (TwituxAvatar *avatar, gint size)
+avatar_create_pixbuf_with_size (TwituxAvatar *avatar, gint size)
 {
 	return avatar_create_pixbuf (avatar, size);
 }
 
 void
-twitux_avatar_unref (TwituxAvatar *avatar)
+avatar_unref (TwituxAvatar *avatar)
 {
 	g_return_if_fail (avatar != NULL);
 
@@ -250,7 +250,7 @@ twitux_avatar_unref (TwituxAvatar *avatar)
 }
 
 TwituxAvatar *
-twitux_avatar_ref (TwituxAvatar *avatar)
+avatar_ref (TwituxAvatar *avatar)
 {
 	g_return_val_if_fail (avatar != NULL, NULL);
 

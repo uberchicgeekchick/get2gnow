@@ -42,7 +42,7 @@
 #include "spell.h"
 #include "spell-dialog.h"
 
-#define XML_FILE "spell_dlg.xml"
+#define GLADE_FILE "spell_dlg.xml"
 
 typedef struct {
 	GtkWidget   *window;
@@ -114,7 +114,7 @@ spell_dialog_model_populate_suggestions (TwituxSpellDialog *dialog)
 	model = gtk_tree_view_get_model (GTK_TREE_VIEW (dialog->treeview_words));
 	store = GTK_LIST_STORE (model);
 
-	suggestions = (GList *) twitux_spell_get_suggestions (dialog->word);
+	suggestions = (GList *) spell_get_suggestions (dialog->word);
 	for (l = suggestions; l; l=l->next) {
 		GtkTreeIter  iter;
 		gchar       *word;
@@ -127,7 +127,7 @@ spell_dialog_model_populate_suggestions (TwituxSpellDialog *dialog)
 							-1);
 	}
 
-	twitux_spell_free_suggestions (suggestions);
+	spell_free_suggestions (suggestions);
 }
 
 static void
@@ -210,7 +210,7 @@ spell_dialog_response_cb (GtkWidget         *widget,
 
 		gtk_tree_model_get (model, &iter, COL_SPELL_WORD, &new_word, -1);
 
-		twitux_message_correct_word (dialog->textview,
+		message_correct_word (dialog->textview,
 									 dialog->start,
 									 dialog->end,
 									 new_word);
@@ -222,7 +222,7 @@ spell_dialog_response_cb (GtkWidget         *widget,
 }
 
 void
-twitux_spell_dialog_show (GtkWidget   *textview,
+spell_dialog_show (GtkWidget   *textview,
 						  GtkTextIter  start,
 						  GtkTextIter  end,
 						  const gchar *word)
@@ -244,7 +244,7 @@ twitux_spell_dialog_show (GtkWidget   *textview,
 	dialog->end = end;
 
 	/* Get widgets */
-	ui = twitux_xml_get_file (XML_FILE,
+	ui = glade_get_file (GLADE_FILE,
 						"spell_dialog", &dialog->window,
 						"button_replace", &dialog->button_replace,
 						"label_word", &dialog->label_word,
@@ -252,7 +252,7 @@ twitux_spell_dialog_show (GtkWidget   *textview,
 						NULL);
 
 	/* Connect the signals */
-	twitux_xml_connect (ui, dialog,
+	glade_connect (ui, dialog,
 						"spell_dialog", "destroy", spell_dialog_destroy_cb,
 						"spell_dialog", "response", spell_dialog_response_cb,
 						NULL);

@@ -38,7 +38,7 @@
 #include "preferences.h"
 #include "spell.h"
 
-#define XML_FILE "prefs_dlg.xml"
+#define GLADE_FILE "prefs_dlg.xml"
 
 typedef struct {
 	GtkWidget *dialog;
@@ -147,39 +147,39 @@ static void
 preferences_setup_widgets (TwituxPrefs *prefs)
 {
 	preferences_hookup_toggle_button (prefs,
-									  TWITUX_PREFS_TWEETS_SHOW_NAMES,
+									  PREFS_TWEETS_SHOW_NAMES,
 									  prefs->names);
 
 	preferences_hookup_toggle_button (prefs,
-									  TWITUX_PREFS_UI_EXPAND_MESSAGES,
+									  PREFS_UI_EXPAND_MESSAGES,
 									  prefs->expand);
 
 	preferences_hookup_toggle_button (prefs,
-									  TWITUX_PREFS_AUTH_AUTO_LOGIN,
+									  PREFS_AUTH_AUTO_LOGIN,
 									  prefs->autoconnect);
 
 	preferences_hookup_toggle_button (prefs,
-									  TWITUX_PREFS_UI_NOTIFICATION,
+									  PREFS_UI_NOTIFICATION,
 									  prefs->notify);
 
 	preferences_hookup_toggle_button (prefs,
-									  TWITUX_PREFS_UI_SOUND,
+									  PREFS_UI_SOUND,
 									  prefs->sound);
 
 	preferences_hookup_toggle_button (prefs,
-									  TWITUX_PREFS_UI_SPELL,
+									  PREFS_UI_SPELL,
 									  prefs->spell);
 
 	preferences_hookup_sensitivity (prefs,
-									TWITUX_PREFS_UI_SPELL_LANGUAGES,
+									PREFS_UI_SPELL_LANGUAGES,
 									prefs->treeview_spell_checker);
 
 	preferences_hookup_string_combo (prefs,
-									 TWITUX_PREFS_TWEETS_HOME_TIMELINE,
+									 PREFS_TWEETS_HOME_TIMELINE,
 									 prefs->combo_default_timeline);
 
 	preferences_hookup_int_combo (prefs,
-								  TWITUX_PREFS_TWEETS_RELOAD_TIMELINES,
+								  PREFS_TWEETS_RELOAD_TIMELINES,
 								  prefs->combo_reload);
 }
 static void
@@ -248,14 +248,14 @@ preferences_languages_add (TwituxPrefs *prefs)
 	view = GTK_TREE_VIEW (prefs->treeview_spell_checker);
 	store = GTK_LIST_STORE (gtk_tree_view_get_model (view));
 
-	codes = twitux_spell_get_language_codes ();
+	codes = spell_get_language_codes ();
 	for (l = codes; l; l = l->next) {
 		GtkTreeIter  iter;
 		const gchar *code;
 		const gchar *name;
 
 		code = l->data;
-		name = twitux_spell_get_language_name (code);
+		name = spell_get_language_name (code);
 		if (!name) {
 			continue;
 		}
@@ -267,7 +267,7 @@ preferences_languages_add (TwituxPrefs *prefs)
 							-1);
 	}
 
-	twitux_spell_free_language_codes (codes);
+	spell_free_language_codes (codes);
 }
 
 static void
@@ -291,8 +291,8 @@ preferences_languages_save (TwituxPrefs *prefs)
 		languages = g_strdup ("en");
 	}
 
-	twitux_conf_set_string (twitux_conf_get (),
-							TWITUX_PREFS_UI_SPELL_LANGUAGES,
+	conf_set_string (conf_get (),
+							PREFS_UI_SPELL_LANGUAGES,
 							languages);
 	g_free (languages);
 }
@@ -341,8 +341,8 @@ preferences_languages_load (TwituxPrefs *prefs)
 	gchar         *value;
 	gchar        **vlanguages;
 
-	if (!twitux_conf_get_string (twitux_conf_get (),
-								 TWITUX_PREFS_UI_SPELL_LANGUAGES,
+	if (!conf_get_string (conf_get (),
+								 PREFS_UI_SPELL_LANGUAGES,
 								 &value) || !value) {
 		return;
 	}
@@ -433,9 +433,9 @@ static void
 preferences_timeline_setup (TwituxPrefs *prefs)
 {
 	static const gchar *timelines[] = {
-		TWITUX_API_TIMELINE_PUBLIC, N_("Public"),
-		TWITUX_API_TIMELINE_FRIENDS, N_("Friends"),
-		TWITUX_API_TIMELINE_MY, N_("Mine"),
+		API_TIMELINE_PUBLIC, N_("Public"),
+		API_TIMELINE_FRIENDS, N_("Friends"),
+		API_TIMELINE_MY, N_("Mine"),
 		NULL
 	};
 
@@ -508,7 +508,7 @@ preferences_widget_sync_bool (const gchar *key, GtkWidget *widget)
 {
 	gboolean value;
 
-	if (twitux_conf_get_bool (twitux_conf_get (), key, &value)) {
+	if (conf_get_bool (conf_get (), key, &value)) {
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), value);
 	}
 }
@@ -521,7 +521,7 @@ preferences_widget_sync_string_combo (const gchar *key, GtkWidget *widget)
 	GtkTreeIter   iter;
 	gboolean      found;
 
-	if (!twitux_conf_get_string (twitux_conf_get (), key, &value)) {
+	if (!conf_get_string (conf_get (), key, &value)) {
 		return;
 	}
 
@@ -566,7 +566,7 @@ preferences_widget_sync_int_combo (const gchar *key, GtkWidget *widget)
 	GtkTreeIter   iter;
 	gboolean      found;
 
-	if (!twitux_conf_get_int (twitux_conf_get (), key, &value)) {
+	if (!conf_get_int (conf_get (), key, &value)) {
 		return;
 	}
 
@@ -623,7 +623,7 @@ preferences_notify_sensitivity_cb (TwituxConf  *conf,
 {
 	gboolean value;
 
-	if (twitux_conf_get_bool (conf, key, &value)) {
+	if (conf_get_bool (conf, key, &value)) {
 		gtk_widget_set_sensitive (GTK_WIDGET (user_data), value);
 	}
 }
@@ -652,7 +652,7 @@ preferences_hookup_toggle_button (TwituxPrefs *prefs,
 					  G_CALLBACK (preferences_toggle_button_toggled_cb),
 					  NULL);
 
-	id = twitux_conf_notify_add (twitux_conf_get (),
+	id = conf_notify_add (conf_get (),
 								 key,
 								 preferences_notify_bool_cb,
 								 widget);
@@ -679,7 +679,7 @@ preferences_hookup_string_combo (TwituxPrefs *prefs,
 					  G_CALLBACK (preferences_string_combo_changed_cb),
 					  NULL);
 
-	id = twitux_conf_notify_add (twitux_conf_get (),
+	id = conf_notify_add (conf_get (),
 								 key,
 								 preferences_notify_string_combo_cb,
 								 widget);
@@ -705,7 +705,7 @@ preferences_hookup_int_combo (TwituxPrefs *prefs,
 					  G_CALLBACK (preferences_int_combo_changed_cb),
 					  NULL);
 
-	id = twitux_conf_notify_add (twitux_conf_get (),
+	id = conf_notify_add (conf_get (),
 								 key,
 								 preferences_notify_int_combo_cb,
 								 widget);
@@ -723,11 +723,11 @@ preferences_hookup_sensitivity (TwituxPrefs *prefs,
 	gboolean value;
 	guint    id;
 
-	if (twitux_conf_get_bool (twitux_conf_get (), key, &value)) {
+	if (conf_get_bool (conf_get (), key, &value)) {
 		gtk_widget_set_sensitive (widget, value);
 	}
 
-	id = twitux_conf_notify_add (twitux_conf_get (),
+	id = conf_notify_add (conf_get (),
 								 key,
 								 preferences_notify_sensitivity_cb,
 								 widget);
@@ -745,7 +745,7 @@ preferences_toggle_button_toggled_cb (GtkWidget *button,
 
 	key = g_object_get_data (G_OBJECT (button), "key");
 
-	twitux_conf_set_bool (twitux_conf_get (),
+	conf_set_bool (conf_get (),
 						  key,
 						  gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)));
 }
@@ -767,7 +767,7 @@ preferences_string_combo_changed_cb (GtkWidget *combo,
 		gtk_tree_model_get (model, &iter,
 							COL_COMBO_NAME, &name,
 							-1);
-		twitux_conf_set_string (twitux_conf_get (), key, name);
+		conf_set_string (conf_get (), key, name);
 		g_free (name);
 	}
 }
@@ -790,7 +790,7 @@ preferences_int_combo_changed_cb (GtkWidget *combo,
 							COL_COMBO_NAME, &minutes,
 							-1);
 
-		twitux_conf_set_int (twitux_conf_get (), key, minutes);
+		conf_set_int (conf_get (), key, minutes);
 	}
 }
 
@@ -811,7 +811,7 @@ preferences_destroy_cb (GtkWidget   *widget,
 		guint id;
 
 		id = GPOINTER_TO_UINT (l->data);
-		twitux_conf_notify_remove (twitux_conf_get (), id);
+		conf_notify_remove (conf_get (), id);
 	}
 
 	g_list_free (prefs->notify_ids);
@@ -819,7 +819,7 @@ preferences_destroy_cb (GtkWidget   *widget,
 }
 
 void
-twitux_preferences_dialog_show (GtkWindow *parent)
+preferences_dialog_show (GtkWindow *parent)
 {
 	static TwituxPrefs *prefs;
 	GtkBuilder         *ui;
@@ -832,7 +832,7 @@ twitux_preferences_dialog_show (GtkWindow *parent)
 	prefs = g_new0 (TwituxPrefs, 1);
 
 	/* Get widgets */
-	ui = twitux_xml_get_file (XML_FILE,
+	ui = glade_get_file (GLADE_FILE,
 							  "preferences_dialog", &prefs->dialog,
 							  "preferences_notebook", &prefs->notebook,
 							  "combobox_timeline", &prefs->combo_default_timeline,
@@ -847,7 +847,7 @@ twitux_preferences_dialog_show (GtkWindow *parent)
 							  NULL);
 
 	/* Connect the signals */
-	twitux_xml_connect (ui, prefs,
+	glade_connect (ui, prefs,
 						"preferences_dialog", "destroy", preferences_destroy_cb,
 						"preferences_dialog", "response", preferences_response_cb,
 						NULL);
@@ -868,7 +868,7 @@ twitux_preferences_dialog_show (GtkWindow *parent)
 	preferences_languages_load (prefs);
 
 	/* If compiled with spelling support, show the notebook page */
-	if (twitux_spell_supported ()) {
+	if (spell_supported ()) {
 		GtkWidget *page;
 
 		page = gtk_notebook_get_nth_page (GTK_NOTEBOOK (prefs->notebook), 1);

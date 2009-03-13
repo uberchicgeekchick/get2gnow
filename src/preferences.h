@@ -24,11 +24,11 @@
  *			Brian Pepple <bpepple@fedoraproject.org>
  */
 
-#ifndef __TWITUX_PREFERENCES_H__
-#define __TWITUX_PREFERENCES_H__
+#ifndef __PREFERENCES_H__
+#define __PREFERENCES_H__
 
 #include <gtk/gtk.h>
 
-void twitux_preferences_dialog_show (GtkWindow *parent);
+void preferences_dialog_show (GtkWindow *parent);
 
-#endif /* __TWITUX_PREFERENCES_H__ */
+#endif /* __PREFERENCES_H__ */

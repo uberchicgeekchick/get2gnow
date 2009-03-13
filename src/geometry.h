@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef __TWITUX_GEOMETRY_H__
-#define __TWITUX_GEOMETRY_H__
+#ifndef __GEOMETRY_H__
+#define __GEOMETRY_H__
 
 #include <gtk/gtk.h>
 
-void twitux_geometry_load_for_main_window (GtkWidget *main_window);
-void twitux_geometry_save_for_main_window (gint       x,
+void geometry_load_for_main_window (GtkWidget *main_window);
+void geometry_save_for_main_window (gint       x,
 										   gint       y,
 										   gint       w,
 										   gint       h);
 
-#endif /* __TWITUX_GEOMETRY_H__ */
+#endif /* __GEOMETRY_H__ */

@@ -936,10 +936,10 @@ GNOME_KEYRING_CFLAGS
 GNOME_KEYRING_LIBS
 HAVE_GNOME_KEYRING_TRUE
 HAVE_GNOME_KEYRING_FALSE
-LIBTWITUX_CFLAGS
-LIBTWITUX_LIBS
-TWITUX_CFLAGS
-TWITUX_LIBS
+LIBGREET_TWEET_KNOW_CFLAGS
+LIBGREET_TWEET_KNOW_LIBS
+GREET_TWEET_KNOW_CFLAGS
+GREET_TWEET_KNOW_LIBS
 ENCHANT_CFLAGS
 ENCHANT_LIBS
 HAVE_ENCHANT_TRUE
@@ -980,10 +980,10 @@ DBUS_CFLAGS
 DBUS_LIBS
 GNOME_KEYRING_CFLAGS
 GNOME_KEYRING_LIBS
-LIBTWITUX_CFLAGS
-LIBTWITUX_LIBS
-TWITUX_CFLAGS
-TWITUX_LIBS
+LIBGREET_TWEET_KNOW_CFLAGS
+LIBGREET_TWEET_KNOW_LIBS
+GREET_TWEET_KNOW_CFLAGS
+GREET_TWEET_KNOW_LIBS
 ENCHANT_CFLAGS
 ENCHANT_LIBS'
 
@@ -1627,13 +1627,13 @@ Some influential environment variables:
               C compiler flags for GNOME_KEYRING, overriding pkg-config
   GNOME_KEYRING_LIBS 
               linker flags for GNOME_KEYRING, overriding pkg-config
-  LIBTWITUX_CFLAGS 
+  LIBGREET_TWEET_KNOW_CFLAGS 
               C compiler flags for LIBTWITUX, overriding pkg-config
-  LIBTWITUX_LIBS 
+  LIBGREET_TWEET_KNOW_LIBS 
               linker flags for LIBTWITUX, overriding pkg-config
-  TWITUX_CFLAGS 
+  GREET_TWEET_KNOW_CFLAGS 
               C compiler flags for TWITUX, overriding pkg-config
-  TWITUX_LIBS linker flags for TWITUX, overriding pkg-config
+  GREET_TWEET_KNOW_LIBS linker flags for TWITUX, overriding pkg-config
   ENCHANT_CFLAGS 
               C compiler flags for ENCHANT, overriding pkg-config
   ENCHANT_LIBS 
@@ -23275,8 +23275,8 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for LIBTWITUX" >&5
 echo $ECHO_N "checking for LIBTWITUX... $ECHO_C" >&6; }
 
-if test -n "$LIBTWITUX_CFLAGS"; then
-    pkg_cv_LIBTWITUX_CFLAGS="$LIBTWITUX_CFLAGS"
+if test -n "$LIBGREET_TWEET_KNOW_CFLAGS"; then
+    pkg_cv_LIBGREET_TWEET_KNOW_CFLAGS="$LIBGREET_TWEET_KNOW_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
@@ -23298,7 +23298,7 @@ if test -n "$LIBTWITUX_CFLAGS"; then
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_LIBTWITUX_CFLAGS=`$PKG_CONFIG --cflags "
+  pkg_cv_LIBGREET_TWEET_KNOW_CFLAGS=`$PKG_CONFIG --cflags "
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -23312,8 +23312,8 @@ fi
  else
     pkg_failed=untried
 fi
-if test -n "$LIBTWITUX_LIBS"; then
-    pkg_cv_LIBTWITUX_LIBS="$LIBTWITUX_LIBS"
+if test -n "$LIBGREET_TWEET_KNOW_LIBS"; then
+    pkg_cv_LIBGREET_TWEET_KNOW_LIBS="$LIBGREET_TWEET_KNOW_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
@@ -23335,7 +23335,7 @@ if test -n "$LIBTWITUX_LIBS"; then
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_LIBTWITUX_LIBS=`$PKG_CONFIG --libs "
+  pkg_cv_LIBGREET_TWEET_KNOW_LIBS=`$PKG_CONFIG --libs "
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -23360,7 +23360,7 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBTWITUX_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+	        LIBGREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -23369,7 +23369,7 @@ fi
 	$gnome_keyring_pkgconfig
 " 2>&1`
         else 
-	        LIBTWITUX_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+	        LIBGREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --print-errors "
 	libxml-2.0 >= $LIBXML_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gtk+-2.0 >= $GTK_REQUIRED
@@ -23379,7 +23379,7 @@ fi
 " 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$LIBTWITUX_PKG_ERRORS" >&5
+	echo "$LIBGREET_TWEET_KNOW_PKG_ERRORS" >&5
 
 	{ { echo "$as_me:$LINENO: error: Package requirements (
 	libxml-2.0 >= $LIBXML_REQUIRED
@@ -23390,13 +23390,13 @@ fi
 	$gnome_keyring_pkgconfig
 ) were not met:
 
-$LIBTWITUX_PKG_ERRORS
+$LIBGREET_TWEET_KNOW_PKG_ERRORS
 
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-Alternatively, you may set the environment variables LIBTWITUX_CFLAGS
-and LIBTWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables LIBGREET_TWEET_KNOW_CFLAGS
+and LIBGREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
 echo "$as_me: error: Package requirements (
@@ -23408,13 +23408,13 @@ echo "$as_me: error: Package requirements (
 	$gnome_keyring_pkgconfig
 ) were not met:
 
-$LIBTWITUX_PKG_ERRORS
+$LIBGREET_TWEET_KNOW_PKG_ERRORS
 
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-Alternatively, you may set the environment variables LIBTWITUX_CFLAGS
-and LIBTWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables LIBGREET_TWEET_KNOW_CFLAGS
+and LIBGREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&2;}
    { (exit 1); exit 1; }; }
@@ -23423,8 +23423,8 @@ elif test $pkg_failed = untried; then
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
-Alternatively, you may set the environment variables LIBTWITUX_CFLAGS
-and LIBTWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables LIBGREET_TWEET_KNOW_CFLAGS
+and LIBGREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
 To get pkg-config, see <http://pkg-config.freedesktop.org/>.
@@ -23433,16 +23433,16 @@ echo "$as_me: error: The pkg-config script could not be found or is too old.  Ma
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
-Alternatively, you may set the environment variables LIBTWITUX_CFLAGS
-and LIBTWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables LIBGREET_TWEET_KNOW_CFLAGS
+and LIBGREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
 To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details." >&2;}
    { (exit 1); exit 1; }; }
 else
-	LIBTWITUX_CFLAGS=$pkg_cv_LIBTWITUX_CFLAGS
-	LIBTWITUX_LIBS=$pkg_cv_LIBTWITUX_LIBS
+	LIBGREET_TWEET_KNOW_CFLAGS=$pkg_cv_LIBGREET_TWEET_KNOW_CFLAGS
+	LIBGREET_TWEET_KNOW_LIBS=$pkg_cv_LIBGREET_TWEET_KNOW_LIBS
         { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
 	:
@@ -23457,8 +23457,8 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for TWITUX" >&5
 echo $ECHO_N "checking for TWITUX... $ECHO_C" >&6; }
 
-if test -n "$TWITUX_CFLAGS"; then
-    pkg_cv_TWITUX_CFLAGS="$TWITUX_CFLAGS"
+if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
+    pkg_cv_GREET_TWEET_KNOW_CFLAGS="$GREET_TWEET_KNOW_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
@@ -23486,7 +23486,7 @@ if test -n "$TWITUX_CFLAGS"; then
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_TWITUX_CFLAGS=`$PKG_CONFIG --cflags "
+  pkg_cv_GREET_TWEET_KNOW_CFLAGS=`$PKG_CONFIG --cflags "
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -23503,8 +23503,8 @@ fi
  else
     pkg_failed=untried
 fi
-if test -n "$TWITUX_LIBS"; then
-    pkg_cv_TWITUX_LIBS="$TWITUX_LIBS"
+if test -n "$GREET_TWEET_KNOW_LIBS"; then
+    pkg_cv_GREET_TWEET_KNOW_LIBS="$GREET_TWEET_KNOW_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
@@ -23532,7 +23532,7 @@ if test -n "$TWITUX_LIBS"; then
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_TWITUX_LIBS=`$PKG_CONFIG --libs "
+  pkg_cv_GREET_TWEET_KNOW_LIBS=`$PKG_CONFIG --libs "
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -23560,7 +23560,7 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        TWITUX_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+	        GREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -23572,7 +23572,7 @@ fi
 	$dbus_pkgconfig
 " 2>&1`
         else 
-	        TWITUX_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+	        GREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --print-errors "
 	libsexy
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
@@ -23585,7 +23585,7 @@ fi
 " 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$TWITUX_PKG_ERRORS" >&5
+	echo "$GREET_TWEET_KNOW_PKG_ERRORS" >&5
 
 	{ { echo "$as_me:$LINENO: error: Package requirements (
 	libsexy
@@ -23599,13 +23599,13 @@ fi
 	$dbus_pkgconfig
 ) were not met:
 
-$TWITUX_PKG_ERRORS
+$GREET_TWEET_KNOW_PKG_ERRORS
 
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-Alternatively, you may set the environment variables TWITUX_CFLAGS
-and TWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables GREET_TWEET_KNOW_CFLAGS
+and GREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
 echo "$as_me: error: Package requirements (
@@ -23620,13 +23620,13 @@ echo "$as_me: error: Package requirements (
 	$dbus_pkgconfig
 ) were not met:
 
-$TWITUX_PKG_ERRORS
+$GREET_TWEET_KNOW_PKG_ERRORS
 
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-Alternatively, you may set the environment variables TWITUX_CFLAGS
-and TWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables GREET_TWEET_KNOW_CFLAGS
+and GREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&2;}
    { (exit 1); exit 1; }; }
@@ -23635,8 +23635,8 @@ elif test $pkg_failed = untried; then
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
-Alternatively, you may set the environment variables TWITUX_CFLAGS
-and TWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables GREET_TWEET_KNOW_CFLAGS
+and GREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
 To get pkg-config, see <http://pkg-config.freedesktop.org/>.
@@ -23645,16 +23645,16 @@ echo "$as_me: error: The pkg-config script could not be found or is too old.  Ma
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
-Alternatively, you may set the environment variables TWITUX_CFLAGS
-and TWITUX_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables GREET_TWEET_KNOW_CFLAGS
+and GREET_TWEET_KNOW_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
 To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details." >&2;}
    { (exit 1); exit 1; }; }
 else
-	TWITUX_CFLAGS=$pkg_cv_TWITUX_CFLAGS
-	TWITUX_LIBS=$pkg_cv_TWITUX_LIBS
+	GREET_TWEET_KNOW_CFLAGS=$pkg_cv_GREET_TWEET_KNOW_CFLAGS
+	GREET_TWEET_KNOW_LIBS=$pkg_cv_GREET_TWEET_KNOW_LIBS
         { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
 	:
@@ -26264,10 +26264,10 @@ GNOME_KEYRING_CFLAGS!$GNOME_KEYRING_CFLAGS$ac_delim
 GNOME_KEYRING_LIBS!$GNOME_KEYRING_LIBS$ac_delim
 HAVE_GNOME_KEYRING_TRUE!$HAVE_GNOME_KEYRING_TRUE$ac_delim
 HAVE_GNOME_KEYRING_FALSE!$HAVE_GNOME_KEYRING_FALSE$ac_delim
-LIBTWITUX_CFLAGS!$LIBTWITUX_CFLAGS$ac_delim
-LIBTWITUX_LIBS!$LIBTWITUX_LIBS$ac_delim
-TWITUX_CFLAGS!$TWITUX_CFLAGS$ac_delim
-TWITUX_LIBS!$TWITUX_LIBS$ac_delim
+LIBGREET_TWEET_KNOW_CFLAGS!$LIBGREET_TWEET_KNOW_CFLAGS$ac_delim
+LIBGREET_TWEET_KNOW_LIBS!$LIBGREET_TWEET_KNOW_LIBS$ac_delim
+GREET_TWEET_KNOW_CFLAGS!$GREET_TWEET_KNOW_CFLAGS$ac_delim
+GREET_TWEET_KNOW_LIBS!$GREET_TWEET_KNOW_LIBS$ac_delim
 ENCHANT_CFLAGS!$ENCHANT_CFLAGS$ac_delim
 ENCHANT_LIBS!$ENCHANT_LIBS$ac_delim
 HAVE_ENCHANT_TRUE!$HAVE_ENCHANT_TRUE$ac_delim

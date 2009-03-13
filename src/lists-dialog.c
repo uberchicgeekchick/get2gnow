@@ -34,7 +34,7 @@
 #include "add-dialog.h"
 #include "network.h"
 
-#define XML_FILE "lists_dlg.xml"
+#define GLADE_FILE "lists_dlg.xml"
 
 enum {
 	FOLLOWER_USER,
@@ -95,7 +95,7 @@ lists_rem_response_cb (GtkButton   *button,
 
 	gtk_list_store_remove (GTK_LIST_STORE (lists->following_store), &iter);
 
-	twitux_network_del_user (user);
+	network_del_user (user);
 }
 
 static void
@@ -117,13 +117,13 @@ list_follower_activated_cb (GtkTreeView       *tree_view,
 						-1);
 
 	/* Retrive timeline */
-	twitux_network_get_user (username);
+	network_get_user (username);
 
 	g_free (username);
 }
 
 void
-twitux_lists_dialog_load_lists (GList *users)
+lists_dialog_load_lists (GList *users)
 {
 	TwituxUser  *user;
 	GtkTreeIter  iter;
@@ -145,7 +145,7 @@ twitux_lists_dialog_load_lists (GList *users)
 }
 
 void
-twitux_lists_dialog_show (GtkWindow *parent)
+lists_dialog_show (GtkWindow *parent)
 {
 	if (lists) 
 		return gtk_window_present (GTK_WINDOW (lists->dialog));
@@ -157,7 +157,7 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	lists = g_new0 (TwituxLists, 1);
 
 	/* Get widgets */
-	ui = twitux_xml_get_file (XML_FILE,
+	ui = glade_get_file (GLADE_FILE,
 						"lists_dialog", &lists->dialog,
 						"following_list", &lists->following_list,
 						NULL);
@@ -165,7 +165,7 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	lists->following_store = gtk_tree_view_get_model (lists->following_list);
 
 	/* Connect the signals */
-	twitux_xml_connect (ui, lists,
+	glade_connect (ui, lists,
 						"lists_dialog", "destroy", lists_destroy_cb,
 						"lists_dialog", "response", lists_response_cb,
 						"follow_rem", "clicked", lists_rem_response_cb,
@@ -181,16 +181,16 @@ twitux_lists_dialog_show (GtkWindow *parent)
 	/* Now that we're done setting up, let's show the widget */
 	gtk_widget_show (lists->dialog);
 	
-	twitux_app_set_statusbar_msg(_("Please wait while the list of every one you\'re following is loaded."));
+	app_set_statusbar_msg(_("Please wait while the list of every one you\'re following is loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, cursor);
 	gtk_widget_set_sensitive(lists->dialog, FALSE);
 
 	/* Load lists */
-	if( (friends=twitux_network_get_friends()) )
-		twitux_lists_dialog_load_lists(friends);
+	if( (friends=network_get_friends()) )
+		lists_dialog_load_lists(friends);
 	
 	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, NULL);
 	gtk_widget_set_sensitive(lists->dialog, TRUE);
-	twitux_app_set_statusbar_msg("");
+	app_set_statusbar_msg("");
 }

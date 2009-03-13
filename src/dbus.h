@@ -21,13 +21,13 @@
  *			Brian Pepple <bpepple@fedoraproject.org>
  */
 
-#ifndef __TWITUX_DBUS_H__
-#define __TWITUX_DBUS_H__
+#ifndef __DBUS_H__
+#define __DBUS_H__
 
 #include <glib.h>
 
-gboolean twitux_dbus_nm_init      (void);
-void     twitux_dbus_nm_finalize  (void);
-gboolean twitux_dbus_nm_get_state (gboolean *connected);
+gboolean dbus_nm_init      (void);
+void     dbus_nm_finalize  (void);
+gboolean dbus_nm_get_state (gboolean *connected);
 
-#endif /* __TWITUX_DBUS_H__ */
+#endif /* __DBUS_H__ */

@@ -20,73 +20,73 @@
  * Authors: Daniel Morales <daniminas@gmail.com>
  *
  */
-#ifndef __TWITUX_NETWORK_H__
-#define __TWITUX_NETWORK_H__
+#ifndef __NETWORK_H__
+#define __NETWORK_H__
 
 #include <gtk/gtk.h>
 #include "parser.h"
 
 /* Twitter API */
-#define TWITUX_API_REPLIES		"https://twitter.com/statuses/replies.xml"
-#define TWITUX_API_DIRECT_MESSAGES	"https://twitter.com/direct_messages.xml"
+#define API_REPLIES		"https://twitter.com/statuses/replies.xml"
+#define API_DIRECT_MESSAGES	"https://twitter.com/direct_messages.xml"
 
-#define TWITUX_API_POST_STATUS		"https://twitter.com/statuses/update.xml"
-#define TWITUX_API_SEND_MESSAGE		"https://twitter.com/direct_messages/new.xml"
+#define API_POST_STATUS		"https://twitter.com/statuses/update.xml"
+#define API_SEND_MESSAGE		"https://twitter.com/direct_messages/new.xml"
 
-#define TWITUX_API_FOLLOWING		"https://twitter.com/statuses/friends.xml"
-#define TWITUX_API_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
+#define API_FOLLOWING		"https://twitter.com/statuses/friends.xml"
+#define API_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
 
-#define TWITUX_API_FOLLOWING_ADD	"https://twitter.com/friendships/create/%s.xml"
-#define TWITUX_API_FOLLOWING_DEL	"https://twitter.com/friendships/destroy/%s.xml"
+#define API_FOLLOWING_ADD	"https://twitter.com/friendships/create/%s.xml"
+#define API_FOLLOWING_DEL	"https://twitter.com/friendships/destroy/%s.xml"
 
-#define TWITUX_API_LOGIN		"https://twitter.com/account/verify_credentials.xml"
+#define API_LOGIN		"https://twitter.com/account/verify_credentials.xml"
 
 /* Verify user credentials */
-void twitux_network_login		(const char *username, 
+void network_login		(const char *username, 
 								 const char *password);
 
 /* Logout current user */
-void twitux_network_logout 		(void);
+void network_logout 		(void);
 
 /* Post a new tweet */
-void twitux_network_post_status		(const gchar *text);
+void network_post_status		(const gchar *text);
 
 /* Post a direct message to a follower */
-void twitux_network_send_message	(const gchar *friend,
+void network_send_message	(const gchar *friend,
 					 const gchar *text);
 
 /* Get and parse a timeline */
-void twitux_network_get_timeline 	(const gchar *url_timeline);
+void network_get_timeline 	(const gchar *url_timeline);
 
 /* Retrive a user timeline. If user is null, get
  * authenticated user timeline*/
-void twitux_network_get_user		(const gchar *username);
+void network_get_user		(const gchar *username);
 
 /* Refresh current timeline */
-void twitux_network_refresh			(void);
+void network_refresh			(void);
 
 /* Get authenticating user's friends(following) */
-GList *twitux_network_get_friends	(void);
+GList *network_get_friends	(void);
 
 /* Get the authenticating user's followers */
-GList *twitux_network_get_followers	(void);
+GList *network_get_followers	(void);
 
 /* Get an image from servers */
-void twitux_network_get_image (const gchar *url_image,
+void network_get_image (const gchar *url_image,
 							   GtkTreeIter iter);
 
 /* Add a user to follow */
-void twitux_network_add_user		(const gchar *username);
+void network_add_user		(const gchar *username);
 
 /* Remove a user */
-void twitux_network_del_user		(TwituxUser *user);
+void network_del_user		(TwituxUser *user);
 
 /* Networking */
-void twitux_network_new			(void);
+void network_new			(void);
 
-void twitux_network_close		(void);
+void network_close		(void);
 
-void twitux_network_stop		(void);
+void network_stop		(void);
 
 
-#endif /*  __TWITUX_NETWORK_H__ */
+#endif /*  __NETWORK_H__ */

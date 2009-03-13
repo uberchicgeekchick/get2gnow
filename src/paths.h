@@ -18,17 +18,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __TWITUX_PATHS_H__
-#define __TWITUX_PATHS_H__
+#ifndef __PATHS_H__
+#define __PATHS_H__
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
-gchar *twitux_paths_get_xml_path    (const gchar *filename);
-gchar *twitux_paths_get_image_path  (const gchar *filename);
-gchar *twitux_paths_get_locale_path (void);
+gchar *paths_get_glade_path    (const gchar *filename);
+gchar *paths_get_image_path  (const gchar *filename);
+gchar *paths_get_locale_path (void);
 
 G_END_DECLS
 
-#endif /* __TWITUX_PATHS_H__ */
+#endif /* __PATHS_H__ */

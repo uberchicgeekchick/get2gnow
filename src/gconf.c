@@ -32,10 +32,10 @@
 
 #define DEBUG_DOMAIN "Config"
 
-#define TWITUX_CONF_ROOT        "/apps/greet-tweet-know"
+#define CONF_ROOT        "/apps/greet-tweet-know"
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
 
-#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TWITUX_TYPE_CONF, TwituxConfPriv))
+#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_CONF, TwituxConfPriv))
 
 typedef struct {
 	GConfClient *gconf_client;
@@ -49,13 +49,13 @@ typedef struct {
 
 static void conf_finalize(GObject *object);
 
-G_DEFINE_TYPE(TwituxConf, twitux_conf, G_TYPE_OBJECT);
+G_DEFINE_TYPE(TwituxConf, conf, G_TYPE_OBJECT);
 
 static TwituxConf *global_conf = NULL;
 static TwituxConfPriv *config_priv=NULL;
 
 static void
-twitux_conf_class_init(TwituxConfClass *class)
+conf_class_init(TwituxConfClass *class)
 {
 	GObjectClass *object_class;
 
@@ -67,7 +67,7 @@ twitux_conf_class_init(TwituxConfClass *class)
 }
 
 static void
-twitux_conf_init(TwituxConf *conf)
+conf_init(TwituxConf *conf)
 {
 	
 	config_priv = GET_PRIV(conf);
@@ -75,7 +75,7 @@ twitux_conf_init(TwituxConf *conf)
 	config_priv->gconf_client = gconf_client_get_default();
 
 	gconf_client_add_dir(config_priv->gconf_client,
-						  TWITUX_CONF_ROOT,
+						  CONF_ROOT,
 						  GCONF_CLIENT_PRELOAD_ONELEVEL,
 						  NULL);
 	gconf_client_add_dir(config_priv->gconf_client,
@@ -89,7 +89,7 @@ conf_finalize(GObject *object)
 {
 	
 	gconf_client_remove_dir(config_priv->gconf_client,
-							 TWITUX_CONF_ROOT,
+							 CONF_ROOT,
 							 NULL);
 	gconf_client_remove_dir(config_priv->gconf_client,
 							 DESKTOP_INTERFACE_ROOT,
@@ -97,21 +97,21 @@ conf_finalize(GObject *object)
 
 	g_object_unref(config_priv->gconf_client);
 
-	G_OBJECT_CLASS(twitux_conf_parent_class)->finalize(object);
+	G_OBJECT_CLASS(conf_parent_class)->finalize(object);
 }
 
 TwituxConf *
-twitux_conf_get(void)
+conf_get(void)
 {
 	if(!global_conf) {
-		global_conf = g_object_new(TWITUX_TYPE_CONF, NULL);
+		global_conf = g_object_new(TYPE_CONF, NULL);
 	}
 
 	return global_conf;
 }
 
 void
-twitux_conf_shutdown(void)
+conf_shutdown(void)
 {
 	if(global_conf) {
 		g_object_unref(global_conf);
@@ -120,14 +120,14 @@ twitux_conf_shutdown(void)
 }
 
 gboolean
-twitux_conf_set_int(TwituxConf  *conf,
+conf_set_int(TwituxConf  *conf,
 					 const gchar *key,
 					 gint         value)
 {
 	
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
-	twitux_debug(DEBUG_DOMAIN, "Setting int:'%s' to %d", key, value);
+	debug(DEBUG_DOMAIN, "Setting int:'%s' to %d", key, value);
 
 	
 	return gconf_client_set_int(config_priv->gconf_client,
@@ -137,7 +137,7 @@ twitux_conf_set_int(TwituxConf  *conf,
 }
 
 gboolean
-twitux_conf_get_int(TwituxConf  *conf,
+conf_get_int(TwituxConf  *conf,
 					 const gchar *key,
 					 gint        *value)
 {
@@ -145,7 +145,7 @@ twitux_conf_get_int(TwituxConf  *conf,
 
 	*value = 0;
 
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 	g_return_val_if_fail(value != NULL, FALSE);
 
 	
@@ -153,7 +153,7 @@ twitux_conf_get_int(TwituxConf  *conf,
 								   key,
 								   &error);
 
-	twitux_debug(DEBUG_DOMAIN, "Getting int:'%s'(=%d), error:'%s'",
+	debug(DEBUG_DOMAIN, "Getting int:'%s'(=%d), error:'%s'",
 				  key, *value, error ? error->message : "None");
 
 	if(error) {
@@ -165,14 +165,14 @@ twitux_conf_get_int(TwituxConf  *conf,
 }
 
 gboolean
-twitux_conf_set_bool(TwituxConf  *conf,
+conf_set_bool(TwituxConf  *conf,
 					  const gchar *key,
 					  gboolean     value)
 {
 	
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
-	twitux_debug(DEBUG_DOMAIN, "Setting bool:'%s' to %d ---> %s",
+	debug(DEBUG_DOMAIN, "Setting bool:'%s' to %d ---> %s",
 				  key, value, value ? "true" : "false");
 
 	
@@ -183,7 +183,7 @@ twitux_conf_set_bool(TwituxConf  *conf,
 }
 
 gboolean
-twitux_conf_get_bool(TwituxConf  *conf,
+conf_get_bool(TwituxConf  *conf,
 					  const gchar *key,
 					  gboolean    *value)
 {
@@ -191,7 +191,7 @@ twitux_conf_get_bool(TwituxConf  *conf,
 
 	*value = FALSE;
 
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 	g_return_val_if_fail(value != NULL, FALSE);
 
 	
@@ -199,7 +199,7 @@ twitux_conf_get_bool(TwituxConf  *conf,
 									key,
 									&error);
 
-	twitux_debug(DEBUG_DOMAIN, "Getting bool:'%s'(=%d ---> %s), error:'%s'",
+	debug(DEBUG_DOMAIN, "Getting bool:'%s'(=%d ---> %s), error:'%s'",
 				  key, *value, *value ? "true" : "false",
 				  error ? error->message : "None");
 
@@ -212,14 +212,14 @@ twitux_conf_get_bool(TwituxConf  *conf,
 }
 
 gboolean
-twitux_conf_set_string(TwituxConf  *conf,
+conf_set_string(TwituxConf  *conf,
 						const gchar *key,
 						const gchar *value)
 {
 	
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
-	twitux_debug(DEBUG_DOMAIN, "Setting string:'%s' to '%s'",
+	debug(DEBUG_DOMAIN, "Setting string:'%s' to '%s'",
 				  key, value);
 
 	
@@ -230,7 +230,7 @@ twitux_conf_set_string(TwituxConf  *conf,
 }
 
 gboolean
-twitux_conf_get_string(TwituxConf   *conf,
+conf_get_string(TwituxConf   *conf,
 						const gchar  *key,
 						gchar       **value)
 {
@@ -238,14 +238,14 @@ twitux_conf_get_string(TwituxConf   *conf,
 
 	*value = NULL;
 
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
 	
 	*value = gconf_client_get_string(config_priv->gconf_client,
 									  key,
 									  &error);
 
-	twitux_debug(DEBUG_DOMAIN, "Getting string:'%s'(='%s'), error:'%s'",
+	debug(DEBUG_DOMAIN, "Getting string:'%s'(='%s'), error:'%s'",
 				  key, *value, error ? error->message : "None");
 
 	if(error) {
@@ -257,12 +257,12 @@ twitux_conf_get_string(TwituxConf   *conf,
 }
 
 gboolean
-twitux_conf_set_string_list(TwituxConf  *conf,
+conf_set_string_list(TwituxConf  *conf,
 							 const gchar *key,
 							 GSList      *value)
 {
 	
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
 	
 	return gconf_client_set_list(config_priv->gconf_client,
@@ -273,7 +273,7 @@ twitux_conf_set_string_list(TwituxConf  *conf,
 }
 
 gboolean
-twitux_conf_get_string_list(TwituxConf   *conf,
+conf_get_string_list(TwituxConf   *conf,
 							 const gchar  *key,
 							 GSList      **value)
 {
@@ -281,7 +281,7 @@ twitux_conf_get_string_list(TwituxConf   *conf,
 
 	*value = NULL;
 
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
 	
 	*value = gconf_client_get_list(config_priv->gconf_client,
@@ -319,7 +319,7 @@ conf_notify_func(GConfClient *client,
 }
 
 guint
-twitux_conf_notify_add(TwituxConf           *conf,
+conf_notify_add(TwituxConf           *conf,
 						const gchar          *key,
 						TwituxConfNotifyFunc  func,
 						gpointer              user_data)
@@ -327,7 +327,7 @@ twitux_conf_notify_add(TwituxConf           *conf,
 		guint                 id;
 	TwituxConfNotifyData *data;
 
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), 0);
+	g_return_val_if_fail(IS_CONF(conf), 0);
 
 	
 	data = g_slice_new(TwituxConfNotifyData);
@@ -346,10 +346,10 @@ twitux_conf_notify_add(TwituxConf           *conf,
 }
 
 gboolean
-twitux_conf_notify_remove(TwituxConf *conf,
+conf_notify_remove(TwituxConf *conf,
 						   guint       id)
 {
-	g_return_val_if_fail(TWITUX_IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_CONF(conf), FALSE);
 
 	
 	gconf_client_notify_remove(config_priv->gconf_client, id);

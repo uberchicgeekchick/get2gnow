@@ -53,7 +53,7 @@ typedef struct {
 
 static GHashTable  *iso_code_names = NULL;
 static GList       *languages = NULL;
-static gboolean     twitux_conf_notify_inited = FALSE;
+static gboolean     conf_notify_inited = FALSE;
 
 static void
 spell_iso_codes_parse_start_tag (GMarkupParseContext  *ctx,
@@ -170,7 +170,7 @@ spell_notify_languages_cb (TwituxConf  *conf,
 {
 	GList *l;
 
-	twitux_debug (DEBUG_DOMAIN, "Resetting languages due to config change");
+	debug (DEBUG_DOMAIN, "Resetting languages due to config change");
 
 	/* We just reset the languages list. */
 	for (l = languages; l; l = l->next) {
@@ -193,21 +193,21 @@ spell_setup_languages (void)
 {
 	gchar  *str;
 
-	if (!twitux_conf_notify_inited) {
-		twitux_conf_notify_add (twitux_conf_get (),
-								TWITUX_PREFS_UI_SPELL_LANGUAGES,
+	if (!conf_notify_inited) {
+		conf_notify_add (conf_get (),
+								PREFS_UI_SPELL_LANGUAGES,
 								spell_notify_languages_cb, NULL);
 
-		twitux_conf_notify_inited = TRUE;
+		conf_notify_inited = TRUE;
 	}
 
 	if (languages) {
-		twitux_debug (DEBUG_DOMAIN, "No languages to setup");
+		debug (DEBUG_DOMAIN, "No languages to setup");
 		return;
 	}
 
-	if (twitux_conf_get_string (twitux_conf_get (),
-								TWITUX_PREFS_UI_SPELL_LANGUAGES,
+	if (conf_get_string (conf_get (),
+								PREFS_UI_SPELL_LANGUAGES,
 								&str) && str) {
 		gchar **strv;
 		gint    i;
@@ -218,7 +218,7 @@ spell_setup_languages (void)
 		while (strv && strv[i]) {
 			SpellLanguage *lang;
 
-			twitux_debug (DEBUG_DOMAIN, "Setting up language:'%s'", strv[i]);
+			debug (DEBUG_DOMAIN, "Setting up language:'%s'", strv[i]);
 
 			lang = g_slice_new0 (SpellLanguage);
 
@@ -238,7 +238,7 @@ spell_setup_languages (void)
 }
 
 const char *
-twitux_spell_get_language_name (const char *code)
+spell_get_language_name (const char *code)
 {
 	const gchar *name;
 
@@ -281,7 +281,7 @@ enumerate_dicts (const gchar * const lang_tag,
 }
 
 GList *
-twitux_spell_get_language_codes (void)
+spell_get_language_codes (void)
 {
 	EnchantBroker *broker;
 	GList         *list_langs = NULL;
@@ -294,14 +294,14 @@ twitux_spell_get_language_codes (void)
 }
 
 void
-twitux_spell_free_language_codes (GList *codes)
+spell_free_language_codes (GList *codes)
 {
 	g_list_foreach (codes, (GFunc) g_free, NULL);
 	g_list_free (codes);
 }
 
 gboolean
-twitux_spell_check (const gchar *word)
+spell_check (const gchar *word)
 {
 	gint         enchant_result = 1;
 	const gchar *p;
@@ -315,7 +315,7 @@ twitux_spell_check (const gchar *word)
 	spell_setup_languages ();
 
 	if (!languages) {
-		twitux_debug (DEBUG_DOMAIN, "No languages to check against");
+		debug (DEBUG_DOMAIN, "No languages to check against");
 		return TRUE;
 	}
 
@@ -327,7 +327,7 @@ twitux_spell_check (const gchar *word)
 
 	if (digit) {
 		/* We don't spell check digits. */
-		twitux_debug (DEBUG_DOMAIN, "Not spell checking word:'%s', it is all digits", word);
+		debug (DEBUG_DOMAIN, "Not spell checking word:'%s', it is all digits", word);
 		return TRUE;
 	}
 
@@ -348,7 +348,7 @@ twitux_spell_check (const gchar *word)
 }
 
 GList *
-twitux_spell_get_suggestions (const gchar *word)
+spell_get_suggestions (const gchar *word)
 {
 	gint   len;
 	GList *l1;
@@ -388,14 +388,14 @@ twitux_spell_get_suggestions (const gchar *word)
 }
 
 gboolean
-twitux_spell_supported (void)
+spell_supported (void)
 {
-	if (g_getenv ("TWITUX_SPELL_DISABLED")) {
-		twitux_debug (DEBUG_DOMAIN, "TWITUX_SPELL_DISABLE env variable defined");
+	if (g_getenv ("SPELL_DISABLED")) {
+		debug (DEBUG_DOMAIN, "SPELL_DISABLE env variable defined");
 		return FALSE;
 	}
 
-	twitux_debug (DEBUG_DOMAIN, "Support enabled");
+	debug (DEBUG_DOMAIN, "Support enabled");
 
 	return TRUE;
 }
@@ -403,47 +403,47 @@ twitux_spell_supported (void)
 #else /* not HAVE_ENCHANT */
 
 gboolean
-twitux_spell_supported (void)
+spell_supported (void)
 {
-	twitux_debug (DEBUG_DOMAIN, "Support disabled");
+	debug (DEBUG_DOMAIN, "Support disabled");
 
 	return FALSE;
 }
 
 GList *
-twitux_spell_get_suggestions (const gchar *word)
+spell_get_suggestions (const gchar *word)
 {
-	twitux_debug (DEBUG_DOMAIN, "Support disabled, could not get suggestions");
+	debug (DEBUG_DOMAIN, "Support disabled, could not get suggestions");
 
 	return NULL;
 }
 
 gboolean
-twitux_spell_check (const gchar *word)
+spell_check (const gchar *word)
 {
-	twitux_debug (DEBUG_DOMAIN, "Support disabled, could not check spelling");
+	debug (DEBUG_DOMAIN, "Support disabled, could not check spelling");
 
 	return TRUE;
 }
 
 const char *
-twitux_spell_get_language_name (const char *lang)
+spell_get_language_name (const char *lang)
 {
-	twitux_debug (DEBUG_DOMAIN, "Support disabled, could not get language name");
+	debug (DEBUG_DOMAIN, "Support disabled, could not get language name");
 
 	return NULL;
 }
 
 GList *
-twitux_spell_get_language_codes (void)
+spell_get_language_codes (void)
 {
-	twitux_debug (DEBUG_DOMAIN, "Support disabled, could not get language codes");
+	debug (DEBUG_DOMAIN, "Support disabled, could not get language codes");
 
 	return NULL;
 }
 
 void
-twitux_spell_free_language_codes (GList *codes)
+spell_free_language_codes (GList *codes)
 {
 }
 
@@ -451,7 +451,7 @@ twitux_spell_free_language_codes (GList *codes)
 
 
 void
-twitux_spell_free_suggestions (GList *suggestions)
+spell_free_suggestions (GList *suggestions)
 {
 	g_list_foreach (suggestions, (GFunc) g_free, NULL);
 	g_list_free (suggestions);

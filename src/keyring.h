@@ -21,18 +21,18 @@
  *
  */
 
-#ifndef __TWITUX_KEYRING_H__
-#define __TWITUX_KEYRING_H__
+#ifndef __KEYRING_H__
+#define __KEYRING_H__
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
-gboolean twitux_keyring_get_password (gchar        *username,
+gboolean keyring_get_password (gchar        *username,
 									  gchar       **password);
-gboolean twitux_keyring_set_password (const gchar  *username,
+gboolean keyring_set_password (const gchar  *username,
 									  const gchar  *password);
 
 G_END_DECLS
 
-#endif /* __TWITUX_KEYRING_H__ */
+#endif /* __KEYRING_H__ */

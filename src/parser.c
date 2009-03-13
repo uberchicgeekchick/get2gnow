@@ -55,9 +55,9 @@ typedef struct
 	gchar		*id;
 } TwituxStatus;
 
-static TwituxUser	*parser_twitux_node_user   (xmlNode     *a_node);
-static TwituxStatus	*parser_twitux_node_status (xmlNode     *a_node);
-static xmlDoc       *parser_twitux_parse       (const char  *data,
+static TwituxUser	*parser_node_user   (xmlNode     *a_node);
+static TwituxStatus	*parser_node_status (xmlNode     *a_node);
+static xmlDoc       *parser_parse       (const char  *data,
 												gssize       length,
 												xmlNode    **first_element);
 static gchar		*parser_convert_time       (const char	*datetime);
@@ -67,7 +67,7 @@ static gboolean      display_notification      (gpointer     tweet);
 static gint			last_id = 0;
 
 static xmlDoc*
-parser_twitux_parse (const char  *data,
+parser_parse (const char  *data,
 					 gssize       length,
 					 xmlNode    **first_element)
 {
@@ -77,7 +77,7 @@ parser_twitux_parse (const char  *data,
 	/* Read the XML */
 	doc = xmlReadMemory (data, length, "xml", "UTF-8", 0);
 	if (doc == NULL) {
-		twitux_debug (DEBUG_DOMAIN_SETUP,
+		debug (DEBUG_DOMAIN_SETUP,
 					  "failed to read xml data");
 		return NULL;
 	}
@@ -85,7 +85,7 @@ parser_twitux_parse (const char  *data,
 	/* Get first element */
 	root_element = xmlDocGetRootElement (doc);
 	if (root_element == NULL) {
-		twitux_debug (DEBUG_DOMAIN_SETUP,
+		debug (DEBUG_DOMAIN_SETUP,
 					  "failed getting first element of xml data");
 		xmlFreeDoc (doc);
 		return NULL;
@@ -99,7 +99,7 @@ parser_twitux_parse (const char  *data,
 
 /* Parse a user-list XML ( friends, followers,... ) */
 GList *
-twitux_parser_users_list (const gchar *data,
+parser_users_list (const gchar *data,
 						  gssize       length)
 {
 	xmlDoc		*doc = NULL;
@@ -111,7 +111,7 @@ twitux_parser_users_list (const gchar *data,
 	TwituxUser 	*user;
 
 	/* parse the xml */
-	doc = parser_twitux_parse (data, length, &root_element);
+	doc = parser_parse (data, length, &root_element);
 
 	if (!doc) {
 		xmlCleanupParser ();
@@ -124,7 +124,7 @@ twitux_parser_users_list (const gchar *data,
 			continue;
 		if (g_str_equal (cur_node->name, "user")){
 			/* parse user */
-			user = parser_twitux_node_user (cur_node->children);
+			user = parser_node_user (cur_node->children);
 			/* add to list */
 			friends = g_list_append (friends, user);
 		} else if (g_str_equal (cur_node->name, "users")){
@@ -142,7 +142,7 @@ twitux_parser_users_list (const gchar *data,
 
 /* Parse a xml user node. Ex: add/del users responses */
 TwituxUser *
-twitux_parser_single_user (const gchar *data,
+parser_single_user (const gchar *data,
 						   gssize       length)
 {
 	xmlDoc		*doc = NULL;
@@ -150,7 +150,7 @@ twitux_parser_single_user (const gchar *data,
 	TwituxUser 	*user = NULL;
 	
 	/* parse the xml */
-	doc = parser_twitux_parse (data, length, &root_element);
+	doc = parser_parse (data, length, &root_element);
 
 	if (!doc) {
 		xmlCleanupParser ();
@@ -158,7 +158,7 @@ twitux_parser_single_user (const gchar *data,
 	}
 
 	if (g_str_equal (root_element->name, "user")) {
-		user = parser_twitux_node_user (root_element->children);
+		user = parser_node_user (root_element->children);
 	}
 
 	/* Free memory */
@@ -171,7 +171,7 @@ twitux_parser_single_user (const gchar *data,
 static gboolean
 display_notification (gpointer tweet)
 {
-	twitux_app_notify (tweet);
+	app_notify (tweet);
 	g_free (tweet);
 
 	return FALSE;
@@ -180,7 +180,7 @@ display_notification (gpointer tweet)
 
 /* Parse a timeline XML file */
 gboolean
-twitux_parser_timeline (const gchar *data, 
+parser_timeline (const gchar *data, 
 						gssize       length)
 {
 	xmlDoc		    *doc          = NULL;
@@ -206,7 +206,7 @@ twitux_parser_timeline (const gchar *data,
 	const int        tweet_display_interval = 5;
 
 	/* parse the xml */
-	doc = parser_twitux_parse (data, length, &root_element);
+	doc = parser_parse (data, length, &root_element);
 
 	if (!doc) {
 		xmlCleanupParser ();
@@ -214,12 +214,12 @@ twitux_parser_timeline (const gchar *data,
 	}
 
 	/* Get the twitux ListStore and clear previous */
-	store = twitux_tweet_list_get_store ();
+	store = tweet_list_get_store ();
 	gtk_list_store_clear (store);
 
 	/* Show user names or real names */
-	twitux_conf_get_bool (twitux_conf_get (),
-						  TWITUX_PREFS_TWEETS_SHOW_NAMES,
+	conf_get_bool (conf_get (),
+						  PREFS_TWEETS_SHOW_NAMES,
 						  &show_username);
 
 	/* get tweets or direct messages */
@@ -234,7 +234,7 @@ twitux_parser_timeline (const gchar *data,
 			gint   sid;
 
 			/* Parse node */
-			status = parser_twitux_node_status (cur_node->children);
+			status = parser_node_status (cur_node->children);
 
 			sid = atoi (status->id);
 			
@@ -253,7 +253,7 @@ twitux_parser_timeline (const gchar *data,
 			
 			if (sid > last_id && show_notification) {
 				if (multiple_new_tweets != TRUE) {
-					twitux_app_notify_sound ();
+					app_notify_sound ();
 					multiple_new_tweets = TRUE;
 				}
 				g_timeout_add_seconds (tweet_display_delay,
@@ -277,7 +277,7 @@ twitux_parser_timeline (const gchar *data,
 			g_free (tweet);
 
 			/* Get Image */
-			twitux_network_get_image (status->user->image_url,
+			network_get_image (status->user->image_url,
 									  iter);
 
 			/* Free struct */
@@ -312,7 +312,7 @@ twitux_parser_timeline (const gchar *data,
 }
 
 static TwituxUser *
-parser_twitux_node_user (xmlNode *a_node)
+parser_node_user (xmlNode *a_node)
 {
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
@@ -360,7 +360,7 @@ parser_twitux_node_user (xmlNode *a_node)
 
 
 static TwituxStatus *
-parser_twitux_node_status (xmlNode *a_node)
+parser_node_status (xmlNode *a_node)
 {
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
@@ -404,7 +404,7 @@ parser_twitux_node_status (xmlNode *a_node)
 		} else if (g_str_equal (cur_node->name, "sender") ||
 				   g_str_equal (cur_node->name, "user")) {
 
-			status->user = parser_twitux_node_user (cur_node->children);
+			status->user = parser_node_user (cur_node->children);
 		}
 
 		/* Free buffer content */

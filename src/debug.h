@@ -19,36 +19,36 @@
  */
 
 
-#ifndef __TWITUX_DEBUG_H__
-#define __TWITUX_DEBUG_H__
+#ifndef __DEBUG_H__
+#define __DEBUG_H__
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
 #ifdef G_HAVE_ISO_VARARGS
-#  ifdef TWITUX_DISABLE_DEBUG
-#    define twitux_debug(...)
+#  ifdef DISABLE_DEBUG
+#    define debug(...)
 #  else
-#    define twitux_debug(...) twitux_debug_impl (__VA_ARGS__)
+#    define debug(...) debug_impl (__VA_ARGS__)
 #  endif
 #elif defined(G_HAVE_GNUC_VARARGS)
-#  if TWITUX_DISABLE_DEBUG
-#    define twitux_debug(fmt...)
+#  if DISABLE_DEBUG
+#    define debug(fmt...)
 #  else
-#    define twitux_debug(fmt...) twitux_debug_impl(fmt)
+#    define debug(fmt...) debug_impl(fmt)
 #  endif
 #else
-#  if TWITUX_DISABLE_DEBUG
-#    define twitux_debug(x)
+#  if DISABLE_DEBUG
+#    define debug(x)
 #  else
-#    define twitux_debug twitux_debug_impl
+#    define debug debug_impl
 #  endif
 #endif
 
-void twitux_debug_impl (const gchar *domain, const gchar *msg, ...);
+void debug_impl (const gchar *domain, const gchar *msg, ...);
 
 G_END_DECLS
 
-#endif /* __TWITUX_DEBUG_H__ */
+#endif /* __DEBUG_H__ */
 

@@ -5,7 +5,7 @@ AM_CPPFLAGS=						\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLOCALEDIR=\""$(localedir)"\"			\
 	-DLIBDIR=\""$(libdir)"\"			\
-	$(TWITUX_CFLAGS)				\
+	$(GREET_TWEET_KNOW_CFLAGS)				\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
 
@@ -46,5 +46,5 @@ greet_tweet_know_SOURCES = 				\
 
 
 greet_tweet_know_LDADD=						\
-	$(TWITUX_LIBS)					\
+	$(GREET_TWEET_KNOW_LIBS)					\
 	$(ENCHANT_LIBS)

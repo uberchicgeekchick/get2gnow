@@ -289,20 +289,20 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = \
+AM_CPPFLAGS =						\
 	-I$(top_srcdir)                          	\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLIBDIR=\""$(libdir)"\"			\
-	-DLOCALEDIR=\""$(localedir)"\"		\
+	-DLOCALEDIR=\""$(localedir)"\"			\
 	$(GREET_TWEET_KNOW_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
 
 @HAVE_DBUS_TRUE@dbus_sources = dbus.c dbus.h
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-greet_tweet_know_SOURCES = \
+greet_tweet_know_SOURCES =				\
 	$(dbus_sources)					\
 	$(keyring)					\
 	gconf.c			gconf.h			\

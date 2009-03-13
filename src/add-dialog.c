@@ -26,7 +26,7 @@
 #include "add-dialog.h"
 #include "network.h"
 
-#define XML_FILE "add_friend_dlg.xml"
+#define GLADE_FILE "add_friend_dlg.xml"
 
 typedef struct {
 	GtkWidget *entry;
@@ -45,7 +45,7 @@ add_response_cb (GtkWidget     *widget,
 				 TwituxAdd     *add)
 {
 	if (response == GTK_RESPONSE_OK) {
-		twitux_network_add_user (gtk_entry_get_text (GTK_ENTRY (add->entry)));
+		network_add_user (gtk_entry_get_text (GTK_ENTRY (add->entry)));
 	}
 	gtk_widget_destroy (widget);
 }
@@ -58,7 +58,7 @@ add_destroy_cb (GtkWidget     *widget,
 }
 
 void
-twitux_add_dialog_show (GtkWindow *parent)
+add_dialog_show (GtkWindow *parent)
 {
 	static TwituxAdd *add;
 	GtkBuilder       *ui;
@@ -71,13 +71,13 @@ twitux_add_dialog_show (GtkWindow *parent)
 	add = g_new0 (TwituxAdd, 1);
 
 	/* Get widgets */
-	ui = twitux_xml_get_file (XML_FILE,
+	ui = glade_get_file (GLADE_FILE,
 						"add_friend_dialog", &add->dialog,
 						"frienduser_entry", &add->entry,
 						NULL);
 
 	/* Connect the signals */
-	twitux_xml_connect (ui, add,
+	glade_connect (ui, add,
 						"add_friend_dialog", "destroy", add_destroy_cb,
 						"add_friend_dialog", "response", add_response_cb,
 						NULL);

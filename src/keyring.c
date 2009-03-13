@@ -62,7 +62,7 @@ account_gnome_keyring_result_to_string (GnomeKeyringResult result)
 }
 
 gboolean
-twitux_keyring_get_password (gchar  *username,
+keyring_get_password (gchar  *username,
 							 gchar **password)
 {
 	GnomeKeyringNetworkPasswordData *data;
@@ -79,7 +79,7 @@ twitux_keyring_get_password (gchar  *username,
 													   &passwords);    /* Result */
 
 	if (result != GNOME_KEYRING_RESULT_OK) {
-		twitux_debug (DEBUG_DOMAIN,
+		debug (DEBUG_DOMAIN,
 					  "Could not retrieve password from keyring, result:%d->'%s'",
 					  result, account_gnome_keyring_result_to_string (result));
 
@@ -87,7 +87,7 @@ twitux_keyring_get_password (gchar  *username,
 	}
 
 	if (g_list_length (passwords) > 1) {
-		twitux_debug (DEBUG_DOMAIN,
+		debug (DEBUG_DOMAIN,
 					  "Found %d matching passwords in keyring, using first available",
 					  g_list_length (passwords));
 	}
@@ -102,7 +102,7 @@ twitux_keyring_get_password (gchar  *username,
 }
 
 gboolean
-twitux_keyring_set_password (const gchar *username,
+keyring_set_password (const gchar *username,
 							 const gchar *password)
 {
 	GnomeKeyringResult result;
@@ -120,7 +120,7 @@ twitux_keyring_set_password (const gchar *username,
 													  &id);            /* Unique ID */
 
 	if (result != GNOME_KEYRING_RESULT_OK) {
-		twitux_debug (DEBUG_DOMAIN,
+		debug (DEBUG_DOMAIN,
 					  "Could not set password to keyring, result:%d->'%s'",
 					  result, account_gnome_keyring_result_to_string (result));
 

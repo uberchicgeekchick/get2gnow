@@ -29,7 +29,7 @@
 #include "main.h"
 #include "account-dialog.h"
 
-#define XML_FILE "account_dlg.xml"
+#define GLADE_FILE "account_dlg.xml"
 
 typedef struct {
 	GtkWidget *dialog;
@@ -54,18 +54,18 @@ account_response_cb (GtkWidget     *widget,
 	if (response == GTK_RESPONSE_OK) {
 		TwituxConf *conf;
 
-		conf = twitux_conf_get ();
+		conf = conf_get ();
 
-		twitux_conf_set_string (conf,
-								TWITUX_PREFS_AUTH_USER_ID,
+		conf_set_string (conf,
+								PREFS_AUTH_USER_ID,
 								gtk_entry_get_text (GTK_ENTRY (act->username)));
 
 #ifdef HAVE_GNOME_KEYRING
-		twitux_keyring_set_password (gtk_entry_get_text (GTK_ENTRY (act->username)),
+		keyring_set_password (gtk_entry_get_text (GTK_ENTRY (act->username)),
 									 gtk_entry_get_text (GTK_ENTRY (act->password)));
 #else
-		twitux_conf_set_string (conf,
-								TWITUX_PREFS_AUTH_PASSWORD,
+		conf_set_string (conf,
+								PREFS_AUTH_PASSWORD,
 								gtk_entry_get_text (GTK_ENTRY (act->password)));
 #endif
 	}
@@ -90,7 +90,7 @@ account_show_password_cb (GtkWidget     *widget,
 }
 
 void
-twitux_account_dialog_show (GtkWindow *parent)
+account_dialog_show (GtkWindow *parent)
 {
 	static TwituxAccount *act;
 	GtkBuilder           *ui;
@@ -106,7 +106,7 @@ twitux_account_dialog_show (GtkWindow *parent)
 	act = g_new0 (TwituxAccount, 1);
 
 	/* Get widgets */
-	ui = twitux_xml_get_file (XML_FILE,
+	ui = glade_get_file (GLADE_FILE,
 						"account_dialog", &act->dialog,
 						"username_entry", &act->username,
 						"password_entry", &act->password,
@@ -114,7 +114,7 @@ twitux_account_dialog_show (GtkWindow *parent)
 						NULL);
 
 	/* Connect the signals */
-	twitux_xml_connect (ui, act,
+	glade_connect (ui, act,
 						"account_dialog", "destroy", account_destroy_cb,
 						"account_dialog", "response", account_response_cb,
 						"show_password_checkbutton", "toggled", account_show_password_cb,
@@ -130,9 +130,9 @@ twitux_account_dialog_show (GtkWindow *parent)
 	 * Check to see if the username & pasword are already in gconf,
 	 * and if so fill in the appropriate entry widget.
 	 */
-	conf = twitux_conf_get ();
-	twitux_conf_get_string (conf,
-							TWITUX_PREFS_AUTH_USER_ID,
+	conf = conf_get ();
+	conf_get_string (conf,
+							PREFS_AUTH_USER_ID,
 							&username);
 	gtk_entry_set_text (GTK_ENTRY (act->username), username ? username : "");
 
@@ -142,13 +142,13 @@ twitux_account_dialog_show (GtkWindow *parent)
 		username = NULL;
 		password = NULL;
 	} else {
-		if (!(twitux_keyring_get_password (username, &password))) {
+		if (!(keyring_get_password (username, &password))) {
 			password = NULL;
 		}
 	}
 #else
-	twitux_conf_get_string (conf,
-							TWITUX_PREFS_AUTH_PASSWORD,
+	conf_get_string (conf,
+							PREFS_AUTH_PASSWORD,
 							&password);
 #endif
 

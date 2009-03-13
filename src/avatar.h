@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __TWITUX_AVATAR_H__
-#define __TWITUX_AVATAR_H__
+#ifndef __AVATAR_H__
+#define __AVATAR_H__
 
 #include <glib-object.h>
 
@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#define TWITUX_TYPE_AVATAR (twitux_avatar_get_gtype ())
+#define TYPE_AVATAR (avatar_get_gtype ())
 
 typedef struct _TwituxAvatar TwituxAvatar;
 
@@ -39,17 +39,17 @@ struct _TwituxAvatar {
 	guint      refcount;
 };
 
-GType          twitux_avatar_get_gtype               (void) G_GNUC_CONST;
-TwituxAvatar * twitux_avatar_new                     (guchar *avatar,
+GType          avatar_get_gtype               (void) G_GNUC_CONST;
+TwituxAvatar * avatar_new                     (guchar *avatar,
 													  gsize len,
 													  gchar *format);
-GdkPixbuf    * twitux_avatar_get_pixbuf              (TwituxAvatar *avatar);
-GdkPixbuf    * twitux_avatar_create_pixbuf_with_size (TwituxAvatar *avatar,
+GdkPixbuf    * avatar_get_pixbuf              (TwituxAvatar *avatar);
+GdkPixbuf    * avatar_create_pixbuf_with_size (TwituxAvatar *avatar,
 													  gint          size);
 
-TwituxAvatar * twitux_avatar_ref                     (TwituxAvatar *avatar);
-void           twitux_avatar_unref                   (TwituxAvatar *avatar);
+TwituxAvatar * avatar_ref                     (TwituxAvatar *avatar);
+void           avatar_unref                   (TwituxAvatar *avatar);
 
 G_END_DECLS
 
-#endif /* __TWITUX_AVATAR_H__ */
+#endif /* __AVATAR_H__ */

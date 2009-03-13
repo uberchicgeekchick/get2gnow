@@ -31,58 +31,58 @@
 #define DEBUG_DOMAIN "Geometry"
 
 void
-twitux_geometry_save_for_main_window (gint x, gint y,
+geometry_save_for_main_window (gint x, gint y,
 									  gint w, gint h)
 {
 	TwituxConf *conf;
 
-	twitux_debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, w:%d, h:%d",
+	debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, w:%d, h:%d",
 				  x, y, w, h);
 
-	conf = twitux_conf_get ();
+	conf = conf_get ();
 
-	twitux_conf_set_int (conf,
-						 TWITUX_PREFS_UI_WINDOW_HEIGHT,
+	conf_set_int (conf,
+						 PREFS_UI_WINDOW_HEIGHT,
 						 h);
 
-	twitux_conf_set_int (conf,
-						 TWITUX_PREFS_UI_WINDOW_WIDTH,
+	conf_set_int (conf,
+						 PREFS_UI_WINDOW_WIDTH,
 						 w);
 
-	twitux_conf_set_int (conf,
-						 TWITUX_PREFS_UI_WIN_POS_X,
+	conf_set_int (conf,
+						 PREFS_UI_WIN_POS_X,
 						 x);
 
-	twitux_conf_set_int (conf,
-						 TWITUX_PREFS_UI_WIN_POS_Y,
+	conf_set_int (conf,
+						 PREFS_UI_WIN_POS_Y,
 						 y);
 
 }
  
 void
-twitux_geometry_load_for_main_window (GtkWidget *main_window)
+geometry_load_for_main_window (GtkWidget *main_window)
 {
 	TwituxConf *conf;
 	gint        x, y, w, h;
 
-	twitux_debug (DEBUG_DOMAIN, "Loading window geometry...");
+	debug (DEBUG_DOMAIN, "Loading window geometry...");
 
-	conf = twitux_conf_get ();
+	conf = conf_get ();
 
-	twitux_conf_get_int (conf,
-						 TWITUX_PREFS_UI_WINDOW_HEIGHT,
+	conf_get_int (conf,
+						 PREFS_UI_WINDOW_HEIGHT,
 						 &h);
 
-	twitux_conf_get_int (conf,
-						 TWITUX_PREFS_UI_WINDOW_WIDTH,
+	conf_get_int (conf,
+						 PREFS_UI_WINDOW_WIDTH,
 						 &w);
 
-	twitux_conf_get_int (conf,
-						 TWITUX_PREFS_UI_WIN_POS_X,
+	conf_get_int (conf,
+						 PREFS_UI_WIN_POS_X,
 						 &x);
 
-	twitux_conf_get_int (conf,
-						 TWITUX_PREFS_UI_WIN_POS_Y,
+	conf_get_int (conf,
+						 PREFS_UI_WIN_POS_Y,
 						 &y);
 
 	if (w >=1 && h >= 1) {
@@ -90,7 +90,7 @@ twitux_geometry_load_for_main_window (GtkWidget *main_window)
 		 * Use the defaults from the glade file
 		 * if we don't have good w, h geometry.
 		 */
-		 twitux_debug (DEBUG_DOMAIN,
+		 debug (DEBUG_DOMAIN,
 					   "Configuring window default size w:%d, h: %d", w, h);
 		 gtk_window_resize (GTK_WINDOW (main_window), w, h);
 	}
@@ -100,7 +100,7 @@ twitux_geometry_load_for_main_window (GtkWidget *main_window)
 		 * Let the window manager position it
 		 * if we don't have good x, y coordinates.
 		 */
-		twitux_debug (DEBUG_DOMAIN,
+		debug (DEBUG_DOMAIN,
 					  "Configuring window default position x:%d, y:%d", x, y);
 		gtk_window_move (GTK_WINDOW (main_window), x, y);
 	}

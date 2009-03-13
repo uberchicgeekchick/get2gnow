@@ -26,7 +26,7 @@
 #include "glade.h"
 
 static GtkBuilder *
-xml_get_file (const gchar *filename,
+glade_load_file (const gchar *filename,
               const gchar *first_widget,
               va_list      args)
 {
@@ -39,7 +39,7 @@ xml_get_file (const gchar *filename,
 	/* Create gtkbuilder & load the xml file */
 	ui = gtk_builder_new ();
 	gtk_builder_set_translation_domain (ui, GETTEXT_PACKAGE);
-	path = twitux_paths_get_xml_path (filename);
+	path = paths_get_glade_path (filename);
 	if (gtk_builder_add_from_file (ui, path, &err) == 0) {
 		g_warning ("XML file error: %s", err->message);
 		g_error_free (err);
@@ -64,7 +64,7 @@ xml_get_file (const gchar *filename,
 }
 
 GtkBuilder *
-twitux_xml_get_file (const gchar *filename,
+glade_get_file (const gchar *filename,
                      const gchar *first_widget,
                      ...)
 {
@@ -73,7 +73,7 @@ twitux_xml_get_file (const gchar *filename,
 
 	va_start(args, first_widget);
 
-	ui=xml_get_file(filename, first_widget, args);
+	ui=glade_load_file(filename, first_widget, args);
 
 	va_end(args);
 
@@ -81,7 +81,7 @@ twitux_xml_get_file (const gchar *filename,
 }
 
 void
-twitux_xml_connect (GtkBuilder *ui,
+glade_connect (GtkBuilder *ui,
                     gpointer    user_data,
                     gchar      *first_widget,
                     ...)
