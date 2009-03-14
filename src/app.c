@@ -784,7 +784,7 @@ app_public_timeline_cb(GtkRadioAction *action,
 	
 	
 	if(app_priv->menu_public == current)
-		network_get_timeline(API_TIMELINE_PUBLIC);
+		network_get_timeline(API_TWITTER_TIMELINE_PUBLIC);
 }
 
 static void
@@ -795,7 +795,7 @@ app_friends_timeline_cb(GtkRadioAction *action,
 	
 	
 	if(app_priv->menu_friends == current) 
-		network_get_timeline(API_TIMELINE_FRIENDS);
+		network_get_timeline(API_TWITTER_TIMELINE_FRIENDS);
 }
 
 static void
@@ -817,7 +817,7 @@ app_view_direct_messages_cb(GtkRadioAction *action,
 	
 	
 	if(app_priv->menu_direct_messages == current)
-		network_get_timeline(API_DIRECT_MESSAGES);
+		network_get_timeline(API_TWITTER_DIRECT_MESSAGES);
 }
 
 static void
@@ -828,7 +828,7 @@ app_view_direct_replies_cb(GtkRadioAction *action,
 	
 	
 	if(app_priv->menu_direct_replies == current) 
-		network_get_timeline(API_REPLIES);
+		network_get_timeline(API_TWITTER_REPLIES);
 }
 
 static void
@@ -1166,13 +1166,13 @@ app_set_default_timeline(TwituxApp *app, gchar *timeline)
 
 	
 	/* redundancy is a waste of time
-	 * if(strcmp(timeline, API_TIMELINE_FRIENDS) == 0)
+	 * if(strcmp(timeline, API_TWITTER_TIMELINE_FRIENDS) == 0)
 	 * 	gtk_radio_action_set_current_value(app_priv->menu_friends,	1);
 	 */
-	if( !(strcmp( timeline, API_TIMELINE_PUBLIC )) )
+	if( !(strcmp( timeline, API_TWITTER_TIMELINE_PUBLIC )) )
 		return gtk_radio_action_set_current_value( app_priv->menu_public, 1);
 	
-	if( !(strcmp( timeline, API_TIMELINE_MY )) )
+	if( !(strcmp( timeline, API_TWITTER_TIMELINE_MY )) )
 		return gtk_radio_action_set_current_value(app_priv->menu_mine, 1);
 	
 	/* Let's fallback to friends timeline */
@@ -1190,8 +1190,8 @@ app_retrieve_default_timeline(void)
 							&timeline);
 
 	if(G_STR_EMPTY(timeline)){
-		timeline = g_strdup(API_TIMELINE_FRIENDS);
-		app_set_default_timeline(app, API_TIMELINE_FRIENDS);
+		timeline = g_strdup(API_TWITTER_TIMELINE_FRIENDS);
+		app_set_default_timeline(app, API_TWITTER_TIMELINE_FRIENDS);
 	}
 
 	network_get_timeline(timeline);

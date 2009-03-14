@@ -49,48 +49,28 @@ typedef struct {
 	GtkTreeIter   iter;
 } TwituxImage;
 
-static void network_get_data		(const gchar           *url,
-									 SoupSessionCallback    callback,
-									 gpointer               data);
-static void network_post_data		(const gchar           *url,
-									 gchar                 *formdata,
-									 SoupSessionCallback    callback,
-									 gpointer               data);
-static gboolean	network_check_http 	(gint                   status_code);
+static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data);
+static void network_post_data( const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data );
+static gboolean	network_check_http( gint status_code );
 static void network_parser_free_lists (void);
 
 /* libsoup callbacks */
-static void network_cb_on_login		(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_post		(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_message	(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_timeline	(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_image		(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_add		(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_del		(SoupSession           *session,
-									 SoupMessage           *msg,
-									 gpointer               user_data);
-static void network_cb_on_auth		(SoupSession           *session,
-									 SoupMessage           *msg,
-									 SoupAuth              *auth,
-									 gboolean               retrying,
-									 gpointer               data);
+static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_post( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_message( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_add( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_del( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
+
+/* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 GList *network_get_users_glist(gboolean get_friends);
 static gboolean network_get_users_page(SoupMessage *msg );
 static int network_sort_users(TwituxUser *a, TwituxUser *b);
 static void network_make_users_list(gboolean friends);
 GList *all_users=NULL;
+/* My, Kaity G. B., new stuff ends here. */
 
 /* Autoreload timeout functions */
 static gboolean 	network_timeout			(gpointer user_data);
@@ -242,7 +222,7 @@ network_login (const char *username, const char *password)
 					  NULL);
 
 	/* Verify cedentials */
-	network_get_data (API_LOGIN, network_cb_on_login, NULL);
+	network_get_data (API_TWITTER_LOGIN, network_cb_on_login, NULL);
 }
 
 
@@ -256,17 +236,8 @@ void network_logout (void)
 
 
 /* Post a new tweet - text must be Url encoded */
-void
-network_post_status (const gchar *text)
-{
-	gchar *formdata;
-
-	formdata = g_strdup_printf ("source=twitux&status=%s", text);
-
-	network_post_data (API_POST_STATUS,
-					   formdata,
-					   network_cb_on_post,
-					   NULL);
+void network_post_status (const gchar *text){
+	network_post_data( API_TWITTER_POST_STATUS, (g_strdup_printf( "source=%s&status=%s", API_TWITTER_CLIENT_AUTH, text )), network_cb_on_post, NULL );
 }
 
 
@@ -279,7 +250,7 @@ network_send_message (const gchar *friend,
 
 	formdata = g_strdup_printf ( "user=%s&text=%s", friend, text);
 	
-	network_post_data (API_SEND_MESSAGE,
+	network_post_data (API_TWITTER_SEND_MESSAGE,
 					   formdata,
 					   network_cb_on_message,
 					   NULL);
@@ -330,7 +301,7 @@ network_get_user (const gchar *username)
 	}
 
 	if(!G_STR_EMPTY (user_id)) {
-		user_timeline = g_strdup_printf (API_TIMELINE_USER,
+		user_timeline = g_strdup_printf (API_TWITTER_TIMELINE_USER,
 										 user_id);
 	
 		network_get_timeline (user_timeline);
@@ -368,7 +339,7 @@ GList *network_get_users_glist(gboolean get_friends){
 	gboolean fetching=TRUE;
 	while(fetching){
 		page++;
-		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_FOLLOWING:API_FOLLOWERS), page)) );
+		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page)) );
 		soup_session_send_message(soup_connection, msg);
 		fetching=network_get_users_page(msg);
 	}
@@ -472,7 +443,7 @@ network_add_user (const gchar *username)
 	if (G_STR_EMPTY (username))
 		return;
 	
-	url = g_strdup_printf (API_FOLLOWING_ADD, username);
+	url = g_strdup_printf (API_TWITTER_FOLLOWING_ADD, username);
 
 	network_post_data (url, NULL, network_cb_on_add, NULL);
 
@@ -489,7 +460,7 @@ network_del_user (TwituxUser *user)
 	if (!user || !user->screen_name)
 		return;
 	
-	url = g_strdup_printf (API_FOLLOWING_DEL, user->screen_name);
+	url = g_strdup_printf (API_TWITTER_FOLLOWING_DEL, user->screen_name);
 
 	network_post_data (url, NULL, network_cb_on_del, user);
 

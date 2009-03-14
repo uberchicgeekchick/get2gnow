@@ -556,6 +556,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
+	-rm -rf ./$(DEPDIR)
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)

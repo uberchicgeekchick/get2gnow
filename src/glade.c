@@ -86,7 +86,7 @@ glade_connect (GtkBuilder *ui,
                     gchar      *first_widget,
                     ...)
 {
-	GObject     *pointer;
+	GObject     *instance;
 	gpointer    *callback;
 	const gchar *signal;
 	const gchar *name;
@@ -98,13 +98,13 @@ glade_connect (GtkBuilder *ui,
 		signal = va_arg (args, void *);
 		callback = va_arg (args, void *);
 
-		pointer = gtk_builder_get_object (ui, name);
-		if (!pointer) {
+		instance=gtk_builder_get_object(ui, name);
+		if (!instance) {
 			g_warning ("Missing widget '%s'", name);
 			continue;
 		}
 
-		g_signal_connect (pointer, signal, G_CALLBACK (callback), user_data);
+		g_signal_connect(instance, signal, G_CALLBACK (callback), user_data);
 	}
 
 	va_end (args);

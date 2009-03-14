@@ -20,20 +20,14 @@
  * Authors: Kaity G. B. <uberChick@uberChicGeekChick.Com>
  */
 
-#ifndef __H__
-#define __H__
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 G_BEGIN_DECLS
 
 #define G_STR_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
 
-/* Twitter Timelines */
-#define API_TIMELINE_PUBLIC	"https://twitter.com/statuses/public_timeline.xml"
-#define API_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
-#define API_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
-#define API_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
-
-/* Twitux GConf Keys */
+/* GConf Keys */
 #define PREFS_PATH "/apps/greet-tweet-know"
 
 #define PREFS_AUTH_USER_ID             PREFS_PATH "/auth/user_id"
@@ -83,4 +77,4 @@ enum {
 
 G_END_DECLS
 
-#endif /* __H__ */
+#endif /* _MAIN_H_ */

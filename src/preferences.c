@@ -31,6 +31,7 @@
 
 #include <glib/gi18n.h>
 
+#include "network.h"
 #include "gconf.h"
 #include "glade.h"
 
@@ -433,9 +434,9 @@ static void
 preferences_timeline_setup (TwituxPrefs *prefs)
 {
 	static const gchar *timelines[] = {
-		API_TIMELINE_PUBLIC, N_("Public"),
-		API_TIMELINE_FRIENDS, N_("Friends"),
-		API_TIMELINE_MY, N_("Mine"),
+		API_TWITTER_TIMELINE_PUBLIC, N_("Public"),
+		API_TWITTER_TIMELINE_FRIENDS, N_("Friends"),
+		API_TWITTER_TIMELINE_MY, N_("Mine"),
 		NULL
 	};
 

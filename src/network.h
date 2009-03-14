@@ -27,19 +27,23 @@
 #include "parser.h"
 
 /* Twitter API */
-#define API_REPLIES		"https://twitter.com/statuses/replies.xml"
-#define API_DIRECT_MESSAGES	"https://twitter.com/direct_messages.xml"
+#define API_TWITTER_CLIENT_AUTH		"greettweetknow"
+#define API_TWITTER_LOGIN		"https://twitter.com/account/verify_credentials.xml"
+#define API_TWITTER_REPLIES		"https://twitter.com/statuses/replies.xml"
+#define API_TWITTER_DIRECT_MESSAGES	"https://twitter.com/direct_messages.xml"
+#define API_TWITTER_POST_STATUS		"https://twitter.com/statuses/update.xml"
+#define API_TWITTER_SEND_MESSAGE	"https://twitter.com/direct_messages/new.xml"
+#define API_TWITTER_FOLLOWING		"https://twitter.com/statuses/friends.xml"
+#define API_TWITTER_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
+#define API_TWITTER_FOLLOWING_ADD	"https://twitter.com/friendships/create/%s.xml"
+#define API_TWITTER_FOLLOWING_DEL	"https://twitter.com/friendships/destroy/%s.xml"
 
-#define API_POST_STATUS		"https://twitter.com/statuses/update.xml"
-#define API_SEND_MESSAGE		"https://twitter.com/direct_messages/new.xml"
+/* Twitter Timelines */
+#define API_TWITTER_TIMELINE_PUBLIC	"https://twitter.com/statuses/public_timeline.xml"
+#define API_TWITTER_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
+#define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
+#define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
 
-#define API_FOLLOWING		"https://twitter.com/statuses/friends.xml"
-#define API_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
-
-#define API_FOLLOWING_ADD	"https://twitter.com/friendships/create/%s.xml"
-#define API_FOLLOWING_DEL	"https://twitter.com/friendships/destroy/%s.xml"
-
-#define API_LOGIN		"https://twitter.com/account/verify_credentials.xml"
 
 /* Verify user credentials */
 void network_login		(const char *username, 
