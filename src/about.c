@@ -25,7 +25,7 @@
 
 #include "about.h"
 
-#define WEB_SITE "https://www.github.com/uberchicgeekchick/greet-tweet-know/"
+#define WEB_SITE "http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know"
 
 const gchar *authors[] = {
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
