@@ -1,6 +1,15 @@
 2009-03-14  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+
+	* ./configure, ./configure.in, ./Makefile.in &./Makefile.am, ./po/POTFILES.in
+			{ SUBDIRS, inttool, & po }
+		inttool translating po was causing an endless loop on some systems
+		when running configure.  :-) Well it aint doin that no mores. Well not
+		in any way I can emulate.
+		
+		*Thnx* @snkmchnb for the detailed bug report.
 	
-	* src/send-message-dialog.c: message_setup
+	* src/send-message-dialog.c:
+	message_setup
 		message_text_button_press_cb(*new*)
 		message_text_populate_popup_cb
 		Spell checking can be activated via right clicking an

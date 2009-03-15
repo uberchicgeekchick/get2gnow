@@ -1,8 +1,10 @@
-SUBDIRS = data src po
+SUBDIRS = po data
 
 if ENABLE_SK
 SUBDIRS += help
 endif
+
+SUBDIRS += src
 
 INTLTOOL = 			\
 	intltool-extract.in 	\
