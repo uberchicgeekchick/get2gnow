@@ -47,40 +47,40 @@ typedef struct {
 	GtkTreeView  *following_list;
 	
 	GtkTreeModel *following_store;
-} TwituxLists;
+} Lists;
 
 static void lists_rem_response_cb (GtkButton   *button,
-								   TwituxLists *lists);
+								   Lists *lists);
 static void lists_response_cb     (GtkWidget   *widget,
 								   gint         response,
-								   TwituxLists *lists);
+								   Lists *lists);
 static void lists_destroy_cb      (GtkWidget   *widget,
-								   TwituxLists *lists);
+								   Lists *lists);
 
-static TwituxLists *lists;
+static Lists *lists;
 
 static void
 lists_response_cb (GtkWidget     *widget,
 				   gint           response,
-				   TwituxLists   *lists)
+				   Lists   *lists)
 {
 	gtk_widget_destroy (widget);
 }
 
 static void
 lists_destroy_cb (GtkWidget    *widget,
-				  TwituxLists  *lists)
+				  Lists  *lists)
 {
 	g_free (lists);
 }
 
 static void
 lists_rem_response_cb (GtkButton   *button,
-					   TwituxLists *lists)
+					   Lists *lists)
 {
 	GtkTreeSelection *sel;
 	GtkTreeIter       iter;
-	TwituxUser       *user;
+	User       *user;
 
 	/* Get selected Iter */
 	sel = gtk_tree_view_get_selection (lists->following_list);
@@ -102,7 +102,7 @@ static void
 list_follower_activated_cb (GtkTreeView       *tree_view,
 							GtkTreePath       *path,
 							GtkTreeViewColumn *column,
-							TwituxLists       *lists)
+							Lists       *lists)
 {
 	GtkTreeIter  iter;
 	gchar       *username;
@@ -125,14 +125,14 @@ list_follower_activated_cb (GtkTreeView       *tree_view,
 void
 lists_dialog_load_lists (GList *users)
 {
-	TwituxUser  *user;
+	User  *user;
 	GtkTreeIter  iter;
 	GList       *list;
 
 	/* Following */
 	for (list = users; list; list = list->next)
 	{
-		user = (TwituxUser *)list->data;
+		user = (User *)list->data;
 		gtk_list_store_append (GTK_LIST_STORE (lists->following_store), &iter);
 
 		gtk_list_store_set (GTK_LIST_STORE (lists->following_store),
@@ -154,7 +154,7 @@ lists_dialog_show (GtkWindow *parent)
 	GList      *friends;
 	GdkCursor *cursor;
 
-	lists = g_new0 (TwituxLists, 1);
+	lists = g_new0 (Lists, 1);
 
 	/* Get widgets */
 	ui = glade_get_file (GLADE_FILE,

@@ -50,7 +50,7 @@
 #define MAX_CHARACTER_COUNT 140
 
 #define GET_PRIV(obj)          \
-	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), TYPE_MESSAGE, TwituxMsgDialogPriv))
+	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), TYPE_MESSAGE, MsgDialogPriv))
 
 typedef struct {
 	GtkWidget         *textview;
@@ -58,9 +58,9 @@ typedef struct {
 
 	GtkTextIter        start;
 	GtkTextIter        end;
-} TwituxMessageSpell;
+} MessageSpell;
 
-struct _TwituxMsgDialogPriv {
+struct _MsgDialogPriv {
 	/* Main widgets */
 	GtkWidget         *dialog;
 	GtkWidget         *textview;
@@ -72,15 +72,15 @@ struct _TwituxMsgDialogPriv {
 	gboolean           show_friends;
 };
 
-static void message_class_init( TwituxMsgDialogClass *klass );
-static void message_init( TwituxMsgDialog *signelton_message );
+static void message_class_init( MsgDialogClass *klass );
+static void message_init( MsgDialog *signelton_message );
 static void message_finalize( GObject *object );
 static void message_setup( GtkWindow *parent );
 static void message_set_characters_available( GtkTextBuffer *buffer );
 static void message_text_buffer_changed_cb ( GtkTextBuffer *buffer );
-static void message_text_check_word_spelling_cb( GtkMenuItem *menuitem, TwituxMessageSpell *message_spell );
-static TwituxMessageSpell *message_spell_new( GtkWidget *window, const gchar *word, GtkTextIter start, GtkTextIter end);
-static void message_spell_free( TwituxMessageSpell *message_spell );
+static void message_text_check_word_spelling_cb( GtkMenuItem *menuitem, MessageSpell *message_spell );
+static MessageSpell *message_spell_new( GtkWidget *window, const gchar *word, GtkTextIter start, GtkTextIter end);
+static void message_spell_free( MessageSpell *message_spell );
 static void message_destroy_cb( GtkWidget *widget );
 static void message_response_cb( GtkWidget *widget, gint response );
 
@@ -89,21 +89,21 @@ static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu );
 
 
 static GtkTextBuffer *undo_buffer=NULL;
-static TwituxMsgDialog  *dialog = NULL;
-static 	TwituxMsgDialogPriv *dialog_priv=NULL;
-G_DEFINE_TYPE (TwituxMsgDialog, message, G_TYPE_OBJECT);
+static MsgDialog  *dialog = NULL;
+static 	MsgDialogPriv *dialog_priv=NULL;
+G_DEFINE_TYPE (MsgDialog, message, G_TYPE_OBJECT);
 
 static void
-message_class_init (TwituxMsgDialogClass *klass)
+message_class_init (MsgDialogClass *klass)
 {
 	GObjectClass  *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->finalize = message_finalize;
 
-	g_type_class_add_private (object_class, sizeof (TwituxMsgDialogPriv));
+	g_type_class_add_private (object_class, sizeof (MsgDialogPriv));
 }
 
-static void message_init( TwituxMsgDialog *singleton_message ){
+static void message_init( MsgDialog *singleton_message ){
 	dialog=singleton_message;
 	dialog_priv=GET_PRIV( dialog );
 }
@@ -228,7 +228,7 @@ message_set_followers (GList *followers)
 {
 	GList               *list;
 	GtkTreeIter          iter;
-	TwituxUser          *user;
+	User          *user;
 	GtkListStore        *model_followers;
 
 		model_followers =
@@ -236,7 +236,7 @@ message_set_followers (GList *followers)
 							GTK_COMBO_BOX (dialog_priv->friends_combo)));
 
 	for (list = followers; list; list = list->next) {
-		user = (TwituxUser *)list->data;
+		user = (User *)list->data;
 		gtk_list_store_append (model_followers, &iter);
 		gtk_list_store_set (model_followers,
 							&iter,
@@ -437,7 +437,7 @@ static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu ){
 	GtkTextIter iter, start, end;
 	GtkWidget *item;
 	gchar *str=NULL;
-	TwituxMessageSpell *message_spell;
+	MessageSpell *message_spell;
 
 	/* Find where the cursor's location, ie where you're typing. */
 	GtkTextMark *cursor_position=gtk_text_buffer_get_insert( buffer );
@@ -474,7 +474,7 @@ static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu ){
 
 static void
 message_text_check_word_spelling_cb (GtkMenuItem        *menuitem,
-									 TwituxMessageSpell *chat_spell)
+									 MessageSpell *chat_spell)
 {
 	spell_dialog_show (chat_spell->textview,
 							  chat_spell->start,
@@ -482,15 +482,15 @@ message_text_check_word_spelling_cb (GtkMenuItem        *menuitem,
 							  chat_spell->word);
 }
 
-static TwituxMessageSpell *
+static MessageSpell *
 message_spell_new (GtkWidget          *textview,
 				   const gchar        *word,
 				   GtkTextIter         start,
 				   GtkTextIter         end)
 {
-	TwituxMessageSpell *message_spell;
+	MessageSpell *message_spell;
 
-	message_spell = g_new0 (TwituxMessageSpell, 1);
+	message_spell = g_new0 (MessageSpell, 1);
 
 	message_spell->textview = textview;
 	message_spell->word = g_strdup (word);
@@ -501,7 +501,7 @@ message_spell_new (GtkWidget          *textview,
 }
 
 static void
-message_spell_free (TwituxMessageSpell *message_spell)
+message_spell_free (MessageSpell *message_spell)
 {
 	g_free (message_spell->word);
 	g_free (message_spell);

@@ -36,23 +36,23 @@ typedef struct {
 	GtkWidget *username;
 	GtkWidget *password;
 	GtkWidget *show_password;
-} TwituxAccount;
+} Account;
 
 static void      account_response_cb          (GtkWidget         *widget,
 											   gint               response,
-											   TwituxAccount     *act);
+											   Account     *act);
 static void      account_destroy_cb           (GtkWidget         *widget,
-											   TwituxAccount     *act);
+											   Account     *act);
 static void      account_show_password_cb     (GtkWidget         *widget,
-											   TwituxAccount     *act);
+											   Account     *act);
 
 static void
 account_response_cb (GtkWidget     *widget,
 					 gint           response,
-					 TwituxAccount *act)
+					 Account *act)
 {
 	if (response == GTK_RESPONSE_OK) {
-		TwituxConf *conf;
+		Conf *conf;
 
 		conf = conf_get ();
 
@@ -74,14 +74,14 @@ account_response_cb (GtkWidget     *widget,
 
 static void
 account_destroy_cb (GtkWidget     *widget,
-					TwituxAccount *act)
+					Account *act)
 {
 	g_free (act);
 }
 
 static void
 account_show_password_cb (GtkWidget     *widget,
-						  TwituxAccount *act)
+						  Account *act)
 {
 	gboolean visible;
 
@@ -92,9 +92,9 @@ account_show_password_cb (GtkWidget     *widget,
 void
 account_dialog_show (GtkWindow *parent)
 {
-	static TwituxAccount *act;
+	static Account *act;
 	GtkBuilder           *ui;
-	TwituxConf           *conf;
+	Conf           *conf;
 	gchar                *username;
 	gchar                *password;
 
@@ -103,7 +103,7 @@ account_dialog_show (GtkWindow *parent)
 		return;
 	}
 
-	act = g_new0 (TwituxAccount, 1);
+	act = g_new0 (Account, 1);
 
 	/* Get widgets */
 	ui = glade_get_file (GLADE_FILE,

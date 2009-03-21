@@ -34,21 +34,21 @@
 G_BEGIN_DECLS
 
 #define TYPE_MESSAGE         	(message_get_type ())
-#define MESSAGE(o)		    	(G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_MESSAGE, TwituxMsgDialog))
-#define MESSAGE_CLASS(k)	   	 	(G_TYPE_CHECK_CLASS_CAST((k), TYPE_MESSAGE, TwituxMsgDialogClass))
+#define MESSAGE(o)		    	(G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_MESSAGE, MsgDialog))
+#define MESSAGE_CLASS(k)	   	 	(G_TYPE_CHECK_CLASS_CAST((k), TYPE_MESSAGE, MsgDialogClass))
 #define IS_MESSAGE(o)	    	(G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_MESSAGE))
 #define IS_MESSAGE_CLASS(k)  	(G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_MESSAGE))
-#define IS_MESSAGE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_MESSAGE, TwituxMsgDialogClass))
+#define IS_MESSAGE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_MESSAGE, MsgDialogClass))
 
-typedef struct _TwituxMsgDialog      	TwituxMsgDialog;
-typedef struct _TwituxMsgDialogClass 	TwituxMsgDialogClass;
-typedef struct _TwituxMsgDialogPriv  	TwituxMsgDialogPriv;
+typedef struct _MsgDialog      	MsgDialog;
+typedef struct _MsgDialogClass 	MsgDialogClass;
+typedef struct _MsgDialogPriv  	MsgDialogPriv;
 
-struct _TwituxMsgDialog {
+struct _MsgDialog {
         GObject        parent;
 };
 
-struct _TwituxMsgDialogClass {
+struct _MsgDialogClass {
         GObjectClass parent_class;
 };
 

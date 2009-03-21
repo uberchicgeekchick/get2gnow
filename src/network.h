@@ -61,6 +61,7 @@ void network_send_message	(const gchar *friend,
 
 /* Get and parse a timeline */
 void network_get_timeline 	(const gchar *url_timeline);
+void network_get_combined_timeline(void);
 
 /* Retrive a user timeline. If user is null, get
  * authenticated user timeline*/
@@ -83,7 +84,7 @@ void network_get_image (const gchar *url_image,
 void network_add_user		(const gchar *username);
 
 /* Remove a user */
-void network_del_user		(TwituxUser *user);
+void network_del_user		(User *user);
 
 /* Networking */
 void network_new			(void);

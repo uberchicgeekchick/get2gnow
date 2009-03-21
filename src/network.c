@@ -47,7 +47,7 @@
 typedef struct {
 	gchar        *src;
 	GtkTreeIter   iter;
-} TwituxImage;
+} Image;
 
 static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data);
 static void network_post_data( const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data );
@@ -67,7 +67,7 @@ static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 GList *network_get_users_glist(gboolean get_friends);
 static gboolean network_get_users_page(SoupMessage *msg );
-static int network_sort_users(TwituxUser *a, TwituxUser *b);
+static int network_sort_users(User *a, User *b);
 static void network_make_users_list(gboolean friends);
 GList *all_users=NULL;
 /* My, Kaity G. B., new stuff ends here. */
@@ -89,7 +89,7 @@ static gchar                *global_password = NULL;
 void
 network_new (void)
 {
-	TwituxConf	*conf;
+	Conf	*conf;
 	gboolean	check_proxy = FALSE;
  
 	/* Close previous networking */
@@ -276,13 +276,13 @@ network_get_timeline (const gchar *url_timeline)
 	if (processing)
 		return;
 
-	parser_reset_lastid ();
+	parser_reset_lastid();
 
 	/* UI */
-	app_set_statusbar_msg (_("Loading timeline..."));
+	app_set_statusbar_msg(_("Loading timeline..."));
 
-	processing = TRUE;
-	network_get_data (url_timeline, network_cb_on_timeline, g_strdup(url_timeline));
+	processing=TRUE;
+	network_get_data(url_timeline, network_cb_on_timeline, g_strdup(url_timeline));
 }
 
 /* Get a user timeline */
@@ -346,7 +346,19 @@ GList *network_get_users_glist(gboolean get_friends){
 	network_make_users_list(get_friends);
 
 	return NULL;
-}
+}//network_get_users_glist
+
+void network_get_combined_timeline(void){
+	SoupMessage *msg;
+	char *timeline[3]={ {API_TWITTER_TIMELINE_FRIENDS}, {API_TWITTER_REPLIES}, {API_TWITTER_DIRECT_MESSAGES} };
+	
+	for(int i=0; i<3; i++)
+		network_get_data(timeline[i], network_cb_on_timeline, g_strdup(timeline[i]));
+	/*{	msg=soup_message_new("GET", timeline[i]);
+		soup_session_send_message(soup_connection, msg);
+	}*/
+	current_timeline=g_strdup("combined");
+}//network_get_combined_timeline
 
 
 static gboolean network_get_users_page(SoupMessage *msg){
@@ -371,7 +383,7 @@ static gboolean network_get_users_page(SoupMessage *msg){
 }
 
 
-static int network_sort_users(TwituxUser *a, TwituxUser *b){
+static int network_sort_users(User *a, User *b){
 	return g_strcmp0(a->screen_name,b->screen_name);
 }
 
@@ -401,7 +413,7 @@ static void network_make_users_list( gboolean friends ){
 void network_get_image (const gchar  *url_image, GtkTreeIter   iter){
 	gchar *image_file, **image_name_info;
 	
-	TwituxImage *image;
+	Image *image;
 	
 	/* save using the filename */
 	image_name_info=g_strsplit(url_image, (const gchar *)"/", 7);
@@ -423,7 +435,7 @@ void network_get_image (const gchar  *url_image, GtkTreeIter   iter){
 		return;
 	}
 
-	image=g_new0(TwituxImage, 1);
+	image=g_new0(Image, 1);
 	image->src=g_strdup(image_file);
 	image->iter=iter;
 	
@@ -453,7 +465,7 @@ network_add_user (const gchar *username)
 
 /* Add a user to follow */
 void
-network_del_user (TwituxUser *user)
+network_del_user (User *user)
 {
 	gchar *url;
 	
@@ -545,12 +557,12 @@ static void
 network_free_user_list_each (gpointer user,
 							 gpointer data)
 {
-	TwituxUser *usr;
+	User *usr;
 
 	if (!user)
 		return;
 
-	usr = (TwituxUser *)user;
+	usr = (User *)user;
 	parser_free_user (user);
 }
 
@@ -697,7 +709,7 @@ network_cb_on_image (SoupSession *session,
 					 SoupMessage *msg,
 					 gpointer     user_data)
 {
-	TwituxImage *image = (TwituxImage *)user_data;
+	Image *image = (Image *)user_data;
 
 	debug (DEBUG_DOMAIN,
 				  "Image response: %i", msg->status_code);
@@ -725,7 +737,7 @@ network_cb_on_add (SoupSession *session,
 				   SoupMessage *msg,
 				   gpointer     user_data)
 {
-	TwituxUser *user;
+	User *user;
 
 	debug (DEBUG_DOMAIN,
 				  "Add user response: %i", msg->status_code);
@@ -765,7 +777,7 @@ network_cb_on_del (SoupSession *session,
 	}
 	
 	if (user_data) {
-		TwituxUser *user = (TwituxUser *)user_data;
+		User *user = (User *)user_data;
 		user_friends = g_list_remove (user_friends, user);
 		parser_free_user (user);
 	}

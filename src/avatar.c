@@ -124,7 +124,7 @@ avatar_get_gtype (void)
 	static GType type_id = 0;
 
 	if (!type_id) {
-		type_id = g_boxed_type_register_static ("TwituxAvatar",
+		type_id = g_boxed_type_register_static ("Avatar",
 												(GBoxedCopyFunc) avatar_ref,
 												(GBoxedFreeFunc) avatar_unref);
 	}
@@ -132,18 +132,18 @@ avatar_get_gtype (void)
 	return type_id;
 }
 
-TwituxAvatar *
+Avatar *
 avatar_new (guchar *data,
 				   gsize   len,
 				   gchar  *format)
 {
-	TwituxAvatar *avatar;
+	Avatar *avatar;
 
 	g_return_val_if_fail (data != NULL, NULL);
 	g_return_val_if_fail (len > 0, NULL);
 	g_return_val_if_fail (format != NULL, NULL);
 
-	avatar = g_slice_new0 (TwituxAvatar);
+	avatar = g_slice_new0 (Avatar);
 	avatar->data = g_memdup (data, len);
 	avatar->len = len;
 	avatar->format = g_strdup (format);
@@ -153,7 +153,7 @@ avatar_new (guchar *data,
 }
 
 static GdkPixbuf *
-avatar_create_pixbuf (TwituxAvatar *avatar, gint size)
+avatar_create_pixbuf (Avatar *avatar, gint size)
 {
 	GdkPixbuf       *tmp_pixbuf;
 	GdkPixbuf       *ret_pixbuf;
@@ -214,7 +214,7 @@ avatar_create_pixbuf (TwituxAvatar *avatar, gint size)
 }
 
 GdkPixbuf *
-avatar_get_pixbuf (TwituxAvatar *avatar)
+avatar_get_pixbuf (Avatar *avatar)
 {
 	g_return_val_if_fail (avatar != NULL, NULL);
 
@@ -226,13 +226,13 @@ avatar_get_pixbuf (TwituxAvatar *avatar)
 }
 
 GdkPixbuf *
-avatar_create_pixbuf_with_size (TwituxAvatar *avatar, gint size)
+avatar_create_pixbuf_with_size (Avatar *avatar, gint size)
 {
 	return avatar_create_pixbuf (avatar, size);
 }
 
 void
-avatar_unref (TwituxAvatar *avatar)
+avatar_unref (Avatar *avatar)
 {
 	g_return_if_fail (avatar != NULL);
 
@@ -245,12 +245,12 @@ avatar_unref (TwituxAvatar *avatar)
 			g_object_unref (avatar->pixbuf);
 		}
 
-		g_slice_free (TwituxAvatar, avatar);
+		g_slice_free (Avatar, avatar);
 	}
 }
 
-TwituxAvatar *
-avatar_ref (TwituxAvatar *avatar)
+Avatar *
+avatar_ref (Avatar *avatar)
 {
 	g_return_val_if_fail (avatar != NULL, NULL);
 

@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<!--*- mode: xml -*-->
 <interface>
   <object class="GtkUIManager" id="uimanager1">
     <child>
@@ -51,7 +50,7 @@
             <property name="name">twitter_refresh</property>
             <property name="label" translatable="yes">_Refresh</property>
           </object>
-          <accelerator key="F5" modifiers="0"/>
+          <accelerator key="F5"/>
         </child>
         <child>
           <object class="GtkAction" id="twitter_quit">
@@ -70,7 +69,7 @@
             <property name="name">settings_account</property>
             <property name="label" translatable="yes">_Account</property>
           </object>
-          <accelerator key="F4" modifiers="0"/>
+          <accelerator key="F4"/>
         </child>
         <child>
           <object class="GtkAction" id="settings_preferences">
@@ -85,14 +84,21 @@
           </object>
         </child>
         <child>
+          <object class="GtkRadioAction" id="view_combined_timeline">
+            <property name="group">view_public_timeline</property>
+            <property name="name">view_combined_timeline</property>
+            <property name="label" translatable="yes">_My Combined Tweets</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkRadioAction" id="view_public_timeline">
             <property name="name">view_public_timeline</property>
-            <property name="label" translatable="yes">Public Timeline</property>
+            <property name="label" translatable="yes">_Every one's Tweets</property>
           </object>
         </child>
         <child>
           <object class="GtkRadioAction" id="view_friends_timeline">
-            <property name="value">1</property>
+            <property name="active">True</property>
             <property name="group">view_public_timeline</property>
             <property name="name">view_friends_timeline</property>
             <property name="label" translatable="yes">Friends Timeline</property>
@@ -137,7 +143,7 @@
             <property name="name">help_contents</property>
             <property name="label" translatable="yes">_Contents</property>
           </object>
-          <accelerator key="F1" modifiers="0"/>
+          <accelerator key="F1"/>
         </child>
         <child>
           <object class="GtkAction" id="help_about">
@@ -167,6 +173,7 @@
           <menuitem action="settings_preferences"/>
         </menu>
         <menu action="view1">
+          <menuitem action="view_combined_timeline"/>
           <menuitem action="view_public_timeline"/>
           <menuitem action="view_friends_timeline"/>
           <menuitem action="view_my_timeline"/>
@@ -187,31 +194,14 @@
     <property name="height_request">320</property>
     <property name="visible">True</property>
     <property name="title" translatable="yes">Greet-Tweet-Know</property>
-    <property name="type">GTK_WINDOW_TOPLEVEL</property>
-    <property name="window_position">GTK_WIN_POS_NONE</property>
-    <property name="modal">False</property>
-    <property name="resizable">True</property>
-    <property name="destroy_with_parent">False</property>
-    <property name="decorated">True</property>
-    <property name="skip_taskbar_hint">False</property>
-    <property name="skip_pager_hint">False</property>
-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
-    <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-    <property name="focus_on_map">True</property>
-    <property name="urgency_hint">False</property>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="homogeneous">False</property>
-        <property name="spacing">0</property>
         <child>
           <object class="GtkMenuBar" constructor="uimanager1" id="main_menubar">
             <property name="visible">True</property>
-            <property name="pack_direction">GTK_PACK_DIRECTION_LTR</property>
-            <property name="child_pack_direction">GTK_PACK_DIRECTION_LTR</property>
           </object>
           <packing>
-            <property name="padding">0</property>
             <property name="expand">False</property>
             <property name="fill">False</property>
           </packing>
@@ -221,95 +211,68 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
-            <property name="vscrollbar_policy">GTK_POLICY_ALWAYS</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
-            <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
             <child>
               <placeholder/>
             </child>
           </object>
           <packing>
-            <property name="padding">0</property>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
           <object class="GtkHBox" id="expand_box">
             <property name="visible">True</property>
-            <property name="homogeneous">False</property>
             <property name="spacing">1</property>
             <child>
               <object class="GtkImage" id="expand_image">
                 <property name="visible">True</property>
-                <property name="stock">gtk-missing-image</property>
-                <property name="icon_size">4</property>
-                <property name="xalign">0.5</property>
                 <property name="yalign">0</property>
                 <property name="xpad">7</property>
                 <property name="ypad">5</property>
+                <property name="stock">gtk-missing-image</property>
               </object>
               <packing>
-                <property name="padding">0</property>
                 <property name="expand">False</property>
-                <property name="fill">True</property>
               </packing>
             </child>
             <child>
               <object class="GtkVBox" id="expand_vbox">
                 <property name="visible">True</property>
-                <property name="homogeneous">False</property>
                 <property name="spacing">2</property>
                 <child>
                   <object class="GtkLabel" id="expand_title">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes"/>
-                    <property name="use_underline">False</property>
-                    <property name="use_markup">True</property>
-                    <property name="justify">GTK_JUSTIFY_LEFT</property>
-                    <property name="wrap">False</property>
-                    <property name="selectable">False</property>
                     <property name="xalign">0</property>
-                    <property name="yalign">0.5</property>
                     <property name="xpad">5</property>
                     <property name="ypad">3</property>
-                    <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-                    <property name="width_chars">-1</property>
-                    <property name="single_line_mode">False</property>
-                    <property name="angle">0</property>
+                    <property name="use_markup">True</property>
                   </object>
-                  <packing>
-                    <property name="padding">0</property>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                  </packing>
                 </child>
                 <child>
                   <placeholder/>
                 </child>
               </object>
               <packing>
-                <property name="padding">0</property>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="padding">6</property>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="padding">6</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
           <object class="GtkStatusbar" id="main_statusbar">
             <property name="visible">True</property>
-            <property name="has_resize_grip">True</property>
           </object>
           <packing>
-            <property name="padding">0</property>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

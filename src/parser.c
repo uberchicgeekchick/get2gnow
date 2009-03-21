@@ -49,14 +49,14 @@
 
 typedef struct 
 {
-	TwituxUser	*user;
+	User	*user;
 	gchar		*text;
 	gchar		*created_at;
 	gchar		*id;
-} TwituxStatus;
+} Status;
 
-static TwituxUser	*parser_node_user   (xmlNode     *a_node);
-static TwituxStatus	*parser_node_status (xmlNode     *a_node);
+static User	*parser_node_user   (xmlNode     *a_node);
+static Status	*parser_node_status (xmlNode     *a_node);
 static xmlDoc       *parser_parse       (const char  *data,
 												gssize       length,
 												xmlNode    **first_element);
@@ -108,7 +108,7 @@ parser_users_list (const gchar *data,
 
 	GList		*friends = NULL;
 
-	TwituxUser 	*user;
+	User 	*user;
 
 	/* parse the xml */
 	doc = parser_parse (data, length, &root_element);
@@ -141,13 +141,13 @@ parser_users_list (const gchar *data,
 
 
 /* Parse a xml user node. Ex: add/del users responses */
-TwituxUser *
+User *
 parser_single_user (const gchar *data,
 						   gssize       length)
 {
 	xmlDoc		*doc = NULL;
 	xmlNode		*root_element = NULL;
-	TwituxUser 	*user = NULL;
+	User 	*user = NULL;
 	
 	/* parse the xml */
 	doc = parser_parse (data, length, &root_element);
@@ -190,7 +190,7 @@ parser_timeline (const gchar *data,
 	GtkListStore 	*store        = NULL;
 	GtkTreeIter	     iter;
 
-	TwituxStatus 	*status;
+	Status 	*status;
 
 	/* Count new tweets */
 	gboolean         show_notification = (last_id > 0);
@@ -311,15 +311,15 @@ parser_timeline (const gchar *data,
 	return TRUE;
 }
 
-static TwituxUser *
+static User *
 parser_node_user (xmlNode *a_node)
 {
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
-	TwituxUser     *user;
+	User     *user;
 
 	buffer = xmlBufferCreate ();
-	user = g_new0 (TwituxUser, 1);
+	user = g_new0 (User, 1);
 
 	/* Begin 'users' node loop */
 	for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
@@ -359,15 +359,15 @@ parser_node_user (xmlNode *a_node)
 }
 
 
-static TwituxStatus *
+static Status *
 parser_node_status (xmlNode *a_node)
 {
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
-	TwituxStatus   *status;
+	Status   *status;
 
 	buffer = xmlBufferCreate ();
-	status = g_new0 (TwituxStatus, 1);
+	status = g_new0 (Status, 1);
 
 	/* Begin 'status' or 'direct-messages' loop */
 	for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
@@ -484,7 +484,7 @@ parser_convert_time (const char *datetime)
 
 /* Free a user struct */
 void
-parser_free_user (TwituxUser *user)
+parser_free_user (User *user)
 {
 	if (!user)
 		return;

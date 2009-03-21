@@ -3,5 +3,5 @@
 - Polish existing features, before adding more!
 - After initial timeline retrieval, only retrieve tweets since last retrieval,
   and append those to the gtk_list_store
-- [in progress] Memory profiling of Twitux, it's leaking pretty bad.
+- Add valgrind suppor Greet-Tweet-Know.
 

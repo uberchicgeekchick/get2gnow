@@ -29,30 +29,30 @@
 G_BEGIN_DECLS
 
 /*
- * TwituxLabel
+ * Label
  */ 
 #define TYPE_LABEL         (label_get_type ())
-#define LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_LABEL, TwituxLabel))
-#define LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_LABEL, TwituxLabelClass))
+#define LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_LABEL, Label))
+#define LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_LABEL, LabelClass))
 #define IS_LABEL(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_LABEL))
 #define IS_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_LABEL))
-#define LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_LABEL, TwituxLabelClass))
+#define LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_LABEL, LabelClass))
 
-typedef struct _TwituxLabel        TwituxLabel;
-typedef struct _TwituxLabelClass   TwituxLabelClass;
-typedef struct _TwituxLabelPriv    TwituxLabelPriv;
+typedef struct _Label        Label;
+typedef struct _LabelClass   LabelClass;
+typedef struct _LabelPriv    LabelPriv;
 
-struct _TwituxLabel {
+struct _Label {
 	SexyUrlLabel           parent;
 };
 
-struct _TwituxLabelClass {
+struct _LabelClass {
 	SexyUrlLabelClass      parent_class;
 };
 
 GType             label_get_type  (void) G_GNUC_CONST;
 GtkWidget*        label_new       (void);
-void              label_set_text  (TwituxLabel  *nav,
+void              label_set_text  (Label  *nav,
                                           const gchar  *text);
 G_END_DECLS
 

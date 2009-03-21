@@ -35,27 +35,27 @@
 #define CONF_ROOT        "/apps/greet-tweet-know"
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
 
-#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_CONF, TwituxConfPriv))
+#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_CONF, ConfPriv))
 
 typedef struct {
 	GConfClient *gconf_client;
-} TwituxConfPriv;
+} ConfPriv;
 
 typedef struct {
-	TwituxConf           *conf;
-	TwituxConfNotifyFunc  func;
+	Conf           *conf;
+	ConfNotifyFunc  func;
 	gpointer              user_data;
-} TwituxConfNotifyData;
+} ConfNotifyData;
 
 static void conf_finalize(GObject *object);
 
-G_DEFINE_TYPE(TwituxConf, conf, G_TYPE_OBJECT);
+G_DEFINE_TYPE(Conf, conf, G_TYPE_OBJECT);
 
-static TwituxConf *global_conf = NULL;
-static TwituxConfPriv *config_priv=NULL;
+static Conf *global_conf = NULL;
+static ConfPriv *config_priv=NULL;
 
 static void
-conf_class_init(TwituxConfClass *class)
+conf_class_init(ConfClass *class)
 {
 	GObjectClass *object_class;
 
@@ -63,11 +63,11 @@ conf_class_init(TwituxConfClass *class)
 
 	object_class->finalize = conf_finalize;
 
-	g_type_class_add_private(object_class, sizeof(TwituxConfPriv));
+	g_type_class_add_private(object_class, sizeof(ConfPriv));
 }
 
 static void
-conf_init(TwituxConf *conf)
+conf_init(Conf *conf)
 {
 	
 	config_priv = GET_PRIV(conf);
@@ -100,7 +100,7 @@ conf_finalize(GObject *object)
 	G_OBJECT_CLASS(conf_parent_class)->finalize(object);
 }
 
-TwituxConf *
+Conf *
 conf_get(void)
 {
 	if(!global_conf) {
@@ -120,7 +120,7 @@ conf_shutdown(void)
 }
 
 gboolean
-conf_set_int(TwituxConf  *conf,
+conf_set_int(Conf  *conf,
 					 const gchar *key,
 					 gint         value)
 {
@@ -137,7 +137,7 @@ conf_set_int(TwituxConf  *conf,
 }
 
 gboolean
-conf_get_int(TwituxConf  *conf,
+conf_get_int(Conf  *conf,
 					 const gchar *key,
 					 gint        *value)
 {
@@ -165,7 +165,7 @@ conf_get_int(TwituxConf  *conf,
 }
 
 gboolean
-conf_set_bool(TwituxConf  *conf,
+conf_set_bool(Conf  *conf,
 					  const gchar *key,
 					  gboolean     value)
 {
@@ -183,7 +183,7 @@ conf_set_bool(TwituxConf  *conf,
 }
 
 gboolean
-conf_get_bool(TwituxConf  *conf,
+conf_get_bool(Conf  *conf,
 					  const gchar *key,
 					  gboolean    *value)
 {
@@ -212,7 +212,7 @@ conf_get_bool(TwituxConf  *conf,
 }
 
 gboolean
-conf_set_string(TwituxConf  *conf,
+conf_set_string(Conf  *conf,
 						const gchar *key,
 						const gchar *value)
 {
@@ -230,7 +230,7 @@ conf_set_string(TwituxConf  *conf,
 }
 
 gboolean
-conf_get_string(TwituxConf   *conf,
+conf_get_string(Conf   *conf,
 						const gchar  *key,
 						gchar       **value)
 {
@@ -257,7 +257,7 @@ conf_get_string(TwituxConf   *conf,
 }
 
 gboolean
-conf_set_string_list(TwituxConf  *conf,
+conf_set_string_list(Conf  *conf,
 							 const gchar *key,
 							 GSList      *value)
 {
@@ -273,7 +273,7 @@ conf_set_string_list(TwituxConf  *conf,
 }
 
 gboolean
-conf_get_string_list(TwituxConf   *conf,
+conf_get_string_list(Conf   *conf,
 							 const gchar  *key,
 							 GSList      **value)
 {
@@ -297,10 +297,10 @@ conf_get_string_list(TwituxConf   *conf,
 }
 
 static void
-conf_notify_data_free(TwituxConfNotifyData *data)
+conf_notify_data_free(ConfNotifyData *data)
 {
 	g_object_unref(data->conf);
-	g_slice_free(TwituxConfNotifyData, data);
+	g_slice_free(ConfNotifyData, data);
 }
 
 static void
@@ -309,7 +309,7 @@ conf_notify_func(GConfClient *client,
 				  GConfEntry  *entry,
 				  gpointer     user_data)
 {
-	TwituxConfNotifyData *data;
+	ConfNotifyData *data;
 
 	data = user_data;
 
@@ -319,18 +319,18 @@ conf_notify_func(GConfClient *client,
 }
 
 guint
-conf_notify_add(TwituxConf           *conf,
+conf_notify_add(Conf           *conf,
 						const gchar          *key,
-						TwituxConfNotifyFunc  func,
+						ConfNotifyFunc  func,
 						gpointer              user_data)
 {
 		guint                 id;
-	TwituxConfNotifyData *data;
+	ConfNotifyData *data;
 
 	g_return_val_if_fail(IS_CONF(conf), 0);
 
 	
-	data = g_slice_new(TwituxConfNotifyData);
+	data = g_slice_new(ConfNotifyData);
 	data->func = func;
 	data->user_data = user_data;
 	data->conf = g_object_ref(conf);
@@ -346,7 +346,7 @@ conf_notify_add(TwituxConf           *conf,
 }
 
 gboolean
-conf_notify_remove(TwituxConf *conf,
+conf_notify_remove(Conf *conf,
 						   guint       id)
 {
 	g_return_val_if_fail(IS_CONF(conf), FALSE);

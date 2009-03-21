@@ -57,7 +57,7 @@ typedef struct {
 	GtkWidget *spell;
 
 	GList     *notify_ids;
-} TwituxPrefs;
+} Prefs;
 
 typedef struct _reload_time {
 	gint   minutes;
@@ -86,55 +86,55 @@ enum {
 	COL_COMBO_COUNT
 };
 
-static void     preferences_setup_widgets          (TwituxPrefs            *prefs);
-static void     preferences_languages_add          (TwituxPrefs            *prefs);
-static void     preferences_languages_save         (TwituxPrefs            *prefs);
+static void     preferences_setup_widgets          (Prefs            *prefs);
+static void     preferences_languages_add          (Prefs            *prefs);
+static void     preferences_languages_save         (Prefs            *prefs);
 static gboolean preferences_languages_save_foreach (GtkTreeModel           *model,
 													GtkTreePath            *path,
 													GtkTreeIter            *iter,
 													gchar                 **languages);
-static void     preferences_languages_load         (TwituxPrefs            *prefs);
+static void     preferences_languages_load         (Prefs            *prefs);
 static gboolean preferences_languages_load_foreach (GtkTreeModel           *model,
 													GtkTreePath            *path,
 													GtkTreeIter            *iter,
 													gchar                 **languages);
 static void preferences_languages_cell_toggled_cb  (GtkCellRendererToggle  *cell,
 												    gchar                  *path_string,
-												    TwituxPrefs            *prefs);
-static void     preferences_timeline_setup         (TwituxPrefs            *prefs);
+												    Prefs            *prefs);
+static void     preferences_timeline_setup         (Prefs            *prefs);
 static void     preferences_widget_sync_bool       (const gchar            *key,
 													GtkWidget              *widget);
 static void   preferences_widget_sync_string_combo (const gchar            *key,
 													GtkWidget              *widget);
 static void   preferences_widget_sync_int_combo    (const gchar            *key,
 													GtkWidget              *widget);
-static void     preferences_notify_bool_cb         (TwituxConf             *conf,
+static void     preferences_notify_bool_cb         (Conf             *conf,
 													const gchar            *key,
 													gpointer                user_data);
-static void     preferences_notify_string_combo_cb (TwituxConf             *conf,
+static void     preferences_notify_string_combo_cb (Conf             *conf,
 													const gchar            *key,
 													gpointer                user_data);
-static void     preferences_notify_int_combo_cb    (TwituxConf             *conf,
+static void     preferences_notify_int_combo_cb    (Conf             *conf,
 													const gchar            *key,
 													gpointer                user_data);
-static void     preferences_notify_sensitivity_cb  (TwituxConf             *conf,
+static void     preferences_notify_sensitivity_cb  (Conf             *conf,
 													const gchar            *key,
 													gpointer                user_data);
-static void     preferences_hookup_toggle_button   (TwituxPrefs            *prefs,
+static void     preferences_hookup_toggle_button   (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
-static void     preferences_hookup_string_combo    (TwituxPrefs            *prefs,
+static void     preferences_hookup_string_combo    (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
-static void     preferences_hookup_int_combo       (TwituxPrefs            *prefs,
+static void     preferences_hookup_int_combo       (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
-static void     preferences_hookup_sensitivity     (TwituxPrefs            *prefs,
+static void     preferences_hookup_sensitivity     (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
 static void preferences_response_cb                (GtkWidget              *widget,
 													gint                    response,
-													TwituxPrefs            *prefs);
+													Prefs            *prefs);
 static void preferences_toggle_button_toggled_cb   (GtkWidget              *button,
 													gpointer                user_data);
 static void preferences_string_combo_changed_cb    (GtkWidget              *button,
@@ -142,10 +142,10 @@ static void preferences_string_combo_changed_cb    (GtkWidget              *butt
 static void preferences_int_combo_changed_cb       (GtkWidget              *combo,
 													gpointer                user_data);
 static void preferences_destroy_cb                 (GtkWidget              *widget,
-													TwituxPrefs            *prefs);
+													Prefs            *prefs);
 
 static void
-preferences_setup_widgets (TwituxPrefs *prefs)
+preferences_setup_widgets (Prefs *prefs)
 {
 	preferences_hookup_toggle_button (prefs,
 									  PREFS_TWEETS_SHOW_NAMES,
@@ -184,7 +184,7 @@ preferences_setup_widgets (TwituxPrefs *prefs)
 								  prefs->combo_reload);
 }
 static void
-preferences_languages_setup (TwituxPrefs *prefs)
+preferences_languages_setup (Prefs *prefs)
 {
 	GtkTreeView       *view;
 	GtkListStore      *store;
@@ -239,7 +239,7 @@ preferences_languages_setup (TwituxPrefs *prefs)
 }
 
 static void
-preferences_languages_add (TwituxPrefs *prefs)
+preferences_languages_add (Prefs *prefs)
 {
 	GtkTreeView  *view;
 	GtkListStore *store;
@@ -272,7 +272,7 @@ preferences_languages_add (TwituxPrefs *prefs)
 }
 
 static void
-preferences_languages_save (TwituxPrefs *prefs)
+preferences_languages_save (Prefs *prefs)
 {
 	GtkTreeView  *view;
 	GtkTreeModel *model;
@@ -335,7 +335,7 @@ preferences_languages_save_foreach (GtkTreeModel  *model,
 }
 
 static void
-preferences_languages_load (TwituxPrefs *prefs)
+preferences_languages_load (Prefs *prefs)
 {
 	GtkTreeView   *view;
 	GtkTreeModel  *model;
@@ -396,7 +396,7 @@ preferences_languages_load_foreach (GtkTreeModel  *model,
 static void
 preferences_languages_cell_toggled_cb (GtkCellRendererToggle *cell,
 									   gchar                 *path_string,
-									   TwituxPrefs           *prefs)
+									   Prefs           *prefs)
 {
 	GtkTreeView  *view;
 	GtkTreeModel *model;
@@ -423,7 +423,7 @@ preferences_languages_cell_toggled_cb (GtkCellRendererToggle *cell,
 }
 
 static void
-preferences_notify_bool_cb (TwituxConf  *conf,
+preferences_notify_bool_cb (Conf  *conf,
 							const gchar *key,
 							gpointer     user_data)
 {
@@ -431,7 +431,7 @@ preferences_notify_bool_cb (TwituxConf  *conf,
 }
 
 static void
-preferences_timeline_setup (TwituxPrefs *prefs)
+preferences_timeline_setup (Prefs *prefs)
 {
 	static const gchar *timelines[] = {
 		API_TWITTER_TIMELINE_PUBLIC, N_("Public"),
@@ -470,7 +470,7 @@ preferences_timeline_setup (TwituxPrefs *prefs)
 }
 
 static void
-preferences_reload_setup (TwituxPrefs *prefs)
+preferences_reload_setup (Prefs *prefs)
 {
 	GtkListStore    *model;
 	GtkTreeIter      iter;
@@ -602,7 +602,7 @@ preferences_widget_sync_int_combo (const gchar *key, GtkWidget *widget)
 }
 
 static void
-preferences_notify_string_combo_cb (TwituxConf  *conf,
+preferences_notify_string_combo_cb (Conf  *conf,
 									const gchar *key,
 									gpointer     user_data)
 {
@@ -610,7 +610,7 @@ preferences_notify_string_combo_cb (TwituxConf  *conf,
 }
 
 static void
-preferences_notify_int_combo_cb (TwituxConf  *conf,
+preferences_notify_int_combo_cb (Conf  *conf,
 								 const gchar *key,
 								 gpointer     user_data)
 {
@@ -618,7 +618,7 @@ preferences_notify_int_combo_cb (TwituxConf  *conf,
 }
 
 static void
-preferences_notify_sensitivity_cb (TwituxConf  *conf,
+preferences_notify_sensitivity_cb (Conf  *conf,
 								   const gchar *key,
 								   gpointer     user_data)
 {
@@ -630,14 +630,14 @@ preferences_notify_sensitivity_cb (TwituxConf  *conf,
 }
 
 static void
-preferences_add_id (TwituxPrefs *prefs, guint id)
+preferences_add_id (Prefs *prefs, guint id)
 {
 	prefs->notify_ids = g_list_prepend (prefs->notify_ids,
 										GUINT_TO_POINTER (id));
 }
 
 static void
-preferences_hookup_toggle_button (TwituxPrefs *prefs,
+preferences_hookup_toggle_button (Prefs *prefs,
 								  const gchar *key,
 								  GtkWidget   *widget)
 {
@@ -664,7 +664,7 @@ preferences_hookup_toggle_button (TwituxPrefs *prefs,
 }
 
 static void
-preferences_hookup_string_combo (TwituxPrefs *prefs,
+preferences_hookup_string_combo (Prefs *prefs,
 								 const gchar *key,
 								 GtkWidget   *widget)
 {
@@ -690,7 +690,7 @@ preferences_hookup_string_combo (TwituxPrefs *prefs,
 }
 
 static void
-preferences_hookup_int_combo (TwituxPrefs *prefs,
+preferences_hookup_int_combo (Prefs *prefs,
 								 const gchar *key,
 								 GtkWidget   *widget)
 {
@@ -717,7 +717,7 @@ preferences_hookup_int_combo (TwituxPrefs *prefs,
 }
 
 static void
-preferences_hookup_sensitivity (TwituxPrefs *prefs,
+preferences_hookup_sensitivity (Prefs *prefs,
 								const gchar *key,
 								GtkWidget   *widget)
 {
@@ -798,13 +798,13 @@ preferences_int_combo_changed_cb (GtkWidget *combo,
 static void
 preferences_response_cb (GtkWidget   *widget,
 						 gint         response,
-						 TwituxPrefs *prefs)
+						 Prefs *prefs)
 {
 	gtk_widget_destroy (widget);
 }
 static void
 preferences_destroy_cb (GtkWidget   *widget,
-						TwituxPrefs *prefs)
+						Prefs *prefs)
 {
 	GList *l;
 
@@ -822,7 +822,7 @@ preferences_destroy_cb (GtkWidget   *widget,
 void
 preferences_dialog_show (GtkWindow *parent)
 {
-	static TwituxPrefs *prefs;
+	static Prefs *prefs;
 	GtkBuilder         *ui;
 
 	if (prefs) {
@@ -830,7 +830,7 @@ preferences_dialog_show (GtkWindow *parent)
 		return;
 	}
 
-	prefs = g_new0 (TwituxPrefs, 1);
+	prefs = g_new0 (Prefs, 1);
 
 	/* Get widgets */
 	ui = glade_get_file (GLADE_FILE,

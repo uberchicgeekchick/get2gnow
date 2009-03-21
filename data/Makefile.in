@@ -310,6 +310,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+
 install-desktopDATA: $(desktop_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(desktopdir)" || $(MKDIR_P) "$(DESTDIR)$(desktopdir)"
@@ -327,6 +328,7 @@ uninstall-desktopDATA:
 	  echo " rm -f '$(DESTDIR)$(desktopdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(desktopdir)/$$f"; \
 	done
+
 install-gladeDATA: $(glade_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(gladedir)" || $(MKDIR_P) "$(DESTDIR)$(gladedir)"

@@ -29,7 +29,7 @@ typedef struct {
 	gchar	*screen_name;
 	gchar	*name;
 	gchar	*image_url;
-} TwituxUser;
+} User;
 
 
 /* Returns a liststore for the main treeview to show tweets */
@@ -42,11 +42,11 @@ GList *parser_users_list (const gchar *data,
 								 gssize       length);
 
 /* Parse a xml user node. Ex: add/del users responses */
-TwituxUser *parser_single_user (const gchar *data,
+User *parser_single_user (const gchar *data,
 									   gssize       length);
 
 /* To free a User struct */
-void parser_free_user (TwituxUser *user);
+void parser_free_user (User *user);
 
 /* Restet the ID of the last tweet showed */
 void parser_reset_lastid (void);

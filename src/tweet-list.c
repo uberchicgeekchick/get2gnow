@@ -37,20 +37,20 @@
 #define DEBUG_DOMAIN "TweetList"
 
 #define GET_PRIV(obj)           \
-	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TwituxTweetListPriv))
+	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPriv))
 
-struct _TwituxTweetListPriv {
+struct _TweetListPriv {
 	GtkListStore      *store;
 	
 	GtkTreeViewColumn *text_column;
 	GtkCellRenderer   *text_renderer;
 };
 
-static void   tweet_list_class_init(TwituxTweetListClass *klass);
-static void   tweet_list_init(TwituxTweetList      *tweet);
+static void   tweet_list_class_init(TweetListClass *klass);
+static void   tweet_list_init(TweetList      *tweet);
 static void   tweet_list_finalize(GObject              *obj);
-static void   tweet_list_create_model(TwituxTweetList      *list);
-static void   tweet_list_setup_view(TwituxTweetList      *list);
+static void   tweet_list_create_model(TweetList      *list);
+static void   tweet_list_setup_view(TweetList      *list);
 static void   tweet_list_size_cb(GtkWidget            *widget,
                                             GtkAllocation        *allocation,
                                             gpointer              user_data);
@@ -60,23 +60,23 @@ static void   tweet_list_activated_cb(GtkTreeView          *tree_view,
                                             GtkTreePath          *path,
                                             GtkTreeViewColumn    *column,
                                             gpointer              friends_tweet);
-static TwituxTweetList *list = NULL;
-static TwituxTweetListPriv *list_priv=NULL;
+static TweetList *list = NULL;
+static TweetListPriv *list_priv=NULL;
 
-G_DEFINE_TYPE(TwituxTweetList, tweet_list, GTK_TYPE_TREE_VIEW);
+G_DEFINE_TYPE(TweetList, tweet_list, GTK_TYPE_TREE_VIEW);
 
 static void
-tweet_list_class_init(TwituxTweetListClass *klass)
+tweet_list_class_init(TweetListClass *klass)
 {
 	GObjectClass   *object_class = G_OBJECT_CLASS(klass);
 
 	object_class->finalize = tweet_list_finalize;
 
-	g_type_class_add_private(object_class, sizeof(TwituxTweetListPriv));
+	g_type_class_add_private(object_class, sizeof(TweetListPriv));
 }
 
 static void
-tweet_list_init(TwituxTweetList *tweet)
+tweet_list_init(TweetList *tweet)
 {
 	
 	list=tweet;
@@ -116,7 +116,7 @@ tweet_list_finalize(GObject *object)
 }
 
 static void
-tweet_list_create_model(TwituxTweetList *list)
+tweet_list_create_model(TweetList *list)
 {
 		GtkTreeModel        *model;
 
@@ -140,7 +140,7 @@ tweet_list_create_model(TwituxTweetList *list)
 }
 
 static void
-tweet_list_setup_view(TwituxTweetList *list)
+tweet_list_setup_view(TweetList *list)
 {
 		GtkCellRenderer		*renderer;
 	GtkTreeViewColumn	*avatar_column;
@@ -179,7 +179,7 @@ tweet_list_changed_cb(GtkWidget *widget,
 	if(!expand)
 		return;
 	
-	TwituxTweetList     *t;
+	TweetList     *t;
 		GtkTreeSelection    *sel;
 	GtkTreeIter          iter;
 	GdkPixbuf           *pixbuf;
@@ -214,7 +214,7 @@ tweet_list_size_cb(GtkWidget     *widget,
                     GtkAllocation *allocation,
                     gpointer       user_data)
 {
-	TwituxTweetList     *t;
+	TweetList     *t;
 	
 	t=TWEET_LIST(user_data);	
 	
@@ -227,7 +227,7 @@ tweet_list_activated_cb(GtkTreeView       *tree_view,
                          GtkTreeViewColumn *column,
                          gpointer           friends_tweet)
 {
-	TwituxTweetList     *t=NULL;
+	TweetList     *t=NULL;
 	gchar               *friend=NULL;
 	GtkTreeIter          iter;
 
@@ -249,7 +249,7 @@ tweet_list_activated_cb(GtkTreeView       *tree_view,
 	g_free(friend);
 }
 
-TwituxTweetList *tweet_list_new(void){
+TweetList *tweet_list_new(void){
 	return g_object_new(TYPE_TWEET_LIST, NULL);
 }
 

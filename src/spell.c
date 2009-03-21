@@ -164,7 +164,7 @@ spell_iso_code_names_init (void)
 }
 
 static void
-spell_notify_languages_cb (TwituxConf  *conf,
+spell_notify_languages_cb (Conf  *conf,
 						   const gchar *key,
 						   gpointer     user_data)
 {

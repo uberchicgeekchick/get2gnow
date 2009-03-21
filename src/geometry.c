@@ -34,7 +34,7 @@ void
 geometry_save_for_main_window (gint x, gint y,
 									  gint w, gint h)
 {
-	TwituxConf *conf;
+	Conf *conf;
 
 	debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, w:%d, h:%d",
 				  x, y, w, h);
@@ -62,7 +62,7 @@ geometry_save_for_main_window (gint x, gint y,
 void
 geometry_load_for_main_window (GtkWidget *main_window)
 {
-	TwituxConf *conf;
+	Conf *conf;
 	gint        x, y, w, h;
 
 	debug (DEBUG_DOMAIN, "Loading window geometry...");

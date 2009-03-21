@@ -29,29 +29,29 @@
 G_BEGIN_DECLS
 
 /*
- * TwituxTweetList 
+ * TweetList 
  */ 
 #define TYPE_TWEET_LIST         (tweet_list_get_type ())
-#define TWEET_LIST(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_TWEET_LIST, TwituxTweetList))
-#define TWEET_LIST_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_TWEET_LIST, TwituxTweetListClass))
+#define TWEET_LIST(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_TWEET_LIST, TweetList))
+#define TWEET_LIST_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_TWEET_LIST, TweetListClass))
 #define IS_TWEET_LIST(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_TWEET_LIST))
 #define IS_TWEET_LIST_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_TWEET_LIST))
-#define TWEET_LIST_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_TWEET_LIST, TwituxTweetListClass))
+#define TWEET_LIST_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_TWEET_LIST, TweetListClass))
 
-typedef struct _TwituxTweetList      TwituxTweetList;
-typedef struct _TwituxTweetListClass TwituxTweetListClass;
-typedef struct _TwituxTweetListPriv  TwituxTweetListPriv;
+typedef struct _TweetList      TweetList;
+typedef struct _TweetListClass TweetListClass;
+typedef struct _TweetListPriv  TweetListPriv;
 
-struct _TwituxTweetList {
+struct _TweetList {
 	GtkTreeView            parent;
 };
 
-struct _TwituxTweetListClass {
+struct _TweetListClass {
 	GtkTreeViewClass       parent_class;
 };
 
 GType                 tweet_list_get_type           (void) G_GNUC_CONST;
-TwituxTweetList *     tweet_list_new                (void);
+TweetList *     tweet_list_new                (void);
 GtkListStore *        tweet_list_get_store          (void);
 
 G_END_DECLS

@@ -162,14 +162,27 @@
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="view1_menu">
-                    <child>
-                      <widget class="GtkRadioMenuItem" id="view_public_timeline">
+			<child>
+				<widget class="GtkRadioMenuItem" id="view_combined_timeline">
+					<property name="visible">True</property>
+					<property name="label" translatable="yes">_My Combined Tweets</property>
+					<property name="use_underline">True</property>
+					<property name="group">view_public_timeline</property>
+				</widget>
+			</child>
+			<child>
+			<child>
+				<widget class="GtkSeparatorMenuItem" id="separator7">
+					<property name="visible">True</property>
+				</widget>
+			</child>
+			<widget class="GtkRadioMenuItem" id="view_public_timeline">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Public Timeline</property>
+                        <property name="label" translatable="yes">_Every one's Tweets</property>
                         <property name="use_underline">True</property>
                       </widget>
                     </child>
-                    <child>
+		    <child>
                       <widget class="GtkRadioMenuItem" id="view_friends_timeline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Friends Timeline</property>
@@ -178,7 +191,7 @@
                         <property name="group">view_public_timeline</property>
                       </widget>
                     </child>
-                    <child>
+		<child>
                       <widget class="GtkRadioMenuItem" id="view_my_timeline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">My Timeline</property>
@@ -203,7 +216,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator7">
+                      <widget class="GtkSeparatorMenuItem" id="separator8">
                         <property name="visible">True</property>
                       </widget>
                     </child>

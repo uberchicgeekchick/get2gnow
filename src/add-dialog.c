@@ -31,18 +31,18 @@
 typedef struct {
 	GtkWidget *entry;
 	GtkWidget *dialog;
-} TwituxAdd;
+} Add;
 
 static void add_response_cb (GtkWidget *widget,
 							 gint       response,
-							 TwituxAdd *add);
+							 Add *add);
 static void add_destroy_cb  (GtkWidget *widget,
-							 TwituxAdd *add);
+							 Add *add);
 
 static void
 add_response_cb (GtkWidget     *widget,
 				 gint           response,
-				 TwituxAdd     *add)
+				 Add     *add)
 {
 	if (response == GTK_RESPONSE_OK) {
 		network_add_user (gtk_entry_get_text (GTK_ENTRY (add->entry)));
@@ -52,7 +52,7 @@ add_response_cb (GtkWidget     *widget,
 
 static void
 add_destroy_cb (GtkWidget     *widget,
-				TwituxAdd     *add)
+				Add     *add)
 {
 	g_free (add);
 }
@@ -60,7 +60,7 @@ add_destroy_cb (GtkWidget     *widget,
 void
 add_dialog_show (GtkWindow *parent)
 {
-	static TwituxAdd *add;
+	static Add *add;
 	GtkBuilder       *ui;
 
 	if (add) {
@@ -68,7 +68,7 @@ add_dialog_show (GtkWindow *parent)
 		return;
 	}
 
-	add = g_new0 (TwituxAdd, 1);
+	add = g_new0 (Add, 1);
 
 	/* Get widgets */
 	ui = glade_get_file (GLADE_FILE,

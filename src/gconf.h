@@ -26,58 +26,58 @@
 G_BEGIN_DECLS
 
 #define TYPE_CONF         (conf_get_type ())
-#define CONF(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_CONF, TwituxConf))
-#define CONF_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST ((k), TYPE_CONF, TwituxConfClass))
+#define CONF(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_CONF, Conf))
+#define CONF_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST ((k), TYPE_CONF, ConfClass))
 #define IS_CONF(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_CONF))
 #define IS_CONF_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_CONF))
-#define CONF_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_CONF, TwituxConfClass))
+#define CONF_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_CONF, ConfClass))
 
-typedef struct _TwituxConf      TwituxConf;
-typedef struct _TwituxConfClass TwituxConfClass;
+typedef struct _Conf      Conf;
+typedef struct _ConfClass ConfClass;
 
-struct _TwituxConf  {
+struct _Conf  {
 	GObject parent;
 };
 
-struct _TwituxConfClass {
+struct _ConfClass {
 	GObjectClass parent_class;
 };
 
-typedef void (*TwituxConfNotifyFunc) (TwituxConf  *conf, 
+typedef void (*ConfNotifyFunc) (Conf  *conf, 
 									  const gchar *key,
 									  gpointer     user_data);
 
 GType       conf_get_type        (void) G_GNUC_CONST;
-TwituxConf *conf_get             (void);
+Conf *conf_get             (void);
 void        conf_shutdown        (void);
-guint       conf_notify_add      (TwituxConf            *conf,
+guint       conf_notify_add      (Conf            *conf,
 										 const gchar           *key,
-										 TwituxConfNotifyFunc   func,
+										 ConfNotifyFunc   func,
 										 gpointer               data);
-gboolean    conf_notify_remove   (TwituxConf            *conf,
+gboolean    conf_notify_remove   (Conf            *conf,
 										 guint                  id);
-gboolean    conf_set_int         (TwituxConf            *conf,
+gboolean    conf_set_int         (Conf            *conf,
 										 const gchar           *key,
 										 gint                   value);
-gboolean    conf_get_int         (TwituxConf            *conf,
+gboolean    conf_get_int         (Conf            *conf,
 										 const gchar           *key,
 										 gint                  *value);
-gboolean    conf_set_bool        (TwituxConf            *conf,
+gboolean    conf_set_bool        (Conf            *conf,
 										 const gchar           *key,
 										 gboolean               value);
-gboolean    conf_get_bool        (TwituxConf            *conf,
+gboolean    conf_get_bool        (Conf            *conf,
 										 const gchar           *key,
 										 gboolean              *value);
-gboolean    conf_set_string      (TwituxConf            *conf,
+gboolean    conf_set_string      (Conf            *conf,
 										 const gchar           *key,
 										 const gchar           *value);
-gboolean    conf_get_string      (TwituxConf            *conf,
+gboolean    conf_get_string      (Conf            *conf,
 										 const gchar           *key,
 										 gchar                **value);
-gboolean    conf_set_string_list (TwituxConf            *conf,
+gboolean    conf_set_string_list (Conf            *conf,
 										 const gchar           *key,
 										 GSList                *value);
-gboolean    conf_get_string_list (TwituxConf            *conf,
+gboolean    conf_get_string_list (Conf            *conf,
 										 const gchar           *key,
 										 GSList              **value);
 

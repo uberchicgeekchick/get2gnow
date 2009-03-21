@@ -29,9 +29,9 @@ G_BEGIN_DECLS
 
 #define TYPE_AVATAR (avatar_get_gtype ())
 
-typedef struct _TwituxAvatar TwituxAvatar;
+typedef struct _Avatar Avatar;
 
-struct _TwituxAvatar {
+struct _Avatar {
 	guchar    *data;
 	gsize      len;
 	gchar     *format;
@@ -40,15 +40,15 @@ struct _TwituxAvatar {
 };
 
 GType          avatar_get_gtype               (void) G_GNUC_CONST;
-TwituxAvatar * avatar_new                     (guchar *avatar,
+Avatar * avatar_new                     (guchar *avatar,
 													  gsize len,
 													  gchar *format);
-GdkPixbuf    * avatar_get_pixbuf              (TwituxAvatar *avatar);
-GdkPixbuf    * avatar_create_pixbuf_with_size (TwituxAvatar *avatar,
+GdkPixbuf    * avatar_get_pixbuf              (Avatar *avatar);
+GdkPixbuf    * avatar_create_pixbuf_with_size (Avatar *avatar,
 													  gint          size);
 
-TwituxAvatar * avatar_ref                     (TwituxAvatar *avatar);
-void           avatar_unref                   (TwituxAvatar *avatar);
+Avatar * avatar_ref                     (Avatar *avatar);
+void           avatar_unref                   (Avatar *avatar);
 
 G_END_DECLS
 

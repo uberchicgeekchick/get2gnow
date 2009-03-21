@@ -55,30 +55,30 @@ typedef struct {
 	gchar       *word;
 	GtkTextIter  start;
 	GtkTextIter  end;
-} TwituxSpellDialog;
+} SpellDialog;
 
 enum {
 	COL_SPELL_WORD,
 	COL_SPELL_COUNT
 };
 
-static void spell_dialog_model_populate_columns     (TwituxSpellDialog *dialog);
-static void spell_dialog_model_populate_suggestions (TwituxSpellDialog *dialog);
+static void spell_dialog_model_populate_columns     (SpellDialog *dialog);
+static void spell_dialog_model_populate_suggestions (SpellDialog *dialog);
 static void spell_dialog_model_row_activated_cb     (GtkTreeView       *tree_view,
 													 GtkTreePath       *path,
 													 GtkTreeViewColumn *column,
-													 TwituxSpellDialog *dialog);
+													 SpellDialog *dialog);
 static void spell_dialog_model_selection_changed_cb (GtkTreeSelection  *treeselection,
-													 TwituxSpellDialog *dialog);
-static void spell_dialog_model_setup                (TwituxSpellDialog *dialog);
+													 SpellDialog *dialog);
+static void spell_dialog_model_setup                (SpellDialog *dialog);
 static void spell_dialog_response_cb                (GtkWidget         *widget,
 													 gint               response,
-													 TwituxSpellDialog *dialog);
+													 SpellDialog *dialog);
 static void spell_dialog_destroy_cb                 (GtkWidget         *widget,
-													 TwituxSpellDialog *dialog);
+													 SpellDialog *dialog);
 
 static void
-spell_dialog_model_populate_columns (TwituxSpellDialog *dialog)
+spell_dialog_model_populate_columns (SpellDialog *dialog)
 {
 	GtkTreeModel      *model;
 	GtkTreeViewColumn *column;
@@ -105,7 +105,7 @@ spell_dialog_model_populate_columns (TwituxSpellDialog *dialog)
 }
 
 static void
-spell_dialog_model_populate_suggestions (TwituxSpellDialog *dialog)
+spell_dialog_model_populate_suggestions (SpellDialog *dialog)
 {
 	GtkTreeModel *model;
 	GtkListStore *store;
@@ -134,14 +134,14 @@ static void
 spell_dialog_model_row_activated_cb (GtkTreeView       *tree_view,
 									 GtkTreePath       *path,
 									 GtkTreeViewColumn *column,
-									 TwituxSpellDialog *dialog)
+									 SpellDialog *dialog)
 {
 	spell_dialog_response_cb (dialog->window, GTK_RESPONSE_OK, dialog);
 }
 
 static void
 spell_dialog_model_selection_changed_cb (GtkTreeSelection  *treeselection,
-										 TwituxSpellDialog *dialog)
+										 SpellDialog *dialog)
 {
 	gint count;
 
@@ -150,7 +150,7 @@ spell_dialog_model_selection_changed_cb (GtkTreeSelection  *treeselection,
 }
 
 static void
-spell_dialog_model_setup (TwituxSpellDialog *dialog)
+spell_dialog_model_setup (SpellDialog *dialog)
 {
 	GtkTreeView      *view;
 	GtkListStore     *store;
@@ -182,7 +182,7 @@ spell_dialog_model_setup (TwituxSpellDialog *dialog)
 
 static void
 spell_dialog_destroy_cb (GtkWidget         *widget,
-						 TwituxSpellDialog *dialog)
+						 SpellDialog *dialog)
 {
 	g_free (dialog->word);
 	g_free (dialog);
@@ -191,7 +191,7 @@ spell_dialog_destroy_cb (GtkWidget         *widget,
 static void
 spell_dialog_response_cb (GtkWidget         *widget,
 						  gint               response,
-						  TwituxSpellDialog *dialog)
+						  SpellDialog *dialog)
 {
 	if (response == GTK_RESPONSE_OK) {
 		GtkTreeView      *view;
@@ -227,14 +227,14 @@ spell_dialog_show (GtkWidget   *textview,
 						  GtkTextIter  end,
 						  const gchar *word)
 {
-	TwituxSpellDialog *dialog;
+	SpellDialog *dialog;
 	GtkBuilder        *ui;
 	gchar             *str;
 
 	g_return_if_fail (textview != NULL);
 	g_return_if_fail (word != NULL);
 
-	dialog = g_new0 (TwituxSpellDialog, 1);
+	dialog = g_new0 (SpellDialog, 1);
 
 	dialog->textview = textview;
 

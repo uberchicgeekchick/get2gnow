@@ -37,32 +37,32 @@
 G_BEGIN_DECLS
 
 #define TYPE_APP             (app_get_type ())
-#define APP(o)			    (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_APP, TwituxApp))
-#define APP_CLASS(k)		    (G_TYPE_CHECK_CLASS_CAST((k), TYPE_APP, TwituxAppClass))
+#define APP(o)			    (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_APP, App))
+#define APP_CLASS(k)		    (G_TYPE_CHECK_CLASS_CAST((k), TYPE_APP, AppClass))
 #define IS_APP(o)		    (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_APP))
 #define IS_APP_CLASS(k)	    (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_APP))
-#define IS_APP_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_APP, TwituxAppClass))
+#define IS_APP_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_APP, AppClass))
 
-typedef struct _TwituxApp      	TwituxApp;
-typedef struct _TwituxAppClass 	TwituxAppClass;
-typedef struct _TwituxAppPriv  	TwituxAppPriv;
+typedef struct _App      	App;
+typedef struct _AppClass 	AppClass;
+typedef struct _AppPriv  	AppPriv;
 
-struct _TwituxApp {
+struct _App {
         GObject        parent;
 };
 
-struct _TwituxAppClass {
+struct _AppClass {
         GObjectClass parent_class;
 };
 
 GType               app_get_type                     (void) G_GNUC_CONST;
 void                app_create                       (void);
-TwituxApp *	        app_get                          (void);
+App *	        app_get                          (void);
 GtkWidget *         app_get_window                   (void);
 void				app_set_visibility				(gboolean	   visible);
 void				app_set_statusbar_msg	        (gchar        *message);
 void				app_set_friends	                (GList        *friends);
-void				app_add_friend                   (TwituxUser   *user);
+void				app_add_friend                   (User   *user);
 void                app_notify_sound                 (void);
 void				app_notify                       (gchar        *msg);
 void                app_state_on_connection          (gboolean      connected);

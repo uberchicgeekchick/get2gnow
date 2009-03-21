@@ -32,8 +32,8 @@
 #include "label.h"
 #include "network.h"
 
-static void   label_class_init   (TwituxLabelClass *clas);
-static void   label_init         (TwituxLabel      *label);
+static void   label_class_init   (LabelClass *clas);
+static void   label_init         (Label      *label);
 static void   label_finalize     (GObject          *object);
 
 static void  label_url_activated_cb     (GtkWidget        *url_label,
@@ -41,10 +41,10 @@ static void  label_url_activated_cb     (GtkWidget        *url_label,
                                          gpointer          user_data);
 static char* label_msg_get_string       (const char       * message);
 
-G_DEFINE_TYPE (TwituxLabel, label, SEXY_TYPE_URL_LABEL);
+G_DEFINE_TYPE (Label, label, SEXY_TYPE_URL_LABEL);
 
 static void
-label_class_init (TwituxLabelClass *clas)
+label_class_init (LabelClass *clas)
 {
 	GObjectClass   *object_class = G_OBJECT_CLASS (clas);
 
@@ -54,7 +54,7 @@ label_class_init (TwituxLabelClass *clas)
 }
 
 static void
-label_init (TwituxLabel *label)
+label_init (Label *label)
 {
 	gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
 	
@@ -94,7 +94,7 @@ label_new (void)
 }
 
 void
-label_set_text (TwituxLabel  *nav,
+label_set_text (Label  *nav,
 					   const gchar  *text)
 {
 	gchar *parsed_text;
