@@ -75,7 +75,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator6">
+                      <widget class="GtkSeparatorMenuItem" id="separator2">
                         <property name="visible">True</property>
                       </widget>
                     </child>
@@ -94,7 +94,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkSeparatorMenuItem" id="separador1">
+                      <widget class="GtkSeparatorMenuItem" id="separator3">
                         <property name="visible">True</property>
                       </widget>
                     </child>
@@ -145,6 +145,20 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkMenuItem" id="settings_friends_manager">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Manage My _Friends</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separator5">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">menuitem1</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkImageMenuItem" id="settings_preferences">
                         <property name="visible">True</property>
                         <property name="label">gtk-preferences</property>
@@ -162,39 +176,35 @@
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="view1_menu">
-			<child>
-				<widget class="GtkRadioMenuItem" id="view_combined_timeline">
-					<property name="visible">True</property>
-					<property name="label" translatable="yes">_My Combined Tweets</property>
-					<property name="use_underline">True</property>
-					<property name="group">view_public_timeline</property>
-				</widget>
-			</child>
-			<child>
-			<child>
-				<widget class="GtkSeparatorMenuItem" id="separator7">
-					<property name="visible">True</property>
-				</widget>
-			</child>
-			<widget class="GtkRadioMenuItem" id="view_public_timeline">
+                    <child>
+                      <widget class="GtkRadioMenuItem" id="view_combined_timeline">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Every one's Tweets</property>
+                        <property name="tooltip" translatable="yes">View your friends tweets, @ replies, &amp; dm all in one plane.</property>
+                        <property name="label" translatable="yes">_All Tweets to Me</property>
                         <property name="use_underline">True</property>
+                        <property name="group">view_public_timeline</property>
                       </widget>
                     </child>
-		    <child>
+                    <child>
                       <widget class="GtkRadioMenuItem" id="view_friends_timeline">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Friends Timeline</property>
+                        <property name="label" translatable="yes">My _Friends' Tweets</property>
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
                         <property name="group">view_public_timeline</property>
                       </widget>
                     </child>
-		<child>
-                      <widget class="GtkRadioMenuItem" id="view_my_timeline">
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separator6">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">My Timeline</property>
+                        <property name="label" translatable="yes">menuitem1</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkRadioMenuItem" id="view_direct_replies">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_@ Replies</property>
                         <property name="use_underline">True</property>
                         <property name="group">view_public_timeline</property>
                       </widget>
@@ -202,21 +212,35 @@
                     <child>
                       <widget class="GtkRadioMenuItem" id="view_direct_messages">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Direct Messages</property>
-                        <property name="use_underline">True</property>
-                        <property name="group">view_public_timeline</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkRadioMenuItem" id="view_direct_replies">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Direct Replies</property>
+                        <property name="label" translatable="yes">_Direct Messages</property>
                         <property name="use_underline">True</property>
                         <property name="group">view_public_timeline</property>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkSeparatorMenuItem" id="separator8">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">menuitem2</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkRadioMenuItem" id="view_my_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My Tweet_s</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_public_timeline</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkRadioMenuItem" id="view_public_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Public Timeline</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separator9">
                         <property name="visible">True</property>
                       </widget>
                     </child>

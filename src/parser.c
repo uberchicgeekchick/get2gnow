@@ -500,6 +500,11 @@ parser_free_user (User *user)
 }
 
 
+int parser_sort_users(User *a, User *b){
+	return g_strcmp0(a->screen_name,b->screen_name);
+}
+
+
 void
 parser_reset_lastid ()
 {

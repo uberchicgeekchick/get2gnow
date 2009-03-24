@@ -39,7 +39,7 @@
 #include "parser.h"
 #include "app.h"
 #include "send-message-dialog.h"
-#include "lists-dialog.h"
+#include "followers-dialog.h"
 
 #define DEBUG_DOMAIN	  "Network"
 #define HEADER_URL "https://twitux.sourceforge.net/client.xml"
@@ -65,9 +65,7 @@ static void network_cb_on_del( SoupSession *session, SoupMessage *msg, gpointer 
 static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
-GList *network_get_users_glist(gboolean get_friends);
 static gboolean network_get_users_page(SoupMessage *msg );
-static int network_sort_users(User *a, User *b);
 static void network_make_users_list(gboolean friends);
 GList *all_users=NULL;
 /* My, Kaity G. B., new stuff ends here. */
@@ -350,10 +348,10 @@ GList *network_get_users_glist(gboolean get_friends){
 
 void network_get_combined_timeline(void){
 	SoupMessage *msg;
-	char *timeline[3]={ {API_TWITTER_TIMELINE_FRIENDS}, {API_TWITTER_REPLIES}, {API_TWITTER_DIRECT_MESSAGES} };
+	const char timelines[3]={ {API_TWITTER_TIMELINE_FRIENDS}, {API_TWITTER_REPLIES}, {API_TWITTER_DIRECT_MESSAGES} };
 	
 	for(int i=0; i<3; i++)
-		network_get_data(timeline[i], network_cb_on_timeline, g_strdup(timeline[i]));
+		network_get_data(timelines[i], network_cb_on_timeline, g_strdup(timelines[i]));
 	/*{	msg=soup_message_new("GET", timeline[i]);
 		soup_session_send_message(soup_connection, msg);
 	}*/
@@ -383,18 +381,13 @@ static gboolean network_get_users_page(SoupMessage *msg){
 }
 
 
-static int network_sort_users(User *a, User *b){
-	return g_strcmp0(a->screen_name,b->screen_name);
-}
-
-
 static void network_make_users_list( gboolean friends ){
 	if(!all_users){
 		app_set_statusbar_msg (_("Users parser error."));
 		return;
 	}
 	
-	all_users=g_list_sort(all_users, (GCompareFunc) network_sort_users);
+	all_users=g_list_sort(all_users, (GCompareFunc) parser_sort_users);
 	
 	/* check if it ok, and if it is a followers or following list */
 	if (!friends){
@@ -405,7 +398,7 @@ static void network_make_users_list( gboolean friends ){
 	}
 	/* Friends retrived */
 	user_friends = all_users;
-	lists_dialog_load_lists(user_friends);
+	followers_dialog_load_lists(user_friends);
 }
 
 

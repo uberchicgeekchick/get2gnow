@@ -72,6 +72,12 @@
           <accelerator key="F4"/>
         </child>
         <child>
+          <object class="GtkAction" id="settings_friends_manager">
+            <property name="name">settings_friends_manager</property>
+            <property name="label" translatable="yes">Manage My _Friends</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkAction" id="settings_preferences">
             <property name="stock_id">gtk-preferences</property>
             <property name="name">settings_preferences</property>
@@ -87,13 +93,8 @@
           <object class="GtkRadioAction" id="view_combined_timeline">
             <property name="group">view_public_timeline</property>
             <property name="name">view_combined_timeline</property>
-            <property name="label" translatable="yes">_My Combined Tweets</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_public_timeline">
-            <property name="name">view_public_timeline</property>
-            <property name="label" translatable="yes">_Every one's Tweets</property>
+            <property name="tooltip" translatable="yes">View your friends tweets, @ replies, &amp; dm all in one plane.</property>
+            <property name="label" translatable="yes">_All Tweets to Me</property>
           </object>
         </child>
         <child>
@@ -101,28 +102,34 @@
             <property name="active">True</property>
             <property name="group">view_public_timeline</property>
             <property name="name">view_friends_timeline</property>
-            <property name="label" translatable="yes">Friends Timeline</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_my_timeline">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_my_timeline</property>
-            <property name="label" translatable="yes">My Timeline</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_direct_messages">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_direct_messages</property>
-            <property name="label" translatable="yes">Direct Messages</property>
+            <property name="label" translatable="yes">My _Friends' Tweets</property>
           </object>
         </child>
         <child>
           <object class="GtkRadioAction" id="view_direct_replies">
             <property name="group">view_public_timeline</property>
             <property name="name">view_direct_replies</property>
-            <property name="label" translatable="yes">Direct Replies</property>
+            <property name="label" translatable="yes">_@ Replies</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkRadioAction" id="view_direct_messages">
+            <property name="group">view_public_timeline</property>
+            <property name="name">view_direct_messages</property>
+            <property name="label" translatable="yes">_Direct Messages</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkRadioAction" id="view_my_timeline">
+            <property name="group">view_public_timeline</property>
+            <property name="name">view_my_timeline</property>
+            <property name="label" translatable="yes">My Tweet_s</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkRadioAction" id="view_public_timeline">
+            <property name="name">view_public_timeline</property>
+            <property name="label" translatable="yes">_Public Timeline</property>
           </object>
         </child>
         <child>
@@ -170,15 +177,19 @@
         </menu>
         <menu action="settings1">
           <menuitem action="settings_account"/>
+          <menuitem action="settings_friends_manager"/>
+          <separator/>
           <menuitem action="settings_preferences"/>
         </menu>
         <menu action="view1">
           <menuitem action="view_combined_timeline"/>
-          <menuitem action="view_public_timeline"/>
           <menuitem action="view_friends_timeline"/>
-          <menuitem action="view_my_timeline"/>
-          <menuitem action="view_direct_messages"/>
+          <separator/>
           <menuitem action="view_direct_replies"/>
+          <menuitem action="view_direct_messages"/>
+          <separator/>
+          <menuitem action="view_my_timeline"/>
+          <menuitem action="view_public_timeline"/>
           <separator/>
           <menuitem action="view_friends"/>
         </menu>

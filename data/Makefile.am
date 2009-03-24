@@ -16,7 +16,8 @@ glade_DATA = 				\
 	prefs_dlg.xml			\
 	send_message_dlg.xml		\
 	spell_dlg.xml			\
-	lists_dlg.xml
+	friends_manager.xml		\
+	followers_dlg.xml
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
 icon_DATA = greet-tweet-know.png

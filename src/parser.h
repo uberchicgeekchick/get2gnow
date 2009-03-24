@@ -48,6 +48,8 @@ User *parser_single_user (const gchar *data,
 /* To free a User struct */
 void parser_free_user (User *user);
 
+int parser_sort_users(User *a, User *b);
+
 /* Restet the ID of the last tweet showed */
 void parser_reset_lastid (void);
 

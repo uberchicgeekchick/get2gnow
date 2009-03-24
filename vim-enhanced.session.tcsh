@@ -11,4 +11,4 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./src/app.c" "./src/network.c"
+${my_editor} "./src/app.h" "./src/app.c" "./src/network.h" "./src/network.c"

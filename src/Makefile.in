@@ -68,7 +68,8 @@ am__greet_tweet_know_SOURCES_DIST = \
 	spell.c			spell.h			\
 	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
-	lists-dialog.c		lists-dialog.h		\
+	friends-manager.c	friends-manager.h	\
+	followers-dialog.c	followers-dialog.h	\
 	tweet-list.c		tweet-list.h
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 @HAVE_DBUS_TRUE@am__objects_2 = dbus.$(OBJEXT)
@@ -94,7 +95,8 @@ greet_tweet_know_OBJECTS =		\
 	spell.$(OBJEXT) \
 	spell-dialog.$(OBJEXT)		\
 	ui-utils.$(OBJEXT) \
-	lists-dialog.$(OBJEXT)		\
+	friends-manager.$(OBJEXT)		\
+	followers-dialog.$(OBJEXT)		\
 	tweet-list.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -324,7 +326,8 @@ greet_tweet_know_SOURCES =				\
 	spell.c			spell.h			\
 	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
-	lists-dialog.c		lists-dialog.h		\
+	friends-manager.c	friends-manager.h	\
+	followers-dialog.c	followers-dialog.h	\
 	tweet-list.c		tweet-list.h
 
 greet_tweet_know_LDADD = \
@@ -411,7 +414,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lists-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
@@ -556,7 +560,6 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
-	-rm -rf ./$(DEPDIR)
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)

@@ -41,7 +41,8 @@ greet_tweet_know_SOURCES = 				\
 	spell.c			spell.h			\
 	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
-	lists-dialog.c		lists-dialog.h		\
+	friend-manager.c	friend-manager.h	\
+	followers-dialog.c	followers-dialog.h	\
 	tweet-list.c		tweet-list.h
 
 

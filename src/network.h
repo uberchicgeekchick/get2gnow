@@ -70,11 +70,13 @@ void network_get_user		(const gchar *username);
 /* Refresh current timeline */
 void network_refresh			(void);
 
+/* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
+GList *network_get_users_glist(gboolean get_friends);
 /* Get authenticating user's friends(following) */
 GList *network_get_friends	(void);
-
 /* Get the authenticating user's followers */
 GList *network_get_followers	(void);
+/* My, Kaity G. B., new stuff ends here. */
 
 /* Get an image from servers */
 void network_get_image (const gchar *url_image,

@@ -30,11 +30,11 @@
 
 #include "main.h"
 #include "app.h"
-#include "lists-dialog.h"
+#include "followers-dialog.h"
 #include "add-dialog.h"
 #include "network.h"
 
-#define GLADE_FILE "lists_dlg.xml"
+#define GLADE_FILE "follows_dlg.xml"
 
 enum {
 	FOLLOWER_USER,
@@ -49,51 +49,51 @@ typedef struct {
 	GtkTreeModel *following_store;
 } Lists;
 
-static void lists_rem_response_cb (GtkButton   *button,
-								   Lists *lists);
-static void lists_response_cb     (GtkWidget   *widget,
+static void followers_rem_response_cb (GtkButton   *button,
+								   Lists *followers);
+static void followers_response_cb     (GtkWidget   *widget,
 								   gint         response,
-								   Lists *lists);
-static void lists_destroy_cb      (GtkWidget   *widget,
-								   Lists *lists);
+								   Lists *followers);
+static void followers_destroy_cb      (GtkWidget   *widget,
+								   Lists *followers);
 
-static Lists *lists;
+static Lists *followers;
 
 static void
-lists_response_cb (GtkWidget     *widget,
+followers_response_cb (GtkWidget     *widget,
 				   gint           response,
-				   Lists   *lists)
+				   Lists   *followers)
 {
 	gtk_widget_destroy (widget);
 }
 
 static void
-lists_destroy_cb (GtkWidget    *widget,
-				  Lists  *lists)
+followers_destroy_cb (GtkWidget    *widget,
+				  Lists  *followers)
 {
-	g_free (lists);
+	g_free (followers);
 }
 
 static void
-lists_rem_response_cb (GtkButton   *button,
-					   Lists *lists)
+followers_rem_response_cb (GtkButton   *button,
+					   Lists *followers)
 {
 	GtkTreeSelection *sel;
 	GtkTreeIter       iter;
 	User       *user;
 
 	/* Get selected Iter */
-	sel = gtk_tree_view_get_selection (lists->following_list);
+	sel = gtk_tree_view_get_selection (followers->following_list);
 	
 	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
 		return;
 
-	gtk_tree_model_get (lists->following_store,
+	gtk_tree_model_get (followers->following_store,
 						&iter,
 						FOLLOWER_POINTER, &user,
 						-1);
 
-	gtk_list_store_remove (GTK_LIST_STORE (lists->following_store), &iter);
+	gtk_list_store_remove (GTK_LIST_STORE (followers->following_store), &iter);
 
 	network_del_user (user);
 }
@@ -102,16 +102,16 @@ static void
 list_follower_activated_cb (GtkTreeView       *tree_view,
 							GtkTreePath       *path,
 							GtkTreeViewColumn *column,
-							Lists       *lists)
+							Lists       *followers)
 {
 	GtkTreeIter  iter;
 	gchar       *username;
 
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (lists->following_store),
+	gtk_tree_model_get_iter (GTK_TREE_MODEL (followers->following_store),
 							 &iter,
 							 path);
 
-	gtk_tree_model_get (GTK_TREE_MODEL (lists->following_store),
+	gtk_tree_model_get (GTK_TREE_MODEL (followers->following_store),
 						&iter,
 						FOLLOWER_USER, &username,
 						-1);
@@ -123,7 +123,7 @@ list_follower_activated_cb (GtkTreeView       *tree_view,
 }
 
 void
-lists_dialog_load_lists (GList *users)
+followers_dialog_load_lists (GList *users)
 {
 	User  *user;
 	GtkTreeIter  iter;
@@ -133,9 +133,9 @@ lists_dialog_load_lists (GList *users)
 	for (list = users; list; list = list->next)
 	{
 		user = (User *)list->data;
-		gtk_list_store_append (GTK_LIST_STORE (lists->following_store), &iter);
+		gtk_list_store_append (GTK_LIST_STORE (followers->following_store), &iter);
 
-		gtk_list_store_set (GTK_LIST_STORE (lists->following_store),
+		gtk_list_store_set (GTK_LIST_STORE (followers->following_store),
 							&iter,
 							FOLLOWER_USER, user->screen_name,
 							FOLLOWER_NAME, user->name,
@@ -145,52 +145,52 @@ lists_dialog_load_lists (GList *users)
 }
 
 void
-lists_dialog_show (GtkWindow *parent)
+followers_dialog_show (GtkWindow *parent)
 {
-	if (lists) 
-		return gtk_window_present (GTK_WINDOW (lists->dialog));
+	if (followers) 
+		return gtk_window_present (GTK_WINDOW (followers->dialog));
 	
 	GtkBuilder *ui;
 	GList      *friends;
 	GdkCursor *cursor;
 
-	lists = g_new0 (Lists, 1);
+	followers = g_new0 (Lists, 1);
 
 	/* Get widgets */
 	ui = glade_get_file (GLADE_FILE,
-						"lists_dialog", &lists->dialog,
-						"following_list", &lists->following_list,
+						"followers_dialog", &followers->dialog,
+						"following_list", &followers->following_list,
 						NULL);
 
-	lists->following_store = gtk_tree_view_get_model (lists->following_list);
+	followers->following_store = gtk_tree_view_get_model (followers->following_list);
 
 	/* Connect the signals */
-	glade_connect (ui, lists,
-						"lists_dialog", "destroy", lists_destroy_cb,
-						"lists_dialog", "response", lists_response_cb,
-						"follow_rem", "clicked", lists_rem_response_cb,
+	glade_connect (ui, followers,
+						"followers_dialog", "destroy", followers_destroy_cb,
+						"followers_dialog", "response", followers_response_cb,
+						"follow_rem", "clicked", followers_rem_response_cb,
 						"following_list", "row-activated", list_follower_activated_cb,
 						NULL);
 
 	g_object_unref(ui);
 
 	/* Set the parent */
-	g_object_add_weak_pointer (G_OBJECT (lists->dialog), (gpointer) &lists);
-	gtk_window_set_transient_for (GTK_WINDOW (lists->dialog), parent);
+	g_object_add_weak_pointer (G_OBJECT (followers->dialog), (gpointer) &followers);
+	gtk_window_set_transient_for (GTK_WINDOW (followers->dialog), parent);
 
 	/* Now that we're done setting up, let's show the widget */
-	gtk_widget_show (lists->dialog);
+	gtk_widget_show (followers->dialog);
 	
 	app_set_statusbar_msg(_("Please wait while the list of every one you\'re following is loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
-	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, cursor);
-	gtk_widget_set_sensitive(lists->dialog, FALSE);
+	gdk_window_set_cursor(GTK_WIDGET(followers->dialog)->window, cursor);
+	gtk_widget_set_sensitive(followers->dialog, FALSE);
 
-	/* Load lists */
+	/* Load followers */
 	if( (friends=network_get_friends()) )
-		lists_dialog_load_lists(friends);
+		followers_dialog_load_lists(friends);
 	
-	gdk_window_set_cursor(GTK_WIDGET(lists->dialog)->window, NULL);
-	gtk_widget_set_sensitive(lists->dialog, TRUE);
+	gdk_window_set_cursor(GTK_WIDGET(followers->dialog)->window, NULL);
+	gtk_widget_set_sensitive(followers->dialog, TRUE);
 	app_set_statusbar_msg("");
 }

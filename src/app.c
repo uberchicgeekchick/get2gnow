@@ -48,7 +48,8 @@
 #include "network.h"
 #include "preferences.h"
 #include "send-message-dialog.h"
-#include "lists-dialog.h"
+#include "friends-manager.h"
+#include "followers-dialog.h"
 #include "ui-utils.h"
 #include "tweet-list.h"
 
@@ -145,6 +146,7 @@ static void     app_send_direct_message_cb(GtkWidget *window, App *app);
 static void     app_quit_cb(GtkWidget *window, App *app); 
 static void     app_refresh_cb(GtkWidget *window, App *app); 
 static void     app_account_cb(GtkWidget *window, App *app); 
+static void app_friends_manager_cb(GtkWidget *widget, App *app);
 static void     app_preferences_cb(GtkWidget *window, App *app); 
 static void app_combined_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app);
 static void app_public_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app);
@@ -466,6 +468,7 @@ app_setup(void)
 						"twitter_quit", "activate", app_quit_cb,
 						"twitter_add_friend", "activate", app_add_friend_cb,
 						"settings_account", "activate", app_account_cb,
+						"settings_friends_manager", "activate", app_friends_manager_cb,
 						"settings_preferences", "activate", app_preferences_cb,
 						"view_combined_timeline", "changed", app_combined_timeline_cb,
 						"view_public_timeline", "changed", app_public_timeline_cb,
@@ -820,7 +823,7 @@ static void
 app_view_friends_cb(GtkAction *action,
 							App *app)
 {
-			lists_dialog_show(GTK_WINDOW(app_priv->window));
+			followers_dialog_show(GTK_WINDOW(app_priv->window));
 }
 
 static char**
@@ -850,11 +853,12 @@ app_account_cb(GtkWidget *widget,
 	
 }
 
-static void
-app_preferences_cb(GtkWidget *widget,
-					App *app)
-{
-			preferences_dialog_show(GTK_WINDOW(app_priv->window));
+static void app_friends_manager_cb(GtkWidget *widget, App *app){
+	friends_manager_show(GTK_WINDOW(app_priv->window));
+}
+
+static void app_preferences_cb(GtkWidget *widget, App *app){
+	preferences_dialog_show(GTK_WINDOW(app_priv->window));
 }
 
 static void app_about_cb(GtkWidget *widget, App *app){
@@ -969,7 +973,7 @@ app_status_icon_create(void)
 {
 	
 	
-	app_priv->status_icon = gtk_status_icon_new_from_icon_name("twitux");
+	app_priv->status_icon = gtk_status_icon_new_from_icon_name("greet-tweet-know");
 	g_signal_connect(app_priv->status_icon,
 					  "activate",
 					  G_CALLBACK(app_status_icon_activate_cb),
@@ -1149,9 +1153,8 @@ app_set_default_timeline(App *app, gchar *timeline)
 		return;
 	}
 
-	if( !(strcmp( timeline, "combined" )) )
-		return gtk_radio_action_set_current_value( app_priv->menu_combined, 1);
-	
+	/*if( !(strcmp( timeline, "combined" )) )
+		return gtk_radio_action_set_current_value( app_priv->menu_combined, 1);*/
 	if( !(strcmp( timeline, API_TWITTER_TIMELINE_PUBLIC )) )
 		return gtk_radio_action_set_current_value( app_priv->menu_public, 1);
 	
