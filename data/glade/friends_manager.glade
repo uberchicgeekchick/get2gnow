@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <glade-interface>
   <requires-version lib="gtk+" version="2.12"/>
-  <widget class="GtkDialog" id="lists_dialog">
+  <widget class="GtkDialog" id="friends_manager">
     <property name="visible">True</property>
     <property name="title" translatable="yes">Users lists</property>
     <property name="default_width">260</property>

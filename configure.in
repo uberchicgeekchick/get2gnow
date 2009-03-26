@@ -40,38 +40,9 @@ GLIB_REQUIRED=2.15.0
 GTK_REQUIRED=2.14.0
 GCONF_REQUIRED=1.2.0
 LIBGIO_REQUIRED=2.15.5
-DBUS_REQUIRED=0.61
 LIBCANBERRA_REQUIRED=0.4
 ENCHANT_REQUIRED=1.2.0
 ISO_CODES_REQUIRED=0.35
-
-dnl -----------------------------------------------------------
-dnl D-BUS
-dnl -----------------------------------------------------------
-AC_ARG_ENABLE(dbus,
-              AS_HELP_STRING([--enable-dbus=@<:@no/yes/auto@:>@],
-                             [compile with D-Bus support]), ,
-              enable_dbus=auto)
-
-if test "x$enable_dbus" != "xno"; then
-   dbus_pkgconfig_tmp="dbus-1 >= $DBUS_REQUIRED dbus-glib-1"
-   PKG_CHECK_MODULES(DBUS, $dbus_pkgconfig_tmp, have_dbus=yes, have_dbus=no)
-   if test x$have_dbus = xyes; then
-      AC_DEFINE(HAVE_DBUS, 1, [D-Bus support])
-      dbus_pkgconfig=$dbus_pkgconfig_tmp
-   fi
-else
-   have_dbus=no
-   dbus_pkgconfig=
-fi
-
-if test "x$enable_dbus" = "xyes"; then
-   if test "x$have_dbus" != "xyes"; then
-      AC_MSG_ERROR([Couldn't find D-Bus.])
-   fi
-fi
-
-AM_CONDITIONAL(HAVE_DBUS, test x$have_dbus = xyes)
 
 dnl -----------------------------------------------------------
 dnl GNOME Keyring
@@ -119,7 +90,6 @@ PKG_CHECK_MODULES(GREET_TWEET_KNOW,
 	gconf-2.0 >= $GCONF_REQUIRED
 	$gnome_keyring_pkgconfig
 	$iso_codes_pkgconfig
-	$dbus_pkgconfig
 ])
 AC_SUBST(GREET_TWEET_KNOW_CFLAGS)
 AC_SUBST(GREET_TWEET_KNOW_LIBS)
@@ -177,12 +147,11 @@ data/Makefile
 data/greet-tweet-know.desktop.in
 help/Makefile
 src/Makefile
-po/Makefile.in
+po/Makefile
 ])
 
 echo
 echo "Prefix:        $prefix"
 echo "Spell:         $have_enchant"
-echo "DBUS:          $have_dbus"
 echo "GNOME Keyring: $have_gnome_keyring"
 echo

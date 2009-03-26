@@ -1,19 +1,6 @@
-Greet-Tweet-Know is a a Twitter client for GTK+/GNOME.
-I'm focused on creating the most full featured Twitter client available any where.
-Not just on GNOME & Linux, but any OS, Linux's the only OS on which one can experience Greet-Tweet-Know.
-My goals for Greet-Tweet-Know goals are to provide access to all of Twitter's functions:
-	timelines, views, services & search interfaces
-And to make using & managing Twitter's content like:
-	status updates, messages, friends, & followers.
-While making Greet-Tweet-Know easily embeddable into other applications.
-
-For more information please visit Greet-Tweet-Know's website:
-	@ http://uberChicGeekChick.Com/?projecs=Greet-Twee-Know
-
-
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
- * Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
  *
@@ -56,4 +43,17 @@ For more information please visit Greet-Tweet-Know's website:
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+
+#ifndef __HEADER_H__
+#define __HEADER_H__
+
+#include <gtk/gtk.h>
+
+#include "config.h"
+
+G_BEGIN_DECLS
+
+G_END_DECLS
+
+#endif
 

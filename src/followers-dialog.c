@@ -45,7 +45,6 @@ enum {
 typedef struct {
 	GtkWidget    *dialog;
 	GtkTreeView  *following_list;
-	
 	GtkTreeModel *following_store;
 } Lists;
 
@@ -95,7 +94,7 @@ followers_rem_response_cb (GtkButton   *button,
 
 	gtk_list_store_remove (GTK_LIST_STORE (followers->following_store), &iter);
 
-	network_del_user (user);
+	network_del_user(user->user_name);
 }
 
 static void
@@ -105,7 +104,7 @@ list_follower_activated_cb (GtkTreeView       *tree_view,
 							Lists       *followers)
 {
 	GtkTreeIter  iter;
-	gchar       *username;
+	gchar       *user_name;
 
 	gtk_tree_model_get_iter (GTK_TREE_MODEL (followers->following_store),
 							 &iter,
@@ -113,13 +112,13 @@ list_follower_activated_cb (GtkTreeView       *tree_view,
 
 	gtk_tree_model_get (GTK_TREE_MODEL (followers->following_store),
 						&iter,
-						FOLLOWER_USER, &username,
+						FOLLOWER_USER, &user_name,
 						-1);
 
 	/* Retrive timeline */
-	network_get_user (username);
+	network_get_user(user_name);
 
-	g_free (username);
+	g_free(user_name);
 }
 
 void
@@ -137,8 +136,8 @@ followers_dialog_load_lists (GList *users)
 
 		gtk_list_store_set (GTK_LIST_STORE (followers->following_store),
 							&iter,
-							FOLLOWER_USER, user->screen_name,
-							FOLLOWER_NAME, user->name,
+							FOLLOWER_USER, user->user_name,
+							FOLLOWER_NAME, user->nick_name,
 							FOLLOWER_POINTER, user,
 							-1);
 	}

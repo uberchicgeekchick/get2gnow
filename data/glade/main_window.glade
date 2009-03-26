@@ -15,7 +15,7 @@
             <child>
               <widget class="GtkMenuItem" id="twitter">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Twitter</property>
+                <property name="label" translatable="yes">_Actions</property>
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="twitter_menu">
@@ -48,33 +48,6 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator4">
-                        <property name="visible">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="twitter_new_message">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">New Message</property>
-                        <property name="use_underline">True</property>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="image156">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-new</property>
-                            <property name="icon_size">1</property>
-                          </widget>
-                        </child>
-                        <accelerator key="N" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkMenuItem" id="twitter_send_direct_message">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Send Direct Message</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                    </child>
-                    <child>
                       <widget class="GtkSeparatorMenuItem" id="separator2">
                         <property name="visible">True</property>
                       </widget>
@@ -99,6 +72,97 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkImageMenuItem" id="twitter_quit">
+                        <property name="visible">True</property>
+                        <property name="label">gtk-quit</property>
+                        <property name="use_stock">True</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="tweets1">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Tweets</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="tweets_menu1">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="tweets_new_tweet">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">New _Tweet</property>
+                        <property name="use_underline">True</property>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="image156">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-new</property>
+                            <property name="icon_size">1</property>
+                          </widget>
+                        </child>
+                        <accelerator key="N" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="tweets_reply">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="label" translatable="yes">New _@ Reply</property>
+                        <property name="use_underline">True</property>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="menu-item-image8">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-jump-to</property>
+                          </widget>
+                        </child>
+                        <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="tweets_retweet">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="label" translatable="yes">_Retweet</property>
+                        <property name="use_underline">True</property>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="menu-item-image9">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-undelete</property>
+                          </widget>
+                        </child>
+                        <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="tweets_new_dm">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
+                        <property name="label" translatable="yes">New _DM</property>
+                        <property name="use_underline">True</property>
+                        <child internal-child="image">
+                          <widget class="GtkImage" id="image15">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-leave-fullscreen</property>
+                            <property name="icon_size">1</property>
+                          </widget>
+                        </child>
+                        <accelerator key="m" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="view1">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Views</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="view1_menu">
+                    <child>
                       <widget class="GtkImageMenuItem" id="twitter_refresh">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Refresh</property>
@@ -114,68 +178,12 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator1">
-                        <property name="visible">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="twitter_quit">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-quit</property>
-                        <property name="use_stock">True</property>
-                      </widget>
-                    </child>
-                  </widget>
-                </child>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkMenuItem" id="settings1">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Settings</property>
-                <property name="use_underline">True</property>
-                <child>
-                  <widget class="GtkMenu" id="settings1_menu">
-                    <child>
-                      <widget class="GtkMenuItem" id="settings_account">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Account</property>
-                        <property name="use_underline">True</property>
-                        <accelerator key="F4" signal="activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkMenuItem" id="settings_friends_manager">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Manage My _Friends</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator5">
+                      <widget class="GtkSeparatorMenuItem" id="separator6">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">menuitem1</property>
                         <property name="use_underline">True</property>
                       </widget>
                     </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="settings_preferences">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-preferences</property>
-                        <property name="use_stock">True</property>
-                      </widget>
-                    </child>
-                  </widget>
-                </child>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkMenuItem" id="view1">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_View</property>
-                <property name="use_underline">True</property>
-                <child>
-                  <widget class="GtkMenu" id="view1_menu">
                     <child>
                       <widget class="GtkRadioMenuItem" id="view_combined_timeline">
                         <property name="visible">True</property>
@@ -195,7 +203,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator6">
+                      <widget class="GtkSeparatorMenuItem" id="separator7">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">menuitem1</property>
                         <property name="use_underline">True</property>
@@ -249,6 +257,46 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Friends</property>
                         <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="settings1">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Settings</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="settings1_menu">
+                    <child>
+                      <widget class="GtkMenuItem" id="settings_account">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Account</property>
+                        <property name="use_underline">True</property>
+                        <accelerator key="F4" signal="activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="settings_friends_manager">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Manage My _Friends</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separator5">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">menuitem1</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="settings_preferences">
+                        <property name="visible">True</property>
+                        <property name="label">gtk-preferences</property>
+                        <property name="use_stock">True</property>
                       </widget>
                     </child>
                   </widget>

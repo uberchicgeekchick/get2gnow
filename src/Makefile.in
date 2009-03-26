@@ -52,7 +52,6 @@ am__greet_tweet_know_SOURCES_DIST = \
 	paths.c			paths.h			\
 	glade.c			glade.h			\
 	keyring.c		keyring.h		\
-	dbus.c			dbus.h			\
 	main.c			main.h			\
 	about.c			about.h			\
 	account-dialog.c	account-dialog.h	\
@@ -70,33 +69,34 @@ am__greet_tweet_know_SOURCES_DIST = \
 	ui-utils.c		ui-utils.h		\
 	friends-manager.c	friends-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
+	tweets.c		tweets.h		\
 	tweet-list.c		tweet-list.h
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
-@HAVE_DBUS_TRUE@am__objects_2 = dbus.$(OBJEXT)
-greet_tweet_know_OBJECTS =		\
-	gconf.$(OBJEXT)		\
-	debug.$(OBJEXT)		\
-	paths.$(OBJEXT)		\
-	glade.$(OBJEXT)		\
-	$(am__objects_1)	\
-	$(am__objects_2)	\
-	main.$(OBJEXT)		\
-	about.$(OBJEXT)		\
-	account-dialog.$(OBJEXT) \
-	add-dialog.$(OBJEXT)		\
-	app.$(OBJEXT) \
-	geometry.$(OBJEXT)		\
-	hint.$(OBJEXT) \
-	label.$(OBJEXT)		\
-	network.$(OBJEXT) \
-	parser.$(OBJEXT)		\
-	preferences.$(OBJEXT) \
+greet_tweet_know_OBJECTS =			\
+	gconf.$(OBJEXT)				\
+	debug.$(OBJEXT)				\
+	paths.$(OBJEXT)				\
+	glade.$(OBJEXT)				\
+	$(am__objects_1)			\
+	$(am__objects_2)			\
+	main.$(OBJEXT)				\
+	about.$(OBJEXT)				\
+	account-dialog.$(OBJEXT)		\
+	add-dialog.$(OBJEXT)			\
+	app.$(OBJEXT)				\
+	geometry.$(OBJEXT)			\
+	hint.$(OBJEXT)				\
+	label.$(OBJEXT)				\
+	network.$(OBJEXT)			\
+	parser.$(OBJEXT)			\
+	preferences.$(OBJEXT)			\
 	send-message-dialog.$(OBJEXT)		\
-	spell.$(OBJEXT) \
-	spell-dialog.$(OBJEXT)		\
-	ui-utils.$(OBJEXT) \
+	spell.$(OBJEXT)				\
+	spell-dialog.$(OBJEXT)			\
+	ui-utils.$(OBJEXT)			\
 	friends-manager.$(OBJEXT)		\
 	followers-dialog.$(OBJEXT)		\
+	tweets.$(OBJEXT)			\
 	tweet-list.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -136,8 +136,6 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
-DBUS_CFLAGS = @DBUS_CFLAGS@
-DBUS_LIBS = @DBUS_LIBS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
@@ -302,10 +300,8 @@ AM_CPPFLAGS =						\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
 
-@HAVE_DBUS_TRUE@dbus_sources = dbus.c dbus.h
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
 greet_tweet_know_SOURCES =				\
-	$(dbus_sources)					\
 	$(keyring)					\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
@@ -328,10 +324,11 @@ greet_tweet_know_SOURCES =				\
 	ui-utils.c		ui-utils.h		\
 	friends-manager.c	friends-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
+	tweets.c		tweets.h		\
 	tweet-list.c		tweet-list.h
 
-greet_tweet_know_LDADD = \
-	$(GREET_TWEET_KNOW_LIBS)					\
+greet_tweet_know_LDADD =				\
+	$(GREET_TWEET_KNOW_LIBS)			\
 	$(ENCHANT_LIBS)
 
 all: all-am
@@ -410,7 +407,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/account-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/add-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
@@ -423,6 +419,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/send-message-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spell-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spell.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
 

@@ -11,16 +11,11 @@ AM_CPPFLAGS=						\
 
 bin_PROGRAMS = greet-tweet-know
 
-if HAVE_DBUS
-dbus_sources = dbus.c dbus.h
-endif
-
 if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 
 greet_tweet_know_SOURCES = 				\
-	$(dbus_sources)					\
 	$(keyring_sources)				\
 	main.c			main.h			\
 	gconf.c			gconf.h			\
@@ -43,6 +38,7 @@ greet_tweet_know_SOURCES = 				\
 	ui-utils.c		ui-utils.h		\
 	friend-manager.c	friend-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
+	tweets.c		tweets.h		\
 	tweet-list.c		tweet-list.h
 
 

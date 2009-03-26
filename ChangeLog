@@ -1,3 +1,9 @@
+2009-03-25  Kaity G. B. <uberChick@uberChicGeekChick.Com>
+2009-03-19
+
+	* ./src/app.c, ./src/tweets.c, ./src/tweets.h
+	./src/friends-manager.c, ./src/friends-manager.h:
+
 2009-03-14  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
 	* ./configure, ./configure.in, ./Makefile.in &./Makefile.am, ./po/POTFILES.in

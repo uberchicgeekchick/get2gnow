@@ -1,11 +1,11 @@
-# Swedish translation for twitux.
+# Swedish translation for greet-tweet-know.
 # Copyright (C) 2007 Free Software Foundation, Inc.
-# This file is distributed under the same license as the twitux package.
+# This file is distributed under the same license as the greet-tweet-know package.
 # Daniel Nylander <po@danielnylander.se>, 2007.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: twitux\n"
+"Project-Id-Version: greet-tweet-know\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-08-13 09:03-0300\n"
 "PO-Revision-Date: 2007-08-02 14:52-0300\n"

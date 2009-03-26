@@ -26,8 +26,8 @@
 #include <gtk/gtk.h>
 
 typedef struct {
-	gchar	*screen_name;
-	gchar	*name;
+	gchar	*user_name;
+	gchar	*nick_name;
 	gchar	*image_url;
 } User;
 

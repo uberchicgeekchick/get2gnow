@@ -930,10 +930,6 @@ DATADIRNAME
 WARN_CFLAGS
 WARN_CXXFLAGS
 DISABLE_DEPRECATED
-DBUS_CFLAGS
-DBUS_LIBS
-HAVE_DBUS_TRUE
-HAVE_DBUS_FALSE
 GNOME_KEYRING_CFLAGS
 GNOME_KEYRING_LIBS
 HAVE_GNOME_KEYRING_TRUE
@@ -978,8 +974,6 @@ CXXCPP
 F77
 FFLAGS
 PKG_CONFIG
-DBUS_CFLAGS
-DBUS_LIBS
 GNOME_KEYRING_CFLAGS
 GNOME_KEYRING_LIBS
 LIBGREET_TWEET_KNOW_CFLAGS
@@ -1587,8 +1581,6 @@ Optional Features:
 
   --enable-iso-cxx        Try to warn if code is not ISO C++
   --enable-debug          turn on debugging
-  --enable-dbus=[no/yes/auto]
-                          compile with D-Bus support
   --enable-gnome-keyring=[no/yes/auto]
                           compile with Gnome Keyring support
   --enable-spell=[no/yes/auto]
@@ -1623,8 +1615,6 @@ Some influential environment variables:
   F77         Fortran 77 compiler command
   FFLAGS      Fortran 77 compiler flags
   PKG_CONFIG  path to pkg-config utility
-  DBUS_CFLAGS C compiler flags for DBUS, overriding pkg-config
-  DBUS_LIBS   linker flags for DBUS, overriding pkg-config
   GNOME_KEYRING_CFLAGS
               C compiler flags for GNOME_KEYRING, overriding pkg-config
   GNOME_KEYRING_LIBS
@@ -23050,116 +23040,10 @@ GLIB_REQUIRED=2.15.0
 GTK_REQUIRED=2.14.0
 GCONF_REQUIRED=1.2.0
 LIBGIO_REQUIRED=2.15.5
-DBUS_REQUIRED=0.61
 LIBCANBERRA_REQUIRED=0.4
 ENCHANT_REQUIRED=1.2.0
 ISO_CODES_REQUIRED=0.35
 
-# Check whether --enable-dbus was given.
-if test "${enable_dbus+set}" = set; then
-  enableval=$enable_dbus;
-else
-  enable_dbus=auto
-fi
-
-
-if test "x$enable_dbus" != "xno"; then
-   dbus_pkgconfig_tmp="dbus-1 >= $DBUS_REQUIRED dbus-glib-1"
-
-pkg_failed=no
-{ echo "$as_me:$LINENO: checking for DBUS" >&5
-echo $ECHO_N "checking for DBUS... $ECHO_C" >&6; }
-
-if test -n "$DBUS_CFLAGS"; then
-    pkg_cv_DBUS_CFLAGS="$DBUS_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"\$dbus_pkgconfig_tmp\"") >&5
-  ($PKG_CONFIG --exists --print-errors "$dbus_pkgconfig_tmp") 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; then
-  pkg_cv_DBUS_CFLAGS=`$PKG_CONFIG --cflags "$dbus_pkgconfig_tmp" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$DBUS_LIBS"; then
-    pkg_cv_DBUS_LIBS="$DBUS_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"\$dbus_pkgconfig_tmp\"") >&5
-  ($PKG_CONFIG --exists --print-errors "$dbus_pkgconfig_tmp") 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; then
-  pkg_cv_DBUS_LIBS=`$PKG_CONFIG --libs "$dbus_pkgconfig_tmp" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        DBUS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "$dbus_pkgconfig_tmp" 2>&1`
-        else
-	        DBUS_PKG_ERRORS=`$PKG_CONFIG --print-errors "$dbus_pkgconfig_tmp" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$DBUS_PKG_ERRORS" >&5
-
-	{ echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-                have_dbus=no
-elif test $pkg_failed = untried; then
-	have_dbus=no
-else
-	DBUS_CFLAGS=$pkg_cv_DBUS_CFLAGS
-	DBUS_LIBS=$pkg_cv_DBUS_LIBS
-        { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-	have_dbus=yes
-fi
-   if test x$have_dbus = xyes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_DBUS 1
-_ACEOF
-
-      dbus_pkgconfig=$dbus_pkgconfig_tmp
-   fi
-else
-   have_dbus=no
-   dbus_pkgconfig=
-fi
-
-if test "x$enable_dbus" = "xyes"; then
-   if test "x$have_dbus" != "xyes"; then
-      { { echo "$as_me:$LINENO: error: Couldn't find D-Bus." >&5
-echo "$as_me: error: Couldn't find D-Bus." >&2;}
-   { (exit 1); exit 1; }; }
-   fi
-fi
-
- if test x$have_dbus = xyes; then
-  HAVE_DBUS_TRUE=
-  HAVE_DBUS_FALSE='#'
-else
-  HAVE_DBUS_TRUE='#'
-  HAVE_DBUS_FALSE=
-fi
 
 
 # Check whether --enable-gnome_keyring was given.
@@ -23291,7 +23175,6 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 	    gobject-2.0
 	    gconf-2.0 >= \$GCONF_REQUIRED
 	    \$gnome_keyring_pkgconfig
-	    \$dbus_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
 	    libsexy
@@ -23306,7 +23189,6 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 ") 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
@@ -23324,7 +23206,6 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 " 2>/dev/null`
 else
   pkg_failed=yes
@@ -23349,7 +23230,6 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 	    gobject-2.0
 	    gconf-2.0 >= \$GCONF_REQUIRED
 	    \$gnome_keyring_pkgconfig
-	    \$dbus_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
 	    libsexy
@@ -23364,7 +23244,6 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 ") 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
@@ -23382,7 +23261,6 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 " 2>/dev/null`
 else
   pkg_failed=yes
@@ -23414,7 +23292,6 @@ fi
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 " 2>&1`
         else
 	        GREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --print-errors "
@@ -23430,7 +23307,6 @@ fi
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 " 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
@@ -23449,7 +23325,6 @@ fi
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 ) were not met:
 
 $GREET_TWEET_KNOW_PKG_ERRORS
@@ -23474,7 +23349,6 @@ echo "$as_me: error: Package requirements (
 	    gobject-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
-	    $dbus_pkgconfig
 ) were not met:
 
 $GREET_TWEET_KNOW_PKG_ERRORS
@@ -25353,13 +25227,6 @@ fi
   ac_config_commands="$ac_config_commands po/stamp-it"
 
 
-if test -z "${HAVE_DBUS_TRUE}" && test -z "${HAVE_DBUS_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"HAVE_DBUS\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"HAVE_DBUS\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
 if test -z "${HAVE_GNOME_KEYRING_TRUE}" && test -z "${HAVE_GNOME_KEYRING_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"HAVE_GNOME_KEYRING\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -26112,10 +25979,6 @@ DATADIRNAME!$DATADIRNAME$ac_delim
 WARN_CFLAGS!$WARN_CFLAGS$ac_delim
 WARN_CXXFLAGS!$WARN_CXXFLAGS$ac_delim
 DISABLE_DEPRECATED!$DISABLE_DEPRECATED$ac_delim
-DBUS_CFLAGS!$DBUS_CFLAGS$ac_delim
-DBUS_LIBS!$DBUS_LIBS$ac_delim
-HAVE_DBUS_TRUE!$HAVE_DBUS_TRUE$ac_delim
-HAVE_DBUS_FALSE!$HAVE_DBUS_FALSE$ac_delim
 GNOME_KEYRING_CFLAGS!$GNOME_KEYRING_CFLAGS$ac_delim
 GNOME_KEYRING_LIBS!$GNOME_KEYRING_LIBS$ac_delim
 HAVE_GNOME_KEYRING_TRUE!$HAVE_GNOME_KEYRING_TRUE$ac_delim
@@ -26145,7 +26008,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 91; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 87; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -26774,6 +26637,5 @@ fi
 echo
 echo "Prefix:        $prefix"
 echo "Spell:         $have_enchant"
-echo "DBUS:          $have_dbus"
 echo "GNOME Keyring: $have_gnome_keyring"
 echo

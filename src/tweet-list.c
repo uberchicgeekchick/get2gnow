@@ -1,6 +1,6 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (C) 2007-2008 Brian Pepple <bpepple@fedoraproject.org>
+ * Copyright (C) 2009 Brian Pepple <bpepple@fedoraproject.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,11 +17,10 @@
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * Authors: Brian Pepple <bpepple@fedoraproject.org>
- *			Daniel Morales <daniminas@gmail.com>
- *			Kaity G. B. <uberChick@uberChicGeekChick.Com>
- *
+ * Authors: Kaity G. B. <uberChick@uberChicGeekChick.com>
  */
+
+#include <gtk/gtk.h>
 
 #include "config.h"
 
@@ -33,6 +32,7 @@
 #include "send-message-dialog.h"
 #include "label.h"
 #include "app.h"
+#include "tweets.h"
 
 #define DEBUG_DOMAIN "TweetList"
 
@@ -41,7 +41,6 @@
 
 struct _TweetListPriv {
 	GtkListStore      *store;
-	
 	GtkTreeViewColumn *text_column;
 	GtkCellRenderer   *text_renderer;
 };
@@ -75,9 +74,7 @@ tweet_list_class_init(TweetListClass *klass)
 	g_type_class_add_private(object_class, sizeof(TweetListPriv));
 }
 
-static void
-tweet_list_init(TweetList *tweet)
-{
+static void tweet_list_init(TweetList *tweet){
 	
 	list=tweet;
 
@@ -86,19 +83,10 @@ tweet_list_init(TweetList *tweet)
 	tweet_list_create_model(list);
 	tweet_list_setup_view(list);
 
-	g_signal_connect(list,
-					  "size_allocate",
-					  G_CALLBACK(tweet_list_size_cb),
-					  list);
-	g_signal_connect(list,
-					  "cursor-changed",
-					  G_CALLBACK(tweet_list_changed_cb),
-					  list);
-	g_signal_connect(list,
-					  "row-activated",
-					  G_CALLBACK(tweet_list_activated_cb),
-					  list);
-	//g_object_unref(priv);
+	g_signal_connect(list, "size_allocate", G_CALLBACK(tweet_list_size_cb), list);
+	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
+	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
+	g_signal_connect(list, "key-press-event", G_CALLBACK(tweets_key_pressed), list);
 }
 
 static void
@@ -112,13 +100,12 @@ tweet_list_finalize(GObject *object)
 
 	G_OBJECT_CLASS(tweet_list_parent_class)->finalize(object);
 	g_object_unref(object);
-	//g_object_unref(priv);
 }
 
 static void
 tweet_list_create_model(TweetList *list)
 {
-		GtkTreeModel        *model;
+	GtkTreeModel        *model;
 
 	
 	if(list_priv->store)
@@ -136,13 +123,10 @@ tweet_list_create_model(TweetList *list)
 	model=GTK_TREE_MODEL(list_priv->store);
 
 	gtk_tree_view_set_model(GTK_TREE_VIEW(list), model);
-	//g_object_unref(priv);
 }
 
-static void
-tweet_list_setup_view(TweetList *list)
-{
-		GtkCellRenderer		*renderer;
+static void tweet_list_setup_view(TweetList *list){
+	GtkCellRenderer		*renderer;
 	GtkTreeViewColumn	*avatar_column;
 	GtkTreeViewColumn   *tweet_column;
 
@@ -165,46 +149,44 @@ tweet_list_setup_view(TweetList *list)
 	
 	list_priv->text_column=tweet_column;
 	list_priv->text_renderer=renderer;
-	//g_object_unref(priv);
 }
+
 
 static void
 tweet_list_changed_cb(GtkWidget *widget,
                        gpointer   user_data)
 {
+	GtkTreeSelection	*sel;
+	GtkTreeIter		iter;
+	if(!( (sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) ))
+		return show_tweets_submenu_entries((gboolean)FALSE);
+	
+	show_tweets_submenu_entries((gboolean)TRUE);
+	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
+	
+	
 	gboolean expand;
-	conf_get_bool(conf_get(),
-						PREFS_UI_EXPAND_MESSAGES,
-						&expand);
-	if(!expand)
-		return;
+	conf_get_bool((conf_get()), PREFS_UI_EXPAND_MESSAGES, &expand);
 	
-	TweetList     *t;
-		GtkTreeSelection    *sel;
-	GtkTreeIter          iter;
-	GdkPixbuf           *pixbuf;
-	gchar               *name, *tweet, *date;
+	GdkPixbuf	*pixbuf;
+	const gchar		*user_name, *tweet, *date, *name;
 
-	t = TWEET_LIST(user_data);
+	gtk_tree_model_get(
+				GTK_TREE_MODEL(list_priv->store),
+				&iter,
+				STRING_AUTHOR, &name,
+				STRING_TWEET, &tweet,
+				STRING_DATE, &date,
+				STRING_USER, &user_name,
+				PIXBUF_AVATAR, &pixbuf,
+				-1
+	);
 	
-	/* Get selected Iter */
-	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	set_selected_tweet(user_name, tweet);
 	
-	if(!gtk_tree_selection_get_selected(sel, NULL, &iter))
-		return;
-	
-	gtk_tree_model_get(GTK_TREE_MODEL(list_priv->store),
-						&iter,
-						STRING_AUTHOR, &name,
-						STRING_TWEET, &tweet,
-						STRING_DATE, &date,
-						PIXBUF_AVATAR, &pixbuf,
-						-1);
-	
-	app_expand_message(name, date, tweet, pixbuf);
+	if(expand) app_expand_message(name, date, tweet, pixbuf);
 	
 	g_free(name);
-	g_free(tweet);
 	g_free(date);
 	g_object_unref(pixbuf);
 }
@@ -214,39 +196,14 @@ tweet_list_size_cb(GtkWidget     *widget,
                     GtkAllocation *allocation,
                     gpointer       user_data)
 {
-	TweetList     *t;
-	
-	t=TWEET_LIST(user_data);	
+	TweetList     *t=TWEET_LIST(user_data);	
 	
 	g_object_set(list_priv->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(list_priv->text_column))-10), NULL);
 }
 
 static void
-tweet_list_activated_cb(GtkTreeView       *tree_view,
-                         GtkTreePath       *path,
-                         GtkTreeViewColumn *column,
-                         gpointer           friends_tweet)
-{
-	TweetList     *t=NULL;
-	gchar               *friend=NULL;
-	GtkTreeIter          iter;
-
-	t = TWEET_LIST(friends_tweet);
-
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(list_priv->store),
-							 &iter,
-							 path);
-
-	gtk_tree_model_get(GTK_TREE_MODEL(list_priv->store),
-						&iter,
-						STRING_USER, &friend,
-						-1);
-
-	send_message_dialog_show(NULL);
-	message_show_friends(FALSE);
-	message_set_message( (g_strdup_printf("@%s ", friend)) );
-
-	g_free(friend);
+tweet_list_activated_cb(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer friends_tweet){
+	tweets_reply();
 }
 
 TweetList *tweet_list_new(void){

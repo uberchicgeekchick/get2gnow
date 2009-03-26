@@ -98,7 +98,7 @@ help_show (GtkWindow *parent)
 	screen = gtk_widget_get_screen (GTK_WIDGET (parent));
 
 	gtk_show_uri (screen,
-				  "ghelp:twitux",
+				  "ghelp:greet-tweet-know",
 				  gtk_get_current_event_time (),
 				  &error);
 

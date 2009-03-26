@@ -42,7 +42,6 @@
 #include "followers-dialog.h"
 
 #define DEBUG_DOMAIN	  "Network"
-#define HEADER_URL "https://twitux.sourceforge.net/client.xml"
 
 typedef struct {
 	gchar        *src;
@@ -348,9 +347,14 @@ GList *network_get_users_glist(gboolean get_friends){
 
 void network_get_combined_timeline(void){
 	SoupMessage *msg;
-	const char timelines[3]={ {API_TWITTER_TIMELINE_FRIENDS}, {API_TWITTER_REPLIES}, {API_TWITTER_DIRECT_MESSAGES} };
+	const gchar *timelines[]={ 
+		API_TWITTER_TIMELINE_FRIENDS,
+		API_TWITTER_REPLIES,
+		API_TWITTER_DIRECT_MESSAGES,
+		NULL
+	};
 	
-	for(int i=0; i<3; i++)
+	for(int i=0; timelines[i]; i++)
 		network_get_data(timelines[i], network_cb_on_timeline, g_strdup(timelines[i]));
 	/*{	msg=soup_message_new("GET", timeline[i]);
 		soup_session_send_message(soup_connection, msg);
@@ -445,7 +449,7 @@ network_add_user (const gchar *username)
 {
 	gchar *url;
 	
-	if (G_STR_EMPTY (username))
+	if((G_STR_EMPTY(username)))
 		return;
 	
 	url = g_strdup_printf (API_TWITTER_FOLLOWING_ADD, username);
@@ -458,16 +462,16 @@ network_add_user (const gchar *username)
 
 /* Add a user to follow */
 void
-network_del_user (User *user)
+network_del_user(const gchar *username)
 {
 	gchar *url;
 	
-	if (!user || !user->screen_name)
+	if((G_STR_EMPTY(username)))
 		return;
 	
-	url = g_strdup_printf (API_TWITTER_FOLLOWING_DEL, user->screen_name);
+	url = g_strdup_printf (API_TWITTER_FOLLOWING_DEL, username);
 
-	network_post_data (url, NULL, network_cb_on_del, user);
+	network_post_data (url, NULL, network_cb_on_del, NULL);
 
 	g_free (url);
 }
@@ -506,8 +510,6 @@ network_post_data (const gchar           *url,
 								 "X-Twitter-Client", PACKAGE_NAME);
 	soup_message_headers_append (msg->request_headers,
 								 "X-Twitter-Client-Version", PACKAGE_VERSION);
-	soup_message_headers_append (msg->request_headers,
-								 "X-Twitter-Client-URL", HEADER_URL);
 
 	if (formdata)
 	{

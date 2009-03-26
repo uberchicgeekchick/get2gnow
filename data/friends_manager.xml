@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <interface>
-  <object class="GtkDialog" id="lists_dialog">
+  <object class="GtkDialog" id="friends_manager">
     <property name="visible">True</property>
     <property name="title" translatable="yes">Users lists</property>
     <property name="default_width">260</property>
@@ -81,7 +81,7 @@
                 <property name="label" translatable="yes">Friends &amp; Followers</property>
               </object>
               <packing>
-                <property name="tab_fill">True</property>
+                <property name="tab_fill">False</property>
               </packing>
             </child>
           </object>

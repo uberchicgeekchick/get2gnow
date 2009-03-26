@@ -29,10 +29,11 @@
 #include <glib.h>
 
 #include <gtk/gtk.h>
-
 #include "paths.h"
-
 #include "parser.h"
+
+#include "tweet-list.h"
+
 
 G_BEGIN_DECLS
 
@@ -46,6 +47,55 @@ G_BEGIN_DECLS
 typedef struct _App      	App;
 typedef struct _AppClass 	AppClass;
 typedef struct _AppPriv  	AppPriv;
+
+struct _AppPriv {
+	/* Main widgets */
+	GtkWidget		*window;
+	TweetList		*listview;
+	GtkWidget		*statusbar;
+
+	/*
+	 *		Widgets that are enabled when
+	 *		we are connected/disconnected
+	 */
+	GList			*widgets_connected;
+	GList			*widgets_disconnected;
+	GList			*widgets_tweet_selected;
+
+	/* Timeline menu items */
+	GSList			*group;
+	GtkRadioAction		*menu_combined;
+	GtkRadioAction		*menu_public;
+	GtkRadioAction		*menu_friends;
+	GtkRadioAction		*menu_mine;
+	GtkRadioAction		*menu_twitux;
+	GtkRadioAction		*menu_direct_messages;
+	GtkRadioAction		*menu_direct_replies;
+
+	GtkAction		*view_friends;
+
+	/* Status Icon */
+	GtkStatusIcon		*status_icon;
+
+	/* Status Icon Popup Menu */
+	GtkWidget		*popup_menu;
+	GtkToggleAction		*popup_menu_show_app;
+
+	/* Account related data */
+	char			*username;
+	char			*password;
+
+	/* Misc */
+	guint			size_timeout_id;
+	
+	/* Expand messages widgets */
+	GtkWidget		*expand_box;
+	GtkWidget		*expand_image;
+	GtkWidget		*expand_title;
+	GtkWidget		*expand_label;
+};
+
+extern AppPriv *app_priv;
 
 struct _App {
         GObject        parent;
@@ -61,8 +111,6 @@ App *	        app_get                          (void);
 GtkWidget *         app_get_window                   (void);
 void				app_set_visibility				(gboolean	   visible);
 void				app_set_statusbar_msg	        (gchar        *message);
-void				app_set_friends	                (GList        *friends);
-void				app_add_friend                   (User   *user);
 void                app_notify_sound                 (void);
 void				app_notify                       (gchar        *msg);
 void                app_state_on_connection          (gboolean      connected);

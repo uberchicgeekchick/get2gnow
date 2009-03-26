@@ -77,7 +77,7 @@ msgstr "Mensagens Diretas"
 msgid "Direct Replies"
 msgstr "Repostas Diretas"
 
-#: ../data/main.glade.h:15 ../src/twitux-preferences.c:414
+#: ../data/main.glade.h:15 ../src/preferences.c:414
 msgid "Friends"
 msgstr "Amigos"
 
@@ -138,8 +138,8 @@ msgstr "Isto mostrará a situação da mensagem do item selecionado na lista atu
 msgid "Twitter Account"
 msgstr "Conta Twitter"
 
-#: ../data/main.glade.h:30 ../data/twitux.desktop.in.h:2
-#: ../src/twitux-main.c:46 ../src/twitux-preferences.c:416
+#: ../data/main.glade.h:30 ../data/greet-tweet-know.desktop.in.h:2
+#: ../src/main.c:46 ../src/preferences.c:416
 msgid "Greet-Tweet-Know"
 msgstr "Greet-Tweet-Know"
 
@@ -227,115 +227,115 @@ msgstr "gtk-preferences"
 msgid "gtk-quit"
 msgstr "gtk-quit"
 
-#: ../data/twitux.desktop.in.h:1
+#: ../data/greet-tweet-know.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Um cliente Twitter"
 
-#: ../data/twitux.schemas.in.h:1
+#: ../data/greet-tweet-know.schemas.in.h:1
 msgid ""
 "Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
 msgstr ""
 "Lista separada por vírgula das linguagens de verificadores ortográficos para usar (ex.: en, fr, es)."
 
-#: ../data/twitux.schemas.in.h:2
+#: ../data/greet-tweet-know.schemas.in.h:2
 msgid "Enable spell checking"
 msgstr "Habilitar verificação ortográfica"
 
-#: ../data/twitux.schemas.in.h:3
+#: ../data/greet-tweet-know.schemas.in.h:3
 msgid "Enable spell checking."
 msgstr "Habilitar verificação ortográfica."
 
-#: ../data/twitux.schemas.in.h:4
+#: ../data/greet-tweet-know.schemas.in.h:4
 msgid "Expand messages"
 msgstr "Expandir mensagens"
 
-#: ../data/twitux.schemas.in.h:5
+#: ../data/greet-tweet-know.schemas.in.h:5
 msgid "Is the main window hidden"
 msgstr "Janela principal está escondida"
 
-#: ../data/twitux.schemas.in.h:6
+#: ../data/greet-tweet-know.schemas.in.h:6
 msgid "Log automatically into Twitter"
 msgstr "Autentica automaticamente no Twitter"
 
-#: ../data/twitux.schemas.in.h:7
+#: ../data/greet-tweet-know.schemas.in.h:7
 msgid "Log automatically into Twitter."
 msgstr "Autentica automaticamente no Twitter."
 
-#: ../data/twitux.schemas.in.h:8
+#: ../data/greet-tweet-know.schemas.in.h:8
 msgid "Main window X position"
 msgstr "Janela principal posição X"
 
-#: ../data/twitux.schemas.in.h:9
+#: ../data/greet-tweet-know.schemas.in.h:9
 msgid "Main window X position."
 msgstr "Janela principal posição X."
 
-#: ../data/twitux.schemas.in.h:10
+#: ../data/greet-tweet-know.schemas.in.h:10
 msgid "Main window Y position"
 msgstr "Janela principal posição Y"
 
-#: ../data/twitux.schemas.in.h:11
+#: ../data/greet-tweet-know.schemas.in.h:11
 msgid "Main window Y position."
 msgstr "Janela principal posição Y."
 
-#: ../data/twitux.schemas.in.h:12
+#: ../data/greet-tweet-know.schemas.in.h:12
 msgid "Main window height"
 msgstr "Altura da janela principal"
 
-#: ../data/twitux.schemas.in.h:13
+#: ../data/greet-tweet-know.schemas.in.h:13
 msgid "Main window height."
 msgstr "Altura da janela principal."
 
-#: ../data/twitux.schemas.in.h:14
+#: ../data/greet-tweet-know.schemas.in.h:14
 msgid "Main window width"
 msgstr "Largura da Janela principal"
 
-#: ../data/twitux.schemas.in.h:15
+#: ../data/greet-tweet-know.schemas.in.h:15
 msgid "Main window width."
 msgstr "Largura da janela principal."
 
-#: ../data/twitux.schemas.in.h:16
+#: ../data/greet-tweet-know.schemas.in.h:16
 msgid "Minutes between timeline retrievals"
 msgstr "Minutos entre recuperações de linha de tempo"
 
-#: ../data/twitux.schemas.in.h:17
+#: ../data/greet-tweet-know.schemas.in.h:17
 msgid ""
 "Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
 "60"
 msgstr "Minutos entre recuperações de linha de tempo. Valores suportados são 3, 5, 15, 30, e 60"
 
-#: ../data/twitux.schemas.in.h:18
+#: ../data/greet-tweet-know.schemas.in.h:18
 msgid "Show notification of new Twitter messages"
 msgstr "Mostrar notificações de novas mensagens do Twitter"
 
-#: ../data/twitux.schemas.in.h:19
+#: ../data/greet-tweet-know.schemas.in.h:19
 msgid "Show notification of new Twitter messages."
 msgstr "Mostrar notificações de novas mensagens do Twitter."
 
-#: ../data/twitux.schemas.in.h:20
+#: ../data/greet-tweet-know.schemas.in.h:20
 msgid "Spell checking languages"
 msgstr "Linguagens do verificador ortográfico"
 
-#: ../data/twitux.schemas.in.h:21
+#: ../data/greet-tweet-know.schemas.in.h:21
 msgid "Twitter password"
 msgstr "Senha no Twitter"
 
-#: ../data/twitux.schemas.in.h:22
+#: ../data/greet-tweet-know.schemas.in.h:22
 msgid "Twitter username"
 msgstr "Nome de usuário Twitter"
 
-#: ../data/twitux.schemas.in.h:23
+#: ../data/greet-tweet-know.schemas.in.h:23
 msgid "User's Twitter account password."
 msgstr "Senhas de usuários no Twitter"
 
-#: ../data/twitux.schemas.in.h:24
+#: ../data/greet-tweet-know.schemas.in.h:24
 msgid "User's Twitter account username."
 msgstr "Nomes de usuários no Twitter"
 
-#: ../data/twitux.schemas.in.h:25
+#: ../data/greet-tweet-know.schemas.in.h:25
 msgid "User's home timeline"
 msgstr "Linhas de tempo do usuário"
 
-#: ../data/twitux.schemas.in.h:26
+#: ../data/greet-tweet-know.schemas.in.h:26
 msgid "User's home timeline."
 msgstr "Linhas de tempo do usuário."
 
@@ -384,70 +384,70 @@ msgstr "Copyright © 2007 Daniel Morales"
 msgid "translator-credits"
 msgstr "Neto Cury <netocury@gmail.com>"
 
-#: ../src/twitux-app.c:983
+#: ../src/app.c:983
 msgid "Fetching friends..."
 msgstr "Coletando amigos..."
 
-#: ../src/twitux-app.c:1037
+#: ../src/app.c:1037
 msgid "tweets"
 msgstr "tweets"
 
-#: ../src/twitux-app.c:1039
+#: ../src/app.c:1039
 msgid "tweet"
 msgstr "tweet"
 
-#: ../src/twitux-app.c:1042
+#: ../src/app.c:1042
 #, c-format
 msgid "You have %i new %s."
 msgstr "Você tem %i nova(s) %(ns)."
 
-#: ../src/twitux-preferences.c:55
+#: ../src/preferences.c:55
 msgid "3 minutes"
 msgstr "3 minutos"
 
-#: ../src/twitux-preferences.c:56
+#: ../src/preferences.c:56
 msgid "5 minutes"
 msgstr "5 minutos"
 
-#: ../src/twitux-preferences.c:57
+#: ../src/preferences.c:57
 msgid "15 minutes"
 msgstr "15 minutos"
 
-#: ../src/twitux-preferences.c:58
+#: ../src/preferences.c:58
 msgid "30 minutes"
 msgstr "30 minutos"
 
-#: ../src/twitux-preferences.c:59
+#: ../src/preferences.c:59
 msgid "hour"
 msgstr "hora"
 
-#: ../src/twitux-preferences.c:201
+#: ../src/preferences.c:201
 msgid "Language"
 msgstr "Linguagem"
 
-#: ../src/twitux-preferences.c:413
+#: ../src/preferences.c:413
 msgid "Public"
 msgstr "Pública"
 
-#: ../src/twitux-preferences.c:415
+#: ../src/preferences.c:415
 msgid "Mine"
 msgstr "Minha"
 
 #. Set the label
-#: ../src/twitux-send-message-dialog.c:152
-#: ../src/twitux-send-message-dialog.c:320
+#: ../src/send-message-dialog.c:152
+#: ../src/send-message-dialog.c:320
 msgid "Characters Available"
 msgstr "Caracteres Disponíveis"
 
-#: ../src/twitux-send-message-dialog.c:463
+#: ../src/send-message-dialog.c:463
 msgid "_Check Word Spelling..."
 msgstr "_Checando Verificação de Palavra..."
 
-#: ../src/twitux-spell-dialog.c:85
+#: ../src/spell-dialog.c:85
 msgid "Word"
 msgstr "Palavra"
 
-#: ../src/twitux-spell-dialog.c:256
+#: ../src/spell-dialog.c:256
 msgid "Suggestions for the word"
 msgstr "Sugestões para a palavra"
 

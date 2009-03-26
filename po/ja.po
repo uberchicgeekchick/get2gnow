@@ -1,11 +1,11 @@
-# Japanese translation of twitux
+# Japanese translation of greet-tweet-know
 # Copyright (C) 2008, package writer
-# This file is distributed under the same license as the twitux package.
+# This file is distributed under the same license as the greet-tweet-know package.
 # Hiroshi Miura <miura@da-cha.org>, 2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: twitux 0.62\n"
+"Project-Id-Version: greet-tweet-know 0.62\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-09-22 21:45+0900\n"
 "PO-Revision-Date: 2008-09-22 22:29+0900\n"
@@ -75,7 +75,7 @@ msgstr "ダイレクト送信"
 msgid "Direct Replies"
 msgstr "ダイレクト返信"
 
-#: ../data/main_window.xml.h:4 ../src/twitux-preferences.c:428
+#: ../data/main_window.xml.h:4 ../src/preferences.c:428
 msgid "Friends"
 msgstr "友人"
 
@@ -99,8 +99,8 @@ msgstr "公開されたメッセージ"
 msgid "Send Direct Message"
 msgstr "ダイレクトメッセージ送信"
 
-#: ../data/main_window.xml.h:10 ../data/twitux.desktop.in.h:2
-#: ../src/twitux-main.c:46 ../src/twitux-preferences.c:430
+#: ../data/main_window.xml.h:10 ../data/greet-tweet-know.desktop.in.h:2
+#: ../src/main.c:46 ../src/preferences.c:430
 msgid "Greet-Tweet-Know"
 msgstr ""
 
@@ -241,137 +241,137 @@ msgstr "新しいメッセージ(_N)"
 msgid "_Show Greet-Tweet-Know"
 msgstr "Greet-Tweet-Knowを表示(_S)"
 
-#: ../data/twitux.desktop.in.h:1
+#: ../data/greet-tweet-know.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Twitterクライアント"
 
-#: ../data/twitux.schemas.in.h:1
+#: ../data/greet-tweet-know.schemas.in.h:1
 msgid ""
 "Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
 msgstr ""
 "スペルチェッカーで使う言語を、カンマ区切りリストでいれる(例： en, fr, nl)"
 
-#: ../data/twitux.schemas.in.h:2
+#: ../data/greet-tweet-know.schemas.in.h:2
 msgid "Enable spell checking"
 msgstr "スペルチェックを有効にする"
 
-#: ../data/twitux.schemas.in.h:3
+#: ../data/greet-tweet-know.schemas.in.h:3
 msgid "Enable spell checking."
 msgstr "スペルチェック有効。"
 
-#: ../data/twitux.schemas.in.h:4
+#: ../data/greet-tweet-know.schemas.in.h:4
 msgid "Expand messages"
 msgstr "メッセージの展開"
 
-#: ../data/twitux.schemas.in.h:5
+#: ../data/greet-tweet-know.schemas.in.h:5
 msgid "Hide main window"
 msgstr "メインウインドウを隠す"
 
-#: ../data/twitux.schemas.in.h:6
+#: ../data/greet-tweet-know.schemas.in.h:6
 msgid "Hide the main window."
 msgstr "メインウインドウを隠す"
 
-#: ../data/twitux.schemas.in.h:7
+#: ../data/greet-tweet-know.schemas.in.h:7
 msgid "Log automatically into Twitter"
 msgstr "自動的にTwitterにログイン"
 
-#: ../data/twitux.schemas.in.h:8
+#: ../data/greet-tweet-know.schemas.in.h:8
 msgid "Log automatically into Twitter."
 msgstr "自動的にTwitterにログイン"
 
-#: ../data/twitux.schemas.in.h:9
+#: ../data/greet-tweet-know.schemas.in.h:9
 msgid "Main window X position"
 msgstr "メインウインドウのX位置"
 
-#: ../data/twitux.schemas.in.h:10
+#: ../data/greet-tweet-know.schemas.in.h:10
 msgid "Main window X position."
 msgstr "メインウインドウのX位置"
 
-#: ../data/twitux.schemas.in.h:11
+#: ../data/greet-tweet-know.schemas.in.h:11
 msgid "Main window Y position"
 msgstr "メインウインドウのY位置"
 
-#: ../data/twitux.schemas.in.h:12
+#: ../data/greet-tweet-know.schemas.in.h:12
 msgid "Main window Y position."
 msgstr "メインウインドウのY位置"
 
-#: ../data/twitux.schemas.in.h:13
+#: ../data/greet-tweet-know.schemas.in.h:13
 msgid "Main window height"
 msgstr "メインウインドウの高さ"
 
-#: ../data/twitux.schemas.in.h:14
+#: ../data/greet-tweet-know.schemas.in.h:14
 msgid "Main window height."
 msgstr "メインウインドウの高さ"
 
-#: ../data/twitux.schemas.in.h:15
+#: ../data/greet-tweet-know.schemas.in.h:15
 msgid "Main window width"
 msgstr "メインウインドウの幅"
 
-#: ../data/twitux.schemas.in.h:16
+#: ../data/greet-tweet-know.schemas.in.h:16
 msgid "Main window width."
 msgstr "メインウインドウの幅"
 
-#: ../data/twitux.schemas.in.h:17
+#: ../data/greet-tweet-know.schemas.in.h:17
 msgid "Minutes between timeline retrievals"
 msgstr "タイムラインを取り寄せる時間間隔（分）"
 
-#: ../data/twitux.schemas.in.h:18
+#: ../data/greet-tweet-know.schemas.in.h:18
 msgid ""
 "Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
 "60"
 msgstr ""
 "タイムラインを取り寄せる間隔を分で設定。可能な値は、3, 5, 15, 30, 60のいずれか"
 
-#: ../data/twitux.schemas.in.h:19
+#: ../data/greet-tweet-know.schemas.in.h:19
 msgid "Show hint about closing the main window"
 msgstr ""
 "メインウインドウを閉じるときにヒントを表示"
 
-#: ../data/twitux.schemas.in.h:20
+#: ../data/greet-tweet-know.schemas.in.h:20
 msgid "Show notification of new Twitter messages"
 msgstr "新しいTwitterメッセージの通知を表示する"
 
-#: ../data/twitux.schemas.in.h:21
+#: ../data/greet-tweet-know.schemas.in.h:21
 msgid "Show notification of new Twitter messages."
 msgstr "新しいTwitterメッセージの通知を表示する。"
 
-#: ../data/twitux.schemas.in.h:22
+#: ../data/greet-tweet-know.schemas.in.h:22
 msgid "Show user names instead real names"
 msgstr "実際の名前の代わりにユーザ名を表示"
 
-#: ../data/twitux.schemas.in.h:23
+#: ../data/greet-tweet-know.schemas.in.h:23
 msgid "Show user names instead real names."
 msgstr "実際の名前の代わりにユーザ名を表示"
 
-#: ../data/twitux.schemas.in.h:24
+#: ../data/greet-tweet-know.schemas.in.h:24
 msgid "Spell checking languages"
 msgstr "スペルチェックを行う言語"
 
-#: ../data/twitux.schemas.in.h:25
+#: ../data/greet-tweet-know.schemas.in.h:25
 msgid "Twitter password"
 msgstr "Twitterパスワード"
 
-#: ../data/twitux.schemas.in.h:26
+#: ../data/greet-tweet-know.schemas.in.h:26
 msgid "Twitter username"
 msgstr "Twitterユーザ名"
 
-#: ../data/twitux.schemas.in.h:27
+#: ../data/greet-tweet-know.schemas.in.h:27
 msgid "User's Twitter account password."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:28
+#: ../data/greet-tweet-know.schemas.in.h:28
 msgid "User's Twitter account username."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:29
+#: ../data/greet-tweet-know.schemas.in.h:29
 msgid "User's home timeline"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:30
+#: ../data/greet-tweet-know.schemas.in.h:30
 msgid "User's home timeline."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:31
+#: ../data/greet-tweet-know.schemas.in.h:31
 msgid ""
 "Whether or not to show the message dialog about closing the main window with "
 "the 'x' button in the title bar."
@@ -412,19 +412,19 @@ msgstr ""
 msgid "translator-credits"
 msgstr "Hiroshi Miura , 三浦広志 <miura@da-cha.org>"
 
-#: ../src/twitux-app.c:407
+#: ../src/app.c:407
 msgid "Greet-Tweet-Know is still running, it is just hidden."
 msgstr "Greet-Tweet-Knowは実行し続けますが、隠されます。"
 
-#: ../src/twitux-app.c:408
+#: ../src/app.c:408
 msgid "Click on the notification area icon to show Greet-Tweet-Know."
 msgstr "Greet-Tweet-Knowを表示するには通知エリアのアイコンをクリックしてください。"
 
-#: ../src/twitux-app.c:418
+#: ../src/app.c:418
 msgid "You were about to quit!"
 msgstr "終了しようとしています！"
 
-#: ../src/twitux-app.c:419
+#: ../src/app.c:419
 msgid ""
 "Since no system or notification tray has been found, this action would "
 "normally quit Greet-Tweet-Know.\n"
@@ -437,189 +437,189 @@ msgstr ""
 "これは現状報告で、あなたが以下のオプションをオフにするまで、このアクション"
 "によりアプリケーションの終了が引き起こされます。"
 
-#: ../src/twitux-app.c:1080
+#: ../src/app.c:1080
 msgid "tweets"
 msgstr ""
 
-#: ../src/twitux-app.c:1082
+#: ../src/app.c:1082
 msgid "tweet"
 msgstr ""
 
-#: ../src/twitux-app.c:1085
+#: ../src/app.c:1085
 #, c-format
 msgid "You have %i new %s."
 msgstr ""
 
-#: ../src/twitux-hint.c:89
+#: ../src/hint.c:89
 msgid "Do not show this again"
 msgstr "再度表示しない。"
 
-#: ../src/twitux-network.c:225
+#: ../src/network.c:225
 msgid "Connecting..."
 msgstr "接続..."
 
 #. UI
-#: ../src/twitux-network.c:282 ../src/twitux-network.c:298
+#: ../src/network.c:282 ../src/network.c:298
 msgid "Loading timeline..."
 msgstr "タイムラインのロード..."
 
-#: ../src/twitux-network.c:501
+#: ../src/network.c:501
 msgid "Access denied."
 msgstr "アクセス拒否。"
 
-#: ../src/twitux-network.c:504
+#: ../src/network.c:504
 msgid "HTTP communication error."
 msgstr "HTTP通信エラー"
 
-#: ../src/twitux-network.c:507
+#: ../src/network.c:507
 msgid "Internal server error."
 msgstr "サーバ内部エラー"
 
-#: ../src/twitux-network.c:510
+#: ../src/network.c:510
 msgid "Stopped"
 msgstr "停止"
 
-#: ../src/twitux-network.c:540
+#: ../src/network.c:540
 msgid "Failed to save cache file."
 msgstr "キャッシュファイルの保存失敗。"
 
-#: ../src/twitux-network.c:612
+#: ../src/network.c:612
 msgid "Could not retrieve password from keyring."
 msgstr "キーリングからパスワードの取得ができませんでした。"
 
-#: ../src/twitux-network.c:657
+#: ../src/network.c:657
 msgid "Status Sent"
 msgstr "状況送信完了"
 
-#: ../src/twitux-network.c:672
+#: ../src/network.c:672
 msgid "Message Sent"
 msgstr "メッセージ送信完了"
 
-#: ../src/twitux-network.c:717
+#: ../src/network.c:717
 msgid "Timeline Loaded"
 msgstr "タイムラインのロード完了"
 
-#: ../src/twitux-network.c:725
+#: ../src/network.c:725
 msgid "Timeline Parser Error."
 msgstr "タイムラインのパースエラー"
 
-#: ../src/twitux-network.c:772
+#: ../src/network.c:772
 msgid "Users parser error."
 msgstr "ユーザ一覧のパースエラー"
 
-#: ../src/twitux-network.c:835
+#: ../src/network.c:835
 msgid "Friend Added"
 msgstr "友人の追加"
 
-#: ../src/twitux-network.c:837
+#: ../src/network.c:837
 msgid "Failed to add user"
 msgstr "ユーザ追加の失敗"
 
-#: ../src/twitux-network.c:854
+#: ../src/network.c:854
 msgid "Friend Removed"
 msgstr "友人の削除"
 
-#: ../src/twitux-network.c:856
+#: ../src/network.c:856
 msgid "Failed to remove user"
 msgstr "ユーザの削除失敗"
 
 #. UI
-#: ../src/twitux-network.c:905
+#: ../src/network.c:905
 msgid "Reloading timeline..."
 msgstr "タイムラインの再ロード..."
 
-#: ../src/twitux-parser.c:437
+#: ../src/parser.c:437
 msgid "1 second ago"
 msgstr "１秒前"
 
-#: ../src/twitux-parser.c:441
+#: ../src/parser.c:441
 msgid "1 minute ago"
 msgstr "１分前"
 
-#: ../src/twitux-parser.c:443
+#: ../src/parser.c:443
 #, c-format
 msgid "%i seconds ago"
 msgstr "%i 秒前"
 
-#: ../src/twitux-parser.c:448
+#: ../src/parser.c:448
 msgid "1 hour ago"
 msgstr "１時間前"
 
-#: ../src/twitux-parser.c:450
+#: ../src/parser.c:450
 #, c-format
 msgid "%i minutes ago"
 msgstr "%i 分前"
 
-#: ../src/twitux-parser.c:455
+#: ../src/parser.c:455
 msgid "1 day ago"
 msgstr "一日前"
 
-#: ../src/twitux-parser.c:457
+#: ../src/parser.c:457
 #, c-format
 msgid "%i hours ago"
 msgstr "%i 時間前"
 
-#: ../src/twitux-parser.c:462
+#: ../src/parser.c:462
 msgid "1 month ago"
 msgstr "一ヶ月前"
 
-#: ../src/twitux-parser.c:464
+#: ../src/parser.c:464
 #, c-format
 msgid "%i days ago"
 msgstr "%i 日前"
 
-#: ../src/twitux-parser.c:466
+#: ../src/parser.c:466
 #, c-format
 msgid "%i months ago"
 msgstr "%i か月前"
 
-#: ../src/twitux-preferences.c:66
+#: ../src/preferences.c:66
 msgid "3 minutes"
 msgstr "３分間ごと"
 
-#: ../src/twitux-preferences.c:67
+#: ../src/preferences.c:67
 msgid "5 minutes"
 msgstr "５分間ごと"
 
-#: ../src/twitux-preferences.c:68
+#: ../src/preferences.c:68
 msgid "15 minutes"
 msgstr "１５分間ごと"
 
-#: ../src/twitux-preferences.c:69
+#: ../src/preferences.c:69
 msgid "30 minutes"
 msgstr "３０分間ごと"
 
-#: ../src/twitux-preferences.c:70
+#: ../src/preferences.c:70
 msgid "hour"
 msgstr "１時間ごと"
 
-#: ../src/twitux-preferences.c:215
+#: ../src/preferences.c:215
 msgid "Language"
 msgstr "言語"
 
-#: ../src/twitux-preferences.c:427
+#: ../src/preferences.c:427
 msgid "Public"
 msgstr "公開"
 
-#: ../src/twitux-preferences.c:429
+#: ../src/preferences.c:429
 msgid "Mine"
 msgstr "自分"
 
 #. Set the label
-#: ../src/twitux-send-message-dialog.c:163
-#: ../src/twitux-send-message-dialog.c:345
+#: ../src/send-message-dialog.c:163
+#: ../src/send-message-dialog.c:345
 msgid "Characters Available"
 msgstr "のこり利用可能文字数"
 
-#: ../src/twitux-send-message-dialog.c:488
+#: ../src/send-message-dialog.c:488
 msgid "_Check Word Spelling..."
 msgstr "スペルチェック開始...(_C)"
 
-#: ../src/twitux-spell-dialog.c:93
+#: ../src/spell-dialog.c:93
 msgid "Word"
 msgstr "語"
 
-#: ../src/twitux-spell-dialog.c:264
+#: ../src/spell-dialog.c:264
 msgid "Suggestions for the word"
 msgstr "修正候補"
 

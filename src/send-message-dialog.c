@@ -198,8 +198,8 @@ send_message_dialog_show (GtkWindow *parent)
 		return gtk_window_present( (GTK_WINDOW( dialog_priv->dialog )) );
 	}
 	
-	g_object_new (TYPE_MESSAGE, NULL);
-	message_setup (parent);
+	g_object_new(TYPE_MESSAGE, NULL);
+	message_setup(parent);
 	if(!dialog_priv)
 		dialog_priv=GET_PRIV(dialog);
 	undo_buffer=gtk_text_view_get_buffer( (GTK_TEXT_VIEW( dialog_priv->textview )) );
@@ -240,7 +240,7 @@ message_set_followers (GList *followers)
 		gtk_list_store_append (model_followers, &iter);
 		gtk_list_store_set (model_followers,
 							&iter,
-							0, user->screen_name,
+							0, user->user_name,
 							-1);
 	}
 }
@@ -279,16 +279,14 @@ message_show_friends (gboolean show_friends)
 	gtk_widget_grab_focus(GTK_WIDGET(dialog_priv->friends_combo));
 }
 
-void
-message_set_message (const gchar *message)
-{
+void message_set_message(const gchar *message){
 	GtkTextBuffer *buffer;
 
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (dialog_priv->textview));
+	buffer=gtk_text_view_get_buffer( GTK_TEXT_VIEW (dialog_priv->textview) );
 
-	gtk_text_buffer_set_text (buffer, message, -1);
+	gtk_text_buffer_set_text(buffer, message, -1);
 
-	gtk_window_set_focus (GTK_WINDOW (dialog_priv->dialog), dialog_priv->textview);
+	gtk_window_set_focus(GTK_WINDOW (dialog_priv->dialog), dialog_priv->textview);
 }
 
 static gchar *

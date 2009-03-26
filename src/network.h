@@ -86,7 +86,7 @@ void network_get_image (const gchar *url_image,
 void network_add_user		(const gchar *username);
 
 /* Remove a user */
-void network_del_user		(User *user);
+void network_del_user		(const gchar *username);
 
 /* Networking */
 void network_new			(void);

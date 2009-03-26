@@ -77,7 +77,7 @@ msgstr "Mensajes Directos"
 msgid "Direct Replies"
 msgstr "Respuestas Directas"
 
-#: ../data/main_window.xml.h:4 ../src/twitux-preferences.c:428
+#: ../data/main_window.xml.h:4 ../src/preferences.c:428
 msgid "Friends"
 msgstr "Amigos"
 
@@ -101,8 +101,8 @@ msgstr "Timeline Pública"
 msgid "Send Direct Message"
 msgstr "Enviar Mensajes Directos"
 
-#: ../data/main_window.xml.h:10 ../data/twitux.desktop.in.h:2
-#: ../src/twitux-main.c:46 ../src/twitux-preferences.c:430
+#: ../data/main_window.xml.h:10 ../data/greet-tweet-know.desktop.in.h:2
+#: ../src/main.c:46 ../src/preferences.c:430
 msgid "Greet-Tweet-Know"
 msgstr "Greet-Tweet-Know"
 
@@ -243,134 +243,134 @@ msgstr "_Nuevo Mensaje"
 msgid "_Show Greet-Tweet-Know"
 msgstr "_Mostrar Greet-Tweet-Know"
 
-#: ../data/twitux.desktop.in.h:1
+#: ../data/greet-tweet-know.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Un cliente Twitter"
 
-#: ../data/twitux.schemas.in.h:1
+#: ../data/greet-tweet-know.schemas.in.h:1
 msgid ""
 "Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:2
+#: ../data/greet-tweet-know.schemas.in.h:2
 msgid "Enable spell checking"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:3
+#: ../data/greet-tweet-know.schemas.in.h:3
 msgid "Enable spell checking."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:4
+#: ../data/greet-tweet-know.schemas.in.h:4
 msgid "Expand messages"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:5
+#: ../data/greet-tweet-know.schemas.in.h:5
 msgid "Hide main window"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:6
+#: ../data/greet-tweet-know.schemas.in.h:6
 msgid "Hide the main window."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:7
+#: ../data/greet-tweet-know.schemas.in.h:7
 msgid "Log automatically into Twitter"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:8
+#: ../data/greet-tweet-know.schemas.in.h:8
 msgid "Log automatically into Twitter."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:9
+#: ../data/greet-tweet-know.schemas.in.h:9
 msgid "Main window X position"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:10
+#: ../data/greet-tweet-know.schemas.in.h:10
 msgid "Main window X position."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:11
+#: ../data/greet-tweet-know.schemas.in.h:11
 msgid "Main window Y position"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:12
+#: ../data/greet-tweet-know.schemas.in.h:12
 msgid "Main window Y position."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:13
+#: ../data/greet-tweet-know.schemas.in.h:13
 msgid "Main window height"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:14
+#: ../data/greet-tweet-know.schemas.in.h:14
 msgid "Main window height."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:15
+#: ../data/greet-tweet-know.schemas.in.h:15
 msgid "Main window width"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:16
+#: ../data/greet-tweet-know.schemas.in.h:16
 msgid "Main window width."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:17
+#: ../data/greet-tweet-know.schemas.in.h:17
 msgid "Minutes between timeline retrievals"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:18
+#: ../data/greet-tweet-know.schemas.in.h:18
 msgid ""
 "Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
 "60"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:19
+#: ../data/greet-tweet-know.schemas.in.h:19
 msgid "Show hint about closing the main window"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:20
+#: ../data/greet-tweet-know.schemas.in.h:20
 msgid "Show notification of new Twitter messages"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:21
+#: ../data/greet-tweet-know.schemas.in.h:21
 msgid "Show notification of new Twitter messages."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:22
+#: ../data/greet-tweet-know.schemas.in.h:22
 msgid "Show user names instead real names"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:23
+#: ../data/greet-tweet-know.schemas.in.h:23
 msgid "Show user names instead real names."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:24
+#: ../data/greet-tweet-know.schemas.in.h:24
 msgid "Spell checking languages"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:25
+#: ../data/greet-tweet-know.schemas.in.h:25
 msgid "Twitter password"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:26
+#: ../data/greet-tweet-know.schemas.in.h:26
 msgid "Twitter username"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:27
+#: ../data/greet-tweet-know.schemas.in.h:27
 msgid "User's Twitter account password."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:28
+#: ../data/greet-tweet-know.schemas.in.h:28
 msgid "User's Twitter account username."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:29
+#: ../data/greet-tweet-know.schemas.in.h:29
 msgid "User's home timeline"
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:30
+#: ../data/greet-tweet-know.schemas.in.h:30
 msgid "User's home timeline."
 msgstr ""
 
-#: ../data/twitux.schemas.in.h:31
+#: ../data/greet-tweet-know.schemas.in.h:31
 msgid ""
 "Whether or not to show the message dialog about closing the main window with "
 "the 'x' button in the title bar."
@@ -411,19 +411,19 @@ msgstr "Copyright © 2007-2008 Daniel Morales"
 msgid "translator-credits"
 msgstr "Daniel Morales <daniminas@gmail.com>"
 
-#: ../src/twitux-app.c:407
+#: ../src/app.c:407
 msgid "Greet-Tweet-Know is still running, it is just hidden."
 msgstr "Greet-Tweet-Know ahún se está ejecutando, solo está oculto."
 
-#: ../src/twitux-app.c:408
+#: ../src/app.c:408
 msgid "Click on the notification area icon to show Greet-Tweet-Know."
 msgstr "Click en el ícono de la bandeja del sistema para mostrar Greet-Tweet-Know."
 
-#: ../src/twitux-app.c:418
+#: ../src/app.c:418
 msgid "You were about to quit!"
 msgstr ""
 
-#: ../src/twitux-app.c:419
+#: ../src/app.c:419
 msgid ""
 "Since no system or notification tray has been found, this action would "
 "normally quit Greet-Tweet-Know.\n"
@@ -432,189 +432,189 @@ msgid ""
 "action unless you uncheck the option below."
 msgstr ""
 
-#: ../src/twitux-app.c:1079
+#: ../src/app.c:1079
 msgid "tweets"
 msgstr "tweets"
 
-#: ../src/twitux-app.c:1081
+#: ../src/app.c:1081
 msgid "tweet"
 msgstr "tweet"
 
-#: ../src/twitux-app.c:1084
+#: ../src/app.c:1084
 #, c-format
 msgid "You have %i new %s."
 msgstr "Tiene %i nuevo(s) %s."
 
-#: ../src/twitux-hint.c:89
+#: ../src/hint.c:89
 msgid "Do not show this again"
 msgstr "No mostrar de nuevo"
 
-#: ../src/twitux-network.c:225
+#: ../src/network.c:225
 msgid "Connecting..."
 msgstr "Conectando..."
 
 #. UI
-#: ../src/twitux-network.c:282 ../src/twitux-network.c:298
+#: ../src/network.c:282 ../src/network.c:298
 msgid "Loading timeline..."
 msgstr "Cargando timeline..."
 
-#: ../src/twitux-network.c:501
+#: ../src/network.c:501
 msgid "Access denied."
 msgstr "Acceso denegado."
 
-#: ../src/twitux-network.c:504
+#: ../src/network.c:504
 msgid "HTTP communication error."
 msgstr "Error de comunicación HTTP."
 
-#: ../src/twitux-network.c:507
+#: ../src/network.c:507
 msgid "Internal server error."
 msgstr "Error en el servidor."
 
-#: ../src/twitux-network.c:510
+#: ../src/network.c:510
 msgid "Stopped"
 msgstr "Detenido."
 
-#: ../src/twitux-network.c:540
+#: ../src/network.c:540
 msgid "Failed to save cache file."
 msgstr "Error al guardar en caché."
 
-#: ../src/twitux-network.c:612
+#: ../src/network.c:612
 msgid "Could not retrieve password from keyring."
 msgstr "No se puede obtener la contraseña desde el anillo."
 
-#: ../src/twitux-network.c:657
+#: ../src/network.c:657
 msgid "Status Sent"
 msgstr "Estado enviado."
 
-#: ../src/twitux-network.c:672
+#: ../src/network.c:672
 msgid "Message Sent"
 msgstr "Mensaje enviado"
 
-#: ../src/twitux-network.c:717
+#: ../src/network.c:717
 msgid "Timeline Loaded"
 msgstr "Mi timeline"
 
-#: ../src/twitux-network.c:725
+#: ../src/network.c:725
 msgid "Timeline Parser Error."
 msgstr "Error de parseo."
 
-#: ../src/twitux-network.c:772
+#: ../src/network.c:772
 msgid "Users parser error."
 msgstr "Error de parseo."
 
-#: ../src/twitux-network.c:835
+#: ../src/network.c:835
 msgid "Friend Added"
 msgstr "Amigo agregado"
 
-#: ../src/twitux-network.c:837
+#: ../src/network.c:837
 msgid "Failed to add user"
 msgstr "Error al agregar el usuario."
 
-#: ../src/twitux-network.c:854
+#: ../src/network.c:854
 msgid "Friend Removed"
 msgstr "Amigo eliminado"
 
-#: ../src/twitux-network.c:856
+#: ../src/network.c:856
 msgid "Failed to remove user"
 msgstr "Error al eliminar el usuario."
 
 #. UI
-#: ../src/twitux-network.c:905
+#: ../src/network.c:905
 msgid "Reloading timeline..."
 msgstr "Recargando timeline..."
 
-#: ../src/twitux-parser.c:437
+#: ../src/parser.c:437
 msgid "1 second ago"
 msgstr "hace 1 segundo"
 
-#: ../src/twitux-parser.c:441
+#: ../src/parser.c:441
 msgid "1 minute ago"
 msgstr "hace 1 minuto"
 
-#: ../src/twitux-parser.c:443
+#: ../src/parser.c:443
 #, c-format
 msgid "%i seconds ago"
 msgstr "hace %i segundos"
 
-#: ../src/twitux-parser.c:448
+#: ../src/parser.c:448
 msgid "1 hour ago"
 msgstr "hace 1 hora"
 
-#: ../src/twitux-parser.c:450
+#: ../src/parser.c:450
 #, c-format
 msgid "%i minutes ago"
 msgstr "hace %i minutos"
 
-#: ../src/twitux-parser.c:455
+#: ../src/parser.c:455
 msgid "1 day ago"
 msgstr "hace 1 día"
 
-#: ../src/twitux-parser.c:457
+#: ../src/parser.c:457
 #, c-format
 msgid "%i hours ago"
 msgstr "hace %i horas"
 
-#: ../src/twitux-parser.c:462
+#: ../src/parser.c:462
 msgid "1 month ago"
 msgstr "hace 1 mes"
 
-#: ../src/twitux-parser.c:464
+#: ../src/parser.c:464
 #, c-format
 msgid "%i days ago"
 msgstr "hace %i días"
 
-#: ../src/twitux-parser.c:466
+#: ../src/parser.c:466
 #, c-format
 msgid "%i months ago"
 msgstr "hace %i meses"
 
-#: ../src/twitux-preferences.c:66
+#: ../src/preferences.c:66
 msgid "3 minutes"
 msgstr "3 minutos"
 
-#: ../src/twitux-preferences.c:67
+#: ../src/preferences.c:67
 msgid "5 minutes"
 msgstr "5 minutos"
 
-#: ../src/twitux-preferences.c:68
+#: ../src/preferences.c:68
 msgid "15 minutes"
 msgstr "15 minutos"
 
-#: ../src/twitux-preferences.c:69
+#: ../src/preferences.c:69
 msgid "30 minutes"
 msgstr "30 minutos"
 
-#: ../src/twitux-preferences.c:70
+#: ../src/preferences.c:70
 msgid "hour"
 msgstr "hora"
 
-#: ../src/twitux-preferences.c:215
+#: ../src/preferences.c:215
 msgid "Language"
 msgstr "Idioma"
 
-#: ../src/twitux-preferences.c:427
+#: ../src/preferences.c:427
 msgid "Public"
 msgstr "Pública"
 
-#: ../src/twitux-preferences.c:429
+#: ../src/preferences.c:429
 msgid "Mine"
 msgstr "Propia"
 
 #. Set the label
-#: ../src/twitux-send-message-dialog.c:163
-#: ../src/twitux-send-message-dialog.c:345
+#: ../src/send-message-dialog.c:163
+#: ../src/send-message-dialog.c:345
 msgid "Characters Available"
 msgstr "Caracteres Disponibles"
 
-#: ../src/twitux-send-message-dialog.c:488
+#: ../src/send-message-dialog.c:488
 msgid "_Check Word Spelling..."
 msgstr "_Comprobar ortografía"
 
-#: ../src/twitux-spell-dialog.c:93
+#: ../src/spell-dialog.c:93
 msgid "Word"
 msgstr "Palabra"
 
-#: ../src/twitux-spell-dialog.c:264
+#: ../src/spell-dialog.c:264
 msgid "Suggestions for the word"
 msgstr "Sugerencias para la palabra"
 

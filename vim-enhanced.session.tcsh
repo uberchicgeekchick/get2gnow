@@ -11,4 +11,4 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./src/app.h" "./src/app.c" "./src/network.h" "./src/network.c"
+${my_editor} "./src/tweet-list.h" "./src/app.h" "./src/tweets.h" "./src/.tweet-list.c.swo" "./src/tweet-list.c" "./src/app.c" "./src/friends-manager.h" "./src/friends-manager.c" "./src/tweets.c" "./ChangeLog"

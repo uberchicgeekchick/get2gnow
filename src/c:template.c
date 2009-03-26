@@ -1,21 +1,9 @@
-Greet-Tweet-Know is a a Twitter client for GTK+/GNOME.
-I'm focused on creating the most full featured Twitter client available any where.
-Not just on GNOME & Linux, but any OS, Linux's the only OS on which one can experience Greet-Tweet-Know.
-My goals for Greet-Tweet-Know goals are to provide access to all of Twitter's functions:
-	timelines, views, services & search interfaces
-And to make using & managing Twitter's content like:
-	status updates, messages, friends, & followers.
-While making Greet-Tweet-Know easily embeddable into other applications.
-
-For more information please visit Greet-Tweet-Know's website:
-	@ http://uberChicGeekChick.Com/?projecs=Greet-Twee-Know
-
-
 /*
- * Greet-Tweet-Know is:
- * Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * project is about this project.
+ *
+ * Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=connectED
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -23,8 +11,9 @@ For more information please visit Greet-Tweet-Know's website:
  * I'm also disabled. I live with a progressive neuro-muscular disease.
  * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
  * 	http://Dystonia-DREAMS.Org/
- *
- *
+ */
+
+/*
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
  * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
@@ -56,4 +45,9 @@ For more information please visit Greet-Tweet-Know's website:
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+
+#include <gtk/gtk.h>
+
+#include "config.h"
+
 
