@@ -23173,6 +23173,7 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 	    libcanberra-gtk >= \$LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= \$LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= \$GCONF_REQUIRED
 	    \$gnome_keyring_pkgconfig
 \"") >&5
@@ -23187,6 +23188,7 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 ") 2>&5
@@ -23204,6 +23206,7 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>/dev/null`
@@ -23228,6 +23231,7 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 	    libcanberra-gtk >= \$LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= \$LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= \$GCONF_REQUIRED
 	    \$gnome_keyring_pkgconfig
 \"") >&5
@@ -23242,6 +23246,7 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 ") 2>&5
@@ -23259,6 +23264,7 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>/dev/null`
@@ -23290,6 +23296,7 @@ fi
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>&1`
@@ -23305,6 +23312,7 @@ fi
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>&1`
@@ -23323,6 +23331,7 @@ fi
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 ) were not met:
@@ -23347,6 +23356,7 @@ echo "$as_me: error: Package requirements (
 	    libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	    libxml-2.0 >= $LIBXML_REQUIRED
 	    gobject-2.0
+	    gthread-2.0
 	    gconf-2.0 >= $GCONF_REQUIRED
 	    $gnome_keyring_pkgconfig
 ) were not met:

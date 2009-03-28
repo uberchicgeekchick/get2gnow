@@ -877,11 +877,19 @@ void app_set_statusbar_msg(gchar *message){
 	/* Avoid some warnings */
 	if(!app_priv->statusbar || !GTK_IS_STATUSBAR(app_priv->statusbar))
 		return;
+	
+	/* starts displaying the status bar message for 5 seconds before returning to the system default */
+	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
+	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, message);
 
-	if(!( (g_strcmp0( message, _("Timelne Loaded") )) || (g_strcmp0( message, TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG )) ))
-		app_message_dialog(message);
+	return;
+	/* TODO:
+	 * I want this to display the custom message for a short time
+	 * Then return to the systeme default */
+
 	/* conext ID will be always 1 */
 	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
+	/* returns the status bar message to the default message */
 	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 }
 
