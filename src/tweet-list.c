@@ -86,7 +86,7 @@ static void tweet_list_init(TweetList *tweet){
 	g_signal_connect(list, "size_allocate", G_CALLBACK(tweet_list_size_cb), list);
 	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
 	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
-	g_signal_connect(list, "key-press-event", G_CALLBACK(tweets_key_pressed), list);
+	//g_signal_connect(list, "key-press-event", G_CALLBACK(tweets_key_pressed), list);
 }
 
 static void

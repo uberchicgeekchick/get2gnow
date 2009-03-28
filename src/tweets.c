@@ -41,7 +41,7 @@ typedef struct SelectedTweet {
 static SelectedTweet *selected_tweet=NULL;
 
 static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release);
-
+static void tweets_list_move(GdkEventKey *event, TweetList *list);
 
 
 
@@ -50,7 +50,7 @@ void set_selected_tweet(const gchar *user_name, const gchar *tweet){
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->user_name=user_name;
 	selected_tweet->tweet=tweet;
-}//set_selected_tweet
+}//set_selected_tweets
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
@@ -64,12 +64,37 @@ void show_tweets_submenu_entries(gboolean show){
 		g_object_set(l->data, "sensitive", show, NULL);
 }//show_tweets_submenu_entries
 
-void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event){
-	if(event->keyval !=GDK_Return ) return;
-	if(event->state == GDK_CONTROL_MASK ) return tweets_new_tweet();
-	if(event->state == GDK_MOD1_MASK ) return tweets_retweet();
-	if(event->state == GDK_SHIFT_MASK ) return tweets_new_dm();
-	tweets_reply();
+static void tweets_list_move(GdkEventKey *event, TweetList *list){
+	static int i;
+	static GtkTreePath *path;
+	if(!(i && i>0 && i<20 )) i=1;
+	switch(event->keyval){
+		case GDK_Tab: case GDK_Home:
+			if(path) gtk_tree_path_free(path);
+			break;
+		case GDK_Up:
+			if(path) gtk_tree_path_up(path);
+			break;
+		case GDK_Down:
+			if(path) gtk_tree_path_down(path);
+			break;
+		case GDK_End: i=20; break;
+		case GDK_Page_Down: i+=5; break;
+		default: return;
+	}//switch
+	if(!path)
+		path=gtk_tree_path_new_first();
+	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
+}//tweets_list_move
+
+void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
+	if(event->keyval !=GDK_Return ) return tweets_list_move(event, list);
+	switch(event->state){
+		case GDK_CONTROL_MASK: return tweets_new_tweet();
+		case GDK_MOD1_MASK: return tweets_retweet();
+		case GDK_SHIFT_MASK: return tweets_new_dm();
+		default: tweets_reply();
+	}
 }//tweets_key_pressed
 
 

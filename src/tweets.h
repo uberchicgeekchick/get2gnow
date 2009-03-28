@@ -32,12 +32,12 @@
 #include "app.h"
 #include "tweet-list.h"
 
-#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "Press [Return] to reply, [Alt+Return] to re-tweet, [Ctrl+Return] to tweet, or [Shift+Return] to send dm."
+#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "Press [Return] or [Ctrl+@] to reply, [Ctrl+F] to re-tweet, [Ctrl+N] to send a new tweet, and [Ctrl+D] to send dm."
 
 
 G_BEGIN_DECLS
 
-void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event);
+void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
 		
 /* G_CALLBACK_FUNC for Greet-Tweet-Know's "Tweets" menu.
  * 	Default parameters are:

@@ -119,6 +119,9 @@ static gboolean app_window_configure_event_cb(GtkWidget             *widget,
 												  GdkEventConfigure     *event,
 												  App             *app);
 
+static void app_message_dialog( gchar *message );
+
+
 static App  *app = NULL;
 AppPriv *app_priv=NULL;
 
@@ -303,7 +306,7 @@ app_setup(void)
 	gtk_widget_show(GTK_WIDGET(app_priv->listview));
 	gtk_container_add(GTK_CONTAINER(scrolled_window),
 					   GTK_WIDGET(app_priv->listview));
-
+	
 	/* Set-up expand messages panel */
 	app_priv->expand_label = label_new();
 	gtk_widget_show(GTK_WIDGET(app_priv->expand_label));
@@ -870,19 +873,38 @@ app_get_window(void)
 	return app_priv->window;
 }
 
-void
-app_set_statusbar_msg(gchar *message)
-{
-	
-	
+void app_set_statusbar_msg(gchar *message){	
 	/* Avoid some warnings */
 	if(!app_priv->statusbar || !GTK_IS_STATUSBAR(app_priv->statusbar))
 		return;
 
+	if(!( (g_strcmp0( message, _("Timelne Loaded") )) || (g_strcmp0( message, TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG )) ))
+		app_message_dialog(message);
 	/* conext ID will be always 1 */
 	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
-	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, message);
+	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 }
+
+static void app_message_dialog( gchar *message ) {
+	GtkWidget *dialog, *label, *content_area;
+	/* Create the widgets */
+	dialog = gtk_dialog_new_with_buttons (
+						message,
+						app_priv->window,
+						GTK_DIALOG_DESTROY_WITH_PARENT,
+						GTK_STOCK_INFO,
+						GTK_RESPONSE_NONE,
+						NULL
+	);
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+	label = gtk_label_new (message);
+	/* Ensure that the dialog box is destroyed when the user responds. */
+	g_signal_connect_swapped( dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
+	/* Add the label, and show everything we've added to the dialog. */
+	gtk_container_add(GTK_CONTAINER (content_area), label);
+	gtk_widget_show_all(dialog);
+}
+
 
 void
 app_notify_sound(void)
