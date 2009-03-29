@@ -101,8 +101,7 @@ greet_tweet_know_OBJECTS =			\
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-C_STD_MODE=-std=gnu99
-COMPILE = $(CC) $(C_STD_MODE) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CC) $(C_STD_MODE) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -290,8 +289,9 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS =						\
-	-std=gnu99					\
+C_STD_MODE=gnu99
+AM_CFLAGS =						\
+	-std=$(C_STD_MODE)				\
 	-I$(top_srcdir)                          	\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\

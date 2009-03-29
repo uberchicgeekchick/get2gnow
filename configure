@@ -719,7 +719,7 @@ ac_hostname=`(hostname || uname -n) 2>/dev/null | sed 1q`
 #
 # Initializations.
 #
-ac_default_prefix=/usr/local
+ac_default_prefix=/usr
 ac_clean_files=
 ac_config_libobj_dir=.
 LIBOBJS=
@@ -9086,7 +9086,7 @@ BEGIN {RS=" "; FS="/|\n";} {
 }'`
   sys_lib_search_path_spec=`echo $lt_search_path_spec`
 else
-  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
+  sys_lib_search_path_spec="/lib64 /usr/lib64 /usr/local/lib64 /lib /usr/lib /usr/local/lib"
 fi
 need_lib_prefix=unknown
 hardcode_into_libs=no

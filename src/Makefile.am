@@ -1,5 +1,5 @@
-AM_CPPFLAGS=						\
-	-std=gnu99					\
+C_STD_MODE=gnu99
+AM_CFLAGS=						\
 	-I$(top_srcdir)                          	\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
@@ -8,7 +8,8 @@ AM_CPPFLAGS=						\
 	-DLIBDIR=\""$(libdir)"\"			\
 	$(GREET_TWEET_KNOW_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
-	$(WARN_CFLAGS)
+	$(WARN_CFLAGS)					\
+	-std=$(C_STD_MODE)
 
 bin_PROGRAMS = greet-tweet-know
 
