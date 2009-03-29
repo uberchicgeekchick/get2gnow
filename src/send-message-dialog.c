@@ -90,7 +90,7 @@ static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu );
 
 static GtkTextBuffer *undo_buffer=NULL;
 static MsgDialog  *dialog = NULL;
-static 	MsgDialogPriv *dialog_priv=NULL;
+static MsgDialogPriv *dialog_priv=NULL;
 G_DEFINE_TYPE (MsgDialog, message, G_TYPE_OBJECT);
 
 static void

@@ -1,0 +1,20 @@
+	../data/add_friend_dlg.xml \
+	../data/account_dlg.xml \
+	../data/lists_dlg.xml \
+	../data/main_window.xml \
+	../data/prefs_dlg.xml \
+	../data/send_message_dlg.xml \
+	../data/spell_dlg.xml \
+	../data/greet-tweet-know.desktop.in \
+	../data/greet-tweet-know.schemas.in \
+	../src/about.c \
+	../src/app.c \
+	../src/hint.c \
+	../src/main.c \
+	../src/network.c \
+	../src/parser.c \
+	../src/preferences.c \
+	../src/send-message-dialog.c \
+	../src/spell.c \
+	../src/spell-dialog.c \
+	../src/ui-utils.c

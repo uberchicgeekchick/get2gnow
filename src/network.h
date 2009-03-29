@@ -76,6 +76,18 @@ GList *network_get_users_glist(gboolean get_friends);
 GList *network_get_friends	(void);
 /* Get the authenticating user's followers */
 GList *network_get_followers	(void);
+
+typedef struct {
+	const gchar *user_name;
+	const gchar *url;
+	const gchar *status; //ie, latest tweet
+	const gchar *bio;
+	gint tweets;
+	gint friends;
+	gint followers;
+} OnlineProfile;
+
+OnlineProfile *network_get_user_profile(const gchar *username);
 /* My, Kaity G. B., new stuff ends here. */
 
 /* Get an image from servers */

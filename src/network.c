@@ -305,9 +305,15 @@ network_get_user (const gchar *username)
 		g_free (user_timeline);
 	}
 
-	if (user_id)
-		g_free (user_id);
-}
+	if(user_id) g_free(user_id);
+}//network_get_timeline
+
+/* Begin: (C) 2009 Kaity G. B. <uberChick@uberChitGeekChick.Com> */
+OnlineProfile *network_get_user_profile(const gchar *username){
+	OnlineProfile *profile=g_new0(OnlineProfile, 1);
+
+	return profile;
+}//OnlineProfile *network_get_user_profile(const gchar *username);
 
 /* Get authenticating user's friends(following)
  * Returns:

@@ -50,15 +50,10 @@ static void   tweet_list_init(TweetList      *tweet);
 static void   tweet_list_finalize(GObject              *obj);
 static void   tweet_list_create_model(TweetList      *list);
 static void   tweet_list_setup_view(TweetList      *list);
-static void   tweet_list_size_cb(GtkWidget            *widget,
-                                            GtkAllocation        *allocation,
-                                            gpointer              user_data);
-static void   tweet_list_changed_cb(GtkWidget            *widget,
-                                            gpointer              user_data);
-static void   tweet_list_activated_cb(GtkTreeView          *tree_view,
-                                            GtkTreePath          *path,
-                                            GtkTreeViewColumn    *column,
-                                            gpointer              friends_tweet);
+static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *list);
+static void tweet_list_changed_cb(GtkWidget *widget, TweetList *tweet);
+static void tweet_list_activated_cb(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, TweetList *friends_tweet);
+
 static TweetList *list = NULL;
 static TweetListPriv *list_priv=NULL;
 
@@ -102,9 +97,7 @@ tweet_list_finalize(GObject *object)
 	g_object_unref(object);
 }
 
-static void
-tweet_list_create_model(TweetList *list)
-{
+static void tweet_list_create_model(TweetList *list){
 	GtkTreeModel        *model;
 
 	
@@ -129,7 +122,7 @@ static void tweet_list_setup_view(TweetList *list){
 	GtkCellRenderer		*renderer;
 	GtkTreeViewColumn	*avatar_column;
 	GtkTreeViewColumn   *tweet_column;
-
+	
 		
 	g_object_set(list, "rules-hint", TRUE, "reorderable", FALSE, "headers-visible", FALSE, NULL);
 
@@ -152,10 +145,7 @@ static void tweet_list_setup_view(TweetList *list){
 }
 
 
-static void
-tweet_list_changed_cb(GtkWidget *widget,
-                       gpointer   user_data)
-{
+static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;
 	GtkTreeIter		iter;
 	if(!( (sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) ))
@@ -191,18 +181,13 @@ tweet_list_changed_cb(GtkWidget *widget,
 	g_object_unref(pixbuf);
 }
 
-static void
-tweet_list_size_cb(GtkWidget     *widget,
-                    GtkAllocation *allocation,
-                    gpointer       user_data)
-{
-	TweetList     *t=TWEET_LIST(user_data);	
-	
+static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *friends_tweet){
+	TweetList *t=TWEET_LIST(friends_tweet);
 	g_object_set(list_priv->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(list_priv->text_column))-10), NULL);
 }
 
 static void
-tweet_list_activated_cb(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer friends_tweet){
+tweet_list_activated_cb(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, TweetList *friends_tweet){
 	tweets_reply();
 }
 

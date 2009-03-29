@@ -25,6 +25,5 @@
 #include <gtk/gtk.h>
 
 void friends_manager_show(GtkWindow *parent);
-void friends_manager_load_lists(GList *users);
 
 #endif /* __FRIENDS_MANAGER_H__ */

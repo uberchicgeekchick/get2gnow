@@ -1,11 +1,12 @@
 AM_CPPFLAGS=						\
+	-std=gnu99					\
 	-I$(top_srcdir)                          	\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLOCALEDIR=\""$(localedir)"\"			\
 	-DLIBDIR=\""$(libdir)"\"			\
-	$(GREET_TWEET_KNOW_CFLAGS)				\
+	$(GREET_TWEET_KNOW_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
 
