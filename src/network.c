@@ -24,7 +24,9 @@
 
 #include <config.h>
 #include <string.h>
+#include <glib.h>
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
@@ -50,7 +52,7 @@ typedef struct {
 
 static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data);
 static void network_post_data( const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data );
-static gboolean	network_check_http( gint status_code );
+static gboolean	network_check_http( SoupMessage *msg );
 static void network_parser_free_lists (void);
 
 /* libsoup callbacks */
@@ -64,9 +66,7 @@ static void network_cb_on_del( SoupSession *session, SoupMessage *msg, gpointer 
 static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
-static gboolean network_get_users_page(SoupMessage *msg );
-static void network_make_users_list(gboolean friends);
-GList *all_users=NULL;
+static gboolean network_get_users_page(SoupMessage *msg);
 /* My, Kaity G. B., new stuff ends here. */
 
 /* Autoreload timeout functions */
@@ -76,6 +76,7 @@ static void			network_timeout_new		(void);
 static SoupSession			*soup_connection = NULL;
 static GList				*user_friends = NULL;
 static GList				*user_followers = NULL;
+static GList *all_users=NULL;
 static gboolean				 processing = FALSE;
 static gchar				*current_timeline = NULL;
 static guint				 timeout_id;
@@ -321,7 +322,10 @@ OnlineProfile *network_get_user_profile(const gchar *username){
  * 		GList: The list of friends (fetched previously)
  */
 GList *network_get_friends (void){
-	return ( user_friends ? user_friends : network_get_users_glist((gboolean)TRUE) );
+	if(user_friends) return user_friends;
+	user_friends=network_get_users_glist((gboolean)TRUE);
+	followers_dialog_load_lists(user_friends);
+	return NULL;
 }
 
 
@@ -331,25 +335,12 @@ GList *network_get_friends (void){
  * 		GList: The list of friends (fetched previously)
  */
 GList *network_get_followers (void){
-	return ( user_followers ? user_followers : network_get_users_glist((gboolean)FALSE) );
+	if(user_followers) return user_followers;
+	user_followers=network_get_users_glist((gboolean)FALSE);	
+	message_set_followers(user_followers);
+	return NULL;
 }
 
-GList *network_get_users_glist(gboolean get_friends){
-	SoupMessage *msg;
-	gint page=0;
-
-	all_users=NULL;
-	gboolean fetching=TRUE;
-	while(fetching){
-		page++;
-		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page)) );
-		soup_session_send_message(soup_connection, msg);
-		fetching=network_get_users_page(msg);
-	}
-	network_make_users_list(get_friends);
-
-	return NULL;
-}//network_get_users_glist
 
 void network_get_combined_timeline(void){
 	SoupMessage *msg;
@@ -363,53 +354,55 @@ void network_get_combined_timeline(void){
 	for(int i=0; timelines[i]; i++)
 		network_get_data(timelines[i], network_cb_on_timeline, g_strdup(timelines[i]));
 	/*{	msg=soup_message_new("GET", timeline[i]);
-		soup_session_send_message(soup_connection, msg);
-	}*/
+	 * 		soup_session_send_message(soup_connection, msg);
+	 * 			}*/
 	current_timeline=g_strdup("combined");
 }//network_get_combined_timeline
+
+
+GList *network_get_users_glist(gboolean get_friends){
+	SoupMessage *msg;
+	gint page=0;
+	
+	if(all_users)
+		g_list_free(all_users);
+	all_users=NULL;
+	gboolean fetching=TRUE;
+	while(fetching){
+		page++;
+		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page)) );
+		soup_session_send_message(soup_connection, msg);
+		fetching=network_get_users_page(msg);
+	}
+	if(!all_users)
+		app_set_statusbar_msg( _("Users parser error.") );
+	else
+		all_users=g_list_sort(all_users, (GCompareFunc) parser_sort_users);
+
+	return all_users;
+}//network_get_users_glist
 
 
 static gboolean network_get_users_page(SoupMessage *msg){
 	debug(DEBUG_DOMAIN, "Users response: %i",msg->status_code);
 	
 	/* Check response */
-	if (!network_check_http(msg->status_code))
+	if (!network_check_http( msg ))
 		return (gboolean)FALSE;
 
 	/* parse user list */
 	debug(DEBUG_DOMAIN, "Parsing user list");
-	GList *users;
-	if(! (users=parser_users_list(msg->response_body->data, msg->response_body->length)) )
+	GList *new_users;
+	if(! (new_users=parser_users_list(msg->response_body->data, msg->response_body->length)) )
 		return (gboolean)FALSE;
 	
 	if(!all_users)
-		all_users=users;
+		all_users=new_users;
 	else
-		all_users=g_list_concat(all_users, users);
+		all_users=g_list_concat(all_users, new_users);
 	
 	return TRUE;
-}
-
-
-static void network_make_users_list( gboolean friends ){
-	if(!all_users){
-		app_set_statusbar_msg (_("Users parser error."));
-		return;
-	}
-	
-	all_users=g_list_sort(all_users, (GCompareFunc) parser_sort_users);
-	
-	/* check if it ok, and if it is a followers or following list */
-	if (!friends){
-		/* Followers list retrived */
-		user_followers = all_users;
-		message_set_followers(user_followers);
-		return;
-	}
-	/* Friends retrived */
-	user_friends = all_users;
-	followers_dialog_load_lists(user_friends);
-}
+}//network_get_users_page
 
 
 /* Get an image from servers */
@@ -531,40 +524,32 @@ network_post_data (const gchar           *url,
 
 
 /* Check HTTP response code */
-static gboolean
-network_check_http (gint status_code)
-{
-	if (status_code == 401) {
-		app_set_statusbar_msg (_("Access denied."));
+static gboolean network_check_http( SoupMessage *msg ){
+	const gchar *error=NULL;
+	if(msg->status_code == 401)
+		error=_("Access denied");
+	else if(SOUP_STATUS_IS_CLIENT_ERROR(msg->status_code))
+		error=_("HTTP communication error");
+	else if(SOUP_STATUS_IS_SERVER_ERROR(msg->status_code))
+		error=_("Internal server error");
+	else if(!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
+		error=_("Stopped");
 
-	} else if (SOUP_STATUS_IS_CLIENT_ERROR (status_code)) {
-		app_set_statusbar_msg (_("HTTP communication error."));
-
-	} else if(SOUP_STATUS_IS_SERVER_ERROR (status_code)) {
-		app_set_statusbar_msg (_("Internal server error."));
-
-	} else if (!SOUP_STATUS_IS_SUCCESSFUL (status_code)) {
-		app_set_statusbar_msg (_("Stopped"));
-
-	} else {
+	else
 		return TRUE;
-	}
+	
+	gchar *http_message=g_strdup_printf("%s:%s.", error, msg->reason_phrase);
+	app_set_statusbar_msg( http_message );
+	g_free( http_message );
 	
 	return FALSE;
 }
 
 /* Callback to free every element on a User list */
-static void
-network_free_user_list_each (gpointer user,
-							 gpointer data)
-{
-	User *usr;
-
+static void network_free_user_list_each( gpointer user, gpointer data ){
 	if (!user)
 		return;
-
-	usr = (User *)user;
-	parser_free_user (user);
+	parser_free_user( (User *)user );
 }
 
 
@@ -618,7 +603,7 @@ network_cb_on_login (SoupSession *session,
 	debug (DEBUG_DOMAIN,
 				  "Login response: %i",msg->status_code);
 
-	if (network_check_http (msg->status_code)) {
+	if (network_check_http( msg )) {
 		app_state_on_connection (TRUE);
 		return;
 	}
@@ -633,7 +618,7 @@ network_cb_on_post (SoupSession *session,
 					SoupMessage *msg,
 					gpointer     user_data)
 {
-	if (network_check_http (msg->status_code)) {
+	if (network_check_http( msg )) {
 		app_set_statusbar_msg (_("Status Sent"));
 	}
 	
@@ -648,7 +633,7 @@ network_cb_on_message (SoupSession *session,
 					   SoupMessage *msg,
 					   gpointer     user_data)
 {
-	if (network_check_http (msg->status_code)) {
+	if (network_check_http( msg )) {
 		app_set_statusbar_msg (_("Message Sent"));
 	}
 
@@ -678,7 +663,7 @@ network_cb_on_timeline (SoupSession *session,
 	network_timeout_new ();
 
 	/* Check response */
-	if (!network_check_http (msg->status_code)) {
+	if (!network_check_http( msg )) {
 		if (new_timeline)
 			g_free (new_timeline);
 		return;
@@ -716,7 +701,7 @@ network_cb_on_image (SoupSession *session,
 				  "Image response: %i", msg->status_code);
 
 	/* check response */
-	if (network_check_http (msg->status_code)) {
+	if (network_check_http( msg )) {
 		/* Save image data */
 		if (g_file_set_contents (image->src,
 								 msg->response_body->data,
@@ -744,7 +729,7 @@ network_cb_on_add (SoupSession *session,
 				  "Add user response: %i", msg->status_code);
 	
 	/* Check response */
-	if (!network_check_http (msg->status_code))
+	if (!network_check_http( msg ))
 		return;
 
 	/* parse new user */
@@ -771,7 +756,7 @@ network_cb_on_del (SoupSession *session,
 	debug (DEBUG_DOMAIN,
 				  "Delete user response: %i", msg->status_code);
 
-	if (network_check_http (msg->status_code)) {		
+	if (network_check_http( msg )) {		
 		app_set_statusbar_msg (_("Friend Removed"));
 	} else {
 		app_set_statusbar_msg (_("Failed to remove user"));

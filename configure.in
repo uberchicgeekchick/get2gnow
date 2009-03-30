@@ -89,7 +89,7 @@ PKG_CHECK_MODULES(GREET_TWEET_KNOW,
 	libcanberra-gtk >= $LIBCANBERRA_REQUIRED
 	libxml-2.0 >= $LIBXML_REQUIRED
 	gobject-2.0
-	g-thread-2.0
+	gthread-2.0
 	gconf-2.0 >= $GCONF_REQUIRED
 	$gnome_keyring_pkgconfig
 	$iso_codes_pkgconfig

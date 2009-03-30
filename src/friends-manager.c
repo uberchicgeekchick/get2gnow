@@ -38,10 +38,10 @@
 #define GLADE_FILE "friends_manager.xml"
 
 enum {
-	USER_NAME = 1,
-	USER_NICK = 2,
-	FOLLOWING_TOO = 3,
-	USER_POINTER = 4
+	USER_NAME,
+	USER_NICK,
+	FOLLOWING_TOO,
+	FRIEND_POINTER
 };
 
 typedef struct {
@@ -87,7 +87,7 @@ static void friends_manager_add_response_cb(GtkButton   *button, FriendsManager 
 	gtk_tree_model_get(
 				friends_manager->friends_and_follows_model,
 				&iter,
-				USER_POINTER, &user,
+				FRIEND_POINTER, &user,
 				-1
 	);
 	
@@ -109,7 +109,7 @@ static void friends_manager_rem_response_cb(GtkButton   *button, FriendsManager 
 
 	gtk_tree_model_get (friends_manager->friends_and_follows_model,
 						&iter,
-						USER_POINTER, &user,
+						FRIEND_POINTER, &user,
 						-1);
 
 	//gtk_list_store_remove (GTK_LIST_STORE (friends_manager->friends_and_follows_model), &iter);
@@ -150,21 +150,18 @@ static void friends_manager_popup_profile( GtkTreeView *tree_view, GtkTreePath *
 static void friends_manager_load_friends_and_followers(GList *friends, GList *followers){
 	User		*friend, *follower;
 	GtkTreeIter	iter;
-	GList		*list, *friends_and_followers;
-	friends_and_followers=friends;
-	//friends_and_followers=g_list_alloc();
-	//friends_and_followers=g_list_concat(friends, followers);
-	//friends_and_followers=g_list_sort(friends_and_followers, (GCompareFunc) parser_sort_users);
-	gboolean following_too=0;
+	GList		*list, *friends_and_followers=g_list_alloc();
+	friends_and_followers=g_list_concat(friends, followers);
+	friends_and_followers=g_list_sort(friends_and_followers, (GCompareFunc) parser_sort_users);
+	gint follower_too=0;
 
-	//g_printf("Starting to sort & display friends & followers.\n");
-	for( list=friends; list; list=list->next ){
+	for( list=friends_and_followers; follower_too<2 && list; list=list->next ){
 		friend = (User *)list->data;
 		if(!( (list=list->next) && list->data ))
-			following_too=1;
+			follower_too=2;
 		else{
 			follower=(User *)list->data;
-			following_too=(gboolean)!g_strcmp0(friend->user_name, follower->user_name);
+			follower_too=g_strcmp0(friend->user_name, follower->user_name);
 		}
 		gtk_list_store_append( GTK_LIST_STORE(friends_manager->friends_and_follows_model), &iter );
 		gtk_list_store_set(
@@ -172,12 +169,11 @@ static void friends_manager_load_friends_and_followers(GList *friends, GList *fo
 					&iter,
 					USER_NAME, friend->user_name,
 					USER_NICK, friend->nick_name,
-					FOLLOWING_TOO, (following_too?"Yes":"No"),
-					USER_POINTER, friend,
+					FOLLOWING_TOO, (follower_too?"No":"Yes"),
+					FRIEND_POINTER, friend,
 					-1
 		);
-		if(following_too) continue;
-		//g_printf("Adding your follower: %s\n", follower->user_name);
+		if(!follower_too) continue;
 		gtk_list_store_append( GTK_LIST_STORE(friends_manager->friends_and_follows_model), &iter );
 		gtk_list_store_set(
 					GTK_LIST_STORE(friends_manager->friends_and_follows_model),
@@ -185,10 +181,14 @@ static void friends_manager_load_friends_and_followers(GList *friends, GList *fo
 					USER_NAME, follower->user_name,
 					USER_NICK, follower->nick_name,
 					FOLLOWING_TOO, "No",
-					USER_POINTER, follower,
+					FRIEND_POINTER, follower,
 					-1
 		);
 	}
+	g_list_free(list);
+	g_list_free(friends_and_followers);
+	g_free(friend);
+	g_free(follower);
 }
 
 void friends_manager_show(GtkWindow *parent){
@@ -238,7 +238,7 @@ void friends_manager_show(GtkWindow *parent){
 	gtk_widget_set_sensitive(friends_manager->dialog, FALSE);
 
 	/* Load friends_manager */
-	if( ( ((friends=network_get_friends())) && (followers=network_get_followers()) ) )
+	if( ( ((friends=network_get_users_glist( TRUE ))) && (followers=network_get_users_glist( FALSE )) ) )
 		friends_manager_load_friends_and_followers(friends, followers);
 	
 	gdk_window_set_cursor(GTK_WIDGET(friends_manager->dialog)->window, NULL);

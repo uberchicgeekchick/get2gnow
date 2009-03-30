@@ -55,21 +55,18 @@ typedef struct
 	gchar		*id;
 } Status;
 
-static User	*parser_node_user  (xmlNode     *a_node);
-static Status	*parser_node_status(xmlNode     *a_node);
-static xmlDoc       *parser_parse      (const char  *data,
-												gssize       length,
-												xmlNode    **first_element);
-static gchar		*parser_convert_time      (const char	*datetime);
-static gboolean      display_notification     (gpointer     tweet);
+static User *parser_node_user (xmlNode *a_node);
+static Status *parser_node_status(xmlNode *a_node);
+static xmlDoc *parser_parse (const char *data, gssize length, xmlNode **first_element);
+static gchar *parser_convert_time (const char *datetime);
+static gboolean display_notification ( gpointer tweet );
 
 /* id of the newest tweet showed */
-static gint			last_id = 0;
+static gint last_id = 0;
 
-static xmlDoc*
-parser_parse(const char *data, gssize length, xmlNode **first_element){
-	xmlDoc	*doc = NULL;
-	xmlNode	*root_element = NULL;
+static xmlDoc* parser_parse(const char *data, gssize length, xmlNode **first_element){
+	xmlDoc* doc = NULL;
+	xmlNode* root_element = NULL;
 
 	/* Read the XML */
 	doc = xmlReadMemory(data, length, "xml", "UTF-8", 0);

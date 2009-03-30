@@ -24,6 +24,7 @@
 #define __NETWORK_H__
 
 #include <gtk/gtk.h>
+#include <glib.h>
 #include "parser.h"
 
 /* Twitter API */

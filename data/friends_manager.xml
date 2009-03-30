@@ -6,6 +6,7 @@
 		<columns>
 			<column type="gchararray"/>
 			<column type="gchararray"/>
+			<column type="gchararray"/>
 			<column type="gpointer"/>
 		</columns>
 	</object>
@@ -62,12 +63,12 @@
 													</object>
 												</child>
 												<child>
-													<object class="GtkTreeViewColumn" id="treeviewcolumn2">
+													<object class="GtkTreeViewColumn" id="treeviewcolumn3">
 														<property name="title" context="yes" translatable="yes">Are they following me too?</property>
 														<child>
 															<object class="GtkCellRendererText" id="treeviewcolumn3-renderer1"/>
 															<attributes>
-																<attribute name="text">1</attribute>
+																<attribute name="text">2</attribute>
 															</attributes>
 														</child>
 													</object>

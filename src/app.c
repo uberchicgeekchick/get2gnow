@@ -873,7 +873,7 @@ app_get_window(void)
 	return app_priv->window;
 }
 
-void app_set_statusbar_msg(gchar *message){	
+void app_set_statusbar_msg(gchar *message){
 	/* Avoid some warnings */
 	if(!app_priv->statusbar || !GTK_IS_STATUSBAR(app_priv->statusbar))
 		return;
