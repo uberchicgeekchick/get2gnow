@@ -24,6 +24,7 @@
 
 #include <config.h>
 #include <string.h>
+#include <stdlib.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
@@ -342,9 +343,40 @@ GList *network_get_followers (void){
 }
 
 
+GList *network_get_users_glist(gboolean get_friends){
+	GTimer *request_timer=g_timer_new();// request_timer is used to avoid
+	guint request_microseconds=1;
+	SoupMessage *msg;
+	gint page=0, remaining_requests;
+	
+	all_users=NULL;
+	gboolean fetching=TRUE;
+	while(fetching){
+		page++;
+		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page)) );
+		soup_session_send_message(soup_connection, msg);
+		fetching=network_get_users_page(msg);
+		remaining_requests=atoi( (soup_message_headers_get(msg->response_headers, "X-RateLimit-Remaining")) );
+		g_timer_start(request_timer);
+		if( remaining_requests && remaining_requests < 2 )
+			while( 30 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		else
+			while( 5 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		g_timer_stop(request_timer);
+	}
+	g_timer_destroy(request_timer);
+	if(!all_users)
+		app_set_statusbar_msg( _("Users parser error.") );
+	else
+		all_users=g_list_sort(all_users, (GCompareFunc) parser_sort_users);
+
+	return all_users;
+}//network_get_users_glist
+
+
 void network_get_combined_timeline(void){
 	SoupMessage *msg;
-	const gchar *timelines[]={ 
+	const gchar *timelines[]={
 		API_TWITTER_TIMELINE_FRIENDS,
 		API_TWITTER_REPLIES,
 		API_TWITTER_DIRECT_MESSAGES,
@@ -354,33 +386,10 @@ void network_get_combined_timeline(void){
 	for(int i=0; timelines[i]; i++)
 		network_get_data(timelines[i], network_cb_on_timeline, g_strdup(timelines[i]));
 	/*{	msg=soup_message_new("GET", timeline[i]);
-	 * 		soup_session_send_message(soup_connection, msg);
-	 * 			}*/
+	 * 	soup_session_send_message(soup_connection, msg);
+	 }*/
 	current_timeline=g_strdup("combined");
 }//network_get_combined_timeline
-
-
-GList *network_get_users_glist(gboolean get_friends){
-	SoupMessage *msg;
-	gint page=0;
-	
-	if(all_users)
-		g_list_free(all_users);
-	all_users=NULL;
-	gboolean fetching=TRUE;
-	while(fetching){
-		page++;
-		msg=soup_message_new( "GET", (g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page)) );
-		soup_session_send_message(soup_connection, msg);
-		fetching=network_get_users_page(msg);
-	}
-	if(!all_users)
-		app_set_statusbar_msg( _("Users parser error.") );
-	else
-		all_users=g_list_sort(all_users, (GCompareFunc) parser_sort_users);
-
-	return all_users;
-}//network_get_users_glist
 
 
 static gboolean network_get_users_page(SoupMessage *msg){
@@ -501,23 +510,21 @@ network_post_data (const gchar           *url,
 {
 	SoupMessage *msg;
 
-	debug (DEBUG_DOMAIN, "Post: %s",url);
+	debug( DEBUG_DOMAIN, "Post: %s",url );
 
-	msg = soup_message_new ("POST", url);
+	msg=soup_message_new( "POST", url );
 	
-	soup_message_headers_append (msg->request_headers,
-								 "X-Twitter-Client", PACKAGE_NAME);
-	soup_message_headers_append (msg->request_headers,
-								 "X-Twitter-Client-Version", PACKAGE_VERSION);
+	soup_message_headers_append( msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
+	soup_message_headers_append( msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
 
 	if (formdata)
-	{
-		soup_message_set_request (msg, 
-								  "application/x-www-form-urlencoded",
-								  SOUP_MEMORY_TAKE,
-								  formdata,
-								  strlen (formdata));
-	}
+		soup_message_set_request(
+						msg, 
+						"application/x-www-form-urlencoded",
+						SOUP_MEMORY_TAKE,
+						formdata,
+						strlen( formdata )
+		);
 
 	soup_session_queue_message (soup_connection, msg, callback, data);
 }
@@ -538,7 +545,7 @@ static gboolean network_check_http( SoupMessage *msg ){
 	else
 		return TRUE;
 	
-	gchar *http_message=g_strdup_printf("%s:%s.", error, msg->reason_phrase);
+	gchar *http_message=g_strdup_printf("%s: %s.", error, msg->reason_phrase);
 	app_set_statusbar_msg( http_message );
 	g_free( http_message );
 	

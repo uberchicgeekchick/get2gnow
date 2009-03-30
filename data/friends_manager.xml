@@ -7,6 +7,7 @@
 			<column type="gchararray"/>
 			<column type="gchararray"/>
 			<column type="gchararray"/>
+			<column type="gchararray"/>
 			<column type="gpointer"/>
 		</columns>
 	</object>
@@ -64,11 +65,22 @@
 												</child>
 												<child>
 													<object class="GtkTreeViewColumn" id="treeviewcolumn3">
-														<property name="title" context="yes" translatable="yes">Are they following me too?</property>
+														<property name="title" context="yes" translatable="yes">Am I following them?</property>
 														<child>
 															<object class="GtkCellRendererText" id="treeviewcolumn3-renderer1"/>
 															<attributes>
 																<attribute name="text">2</attribute>
+															</attributes>
+														</child>
+													</object>
+												</child>
+												<child>
+													<object class="GtkTreeViewColumn" id="treeviewcolumn4">
+														<property name="title" context="yes" translatable="yes">Are they following me?</property>
+														<child>
+															<object class="GtkCellRendererText" id="treeviewcolumn4-renderer1"/>
+															<attributes>
+																<attribute name="text">3</attribute>
 															</attributes>
 														</child>
 													</object>

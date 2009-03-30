@@ -104,7 +104,6 @@ static void     app_status_icon_popup_menu_cb(GtkStatusIcon         *status_icon
 												  guint                  button,
 												  guint                  activate_time,
 												  App             *app);
-static gboolean request_accounts(App *a, GError **error);
 static void     app_add_friend_cb(GtkAction *menuitem, App *app); 
 static void     app_connection_items_setup(App *app, GtkBuilder *ui); 
 static void     app_login(App             *app);
@@ -896,9 +895,9 @@ void app_set_statusbar_msg(gchar *message){
 static void app_message_dialog( gchar *message ) {
 	GtkWidget *dialog, *label, *content_area;
 	/* Create the widgets */
-	dialog = gtk_dialog_new_with_buttons (
+	dialog = gtk_message_dialog_new(
 						message,
-						app_priv->window,
+						GTK_WINDOW(app_priv->window),
 						GTK_DIALOG_DESTROY_WITH_PARENT,
 						GTK_STOCK_INFO,
 						GTK_RESPONSE_NONE,
