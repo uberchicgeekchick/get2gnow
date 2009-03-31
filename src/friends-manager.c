@@ -26,6 +26,8 @@
 
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
+#include <gtk/gtk.h>
+
 
 #include "glade.h"
 
@@ -59,11 +61,16 @@ static void friends_manager_add_response_cb(GtkButton *button, FriendsManager *f
 static void friends_manager_rem_response_cb(GtkButton *button, FriendsManager *friends_manager);
 static void friends_manager_response_cb(GtkWidget *widget, gint response, FriendsManager *friends_manager);
 static void friends_manager_destroy_cb(GtkWidget *widget, FriendsManager *friends_manager);
-static void friends_manager_list_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager);
 static void friends_manager_list_clicked(GtkTreeView *tree_view, FriendsManager *friends_manager);
 static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_manager, gboolean is_sensitive);
-static void friends_manager_popup_profile(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager);
+static void friends_manager_view_profile_clicked(GtkButton *button, FriendsManager *friends_manager);
+static void friends_manager_friend_selected(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager);
+static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkTreeIter *iter );
+
+
 static FriendsManager *friends_manager;
+
+
 
 static void
 friends_manager_response_cb( GtkWidget *widget, gint response, FriendsManager *friends_manager){
@@ -146,39 +153,74 @@ static void friends_manager_list_clicked(GtkTreeView *tree_view, FriendsManager 
 static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_manager, gboolean is_sensitive){
 	gtk_widget_set_sensitive(friends_manager->follow_add, is_sensitive);
 	gtk_widget_set_sensitive(friends_manager->follow_rem, is_sensitive);
-	/* TODO:
-	 * 	Make the about button actually pull the user's profile information.
-	 * 	Display it in a gtk_dialog_new_with_buttons
-	 * gtk_widget_set_sensitive(friends_manager->view_profile, is_sensitive);
-	 */
+	gtk_widget_set_sensitive(friends_manager->view_profile, is_sensitive);
 }//friends_manager_set_buttons_sensitivity
 
+static void friends_manager_view_profile_clicked(GtkButton *button, FriendsManager *friends_manager){
+	User *profile;
+	GtkTreeIter iter;
 
-static void friends_manager_list_activated( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager ){
-	return;
-	friends_manager_popup_profile( tree_view, path, column, friends_manager );
-}//friends_manager_list_activated
+	GtkTreeSelection *selection=gtk_tree_view_get_selection(friends_manager->friends_and_followers);
+	gtk_tree_selection_get_selected(selection, NULL, &iter);
 
-static void friends_manager_popup_profile( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager ){
-	GtkTreeIter  iter;
-	gchar       *username;
-	OnlineProfile *profile;
+	friends_manager_popup_profile(friends_manager, &iter);
+}//friends_manager_view_profile_clicked
 
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (friends_manager->friends_and_follows_model),
-							 &iter,
-							 path);
+static void friends_manager_friend_selected( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager ){
+	GtkTreeIter iter;
+	gtk_tree_model_get_iter(
+				GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
+				&iter,
+				path
+	);
+	friends_manager_popup_profile(friends_manager, &iter);
+}//friends_manager_friend_selected
 
-	gtk_tree_model_get (GTK_TREE_MODEL (friends_manager->friends_and_follows_model),
-						&iter,
-						USER_NAME, &username,
-						-1);
+static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkTreeIter *iter ){
+	User *profile=NULL;
 
-	/* Retrive timeline */
-	profile=network_get_user_profile(username);
+	gtk_tree_model_get(
+			GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
+			iter,
+			FRIEND_POINTER, &profile,
+			-1
+	);
 
+
+	GtkMessageDialog *dialog=(GtkMessageDialog *)gtk_message_dialog_new_with_markup(
+			GTK_WINDOW(app_priv->window),
+			( GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT ),
+			GTK_MESSAGE_INFO,
+			GTK_BUTTONS_CLOSE,
+			NULL
+	);
+	g_signal_connect( dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog );
+	
+	
+	gchar *image_filename;
+	GtkWidget *image;
+	gtk_message_dialog_set_image( GTK_MESSAGE_DIALOG( dialog ), (image=gtk_image_new_from_file( (image_filename=network_get_image( profile->image_url, NULL )) )) );
+
+	gchar *message=g_strdup_printf(
+			"<u><b>%s:</b> %s</u>\n\t<b>Location:</b> %s\n\t<b>URL:</b> %s\n\t<b>Followers:</b> %u\n\t<b>Bio:</b>\n\t\t%s\n",
+			profile->user_name, profile->nick_name,
+			profile->location,
+			profile->url,
+			(unsigned int)profile->followers,
+			profile->bio
+	);
+	gtk_message_dialog_set_markup( GTK_MESSAGE_DIALOG( dialog ), message );
+	
+	
+	gtk_widget_show( GTK_WIDGET( dialog ) );
+	
+	g_free(message);
+	g_free(image_filename);
+
+	gtk_widget_destroy( GTK_WIDGET( image ) );
+	
 	g_free(profile);
-	g_free(username);
-}
+}//friends_manager_popup_profile
 
 static void friends_manager_display_following_and_followers(GList *im_following, GList *my_followers){
 	User		*following, *follower;
@@ -186,7 +228,7 @@ static void friends_manager_display_following_and_followers(GList *im_following,
 	GList		*list, *following_and_followers=g_list_alloc();
 	following_and_followers=g_list_concat(im_following, my_followers);
 	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) parser_sort_users);
-	gboolean follower_too=FALSE, list_break=FALSE, following_user=TRUE;
+	gboolean follower_too=FALSE, list_break=FALSE;
 	
 	for( list=following_and_followers; list; list=list->next ){
 		following = (User *)list->data;
@@ -195,10 +237,8 @@ static void friends_manager_display_following_and_followers(GList *im_following,
 		else{
 			follower=(User *)list->data;
 			follower_too=(gboolean)!g_strcmp0( following->user_name, follower->user_name );
-			if(!follower_too) {
+			if(!follower_too)
 				list=list->prev;
-				following_user=FALSE;
-			} else following_user=TRUE;
 		}
 		gtk_list_store_append( GTK_LIST_STORE(friends_manager->friends_and_follows_model), &iter );
 		gtk_list_store_set(
@@ -206,15 +246,13 @@ static void friends_manager_display_following_and_followers(GList *im_following,
 					&iter,
 					USER_NAME, following->user_name,
 					USER_NICK, following->nick_name,
-					FOLLOWING_TOO, (following_user?"Yes":"No"),
+					FOLLOWING_TOO, (following->following?"Yes":"No"),
 					FOLLOWER_TOO, (follower_too?"Yes":"No"),
 					FRIEND_POINTER, following,
 					-1
 		);
 		if(list_break) break;
 	}
-	/*g_list_free(list);
-	g_list_free(following_and_followers);*/
 	g_free(following);
 	g_free(follower);
 }//friends_manager_display_following_and_followers
@@ -245,8 +283,8 @@ void friends_manager_show(GtkWindow *parent){
 						"friends_manager", "response", friends_manager_response_cb,
 						"follow_add", "clicked", friends_manager_add_response_cb,
 						"follow_rem", "clicked", friends_manager_rem_response_cb,
-						"view_profile", "clicked", friends_manager_popup_profile,
-						"friends_and_followers", "row-activated", friends_manager_list_activated,
+						"view_profile", "clicked", friends_manager_view_profile_clicked,
+						"friends_and_followers", "row-activated", friends_manager_friend_selected,
 						"friends_and_followers", "cursor-changed", friends_manager_list_clicked,
 						NULL);
 

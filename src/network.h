@@ -45,55 +45,42 @@
 #define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
 #define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
 
-
 /* Verify user credentials */
-void network_login		(const char *username, 
-								 const char *password);
+void network_login( const char *username, const char *password );
 
 /* Logout current user */
-void network_logout 		(void);
+void network_logout( void );
 
 /* Post a new tweet */
-void network_post_status		(const gchar *text);
+void network_post_status( const gchar *text );
 
 /* Post a direct message to a follower */
-void network_send_message	(const gchar *friend,
-					 const gchar *text);
+void network_send_message( const gchar *friend, const gchar *text );
 
 /* Get and parse a timeline */
-void network_get_timeline 	(const gchar *url_timeline);
+void network_get_timeline( const gchar *url_timeline );
 void network_get_combined_timeline(void);
 
 /* Retrive a user timeline. If user is null, get
  * authenticated user timeline*/
-void network_get_user		(const gchar *username);
+void network_get_user( const gchar *username );
 
 /* Refresh current timeline */
-void network_refresh			(void);
+void network_refresh(void);
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 GList *network_get_users_glist(gboolean get_friends);
 /* Get authenticating user's friends(following) */
-GList *network_get_friends	(void);
+GList *network_get_friends(void);
 /* Get the authenticating user's followers */
-GList *network_get_followers	(void);
+GList *network_get_followers(void);
 
-typedef struct {
-	const gchar *user_name;
-	const gchar *url;
-	const gchar *status; //ie, latest tweet
-	const gchar *bio;
-	gint tweets;
-	gint friends;
-	gint followers;
-} OnlineProfile;
+extern gboolean following;
 
-OnlineProfile *network_get_user_profile(const gchar *username);
 /* My, Kaity G. B., new stuff ends here. */
 
 /* Get an image from servers */
-void network_get_image (const gchar *url_image,
-							   GtkTreeIter iter);
+gchar *network_get_image (const gchar *url_image, GtkTreeIter *iter);
 
 /* Add a user to follow */
 void network_add_user		(const gchar *username);

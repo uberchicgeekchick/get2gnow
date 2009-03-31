@@ -29,6 +29,7 @@
 #define _XOPEN_SOURCE
 #include <time.h>
 #include <string.h> /* for g_memmove - memmove */
+#include <strings.h>
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
@@ -49,7 +50,7 @@
 
 typedef struct 
 {
-	User	*user;
+	User		*user;
 	gchar		*text;
 	gchar		*created_at;
 	gchar		*id;
@@ -273,8 +274,7 @@ parser_timeline(const gchar *data,
 		g_free(tweet);
 
 		/* Get Image */
-		network_get_image(status->user->image_url,
-								  iter);
+		g_free( network_get_image(status->user->image_url, &iter) );
 
 		/* Free struct */
 		parser_free_user(status->user);
@@ -306,44 +306,53 @@ parser_node_user(xmlNode *a_node){
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
 	User     *user;
-
+	
 	buffer = xmlBufferCreate();
 	user = g_new0(User, 1);
 
+	user->following=following;
+	
 	/* Begin 'users' node loop */
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE)
 			continue;
 		if(xmlNodeBufGetContent(buffer, cur_node) != 0)
 			continue;
-		if(g_str_equal(cur_node->name, "screen_name" )) {
-			const xmlChar *tmp;
-
-			tmp = xmlBufferContent(buffer);
-			user->user_name = g_strdup((const gchar *)tmp);
-
-		} else if(g_str_equal(cur_node->name, "name" )) {
-			const xmlChar *tmp;
-
-			tmp = xmlBufferContent(buffer);
+		
+		const xmlChar *tmp=xmlBufferContent(buffer);
+		
+		if(g_str_equal(cur_node->name, "id" ))
+			user->id = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
+			
+		else if(g_str_equal(cur_node->name, "name" ))
 			user->nick_name = g_strdup((const gchar *)tmp);
-
-		} else if(g_str_equal(cur_node->name, "profile_image_url")) {
-			const xmlChar *tmp;
-
-			tmp = xmlBufferContent(buffer);
+		
+		else if(g_str_equal(cur_node->name, "screen_name" ))
+			user->user_name = g_strdup((const gchar *)tmp);
+		
+		else if(g_str_equal(cur_node->name, "location" ))
+			user->location = g_strdup((const gchar *)tmp);
+			
+		else if(g_str_equal(cur_node->name, "description" ))
+			user->bio = g_strdup((const gchar *)tmp);
+			
+		else if(g_str_equal(cur_node->name, "url" ))
+			user->url = g_strdup((const gchar *)tmp);
+			
+		else if(g_str_equal(cur_node->name, "followers_count" ))
+			user->followers = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
+			
+		else if(g_str_equal(cur_node->name, "profile_image_url"))
 			user->image_url = g_strdup((const gchar *)tmp);
-
-		}
-
+		
 		/* Free buffer content */
 		xmlBufferEmpty(buffer);
-
+		
 	} /* End of loop */
-
+	
 	/* Free buffer pointer */
 	xmlBufferFree(buffer);
-
+	
 	return user;
 }
 
@@ -487,7 +496,7 @@ parser_free_user(User *user){
 
 
 int parser_sort_users(User *a, User *b){
-	return g_strcmp0(a->user_name,b->user_name);
+	return strcasecmp( (const char *)a->user_name, (const char *)b->user_name );
 }
 
 

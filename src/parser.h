@@ -26,9 +26,15 @@
 #include <gtk/gtk.h>
 
 typedef struct {
-	gchar	*user_name;
-	gchar	*nick_name;
-	gchar	*image_url;
+	guint		id;
+	gchar		*user_name;
+	gchar		*nick_name;
+	gchar		*location;
+	gchar		*bio;
+	gchar		*url;
+	guint		followers;
+	gchar		*image_url;
+	gboolean	following;
 } User;
 
 

@@ -774,7 +774,7 @@ app_set_default_timeline(App *app, gchar *timeline)
 		return gtk_radio_action_set_current_value(app_priv->menu_mine, 1);
 	
 	/* Let's fallback to friends timeline */
-	gtk_radio_action_set_current_value(app_priv->menu_friends,	1);
+	gtk_radio_action_set_current_value(app_priv->menu_friends, 1);
 }
 
 /* Function to retrieve the users default timeline */
@@ -820,13 +820,14 @@ app_connection_items_setup(App  *app,
 
 	const gchar   *widgets_connected[] = {
 		"twitter_disconnect",
-/*		"tweets_new_tweet",
+		"tweets_new_tweet",
 		"tweets_new_dm",
 		"tweets_reply",
 		"twitter_refresh",
-*/		"twitter_add_friend",
+		"twitter_add_friend",
 		"tweets1",
-		"view1"
+		"view1",
+		"settings_friends_manager"
 	};
 
 	const gchar   *widgets_disconnected[] = {
@@ -896,17 +897,16 @@ static void app_message_dialog( gchar *message ) {
 	GtkWidget *dialog, *label, *content_area;
 	/* Create the widgets */
 	dialog = gtk_message_dialog_new(
-						message,
 						GTK_WINDOW(app_priv->window),
 						GTK_DIALOG_DESTROY_WITH_PARENT,
-						GTK_STOCK_INFO,
-						GTK_RESPONSE_NONE,
-						NULL
+						GTK_MESSAGE_INFO,
+						GTK_BUTTONS_OK,
+						"%s", message
 	);
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 	label = gtk_label_new (message);
 	/* Ensure that the dialog box is destroyed when the user responds. */
-	g_signal_connect_swapped( dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
+	g_signal_connect( dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
 	/* Add the label, and show everything we've added to the dialog. */
 	gtk_container_add(GTK_CONTAINER (content_area), label);
 	gtk_widget_show_all(dialog);
@@ -966,9 +966,7 @@ app_notify(gchar *msg)
 }
 
 void
-app_set_image(const gchar *file,
-                      GtkTreeIter  iter)
-{
+app_set_image(const gchar *file, GtkTreeIter  *iter){
 	GdkPixbuf	 *pixbuf, *resized;
 	GError		 *error = NULL;
 
@@ -980,7 +978,7 @@ app_set_image(const gchar *file,
 
 	resized=gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
 
-	gtk_list_store_set((tweet_list_get_store()) , &iter, PIXBUF_AVATAR, resized, -1);
+	gtk_list_store_set((tweet_list_get_store()) , iter, PIXBUF_AVATAR, resized, -1);
 	g_object_unref(pixbuf);
 	g_object_unref(resized);
 	if(error) g_error_free(error);

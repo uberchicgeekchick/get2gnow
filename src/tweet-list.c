@@ -52,7 +52,6 @@ static void   tweet_list_create_model(TweetList      *list);
 static void   tweet_list_setup_view(TweetList      *list);
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *list);
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *tweet);
-static void tweet_list_activated_cb(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, TweetList *friends_tweet);
 
 static TweetList *list = NULL;
 static TweetListPriv *list_priv=NULL;
@@ -159,7 +158,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	conf_get_bool((conf_get()), PREFS_UI_EXPAND_MESSAGES, &expand);
 	
 	GdkPixbuf	*pixbuf;
-	const gchar		*user_name, *tweet, *date, *name;
+	gchar		*user_name, *tweet, *date, *name;
 
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(list_priv->store),
@@ -178,17 +177,12 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	
 	g_free(name);
 	g_free(date);
-	g_object_unref(pixbuf);
+	if(pixbuf) g_object_unref(pixbuf);
 }
 
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *friends_tweet){
 	TweetList *t=TWEET_LIST(friends_tweet);
 	g_object_set(list_priv->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(list_priv->text_column))-10), NULL);
-}
-
-static void
-tweet_list_activated_cb(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, TweetList *friends_tweet){
-	tweets_reply();
 }
 
 TweetList *tweet_list_new(void){

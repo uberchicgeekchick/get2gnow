@@ -142,7 +142,7 @@ static void message_setup( GtkWindow  *parent ){
 			"send_message_dialog", "destroy", message_destroy_cb,
 			"send_message_dialog", "response", message_response_cb,
 			"send_message_textview", "button_press_event", message_text_button_press_cb,
-			"send_message_textview", "populate_popup", message_text_populate_popup_cb,
+			"send_message_textview", "populate-popup", message_text_populate_popup_cb,
 			NULL
 	);
 
@@ -425,7 +425,7 @@ static void message_text_button_press_cb( GtkTextView *view, GdkEventButton *eve
 
 	if( event->button != 3 ) return;
 	
-	g_signal_emit_by_name( ((gpointer *)dialog), "populate_popup" );
+	g_signal_emit_by_name( ((gpointer *)dialog), "populate-popup" );
 }//message_text_button_press_cb
 
 static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu ){
@@ -501,8 +501,8 @@ message_spell_new (GtkWidget          *textview,
 static void
 message_spell_free (MessageSpell *message_spell)
 {
-	g_free (message_spell->word);
-	g_free (message_spell);
+	if( message_spell->word ) g_free( message_spell->word );
+	if(message_spell) g_free(message_spell );
 }
 
 static void
@@ -539,7 +539,7 @@ message_response_cb( GtkWidget *widget, gint response ){
 		/* Post a tweet */
 		gtk_widget_destroy(widget);
 		network_post_status (good_msg);
-		g_free (good_msg);
+		if(good_msg) g_free (good_msg);
 		return;
 	}
 	
@@ -556,10 +556,10 @@ message_response_cb( GtkWidget *widget, gint response ){
 					-1);
 		/* Send the message */
 		network_send_message (to_user, good_msg);
-		g_free (to_user);
+		if(to_user) g_free(to_user);
 	}
-	g_free (good_msg);
-	gtk_widget_destroy (widget);
+	if( good_msg ) g_free(good_msg);
+	gtk_widget_destroy(widget);
 }
 
 static void message_destroy_cb( GtkWidget *widget ){
