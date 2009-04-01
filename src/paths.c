@@ -25,6 +25,13 @@
 #include "paths.h"
 
 gchar * paths_get_gtkbuilder_path (const gchar *filename){
+	/* TODO:
+	 *	have this test for the file in DATADIR & if its not there yet
+	 *	than hade it look for the relative path, from tha binary
+	 *	to the gtkbuilder UI files.  Usually its "../data/", filename.
+	 *	Though I may just add 'topsrcdir to the command line defines
+	 *	while compiling.
+	 */
 	return g_build_filename( DATADIR, PACKAGE_TARNAME, filename, NULL );
 }
 
