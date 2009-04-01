@@ -23,7 +23,7 @@ greet_tweet_know_SOURCES = 				\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	paths.c 		paths.h			\
-	glade.c			glade.h			\
+	gtkbuilder.c		gtkbuilder.h		\
 	about.c			about.h			\
 	account-dialog.c 	account-dialog.h	\
 	add-dialog.c 		add-dialog.h		\

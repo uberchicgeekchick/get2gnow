@@ -33,13 +33,13 @@
 
 #include "network.h"
 #include "gconf.h"
-#include "glade.h"
+#include "gtkbuilder.h"
 
 #include "main.h"
 #include "preferences.h"
 #include "spell.h"
 
-#define GLADE_FILE "prefs_dlg.xml"
+#define GtkBuilderUI "preferences.ui"
 
 typedef struct {
 	GtkWidget *dialog;
@@ -833,7 +833,7 @@ preferences_dialog_show (GtkWindow *parent)
 	prefs = g_new0 (Prefs, 1);
 
 	/* Get widgets */
-	ui = glade_get_file (GLADE_FILE,
+	ui = gtkbuilder_get_file (GtkBuilderUI,
 							  "preferences_dialog", &prefs->dialog,
 							  "preferences_notebook", &prefs->notebook,
 							  "combobox_timeline", &prefs->combo_default_timeline,
@@ -848,7 +848,7 @@ preferences_dialog_show (GtkWindow *parent)
 							  NULL);
 
 	/* Connect the signals */
-	glade_connect (ui, prefs,
+	gtkbuilder_connect (ui, prefs,
 						"preferences_dialog", "destroy", preferences_destroy_cb,
 						"preferences_dialog", "response", preferences_response_cb,
 						NULL);

@@ -36,8 +36,7 @@
 
 #define DEBUG_DOMAIN "TweetList"
 
-#define GET_PRIV(obj)           \
-	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPriv))
+#define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPriv))
 
 struct _TweetListPriv {
 	GtkListStore      *store;
@@ -58,45 +57,30 @@ static TweetListPriv *list_priv=NULL;
 
 G_DEFINE_TYPE(TweetList, tweet_list, GTK_TYPE_TREE_VIEW);
 
-static void
-tweet_list_class_init(TweetListClass *klass)
-{
+static void tweet_list_class_init( TweetListClass *klass ){
 	GObjectClass   *object_class = G_OBJECT_CLASS(klass);
-
 	object_class->finalize = tweet_list_finalize;
-
 	g_type_class_add_private(object_class, sizeof(TweetListPriv));
-}
+}//tweet_list_class_init
 
 static void tweet_list_init(TweetList *tweet){
-	
 	list=tweet;
-
 	list_priv=GET_PRIV(list);
-
 	tweet_list_create_model(list);
 	tweet_list_setup_view(list);
-
 	g_signal_connect(list, "size_allocate", G_CALLBACK(tweet_list_size_cb), list);
 	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
 	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
 	//g_signal_connect(list, "key-press-event", G_CALLBACK(tweets_key_pressed), list);
-}
+}//tweet_list_init
 
-static void
-tweet_list_finalize(GObject *object)
-{
-	
-	list_priv=GET_PRIV(object);
-
+static void tweet_list_finalize( GObject *object ){
 	if(list_priv->store)
 		g_object_unref(list_priv->store);
-
 	G_OBJECT_CLASS(tweet_list_parent_class)->finalize(object);
-	g_object_unref(object);
-}
+}//tweet_list_finalizd
 
-static void tweet_list_create_model(TweetList *list){
+static void tweet_list_create_model( TweetList *list ){
 	GtkTreeModel        *model;
 
 	

@@ -22,19 +22,10 @@
  */
 
 #include "config.h"
-
 #include "paths.h"
 
-#define GREET_TWEET_KNOW "greet-tweet-know"
-
-gchar *
-paths_get_glade_path (const gchar *filename)
-{
-	return g_build_filename( DATADIR, GREET_TWEET_KNOW, filename, NULL );
-}
-
-gchar *paths_get_image_path( const gchar *filename ){
-	return g_build_filename( DATADIR, GREET_TWEET_KNOW, filename, NULL );
+gchar * paths_get_gtkbuilder_path (const gchar *filename){
+	return g_build_filename( DATADIR, PACKAGE_TARNAME, filename, NULL );
 }
 
 gchar *paths_get_locale_path(){

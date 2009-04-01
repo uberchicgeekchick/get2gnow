@@ -25,9 +25,8 @@
 
 G_BEGIN_DECLS
 
-gchar *paths_get_glade_path    (const gchar *filename);
-gchar *paths_get_image_path  (const gchar *filename);
-gchar *paths_get_locale_path (void);
+gchar *paths_get_gtkbuilder_path( const gchar *filename );
+gchar *paths_get_locale_path( void );
 
 G_END_DECLS
 

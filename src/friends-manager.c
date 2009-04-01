@@ -1,25 +1,51 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (C) 2008 Daniel Morales <daniminas@gmail.com>
+ * Greet-Tweet-Know is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * For more information or to find the latest release, visit our
+ * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Writen by an uberChick, other uberChicks please meet me & others @:
+ * 	http://uberChicks.Net/
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * I'm also disabled. I live with a progressive neuro-muscular disease.
+ * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
+ * 	http://Dystonia-DREAMS.Org/
  *
- * Authors: Daniel Morales <daniminas@gmail.com>
- * 		Kaity G. B. <uberChick@uberChicGeekChick.Com>
  *
+ *
+ * Unless explicitly acquired and licensed from Licensor under another
+ * license, the contents of this file are subject to the Reciprocal Public
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * and You may not copy or use this file in either source code or executable
+ * form, except in compliance with the terms and conditions of the RPL.
+ *
+ * All software distributed under the RPL is provided strictly on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND
+ * LICENSOR HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT
+ * LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific
+ * language governing rights and limitations under the RPL.
+ *
+ * The User-Visible Attribution Notice below, when provided, must appear in each
+ * user-visible display as defined in Section 6.4 (d):
+ * 
+ * Initial art work including: design, logic, programming, and graphics are
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * All materials not covered under the terms of the RPL are all still
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
+ * 
+ * Any & all data stored by this Software created, generated and/or uploaded by any User
+ * and any data gathered by the Software that connects back to the User.  All data stored
+ * by this Software is Copyright (C) of the User the data is connected to.
+ * Users may lisences their data under the terms of an OSI approved or Creative Commons
+ * license.  Users must be allowed to select their choice of license for each piece of data
+ * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
+ * select a default license for their data.  All of the Software's data pertaining to each
+ * User must be fully accessible, exportable, and deletable to that User.
  */
 
 #include "config.h"
@@ -29,7 +55,7 @@
 #include <gtk/gtk.h>
 
 
-#include "glade.h"
+#include "gtkbuilder.h"
 
 #include "main.h"
 #include "app.h"
@@ -37,7 +63,7 @@
 #include "add-dialog.h"
 #include "network.h"
 
-#define GLADE_FILE "friends_manager.xml"
+#define GtkBuilderUI "friends-manager.ui"
 
 enum {
 	USER_NAME,
@@ -54,6 +80,7 @@ typedef struct {
 	GtkWidget	*follow_add;
 	GtkWidget	*follow_rem;
 	GtkWidget	*view_profile;
+	GtkWidget	*view_timeline;
 } FriendsManager;
 
 static void friends_manager_display_following_and_followers(GList *im_following, GList *my_followers);
@@ -63,9 +90,10 @@ static void friends_manager_response_cb(GtkWidget *widget, gint response, Friend
 static void friends_manager_destroy_cb(GtkWidget *widget, FriendsManager *friends_manager);
 static void friends_manager_list_clicked(GtkTreeView *tree_view, FriendsManager *friends_manager);
 static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_manager, gboolean is_sensitive);
-static void friends_manager_view_profile_clicked(GtkButton *button, FriendsManager *friends_manager);
+static void friends_manager_view_profile(GtkButton *button, FriendsManager *friends_manager);
+static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager);
 static void friends_manager_friend_selected(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager);
-static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkTreeIter *iter );
+static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkTreeIter iter );
 
 
 static FriendsManager *friends_manager;
@@ -154,17 +182,42 @@ static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_mana
 	gtk_widget_set_sensitive(friends_manager->follow_add, is_sensitive);
 	gtk_widget_set_sensitive(friends_manager->follow_rem, is_sensitive);
 	gtk_widget_set_sensitive(friends_manager->view_profile, is_sensitive);
+	gtk_widget_set_sensitive(friends_manager->view_timeline, is_sensitive);
 }//friends_manager_set_buttons_sensitivity
 
-static void friends_manager_view_profile_clicked(GtkButton *button, FriendsManager *friends_manager){
+
+static void friends_manager_view_profile(GtkButton *button, FriendsManager *friends_manager){
 	User *profile;
 	GtkTreeIter iter;
 
 	GtkTreeSelection *selection=gtk_tree_view_get_selection(friends_manager->friends_and_followers);
 	gtk_tree_selection_get_selected(selection, NULL, &iter);
 
-	friends_manager_popup_profile(friends_manager, &iter);
-}//friends_manager_view_profile_clicked
+	friends_manager_popup_profile(friends_manager, iter);
+}//friends_manager_view_profile
+
+
+static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager){
+	GtkTreeIter iter;
+	gchar *user_name;
+	
+	
+	GtkTreeSelection *selection=gtk_tree_view_get_selection(friends_manager->friends_and_followers);
+	gtk_tree_selection_get_selected(selection, NULL, &iter);
+	
+	
+	gtk_tree_model_get(
+			GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
+			&iter,
+			USER_NAME, &user_name,
+			-1
+	);
+	
+	network_get_user((const gchar *)user_name);
+	
+	g_free(user_name);
+}//friends_manager_view_timeline
+
 
 static void friends_manager_friend_selected( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager ){
 	GtkTreeIter iter;
@@ -173,15 +226,15 @@ static void friends_manager_friend_selected( GtkTreeView *tree_view, GtkTreePath
 				&iter,
 				path
 	);
-	friends_manager_popup_profile(friends_manager, &iter);
+	friends_manager_popup_profile(friends_manager, iter);
 }//friends_manager_friend_selected
 
-static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkTreeIter *iter ){
+static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkTreeIter iter ){
 	User *profile=NULL;
 
 	gtk_tree_model_get(
 			GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
-			iter,
+			&iter,
 			FRIEND_POINTER, &profile,
 			-1
 	);
@@ -267,23 +320,25 @@ void friends_manager_show(GtkWindow *parent){
 	friends_manager = g_new0 (FriendsManager, 1);
 
 	/* Get widgets */
-	ui = glade_get_file(GLADE_FILE,
+	ui = gtkbuilder_get_file(GtkBuilderUI,
 						"friends_manager", &friends_manager->dialog,
 						"friends_and_followers", &friends_manager->friends_and_followers,
 						"follow_add", &friends_manager->follow_add,
 						"follow_rem", &friends_manager->follow_rem,
 						"view_profile", &friends_manager->view_profile,
+						"view_timeline", &friends_manager->view_timeline,
 						NULL);
 	
 	friends_manager->friends_and_follows_model = gtk_tree_view_get_model (friends_manager->friends_and_followers);
 
 	/* Connect the signals */
-	glade_connect (ui, friends_manager,
+	gtkbuilder_connect (ui, friends_manager,
 						"friends_manager", "destroy", friends_manager_destroy_cb,
 						"friends_manager", "response", friends_manager_response_cb,
 						"follow_add", "clicked", friends_manager_add_response_cb,
 						"follow_rem", "clicked", friends_manager_rem_response_cb,
-						"view_profile", "clicked", friends_manager_view_profile_clicked,
+						"view_profile", "clicked", friends_manager_view_profile,
+						"view_timeline", "clicked", friends_manager_view_timeline,
 						"friends_and_followers", "row-activated", friends_manager_friend_selected,
 						"friends_and_followers", "cursor-changed", friends_manager_list_clicked,
 						NULL);

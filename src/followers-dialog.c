@@ -1,41 +1,73 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (C) 2008 Daniel Morales <daniminas@gmail.com>
+ * Greet-Tweet-Know is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * For more information or to find the latest release, visit our
+ * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Writen by an uberChick, other uberChicks please meet me & others @:
+ * 	http://uberChicks.Net/
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * I'm also disabled. I live with a progressive neuro-muscular disease.
+ * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
+ * 	http://Dystonia-DREAMS.Org/
  *
- * Authors: Daniel Morales <daniminas@gmail.com>
- * 		Kaity G. B. <uberChick@uberChicGeekChick.Com>
  *
+ *
+ * Unless explicitly acquired and licensed from Licensor under another
+ * license, the contents of this file are subject to the Reciprocal Public
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * and You may not copy or use this file in either source code or executable
+ * form, except in compliance with the terms and conditions of the RPL.
+ *
+ * All software distributed under the RPL is provided strictly on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND
+ * LICENSOR HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT
+ * LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific
+ * language governing rights and limitations under the RPL.
+ *
+ * The User-Visible Attribution Notice below, when provided, must appear in each
+ * user-visible display as defined in Section 6.4 (d):
+ * 
+ * Initial art work including: design, logic, programming, and graphics are
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * All materials not covered under the terms of the RPL are all still
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
+ * 
+ * Any & all data stored by this Software created, generated and/or uploaded by any User
+ * and any data gathered by the Software that connects back to the User.  All data stored
+ * by this Software is Copyright (C) of the User the data is connected to.
+ * Users may lisences their data under the terms of an OSI approved or Creative Commons
+ * license.  Users must be allowed to select their choice of license for each piece of data
+ * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
+ * select a default license for their data.  All of the Software's data pertaining to each
+ * User must be fully accessible, exportable, and deletable to that User.
  */
 
+/********************************************************
+ *        System & library headers.                     *
+ ********************************************************/
 #include "config.h"
 
 #include <glib/gi18n.h>
 
-#include "glade.h"
-
+/********************************************************
+ *        Project headers.                              *
+ ********************************************************/
+#include "gtkbuilder.h"
 #include "main.h"
 #include "app.h"
 #include "followers-dialog.h"
 #include "add-dialog.h"
 #include "network.h"
 
-#define GLADE_FILE "followers_dlg.xml"
-
+/********************************************************
+ *        Objects, structures, and etc typedefs         *
+ ********************************************************/
 enum {
 	FOLLOWER_USER,
 	FOLLOWER_NAME,
@@ -46,32 +78,48 @@ typedef struct {
 	GtkWidget	*dialog;
 	GtkTreeView	*following_list;
 	GtkTreeModel	*following_store;
-} Lists;
+	GtkWidget	*follow_rem;
+	GtkWidget	*view_profile;
+} Followers;
 
-static void followers_rem_response_cb( GtkButton   *button, Lists *followers);
-static void followers_response_cb( GtkWidget *widget, gint response, Lists *followers);
-static void followers_destroy_cb( GtkWidget *widget, Lists *followers );
+/********************************************************
+ *          Variable definitions.                       *
+ ********************************************************/
+#define GtkBuilderUI "followers-dialog.ui"
 
-static Lists *followers;
+static Followers *followers;
+
+/********************************************************
+ *          Method  & function prototypes               *
+ ********************************************************/
+
+static void followers_rem_response_cb( GtkButton   *button, Followers *followers);
+static void followers_response_cb( GtkWidget *widget, gint response, Followers *followers);
+static void followers_destroy_cb( GtkWidget *widget, Followers *followers );
+static void followers_view_timeline(GtkButton *button, Followers *followers);
+
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
 
 static void
 followers_response_cb (GtkWidget     *widget,
 				   gint           response,
-				   Lists   *followers)
+				   Followers   *followers)
 {
 	gtk_widget_destroy (widget);
 }
 
 static void
 followers_destroy_cb (GtkWidget    *widget,
-				  Lists  *followers)
+				  Followers  *followers)
 {
 	g_free (followers);
 }
 
 static void
 followers_rem_response_cb (GtkButton   *button,
-					   Lists *followers)
+					   Followers *followers)
 {
 	GtkTreeSelection *sel;
 	GtkTreeIter       iter;
@@ -83,21 +131,38 @@ followers_rem_response_cb (GtkButton   *button,
 	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
 		return;
 
-	/*gtk_tree_model_get (followers->following_store,
-						&iter,
-						FOLLOWER_POINTER, &user,
-						-1);*/
-
 	gtk_list_store_remove (GTK_LIST_STORE (followers->following_store), &iter);
 
 	network_del_user(user->user_name);
 }
 
+static void followers_view_timeline(GtkButton *button, Followers *followers){
+	GtkTreeIter iter;
+	gchar *user_name;
+	
+	
+	GtkTreeSelection *selection=gtk_tree_view_get_selection(followers->following_list);
+	if(!(gtk_tree_selection_get_selected(selection, NULL, &iter))) return;
+	
+	
+	gtk_tree_model_get(
+			GTK_TREE_MODEL( followers->following_list ),
+			&iter,
+			FOLLOWER_USER, &user_name,
+			-1
+	);
+	
+	network_get_user((const gchar *)user_name);
+	
+	g_free(user_name);
+}//friends_manager_view_timeline
+
+
 static void
 list_follower_activated_cb (GtkTreeView       *tree_view,
 							GtkTreePath       *path,
 							GtkTreeViewColumn *column,
-							Lists       *followers)
+							Followers       *followers)
 {
 	GtkTreeIter  iter;
 	gchar       *user_name;
@@ -115,6 +180,8 @@ list_follower_activated_cb (GtkTreeView       *tree_view,
 	network_get_user(user_name);
 
 	g_free(user_name);
+	gtk_widget_destroy(followers->dialog);
+	g_free(followers);
 }
 
 void
@@ -148,21 +215,24 @@ void followers_dialog_show (GtkWindow *parent){
 	GList      *friends;
 	GdkCursor *cursor;
 
-	followers = g_new0 (Lists, 1);
+	followers = g_new0 (Followers, 1);
 
 	/* Get widgets */
-	ui = glade_get_file (GLADE_FILE,
+	ui = gtkbuilder_get_file (GtkBuilderUI,
 						"followers_dialog", &followers->dialog,
 						"following_list", &followers->following_list,
+						"following_list", &followers->follow_rem,
+						"following_list", &followers->view_profile,
 						NULL);
 	
 	followers->following_store=gtk_tree_view_get_model(followers->following_list);
 	
 	/* Connect the signals */
-	glade_connect (ui, followers,
+	gtkbuilder_connect (ui, followers,
 						"followers_dialog", "destroy", followers_destroy_cb,
 						"followers_dialog", "response", followers_response_cb,
 						"follow_rem", "clicked", followers_rem_response_cb,
+						"view_profile", "clicked", followers_view_timeline,
 						"following_list", "row-activated", list_follower_activated_cb,
 						NULL);
 

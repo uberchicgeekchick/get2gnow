@@ -44,16 +44,56 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
+
+
 #ifndef __HEADER_H__
 #define __HEADER_H__
 
+/********************************************************
+ *        System & library headers.                     *
+ ********************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <glib.h>
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
+#include <libgnome/libgnome.h>
 
 #include "config.h"
 
 G_BEGIN_DECLS
 
-G_END_DECLS
+/********************************************************
+ *         typedefs: objects, structures, and etc.      *
+ ********************************************************/
+typedef struct {
+	GtkWidget  parent;
+} ThisObject;
 
+typedef struct {
+	GtkWidgetClass       parent_class;
+} ThisObjectClass;
+
+/********************************************************
+ *          Objects and handlers prototypes.            *
+ ********************************************************/
+#define	TYPE_OF_THIS_OBJECT		(this_object_get_type())
+#define	THIS_OBJECT(o)			(G_TYPE_CHECK_INSTANCE_CAST( (o), TYPE_OF_THIS_OBJECT, ThisObject ))
+#define	THIS_OBJECT_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST( (k), TYPE_OF_THIS_OBJECT, ThisObjectClass ))
+#define	IS_THIS_OBJECT(o)		(G_TYPE_CHECK_INSTANCE_TYPE( (o), TYPE_OF_THIS_OBJECT) )
+#define	IS_THIS_OBJECT_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE( (k), TYPE_OF_THIS_OBJECT) )
+#define	THIS_OBJECT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS( (o), TYPE_OF_THIS_OBJECT, ThisObjectClass) )
+
+GType this_object_get_type( void ) G_GNUC_CONST;// Macro
+ThisObject *this_object_new( void );
+void this_object_show( GtkWindow *parent );
+
+G_END_DECLS
 #endif
 

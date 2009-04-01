@@ -50,7 +50,7 @@ am__greet_tweet_know_SOURCES_DIST = \
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	paths.c			paths.h			\
-	glade.c			glade.h			\
+	gtkbuilder.c			gtkbuilder.h			\
 	keyring.c		keyring.h		\
 	main.c			main.h			\
 	about.c			about.h			\
@@ -76,7 +76,7 @@ greet_tweet_know_OBJECTS =			\
 	gconf.$(OBJEXT)				\
 	debug.$(OBJEXT)				\
 	paths.$(OBJEXT)				\
-	glade.$(OBJEXT)				\
+	gtkbuilder.$(OBJEXT)			\
 	$(am__objects_1)			\
 	$(am__objects_2)			\
 	main.$(OBJEXT)				\
@@ -308,7 +308,7 @@ greet_tweet_know_SOURCES =				\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	paths.c			paths.h			\
-	glade.c			glade.h			\
+	gtkbuilder.c		gtkbuilder.h		\
 	main.c			main.h			\
 	about.c			about.h			\
 	account-dialog.c 	account-dialog.h	\

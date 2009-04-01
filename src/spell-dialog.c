@@ -36,13 +36,13 @@
 #include <gtk/gtktreeselection.h>
 #include <gtk/gtksizegroup.h>
 
-#include "glade.h"
+#include "gtkbuilder.h"
 
 #include "send-message-dialog.h"
 #include "spell.h"
 #include "spell-dialog.h"
 
-#define GLADE_FILE "spell_dlg.xml"
+#define GtkBuilderUI "spell-dialog.ui"
 
 typedef struct {
 	GtkWidget   *window;
@@ -244,7 +244,7 @@ spell_dialog_show (GtkWidget   *textview,
 	dialog->end = end;
 
 	/* Get widgets */
-	ui = glade_get_file (GLADE_FILE,
+	ui = gtkbuilder_get_file (GtkBuilderUI,
 						"spell_dialog", &dialog->window,
 						"button_replace", &dialog->button_replace,
 						"label_word", &dialog->label_word,
@@ -252,7 +252,7 @@ spell_dialog_show (GtkWidget   *textview,
 						NULL);
 
 	/* Connect the signals */
-	glade_connect (ui, dialog,
+	gtkbuilder_connect (ui, dialog,
 						"spell_dialog", "destroy", spell_dialog_destroy_cb,
 						"spell_dialog", "response", spell_dialog_response_cb,
 						NULL);

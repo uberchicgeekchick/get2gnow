@@ -21,7 +21,7 @@
 #include "config.h"
 
 #include "gconf.h"
-#include "glade.h"
+#include "gtkbuilder.h"
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
 #endif
@@ -29,7 +29,7 @@
 #include "main.h"
 #include "account-dialog.h"
 
-#define GLADE_FILE "account_dlg.xml"
+#define GtkBuilderUI "account-dialog.ui"
 
 typedef struct {
 	GtkWidget *dialog;
@@ -106,7 +106,7 @@ account_dialog_show (GtkWindow *parent)
 	act = g_new0 (Account, 1);
 
 	/* Get widgets */
-	ui = glade_get_file (GLADE_FILE,
+	ui = gtkbuilder_get_file (GtkBuilderUI,
 						"account_dialog", &act->dialog,
 						"username_entry", &act->username,
 						"password_entry", &act->password,
@@ -114,7 +114,7 @@ account_dialog_show (GtkWindow *parent)
 						NULL);
 
 	/* Connect the signals */
-	glade_connect (ui, act,
+	gtkbuilder_connect (ui, act,
 						"account_dialog", "destroy", account_destroy_cb,
 						"account_dialog", "response", account_response_cb,
 						"show_password_checkbutton", "toggled", account_show_password_cb,

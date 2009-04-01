@@ -274,7 +274,8 @@ parser_timeline(const gchar *data,
 		g_free(tweet);
 
 		/* Get Image */
-		g_free( network_get_image(status->user->image_url, &iter) );
+		//g_free( network_get_image(status->user->image_url, &iter) );
+		network_get_image(status->user->image_url, &iter);
 
 		/* Free struct */
 		parser_free_user(status->user);

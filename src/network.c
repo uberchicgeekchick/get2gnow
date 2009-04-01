@@ -61,7 +61,7 @@ static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointe
 static void network_cb_on_post( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_message( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_cb_on_image( SoupSession *session, SoupMessage *msg, Image *image );
 static void network_cb_on_add( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_del( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
@@ -410,7 +410,7 @@ gchar *network_get_image (const gchar  *url_image, GtkTreeIter *iter){
 
 	Image *image=g_new0(Image, 1);
 	image->src=g_strdup(image_file);
-	image->iter=(iter?iter:NULL);
+	image->iter=iter;
 	
 	network_get_data(url_image, network_cb_on_image, image);
 	
@@ -656,15 +656,9 @@ static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpoi
 
 
 /* On get a image */
-static void
-network_cb_on_image (SoupSession *session,
-					 SoupMessage *msg,
-					 gpointer     user_data)
-{
-	Image *image = (Image *)user_data;
+static void network_cb_on_image( SoupSession *session, SoupMessage *msg, Image *image ){
 
-	debug (DEBUG_DOMAIN,
-				  "Image response: %i", msg->status_code);
+	debug (DEBUG_DOMAIN, "Image response: %i", msg->status_code);
 
 	/* check response */
 	if (network_check_http( msg )) {
@@ -674,7 +668,7 @@ network_cb_on_image (SoupSession *session,
 								 msg->response_body->length,
 								 NULL)) {
 			/* Set image from file here (image_file) */
-			if(image->iter) app_set_image(image->src,image->iter);
+			if(image->iter!=NULL) app_set_image(image->src,image->iter);
 		}
 	}
 

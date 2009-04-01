@@ -34,7 +34,7 @@
 
 #include "gconf.h"
 #include "debug.h"
-#include "glade.h"
+#include "gtkbuilder.h"
 
 #include "main.h"
 #include "app.h"
@@ -44,7 +44,7 @@
 #include "network.h"
 
 #define DEBUG_DOMAIN_SETUP    "SendMessage"
-#define GLADE_FILE              "send_message_dlg.xml"
+#define GtkBuilderUI              "send-message-dialog.ui"
 
 /* Let's use the preferred maximum character count */
 #define MAX_CHARACTER_COUNT 140
@@ -127,7 +127,7 @@ static void message_setup( GtkWindow  *parent ){
 	debug (DEBUG_DOMAIN_SETUP, "Initialising message dialog");
 
 	/* Get widgets */
-	ui=glade_get_file(	GLADE_FILE,
+	ui=gtkbuilder_get_file(	GtkBuilderUI,
 				"send_message_dialog", &dialog_priv->dialog,
 				"send_message_textview", &dialog_priv->textview,
 				"char_label", &dialog_priv->label,
@@ -138,7 +138,7 @@ static void message_setup( GtkWindow  *parent ){
 	);
 	
 	/* Connect the signals */
-	glade_connect(	ui, dialog,
+	gtkbuilder_connect(	ui, dialog,
 			"send_message_dialog", "destroy", message_destroy_cb,
 			"send_message_dialog", "response", message_response_cb,
 			"send_message_textview", "button_press_event", message_text_button_press_cb,

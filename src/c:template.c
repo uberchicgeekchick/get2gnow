@@ -1,9 +1,11 @@
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * project is about this project.
+ * Greet-Tweet-Know is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=connectED
+ * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -11,9 +13,9 @@
  * I'm also disabled. I live with a progressive neuro-muscular disease.
  * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
  * 	http://Dystonia-DREAMS.Org/
- */
-
-/*
+ *
+ *
+ *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
  * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
@@ -46,8 +48,76 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#include <gtk/gtk.h>
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
 
+/********************************************************
+ *        Project headers.                              *
+ ********************************************************/
 #include "config.h"
+#include "new-object.h"
 
+/********************************************************
+ *         typedefs: objects, structures, and etc       *
+ ********************************************************/
+struct {
+	gchar		*gtkbuilder_ui_file;
+	GtkWindow	*dialog;
+	GtkButton	*yes;
+	GtkButton	*no;
+} ThisObjectPriv;
+
+
+/********************************************************
+ *          Objects and handlers.                       *
+ ********************************************************/
+#define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_OF_THIS_OBJECT, ThisObjectPriv))
+
+static ThisObject *this=NULL;
+
+static void this_object_class_init( ThisObjectClass *goclass );
+static void this_object_init( ThisObject *new_object );
+static void this_object_finalize( GObject *object );
+
+
+/********************************************************
+ *          Method  & function prototypes               *
+ ********************************************************/
+
+
+ThisObject *this_object_class_new(void){
+	return g_object_new(TYPE_OF_NEW_OBJECT, NULL);
+}//new_object_class_new
+
+
+static void this_object_class_init( ThisObjectClass *kclass ){
+	GObjectClass *this=G_OBJECT_CLASS(golass);
+	this->finalize=new_object_finalize;
+	g_type_class_add_private(this, sizeof(ThisObjectPriv));
+}//new_object_class_init
+
+static void this_object_init(ThisObject *this_object){
+	this=this_object;
+	g_signal_connect(this, "size_allocate", G_CALLBACK(this_object_resize), this);
+	g_signal_connect(this, "activated", G_CALLBACK(this_object_clicked), this);
+}//new_class_init
+
+static void this_object_create( GtkWindow *parent ){
+	this=g_new0(ThisObject, 1);
+	this->gtkbuilder_ui_file=g_strdup_printf( "%sthis-object.ui", PACKAGE_PREFIX );
+
+
+}//void this_object_create
+
+void this_object_show( GtkWindow *parent ){
+	if(!this) this_object_create( parent );
+	
+	gtk_widget_show( GET_PRIV(this)->window );
+}//void this_object_show
+
+static void this_object_finalize( GObject *object ){
+	ThisObjectPrivate *private=GET_PRIV(object);
+	G_OBJECT_CLASS(private_parent_class)->finalize(object);
+}//this_object_finalize
 

@@ -51,15 +51,15 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(desktopdir)" "$(DESTDIR)$(gladedir)" \
+am__installdirs = "$(DESTDIR)$(desktopdir)" "$(DESTDIR)$(gtkbuilderdir)" \
 	"$(DESTDIR)$(icondir)" "$(DESTDIR)$(schemasdir)" \
 	"$(DESTDIR)$(svgicondir)"
 desktopDATA_INSTALL = $(INSTALL_DATA)
-gladeDATA_INSTALL = $(INSTALL_DATA)
+gtkbuilderDATA_INSTALL = $(INSTALL_DATA)
 iconDATA_INSTALL = $(INSTALL_DATA)
 schemasDATA_INSTALL = $(INSTALL_DATA)
 svgiconDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(desktop_DATA) $(glade_DATA) $(icon_DATA) $(schemas_DATA) \
+DATA = $(desktop_DATA) $(gtkbuilder_DATA) $(icon_DATA) $(schemas_DATA) \
 	$(svgicon_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -244,23 +244,22 @@ desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
 schemasdir = $(GCONF_SCHEMA_FILE_DIR)
 schemas_in_files = greet-tweet-know.schemas.in
 schemas_DATA = $(schemas_in_files:.schemas.in=.schemas)
-gladedir = $(datadir)/greet-tweet-know
-glade_DATA = \
-	add_friend_dlg.xml		\
-	account_dlg.xml			\
-	main_window.xml			\
-	prefs_dlg.xml			\
-	send_message_dlg.xml		\
-	spell_dlg.xml			\
-	friends_manager.xml		\
-	followers_dlg.xml
+gtkbuilderdir = $(datadir)/greet-tweet-know
+gtkbuilder_DATA = 			\
+	preferences.ui			\
+	main-window.ui			\
+	send-message-dialog.ui		\
+	add-friend-dialog.ui		\
+	friends-manager.ui		\
+	followers-dialog.ui		\
+	account-dialog.ui
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
 icon_DATA = greet-tweet-know.png
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = greet-tweet-know.svg
 EXTRA_DIST = \
-	$(glade_DATA)		\
+	$(gtkbuilder_DATA)	\
 	$(icon_DATA)		\
 	$(svgicon_DATA)		\
 	$(desktop_in_files)	\
@@ -330,22 +329,22 @@ uninstall-desktopDATA:
 	  rm -f "$(DESTDIR)$(desktopdir)/$$f"; \
 	done
 
-install-gladeDATA: $(glade_DATA)
+install-gtkbuilderDATA: $(gtkbuilder_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(gladedir)" || $(MKDIR_P) "$(DESTDIR)$(gladedir)"
-	@list='$(glade_DATA)'; for p in $$list; do \
+	test -z "$(gtkbuilderdir)" || $(MKDIR_P) "$(DESTDIR)$(gtkbuilderdir)"
+	@list='$(gtkbuilder_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f=$(am__strip_dir) \
-	  echo " $(gladeDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gladedir)/$$f'"; \
-	  $(gladeDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gladedir)/$$f"; \
+	  echo " $(gtkbuilderDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gtkbuilderdir)/$$f'"; \
+	  $(gtkbuilderDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gtkbuilderdir)/$$f"; \
 	done
 
-uninstall-gladeDATA:
+uninstall-gtkbuilderDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(glade_DATA)'; for p in $$list; do \
+	@list='$(gtkbuilder_DATA)'; for p in $$list; do \
 	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(gladedir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(gladedir)/$$f"; \
+	  echo " rm -f '$(DESTDIR)$(gtkbuilderdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(gtkbuilderdir)/$$f"; \
 	done
 install-iconDATA: $(icon_DATA)
 	@$(NORMAL_INSTALL)
@@ -435,7 +434,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(desktopdir)" "$(DESTDIR)$(gladedir)" "$(DESTDIR)$(icondir)" "$(DESTDIR)$(schemasdir)" "$(DESTDIR)$(svgicondir)"; do \
+	for dir in "$(DESTDIR)$(desktopdir)" "$(DESTDIR)$(gtkbuilderdir)" "$(DESTDIR)$(icondir)" "$(DESTDIR)$(schemasdir)" "$(DESTDIR)$(svgicondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -482,7 +481,7 @@ info: info-am
 info-am:
 
 install-data-am: install-data-local install-desktopDATA \
-	install-gladeDATA install-iconDATA install-schemasDATA \
+	install-gtkbuilderDATA install-iconDATA install-schemasDATA \
 	install-svgiconDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
@@ -519,7 +518,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-desktopDATA uninstall-gladeDATA \
+uninstall-am: uninstall-desktopDATA uninstall-gtkbuilderDATA \
 	uninstall-iconDATA uninstall-schemasDATA uninstall-svgiconDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
@@ -531,7 +530,7 @@ uninstall-am: uninstall-desktopDATA uninstall-gladeDATA \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-data-hook \
 	install-data-local install-desktopDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-gladeDATA \
+	install-dvi-am install-exec install-exec-am install-gtkbuilderDATA \
 	install-html install-html-am install-iconDATA install-info \
 	install-info-am install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-schemasDATA install-strip \
@@ -539,7 +538,7 @@ uninstall-am: uninstall-desktopDATA uninstall-gladeDATA \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	uninstall uninstall-am uninstall-desktopDATA \
-	uninstall-gladeDATA uninstall-hook uninstall-iconDATA \
+	uninstall-gtkbuilderDATA uninstall-hook uninstall-iconDATA \
 	uninstall-schemasDATA uninstall-svgiconDATA
 
 @INTLTOOL_DESKTOP_RULE@

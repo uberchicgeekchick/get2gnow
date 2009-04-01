@@ -20,13 +20,13 @@
 
 #include "config.h"
 
-#include "glade.h"
+#include "gtkbuilder.h"
 
 #include "main.h"
 #include "add-dialog.h"
 #include "network.h"
 
-#define GLADE_FILE "add_friend_dlg.xml"
+#define GtkBuilderUI "add-friend-dialog.ui"
 
 typedef struct {
 	GtkWidget *entry;
@@ -71,13 +71,13 @@ add_dialog_show (GtkWindow *parent)
 	add = g_new0 (Add, 1);
 
 	/* Get widgets */
-	ui = glade_get_file (GLADE_FILE,
+	ui = gtkbuilder_get_file (GtkBuilderUI,
 						"add_friend_dialog", &add->dialog,
 						"frienduser_entry", &add->entry,
 						NULL);
 
 	/* Connect the signals */
-	glade_connect (ui, add,
+	gtkbuilder_connect (ui, add,
 						"add_friend_dialog", "destroy", add_destroy_cb,
 						"add_friend_dialog", "response", add_response_cb,
 						NULL);

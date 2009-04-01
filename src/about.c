@@ -75,7 +75,7 @@ void about_dialog_new (GtkWindow *parent){
 						   "version", PACKAGE_VERSION,
 						   "website", WEB_SITE,
 						   "wrap-license", TRUE,
-						   "logo-icon-name", "greet-tweet-know",
+						   "logo-icon-name", PACKAGE_TARNAME,
 						   NULL);
 
 	g_free(license_trans);

@@ -33,7 +33,7 @@
 #include "debug.h"
 #include "gconf.h"
 #include "paths.h"
-#include "glade.h"
+#include "gtkbuilder.h"
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
 #endif
@@ -55,10 +55,10 @@
 #include "ui-utils.h"
 #include "tweet-list.h"
 
-#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_APP, AppPriv ))
+#define GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_APP, AppPriv ))
 
 #define DEBUG_DOMAIN_SETUP       "AppSetup"
-#define GLADE_FILE	"main_window.xml"
+#define GtkBuilderUI	"main-window.ui"
 #define DEBUG_QUIT
 
 #define TYPE_TWITTER "twitter"
@@ -223,7 +223,7 @@ app_setup(void)
 	
 	/* Set up interface */
 	debug(DEBUG_DOMAIN_SETUP, "Initialising interface");
-	ui = glade_get_file(GLADE_FILE,
+	ui = gtkbuilder_get_file(GtkBuilderUI,
 							  "main_window", &app_priv->window,
 							  "main_scrolledwindow", &scrolled_window,
 							  "main_statusbar", &app_priv->statusbar,
@@ -257,7 +257,7 @@ app_setup(void)
 	g_free(timeline);
 
 	/* Connect the signals */
-	glade_connect(ui, app,
+	gtkbuilder_connect(ui, app,
 						"main_window", "destroy", main_window_destroy_cb,
 						"main_window", "delete_event", main_window_delete_event_cb,
 						"main_window", "configure_event", app_window_configure_event_cb,

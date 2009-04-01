@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <interface>
-  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkListStore" id="friends_manager_store">
     <columns>
@@ -133,18 +133,34 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="view_profile">
-                        <property name="label" translatable="yes">gtk-about</property>
+                        <property name="label" translatable="yes">gtk-info</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">View the selected users details including their bio, friends, followers, tweets, and etc.</property>
+                        <property name="tooltip_text" translatable="yes">View the selected users details including their bio, followers, and etc.</property>
                         <property name="use_stock">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-			<property name="fill">False</property>
-			<property name="position">2</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="view_timeline">
+                        <property name="label" translatable="yes">gtk-home</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">View the selected users tweets/status updates.</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>

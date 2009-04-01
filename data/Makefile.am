@@ -8,16 +8,15 @@ schemas_in_files = greet-tweet-know.schemas.in
 schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 @INTLTOOL_SCHEMAS_RULE@
 
-gladedir = $(datadir)/greet-tweet-know
-glade_DATA = 				\
-	add_friend_dlg.xml		\
-	account_dlg.xml			\
-	main_window.xml			\
-	prefs_dlg.xml			\
-	send_message_dlg.xml		\
-	spell_dlg.xml			\
-	friends_manager.xml		\
-	followers_dlg.xml
+gtkbuilderdir = $(datadir)/greet-tweet-know
+gtkbuilder_DATA = 			\
+	preferences.ui			\
+	main-window.ui			\
+	send-message-dialog.ui		\
+	add-friend-dialog.ui		\
+	friends-manager.ui		\
+	followers-dialog.ui		\
+	account-dialog.ui
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
 icon_DATA = greet-tweet-know.png
@@ -25,7 +24,7 @@ svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = greet-tweet-know.svg
 	
 EXTRA_DIST =			\
-	$(glade_DATA)		\
+	$(gtkbuilder_DATA)		\
 	$(icon_DATA)		\
 	$(svgicon_DATA)		\
 	$(desktop_in_files)	\
@@ -58,4 +57,4 @@ install-data-local:
 else
 install-data-local:
 endif
-	
+
