@@ -48,76 +48,39 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/********************************************************
- *          My art, code, & programming.                *
- ********************************************************/
+#ifndef __IMAGES_H__
+#define __IMAGES_H__
 
-/********************************************************
- *        Project headers.                              *
- ********************************************************/
-#include "config.h"
-#include "new-object.h"
-
-/********************************************************
- *         typedefs: objects, structures, and etc       *
- ********************************************************/
-struct {
-	gchar		*gtkbuilder_ui_file;
-	GtkWindow	*dialog;
-	GtkButton	*yes;
-	GtkButton	*no;
-} ThisObjectPriv;
+#include <glib.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 
-/********************************************************
- *          Objects and handlers.                       *
- ********************************************************/
-#define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_OF_THIS_OBJECT, ThisObjectPriv))
+G_BEGIN_DECLS
 
-static ThisObject *this=NULL;
-
-static void this_object_class_init( ThisObjectClass *goclass );
-static void this_object_init( ThisObject *new_object );
-static void this_object_finalize( GObject *object );
-
-
-/********************************************************
- *          Method  & function prototypes               *
- ********************************************************/
+typedef enum {
+	ImagesMaximum		=	128,
+	ImagesExpanded		=	73,
+	ImagesDefault		=	48,
+	ImagesMinimum		=	24,
+	ImagesUnscaled		=	-1
+} ImagesSizesDefault;
 
 
-ThisObject *this_object_class_new(void){
-	return g_object_new(TYPE_OF_NEW_OBJECT, NULL);
-}//new_object_class_new
+gchar *images_get_filename( const gchar *url );
 
+GdkImage *images_get_image_from_file( const gchar *image_filename );
+GdkImage *images_get_scaled_image_from_file( const gchar *image_filename, gint width, gint height );
 
-static void this_object_class_init( ThisObjectClass *kclass ){
-	GObjectClass *this=G_OBJECT_CLASS(golass);
-	this->finalize=new_object_finalize;
-	g_type_class_add_private(this, sizeof(ThisObjectPriv));
-}//new_object_class_init
+GdkPixbuf *images_get_expanded_pixbuf( const gchar *image_filename );
+GdkPixbuf *images_get_maximimized_pixbuf( const gchar *image_filename );
+GdkPixbuf *images_get_default_pixbuf( const gchar *image_filename );
+GdkPixbuf *images_get_minimized_pixbuf( const gchar *image_filename );
+GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename );
+GdkPixbuf *images_get_pixbuf_from_file( const gchar *image_filename );
+GdkPixbuf *images_get_scaled_pixbuf_from_file( const gchar *image_filename, gint width, gint height );
+GdkPixbuf *images_get_unscaled_pixbuf_from_file( const gchar *image_filename );
+GdkPixbuf *images_get_and_scale_pixbuf_from_file( const gchar *image_filename, gint width, gint height );
 
-static void this_object_init(ThisObject *this_object){
-	this=this_object;
-	g_signal_connect(this, "size_allocate", G_CALLBACK(this_object_resize), this);
-	g_signal_connect(this, "activated", G_CALLBACK(this_object_clicked), this);
-}//new_class_init
+G_END_DECLS
 
-static void this_object_create( GtkWindow *parent ){
-	this=g_new0(ThisObject, 1);
-	this->gtkbuilder_ui_file=g_strdup_printf( "%sthis-object.ui", PACKAGE_PREFIX );
-
-
-}//void this_object_create
-
-void this_object_show( GtkWindow *parent ){
-	if(!this) this_object_create( parent );
-	
-	gtk_widget_show( GET_PRIV(this)->window );
-}//void this_object_show
-
-static void this_object_finalize( GObject *object ){
-	ThisObjectPrivate *private=GET_PRIV(object);
-	G_OBJECT_CLASS(private_parent_class)->finalize(object);
-}//this_object_finalize
-
+#endif /* __IMAGES_H__ */

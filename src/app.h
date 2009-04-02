@@ -31,6 +31,7 @@
 #include <gtk/gtk.h>
 #include "paths.h"
 #include "parser.h"
+#include "images.h"
 
 #include "tweet-list.h"
 
@@ -114,8 +115,7 @@ void				app_set_statusbar_msg	        (gchar        *message);
 void                app_notify_sound                 (void);
 void				app_notify                       (gchar        *msg);
 void                app_state_on_connection          (gboolean      connected);
-void                app_set_image                    (const gchar  *file,
-                                                             GtkTreeIter   *iter);
+void app_set_image ( const gchar *file, GtkTreeIter iter );
 void                app_expand_message               (const gchar  *name,
                                                              const gchar  *date,
                                                              const gchar  *tweet,

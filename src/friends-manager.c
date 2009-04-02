@@ -62,6 +62,7 @@
 #include "friends-manager.h"
 #include "add-dialog.h"
 #include "network.h"
+#include "images.h"
 
 #define GtkBuilderUI "friends-manager.ui"
 
@@ -250,9 +251,13 @@ static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkT
 	g_signal_connect( dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog );
 	
 	
-	gchar *image_filename;
-	GtkWidget *image;
-	gtk_message_dialog_set_image( GTK_MESSAGE_DIALOG( dialog ), (image=gtk_image_new_from_file( (image_filename=network_get_image( profile->image_url, NULL )) )) );
+	GtkImage *image;
+	if(g_str_equal("unknown_image", profile->image_filename)){
+		network_download_avatar( profile->image_url );
+		profile->image_filename=images_get_filename( profile->image_url );
+	}
+	
+	gtk_message_dialog_set_image( GTK_MESSAGE_DIALOG( dialog ), (image=GTK_IMAGE( gtk_image_new_from_pixbuf( images_new( profile->image_filename) )) );
 
 	gchar *message=g_strdup_printf(
 			"<u><b>%s:</b> %s</u>\n\t<b>Location:</b> %s\n\t<b>URL:</b> %s\n\t<b>Followers:</b> %u\n\t<b>Bio:</b>\n\t\t%s\n",
@@ -268,9 +273,8 @@ static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkT
 	gtk_widget_show( GTK_WIDGET( dialog ) );
 	
 	g_free(message);
-	g_free(image_filename);
 
-	gtk_widget_destroy( GTK_WIDGET( image ) );
+	//gtk_widget_destroy( GTK_WIDGET( image ) );
 	
 	g_free(profile);
 }//friends_manager_popup_profile

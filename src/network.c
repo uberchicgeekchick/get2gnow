@@ -40,6 +40,7 @@
 #include "main.h"
 #include "network.h"
 #include "parser.h"
+#include "images.h"
 #include "app.h"
 #include "send-message-dialog.h"
 #include "followers-dialog.h"
@@ -48,7 +49,7 @@
 
 typedef struct {
 	gchar        *src;
-	GtkTreeIter   *iter;
+	GtkTreeIter   iter;
 } Image;
 
 static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data);
@@ -354,7 +355,7 @@ void network_get_combined_timeline(void){
 	};
 	
 	for(int i=0; timelines[i]; i++)
-		network_get_data(timelines[i], network_cb_on_timeline, NULL);
+		network_get_data(timelines[i], network_cb_on_timeline, "combined");
 	/*{	msg=soup_message_new("GET", timeline[i]);
 	 * 	soup_session_send_message(soup_connection, msg);
 	 }*/
@@ -386,36 +387,41 @@ static gboolean network_get_users_page(SoupMessage *msg){
 
 
 /* Get an image from servers */
-gchar *network_get_image (const gchar  *url_image, GtkTreeIter *iter){
-	gchar *image_file, **image_name_info;
+gboolean network_download_avatar( const gchar *image_url ){
+	gchar *image_filename=NULL;
+	if (g_file_test( (image_filename=images_get_filename(image_url)), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+		return TRUE;
+	SoupMessage *msg;
 	
-	/* save using the filename */
-	image_name_info=g_strsplit(url_image, (const gchar *)"/", 7);
-	if( image_name_info[5] && image_name_info[6] )
-		image_file=g_strconcat(image_name_info[5], "_", image_name_info[6], NULL);
-	else
-		image_file="unknown_image";
-	
-	if(image_name_info)
-		g_strfreev(image_name_info);
-	
-	image_file=g_build_filename( g_get_home_dir(), ".gnome2", CACHE_IMAGES, image_file, NULL );
-	
-	/* TODO: fix - check if image already exists */
-	if (g_file_test(image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) {		
-		/* Set image from file here */
-		if(iter) app_set_image(image_file, iter);
-		return g_strdup(image_file);
-	}
+	debug(DEBUG_DOMAIN, "Downloading Image: %s\nGet: %s", image_filename, image_url);
+	msg=soup_message_new("GET", image_url);
+	soup_session_send_message(soup_connection, msg);
 
+	debug (DEBUG_DOMAIN, "Image response: %i", msg->status_code);
+
+	/* check response */
+	if(!( (network_check_http( msg )) && ( g_file_set_contents( image_filename, msg->response_body->data, msg->response_body->length, NULL )) ))
+		return FALSE;
+	
+	return TRUE;
+}
+
+
+void network_get_image(const gchar *image_url, GtkTreeIter iter ){
+	gchar *image_filename=NULL;
+	/* TODO: fix - check if image already exists */
+	if (g_file_test( (image_filename=images_get_filename(image_url)), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) {		
+		/* Set image from file here */
+		app_set_image(image_filename, iter);
+		return;
+	}
+	
 	Image *image=g_new0(Image, 1);
-	image->src=g_strdup(image_file);
+	image->src=image_filename;
 	image->iter=iter;
 	
-	network_get_data(url_image, network_cb_on_image, image);
-	
-	return g_strdup(image_file);
-}
+	network_get_data( image_url, network_cb_on_image, image );
+}//network_get_avatar
 
 
 
@@ -428,8 +434,8 @@ network_add_user (const gchar *username)
 	if((G_STR_EMPTY(username)))
 		return;
 	
-	url = g_strdup_printf (API_TWITTER_FOLLOWING_ADD, username);
-	network_post_data (url, NULL, network_cb_on_add, NULL);
+	url=g_strdup_printf (API_TWITTER_FOLLOWING_ADD, username);
+	network_post_data(url, NULL, network_cb_on_add, NULL);
 	if(url) g_free(url); url=NULL;
 }
 
@@ -623,8 +629,7 @@ static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpoi
 		new_timeline = (gchar *)user_data;
 	}
 
-	debug (DEBUG_DOMAIN,
-				  "Timeline response: %i",msg->status_code);
+	debug( DEBUG_DOMAIN, "Timeline response: %i",msg->status_code);
 
 	processing = FALSE;
 
@@ -668,10 +673,10 @@ static void network_cb_on_image( SoupSession *session, SoupMessage *msg, Image *
 								 msg->response_body->length,
 								 NULL)) {
 			/* Set image from file here (image_file) */
-			if(image->iter!=NULL) app_set_image(image->src,image->iter);
+			app_set_image(image->src,image->iter);
 		}
 	}
-
+	
 	if(image->src) g_free(image->src); image->src=NULL;
 	if(image) g_free(image); image=NULL;
 }

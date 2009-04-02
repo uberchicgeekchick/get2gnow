@@ -965,24 +965,14 @@ app_notify(gchar *msg)
 	g_error_free(error);
 }
 
-void
-app_set_image(const gchar *file, GtkTreeIter  *iter){
-	GdkPixbuf	 *pixbuf, *resized;
-	GError		 *error = NULL;
-
-	if( !(pixbuf=gdk_pixbuf_new_from_file(file, &error)) ){
-		debug(DEBUG_DOMAIN_SETUP, "Image error: %s: %s", file, error->message);
-		if(error) g_error_free(error);
+void app_set_image(const gchar *image_filename, GtkTreeIter  iter){
+	GdkPixbuf *pixbuf;
+	if( !(pixbuf=images_get_pixbuf_from_file( image_filename )) )
 		return;
-	}
 
-	resized=gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
-
-	gtk_list_store_set((tweet_list_get_store()) , iter, PIXBUF_AVATAR, resized, -1);
+	gtk_list_store_set((tweet_list_get_store()) , &iter, PIXBUF_AVATAR, pixbuf, -1);
 	g_object_unref(pixbuf);
-	g_object_unref(resized);
-	if(error) g_error_free(error);
-}
+}//app_set_image
 
 void app_expand_message(const gchar *name, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf){
 	gchar *title_text=g_strdup_printf("<b>%s</b> - %s", name, date);

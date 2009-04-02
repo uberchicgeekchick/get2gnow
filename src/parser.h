@@ -34,6 +34,7 @@ typedef struct {
 	gchar		*url;
 	guint		followers;
 	gchar		*image_url;
+	gchar		*image_filename;
 	gboolean	following;
 } User;
 

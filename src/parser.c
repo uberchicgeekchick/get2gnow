@@ -275,7 +275,7 @@ parser_timeline(const gchar *data,
 
 		/* Get Image */
 		//g_free( network_get_image(status->user->image_url, &iter) );
-		network_get_image(status->user->image_url, &iter);
+		network_get_image(status->user->image_url, iter);
 
 		/* Free struct */
 		parser_free_user(status->user);
@@ -344,7 +344,7 @@ parser_node_user(xmlNode *a_node){
 			user->followers = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
 			
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
-			user->image_url = g_strdup((const gchar *)tmp);
+			user->image_filename=paths_get_image_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
 		
 		/* Free buffer content */
 		xmlBufferEmpty(buffer);

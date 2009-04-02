@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 #include "parser.h"
+#include "images.h"
 
 /* Twitter API */
 #define API_TWITTER_CLIENT_AUTH		"greettweetknow"
@@ -75,12 +76,13 @@ GList *network_get_friends(void);
 /* Get the authenticating user's followers */
 GList *network_get_followers(void);
 
+gboolean network_download_avatar( const gchar *image_url );
 extern gboolean following;
 
 /* My, Kaity G. B., new stuff ends here. */
 
 /* Get an image from servers */
-gchar *network_get_image (const gchar *url_image, GtkTreeIter *iter);
+void network_get_image (const gchar *image_url, GtkTreeIter iter);
 
 /* Add a user to follow */
 void network_add_user		(const gchar *username);

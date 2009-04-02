@@ -1,6 +1,8 @@
 C_STD_MODE=gnu99
 AM_CFLAGS=						\
 	-I$(top_srcdir)                          	\
+	-I${top_builddir}				\
+	-DBUILDDIR=\""${top_builddir}"\"		\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"              	\
@@ -41,9 +43,10 @@ greet_tweet_know_SOURCES = 				\
 	friend-manager.c	friend-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
 	tweets.c		tweets.h		\
+	images.c		images.h		\
 	tweet-list.c		tweet-list.h
 
 
-greet_tweet_know_LDADD=						\
-	$(GREET_TWEET_KNOW_LIBS)					\
+greet_tweet_know_LDADD=			\
+	$(GREET_TWEET_KNOW_LIBS)	\
 	$(ENCHANT_LIBS)
