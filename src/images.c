@@ -51,9 +51,21 @@
 
 #include "config.h"
 #include "images.h"
+#include "main.h"
+#include "debug.h"
+
+#define DEBUG_DOMAIN_SETUP       "Images"
+
+enum {
+	ImagesMaximum		=	128,
+	ImagesExpanded		=	73,
+	ImagesDefault		=	48,
+	ImagesMinimum		=	24,
+};
 
 
-static void images_set_width_and_height( gint *width, gint *height );
+static gint images_validate_width( gint width );
+static gint images_validate_height( gint height );
 
 
 gchar *images_get_filename( const gchar *image_url ){
@@ -62,7 +74,7 @@ gchar *images_get_filename( const gchar *image_url ){
 	/* save using the filename */
 	image_name_info=g_strsplit(image_url, (const gchar *)"/", 7);
 	if(!(image_name_info[5] && image_name_info[6]))
-		return strdup("unknown_image");
+		return g_strdup("unknown_image");
 	
 	image_file=g_strconcat(image_name_info[5], "_", image_name_info[6], NULL);
 	
@@ -78,49 +90,68 @@ gchar *images_get_filename( const gchar *image_url ){
 
 
 
-GdkImage *images_get_image_from_file( const gchar *image_filename ){
-	return images_get_image_from_file( image_filename, ImagesDefault, ImagesDefault );
+GtkImage *images_get_image_from_filename( const gchar *image_filename ){
+	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename( image_filename );
+	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
+	g_object_unref( pixbuf );
+	return image;
 }//images_get_image_from_file
 
 
 
-GdkImage *images_get_scaled_image_from_file( const gchar *image_filename, gint width, gint height ){
-	images_validate_width_and_height( &width, &height );
-	
-	GdkPixbuf *pixbuf=images_get_scaled_pixbuf_from_file( image_filename, &width, &height );
-	return gdk_image_new_from_pixbuf( pixbuf );
+GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height ){
+	width=images_validate_width( width );
+	height=images_validate_height( height );
+	GdkPixbuf *pixbuf=images_get_scaled_pixbuf_from_filename( image_filename, width, height );
+	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
+	g_object_unref( pixbuf );
+	return image;
 }//images_get_image_from_file
 
 
 
-GdkPixbuf *images_get_expanded_pixbuf( const gchar *image_filename ){
-	return images_get_resized_pixbuf( pixbuf, ImagesExpanded, ImagesExpanded );
-}//images_get_expanded_pixbuf
+GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesExpanded, ImagesExpanded );
+}//images_get_expanded_pixbuf_from_filename
+
+GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesMaximum, ImagesMaximum );
+}//images_get_maximize_pixbuf_from_filename
+
+GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDefault, ImagesDefault );
+}//images_get_default_pixbuf_from_filename
+
+GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
+}//images_get_minimize_pixbuf_from_filename
 
 
 
-GdkPixbuf *images_get_maximized_pixbuf( const gchar *image_filename ){
-	return images_get_resized_pixbuf( pixbuf, ImagesMaximum, ImagesMaximum );
+GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf ){
+	return images_scale_pixbuf( pixbuf, ImagesExpanded, ImagesExpanded );
+}//images_get_expand_pixbuf
+
+GdkPixbuf *images_maximize_pixbuf( GdkPixbuf *pixbuf ){
+	return images_scale_pixbuf( pixbuf, ImagesMaximum, ImagesMaximum );
 }//images_maximize_pixbuf
 
+GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf ){
+	return images_scale_pixbuf( pixbuf, ImagesDefault, ImagesDefault );
+}//images_normalize_pixbuf
 
-
-GdkPixbuf *images_get_default_pixbuf( const gchar *image_filename ){
-	return images_get_resized_pixbuf( pixbuf, ImagesDefault, ImagesDefault );
-}//images_resize_pixbuf_to_default
-
-
-
-GdkPixbuf *images_get_minimized_pixbuf( const gchar *image_filename ){
-	return images_get_resized_pixbuf( pixbuf, ImagesMinimum, ImagesMinimum );
+GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf ){
+	return images_scale_pixbuf( pixbuf, ImagesMinimum, ImagesMinimum );
 }//images_minimize_pixbuf
 
 
 
-GdkPixbuf *images_get_scaled_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
-	images_validate_width_and_height( &width, &height );
+GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
+	width=images_validate_width( width );
+	height=images_validate_height( height );
 	
-	if( (GdkPixbuf *resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR )) )
+	GdkPixbuf *resized=NULL;
+	if( (resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR )) )
 		return resized;
 			
 	debug(DEBUG_DOMAIN_SETUP, "Image error: risizing of pixmap to: %d x %d failed.", width, height );
@@ -129,73 +160,89 @@ GdkPixbuf *images_get_scaled_pixbuf( GdkPixbuf *pixbuf, gint width, gint height 
 
 
 
-GdkPixbuf *images_get_pixbuf_from_file( const gchar *image_filename ){
-	return images_get_scaled_pixbuf_from_file( image_filename, ImagesDefault, ImagesDefault );
+GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDefault, ImagesDefault );
 }//images_get_from_filename
 
 
 
-GdkPixbuf *images_get_unscaled_pixbuf_from_file( const gchar *image_filename ){
+static gint images_validate_width( gint width ){
+	if( width >= ImagesMinimum )
+		width=ImagesMinimum;
+	
+	if( width > (gint)ImagesMaximum )
+		width=ImagesMaximum;
+	
+	return width;
+}//images_validate_width
+
+
+
+static gint images_validate_height( gint height ){
+	if( height >= ImagesMinimum )
+		height=ImagesMinimum;
+			
+	if( height > (gint)ImagesMaximum )
+		height=ImagesMaximum;
+	
+	return height;
+}//images_validate_height
+
+
+
+GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename ){
 	GError *error=NULL;
-	if( (GdkPixbuf *pixbuf=gdk_pixbuf_new_from_file(image_filename, &error )) )
+	GdkPixbuf *pixbuf=NULL;
+	if( (pixbuf=gdk_pixbuf_new_from_file(image_filename, &error )) )
 		return pixbuf;
-		
-	debug(DEBUG_DOMAIN_SETUP, "Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
+	
+	debug(DEBUG_DOMAIN_SETUP, "Image error: %s: %s", image_filename, error->message);
 	if(error) g_error_free(error);
 	return NULL;
 }//images_get_full_sized_pixbuf_from_file
 
 
-
-static void images_validate_width_and_height( gint *width, gint *height ){
-	if( width == ImagesUnscaled || height == ImagesUnscaled )
-		return;
-	
-	if(!( width >= ImagesMinimum && height >= ImagesMinimum )){
-		width=ImagesMinimum;
-		height=ImagesMinimum;
-	}
-	
-	if(!( width <= ImagesMaximum && height <= ImagesMaximum )){
-		width=ImagesMaximum;
-		height=ImagesMaximum;
-	}	
-}//
-
-
-
-GdkPixbuf *images_get_scaled_pixbuf_from_file( const gchar *image_filename, gint width, gint height ){
+/* GNOME 2.6
+GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
 	if( width == ImagesUnscaled || height == ImagesUnscaled )
 		return images_get_unscaled_pixbuf_from_filename( image_filename );
 	
-	images_validate_width_and_height( &width, &height );
+	width=images_validate_width( width );
+	height=images_validate_height( height );
 	
 	GError *error=NULL;
 	GdkPixbuf *pixbuf;
-	/* GNOME 2.6 */
+	
 	if( (pixbuf=gdk_pixbuf_new_from_file_at_scale(image_filename, width, height, &error )) )
 		return pixbuf;
 	
 	debug(DEBUG_DOMAIN_SETUP, "Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
+}images_get_scaled_pixbuf_from_file*/
+
+/* I am using these last two methods, okay they're function - but they'll become methods soon enough.
+ * Any ways I'm using them in place of the one above, which relies on GNOME 2.6, until GNOME 2.6
+ * populates to more distros. */
+GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
+	return images_get_and_scale_pixbuf_from_filename( image_filename, width, height );
 }//images_get_scaled_pixbuf_from_file
 
 
 
-GdkPixbuf *images_get_and_scale_pixbuf_from_file( const gchar *image_filename, gint width, gint height ){
-	images_validate_width_and_height( &width, &height );
+GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
+	width=images_validate_width( width );
+	height=images_validate_height( height );
 	
 	GError *error;
 	GdkPixbuf *pixbuf, *resized;
 	
--	if( (pixbuf=images_get_unscaled_pixbuf_from_file(file, &error)) ){
+	if( (pixbuf=images_get_unscaled_pixbuf_from_filename(image_filename)) ){
 		resized=gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
 		g_object_unref( pixbuf );
 		return resized;
 	}
 	
-	debug(DEBUG_DOMAIN_SETUP, "Image error: %s: %s", file, error->message);
-	if(error) g_error_free(error);	 
+	return NULL;
 }//images_get_and_scale_pixbuf_from_file
 

@@ -24,7 +24,6 @@ greet_tweet_know_SOURCES = 				\
 	main.c			main.h			\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
-	paths.c 		paths.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	about.c			about.h			\
 	account-dialog.c 	account-dialog.h	\
@@ -40,8 +39,8 @@ greet_tweet_know_SOURCES = 				\
 	spell.c			spell.h			\
 	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
-	friend-manager.c	friend-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
+	friend-manager.c	friend-manager.h	\
 	tweets.c		tweets.h		\
 	images.c		images.h		\
 	tweet-list.c		tweet-list.h

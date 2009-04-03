@@ -22,14 +22,22 @@
 
 #include <config.h>
 
-#include "paths.h"
 #include "gtkbuilder.h"
 
-static GtkBuilder *
-gtkbuilder_load_file (const gchar *filename,
-              const gchar *first_widget,
-              va_list      args)
-{
+static gchar *gtkbuilder_get_path( const gchar *filename );
+
+static gchar *gtkbuilder_get_path( const gchar *filename ){
+	gchar *gtkbuilder_ui_file=NULL;
+	if( (g_file_test( (gtkbuilder_ui_file=g_build_filename( DATADIR, PACKAGE_TARNAME, filename, NULL )), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )) )
+		return gtkbuilder_ui_file;
+	
+	g_free( gtkbuilder_ui_file );
+	return g_build_filename( BUILDDIR, "data", filename, NULL );
+}
+
+
+
+static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *first_widget, va_list args ){
 	GtkBuilder  *ui = NULL;
 	GObject    **pointer;
 	const char  *name;
@@ -39,7 +47,7 @@ gtkbuilder_load_file (const gchar *filename,
 	/* Create gtkbuilder & load the xml file */
 	ui = gtk_builder_new ();
 	gtk_builder_set_translation_domain (ui, GETTEXT_PACKAGE);
-	path = paths_get_gtkbuilder_path (filename);
+	path = gtkbuilder_get_path(filename);
 	if (gtk_builder_add_from_file (ui, path, &err) == 0) {
 		g_warning ("XML file error: %s", err->message);
 		g_error_free (err);

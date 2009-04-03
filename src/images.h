@@ -52,34 +52,32 @@
 #define __IMAGES_H__
 
 #include <glib.h>
+#include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 
 G_BEGIN_DECLS
 
-typedef enum {
-	ImagesMaximum		=	128,
-	ImagesExpanded		=	73,
-	ImagesDefault		=	48,
-	ImagesMinimum		=	24,
-	ImagesUnscaled		=	-1
-} ImagesSizesDefault;
-
-
 gchar *images_get_filename( const gchar *url );
 
-GdkImage *images_get_image_from_file( const gchar *image_filename );
-GdkImage *images_get_scaled_image_from_file( const gchar *image_filename, gint width, gint height );
+GtkImage *images_get_image_from_filename( const gchar *image_filename );
+GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height );
 
-GdkPixbuf *images_get_expanded_pixbuf( const gchar *image_filename );
-GdkPixbuf *images_get_maximimized_pixbuf( const gchar *image_filename );
-GdkPixbuf *images_get_default_pixbuf( const gchar *image_filename );
-GdkPixbuf *images_get_minimized_pixbuf( const gchar *image_filename );
+GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename );
+GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename );
+GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename );
+GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filename );
+
+GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf );
+GdkPixbuf *images_maximize_pixbuf( GdkPixbuf *pixbuf );
+GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf );
+GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf );
+
+GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height );
 GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_pixbuf_from_file( const gchar *image_filename );
-GdkPixbuf *images_get_scaled_pixbuf_from_file( const gchar *image_filename, gint width, gint height );
-GdkPixbuf *images_get_unscaled_pixbuf_from_file( const gchar *image_filename );
-GdkPixbuf *images_get_and_scale_pixbuf_from_file( const gchar *image_filename, gint width, gint height );
+GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename );
+GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
+GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
 
 G_END_DECLS
 

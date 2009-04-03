@@ -32,7 +32,6 @@
 
 #include "debug.h"
 #include "gconf.h"
-#include "paths.h"
 #include "gtkbuilder.h"
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
@@ -967,7 +966,7 @@ app_notify(gchar *msg)
 
 void app_set_image(const gchar *image_filename, GtkTreeIter  iter){
 	GdkPixbuf *pixbuf;
-	if( !(pixbuf=images_get_pixbuf_from_file( image_filename )) )
+	if( !(pixbuf=images_get_pixbuf_from_filename( image_filename )) )
 		return;
 
 	gtk_list_store_set((tweet_list_get_store()) , &iter, PIXBUF_AVATAR, pixbuf, -1);

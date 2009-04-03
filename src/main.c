@@ -27,22 +27,15 @@
 
 #include <libnotify/notify.h>
 
-#include "paths.h"
-
 #include "app.h"
 #include "network.h"
 
-int
-main(int argc, char *argv[])
-{
-	gchar *localedir;
+int main(int argc, char *argv[]){
 	gboolean notifing=FALSE;
 
-	localedir = paths_get_locale_path();
-	bindtextdomain(GETTEXT_PACKAGE, localedir);
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
-	g_free(localedir);
 
 	g_set_application_name(_("Greet-Tweet-Know"));
 

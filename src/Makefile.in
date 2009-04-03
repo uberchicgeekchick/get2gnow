@@ -49,8 +49,7 @@ PROGRAMS = $(bin_PROGRAMS)
 am__greet_tweet_know_SOURCES_DIST = \
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
-	paths.c			paths.h			\
-	gtkbuilder.c			gtkbuilder.h			\
+	gtkbuilder.c		gtkbuilder.h			\
 	keyring.c		keyring.h		\
 	main.c			main.h			\
 	about.c			about.h			\
@@ -67,15 +66,16 @@ am__greet_tweet_know_SOURCES_DIST = \
 	spell.c			spell.h			\
 	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
-	friends-manager.c	friends-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
+	friends-manager.c	friends-manager.h	\
+	images.c		images.h		\
 	tweets.c		tweets.h		\
 	tweet-list.c		tweet-list.h
+
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 greet_tweet_know_OBJECTS =			\
 	gconf.$(OBJEXT)				\
 	debug.$(OBJEXT)				\
-	paths.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)			\
 	$(am__objects_1)			\
 	$(am__objects_2)			\
@@ -87,15 +87,16 @@ greet_tweet_know_OBJECTS =			\
 	geometry.$(OBJEXT)			\
 	hint.$(OBJEXT)				\
 	label.$(OBJEXT)				\
-	network.$(OBJEXT)			\
 	parser.$(OBJEXT)			\
+	network.$(OBJEXT)			\
 	preferences.$(OBJEXT)			\
 	send-message-dialog.$(OBJEXT)		\
 	spell.$(OBJEXT)				\
 	spell-dialog.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)			\
-	friends-manager.$(OBJEXT)		\
 	followers-dialog.$(OBJEXT)		\
+	friends-manager.$(OBJEXT)		\
+	images.$(OBJEXT)			\
 	tweets.$(OBJEXT)			\
 	tweet-list.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -309,7 +310,6 @@ greet_tweet_know_SOURCES =				\
 	$(keyring)					\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
-	paths.c			paths.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	main.c			main.h			\
 	about.c			about.h			\

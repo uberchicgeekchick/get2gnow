@@ -45,6 +45,7 @@
 #include "network.h"
 #include "parser.h"
 #include "tweet-list.h"
+#include "images.h"
 
 #define DEBUG_DOMAIN_SETUP       "Parser" 
 
@@ -344,7 +345,7 @@ parser_node_user(xmlNode *a_node){
 			user->followers = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
 			
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
-			user->image_filename=paths_get_image_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
+			user->image_filename=images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
 		
 		/* Free buffer content */
 		xmlBufferEmpty(buffer);

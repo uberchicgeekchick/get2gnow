@@ -29,7 +29,6 @@
 #include <glib.h>
 
 #include <gtk/gtk.h>
-#include "paths.h"
 #include "parser.h"
 #include "images.h"
 

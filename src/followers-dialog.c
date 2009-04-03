@@ -123,17 +123,24 @@ followers_rem_response_cb (GtkButton   *button,
 {
 	GtkTreeSelection *sel;
 	GtkTreeIter       iter;
-	User       *user;
+	gchar       *user_name=NULL;
 
 	/* Get selected Iter */
 	sel = gtk_tree_view_get_selection (followers->following_list);
 	
 	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
 		return;
+	
+	gtk_tree_model_get(
+			followers->following_store,
+			&iter,
+			FOLLOWER_USER, &user_name,
+			-1
+	);
 
-	gtk_list_store_remove (GTK_LIST_STORE (followers->following_store), &iter);
+	gtk_list_store_remove( GTK_LIST_STORE( followers->following_store ), &iter );
 
-	network_del_user(user->user_name);
+	network_del_user((const gchar *)user_name);
 }
 
 static void followers_view_timeline(GtkButton *button, Followers *followers){
@@ -151,9 +158,11 @@ static void followers_view_timeline(GtkButton *button, Followers *followers){
 			FOLLOWER_USER, &user_name,
 			-1
 	);
+
+	if(!user_name)
+		return;
 	
 	network_get_user((const gchar *)user_name);
-	
 	g_free(user_name);
 }//friends_manager_view_timeline
 

@@ -143,22 +143,23 @@ static void friends_manager_add_response_cb(GtkButton   *button, FriendsManager 
 }
 
 static void friends_manager_rem_response_cb(GtkButton   *button, FriendsManager *friends_manager){
-	GtkTreeSelection *sel;
-	GtkTreeIter       iter;
-	User       *user;
-	gchar *following_too;
-
-	/* Get selected Iter */
-	sel = gtk_tree_view_get_selection (friends_manager->friends_and_followers);
+	GtkTreeIter		iter;
+	User			*user=NULL;
+	gchar			*following_too=NULL;
 	
-	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
+	/* Get selected Iter */
+	GtkTreeSelection *sel=gtk_tree_view_get_selection( friends_manager->friends_and_followers );
+	
+	if(!(gtk_tree_selection_get_selected( sel, NULL, &iter )))
 		return;
 
-	gtk_tree_model_get (friends_manager->friends_and_follows_model,
-						&iter,
-						FOLLOWING_TOO, &following_too,
-						FRIEND_POINTER, &user,
-						-1);
+	gtk_tree_model_get(
+				friends_manager->friends_and_follows_model,
+				&iter,
+				FOLLOWING_TOO, &following_too,
+				FRIEND_POINTER, &user,
+				-1
+	);
 
 	if(!(g_strcmp0(following_too, "Yes")))
 		gtk_list_store_set(
@@ -257,7 +258,7 @@ static void friends_manager_popup_profile( FriendsManager *friends_manager, GtkT
 		profile->image_filename=images_get_filename( profile->image_url );
 	}
 	
-	gtk_message_dialog_set_image( GTK_MESSAGE_DIALOG( dialog ), (image=GTK_IMAGE( gtk_image_new_from_pixbuf( images_new( profile->image_filename) )) );
+	gtk_message_dialog_set_image( GTK_MESSAGE_DIALOG( dialog ), GTK_WIDGET(image=images_get_image_from_filename( profile->image_filename )) );
 
 	gchar *message=g_strdup_printf(
 			"<u><b>%s:</b> %s</u>\n\t<b>Location:</b> %s\n\t<b>URL:</b> %s\n\t<b>Followers:</b> %u\n\t<b>Bio:</b>\n\t\t%s\n",
