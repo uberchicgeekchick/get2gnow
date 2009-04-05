@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /*
- * Copyright (C) 2007-2008 Daniel Morales <daniminas@gmail.com>
+ * Copyright (C) 2007-2008 Brian Pepple <bpepple@fedoraproject.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __ADD_DIALOG_H__
-#define __ADD_DIALOG_H__
+#ifndef __ACCOUNT_DIALOG_H__
+#define __ACCOUNT_DIALOG_H__
 
 #include <gtk/gtk.h>
 
-void add_dialog_show (GtkWindow *parent);
+void accounts_dialog_show (GtkWindow *parent);
 
-#endif /* __ADD_DIALOG_H__ */
+#endif /* __ACCOUNT_DIALOG_H__ */

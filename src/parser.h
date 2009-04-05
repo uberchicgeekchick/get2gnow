@@ -26,16 +26,18 @@
 #include <gtk/gtk.h>
 
 typedef struct {
-	guint		id;
-	gchar		*user_name;
-	gchar		*nick_name;
-	gchar		*location;
-	gchar		*bio;
-	gchar		*url;
-	guint		followers;
-	gchar		*image_url;
-	gchar		*image_filename;
-	gboolean	following;
+	guint			id;
+	gchar			*user_name;
+	gchar			*nick_name;
+	gchar			*location;
+	gchar			*bio;
+	gchar			*url;
+	unsigned long int	tweets;
+	unsigned long int	friends;
+	unsigned long int	followers;
+	gchar			*image_url;
+	gchar			*image_filename;
+	gboolean		follower;
 } User;
 
 

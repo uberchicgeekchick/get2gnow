@@ -62,7 +62,7 @@
 #include "main.h"
 #include "app.h"
 #include "followers-dialog.h"
-#include "add-dialog.h"
+#include "popup-dialog.h"
 #include "network.h"
 
 /********************************************************
@@ -78,7 +78,8 @@ typedef struct {
 	GtkWidget	*dialog;
 	GtkTreeView	*following_list;
 	GtkTreeModel	*following_store;
-	GtkWidget	*follow_rem;
+	GtkWidget	*user_unfollow;
+	GtkWidget	*user_block;
 	GtkWidget	*view_profile;
 } Followers;
 
@@ -94,6 +95,7 @@ static Followers *followers;
  ********************************************************/
 
 static void followers_rem_response_cb( GtkButton   *button, Followers *followers);
+static void followers_block_response_cb( GtkButton   *button, Followers *followers);
 static void followers_response_cb( GtkWidget *widget, gint response, Followers *followers);
 static void followers_destroy_cb( GtkWidget *widget, Followers *followers );
 static void followers_view_timeline(GtkButton *button, Followers *followers);
@@ -117,10 +119,7 @@ followers_destroy_cb (GtkWidget    *widget,
 	g_free (followers);
 }
 
-static void
-followers_rem_response_cb (GtkButton   *button,
-					   Followers *followers)
-{
+static void followers_rem_response_cb( GtkButton *button, Followers *followers ){
 	GtkTreeSelection *sel;
 	GtkTreeIter       iter;
 	gchar       *user_name=NULL;
@@ -140,7 +139,32 @@ followers_rem_response_cb (GtkButton   *button,
 
 	gtk_list_store_remove( GTK_LIST_STORE( followers->following_store ), &iter );
 
-	network_del_user((const gchar *)user_name);
+	network_unfollow_user((const gchar *)user_name);
+}
+
+
+
+static void followers_block_response_cb( GtkButton *button, Followers *followers ){
+	GtkTreeSelection *sel;
+	GtkTreeIter       iter;
+	gchar       *user_name=NULL;
+	
+	/* Get selected Iter */
+	sel = gtk_tree_view_get_selection (followers->following_list);
+	
+	if (!gtk_tree_selection_get_selected (sel, NULL, &iter))
+		return;
+	
+	gtk_tree_model_get(
+				followers->following_store,
+				&iter,
+				FOLLOWER_USER, &user_name,
+				-1
+	);
+	
+	gtk_list_store_remove( GTK_LIST_STORE( followers->following_store ), &iter );
+	
+	network_block_user((const gchar *)user_name);
 }
 
 static void followers_view_timeline(GtkButton *button, Followers *followers){
@@ -230,8 +254,9 @@ void followers_dialog_show (GtkWindow *parent){
 	ui = gtkbuilder_get_file (GtkBuilderUI,
 						"followers_dialog", &followers->dialog,
 						"following_list", &followers->following_list,
-						"following_list", &followers->follow_rem,
-						"following_list", &followers->view_profile,
+						"user_unfollow", &followers->user_unfollow,
+						"user_block", &followers->user_block,
+						"view_profile", &followers->view_profile,
 						NULL);
 	
 	followers->following_store=gtk_tree_view_get_model(followers->following_list);
@@ -240,7 +265,8 @@ void followers_dialog_show (GtkWindow *parent){
 	gtkbuilder_connect (ui, followers,
 						"followers_dialog", "destroy", followers_destroy_cb,
 						"followers_dialog", "response", followers_response_cb,
-						"follow_rem", "clicked", followers_rem_response_cb,
+						"user_unfollow", "clicked", followers_rem_response_cb,
+						"user_block", "clicked", followers_block_response_cb,
 						"view_profile", "clicked", followers_view_timeline,
 						"following_list", "row-activated", list_follower_activated_cb,
 						NULL);

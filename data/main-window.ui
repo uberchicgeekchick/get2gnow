@@ -4,36 +4,44 @@
     <child>
       <object class="GtkActionGroup" id="actiongroup1">
         <child>
-          <object class="GtkAction" id="twitter">
-            <property name="name">twitter</property>
-            <property name="label" translatable="yes">_Actions</property>
+          <object class="GtkAction" id="services">
+            <property name="name">services</property>
+            <property name="label" translatable="yes">_Services</property>
           </object>
         </child>
         <child>
           <object class="GtkAction" id="twitter_connect">
             <property name="stock_id">gtk-connect</property>
             <property name="name">twitter_connect</property>
-            <property name="label" translatable="yes">C_onnect</property>
+            <property name="label">_Connect</property>
           </object>
         </child>
         <child>
           <object class="GtkAction" id="twitter_disconnect">
             <property name="stock_id">gtk-disconnect</property>
             <property name="name">twitter_disconnect</property>
-            <property name="label" translatable="yes">_Disconnect</property>
+            <property name="label">_Disconnect</property>
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="twitter_add_friend">
-            <property name="stock_id">gtk-add</property>
-            <property name="name">twitter_add_friend</property>
-            <property name="label" translatable="yes">Add a friend...</property>
+          <object class="GtkAction" id="accounts">
+            <property name="stock_id">gtk-dialog-authentication</property>
+            <property name="name">accounts</property>
+            <property name="label" translatable="yes">_Accounts</property>
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="twitter_quit">
+          <object class="GtkAction" id="preferences">
+            <property name="stock_id">gtk-preferences</property>
+            <property name="name">preferences</property>
+            <property name="label" translatable="yes">_Preferences</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="quit">
             <property name="stock_id">gtk-quit</property>
-            <property name="name">twitter_quit</property>
+            <property name="name">quit</property>
+            <property name="label">_Quit</property>
           </object>
         </child>
         <child>
@@ -44,48 +52,94 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_new_tweet">
-            <property name="stock_id">gtk-new</property>
+            <property name="stock_id">gtk-edit</property>
             <property name="name">tweets_new_tweet</property>
-            <property name="label" translatable="yes">New _Tweet</property>
+            <property name="label">New _Tweet</property>
           </object>
           <accelerator key="N" modifiers="GDK_CONTROL_MASK"/>
         </child>
         <child>
           <object class="GtkAction" id="tweets_reply">
-            <property name="stock_id">gtk-jump-to</property>
+            <property name="stock_id">gnome-stock-mail-rpl</property>
             <property name="name">tweets_reply</property>
-            <property name="label" translatable="yes">New _@ Reply</property>
+            <property name="label">New _@ Reply</property>
           </object>
           <accelerator key="at" modifiers="GDK_CONTROL_MASK"/>
         </child>
         <child>
           <object class="GtkAction" id="tweets_retweet">
-            <property name="stock_id">gtk-undelete</property>
+            <property name="stock_id">gnome-stock-mail-fwd</property>
             <property name="name">tweets_retweet</property>
-            <property name="label" translatable="yes">_Retweet</property>
+            <property name="label">_Retweet</property>
           </object>
           <accelerator key="f" modifiers="GDK_CONTROL_MASK"/>
         </child>
         <child>
           <object class="GtkAction" id="tweets_new_dm">
-            <property name="stock_id">gtk-leave-fullscreen</property>
+            <property name="stock_id">gnome-stock-mail</property>
             <property name="name">tweets_new_dm</property>
             <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
-            <property name="label" translatable="yes">New _DM</property>
+            <property name="label">New _DM</property>
           </object>
           <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
         </child>
         <child>
+          <object class="GtkAction" id="friends">
+            <property name="name">friends</property>
+            <property name="label" translatable="yes">_Friends</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="friends_manager">
+            <property name="stock_id">gtk-page-setup</property>
+            <property name="name">friends_manager</property>
+            <property name="tooltip" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
+            <property name="label" translatable="yes">Friends _Manager</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="friends_timelines">
+            <property name="stock_id">gtk-orientation-portrait</property>
+            <property name="name">friends_timelines</property>
+            <property name="tooltip" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
+            <property name="label" translatable="yes">My _Friends' Tweets</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="friends_follow">
+            <property name="stock_id">gtk-add</property>
+            <property name="name">friends_follow</property>
+            <property name="tooltip" translatable="yes">Add / Follow a new friend by entering their username.</property>
+            <property name="label" translatable="yes">_Follow a new friend</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="friends_unfollow">
+            <property name="stock_id">gtk-remove</property>
+            <property name="name">friends_unfollow</property>
+            <property name="tooltip" translatable="yes">Stop following a friend by entering their username.</property>
+            <property name="label" translatable="yes">_Unfollow a friend</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="friends_block">
+            <property name="stock_id">gtk-stop</property>
+            <property name="name">friends_block</property>
+            <property name="tooltip" translatable="yes">Block a friend from seeing any of your tweets or sending youany message by entering their username.</property>
+            <property name="label" translatable="yes">_Block a user</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkAction" id="view1">
             <property name="name">view1</property>
-            <property name="label" translatable="yes">_Views</property>
+            <property name="tooltip" translatable="yes">Select what tweets you want to see.</property>
+            <property name="label" translatable="yes">_View Tweets</property>
           </object>
         </child>
         <child>
           <object class="GtkAction" id="twitter_refresh">
             <property name="stock_id">gtk-refresh</property>
             <property name="name">twitter_refresh</property>
-            <property name="label" translatable="yes">_Refresh</property>
           </object>
           <accelerator key="F5"/>
         </child>
@@ -133,37 +187,6 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="view_friends">
-            <property name="name">view_friends</property>
-            <property name="label" translatable="yes">Friends</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="settings1">
-            <property name="name">settings1</property>
-            <property name="label" translatable="yes">_Settings</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="settings_account">
-            <property name="name">settings_account</property>
-            <property name="label" translatable="yes">_Account</property>
-          </object>
-          <accelerator key="F4"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="settings_friends_manager">
-            <property name="name">settings_friends_manager</property>
-            <property name="label" translatable="yes">Manage My _Friends</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="settings_preferences">
-            <property name="stock_id">gtk-preferences</property>
-            <property name="name">settings_preferences</property>
-          </object>
-        </child>
-        <child>
           <object class="GtkAction" id="help1">
             <property name="name">help1</property>
             <property name="label" translatable="yes">_Help</property>
@@ -173,7 +196,6 @@
           <object class="GtkAction" id="help_contents">
             <property name="stock_id">gtk-help</property>
             <property name="name">help_contents</property>
-            <property name="label" translatable="yes">_Contents</property>
           </object>
           <accelerator key="F1"/>
         </child>
@@ -187,19 +209,28 @@
     </child>
     <ui>
       <menubar name="main_menubar">
-        <menu action="twitter">
+        <menu action="services">
           <menuitem action="twitter_connect"/>
           <menuitem action="twitter_disconnect"/>
           <separator/>
-          <menuitem action="twitter_add_friend"/>
+          <menuitem action="accounts"/>
+          <menuitem action="preferences"/>
           <separator/>
-          <menuitem action="twitter_quit"/>
+          <menuitem action="quit"/>
         </menu>
         <menu action="tweets1">
           <menuitem action="tweets_new_tweet"/>
           <menuitem action="tweets_reply"/>
           <menuitem action="tweets_retweet"/>
           <menuitem action="tweets_new_dm"/>
+        </menu>
+        <menu action="friends">
+          <menuitem action="friends_manager"/>
+          <menuitem action="friends_timelines"/>
+          <separator/>
+          <menuitem action="friends_follow"/>
+          <menuitem action="friends_unfollow"/>
+          <menuitem action="friends_block"/>
         </menu>
         <menu action="view1">
           <menuitem action="twitter_refresh"/>
@@ -212,14 +243,6 @@
           <separator/>
           <menuitem action="view_my_timeline"/>
           <menuitem action="view_public_timeline"/>
-          <separator/>
-          <menuitem action="view_friends"/>
-        </menu>
-        <menu action="settings1">
-          <menuitem action="settings_account"/>
-          <menuitem action="settings_friends_manager"/>
-          <separator/>
-          <menuitem action="settings_preferences"/>
         </menu>
         <menu action="help1">
           <menuitem action="help_contents"/>
@@ -228,6 +251,8 @@
       </menubar>
     </ui>
   </object>
+  <!-- interface-requires gtk+ 2.16 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="main_window">
     <property name="width_request">230</property>
     <property name="height_request">320</property>
@@ -243,14 +268,15 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkScrolledWindow" id="main_scrolledwindow">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
-            <property name="shadow_type">GTK_SHADOW_IN</property>
+            <property name="hscrollbar_policy">never</property>
+            <property name="shadow_type">in</property>
             <child>
               <placeholder/>
             </child>
@@ -273,6 +299,7 @@
               </object>
               <packing>
                 <property name="expand">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -287,6 +314,9 @@
                     <property name="ypad">3</property>
                     <property name="use_markup">True</property>
                   </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
                 <child>
                   <placeholder/>

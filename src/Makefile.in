@@ -46,15 +46,15 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am__greet_tweet_know_SOURCES_DIST = \
+am__greet_tweet_know_SOURCES_DIST =			\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
-	gtkbuilder.c		gtkbuilder.h			\
+	gtkbuilder.c		gtkbuilder.h		\
 	keyring.c		keyring.h		\
 	main.c			main.h			\
 	about.c			about.h			\
-	account-dialog.c	account-dialog.h	\
-	add-dialog.c		add-dialog.h		\
+	accounts-dialog.c	accounts-dialog.h	\
+	popup-dialog.c		popup-dialog.h		\
 	app.c			app.h			\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
@@ -81,8 +81,8 @@ greet_tweet_know_OBJECTS =			\
 	$(am__objects_2)			\
 	main.$(OBJEXT)				\
 	about.$(OBJEXT)				\
-	account-dialog.$(OBJEXT)		\
-	add-dialog.$(OBJEXT)			\
+	accounts-dialog.$(OBJEXT)		\
+	popup-dialog.$(OBJEXT)			\
 	app.$(OBJEXT)				\
 	geometry.$(OBJEXT)			\
 	hint.$(OBJEXT)				\
@@ -313,8 +313,8 @@ greet_tweet_know_SOURCES =				\
 	gtkbuilder.c		gtkbuilder.h		\
 	main.c			main.h			\
 	about.c			about.h			\
-	account-dialog.c 	account-dialog.h	\
-	add-dialog.c 		add-dialog.h		\
+	accounts-dialog.c 	accounts-dialog.h	\
+	popup-dialog.c 		popup-dialog.h		\
 	app.c			app.h			\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
@@ -409,8 +409,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/account-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/add-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/accounts-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/popup-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@

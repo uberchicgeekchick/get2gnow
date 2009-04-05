@@ -538,8 +538,8 @@ message_response_cb( GtkWidget *widget, gint response ){
 	if(!dialog_priv->show_friends) {
 		/* Post a tweet */
 		gtk_widget_destroy(widget);
-		network_post_status (good_msg);
-		if(good_msg) g_free (good_msg);
+		network_post_status(good_msg, 0);
+		if(good_msg) g_free(good_msg);
 		return;
 	}
 	

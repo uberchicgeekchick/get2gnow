@@ -27,9 +27,9 @@
 #endif
 
 #include "main.h"
-#include "account-dialog.h"
+#include "accounts-dialog.h"
 
-#define GtkBuilderUI "account-dialog.ui"
+#define GtkBuilderUI "accounts-dialog.ui"
 
 typedef struct {
 	GtkWidget *dialog;
@@ -38,16 +38,16 @@ typedef struct {
 	GtkWidget *show_password;
 } Account;
 
-static void      account_response_cb          (GtkWidget         *widget,
+static void      accounts_response_cb          (GtkWidget         *widget,
 											   gint               response,
 											   Account     *act);
-static void      account_destroy_cb           (GtkWidget         *widget,
+static void      accounts_destroy_cb           (GtkWidget         *widget,
 											   Account     *act);
-static void      account_show_password_cb     (GtkWidget         *widget,
+static void      accounts_show_password_cb     (GtkWidget         *widget,
 											   Account     *act);
 
 static void
-account_response_cb (GtkWidget     *widget,
+accounts_response_cb (GtkWidget     *widget,
 					 gint           response,
 					 Account *act)
 {
@@ -73,14 +73,14 @@ account_response_cb (GtkWidget     *widget,
 }
 
 static void
-account_destroy_cb (GtkWidget     *widget,
+accounts_destroy_cb (GtkWidget     *widget,
 					Account *act)
 {
 	g_free (act);
 }
 
 static void
-account_show_password_cb (GtkWidget     *widget,
+accounts_show_password_cb (GtkWidget     *widget,
 						  Account *act)
 {
 	gboolean visible;
@@ -90,7 +90,7 @@ account_show_password_cb (GtkWidget     *widget,
 }
 
 void
-account_dialog_show (GtkWindow *parent)
+accounts_dialog_show (GtkWindow *parent)
 {
 	static Account *act;
 	GtkBuilder           *ui;
@@ -107,7 +107,7 @@ account_dialog_show (GtkWindow *parent)
 
 	/* Get widgets */
 	ui = gtkbuilder_get_file (GtkBuilderUI,
-						"account_dialog", &act->dialog,
+						"accounts_dialog", &act->dialog,
 						"username_entry", &act->username,
 						"password_entry", &act->password,
 						"show_password_checkbutton", &act->show_password,
@@ -115,9 +115,9 @@ account_dialog_show (GtkWindow *parent)
 
 	/* Connect the signals */
 	gtkbuilder_connect (ui, act,
-						"account_dialog", "destroy", account_destroy_cb,
-						"account_dialog", "response", account_response_cb,
-						"show_password_checkbutton", "toggled", account_show_password_cb,
+						"accounts_dialog", "destroy", accounts_destroy_cb,
+						"accounts_dialog", "response", accounts_response_cb,
+						"show_password_checkbutton", "toggled", accounts_show_password_cb,
 						NULL);
 
 	g_object_unref (ui);

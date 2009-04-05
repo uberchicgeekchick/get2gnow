@@ -26,8 +26,8 @@ greet_tweet_know_SOURCES = 				\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	about.c			about.h			\
-	account-dialog.c 	account-dialog.h	\
-	add-dialog.c 		add-dialog.h		\
+	accounts-dialog.c 	accounts-dialog.h	\
+	popup-dialog.c 		popup-dialog.h		\
 	app.c			app.h			\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\

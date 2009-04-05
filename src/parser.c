@@ -94,9 +94,7 @@ static xmlDoc* parser_parse(const char *data, gssize length, xmlNode **first_ele
 
 
 /* Parse a user-list XML( friends, followers,... ) */
-GList *
-parser_users_list(const gchar *data,
-						  gssize       length){
+GList *parser_users_list(const gchar *data, gssize length){
 	xmlDoc		*doc = NULL;
 	xmlNode		*root_element = NULL;
 	xmlNode		*cur_node = NULL;
@@ -135,10 +133,8 @@ parser_users_list(const gchar *data,
 }
 
 
-/* Parse a xml user node. Ex: add/del users responses */
-User *
-parser_single_user(const gchar *data,
-						   gssize       length){
+/* Parse a xml user node. Ex: user's profile & add/del/block users responses */
+User *parser_single_user(const gchar *data, gssize length){
 	xmlDoc		*doc = NULL;
 	xmlNode		*root_element = NULL;
 	User 	*user = NULL;
@@ -151,9 +147,8 @@ parser_single_user(const gchar *data,
 		return NULL;
 	}
 
-	if(g_str_equal(root_element->name, "user")) {
-		user = parser_node_user(root_element->children);
-	}
+	if(g_str_equal(root_element->name, "user"))
+		user=parser_node_user(root_element->children);
 
 	/* Free memory */
 	xmlFreeDoc(doc);
@@ -303,8 +298,7 @@ parser_timeline(const gchar *data,
 	return TRUE;
 }
 
-static User *
-parser_node_user(xmlNode *a_node){
+static User *parser_node_user(xmlNode *a_node){
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
 	User     *user;
@@ -312,7 +306,7 @@ parser_node_user(xmlNode *a_node){
 	buffer = xmlBufferCreate();
 	user = g_new0(User, 1);
 
-	user->following=following;
+	user->follower=getting_followers;
 	
 	/* Begin 'users' node loop */
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
@@ -325,7 +319,7 @@ parser_node_user(xmlNode *a_node){
 		
 		if(g_str_equal(cur_node->name, "id" ))
 			user->id = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
-			
+		
 		else if(g_str_equal(cur_node->name, "name" ))
 			user->nick_name = g_strdup((const gchar *)tmp);
 		
@@ -334,16 +328,22 @@ parser_node_user(xmlNode *a_node){
 		
 		else if(g_str_equal(cur_node->name, "location" ))
 			user->location = g_strdup((const gchar *)tmp);
-			
+		
 		else if(g_str_equal(cur_node->name, "description" ))
 			user->bio = g_strdup((const gchar *)tmp);
-			
+		
 		else if(g_str_equal(cur_node->name, "url" ))
 			user->url = g_strdup((const gchar *)tmp);
-			
+		
 		else if(g_str_equal(cur_node->name, "followers_count" ))
-			user->followers = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
-			
+			user->followers=(unsigned int)strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+		
+		else if(g_str_equal(cur_node->name, "friends_count" ))
+			user->friends=(unsigned int)strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+		
+		else if(g_str_equal(cur_node->name, "statuses_count" ))
+			user->followers=(unsigned int)strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
 			user->image_filename=images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
 		

@@ -1,4 +1,4 @@
-AC_INIT([greet-tweet-know], [1.0.0a9], [http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know], [greet-tweet-know])
+AC_INIT([greet-tweet-know], [1.0.0e9], [http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know], [greet-tweet-know])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 

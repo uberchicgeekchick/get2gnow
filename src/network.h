@@ -37,14 +37,27 @@
 #define API_TWITTER_SEND_MESSAGE	"https://twitter.com/direct_messages/new.xml"
 #define API_TWITTER_FOLLOWING		"https://twitter.com/statuses/friends.xml"
 #define API_TWITTER_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
-#define API_TWITTER_FOLLOWING_ADD	"https://twitter.com/friendships/create/%s.xml"
-#define API_TWITTER_FOLLOWING_DEL	"https://twitter.com/friendships/destroy/%s.xml"
+
+
+/* Twitter follwer management */
+#define API_TWITTER_USER_FOLLOW		"https://twitter.com/friendships/create/%s.xml"
+#define API_TWITTER_USER_UNFOLLOW	"https://twitter.com/friendships/destroy/%s.xml"
+#define API_TWITTER_USER_BLOCK		"https://twitter.com/blocks/create/%s.xml"
+
+
+/* Twitter Details */
+#define API_TWITTER_ABOUT_USER		"https://twitter.com/users/show/%s.xml"
+
 
 /* Twitter Timelines */
 #define API_TWITTER_TIMELINE_PUBLIC	"https://twitter.com/statuses/public_timeline.xml"
 #define API_TWITTER_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
 #define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
 #define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
+
+
+extern gboolean getting_followers;
+
 
 /* Verify user credentials */
 void network_login( const char *username, const char *password );
@@ -53,7 +66,7 @@ void network_login( const char *username, const char *password );
 void network_logout( void );
 
 /* Post a new tweet */
-void network_post_status( const gchar *text );
+void network_post_status( const gchar *text,  const guint in_reply_to_status_id );
 
 /* Post a direct message to a follower */
 void network_send_message( const gchar *friend, const gchar *text );
@@ -70,6 +83,7 @@ void network_get_user( const gchar *username );
 void network_refresh(void);
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
+User *network_fetch_profile(const gchar *user_name);
 GList *network_get_users_glist(gboolean get_friends);
 /* Get authenticating user's friends(following) */
 GList *network_get_friends(void);
@@ -77,7 +91,6 @@ GList *network_get_friends(void);
 GList *network_get_followers(void);
 
 gboolean network_download_avatar( const gchar *image_url );
-extern gboolean following;
 
 /* My, Kaity G. B., new stuff ends here. */
 
@@ -85,10 +98,13 @@ extern gboolean following;
 void network_get_image (const gchar *image_url, GtkTreeIter iter);
 
 /* Add a user to follow */
-void network_add_user		(const gchar *username);
+void network_follow_user(const gchar *username);
 
 /* Remove a user */
-void network_del_user		(const gchar *username);
+void network_unfollow_user(const gchar *username);
+
+/* Remove a user */
+void network_block_user(const gchar *username);
 
 /* Networking */
 void network_new			(void);

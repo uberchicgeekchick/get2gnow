@@ -62,14 +62,15 @@ static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointe
 static void network_cb_on_post( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_message( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_image( SoupSession *session, SoupMessage *msg, Image *image );
+static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_add( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_del( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
-gboolean following=TRUE;
+gboolean getting_followers=FALSE;
 static gboolean network_get_users_page(SoupMessage *msg);
+static SoupMessage *network_fetch_data( const gchar *url );
 /* My, Kaity G. B., new stuff ends here. */
 
 /* Autoreload timeout functions */
@@ -225,16 +226,23 @@ void network_logout (void)
 
 
 /* Post a new tweet - text must be Url encoded */
-void network_post_status (const gchar *text){
-	gchar *formdata=g_strdup_printf( "source=%s&status=%s", API_TWITTER_CLIENT_AUTH, text );
+void network_post_status(const gchar *text, const guint in_reply_to_status_id){
+	//TODO: add in_reply_to_status_id
+	gchar *formdata=NULL;
+	if(in_reply_to_status_id)
+		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%u&status=%s", API_TWITTER_CLIENT_AUTH, in_reply_to_status_id, text );
+	else
+		formdata=g_strdup_printf( "source=%s&status=%s", API_TWITTER_CLIENT_AUTH, text );
 	network_post_data( API_TWITTER_POST_STATUS, formdata, network_cb_on_post, NULL );
-}
+	//g_free( formdata );
+}//network_post_status
 
 
 /* Send a direct message to a follower - text must be Url encoded  */
 void network_send_message( const gchar *friend, const gchar *text ){
 	gchar *formdata=g_strdup_printf( "source=%s&user=%s&text=%s", API_TWITTER_CLIENT_AUTH, friend, text );
 	network_post_data( API_TWITTER_SEND_MESSAGE, formdata, network_cb_on_message, NULL );
+	//g_free( formdata );
 }
 
 void network_refresh (void){
@@ -266,14 +274,32 @@ network_get_timeline (const gchar *url_timeline)
 }//network_get_timeline
 
 /* Get a user timeline */
-void network_get_user (const gchar *username){
+User *network_fetch_profile(const gchar *user_name){
+
+	if( !user_name || G_STR_EMPTY(user_name))
+		return NULL;
+	
+	User *user=NULL;
+	SoupMessage *msg=NULL;
+	
+	gchar *user_profile=g_strdup_printf( API_TWITTER_ABOUT_USER, user_name );
+	msg=network_fetch_data( user_profile ); 
+	g_free( user_profile );
+	
+	if( (user=parser_single_user( msg->response_body->data, msg->response_body->length )) )
+		return user;
+
+	return NULL;
+}//network_get_user
+
+/* Get a user timeline */
+void network_get_user(const gchar *username){
 	gchar *user_id;
 
-	if (!username){
+	if(!username)
 		conf_get_string(conf_get (), PREFS_AUTH_USER_ID, &user_id);
-	} else {
-		user_id = g_strdup(username);
-	}
+	else
+		user_id=g_strdup(username);
 
 	if(!G_STR_EMPTY (user_id)) {
 		gchar *user_timeline=g_strdup_printf( API_TWITTER_TIMELINE_USER, user_id );
@@ -319,12 +345,11 @@ GList *network_get_users_glist(gboolean get_friends){
 	gchar *uri;
 	all_users=NULL;
 	gboolean fetching=TRUE;
-	following=get_friends;
+	getting_followers=!get_friends;
 	while(fetching){
 		page++;
 		uri=g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page);
-		msg=soup_message_new( "GET", uri );
-		soup_session_send_message(soup_connection, msg);
+		msg=network_fetch_data( uri );
 		fetching=network_get_users_page(msg);
 		remaining_requests=atoi( (soup_message_headers_get(msg->response_headers, "X-RateLimit-Remaining")) );
 		g_timer_start(request_timer);
@@ -356,8 +381,7 @@ void network_get_combined_timeline(void){
 	
 	for(int i=0; timelines[i]; i++)
 		network_get_data(timelines[i], network_cb_on_timeline, "combined");
-	/*{	msg=soup_message_new("GET", timeline[i]);
-	 * 	soup_session_send_message(soup_connection, msg);
+	/*{	msg=network_fetch_data( timeline[i] );
 	 }*/
 	if(current_timeline) g_free(current_timeline);
 	current_timeline=g_strdup("combined");
@@ -391,12 +415,10 @@ gboolean network_download_avatar( const gchar *image_url ){
 	gchar *image_filename=NULL;
 	if (g_file_test( (image_filename=images_get_filename(image_url)), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return TRUE;
-	SoupMessage *msg;
-	
 	debug(DEBUG_DOMAIN, "Downloading Image: %s\nGet: %s", image_filename, image_url);
-	msg=soup_message_new("GET", image_url);
-	soup_session_send_message(soup_connection, msg);
 
+	SoupMessage *msg=network_fetch_data( image_url );
+		
 	debug (DEBUG_DOMAIN, "Image response: %i", msg->status_code);
 
 	/* check response */
@@ -405,6 +427,22 @@ gboolean network_download_avatar( const gchar *image_url ){
 	
 	return TRUE;
 }
+
+
+/* Get data from net */
+static SoupMessage *network_fetch_data( const gchar *url ){
+	SoupMessage *msg;
+	debug( DEBUG_DOMAIN, "Get: %s", url );
+	
+	msg=soup_message_new( "GET", url );
+	soup_session_send_message( soup_connection, msg );
+	
+	if(network_check_http( msg ))
+		return msg;
+	return NULL;
+}
+
+
 
 
 void network_get_image(const gchar *image_url, GtkTreeIter iter ){
@@ -426,49 +464,47 @@ void network_get_image(const gchar *image_url, GtkTreeIter iter ){
 
 
 /* Add a user to follow */
-void
-network_add_user (const gchar *username)
-{
-	gchar *url;
-	
+void network_follow_user(const gchar *username){
 	if((G_STR_EMPTY(username)))
 		return;
 	
-	url=g_strdup_printf (API_TWITTER_FOLLOWING_ADD, username);
+	gchar *url=g_strdup_printf (API_TWITTER_USER_FOLLOW, username);
 	network_post_data(url, NULL, network_cb_on_add, NULL);
-	if(url) g_free(url); url=NULL;
+	g_free(url);
 }
+
 
 
 /* Add a user to follow */
-void
-network_del_user(const gchar *username)
-{
-	gchar *url;
-	
+void network_unfollow_user(const gchar *username){
 	if((G_STR_EMPTY(username)))
 		return;
 	
-	url = g_strdup_printf (API_TWITTER_FOLLOWING_DEL, username);
-
+	gchar *url=g_strdup_printf (API_TWITTER_USER_UNFOLLOW, username);
 	network_post_data (url, NULL, network_cb_on_del, NULL);
-
-	if(url) g_free(url); url=NULL;
+	g_free(url);
 }
 
 
+
+/* Block a user from following or messaging. */
+void network_block_user(const gchar *username){
+	if((G_STR_EMPTY(username)))
+		return;
+	
+	gchar *url=g_strdup_printf (API_TWITTER_USER_BLOCK, username);
+	network_post_data(url, NULL, network_cb_on_del, NULL);
+	g_free(url);
+}
+
+
+
 /* Get data from net */
-static void
-network_get_data (const gchar           *url,
-				  SoupSessionCallback    callback,
-				  gpointer               data)
-{
+static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data){
 	SoupMessage *msg;
-
 	debug (DEBUG_DOMAIN, "Get: %s",url);
-
-	msg = soup_message_new ( "GET", url );
-
+	
+	msg=soup_message_new ( "GET", url );
 	soup_session_queue_message (soup_connection, msg, callback, data);
 }
 
@@ -582,7 +618,7 @@ network_cb_on_login (SoupSession *session,
 	debug (DEBUG_DOMAIN,
 				  "Login response: %i",msg->status_code);
 
-	if (network_check_http( msg )) {
+	if(network_check_http( msg )) {
 		app_state_on_connection (TRUE);
 		return;
 	}
@@ -591,18 +627,14 @@ network_cb_on_login (SoupSession *session,
 }
 
 
-/* On post a tweet */
-static void
-network_cb_on_post (SoupSession *session,
-					SoupMessage *msg,
-					gpointer     user_data)
-{
-	if (network_check_http( msg )) {
+/* A tweet's been posted
+ *	Optional 3rd argument: 'gpointer user_data' callback data set by: network_post_status
+ */
+static void network_cb_on_post(SoupSession *session, SoupMessage *msg, gpointer user_data ){
+	if(network_check_http( msg ))
 		app_set_statusbar_msg (_("Status Sent"));
-	}
 	
-	debug (DEBUG_DOMAIN,
-				  "Tweet response: %i",msg->status_code);
+	debug(DEBUG_DOMAIN, "Tweet response: %i",msg->status_code );
 }
 
 
@@ -661,9 +693,10 @@ static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpoi
 
 
 /* On get a image */
-static void network_cb_on_image( SoupSession *session, SoupMessage *msg, Image *image ){
+static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data ){
 
-	debug (DEBUG_DOMAIN, "Image response: %i", msg->status_code);
+	Image *image=(Image *)user_data;
+	 debug (DEBUG_DOMAIN, "Image response: %i", msg->status_code);
 
 	/* check response */
 	if (network_check_http( msg )) {
@@ -700,8 +733,7 @@ network_cb_on_add (SoupSession *session,
 	/* parse new user */
 	debug (DEBUG_DOMAIN, "Parsing new user");
 
-	user = parser_single_user (msg->response_body->data,
-									  msg->response_body->length);
+	user=parser_single_user(msg->response_body->data, msg->response_body->length);
 
 	if (user) {
 		user_friends = g_list_append ( user_friends, user );

@@ -13,10 +13,10 @@ gtkbuilder_DATA = 			\
 	preferences.ui			\
 	main-window.ui			\
 	send-message-dialog.ui		\
-	add-friend-dialog.ui		\
+	popup-dialog.ui			\
 	friends-manager.ui		\
 	followers-dialog.ui		\
-	account-dialog.ui
+	accounts-dialog.ui
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
 icon_DATA = greet-tweet-know.png

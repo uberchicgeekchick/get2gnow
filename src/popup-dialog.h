@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /*
- * Copyright (C) 2007-2008 Brian Pepple <bpepple@fedoraproject.org>
+ * Copyright (C) 2007-2008 Daniel Morales <daniminas@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,11 +18,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __ACCOUNT_DIALOG_H__
-#define __ACCOUNT_DIALOG_H__
+#ifndef __POPUP_DIALOG_H__
+#define __POPUP_DIALOG_H__
 
 #include <gtk/gtk.h>
 
-void account_dialog_show (GtkWindow *parent);
+typedef enum{
+	PopupFollow,
+	PopupUnfollow,
+	PopupBlock
+}PopupUsage;
 
-#endif /* __ACCOUNT_DIALOG_H__ */
+void popup_friend_follow( GtkWindow *parent );
+void popup_friend_unfollow( GtkWindow *parent );
+void popup_friend_block( GtkWindow *parent );
+
+#endif /* __POPUP_DIALOG_H__ */

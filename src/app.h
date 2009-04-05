@@ -68,11 +68,10 @@ struct _AppPriv {
 	GtkRadioAction		*menu_public;
 	GtkRadioAction		*menu_friends;
 	GtkRadioAction		*menu_mine;
-	GtkRadioAction		*menu_twitux;
 	GtkRadioAction		*menu_direct_messages;
 	GtkRadioAction		*menu_direct_replies;
 
-	GtkAction		*view_friends;
+	GtkAction		*friends_timelines;
 
 	/* Status Icon */
 	GtkStatusIcon		*status_icon;

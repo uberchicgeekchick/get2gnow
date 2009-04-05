@@ -40,8 +40,8 @@
 #include "send-message-dialog.h"
 #include "main.h"
 #include "about.h"
-#include "account-dialog.h"
-#include "add-dialog.h"
+#include "accounts-dialog.h"
+#include "popup-dialog.h"
 #include "app.h"
 #include "geometry.h"
 #include "hint.h"
@@ -78,7 +78,7 @@ static void     app_connect_cb(GtkWidget *window, App *app);
 static void     app_disconnect_cb(GtkWidget *window, App *app); 
 static void     app_quit_cb(GtkWidget *window, App *app); 
 static void     app_refresh_cb(GtkWidget *window, App *app); 
-static void     app_account_cb(GtkWidget *window, App *app); 
+static void     app_accounts_cb(GtkWidget *window, App *app); 
 static void app_friends_manager_cb(GtkWidget *widget, App *app);
 static void     app_preferences_cb(GtkWidget *window, App *app); 
 static void app_combined_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app);
@@ -95,7 +95,7 @@ static void     app_view_direct_messages_cb(GtkRadioAction        *action,
 static void     app_view_direct_replies_cb(GtkRadioAction        *action,
 												  GtkRadioAction        *current,
 												  App             *app);
-static void     app_view_friends_cb(GtkAction *action, App *app); 
+static void     app_friends_timelines_cb(GtkAction *action, App *app); 
 static void     app_about_cb(GtkWidget *window, App *app); 
 static void     app_help_contents_cb(GtkWidget *widget, App *app); 
 static void     app_status_icon_activate_cb(GtkStatusIcon *status_icon, App *app); 
@@ -103,7 +103,12 @@ static void     app_status_icon_popup_menu_cb(GtkStatusIcon         *status_icon
 												  guint                  button,
 												  guint                  activate_time,
 												  App             *app);
-static void     app_add_friend_cb(GtkAction *menuitem, App *app); 
+
+static void friends_follow(GtkAction *item, App *app);
+static void friends_unfollow(GtkAction *item, App *app);
+static void friends_block(GtkAction *item, App *app);
+
+
 static void     app_connection_items_setup(App *app, GtkBuilder *ui); 
 static void     app_login(App             *app);
 static void app_set_default_timeline(App *app, gchar *timeline);
@@ -232,7 +237,7 @@ app_setup(void)
 							  "view_my_timeline", &app_priv->menu_mine,
 							  "view_direct_messages", &app_priv->menu_direct_messages,
 							  "view_direct_replies", &app_priv->menu_direct_replies,
-							  "view_friends", &app_priv->view_friends,
+							  "friends_timelines", &app_priv->friends_timelines,
 							  "expand_box", &app_priv->expand_box,
 							  "expand_vbox", &expand_vbox,
 							  "expand_image", &app_priv->expand_image,
@@ -263,15 +268,17 @@ app_setup(void)
 						"twitter_connect", "activate", app_connect_cb,
 						"twitter_disconnect", "activate", app_disconnect_cb,
 						"twitter_refresh", "activate", app_refresh_cb,
-						"twitter_quit", "activate", app_quit_cb,
-						"twitter_add_friend", "activate", app_add_friend_cb,
+						"quit", "activate", app_quit_cb,
 						"tweets_new_tweet", "activate", tweets_new_tweet,
 						"tweets_reply", "activate", tweets_reply,
 						"tweets_retweet", "activate", tweets_retweet,
 						"tweets_new_dm", "activate", tweets_new_dm,
-						"settings_account", "activate", app_account_cb,
-						"settings_friends_manager", "activate", app_friends_manager_cb,
-						"settings_preferences", "activate", app_preferences_cb,
+						"accounts", "activate", app_accounts_cb,
+						"friends_manager", "activate", app_friends_manager_cb,
+						"friends_follow", "activate", friends_follow,
+						"friends_unfollow", "activate", friends_unfollow,
+						"friends_block", "activate", friends_block,
+						"preferences", "activate", app_preferences_cb,
 						"view_combined_timeline", "changed", app_combined_timeline_cb,
 						"view_public_timeline", "changed", app_public_timeline_cb,
 						"view_friends_timeline", "changed", app_friends_timeline_cb,
@@ -279,7 +286,7 @@ app_setup(void)
 						"view_direct_messages", "changed", app_view_direct_messages_cb,
 						"view_direct_replies", "changed", app_view_direct_replies_cb,
 						"help_contents", "activate", app_help_contents_cb,
-						"view_friends", "activate", app_view_friends_cb,
+						"friends_timelines", "activate", app_friends_timelines_cb,
 						"help_about", "activate", app_about_cb,
 						NULL);
 
@@ -382,6 +389,7 @@ static void app_set_radio_group(App  *app, GtkBuilder *ui){
 
 	const gchar     *radio_actions[] = {
 		"view_public_timeline",
+		"view_combined_timeline",
 		"view_friends_timeline",
 		"view_my_timeline",
 		"view_direct_messages",
@@ -518,7 +526,7 @@ app_view_direct_replies_cb(GtkRadioAction *action,
 }
 
 static void
-app_view_friends_cb(GtkAction *action,
+app_friends_timelines_cb(GtkAction *action,
 							App *app)
 {
 			followers_dialog_show(GTK_WINDOW(app_priv->window));
@@ -532,8 +540,8 @@ get_account_set_request(App *app)
 	return(char **)twitter;
 }
 
-static void app_account_cb(GtkWidget *widget, App *app){
-	account_dialog_show(GTK_WINDOW(app_priv->window));
+static void app_accounts_cb(GtkWidget *widget, App *app){
+	accounts_dialog_show(GTK_WINDOW(app_priv->window));
 }
 
 static void app_friends_manager_cb(GtkWidget *widget, App *app){
@@ -548,28 +556,23 @@ static void app_about_cb(GtkWidget *widget, App *app){
 	about_dialog_new(GTK_WINDOW(app_priv->window));
 }
 
-static void
-app_help_contents_cb(GtkWidget *widget,
-					  App *app)
-{
-	
-	
+static void app_help_contents_cb(GtkWidget *widget, App *app){
 	help_show(GTK_WINDOW(app_priv->window));
 }
 
-static void
-app_add_friend_cb(GtkAction *item,
-				   App *app)
-{
-	
-	
-	add_dialog_show(GTK_WINDOW(app_priv->window));
+static void friends_follow(GtkAction *item, App *app){
+	popup_friend_follow( GTK_WINDOW(app_priv->window) );
 }
 
-static void
-app_show_hide_cb(GtkWidget *widget,
-				  App *app)
-{
+static void friends_unfollow(GtkAction *item, App *app){
+	popup_friend_unfollow( GTK_WINDOW(app_priv->window) );
+}
+
+static void friends_block(GtkAction *item, App *app){
+	popup_friend_block( GTK_WINDOW(app_priv->window) );
+}
+
+static void app_show_hide_cb( GtkWidget *widget, App *app ){
 	app_toggle_visibility();
 }
 
@@ -744,7 +747,7 @@ static void app_login(App *a){
 	request_username_password(a);
 
 	if(G_STR_EMPTY(app_priv->username) || G_STR_EMPTY(app_priv->password))
-		app_account_cb(NULL, a);
+		app_accounts_cb(NULL, a);
 	else {
 		network_login(app_priv->username, app_priv->password);
 		app_retrieve_default_timeline();
@@ -764,8 +767,9 @@ app_set_default_timeline(App *app, gchar *timeline)
 		return;
 	}
 
-	/*if( !(strcmp( timeline, "combined" )) )
-		return gtk_radio_action_set_current_value( app_priv->menu_combined, 1);*/
+	if( !(strcmp( timeline, "combined" )) )
+		return gtk_radio_action_set_current_value( app_priv->menu_combined, 1);
+	
 	if( !(strcmp( timeline, API_TWITTER_TIMELINE_PUBLIC )) )
 		return gtk_radio_action_set_current_value( app_priv->menu_public, 1);
 	
@@ -819,14 +823,9 @@ app_connection_items_setup(App  *app,
 
 	const gchar   *widgets_connected[] = {
 		"twitter_disconnect",
-		"tweets_new_tweet",
-		"tweets_new_dm",
-		"tweets_reply",
-		"twitter_refresh",
-		"twitter_add_friend",
 		"tweets1",
 		"view1",
-		"settings_friends_manager"
+		"friends",
 	};
 
 	const gchar   *widgets_disconnected[] = {

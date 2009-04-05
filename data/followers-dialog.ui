@@ -75,7 +75,7 @@
                     <property name="visible">True</property>
                     <property name="spacing">5</property>
                     <child>
-                      <object class="GtkButton" id="follow_rem">
+                      <object class="GtkButton" id="user_unfollow">
                         <property name="label" translatable="yes">gtk-remove</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -90,7 +90,26 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button1">
+                      <object class="GtkButton" id="user_follow">
+                        <property name="label" translatable="yes">_Block</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
+                        <property name="image">block_image</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="follow_bloc">
                         <property name="label" translatable="yes">gtk-home</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -108,6 +127,7 @@
                   </object>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="fill">False</property>
                     <property name="padding">4</property>
                     <property name="pack_type">end</property>
                     <property name="position">1</property>
@@ -142,6 +162,8 @@
                 <property name="use_stock">True</property>
               </object>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -160,4 +182,11 @@
   </object>
   <object class="GtkAction" id="action1"/>
   <object class="GtkAction" id="action2"/>
+  <object class="GtkImage" id="block_image">
+    <property name="width_request">24</property>
+    <property name="height_request">24</property>
+    <property name="visible">True</property>
+    <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
+    <property name="stock">gtk-stop</property>
+  </object>
 </interface>

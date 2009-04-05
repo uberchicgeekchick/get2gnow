@@ -1,0 +1,364 @@
+<gconfschemafile>
+  <schemalist>
+    
+    <schema>
+       <key>/schemas/apps/greet-tweet-know/auth/user_id</key>
+       <applyto>/apps/greet-tweet-know/auth/user_id</applyto>
+       <owner>greet-tweet-know</owner>
+       <type>string</type>
+       <default></default>
+       <locale name="C">
+          <short>Twitter username</short>
+          <long>User's Twitter account username.</long>
+       </locale>
+
+       <locale name="ja">
+          <short>Twitterユーザ名</short>
+          
+       </locale>
+
+       <locale name="pt">
+          <short>Nome de usuário Twitter</short>
+          <long>Nomes de usuários no Twitter</long>
+       </locale>
+    </schema>
+
+    <schema>
+       <key>/schemas/apps/greet-tweet-know/auth/password</key>
+       <applyto>/apps/greet-tweet-know/auth/password</applyto>
+       <owner>greet-tweet-know</owner>
+       <type>string</type>
+       <default></default>
+       <locale name="C">
+          <short>Twitter password</short>
+          <long>User's Twitter account password.</long>
+       </locale>
+
+       <locale name="ja">
+          <short>Twitterパスワード</short>
+          
+       </locale>
+
+       <locale name="pt">
+          <short>Senha no Twitter</short>
+          <long>Senhas de usuários no Twitter</long>
+       </locale>
+    </schema>
+    
+    <schema>
+    	<key>/schemas/apps/greet-tweet-know/auth/auto_login</key>
+    	<applyto>/apps/greet-tweet-know/auth/auto_login</applyto>
+    	<owner>greet-tweet-know</owner>
+    	<type>bool</type>
+    	<default>true</default>
+    	<locale name="C">
+    	   <short>Log automatically into Twitter</short>
+    	   <long>Log automatically into Twitter.</long>
+    	</locale>
+
+    	<locale name="ja">
+    	   <short>自動的にTwitterにログイン</short>
+    	   <long>自動的にTwitterにログイン</long>
+    	</locale>
+
+    	<locale name="pt">
+    	   <short>Autentica automaticamente no Twitter</short>
+    	   <long>Autentica automaticamente no Twitter.</long>
+    	</locale>
+    </schema>
+
+    <schema>
+    	<key>/schemas/apps/greet-tweet-know/tweets/names</key>
+    	<applyto>/apps/greet-tweet-know/tweets/names</applyto>
+    	<owner>greet-tweet-know</owner>
+    	<type>bool</type>
+    	<default>true</default>
+    	<locale name="C">
+    	   <short>Show user names instead real names</short>
+    	   <long>Show user names instead real names.</long>
+    	</locale>
+
+    	<locale name="ja">
+    	   <short>実際の名前の代わりにユーザ名を表示</short>
+    	   <long>実際の名前の代わりにユーザ名を表示</long>
+    	</locale>
+    </schema>
+
+    <schema>
+    	<key>/schemas/apps/greet-tweet-know/tweets/home_timeline</key>
+    	<applyto>/apps/greet-tweet-know/tweets/home_timeline</applyto>
+    	<owner>greet-tweet-know</owner>
+    	<type>string</type>
+    	<default>http://twitter.com/statuses/friends_timeline.xml</default>
+    	<locale name="C">
+    	   <short>User's home timeline</short>
+    	   <long>User's home timeline.</long>
+    	</locale>
+
+    	<locale name="pt">
+    	   <short>Linhas de tempo do usuário</short>
+    	   <long>Linhas de tempo do usuário.</long>
+    	</locale>
+    </schema>
+    
+    <schema>
+    	<key>/schemas/apps/greet-tweet-know/tweets/reload_timeline</key>
+    	<applyto>/apps/greet-tweet-know/tweets/reload_timeline</applyto>
+    	<owner>greet-tweet-know</owner>
+    	<type>int</type>
+    	<default>5</default>
+    	<locale name="C">
+    	   <short>Minutes between timeline retrievals</short>
+    	   <long>Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and 60</long>
+    	</locale>
+
+    	<locale name="ja">
+    	   <short>タイムラインを取り寄せる時間間隔（分）</short>
+    	   <long>タイムラインを取り寄せる間隔を分で設定。可能な値は、3, 5, 15, 30, 60のいずれか</long>
+    	</locale>
+
+    	<locale name="pt">
+    	   <short>Minutos entre recuperações de linha de tempo</short>
+    	   <long>Minutos entre recuperações de linha de tempo. Valores suportados são 3, 5, 15, 30, e 60</long>
+    	</locale>
+    </schema>
+
+    <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_height</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_height</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>int</type>
+	<default>0</default>
+	<locale name="C">
+	   <short>Main window height</short>
+	   <long>Main window height.</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>メインウインドウの高さ</short>
+	   <long>メインウインドウの高さ</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Altura da janela principal</short>
+	   <long>Altura da janela principal.</long>
+	</locale>
+     </schema>
+
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_width</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_width</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>int</type>
+	<default>0</default>
+	<locale name="C">
+	   <short>Main window width</short>
+	   <long>Main window width.</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>メインウインドウの幅</short>
+	   <long>メインウインドウの幅</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Largura da Janela principal</short>
+	   <long>Largura da janela principal.</long>
+	</locale>
+     </schema>
+
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_pos_x</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_pos_x</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>int</type>
+	<default>0</default>
+	<locale name="C">
+	   <short>Main window X position</short>
+	   <long>Main window X position.</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>メインウインドウのX位置</short>
+	   <long>メインウインドウのX位置</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Janela principal posição X</short>
+	   <long>Janela principal posição X.</long>
+	</locale>
+     </schema>
+
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/main_window_pos_y</key>
+	<applyto>/apps/greet-tweet-know/ui/main_window_pos_y</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>int</type>
+	<default>0</default>
+	<locale name="C">
+	   <short>Main window Y position</short>
+	   <long>Main window Y position.</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>メインウインドウのY位置</short>
+	   <long>メインウインドウのY位置</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Janela principal posição Y</short>
+	   <long>Janela principal posição Y.</long>
+	</locale>
+     </schema>
+     
+     <schema>
+       <key>/schemas/apps/greet-tweet-know/ui/main_window_hidden</key>
+       <applyto>/apps/greet-tweet-know/ui/main_window_hidden</applyto>
+       <owner>greet-tweet-know</owner>
+       <type>bool</type>
+       <default>false</default>
+       <locale name="C">
+          <short>Hide main window</short>
+          <long>Hide the main window.</long>
+       </locale>
+
+       <locale name="ja">
+          <short>メインウインドウを隠す</short>
+          <long>メインウインドウを隠す</long>
+       </locale>
+    </schema>
+     
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/expand_messages</key>
+	<applyto>/apps/greet-tweet-know/ui/expand_messages</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>bool</type>
+	<default>false</default>
+	<locale name="C">
+	   <short>Expand messages</short>
+	   <long>Expand messages</long>
+	</locale>
+
+	<locale name="de">
+	   <short>Nachrichten erweitern</short>
+	   <long>Nachrichten erweitern</long>
+	</locale>
+
+	<locale name="fr">
+	   <short>Ãtendre les messages</short>
+	   <long>Ãtendre les messages</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>メッセージの展開</short>
+	   <long>メッセージの展開</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Expandir mensagens</short>
+	   <long>Expandir mensagens</long>
+	</locale>
+     </schema>
+     
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/notify</key>
+	<applyto>/apps/greet-tweet-know/ui/notify</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>bool</type>
+	<default>false</default>
+	<locale name="C">
+	   <short>Show notification of new Twitter messages</short>
+	   <long>Show notification of new Twitter messages.</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>新しいTwitterメッセージの通知を表示する</short>
+	   <long>新しいTwitterメッセージの通知を表示する。</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Mostrar notificações de novas mensagens do Twitter</short>
+	   <long>Mostrar notificações de novas mensagens do Twitter.</long>
+	</locale>
+     </schema>
+
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/sound</key>
+	<applyto>/apps/greet-tweet-know/ui/sound</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>bool</type>
+	<default>false</default>
+	<locale name="C">
+	   <short>Sound notification of new Twitter messages</short>
+	   <long>Sound notification of new Twitter messages.</long>
+	</locale>
+     </schema>
+
+     <schema>
+      <key>/schemas/apps/greet-tweet-know/ui/spell_checker_languages</key>
+      <applyto>/apps/greet-tweet-know/ui/spell_checker_languages</applyto>
+      <owner>greet-tweet-know</owner>
+      <type>string</type>
+      <default>en</default>
+      <locale name="C">
+	<short>Spell checking languages</short>
+	<long>
+	  Comma separated list of spell checker languages to use (e.g. en, fr, nl).
+	</long>
+      </locale>
+
+      <locale name="ja">
+	<short>スペルチェックを行う言語</short>
+	<long>スペルチェッカーで使う言語を、カンマ区切りリストでいれる(例： en, fr, nl)</long>
+      </locale>
+
+      <locale name="pt">
+	<short>Linguagens do verificador ortográfico</short>
+	<long>Lista separada por vírgula das linguagens de verificadores ortográficos para usar (ex.: en, fr, es).</long>
+      </locale>
+     </schema>
+
+     <schema>
+	<key>/schemas/apps/greet-tweet-know/ui/spell</key>
+	<applyto>/apps/greet-tweet-know/ui/spell</applyto>
+	<owner>greet-tweet-know</owner>
+	<type>bool</type>
+	<default>false</default>
+	<locale name="C">
+	   <short>Enable spell checking</short>
+	   <long>Enable spell checking.</long>
+	</locale>
+
+	<locale name="ja">
+	   <short>スペルチェックを有効にする</short>
+	   <long>スペルチェック有効。</long>
+	</locale>
+
+	<locale name="pt">
+	   <short>Habilitar verificação ortográfica</short>
+	   <long>Habilitar verificação ortográfica.</long>
+	</locale>
+     </schema>
+     
+     <schema>
+      <key>/schemas/apps/greet-tweet-know/hints/close_main_window</key>
+      <applyto>/apps/greet-tweet-know/hints/close_main_window</applyto>
+      <owner>greet-tweet-know</owner>
+      <type>bool</type>
+      <default>true</default>
+      <locale name="C">
+        <short>Show hint about closing the main window</short>
+		<long>
+			Whether or not to show the message dialog about closing the
+      		main window with the 'x' button in the title bar.
+		</long>
+      </locale>
+
+      <locale name="ja">
+        <short>メインウインドウを閉じるときにヒントを表示</short>
+		
+      </locale>
+    </schema>
+
+  </schemalist>  
+</gconfschemafile>

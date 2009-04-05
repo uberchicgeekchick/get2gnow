@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<omf>
+  <resource>
+    <creator>(Kaity G. B.)</creator>
+    <maintainer>(Kaity G. B.)</maintainer>
+    <title>Greet-Tweet-Know Manual V2.1</title>
+    <date>April 2008</date>
+    <version identifier="Greet-Tweet-Know Manual V2.0" date="April 2008"/>
+    <subject category="GNOME|Applications|Internet"/>
+    <description>
+      This manual describes the use of Greet-Tweet-Know.
+    </description>
+    <type>user's guide</type>
+    <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
+    <identifier url="file:///usr/share/gnome/help/greet-tweet-know/C/greet-tweet-know.xml"/>
+    <language code="C"/>
+    <relation seriesid="0feaf6bd-0768-7724-07f1-6c20eae543c310"/>
+    <rights type="GNU FDL" license.version="1.1" holder="Kaity G. B."/>
+  </resource>
+</omf>
