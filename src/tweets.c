@@ -34,10 +34,12 @@
 
 
 typedef struct SelectedTweet {
+	unsigned long int id;
 	const gchar *user_name;
 	const gchar *tweet;
 } SelectedTweet;//SelectedTweet
 
+unsigned long int in_reply_to_status_id=0;
 static SelectedTweet *selected_tweet=NULL;
 
 static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release);
@@ -45,18 +47,20 @@ static void tweets_list_move(GdkEventKey *event, TweetList *list);
 
 
 
-void set_selected_tweet(const gchar *user_name, const gchar *tweet){
+void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet){
 	if(selected_tweet) g_free(selected_tweet);
 	selected_tweet=g_new0(SelectedTweet, 1);
-	selected_tweet->user_name=user_name;
-	selected_tweet->tweet=tweet;
+	selected_tweet->id=id;
+	selected_tweet->user_name=g_strdup(user_name);
+	selected_tweet->tweet=g_strdup(tweet);
 }//set_selected_tweets
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
-//	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
-//	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
+	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
+	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
 	if(selected_tweet) g_free(selected_tweet);
+	in_reply_to_status_id=0;
 }//unset_selected_tweet
 
 void show_tweets_submenu_entries(gboolean show){
@@ -107,13 +111,15 @@ void tweets_reply(void){
 	if(!selected_tweet)
 		return;
 	const gchar *tweet=g_strdup_printf("@%s ", selected_tweet->user_name);
+	in_reply_to_status_id=selected_tweet->id;
 	tweets_include_and_begin_to_send(tweet, (gboolean)TRUE);
 }
 
 void tweets_retweet(void){
 	if(!selected_tweet)
 		return;
-	const gchar *tweet=g_strdup_printf("rt @%s %s", selected_tweet->user_name, selected_tweet->tweet);
+	const gchar *tweet=g_strdup_printf("RT @%s %s", selected_tweet->user_name, selected_tweet->tweet);
+	in_reply_to_status_id=selected_tweet->id;
 	tweets_include_and_begin_to_send(tweet, (gboolean)TRUE);
 }
 

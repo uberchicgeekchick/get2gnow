@@ -196,6 +196,7 @@ parser_timeline(const gchar *data,
 							STRING_DATE, datetime,
 							STRING_TWEET, status->text,
 							STRING_USER, status->user->user_name,
+							ULONG_TWEET_ID, (strtoul( status->id, NULL, 0 )),
 							-1);
 		
 		/* Free the text column string */

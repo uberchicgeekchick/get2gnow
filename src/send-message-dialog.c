@@ -85,7 +85,7 @@ static void message_spell_free( MessageSpell *message_spell );
 static void message_destroy_cb( GtkWidget *widget );
 static void message_response_cb( GtkWidget *widget, gint response );
 
-static void message_text_button_press_cb( GtkTextView *view, GdkEventButton *event );
+static void message_text_button_release_cb( GtkTextView *view, GdkEventButton *event );
 static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu );
 
 
@@ -142,7 +142,7 @@ static void message_setup( GtkWindow  *parent ){
 	gtkbuilder_connect(	ui, dialog,
 			"send_message_dialog", "destroy", message_destroy_cb,
 			"send_message_dialog", "response", message_response_cb,
-			"send_message_textview", "button_press_event", message_text_button_press_cb,
+			"send_message_textview", "button_release_event", message_text_button_release_cb,
 			"send_message_textview", "populate-popup", message_text_populate_popup_cb,
 			NULL
 	);
@@ -401,29 +401,30 @@ static void message_text_buffer_changed_cb( GtkTextBuffer *buffer ){
 	}
 }
 
-static void message_text_button_press_cb( GtkTextView *view, GdkEventButton *event ){
+static void message_text_button_release_cb( GtkTextView *view, GdkEventButton *event ){
 	/*
 	 * When the right mouse button is pressed the cursor/insert point needs to be
 	 * moved so the context menu is drawn with or without the spell checking entry
 	 * based on which word it being right clicked.
 	 */
+	GtkTextBuffer *buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(dialog_priv->textview));
+	
+	if( event->button != 3 ) {
+		g_signal_emit_by_name( ((gpointer *)buffer), "end-user-action" );
+		return;
+	}
+	
 	gint x,y;
 	GtkTextIter iter;
-	GtkTextBuffer *buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(dialog_priv->textview));
 	
 	/* Find where the mouse pointer is at. */
 	gtk_widget_get_pointer( (GTK_WIDGET( view )), &x, &y );
 	gtk_text_view_window_to_buffer_coords( (GTK_TEXT_VIEW( view )), GTK_TEXT_WINDOW_WIDGET, x, y, &x, &y );
 	gtk_text_view_get_iter_at_location( (GTK_TEXT_VIEW( view )), &iter, x, y );
 	
-	/* TODO trigger this when button2 is click or the context menu key is pressed. */
-	/* The pointer is located in a different location than the cursor. */
 	gtk_text_buffer_select_range( buffer, &iter, &iter );
-
-	if( event->button != 3 ) return;
-	
 	g_signal_emit_by_name( ((gpointer *)dialog), "populate-popup" );
-}//message_text_button_press_cb
+}//message_text_button_release_cb
 
 static void message_text_populate_popup_cb( GtkTextView *view, GtkMenu *menu ){
 	GtkTextBuffer *buffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(dialog_priv->textview));
@@ -535,7 +536,7 @@ message_response_cb( GtkWidget *widget, gint response ){
 	if(!dialog_priv->show_friends) {
 		/* Post a tweet */
 		gtk_widget_destroy(widget);
-		network_post_status(good_msg, 0);
+		network_post_status(good_msg);
 		if(good_msg) g_free(good_msg);
 		return;
 	}

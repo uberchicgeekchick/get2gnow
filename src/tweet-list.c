@@ -88,12 +88,14 @@ static void tweet_list_create_model( TweetList *list ){
 		g_object_unref(list_priv->store);
 
 	list_priv->store=gtk_list_store_new(N_COLUMNS,
-							GDK_TYPE_PIXBUF,  /* Avatar pixbuf */
-							G_TYPE_STRING,    /* Display string */
-							G_TYPE_STRING,    /* Author name string */
-							G_TYPE_STRING,    /* Date string */
-							G_TYPE_STRING,    /* Tweet string */
-							G_TYPE_STRING);   /* Username string */
+							GDK_TYPE_PIXBUF,	/* Avatar pixbuf */
+							G_TYPE_STRING,		/* Display string */
+							G_TYPE_STRING,		/* Author name string */
+							G_TYPE_STRING,		/* Date string */
+							G_TYPE_STRING,		/* Tweet string */
+							G_TYPE_STRING,		/* Username string */
+							G_TYPE_ULONG		/* Tweet's ID */
+	);
 
 	/* save normal model */
 	model=GTK_TREE_MODEL(list_priv->store);
@@ -141,6 +143,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	gboolean expand;
 	conf_get_bool((conf_get()), PREFS_UI_EXPAND_MESSAGES, &expand);
 	
+	gulong		tweet_id;
 	GdkPixbuf	*pixbuf;
 	gchar		*user_name, *tweet, *date, *name;
 
@@ -152,15 +155,18 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 				STRING_DATE, &date,
 				STRING_USER, &user_name,
 				PIXBUF_AVATAR, &pixbuf,
+				ULONG_TWEET_ID, &tweet_id,
 				-1
 	);
 	
-	set_selected_tweet(user_name, tweet);
+	set_selected_tweet((unsigned long int)tweet_id, user_name, tweet);
 	
 	if(expand) app_expand_message(name, date, tweet, pixbuf);
 	
 	g_free(name);
+	g_free(tweet);
 	g_free(date);
+	g_free(user_name);
 	if(pixbuf) g_object_unref(pixbuf);
 }
 

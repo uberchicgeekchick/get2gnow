@@ -45,6 +45,7 @@
 #include "app.h"
 #include "send-message-dialog.h"
 #include "followers-dialog.h"
+#include "tweets.h"
 
 #define DEBUG_DOMAIN	  "Network"
 
@@ -227,13 +228,15 @@ void network_logout (void)
 
 
 /* Post a new tweet - text must be Url encoded */
-void network_post_status(const gchar *text, const guint in_reply_to_status_id){
+void network_post_status(const gchar *text){
 	//TODO: add in_reply_to_status_id
 	gchar *formdata=NULL;
-	if(in_reply_to_status_id)
-		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%u&status=%s", API_TWITTER_CLIENT_AUTH, in_reply_to_status_id, text );
-	else
+	if(!in_reply_to_status_id)
 		formdata=g_strdup_printf( "source=%s&status=%s", API_TWITTER_CLIENT_AUTH, text );
+	else{
+		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%u&status=%s", API_TWITTER_CLIENT_AUTH, in_reply_to_status_id, text );
+		in_reply_to_status_id=0;
+	}
 	network_post_data( API_TWITTER_POST_STATUS, formdata, network_cb_on_post, NULL );
 	//g_free( formdata );
 }//network_post_status

@@ -66,7 +66,7 @@ void network_login( const char *username, const char *password );
 void network_logout( void );
 
 /* Post a new tweet */
-void network_post_status( const gchar *text,  const guint in_reply_to_status_id );
+void network_post_status( const gchar *text );
 
 /* Post a direct message to a follower */
 void network_send_message( const gchar *friend, const gchar *text );

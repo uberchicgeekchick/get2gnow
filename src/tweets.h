@@ -34,6 +34,7 @@
 
 #define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "Press [Return] or [Ctrl+@] to reply, [Ctrl+F] to re-tweet, [Ctrl+N] to send a new tweet, and [Ctrl+D] to send dm."
 
+extern unsigned long int in_reply_to_status_id;
 
 G_BEGIN_DECLS
 
@@ -50,7 +51,7 @@ void tweets_reply(void);
 void tweets_retweet(void);
 void tweets_new_dm(void);
 
-void set_selected_tweet(const gchar *user_name, const gchar *tweet);
+void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet);
 void unset_selected_tweet(void);
 void show_tweets_submenu_entries(gboolean show);
 
