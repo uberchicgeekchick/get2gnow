@@ -60,7 +60,7 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_reply">
-            <property name="stock_id">gnome-stock-mail-rpl</property>
+            <property name="stock_id">gtk-convert</property>
             <property name="name">tweets_reply</property>
             <property name="label">New _@ Reply</property>
           </object>
@@ -68,7 +68,7 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_retweet">
-            <property name="stock_id">gnome-stock-mail-fwd</property>
+            <property name="stock_id">gtk-redo</property>
             <property name="name">tweets_retweet</property>
             <property name="label">_Retweet</property>
           </object>
@@ -76,7 +76,7 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_new_dm">
-            <property name="stock_id">gnome-stock-mail</property>
+            <property name="stock_id">gtk-leave-fullscreen</property>
             <property name="name">tweets_new_dm</property>
             <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
             <property name="label">New _DM</property>

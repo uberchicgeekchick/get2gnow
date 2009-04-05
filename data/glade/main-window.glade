@@ -138,7 +138,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image8">
                             <property name="visible">True</property>
-                            <property name="stock">gnome-stock-mail-rpl</property>
+                            <property name="stock">gtk-convert</property>
                           </widget>
                         </child>
                       </widget>
@@ -154,7 +154,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image9">
                             <property name="visible">True</property>
-                            <property name="stock">gnome-stock-mail-fwd</property>
+                            <property name="stock">gtk-redo</property>
                           </widget>
                         </child>
                       </widget>
@@ -170,7 +170,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image10">
                             <property name="visible">True</property>
-                            <property name="stock">gnome-stock-mail</property>
+                            <property name="stock">gtk-leave-fullscreen</property>
                           </widget>
                         </child>
                       </widget>
