@@ -25,7 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
-#include "parser.h"
+#include "users.h"
 #include "images.h"
 
 /* Twitter API */

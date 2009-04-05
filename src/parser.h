@@ -24,42 +24,15 @@
 #define __PARSER_H__
 
 #include <gtk/gtk.h>
+#include <libxml/parser.h>
+#include "users.h"
 
-typedef struct {
-	guint			id;
-	gchar			*user_name;
-	gchar			*nick_name;
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	unsigned long int	tweets;
-	unsigned long int	friends;
-	unsigned long int	followers;
-	gchar			*image_url;
-	gchar			*image_filename;
-	gboolean		follower;
-} User;
-
+xmlDoc *parser_parse (const char *data, gssize length, xmlNode **first_element);
 
 /* Returns a liststore for the main treeview to show tweets */
-gboolean parser_timeline (const gchar *data, 
-								 gssize       length);
-
-/* Returns a Glist with friends. Can be used to 
-   build the friends menu, on direct messages dialog, etc.. */
-GList *parser_users_list (const gchar *data,
-								 gssize       length);
-
-/* Parse a xml user node. Ex: add/del users responses */
-User *parser_single_user (const gchar *data,
-									   gssize       length);
-
-/* To free a User struct */
-void parser_free_user (User *user);
-
-int parser_sort_users(User *a, User *b);
+gboolean parser_timeline( const gchar *data, gssize length );
 
 /* Restet the ID of the last tweet showed */
-void parser_reset_lastid (void);
+void parser_reset_lastid( void );
 
 #endif /*  __PARSER_H__ */

@@ -40,6 +40,7 @@
 #include "main.h"
 #include "network.h"
 #include "parser.h"
+#include "users.h"
 #include "images.h"
 #include "app.h"
 #include "send-message-dialog.h"
@@ -286,7 +287,7 @@ User *network_fetch_profile(const gchar *user_name){
 	msg=network_fetch_data( user_profile ); 
 	g_free( user_profile );
 	
-	if( (user=parser_single_user( msg->response_body->data, msg->response_body->length )) )
+	if( (user=user_parse_new( msg->response_body->data, msg->response_body->length )) )
 		return user;
 
 	return NULL;
@@ -351,6 +352,10 @@ GList *network_get_users_glist(gboolean get_friends){
 		uri=g_strdup_printf("%s?page=%d", (get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page);
 		msg=network_fetch_data( uri );
 		fetching=network_get_users_page(msg);
+		if(uri) g_free(uri); uri=NULL;
+		
+		if(!page) continue;
+		
 		remaining_requests=atoi( (soup_message_headers_get(msg->response_headers, "X-RateLimit-Remaining")) );
 		g_timer_start(request_timer);
 		if( remaining_requests && remaining_requests < 4 )
@@ -358,13 +363,12 @@ GList *network_get_users_glist(gboolean get_friends){
 		else
 			while( 5.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
 		g_timer_stop(request_timer);
-		if(uri) g_free(uri); uri=NULL;
 	}
 	g_timer_destroy(request_timer);
 	if(!all_users)
 		app_set_statusbar_msg( _("Users parser error.") );
 	else
-		all_users=g_list_sort(all_users, (GCompareFunc) parser_sort_users);
+		all_users=g_list_sort(all_users, (GCompareFunc) usrcasecmp);
 
 	return all_users;
 }//network_get_users_glist
@@ -398,7 +402,7 @@ static gboolean network_get_users_page(SoupMessage *msg){
 	/* parse user list */
 	debug(DEBUG_DOMAIN, "Parsing user list");
 	GList *new_users;
-	if(! (new_users=parser_users_list(msg->response_body->data, msg->response_body->length)) )
+	if(! (new_users=users_new(msg->response_body->data, msg->response_body->length)) )
 		return (gboolean)FALSE;
 	
 	if(!all_users)
@@ -560,31 +564,13 @@ static gboolean network_check_http( SoupMessage *msg ){
 	return FALSE;
 }
 
-/* Callback to free every element on a User list */
-static void network_free_user_list_each( gpointer user, gpointer data ){
-	if (!user)
-		return;
-	parser_free_user( (User *)user );
-}
-
-
 /* Free a list of Users */
-static void
-network_parser_free_lists ()
-{
-	if (user_friends) {
-		g_list_foreach (user_friends, network_free_user_list_each, NULL);
-		g_list_free (user_friends);
-		user_friends = NULL;
-		debug (DEBUG_DOMAIN, "Friends freed");
-	}
+static void network_parser_free_lists(void){
+	if (user_friends)
+		users_free(user_friends);
 
-	if (user_followers) {
-		g_list_foreach (user_followers, network_free_user_list_each, NULL);
-		g_list_free (user_followers);
-		user_followers = NULL;
-		debug (DEBUG_DOMAIN, "Followers freed");
-	}
+	if (user_followers)
+		users_free(user_followers);
 }
 
 
@@ -733,7 +719,7 @@ network_cb_on_add (SoupSession *session,
 	/* parse new user */
 	debug (DEBUG_DOMAIN, "Parsing new user");
 
-	user=parser_single_user(msg->response_body->data, msg->response_body->length);
+	user=user_parse_new(msg->response_body->data, msg->response_body->length);
 
 	if (user) {
 		user_friends = g_list_append ( user_friends, user );
@@ -760,9 +746,9 @@ network_cb_on_del (SoupSession *session,
 	}
 	
 	if (user_data) {
-		User *user = (User *)user_data;
-		user_friends = g_list_remove (user_friends, user);
-		parser_free_user (user);
+		User *user=(User *)user_data;
+		user_friends=g_list_remove (user_friends, user);
+		user_free(user);
 	}
 }
 

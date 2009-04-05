@@ -42,6 +42,7 @@ greet_tweet_know_SOURCES = 				\
 	followers-dialog.c	followers-dialog.h	\
 	friend-manager.c	friend-manager.h	\
 	tweets.c		tweets.h		\
+	users.c			users.h			\
 	images.c		images.h		\
 	tweet-list.c		tweet-list.h
 

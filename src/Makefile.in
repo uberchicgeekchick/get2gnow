@@ -69,6 +69,7 @@ am__greet_tweet_know_SOURCES_DIST =			\
 	followers-dialog.c	followers-dialog.h	\
 	friends-manager.c	friends-manager.h	\
 	images.c		images.h		\
+	users.c			users.h			\
 	tweets.c		tweets.h		\
 	tweet-list.c		tweet-list.h
 
@@ -96,6 +97,7 @@ greet_tweet_know_OBJECTS =			\
 	ui-utils.$(OBJEXT)			\
 	followers-dialog.$(OBJEXT)		\
 	friends-manager.$(OBJEXT)		\
+	users.$(OBJEXT)				\
 	images.$(OBJEXT)			\
 	tweets.$(OBJEXT)			\
 	tweet-list.$(OBJEXT)
@@ -112,7 +114,7 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(greet_tweet_know_SOURCES)
-DIST_SOURCES = $(am__greet_tweet_know_SOURCES_DIST)
+DIST_SOURCES = $(greet_tweet_know_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -328,6 +330,7 @@ greet_tweet_know_SOURCES =				\
 	ui-utils.c		ui-utils.h		\
 	friends-manager.c	friends-manager.h	\
 	followers-dialog.c	followers-dialog.h	\
+	users.c			users.h			\
 	tweets.c		tweets.h		\
 	images.c		images.h		\
 	tweet-list.c		tweet-list.h
@@ -425,6 +428,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/send-message-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spell-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spell.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-list.Po@am__quote@

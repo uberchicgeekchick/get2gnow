@@ -46,27 +46,25 @@
 #include "parser.h"
 #include "tweet-list.h"
 #include "images.h"
+#include "users.h"
 
 #define DEBUG_DOMAIN_SETUP       "Parser" 
 
-typedef struct 
-{
+typedef struct {
 	User		*user;
 	gchar		*text;
 	gchar		*created_at;
 	gchar		*id;
 } Status;
 
-static User *parser_node_user (xmlNode *a_node);
 static Status *parser_node_status(xmlNode *a_node);
-static xmlDoc *parser_parse (const char *data, gssize length, xmlNode **first_element);
 static gchar *parser_convert_time (const char *datetime);
 static gboolean display_notification ( gpointer tweet );
 
 /* id of the newest tweet showed */
 static gint last_id = 0;
 
-static xmlDoc* parser_parse(const char *data, gssize length, xmlNode **first_element){
+xmlDoc *parser_parse(const char *data, gssize length, xmlNode **first_element){
 	xmlDoc* doc = NULL;
 	xmlNode* root_element = NULL;
 
@@ -93,75 +91,9 @@ static xmlDoc* parser_parse(const char *data, gssize length, xmlNode **first_ele
 }
 
 
-/* Parse a user-list XML( friends, followers,... ) */
-GList *parser_users_list(const gchar *data, gssize length){
-	xmlDoc		*doc = NULL;
-	xmlNode		*root_element = NULL;
-	xmlNode		*cur_node = NULL;
-
-	GList		*friends = NULL;
-
-	User 	*user;
-
-	/* parse the xml */
-	doc = parser_parse(data, length, &root_element);
-
-	if(!doc) {
-		xmlCleanupParser();
-		return NULL;
-	}
-
-	/* get users */
-	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
-		if(cur_node->type != XML_ELEMENT_NODE)
-			continue;
-		if(g_str_equal(cur_node->name, "user")){
-			/* parse user */
-			user = parser_node_user(cur_node->children);
-			/* add to list */
-			friends = g_list_append(friends, user);
-		} else if(g_str_equal(cur_node->name, "users")){
-			cur_node = cur_node->children;
-		}
-	} /* End of loop */
-
-	/* Free memory */
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-
-	return friends;
-}
-
-
-/* Parse a xml user node. Ex: user's profile & add/del/block users responses */
-User *parser_single_user(const gchar *data, gssize length){
-	xmlDoc		*doc = NULL;
-	xmlNode		*root_element = NULL;
-	User 	*user = NULL;
-	
-	/* parse the xml */
-	doc = parser_parse(data, length, &root_element);
-
-	if(!doc) {
-		xmlCleanupParser();
-		return NULL;
-	}
-
-	if(g_str_equal(root_element->name, "user"))
-		user=parser_node_user(root_element->children);
-
-	/* Free memory */
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	
-	return user;
-}
-
-static gboolean
-display_notification(gpointer tweet){
+static gboolean display_notification(gpointer tweet){
 	app_notify(tweet);
-	g_free(tweet);
-
+	if(tweet) g_free(tweet);
 	return FALSE;
 }
 
@@ -270,17 +202,13 @@ parser_timeline(const gchar *data,
 		g_free(tweet);
 
 		/* Get Image */
-		//g_free( network_get_image(status->user->image_url, &iter) );
 		network_get_image(status->user->image_url, iter);
 
 		/* Free struct */
-		parser_free_user(status->user);
-		if(status->text)
-			g_free(status->text);
-		if(status->created_at)
-			g_free(status->created_at);
-		if(status->id)
-			g_free(status->id);
+		user_free(status->user);
+		if(status->text) g_free(status->text);
+		if(status->created_at) g_free(status->created_at);
+		if(status->id) g_free(status->id);
 		
 		g_free(status);
 		g_free(datetime);
@@ -297,67 +225,6 @@ parser_timeline(const gchar *data,
 
 	return TRUE;
 }
-
-static User *parser_node_user(xmlNode *a_node){
-	xmlNode		   *cur_node = NULL;
-	xmlBufferPtr	buffer;
-	User     *user;
-	
-	buffer = xmlBufferCreate();
-	user = g_new0(User, 1);
-
-	user->follower=getting_followers;
-	
-	/* Begin 'users' node loop */
-	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
-		if(cur_node->type != XML_ELEMENT_NODE)
-			continue;
-		if(xmlNodeBufGetContent(buffer, cur_node) != 0)
-			continue;
-		
-		const xmlChar *tmp=xmlBufferContent(buffer);
-		
-		if(g_str_equal(cur_node->name, "id" ))
-			user->id = (guint)atoi( ((const char *)g_strdup((const gchar *)tmp)) );
-		
-		else if(g_str_equal(cur_node->name, "name" ))
-			user->nick_name = g_strdup((const gchar *)tmp);
-		
-		else if(g_str_equal(cur_node->name, "screen_name" ))
-			user->user_name = g_strdup((const gchar *)tmp);
-		
-		else if(g_str_equal(cur_node->name, "location" ))
-			user->location = g_strdup((const gchar *)tmp);
-		
-		else if(g_str_equal(cur_node->name, "description" ))
-			user->bio = g_strdup((const gchar *)tmp);
-		
-		else if(g_str_equal(cur_node->name, "url" ))
-			user->url = g_strdup((const gchar *)tmp);
-		
-		else if(g_str_equal(cur_node->name, "followers_count" ))
-			user->followers=(unsigned int)strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
-		
-		else if(g_str_equal(cur_node->name, "friends_count" ))
-			user->friends=(unsigned int)strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
-		
-		else if(g_str_equal(cur_node->name, "statuses_count" ))
-			user->followers=(unsigned int)strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
-		
-		else if(g_str_equal(cur_node->name, "profile_image_url"))
-			user->image_filename=images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
-		
-		/* Free buffer content */
-		xmlBufferEmpty(buffer);
-		
-	} /* End of loop */
-	
-	/* Free buffer pointer */
-	xmlBufferFree(buffer);
-	
-	return user;
-}
-
 
 static Status *
 parser_node_status(xmlNode *a_node){
@@ -401,9 +268,8 @@ parser_node_status(xmlNode *a_node){
 			}
 
 		} else if(g_str_equal(cur_node->name, "sender") ||
-				   g_str_equal(cur_node->name, "user")) {
-
-			status->user = parser_node_user(cur_node->children);
+			g_str_equal(cur_node->name, "user")) {
+			status->user=user_new(cur_node->children);
 		}
 
 		/* Free buffer content */
@@ -478,27 +344,6 @@ parser_convert_time(const char *datetime){
 		}
 	}
 	return NULL;
-}
-
-/* Free a user struct */
-void
-parser_free_user(User *user){
-	if(!user)
-		return;
-
-	if(user->user_name)
-		g_free(user->user_name);
-	if(user->nick_name)
-		g_free(user->nick_name);
-	if(user->image_url)
-		g_free(user->image_url);
-
-	g_free(user);
-}
-
-
-int parser_sort_users(User *a, User *b){
-	return strcasecmp( (const char *)a->user_name, (const char *)b->user_name );
 }
 
 

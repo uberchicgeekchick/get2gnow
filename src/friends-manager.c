@@ -63,6 +63,7 @@
 #include "popup-dialog.h"
 #include "network.h"
 #include "images.h"
+#include "users.h"
 
 #define GtkBuilderUI "friends-manager.ui"
 
@@ -316,7 +317,7 @@ static void friends_manager_display_following_and_followers(GList *im_following,
 	GtkTreeIter	iter;
 	GList		*list, *following_and_followers=g_list_alloc();
 	following_and_followers=g_list_concat(im_following, my_followers);
-	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) parser_sort_users);
+	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) usrcasecmp);
 	gboolean following_too=FALSE, list_break=FALSE;
 	
 	for( list=following_and_followers; list; list=list->next ){

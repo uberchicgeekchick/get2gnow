@@ -42,6 +42,7 @@
 #include "spell.h"
 #include "spell-dialog.h"
 #include "network.h"
+#include "users.h"
 
 #define DEBUG_DOMAIN_SETUP    "SendMessage"
 #define GtkBuilderUI              "send-message-dialog.ui"
@@ -223,17 +224,14 @@ message_correct_word (GtkWidget   *textview,
 							-1);
 }
 
-void
-message_set_followers (GList *followers)
+void message_set_followers (GList *followers)
 {
-	GList               *list;
-	GtkTreeIter          iter;
-	User          *user;
-	GtkListStore        *model_followers;
+	GList		*list;
+	GtkTreeIter	iter;
+	User		*user;
+	GtkListStore	*model_followers;
 
-		model_followers =
-		GTK_LIST_STORE (gtk_combo_box_get_model (
-							GTK_COMBO_BOX (dialog_priv->friends_combo)));
+	model_followers=GTK_LIST_STORE( gtk_combo_box_get_model( GTK_COMBO_BOX( dialog_priv->friends_combo ) ) );
 
 	for (list = followers; list; list = list->next) {
 		user = (User *)list->data;
@@ -245,23 +243,22 @@ message_set_followers (GList *followers)
 	}
 }
 
-void
-message_show_friends (gboolean show_friends)
+void message_show_friends (gboolean show_friends)
 {
 	dialog_priv->show_friends = show_friends;
 
 	if(!show_friends){
-		gtk_widget_hide (dialog_priv->friends_combo);
-		gtk_widget_hide (dialog_priv->friends_label);
-		gtk_widget_grab_focus(GTK_WIDGET(dialog_priv->textview));
+		gtk_widget_hide( dialog_priv->friends_combo );
+		gtk_widget_hide( dialog_priv->friends_label );
+		gtk_widget_grab_focus( GTK_WIDGET( dialog_priv->textview ) );
 		return;
 	}
 	
 	GList *followers;
 	GdkCursor *cursor;
 		
-	gtk_widget_show (dialog_priv->friends_combo);
-	gtk_widget_show (dialog_priv->friends_label);
+	gtk_widget_show( dialog_priv->friends_combo );
+	gtk_widget_show( dialog_priv->friends_label );
 
 	app_set_statusbar_msg(_("Please wait while the list of every one who\'s following you is loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
