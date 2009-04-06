@@ -32,7 +32,7 @@
 #include "app.h"
 #include "tweet-list.h"
 
-#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "Press [Return] or [Ctrl+@] to reply, [Ctrl+F] to re-tweet, [Ctrl+N] to send a new tweet, and [Ctrl+D] to send dm."
+#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
 
 extern unsigned long int in_reply_to_status_id;
 

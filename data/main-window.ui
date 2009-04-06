@@ -64,7 +64,7 @@
             <property name="name">tweets_reply</property>
             <property name="label">New _@ Reply</property>
           </object>
-          <accelerator key="at" modifiers="GDK_CONTROL_MASK"/>
+          <accelerator key="at"/>
         </child>
         <child>
           <object class="GtkAction" id="tweets_retweet">
@@ -72,7 +72,7 @@
             <property name="name">tweets_retweet</property>
             <property name="label">_Retweet</property>
           </object>
-          <accelerator key="f" modifiers="GDK_CONTROL_MASK"/>
+          <accelerator key="greater"/>
         </child>
         <child>
           <object class="GtkAction" id="tweets_new_dm">
@@ -82,6 +82,7 @@
             <property name="label">New _DM</property>
           </object>
           <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
+          <accelerator key="Return" modifiers="GDK_SHIFT_MASK"/>
         </child>
         <child>
           <object class="GtkAction" id="friends">
