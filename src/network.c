@@ -229,14 +229,11 @@ void network_logout (void)
 
 /* Post a new tweet - text must be Url encoded */
 void network_post_status(const gchar *text){
-	//TODO: add in_reply_to_status_id
 	gchar *formdata=NULL;
 	if(!in_reply_to_status_id)
 		formdata=g_strdup_printf( "source=%s&status=%s", API_TWITTER_CLIENT_AUTH, text );
-	else{
-		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%u&status=%s", API_TWITTER_CLIENT_AUTH, in_reply_to_status_id, text );
-		in_reply_to_status_id=0;
-	}
+	else
+		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", API_TWITTER_CLIENT_AUTH, in_reply_to_status_id, text );
 	network_post_data( API_TWITTER_POST_STATUS, formdata, network_cb_on_post, NULL );
 	//g_free( formdata );
 }//network_post_status
@@ -622,6 +619,8 @@ network_cb_on_login (SoupSession *session,
 static void network_cb_on_post(SoupSession *session, SoupMessage *msg, gpointer user_data ){
 	if(network_check_http( msg ))
 		app_set_statusbar_msg (_("Status Sent"));
+	
+	in_reply_to_status_id=0;
 	
 	debug(DEBUG_DOMAIN, "Tweet response: %i",msg->status_code );
 }

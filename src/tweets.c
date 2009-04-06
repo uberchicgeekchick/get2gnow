@@ -24,8 +24,10 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib/gprintf.h>
 
 
+#include "debug.h"
 #include "config.h"
 #include "app.h"
 #include "tweets.h"
@@ -35,8 +37,8 @@
 
 typedef struct SelectedTweet {
 	unsigned long int id;
-	const gchar *user_name;
-	const gchar *tweet;
+	gchar *user_name;
+	gchar *tweet;
 } SelectedTweet;//SelectedTweet
 
 unsigned long int in_reply_to_status_id=0;
@@ -60,7 +62,6 @@ void unset_selected_tweet(void){
 	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
 	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
 	if(selected_tweet) g_free(selected_tweet);
-	in_reply_to_status_id=0;
 }//unset_selected_tweet
 
 void show_tweets_submenu_entries(gboolean show){
@@ -103,6 +104,7 @@ void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
 
 
 void tweets_new_tweet(void){
+	if(in_reply_to_status_id) in_reply_to_status_id=0;
 	send_message_dialog_show(GTK_WINDOW(app_priv->window));
 	message_show_friends(FALSE);
 }

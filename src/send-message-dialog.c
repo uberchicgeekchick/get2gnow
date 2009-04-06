@@ -43,6 +43,7 @@
 #include "spell-dialog.h"
 #include "network.h"
 #include "users.h"
+#include "tweets.h"
 
 #define DEBUG_DOMAIN_SETUP    "SendMessage"
 #define GtkBuilderUI              "send-message-dialog.ui"
@@ -78,6 +79,7 @@ static void message_init( MsgDialog *signelton_message );
 static void message_finalize( GObject *object );
 static void message_setup( GtkWindow *parent );
 static void message_set_characters_available( GtkTextBuffer *buffer );
+static void message_text_buffer_undo_cb( GtkTextBuffer *buffer );
 static void message_text_buffer_changed_cb ( GtkTextBuffer *buffer );
 static void message_text_check_word_spelling_cb( GtkMenuItem *menuitem, MessageSpell *message_spell );
 static MessageSpell *message_spell_new( GtkWidget *window, const gchar *word, GtkTextIter start, GtkTextIter end);
@@ -109,11 +111,8 @@ static void message_init( MsgDialog *singleton_message ){
 	dialog_priv=GET_PRIV( dialog );
 }
 
-static void
-message_finalize (GObject *object)
-{	
+static void message_finalize (GObject *object){	
 	G_OBJECT_CLASS (message_parent_class)->finalize( object );
-	dialog_priv=GET_PRIV( dialog );
 }
 
 static void message_setup( GtkWindow  *parent ){
@@ -157,14 +156,13 @@ static void message_setup( GtkWindow  *parent ){
 
 	/* Connect the signal to the textview */
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (dialog_priv->textview));
+	undo_buffer=gtk_text_view_get_buffer( (GTK_TEXT_VIEW( dialog_priv->textview )) );
 
 	/* For spell checking from when the keyboard's 'context menu' key is pressed.
 	 * g_signal_connect(buffer, "context-menu", G_CALLBACK(), dialog);
 	 */
-	g_signal_connect (buffer,
-					  "changed",
-					  G_CALLBACK (message_text_buffer_changed_cb),
-					  dialog);
+	g_signal_connect( buffer, "changed", G_CALLBACK(message_text_buffer_changed_cb), dialog);
+	g_signal_connect( buffer, "modified-changed", G_CALLBACK( message_text_buffer_undo_cb ), dialog );
 
 	/* Create misspelt words identification tag */
 	gtk_text_buffer_create_tag (buffer,
@@ -341,6 +339,11 @@ static void message_set_characters_available( GtkTextBuffer *buffer ){
 
 	gtk_label_set_markup (GTK_LABEL (dialog_priv->label), character_count);
 	g_free (character_count);
+}
+
+static void message_text_buffer_undo_cb( GtkTextBuffer *buffer ){
+	gtk_text_buffer_end_user_action( buffer );
+	gtk_text_buffer_begin_user_action( buffer );
 }
 
 static void message_text_buffer_changed_cb( GtkTextBuffer *buffer ){

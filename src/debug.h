@@ -23,6 +23,8 @@
 #define __DEBUG_H__
 
 #include <glib.h>
+#include <glib/gprintf.h>
+
 
 G_BEGIN_DECLS
 
