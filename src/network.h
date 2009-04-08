@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
+#include "friends-manager.h"
 #include "users.h"
 #include "images.h"
 

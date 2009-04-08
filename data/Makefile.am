@@ -13,6 +13,7 @@ gtkbuilder_DATA = 			\
 	preferences.ui			\
 	main-window.ui			\
 	send-message-dialog.ui		\
+	user-profile.ui			\
 	popup-dialog.ui			\
 	friends-manager.ui		\
 	followers-dialog.ui		\

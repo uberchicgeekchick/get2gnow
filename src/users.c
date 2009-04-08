@@ -57,13 +57,18 @@
 #include <libxml/tree.h>
 
 #include "debug.h"
+#include "friends-manager.h"
 #include "users.h"
+#include "gtkbuilder.h"
 #include "network.h"
 #include "images.h"
+#include "parser.h"
 
 static void users_free_foreach( gpointer user, gpointer data );
 
-#define DEBUG_DOMAIN "User Managemant ( users.c )"
+#define GtkBuilderUI "user-profile.ui"
+
+#define DEBUG_DOMAIN "Users"
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
@@ -121,7 +126,7 @@ User *user_new(xmlNode *a_node){
 			user->location=g_strdup((const gchar *)tmp);
 		
 		else if(g_str_equal(cur_node->name, "description" ))
-			user->bio=g_strdup((const gchar *)tmp);
+			user->bio=g_markup_printf_escaped( "%s", (const gchar *)tmp );
 		
 		else if(g_str_equal(cur_node->name, "url" ))
 			user->url=g_strdup((const gchar *)tmp);
@@ -133,7 +138,7 @@ User *user_new(xmlNode *a_node){
 			user->friends=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "statuses_count" ))
-			user->followers=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+			user->tweets=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
 			user->image_filename=images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
@@ -188,7 +193,7 @@ GList *users_new(const gchar *data, gssize length){
 	/* Free memory */
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-	
+
 	return friends;
 }
 
@@ -229,4 +234,44 @@ void user_free(User *user){
 	
 	g_free(user);
 }//user_free
+
+
+
+void user_popup_profile( gchar *user_name ){
+	GtkImage		*image;
+	GtkMessageDialog	*profile_dialog;
+	
+	GtkBuilder *ui=gtkbuilder_get_file(
+					GtkBuilderUI,
+					"profile_dialog", &profile_dialog,
+					NULL
+	);
+	g_signal_connect( profile_dialog, "response", G_CALLBACK(gtk_widget_destroy), profile_dialog );
+			
+	User *profile=network_fetch_profile(user_name);
+	gchar *message=g_strdup_printf(
+					"<u><b>%s:</b> %s</u>\n\t<b>Tweets:</b> %lu\n\t<b>Friends:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n\t<b>URL:</b>%s\n\t<b>Bio:</b>\n\t\t%s\n",
+					profile->user_name, profile->nick_name,
+					profile->tweets,
+					profile->friends,
+					profile->followers,
+					profile->location,
+					profile->url,
+					profile->bio
+	);
+
+	gtk_message_dialog_set_markup( profile_dialog, message );
+	
+	network_download_avatar( profile->image_url );
+	if(!(g_str_equal("unknown_image", profile->image_filename)))
+		gtk_message_dialog_set_image( profile_dialog, GTK_WIDGET(image=images_get_maximized_image_from_filename( profile->image_filename )) );
+	
+	
+	gtk_widget_show_all( GTK_WIDGET( profile_dialog ) );
+	
+	
+	//if( image ) g_object_unref( image );
+	g_free( message );
+	user_free( profile );
+}//user_popup_profile
 

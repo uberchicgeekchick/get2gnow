@@ -56,6 +56,7 @@
 #include <libxml/parser.h>
 
 
+
 typedef struct {
 	unsigned long int	id;
 	gchar			*user_name;
@@ -85,5 +86,6 @@ User *user_parse_new( const gchar *data, gssize length );
 User *user_new(xmlNode *a_node);
 int user_sort( User *a, User *b );
 void user_free(User *user);
+void user_popup_profile( gchar *user_name );
 
 #endif //__USER_H__

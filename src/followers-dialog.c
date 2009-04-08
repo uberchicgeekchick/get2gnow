@@ -98,7 +98,7 @@ static void followers_rem_response_cb( GtkButton   *button, Followers *followers
 static void followers_block_response_cb( GtkButton   *button, Followers *followers);
 static void followers_response_cb( GtkWidget *widget, gint response, Followers *followers);
 static void followers_destroy_cb( GtkWidget *widget, Followers *followers );
-static void followers_view_timeline(GtkButton *button, Followers *followers);
+static void followers_view_profile(GtkButton *button, Followers *followers);
 
 /********************************************************
  *          My art, code, & programming.                *
@@ -167,7 +167,7 @@ static void followers_block_response_cb( GtkButton *button, Followers *followers
 	network_block_user((const gchar *)user_name);
 }
 
-static void followers_view_timeline(GtkButton *button, Followers *followers){
+static void followers_view_profile(GtkButton *button, Followers *followers){
 	GtkTreeIter iter;
 	gchar *user_name;
 	
@@ -186,9 +186,9 @@ static void followers_view_timeline(GtkButton *button, Followers *followers){
 	if(!user_name)
 		return;
 	
-	network_get_user((const gchar *)user_name);
+	user_popup_profile( user_name );
 	g_free(user_name);
-}//friends_manager_view_timeline
+}//followers_view_profile
 
 
 static void
@@ -267,7 +267,7 @@ void followers_dialog_show (GtkWindow *parent){
 						"followers_dialog", "response", followers_response_cb,
 						"user_unfollow", "clicked", followers_rem_response_cb,
 						"user_block", "clicked", followers_block_response_cb,
-						"view_profile", "clicked", followers_view_timeline,
+						"view_profile", "clicked", followers_view_profile,
 						"following_list", "row-activated", list_follower_activated_cb,
 						NULL);
 

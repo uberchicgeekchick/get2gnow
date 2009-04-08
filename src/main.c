@@ -28,6 +28,7 @@
 #include <libnotify/notify.h>
 
 #include "app.h"
+#include "friends-manager.h"
 #include "network.h"
 
 int main(int argc, char *argv[]){

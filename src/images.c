@@ -57,8 +57,8 @@
 #define DEBUG_DOMAIN_SETUP       "Images"
 
 enum {
-	ImagesMaximum		=	128,
-	ImagesExpanded		=	73,
+	ImagesMaximum		=	96,
+	ImagesExpanded		=	72,
 	ImagesDefault		=	48,
 	ImagesMinimum		=	24,
 };
@@ -90,6 +90,24 @@ gchar *images_get_filename( const gchar *image_url ){
 
 
 
+GtkImage *images_get_expanded_image_from_filename( const gchar *image_filename ){
+	return images_get_scaled_image_from_filename( image_filename, ImagesExpanded, ImagesExpanded );
+}//images_get_expanded_image_from_filename
+
+GtkImage *images_get_maximized_image_from_filename( const gchar *image_filename ){
+	return images_get_scaled_image_from_filename( image_filename, ImagesMaximum, ImagesMaximum );
+}//images_get_maximize_image_from_filename
+
+GtkImage *images_get_default_image_from_filename( const gchar *image_filename ){
+	return images_get_scaled_image_from_filename( image_filename, ImagesDefault, ImagesDefault );
+}//images_get_default_image_from_filename
+
+GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename ){
+	return images_get_scaled_image_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
+}//images_get_minimize_image_from_filename
+
+
+
 GtkImage *images_get_image_from_filename( const gchar *image_filename ){
 	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename( image_filename );
 	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
@@ -110,13 +128,13 @@ GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gi
 
 
 
-GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename ){
-	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesExpanded, ImagesExpanded );
-}//images_get_expanded_pixbuf_from_filename
-
 GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesMaximum, ImagesMaximum );
 }//images_get_maximize_pixbuf_from_filename
+
+GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesExpanded, ImagesExpanded );
+}//images_get_expanded_pixbuf_from_filename
 
 GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDefault, ImagesDefault );
@@ -128,13 +146,13 @@ GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filenam
 
 
 
-GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf ){
-	return images_scale_pixbuf( pixbuf, ImagesExpanded, ImagesExpanded );
-}//images_get_expand_pixbuf
-
 GdkPixbuf *images_maximize_pixbuf( GdkPixbuf *pixbuf ){
 	return images_scale_pixbuf( pixbuf, ImagesMaximum, ImagesMaximum );
 }//images_maximize_pixbuf
+
+GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf ){
+	return images_scale_pixbuf( pixbuf, ImagesExpanded, ImagesExpanded );
+}//images_get_expand_pixbuf
 
 GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf ){
 	return images_scale_pixbuf( pixbuf, ImagesDefault, ImagesDefault );
@@ -167,10 +185,10 @@ GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename ){
 
 
 static gint images_validate_width( gint width ){
-	if( width >= ImagesMinimum )
+	if( width < ImagesMinimum )
 		width=ImagesMinimum;
 	
-	if( width > (gint)ImagesMaximum )
+	if( width > ImagesMaximum )
 		width=ImagesMaximum;
 	
 	return width;
@@ -179,10 +197,10 @@ static gint images_validate_width( gint width ){
 
 
 static gint images_validate_height( gint height ){
-	if( height >= ImagesMinimum )
+	if( height < ImagesMinimum )
 		height=ImagesMinimum;
 			
-	if( height > (gint)ImagesMaximum )
+	if( height > ImagesMaximum )
 		height=ImagesMaximum;
 	
 	return height;
@@ -238,7 +256,7 @@ GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filenam
 	GdkPixbuf *pixbuf, *resized;
 	
 	if( (pixbuf=images_get_unscaled_pixbuf_from_filename(image_filename)) ){
-		resized=gdk_pixbuf_scale_simple( pixbuf, 48, 48, GDK_INTERP_BILINEAR );
+		resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR );
 		g_object_unref( pixbuf );
 		return resized;
 	}

@@ -732,7 +732,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME='Greet-Tweet-Know'
 PACKAGE_TARNAME='greet-tweet-know'
-PACKAGE_VERSION='1.0.0e9'
+PACKAGE_VERSION='0.0.0eC'
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"

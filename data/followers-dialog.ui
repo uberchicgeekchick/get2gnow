@@ -90,7 +90,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="user_follow">
+                      <object class="GtkButton" id="user_block">
                         <property name="label" translatable="yes">_Block</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
@@ -102,6 +102,8 @@
                       </object>
                       <packing>
                         <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="padding">6</property>
                         <property name="position">2</property>
                       </packing>
                     </child>
@@ -109,7 +111,7 @@
                       <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkButton" id="follow_bloc">
+                      <object class="GtkButton" id="view_profile">
                         <property name="label" translatable="yes">gtk-home</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>

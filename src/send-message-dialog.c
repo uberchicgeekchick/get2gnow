@@ -284,9 +284,7 @@ void message_set_message(const gchar *message){
 	gtk_window_set_focus(GTK_WINDOW (dialog_priv->dialog), dialog_priv->textview);
 }
 
-static gchar *
-url_encode_message (gchar *text)
-{
+static gchar *url_encode_message(gchar *text){
 	const char        *good;
 	static const char  hex[16] = "0123456789ABCDEF";
 	GString           *result;

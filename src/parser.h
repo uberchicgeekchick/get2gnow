@@ -25,7 +25,6 @@
 
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
-#include "users.h"
 
 xmlDoc *parser_parse (const char *data, gssize length, xmlNode **first_element);
 

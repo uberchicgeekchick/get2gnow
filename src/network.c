@@ -71,6 +71,10 @@ static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 gboolean getting_followers=FALSE;
+
+/* request_timer is used to avoid Twitter's rate limit. */
+static GTimer *request_timer=NULL;
+
 static gboolean network_get_users_page(SoupMessage *msg);
 static SoupMessage *network_fetch_data( const gchar *url );
 /* My, Kaity G. B., new stuff ends here. */
@@ -90,23 +94,26 @@ static gchar                *global_username = NULL;
 static gchar                *global_password = NULL;
 
 /* This function must be called at startup */
-void
-network_new (void)
-{
+void network_new (void) {
 	Conf	*conf;
 	gboolean	check_proxy = FALSE;
  
+	/* request_timer is used to avoid Twitter's rate limit. */
+	if( request_timer ) g_timer_destroy(request_timer);
+	request_timer=g_timer_new();
+				
 	/* Close previous networking */
-	if (soup_connection) {
-		network_close ();
-	}
+	if(soup_connection){
+		network_close();
+		debug( DEBUG_DOMAIN, "Libsoup re-started" );
+	}else
+		debug( DEBUG_DOMAIN, "Libsoup started" );
 
 	/* Async connections */
-	soup_connection = soup_session_async_new_with_options (SOUP_SESSION_MAX_CONNS,
+	soup_connection=soup_session_async_new_with_options (SOUP_SESSION_MAX_CONNS,
 														   8,
 														   NULL);
 
-	debug (DEBUG_DOMAIN, "Libsoup (re)started");
 
 	/* Set the proxy, if configuration is set */
 	conf = conf_get ();
@@ -164,34 +171,26 @@ network_new (void)
 
 
 /* Cancels requests, and unref libsoup. */
-void
-network_close (void)
-{
+void network_close (void){
 	/* Close all connections */
-	network_stop ();
-
-	network_parser_free_lists ();
-
-	g_object_unref (soup_connection);
-
-	debug (DEBUG_DOMAIN, "Libsoup closed");
+	network_stop();
+	g_timer_destroy(request_timer);
+	request_timer=NULL;
+	network_parser_free_lists();
+	g_object_unref(soup_connection);
+	debug(DEBUG_DOMAIN, "Libsoup closed");
 }
 
 
 /* Cancels all pending requests in session. */
-void
-network_stop	(void)
-{
+void network_stop(void){
 	debug (DEBUG_DOMAIN,"Cancelled all connections");
-
 	soup_session_abort (soup_connection);
 }
 
 
 /* Login in Twitter */
-void
-network_login (const char *username, const char *password)
-{
+void network_login (const char *username, const char *password){
 	debug (DEBUG_DOMAIN, "Begin login.. ");
 
 	if(global_username) g_free(global_username); global_username=NULL;
@@ -291,7 +290,7 @@ User *network_fetch_profile(const gchar *user_name){
 		return user;
 
 	return NULL;
-}//network_get_user
+}//network_fetch_profile
 
 /* Get a user timeline */
 void network_get_user(const gchar *username){
@@ -338,10 +337,8 @@ GList *network_get_followers (void){
 
 
 GList *network_get_users_glist(gboolean get_friends){
-	GTimer *request_timer=g_timer_new();// request_timer is used to avoid
-	gulong request_microseconds=1;
 	SoupMessage *msg;
-	gint page=0, remaining_requests;
+	gint page=0; 
 
 	gchar *uri;
 	all_users=NULL;
@@ -355,16 +352,7 @@ GList *network_get_users_glist(gboolean get_friends){
 		if(uri) g_free(uri); uri=NULL;
 		
 		if(!page) continue;
-		
-		remaining_requests=atoi( (soup_message_headers_get(msg->response_headers, "X-RateLimit-Remaining")) );
-		g_timer_start(request_timer);
-		if( remaining_requests && remaining_requests < 4 )
-			while( 16.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		else
-			while( 5.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		g_timer_stop(request_timer);
 	}
-	g_timer_destroy(request_timer);
 	if(!all_users)
 		app_set_statusbar_msg( _("Users parser error.") );
 	else
@@ -544,6 +532,22 @@ network_post_data (const gchar           *url,
 
 /* Check HTTP response code */
 static gboolean network_check_http( SoupMessage *msg ){
+	/* request_timer is used to avoid Twitters rate limit */
+	g_timer_start(request_timer);
+	gulong request_microseconds=1;
+	const char *rate_limit=NULL;
+	int remaining_requests=10;
+	if( ((rate_limit=soup_message_headers_get( msg->response_headers, "X-RateLimit-Remaining" ))) && (remaining_requests=atoi( rate_limit )) )
+		if( remaining_requests < 5 )
+			while( 16.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		else if( remaining_requests < 11 )
+			while( 8.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		else
+			while( 4.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+	
+	g_timer_stop(request_timer);
+	
+	
 	const gchar *error=NULL;
 	if(msg->status_code == 401)
 		error=_("Access denied");
@@ -559,7 +563,7 @@ static gboolean network_check_http( SoupMessage *msg ){
 	
 	gchar *http_message=g_strdup_printf("%s: %s.", error, msg->reason_phrase);
 	app_set_statusbar_msg( http_message );
-	if( http_message ) g_free( http_message );  http_message =NULL;
+	g_free( http_message );
 	
 	return FALSE;
 }

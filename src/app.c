@@ -878,7 +878,7 @@ void app_set_statusbar_msg(gchar *message){
 	
 	/* starts displaying the status bar message for 5 seconds before returning to the system default */
 	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
-	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, message);
+	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, message );
 
 	return;
 	/* TODO:
@@ -892,21 +892,15 @@ void app_set_statusbar_msg(gchar *message){
 }
 
 static void app_message_dialog( gchar *message ) {
-	GtkWidget *dialog, *label, *content_area;
-	/* Create the widgets */
-	dialog = gtk_message_dialog_new(
+	GtkWidget *dialog=gtk_message_dialog_new(
 						GTK_WINDOW(app_priv->window),
 						GTK_DIALOG_DESTROY_WITH_PARENT,
 						GTK_MESSAGE_INFO,
 						GTK_BUTTONS_OK,
 						"%s", message
 	);
-	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	label = gtk_label_new (message);
-	/* Ensure that the dialog box is destroyed when the user responds. */
-	g_signal_connect( dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
-	/* Add the label, and show everything we've added to the dialog. */
-	gtk_container_add(GTK_CONTAINER (content_area), label);
+	g_signal_connect( dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog );
+	
 	gtk_widget_show_all(dialog);
 }
 
@@ -981,7 +975,7 @@ void app_expand_message(const gchar *name, const gchar *date, const gchar *tweet
 	
 	if(pixbuf) {
 		GdkPixbuf *resized=NULL;
-		resized=gdk_pixbuf_scale_simple( pixbuf, 73, 73, GDK_INTERP_BILINEAR );
+		resized=images_expand_pixbuf( pixbuf );
 		gtk_image_set_from_pixbuf(GTK_IMAGE(app_priv->expand_image), resized);
 		if(resized)
 			g_object_unref(resized);

@@ -63,6 +63,11 @@ gchar *images_get_filename( const gchar *url );
 GtkImage *images_get_image_from_filename( const gchar *image_filename );
 GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height );
 
+GtkImage *images_get_expanded_image_from_filename( const gchar *image_filename );
+GtkImage *images_get_maximized_image_from_filename( const gchar *image_filename );
+GtkImage *images_get_default_image_from_filename( const gchar *image_filename );
+GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename );
+
 GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename );
 GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename );
 GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename );
