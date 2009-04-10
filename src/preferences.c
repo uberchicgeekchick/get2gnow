@@ -53,7 +53,6 @@ typedef struct {
 	GtkWidget *autoconnect;
 	GtkWidget *notify;
 	GtkWidget *sound;
-	GtkWidget *names;
 	GtkWidget *spell;
 
 	GList     *notify_ids;
@@ -147,41 +146,21 @@ static void preferences_destroy_cb                 (GtkWidget              *widg
 static void
 preferences_setup_widgets (Prefs *prefs)
 {
-	preferences_hookup_toggle_button (prefs,
-									  PREFS_TWEETS_SHOW_NAMES,
-									  prefs->names);
+	preferences_hookup_toggle_button( prefs, PREFS_UI_EXPAND_MESSAGES, prefs->expand );
 
-	preferences_hookup_toggle_button (prefs,
-									  PREFS_UI_EXPAND_MESSAGES,
-									  prefs->expand);
+	preferences_hookup_toggle_button( prefs, PREFS_AUTH_AUTO_LOGIN, prefs->autoconnect );
 
-	preferences_hookup_toggle_button (prefs,
-									  PREFS_AUTH_AUTO_LOGIN,
-									  prefs->autoconnect);
+	preferences_hookup_toggle_button( prefs, PREFS_UI_NOTIFICATION, prefs->notify );
 
-	preferences_hookup_toggle_button (prefs,
-									  PREFS_UI_NOTIFICATION,
-									  prefs->notify);
+	preferences_hookup_toggle_button( prefs, PREFS_UI_SOUND, prefs->sound );
 
-	preferences_hookup_toggle_button (prefs,
-									  PREFS_UI_SOUND,
-									  prefs->sound);
+	preferences_hookup_toggle_button( prefs, PREFS_UI_SPELL, prefs->spell );
 
-	preferences_hookup_toggle_button (prefs,
-									  PREFS_UI_SPELL,
-									  prefs->spell);
+	preferences_hookup_sensitivity( prefs, PREFS_UI_SPELL_LANGUAGES, prefs->treeview_spell_checker );
 
-	preferences_hookup_sensitivity (prefs,
-									PREFS_UI_SPELL_LANGUAGES,
-									prefs->treeview_spell_checker);
+	preferences_hookup_string_combo( prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline );
 
-	preferences_hookup_string_combo (prefs,
-									 PREFS_TWEETS_HOME_TIMELINE,
-									 prefs->combo_default_timeline);
-
-	preferences_hookup_int_combo (prefs,
-								  PREFS_TWEETS_RELOAD_TIMELINES,
-								  prefs->combo_reload);
+	preferences_hookup_int_combo( prefs, PREFS_TWEETS_RELOAD_TIMELINES, prefs->combo_reload );
 }
 static void
 preferences_languages_setup (Prefs *prefs)
@@ -209,9 +188,7 @@ preferences_languages_setup (Prefs *prefs)
 	model = GTK_TREE_MODEL (store);
 
 	renderer = gtk_cell_renderer_toggle_new ();
-	g_signal_connect (renderer, "toggled",
-					  G_CALLBACK (preferences_languages_cell_toggled_cb),
-					  prefs);
+	g_signal_connect( renderer, "toggled", G_CALLBACK (preferences_languages_cell_toggled_cb), prefs );
 
 	column = gtk_tree_view_column_new_with_attributes (NULL,
 													   renderer,
@@ -841,7 +818,6 @@ preferences_dialog_show (GtkWindow *parent)
 							  "expand_checkbutton", &prefs->expand,
 							  "autoconnect_checkbutton", &prefs->autoconnect,
 							  "notify_checkbutton", &prefs->notify,
-							  "names_checkbutton", &prefs->names,
 							  "spell_checkbutton", &prefs->spell,
 							  "sound_checkbutton", &prefs->sound,
 							  "spell_treeview", &prefs->treeview_spell_checker,

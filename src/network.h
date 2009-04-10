@@ -56,9 +56,7 @@
 #define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
 #define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
 
-
 extern gboolean getting_followers;
-
 
 /* Verify user credentials */
 void network_login( const char *username, const char *password );
@@ -85,12 +83,8 @@ void network_refresh(void);
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 User *network_fetch_profile(const gchar *user_name);
+GList *network_get_friends_and_followers(gboolean use_cache);
 GList *network_get_users_glist(gboolean get_friends);
-/* Get authenticating user's friends(following) */
-GList *network_get_friends(void);
-/* Get the authenticating user's followers */
-GList *network_get_followers(void);
-
 gboolean network_download_avatar( const gchar *image_url );
 
 /* My, Kaity G. B., new stuff ends here. */

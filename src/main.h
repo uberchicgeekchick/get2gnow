@@ -36,7 +36,6 @@ G_BEGIN_DECLS
 
 #define PREFS_TWEETS_HOME_TIMELINE     PREFS_PATH "/tweets/home_timeline"
 #define PREFS_TWEETS_RELOAD_TIMELINES  PREFS_PATH "/tweets/reload_timeline"
-#define PREFS_TWEETS_SHOW_NAMES        PREFS_PATH "/tweets/names"
 
 #define PREFS_UI_WINDOW_HEIGHT         PREFS_PATH "/ui/main_window_height"
 #define PREFS_UI_WINDOW_WIDTH          PREFS_PATH "/ui/main_window_width"
@@ -63,18 +62,6 @@ G_BEGIN_DECLS
 /* File storage */
 #define DIRECTORY                      "greet-tweet-know"
 #define CACHE_IMAGES                   DIRECTORY "/avatars"
-
-/* ListStore columns */
-enum {
-	PIXBUF_AVATAR,
-	STRING_TEXT,
-	STRING_AUTHOR,
-	STRING_DATE,
-	STRING_TWEET,
-	STRING_USER,
-	ULONG_TWEET_ID,
-	N_COLUMNS
-};
 
 G_END_DECLS
 

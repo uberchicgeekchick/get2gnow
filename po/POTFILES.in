@@ -1,14 +1,15 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
-[type: gettext/glade]data/add_friend_dialog.ui
-[type: gettext/glade]data/account_dialog.ui
-[type: gettext/glade]data/followers_dialog.ui
-[type: gettext/glade]data/friends_manager.ui
-[type: gettext/glade]data/main_window.ui
-[type: gettext/glade]data/preferences_dialog.ui
-[type: gettext/glade]data/send_message_dialog.ui
-[type: gettext/glade]data/spell_dialog.ui
+[type: gettext/glade]data/accounts-dialog.ui
+[type: gettext/glade]data/followers-dialog.ui
+[type: gettext/glade]data/friends-manager.ui
+[type: gettext/glade]data/main-window.ui
+[type: gettext/glade]data/popup-dialog.ui
+[type: gettext/glade]data/preferences.ui
+[type: gettext/glade]data/profile-viewer.ui
+[type: gettext/glade]data/send-message-dialog.ui
+[type: gettext/glade]data/spell-dialog.ui
 data/greet-tweet-know.desktop.in
 data/greet-tweet-know.schemas.in
 

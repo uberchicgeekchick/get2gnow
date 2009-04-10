@@ -57,18 +57,26 @@
 #include <libxml/tree.h>
 
 #include "debug.h"
-#include "friends-manager.h"
+#include "app.h"
 #include "users.h"
 #include "gtkbuilder.h"
 #include "network.h"
 #include "images.h"
 #include "parser.h"
+#include "label.h"
 
-static void users_free_foreach( gpointer user, gpointer data );
+#include "friends-manager.h"
+#include "send-message-dialog.h"
+#include "followers-dialog.h"
+
+
+static void users_free_foreach(gpointer user, gpointer users_list);
 
 #define GtkBuilderUI "user-profile.ui"
 
 #define DEBUG_DOMAIN "Users"
+
+static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
@@ -114,7 +122,7 @@ User *user_new(xmlNode *a_node){
 		const xmlChar *tmp=xmlBufferContent(buffer);
 		
 		if(g_str_equal(cur_node->name, "id" ))
-			user->id=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+			user->id=strtoul( (const gchar *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "name" ))
 			user->nick_name=g_strdup((const gchar *)tmp);
@@ -132,13 +140,13 @@ User *user_new(xmlNode *a_node){
 			user->url=g_strdup((const gchar *)tmp);
 		
 		else if(g_str_equal(cur_node->name, "followers_count" ))
-			user->followers=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+			user->followers=strtoul( (const char *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "friends_count" ))
-			user->friends=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+			user->friends=strtoul( (const gchar *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "statuses_count" ))
-			user->tweets=strtoul( ((const char *)g_strdup((const gchar *)tmp)), NULL, 0 );
+			user->tweets=strtoul( (const gchar *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
 			user->image_filename=images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
@@ -198,80 +206,114 @@ GList *users_new(const gchar *data, gssize length){
 }
 
 
-void users_free( GList *users ){
-	g_list_foreach(users, users_free_foreach, NULL );
+void users_free(const char *type, GList *users ){
+	debug( DEBUG_DOMAIN, "Freeing the authenticated user's %s.", type );
+	g_list_foreach(users, users_free_foreach, users );
 	g_list_free(users);
 	users=NULL;
-	debug( DEBUG_DOMAIN, "Friends freed" );
-}//user_free_glist
-
-
-
-/* Callback to free every element on a User list */
-static void users_free_foreach( gpointer user, gpointer data ){
-	if(!user) return;
-	user_free( (User *)user );
-}
-
-/* Free a user struct */
-void user_free(User *user){
-	if(!user)
-		return;
-
-	if(user->user_name) g_free(user->user_name);
-	
-	if(user->nick_name) g_free(user->nick_name);
-	
-	if(user->location) g_free(user->location);
-	
-	if(user->bio) g_free(user->bio);
-	
-	if(user->url) g_free(user->url);
-	
-	if(user->image_url) g_free(user->image_url);
-	
-	if(user->image_filename) g_free(user->image_filename);
-	
-	g_free(user);
 }//user_free
 
 
 
-void user_popup_profile( gchar *user_name ){
-	GtkImage		*image;
-	GtkMessageDialog	*profile_dialog;
-	
-	GtkBuilder *ui=gtkbuilder_get_file(
-					GtkBuilderUI,
-					"profile_dialog", &profile_dialog,
-					NULL
-	);
-	g_signal_connect( profile_dialog, "response", G_CALLBACK(gtk_widget_destroy), profile_dialog );
-			
-	User *profile=network_fetch_profile(user_name);
-	gchar *message=g_strdup_printf(
-					"<u><b>%s:</b> %s</u>\n\t<b>Tweets:</b> %lu\n\t<b>Friends:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n\t<b>URL:</b>%s\n\t<b>Bio:</b>\n\t\t%s\n",
-					profile->user_name, profile->nick_name,
-					profile->tweets,
-					profile->friends,
-					profile->followers,
-					profile->location,
-					profile->url,
-					profile->bio
-	);
+/* Callback to free every element on a User list */
+static void users_free_foreach(gpointer user, gpointer users_list){
+	if(!user) return;
+	users_list=g_list_remove(users_list, user);
+	user_free( (User *)user );
+}//users_free_foreach
 
-	gtk_message_dialog_set_markup( profile_dialog, message );
+/* Free a user struct */
+void user_free(User *user){
+	if(!user) return;
+	if(user->user_name) g_free(user->user_name);
+	if(user->nick_name) g_free(user->nick_name);
+	if(user->location) g_free(user->location);
+	if(user->bio) g_free(user->bio);
+	if(user->url) g_free(user->url);
+	if(user->image_url) g_free(user->image_url);
+	if(user->image_filename) g_free(user->image_filename);
+	if(user) g_free(user);
+}//user_free
+
+/* Free a list of Users */
+void user_free_lists(void){
+	/* TODO: it would be nice if this worked without causing a segfault, but it doesn't.
+	 * it segfaults if both 'user_friends' & 'user_followers' are both set.
+	 * user_free_lists();
+	 */
+	return;
+
+	if(following_and_followers)
+		users_free("friends, ie who the user is following, and the authenticated user's followers", following_and_followers);
 	
-	network_download_avatar( profile->image_url );
-	if(!(g_str_equal("unknown_image", profile->image_filename)))
-		gtk_message_dialog_set_image( profile_dialog, GTK_WIDGET(image=images_get_maximized_image_from_filename( profile->image_filename )) );
+	if(user_friends)
+		users_free("friends, ie who they're following", user_friends);
+
+	if(user_followers)
+		users_free("followers", user_followers);
+}//user_free_lists
+
+
+void user_append_friend(User *user){
+	user_friends=g_list_append(user_friends, user );
+	app_set_statusbar_msg (_("Friend Added"));
+}//user_append_friend
+
+void user_remove_friend(User *user){
+	user_friends=g_list_remove(user_friends, user);
+	user_free(user);
+}//user_remove_friend
+
+
+void user_append_follower(User *user){
+	user_followers=g_list_append(user_followers, user );
+	app_set_statusbar_msg (_("Follower Added"));
+}//user_append_friend
+
+void user_remove_follower(User *user){
+	user_followers=g_list_remove(user_followers, user);
+	user_free(user);
+}//user_remove_friend
+
+
+/* Get authenticating user's friends(following)
+ * Returns:
+ * 		NULL: Friends will be fetched
+ * 		GList: The list of friends (fetched previously)
+ */
+GList *user_get_friends(void){
+	if(user_friends) return user_friends;
+	user_friends=network_get_users_glist((gboolean)TRUE);
+	followers_dialog_load_lists(user_friends);
+	return NULL;
+}
+
+
+/* Get the authenticating user's followers
+ * Returns:
+ * 		NULL: Followers will be fetched
+ * 		GList: The list of friends (fetched previously)
+ */
+GList *user_get_followers(void){
+	if(user_followers) return user_followers;
+	user_followers=network_get_users_glist((gboolean)FALSE);	
+	message_set_followers(user_followers);
+	return NULL;
+}
+
+
+GList *user_get_friends_and_followers(gboolean use_cache){
+	if(following_and_followers && use_cache)
+		return following_and_followers;
 	
+	if(!(use_cache && user_friends))
+		user_friends=network_get_users_glist( TRUE );
+	if(!(use_cache && user_followers))
+		user_followers=network_get_users_glist( FALSE );
 	
-	gtk_widget_show_all( GTK_WIDGET( profile_dialog ) );
-	
-	
-	//if( image ) g_object_unref( image );
-	g_free( message );
-	user_free( profile );
-}//user_popup_profile
+	following_and_followers=g_list_alloc();
+	following_and_followers=g_list_concat( user_followers, user_friends );
+	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) usrcasecmp);
+	return following_and_followers;
+}//user_get_friends_and_followers
 

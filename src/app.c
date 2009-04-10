@@ -241,7 +241,6 @@ app_setup(void)
 							  "expand_box", &app_priv->expand_box,
 							  "expand_vbox", &expand_vbox,
 							  "expand_image", &app_priv->expand_image,
-							  "expand_title", &app_priv->expand_title,
 							  NULL);
 
 	/* Set group for menu radio actions */
@@ -312,8 +311,15 @@ app_setup(void)
 	gtk_container_add(GTK_CONTAINER(scrolled_window),
 					   GTK_WIDGET(app_priv->listview));
 	
+	app_priv->expand_title=label_new();
+	gtk_widget_show(GTK_WIDGET(app_priv->expand_title));
+	gtk_box_pack_start(
+				GTK_BOX(expand_vbox),
+				GTK_WIDGET(app_priv->expand_title),
+				TRUE, TRUE, 0
+	);
 	/* Set-up expand messages panel */
-	app_priv->expand_label = label_new();
+	app_priv->expand_label=label_new();
 	gtk_widget_show(GTK_WIDGET(app_priv->expand_label));
 	gtk_box_pack_end(GTK_BOX(expand_vbox),
 					   GTK_WIDGET(app_priv->expand_label),
@@ -966,11 +972,10 @@ void app_set_image(const gchar *image_filename, GtkTreeIter  iter){
 	g_object_unref(pixbuf);
 }//app_set_image
 
-void app_expand_message(const gchar *name, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf){
-	gchar *title_text=g_strdup_printf("<b>%s</b> - %s", name, date);
-	
+void app_expand_message(const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf){
+	gchar *title_text=g_strdup_printf("<b>%s ( @%s )</b> - %s", user_nick, user_name, date);
 	label_set_text(LABEL(app_priv->expand_label), tweet);
-	gtk_label_set_markup(GTK_LABEL(app_priv->expand_title), title_text);
+	label_set_text(LABEL(app_priv->expand_title), title_text);
 	g_free(title_text);
 	
 	if(pixbuf) {

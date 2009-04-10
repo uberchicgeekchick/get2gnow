@@ -24,14 +24,21 @@
 #include <config.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 
 #include <libnotify/notify.h>
 
 #include "app.h"
 #include "friends-manager.h"
 #include "network.h"
+#include "ipc.h"
 
-int main(int argc, char *argv[]){
+int main(int argc, char **argv){
+	if( (ipc_init_check( argc-1, argv-1)) ){
+		g_printf( "%s is already running.  Be sure to check system try for %s's icon.\n", PACKAGE_NAME, PACKAGE_NAME );
+		ipc_deinit();
+		exit(0);
+	}
 	gboolean notifing=FALSE;
 
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
@@ -63,6 +70,8 @@ int main(int argc, char *argv[]){
 	/* Close the network */
 	network_close();
 
+	ipc_deinit();
+	
 	/* Clean up the ui */
 	g_object_unref(app_get());
 

@@ -120,7 +120,6 @@ parser_timeline(const gchar *data,
 	 */
 	gboolean         multiple_new_tweets = FALSE;
 
-	gboolean         show_username;
 	gint             tweet_display_delay = 0;
 	const int        tweet_display_interval = 5;
 
@@ -135,11 +134,6 @@ parser_timeline(const gchar *data,
 	/* Get the ListStore and clear previous */
 	store = tweet_list_get_store();
 	gtk_list_store_clear(store);
-
-	/* Show user names or real names */
-	conf_get_bool(conf_get(),
-						  PREFS_TWEETS_SHOW_NAMES,
-						  &show_username);
 
 	/* get tweets or direct messages */
 	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
@@ -159,7 +153,7 @@ parser_timeline(const gchar *data,
 		gint   sid;
 		
 		/* Parse node */
-		status = parser_node_status(cur_node->children);
+		status=parser_node_status(cur_node->children);
 
 		sid = atoi(status->id);
 		
@@ -169,12 +163,12 @@ parser_timeline(const gchar *data,
 		}
 
 		/* Create string for text column */
-		datetime = parser_convert_time(status->created_at);
-		tweet = g_strconcat("<b>",
-							(show_username ? status->user->user_name:status->user->nick_name),
-							 "</b> - ", datetime, "\n",
-							 "<small>", status->text, "</small>",
-							 NULL);
+		datetime=parser_convert_time( status->created_at );
+		tweet=g_strconcat(
+					"<b>",	status->user->nick_name, " ( @",  status->user->user_name, " )", "</b> - ", datetime, "\n",
+					"<small>", status->text, "</small>",
+					NULL
+		);
 		
 		if(sid > last_id && show_notification) {
 			if(multiple_new_tweets != TRUE) {
@@ -192,7 +186,7 @@ parser_timeline(const gchar *data,
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
 							STRING_TEXT, tweet,
-							STRING_AUTHOR,(show_username ? status->user->user_name:status->user->nick_name),
+							STRING_NICK,status->user->nick_name,
 							STRING_DATE, datetime,
 							STRING_TWEET, status->text,
 							STRING_USER, status->user->user_name,

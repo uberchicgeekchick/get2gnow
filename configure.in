@@ -1,4 +1,4 @@
-AC_INIT([greet-tweet-know], [0.0.0eC], [http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know], [greet-tweet-know])
+AC_INIT([greet-tweet-know], [0.0.eCa666], [http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know], [greet-tweet-know])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -82,7 +82,7 @@ PKG_CHECK_MODULES(GREET_TWEET_KNOW,
 	libsexy
 	libsoup-2.4
 	libnotify
-	libglade-2.0 >= $LIBGLADE_REQUIRED
+	gnome-vfs-2.0
 	gtk+-2.0 >= $GTK_REQUIRED
 	glib-2.0 >= $GLIB_REQUIRED
 	gio-2.0 >= $LIBGIO_REQUIRED

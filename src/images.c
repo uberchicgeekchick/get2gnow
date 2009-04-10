@@ -252,15 +252,12 @@ GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filenam
 	width=images_validate_width( width );
 	height=images_validate_height( height );
 	
-	GError *error;
 	GdkPixbuf *pixbuf, *resized;
+	if(!(pixbuf=images_get_unscaled_pixbuf_from_filename(image_filename)))
+		return NULL;
 	
-	if( (pixbuf=images_get_unscaled_pixbuf_from_filename(image_filename)) ){
-		resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR );
-		g_object_unref( pixbuf );
-		return resized;
-	}
-	
-	return NULL;
+	resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR );
+	g_object_unref( pixbuf );
+	return resized;
 }//images_get_and_scale_pixbuf_from_file
 

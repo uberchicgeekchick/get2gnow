@@ -1,5 +1,9 @@
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * Greet-Tweet-Know is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
+ *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
  *
@@ -10,7 +14,8 @@
  * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
  * 	http://Dystonia-DREAMS.Org/
  *
- * 
+ *
+ *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
  * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
@@ -43,52 +48,17 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __TWEET_LIST_H__
-#define __TWEET_LIST_H__
 
-#include <gtk/gtk.h>
+#ifndef __IPC_H__
+#define __IPC_H__
+
+#include <glib.h>
 
 G_BEGIN_DECLS
 
-/*
- * TweetList 
- */ 
-#define TYPE_TWEET_LIST         (tweet_list_get_type ())
-#define TWEET_LIST(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_TWEET_LIST, TweetList))
-#define TWEET_LIST_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_TWEET_LIST, TweetListClass))
-#define IS_TWEET_LIST(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_TWEET_LIST))
-#define IS_TWEET_LIST_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_TWEET_LIST))
-#define TWEET_LIST_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_TWEET_LIST, TweetListClass))
-
-typedef struct _TweetList      TweetList;
-typedef struct _TweetListClass TweetListClass;
-typedef struct _TweetListPriv  TweetListPriv;
-
-struct _TweetList {
-	GtkTreeView            parent;
-};
-
-struct _TweetListClass {
-	GtkTreeViewClass       parent_class;
-};
-
-/* ListStore columns */
-enum {
-	PIXBUF_AVATAR,
-	STRING_TEXT,
-	STRING_NICK,
-	STRING_DATE,
-	STRING_TWEET,
-	STRING_USER,
-	ULONG_TWEET_ID,
-	N_COLUMNS
-};
-
-
-GType		tweet_list_get_type(void) G_GNUC_CONST;
-TweetList	*tweet_list_new(void);
-GtkListStore	*tweet_list_get_store(void);
+gboolean ipc_init_check( int argc, char **argv );
+void ipc_deinit( void );
 
 G_END_DECLS
 
-#endif /* __TWEET_LIST_H__ */
+#endif

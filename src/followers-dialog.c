@@ -64,6 +64,8 @@
 #include "followers-dialog.h"
 #include "popup-dialog.h"
 #include "network.h"
+#include "profile-viewer.h"
+
 
 /********************************************************
  *        Objects, structures, and etc typedefs         *
@@ -186,7 +188,7 @@ static void followers_view_profile(GtkButton *button, Followers *followers){
 	if(!user_name)
 		return;
 	
-	user_popup_profile( user_name );
+	view_profile( user_name, GTK_WINDOW(followers->dialog) );
 	g_free(user_name);
 }//followers_view_profile
 
@@ -278,7 +280,7 @@ void followers_dialog_show (GtkWindow *parent){
 	gtk_window_set_transient_for (GTK_WINDOW (followers->dialog), parent);
 	
 	/* Now that we're done setting up, let's show the widget */
-	gtk_widget_show (followers->dialog);
+	gtk_widget_show(followers->dialog);
 	
 	app_set_statusbar_msg(_("Please wait while the list of every one you\'re following is loaded."));
 	cursor=gdk_cursor_new(GDK_WATCH);
@@ -286,7 +288,7 @@ void followers_dialog_show (GtkWindow *parent){
 	gtk_widget_set_sensitive(followers->dialog, FALSE);
 	
 	/* Load followers */
-	if( (friends=network_get_friends()) )
+	if( (friends=user_get_friends()) )
 		followers_dialog_load_lists(friends);
 	
 	gdk_window_set_cursor(GTK_WIDGET(followers->dialog)->window, NULL);

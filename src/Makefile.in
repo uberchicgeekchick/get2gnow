@@ -46,15 +46,18 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am__greet_tweet_know_SOURCES_DIST =			\
+@HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
+greet_tweet_know_SOURCES =				\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
-	keyring.c		keyring.h		\
+	$(keyring_sources)				\
 	main.c			main.h			\
 	about.c			about.h			\
 	accounts-dialog.c	accounts-dialog.h	\
+	profile-viewer.c	profile-viewer.h	\
 	popup-dialog.c		popup-dialog.h		\
+	ipc.c			ipc.h			\
 	app.c			app.h			\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
@@ -79,11 +82,12 @@ greet_tweet_know_OBJECTS =			\
 	debug.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)			\
 	$(am__objects_1)			\
-	$(am__objects_2)			\
 	main.$(OBJEXT)				\
 	about.$(OBJEXT)				\
 	accounts-dialog.$(OBJEXT)		\
+	profile-viewer.$(OBJEXT)		\
 	popup-dialog.$(OBJEXT)			\
+	ipc.$(OBJEXT)				\
 	app.$(OBJEXT)				\
 	geometry.$(OBJEXT)			\
 	hint.$(OBJEXT)				\
@@ -306,34 +310,6 @@ AM_CFLAGS =						\
 	$(GREET_TWEET_KNOW_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
-
-@HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-greet_tweet_know_SOURCES =				\
-	$(keyring)					\
-	gconf.c			gconf.h			\
-	debug.c			debug.h			\
-	gtkbuilder.c		gtkbuilder.h		\
-	main.c			main.h			\
-	about.c			about.h			\
-	accounts-dialog.c 	accounts-dialog.h	\
-	popup-dialog.c 		popup-dialog.h		\
-	app.c			app.h			\
-	geometry.c		geometry.h		\
-	hint.c			hint.h			\
-	label.c			label.h			\
-	network.c		network.h		\
-	parser.c		parser.h		\
-	preferences.c		preferences.h		\
-	send-message-dialog.c	send-message-dialog.h	\
-	spell.c			spell.h			\
-	spell-dialog.c		spell-dialog.h		\
-	ui-utils.c		ui-utils.h		\
-	friends-manager.c	friends-manager.h	\
-	followers-dialog.c	followers-dialog.h	\
-	users.c			users.h			\
-	tweets.c		tweets.h		\
-	images.c		images.h		\
-	tweet-list.c		tweet-list.h
 
 greet_tweet_know_LDADD =				\
 	$(GREET_TWEET_KNOW_LIBS)			\

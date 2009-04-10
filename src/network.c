@@ -57,7 +57,6 @@ typedef struct {
 static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data);
 static void network_post_data( const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data );
 static gboolean	network_check_http( SoupMessage *msg );
-static void network_parser_free_lists (void);
 
 /* libsoup callbacks */
 static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointer user_data );
@@ -84,8 +83,6 @@ static gboolean 	network_timeout			(gpointer user_data);
 static void			network_timeout_new		(void);
 
 static SoupSession			*soup_connection = NULL;
-static GList				*user_friends = NULL;
-static GList				*user_followers = NULL;
 static GList *all_users=NULL;
 static gchar *current_timeline=NULL;
 static gboolean				 processing = FALSE;
@@ -97,24 +94,16 @@ static gchar                *global_password = NULL;
 void network_new (void) {
 	Conf	*conf;
 	gboolean	check_proxy = FALSE;
- 
-	/* request_timer is used to avoid Twitter's rate limit. */
-	if( request_timer ) g_timer_destroy(request_timer);
-	request_timer=g_timer_new();
-				
+	
+	debug(DEBUG_DOMAIN, "Libsoup %sstarted", (soup_connection?"re-":"") );
+	
 	/* Close previous networking */
-	if(soup_connection){
+	if(soup_connection)
 		network_close();
-		debug( DEBUG_DOMAIN, "Libsoup re-started" );
-	}else
-		debug( DEBUG_DOMAIN, "Libsoup started" );
 
 	/* Async connections */
-	soup_connection=soup_session_async_new_with_options (SOUP_SESSION_MAX_CONNS,
-														   8,
-														   NULL);
-
-
+	soup_connection=soup_session_async_new_with_options( SOUP_SESSION_MAX_CONNS, 8,NULL );
+	
 	/* Set the proxy, if configuration is set */
 	conf = conf_get ();
 	conf_get_bool (conf,
@@ -176,7 +165,10 @@ void network_close (void){
 	network_stop();
 	g_timer_destroy(request_timer);
 	request_timer=NULL;
-	network_parser_free_lists();
+	/* TODO: it would be nice if this worked without causing a segfault, but it doesn't.
+	 * it segfaults if both 'user_friends' & 'user_followers' are both set.
+	 * user_free_lists();
+	 */
 	g_object_unref(soup_connection);
 	debug(DEBUG_DOMAIN, "Libsoup closed");
 }
@@ -191,6 +183,10 @@ void network_stop(void){
 
 /* Login in Twitter */
 void network_login (const char *username, const char *password){
+	/* request_timer is used to avoid Twitter's rate limit. */
+	if( request_timer ) g_timer_destroy(request_timer);
+	request_timer=g_timer_new();
+							
 	debug (DEBUG_DOMAIN, "Begin login.. ");
 
 	if(global_username) g_free(global_username); global_username=NULL;
@@ -309,31 +305,6 @@ void network_get_user(const gchar *username){
 
 	if(user_id) g_free(user_id);
 }//network_get_user
-
-/* Get authenticating user's friends(following)
- * Returns:
- * 		NULL: Friends will be fetched
- * 		GList: The list of friends (fetched previously)
- */
-GList *network_get_friends (void){
-	if(user_friends) return user_friends;
-	user_friends=network_get_users_glist((gboolean)TRUE);
-	followers_dialog_load_lists(user_friends);
-	return NULL;
-}
-
-
-/* Get the authenticating user's followers
- * Returns:
- * 		NULL: Followers will be fetched
- * 		GList: The list of friends (fetched previously)
- */
-GList *network_get_followers (void){
-	if(user_followers) return user_followers;
-	user_followers=network_get_users_glist((gboolean)FALSE);	
-	message_set_followers(user_followers);
-	return NULL;
-}
 
 
 GList *network_get_users_glist(gboolean get_friends){
@@ -536,14 +507,20 @@ static gboolean network_check_http( SoupMessage *msg ){
 	g_timer_start(request_timer);
 	gulong request_microseconds=1;
 	const char *rate_limit=NULL;
-	int remaining_requests=10;
+	int remaining_requests=99;
 	if( ((rate_limit=soup_message_headers_get( msg->response_headers, "X-RateLimit-Remaining" ))) && (remaining_requests=atoi( rate_limit )) )
-		if( remaining_requests < 5 )
-			while( 16.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		else if( remaining_requests < 11 )
-			while( 8.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		debug( DEBUG_DOMAIN, "You have %d request left before the API's RateLimit is reached.", remaining_requests );
+		if( remaining_requests < 11 )
+			while( 36.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		else if( remaining_requests < 21 )
+			while( 24.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		else if( remaining_requests < 41 )
+			while( 12.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+		else if( remaining_requests < 61 )
+			while( 6.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
 		else
-			while( 4.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+			while( 1.0 > (g_timer_elapsed(request_timer, &request_microseconds)) ){}
+
 	
 	g_timer_stop(request_timer);
 	
@@ -567,17 +544,6 @@ static gboolean network_check_http( SoupMessage *msg ){
 	
 	return FALSE;
 }
-
-/* Free a list of Users */
-static void network_parser_free_lists(void){
-	if (user_friends)
-		users_free(user_friends);
-
-	if (user_followers)
-		users_free(user_followers);
-}
-
-
 
 /* HTTP Basic Authentication */
 static void
@@ -727,12 +693,10 @@ network_cb_on_add (SoupSession *session,
 
 	user=user_parse_new(msg->response_body->data, msg->response_body->length);
 
-	if (user) {
-		user_friends = g_list_append ( user_friends, user );
-		app_set_statusbar_msg (_("Friend Added"));
-	} else {
+	if(user)
+		user_append_friend(user);
+	else
 		app_set_statusbar_msg (_("Failed to add user"));
-	}
 }
 
 
@@ -751,16 +715,12 @@ network_cb_on_del (SoupSession *session,
 		app_set_statusbar_msg (_("Failed to remove user"));
 	}
 	
-	if (user_data) {
-		User *user=(User *)user_data;
-		user_friends=g_list_remove (user_friends, user);
-		user_free(user);
+	if(user_data) {
+		user_remove_friend( (User *)user_data );
 	}
 }
 
-static void
-network_timeout_new (void)
-{
+static void network_timeout_new (void){
 	gint minutes;
 	guint reload_time;
 
@@ -791,9 +751,7 @@ network_timeout_new (void)
 				  "Starting timeout id: %i", timeout_id);
 }
 
-static gboolean
-network_timeout (gpointer user_data)
-{
+static gboolean network_timeout(gpointer user_data){
 	if (!current_timeline || processing)
 		return FALSE;
 
