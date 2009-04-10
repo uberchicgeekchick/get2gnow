@@ -52,7 +52,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="notify_checkbutton">
-                                <property name="label" translatable="yes">_Display notifications when message recieved</property>
+                                <property name="label" translatable="yes">Display _notifications when message recieved</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -67,7 +67,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="sound_checkbutton">
-                                <property name="label" translatable="yes">S_ound notification when message received</property>
+                                <property name="label" translatable="yes">_Sound notification when message received</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -82,7 +82,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="autoconnect_checkbutton">
-                                <property name="label" translatable="yes">_Connect automatically</property>
+                                <property name="label" translatable="yes">Connect _automatically</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -94,9 +94,6 @@
                                 <property name="fill">False</property>
                                 <property name="position">3</property>
                               </packing>
-                            </child>
-                            <child>
-                              <placeholder/>
                             </child>
                           </object>
                         </child>

@@ -34,7 +34,7 @@
           <object class="GtkAction" id="preferences">
             <property name="stock_id">gtk-preferences</property>
             <property name="name">preferences</property>
-            <property name="label" translatable="yes">_Preferences</property>
+            <property name="label" translatable="yes">Prefere_nces</property>
           </object>
         </child>
         <child>
@@ -308,6 +308,7 @@
                 <property name="visible">True</property>
                 <property name="spacing">2</property>
                 <child>
+                  <placeholder/>
                 </child>
                 <child>
                   <placeholder/>
