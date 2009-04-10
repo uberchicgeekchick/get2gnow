@@ -208,7 +208,12 @@ GList *users_new(const gchar *data, gssize length){
 
 void users_free(const char *type, GList *users ){
 	debug( DEBUG_DOMAIN, "Freeing the authenticated user's %s.", type );
-	g_list_foreach(users, users_free_foreach, users );
+	/* TODO: it would be nice if this worked without causing a segfault, but it doesn't.
+	 * it segfaults if both 'user_friends' & 'user_followers' are both set.
+	 * user_free_lists();
+	 *
+	 * g_list_foreach(users, users_free_foreach, users );
+	 */
 	g_list_free(users);
 	users=NULL;
 }//user_free
@@ -237,11 +242,6 @@ void user_free(User *user){
 
 /* Free a list of Users */
 void user_free_lists(void){
-	/* TODO: it would be nice if this worked without causing a segfault, but it doesn't.
-	 * it segfaults if both 'user_friends' & 'user_followers' are both set.
-	 * user_free_lists();
-	 */
-	return;
 
 	if(following_and_followers)
 		users_free("friends, ie who the user is following, and the authenticated user's followers", following_and_followers);
