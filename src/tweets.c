@@ -65,7 +65,7 @@ void unset_selected_tweet(void){
 }//unset_selected_tweet
 
 void show_tweets_submenu_entries(gboolean show){
-	for(GList *l = app_priv->widgets_tweet_selected; l; l = l->next)
+	for(GList *l=app_get_widgets_tweet_selected(); l; l = l->next)
 		g_object_set(l->data, "sensitive", show, NULL);
 }//show_tweets_submenu_entries
 
@@ -105,7 +105,7 @@ void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
-	send_message_dialog_show(GTK_WINDOW(app_priv->window));
+	send_message_dialog_show(GTK_WINDOW(app_get_window()));
 	message_show_friends(FALSE);
 }
 
@@ -126,7 +126,7 @@ void tweets_retweet(void){
 }
 
 static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release){
-	send_message_dialog_show(GTK_WINDOW(app_priv->window));
+	send_message_dialog_show(GTK_WINDOW(app_get_window()));
 	message_show_friends(FALSE);
 	if(!tweet) return;
 	message_set_message(tweet);
@@ -134,7 +134,7 @@ static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean releas
 }//tweets_include_and_begin_to_send
 
 void tweets_new_dm(void){
-	send_message_dialog_show(GTK_WINDOW(app_priv->window));
+	send_message_dialog_show(GTK_WINDOW(app_get_window()));
 	message_show_friends(TRUE);
 }
 

@@ -23,6 +23,7 @@
 #include "gtkbuilder.h"
 
 #include "main.h"
+#include "app.h"
 #include "popup-dialog.h"
 #include "network.h"
 
@@ -40,6 +41,8 @@ static void popup_dialog_show( GtkWindow *parent, PopupUsage usage );
 static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup );
 static void popup_destroy_cb( GtkWidget *widget, Popup *popup);
 
+static gboolean popup_validate_and_set_usage(Popup *popup, PopupUsage usage);
+
 static void popup_destroy_and_free( Popup *popup );
 
 
@@ -53,7 +56,7 @@ static gchar *popup_set_title( PopupUsage usage ){
 		case PopupFollow: default:
 			return g_strdup( "Follow a new friend:" );
 	}
-}//popup_response_cb
+}//popup_set_title
 
 
 
@@ -62,12 +65,15 @@ static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 		return gtk_widget_destroy(widget);
 	
 	switch( popup->usage ){
-		case PopupFollow:
-			return network_follow_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
-		case PopupUnfollow:
-			return network_unfollow_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
 		case PopupBlock:
-			return network_block_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
+			network_block_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
+			break;
+		case PopupUnfollow:
+			network_unfollow_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
+			break;
+		case PopupFollow:
+			network_follow_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
+			break;
 	}//switch
 	
 	gtk_widget_destroy(widget);
@@ -94,7 +100,20 @@ void popup_friend_unfollow( GtkWindow *parent ){
 
 void popup_friend_block( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), PopupBlock );
-}
+}//popup_friend_block
+
+static gboolean popup_validate_and_set_usage(Popup *popup, PopupUsage usage){
+	switch( usage ){
+		case PopupBlock:
+		case PopupUnfollow:
+		case PopupFollow:
+			popup->usage=usage;
+			return TRUE;
+		default:
+			app_statusbar_printf("This is currently not yet supported by %s.", PACKAGE_NAME);
+			return FALSE;
+	}//switch
+}//popup_validate_and_set_usage
 
 
 static void popup_dialog_show(GtkWindow *parent, PopupUsage usage ){
@@ -107,18 +126,21 @@ static void popup_dialog_show(GtkWindow *parent, PopupUsage usage ){
 		popup_destroy_and_free(popup);
 	}
 
-	popup = g_new0 (Popup, 1);
+	popup = g_new0(Popup, 1);
+	
+	if(!(popup_validate_and_set_usage(popup, usage)))
+		return;
 
 	/* Get widgets */
 	ui = gtkbuilder_get_file (GtkBuilderUI,
-						"popup_friend_dialog", &popup->dialog,
-						"frienduser_entry", &popup->entry,
+						"entry_popup", &popup->dialog,
+						"entry", &popup->entry,
 						NULL);
 
 	/* Connect the signals */
 	gtkbuilder_connect (ui, popup,
-						"popup_friend_dialog", "destroy", popup_destroy_cb,
-						"popup_friend_dialog", "response", popup_response_cb,
+						"entry_popup", "destroy", popup_destroy_cb,
+						"entry_popup", "response", popup_response_cb,
 						NULL);
 
 	g_object_unref (ui);

@@ -176,7 +176,7 @@ gboolean ipc_init_check( int argc, char **argv ){
 static void ipc_commit(Input *input){
 	g_assert(input->buffer->len > 0 && input->buffer->data[input->buffer->len-1] == 0);
 	
-	gtk_window_present(GTK_WINDOW(app_priv->window));
+	gtk_window_present(GTK_WINDOW( (app_get_window()) ));
 	
 	if(input->buffer->len > MAX_BUFFER_SIZE){
 		g_byte_array_free(input->buffer, TRUE);

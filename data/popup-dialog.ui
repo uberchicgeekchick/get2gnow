@@ -2,7 +2,7 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkDialog" id="add_friend_dialog">
+  <object class="GtkDialog" id="entry_popup">
     <property name="visible">True</property>
     <property name="border_width">6</property>
     <property name="title" translatable="yes">Add a friend</property>
@@ -20,7 +20,7 @@
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
             <child>
-              <object class="GtkEntry" id="frienduser_entry">
+              <object class="GtkEntry" id="entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x2022;</property>
@@ -37,7 +37,7 @@
                 <property name="xalign">0</property>
                 <property name="label" translatable="yes">_Username:</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">frienduser_entry</property>
+                <property name="mnemonic_widget">entry</property>
               </object>
               <packing>
                 <property name="x_options"></property>
@@ -63,6 +63,8 @@
                 <property name="use_stock">True</property>
               </object>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -76,6 +78,8 @@
                 <property name="use_stock">True</property>
               </object>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">1</property>
               </packing>
             </child>

@@ -56,6 +56,51 @@
 
 #define GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_APP, AppPriv ))
 
+struct _AppPriv {
+	/* Main widgets */
+	GtkWidget		*window;
+	TweetList		*listview;
+	GtkWidget		*statusbar;
+	
+	/* Widgets that are enabled when we are connected/disconnected */
+	GList			*widgets_connected;
+	GList			*widgets_disconnected;
+	
+	/* Widgets that are enabled when we a tweet is selected */
+	GList			*widgets_tweet_selected;
+	
+	/* Timeline menu items */
+	GSList			*group;
+	GtkRadioAction		*menu_combined;
+	GtkRadioAction		*menu_public;
+	GtkRadioAction		*menu_friends;
+	GtkRadioAction		*menu_mine;
+	GtkRadioAction		*menu_direct_messages;
+	GtkRadioAction		*menu_direct_replies;
+	
+	GtkAction		*friends_timelines;
+	
+	/* Status Icon */
+	GtkStatusIcon		*status_icon;
+	
+	/* Status Icon Popup Menu */
+	GtkWidget		*popup_menu;
+	GtkToggleAction		*popup_menu_show_app;
+	
+	/* Account related data */
+	char			*username;
+	char			*password;
+	
+	/* Misc */
+	guint			size_timeout_id;
+	
+	/* Expand messages widgets */
+	GtkWidget		*expand_box;
+	GtkWidget		*expand_image;
+	GtkWidget		*expand_title;
+	GtkWidget		*expand_label;
+};
+
 #define DEBUG_DOMAIN_SETUP       "AppSetup"
 #define GtkBuilderUI	"main-window.ui"
 #define DEBUG_QUIT
@@ -118,10 +163,7 @@ static void     app_status_icon_create(void);
 static void     app_check_dir(void);
 static void     app_toggle_visibility(void);
 static gboolean configure_event_timeout_cb(GtkWidget             *widget);
-static gboolean app_window_configure_event_cb(GtkWidget             *widget,
-												  GdkEventConfigure     *event,
-												  App             *app);
-
+static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, App *app);
 static void app_message_dialog( gchar *message );
 
 
@@ -139,6 +181,13 @@ app_class_init(AppClass *klass)
 
 	g_type_class_add_private(object_class, sizeof(AppPriv));
 }
+
+
+GList *app_get_widgets_tweet_selected(void){
+	return app_priv->widgets_tweet_selected;
+}//get_widgets_tweet_selected
+
+
 
 static void app_init(App *singleton_app){
 	//AppPriv      *priv;	
@@ -871,11 +920,20 @@ app_state_on_connection(gboolean connected)
 	g_list_free(l);
 }
 
-GtkWidget *
-app_get_window(void)
-{
+GtkWidget *app_get_window(void){
 	return app_priv->window;
-}
+}//app_get_window
+
+
+void app_statusbar_printf(gchar *msg, ...){
+	va_list words_and_more;
+	va_start(words_and_more, msg);
+	gchar *message=g_vsprintf(message, msg, words_and_more);
+	va_end(words_and_more);
+	app_set_statusbar_msg(message);
+	g_free(message);
+}//app_update_status_bar
+
 
 void app_set_statusbar_msg(gchar *message){
 	/* Avoid some warnings */

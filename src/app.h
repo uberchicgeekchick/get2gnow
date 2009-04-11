@@ -48,54 +48,6 @@ typedef struct _App      	App;
 typedef struct _AppClass 	AppClass;
 typedef struct _AppPriv  	AppPriv;
 
-struct _AppPriv {
-	/* Main widgets */
-	GtkWidget		*window;
-	TweetList		*listview;
-	GtkWidget		*statusbar;
-
-	/*
-	 *		Widgets that are enabled when
-	 *		we are connected/disconnected
-	 */
-	GList			*widgets_connected;
-	GList			*widgets_disconnected;
-	GList			*widgets_tweet_selected;
-
-	/* Timeline menu items */
-	GSList			*group;
-	GtkRadioAction		*menu_combined;
-	GtkRadioAction		*menu_public;
-	GtkRadioAction		*menu_friends;
-	GtkRadioAction		*menu_mine;
-	GtkRadioAction		*menu_direct_messages;
-	GtkRadioAction		*menu_direct_replies;
-
-	GtkAction		*friends_timelines;
-
-	/* Status Icon */
-	GtkStatusIcon		*status_icon;
-
-	/* Status Icon Popup Menu */
-	GtkWidget		*popup_menu;
-	GtkToggleAction		*popup_menu_show_app;
-
-	/* Account related data */
-	char			*username;
-	char			*password;
-
-	/* Misc */
-	guint			size_timeout_id;
-	
-	/* Expand messages widgets */
-	GtkWidget		*expand_box;
-	GtkWidget		*expand_image;
-	GtkWidget		*expand_title;
-	GtkWidget		*expand_label;
-};
-
-extern AppPriv *app_priv;
-
 struct _App {
         GObject        parent;
 };
@@ -104,15 +56,17 @@ struct _AppClass {
         GObjectClass parent_class;
 };
 
-GType               app_get_type                     (void) G_GNUC_CONST;
-void                app_create                       (void);
-App *	        app_get                          (void);
-GtkWidget *         app_get_window                   (void);
-void				app_set_visibility				(gboolean	   visible);
-void				app_set_statusbar_msg	        (gchar        *message);
-void                app_notify_sound                 (void);
-void				app_notify                       (gchar        *msg);
-void                app_state_on_connection          (gboolean      connected);
+GType app_get_type(void) G_GNUC_CONST;
+void app_create                       (void);
+App *app_get(void);
+GtkWidget *app_get_window(void);
+GList *app_get_widgets_tweet_selected(void);
+void app_set_visibility(gboolean visible);
+void app_statusbar_printf(gchar *msg, ...);
+void app_set_statusbar_msg(gchar *msg);
+void app_notify_sound(void);
+void app_notify(gchar *msg);
+void app_state_on_connection(gboolean connected);
 void app_set_image( const gchar *file, GtkTreeIter iter );
 void app_expand_message( const gchar  *user_name, const gchar  *user_nick, const gchar  *date, const gchar  *tweet, GdkPixbuf    *pixbuf );
 
