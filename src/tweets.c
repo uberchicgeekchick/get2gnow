@@ -21,6 +21,7 @@
  */
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -31,6 +32,7 @@
 #include "config.h"
 #include "app.h"
 #include "tweets.h"
+#include "network.h"
 #include "send-message-dialog.h"
 #include "tweet-list.h"
 
@@ -50,6 +52,7 @@ static void tweets_list_move(GdkEventKey *event, TweetList *list);
 
 
 void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet){
+	/*	id=strtoul( char id, NULL, 0 );	*/
 	if(selected_tweet) g_free(selected_tweet);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->id=id;
@@ -64,10 +67,10 @@ void unset_selected_tweet(void){
 	if(selected_tweet) g_free(selected_tweet);
 }//unset_selected_tweet
 
-void show_tweets_submenu_entries(gboolean show){
+void tweets_show_submenu_entries(gboolean show){
 	for(GList *l=app_get_widgets_tweet_selected(); l; l = l->next)
 		g_object_set(l->data, "sensitive", show, NULL);
-}//show_tweets_submenu_entries
+}//tweets_show_submenu_entries
 
 static void tweets_list_move(GdkEventKey *event, TweetList *list){
 	static int i;
@@ -137,4 +140,13 @@ void tweets_new_dm(void){
 	send_message_dialog_show(GTK_WINDOW(app_get_window()));
 	message_show_friends(TRUE);
 }
+
+void tweets_make_fave(void){
+	if(!selected_tweet)
+		return;
+	gchar *url=NULL;
+	network_get( (url=g_strdup_printf( API_TWITTER_SAVE_FAVE, selected_tweet->id )) );
+	g_free(url);
+	app_set_statusbar_msg(_("Star'd Tweet."));
+}//tweets_save_fave
 

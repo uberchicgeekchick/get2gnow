@@ -67,7 +67,7 @@
 
 #include "friends-manager.h"
 #include "send-message-dialog.h"
-#include "followers-dialog.h"
+#include "following-viewer.h"
 
 
 static void users_free_foreach(gpointer user, gpointer users_list);
@@ -284,7 +284,7 @@ void user_remove_follower(User *user){
 GList *user_get_friends(void){
 	if(user_friends) return user_friends;
 	user_friends=network_get_users_glist((gboolean)TRUE);
-	followers_dialog_load_lists(user_friends);
+	following_viewer_load_lists(user_friends);
 	return NULL;
 }
 

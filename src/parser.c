@@ -62,7 +62,7 @@ static gchar *parser_convert_time (const char *datetime);
 static gboolean display_notification ( gpointer tweet );
 
 /* id of the newest tweet showed */
-static gint last_id = 0;
+static unsigned long int last_id=0;
 
 xmlDoc *parser_parse(const char *data, gssize length, xmlNode **first_element){
 	xmlDoc* doc = NULL;
@@ -112,8 +112,8 @@ parser_timeline(const gchar *data,
 	Status 	*status;
 
 	/* Count new tweets */
-	gboolean         show_notification =(last_id > 0);
-	gint             lastTweet = 0;
+	gboolean		show_notification =(last_id > 0);
+	unsigned long int	last_tweet = 0;
 	/*
 	 * On multiple tweet updates we only want to 
 	 * play the sound notification once.
@@ -150,17 +150,15 @@ parser_timeline(const gchar *data,
 		/* Timelines and direct messages */
 		gchar *tweet;
 		gchar *datetime;
-		gint   sid;
+		unsigned long int   sid;
 		
 		/* Parse node */
 		status=parser_node_status(cur_node->children);
-
-		sid = atoi(status->id);
+		sid=strtoul( status->id, NULL, 0 );
 		
 		/* the first tweet parsed is the 'newest' */
-		if(lastTweet == 0){
-			lastTweet = sid;
-		}
+		if(last_tweet == 0)
+			last_tweet = sid;
 
 		/* Create string for text column */
 		datetime=parser_convert_time( status->created_at );
@@ -190,7 +188,7 @@ parser_timeline(const gchar *data,
 							STRING_DATE, datetime,
 							STRING_TWEET, status->text,
 							STRING_USER, status->user->user_name,
-							ULONG_TWEET_ID, (strtoul( status->id, NULL, 0 )),
+							ULONG_TWEET_ID, (guint)sid,
 							-1);
 		
 		/* Free the text column string */
@@ -210,9 +208,8 @@ parser_timeline(const gchar *data,
 	} /* end of loop */
 
 	/* Remember last id showed */
-	if(lastTweet > 0) {
-		last_id = lastTweet;
-	}
+	if(last_tweet > 0)
+		last_id=last_tweet;
 
 	/* Free memory */
 	xmlFreeDoc(doc);
@@ -344,5 +341,5 @@ parser_convert_time(const char *datetime){
 
 void
 parser_reset_lastid(){
-	last_id = 0;
+	last_id=0;
 }

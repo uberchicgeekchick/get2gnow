@@ -12,21 +12,21 @@
       <column type="gpointer"/>
     </columns>
   </object>
-  <object class="GtkDialog" id="followers_dialog">
+  <object class="GtkDialog" id="following_viewer">
     <property name="visible">True</property>
-    <property name="title" translatable="yes">Users settings</property>
+    <property name="title" translatable="yes">Who you're following:</property>
     <property name="default_width">330</property>
     <property name="default_height">295</property>
-    <property name="type_hint">dialog</property>
+    <property name="type_hint">viewer</property>
     <child internal-child="vbox">
-      <object class="GtkVBox" id="dialog-vbox5">
+      <object class="GtkVBox" id="viewer-vbox5">
         <property name="visible">True</property>
         <child>
-          <object class="GtkNotebook" id="followers_notebook">
+          <object class="GtkNotebook" id="following_notebook">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkVBox" id="vbox_followers">
+              <object class="GtkVBox" id="vbox_following">
                 <property name="visible">True</property>
                 <child>
                   <object class="GtkScrolledWindow" id="following_list_scroll">
@@ -138,7 +138,7 @@
               </object>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="label_followers">
+              <object class="GtkLabel" id="label_following">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Following</property>
               </object>
@@ -152,7 +152,7 @@
           </packing>
         </child>
         <child internal-child="action_area">
-          <object class="GtkHButtonBox" id="dialog-action_area5">
+          <object class="GtkHButtonBox" id="viewer-action_area5">
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>

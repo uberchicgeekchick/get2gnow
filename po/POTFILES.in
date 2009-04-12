@@ -2,7 +2,7 @@
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
 [type: gettext/glade]data/accounts-dialog.ui
-[type: gettext/glade]data/followers-dialog.ui
+[type: gettext/glade]data/following-viewer.ui
 [type: gettext/glade]data/friends-manager.ui
 [type: gettext/glade]data/main-window.ui
 [type: gettext/glade]data/popup-dialog.ui

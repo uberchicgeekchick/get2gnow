@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __FOLLOWERS_DIALOG_H__
-#define __FOLLOWERS_DIALOG_H__
+#ifndef __FOLLOWING_DIALOG_H__
+#define __FOLLOWING_DIALOG_H__
 
 #include <glib.h>
 #include <gtk/gtk.h>
 
-void followers_dialog_show       (GtkWindow *parent);
-void followers_dialog_load_lists (GList     *users);
+void following_viewer_show(GtkWindow *parent);
+void following_viewer_load_lists(GList *users);
 
-#endif /* __FOLLOWERS_DIALOG_H__ */
+#endif /* __FOLLOWING_DIALOG_H__ */

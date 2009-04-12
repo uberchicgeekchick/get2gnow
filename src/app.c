@@ -50,7 +50,7 @@
 #include "preferences.h"
 #include "tweets.h"
 #include "friends-manager.h"
-#include "followers-dialog.h"
+#include "following-viewer.h"
 #include "ui-utils.h"
 #include "tweet-list.h"
 
@@ -71,12 +71,13 @@ struct _AppPriv {
 	
 	/* Timeline menu items */
 	GSList			*group;
-	GtkRadioAction		*menu_combined;
-	GtkRadioAction		*menu_public;
-	GtkRadioAction		*menu_friends;
-	GtkRadioAction		*menu_mine;
-	GtkRadioAction		*menu_direct_messages;
-	GtkRadioAction		*menu_direct_replies;
+	GtkRadioAction		*timeline_combined;
+	GtkRadioAction		*timeline_public;
+	GtkRadioAction		*timeline_friends;
+	GtkRadioAction		*timeline_mine;
+	GtkRadioAction		*timeline_dm;
+	GtkRadioAction		*timeline_replies;
+	GtkRadioAction		*timeline_favorites;
 	
 	GtkAction		*friends_timelines;
 	
@@ -99,6 +100,12 @@ struct _AppPriv {
 	GtkWidget		*expand_image;
 	GtkWidget		*expand_title;
 	GtkWidget		*expand_label;
+	
+	/* Buttons for stuff to do with the selected & extend tweet. */
+	GtkButton		*expanded_tweet_reply_button;
+	GtkButton		*expanded_tweet_retweet_button;
+	GtkButton		*expanded_tweet_dm_button;
+	GtkButton		*expanded_tweet_make_fave_button;
 };
 
 #define DEBUG_DOMAIN_SETUP       "AppSetup"
@@ -107,64 +114,51 @@ struct _AppPriv {
 
 #define TYPE_TWITTER "twitter"
 
-static void	    app_class_init			(AppClass        *klass);
-static void     app_init			(App             *app);
-static void     app_finalize(GObject               *object);
-static void     restore_main_window_geometry(GtkWidget             *main_window);
-static void     disconnect(App             *app);
-static void     reconnect(App             *app);
-static void     app_setup(void);
-static void     main_window_destroy_cb(GtkWidget *window, App *app); 
-static gboolean main_window_delete_event_cb(GtkWidget             *window,
-												  GdkEvent              *event,
-												  App             *app);
-static void     app_set_radio_group(App *app, GtkBuilder *ui); 
-static void     app_connect_cb(GtkWidget *window, App *app); 
-static void     app_disconnect_cb(GtkWidget *window, App *app); 
-static void     app_quit_cb(GtkWidget *window, App *app); 
-static void     app_refresh_cb(GtkWidget *window, App *app); 
-static void     app_accounts_cb(GtkWidget *window, App *app); 
+static void app_class_init (AppClass *klass);
+static void app_init (App *app);
+static void app_finalize(GObject *object);
+static void restore_main_window_geometry(GtkWidget *main_window);
+static void disconnect(App *app);
+static void reconnect(App *app);
+static void app_setup(void);
+static void main_window_destroy_cb(GtkWidget *window, App *app); 
+static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app);
+static void app_set_radio_group(App *app, GtkBuilder *ui); 
+static void app_connect_cb(GtkWidget *window, App *app); 
+static void app_disconnect_cb(GtkWidget *window, App *app); 
+static void app_quit_cb(GtkWidget *window, App *app); 
+static void app_refresh_cb(GtkWidget *window, App *app); 
+static void app_accounts_cb(GtkWidget *window, App *app); 
+static char **get_account_set_request(App *app);
+
+static void app_following_viewer(GtkAction *action, App *app);
 static void app_friends_manager_cb(GtkWidget *widget, App *app);
-static void     app_preferences_cb(GtkWidget *window, App *app); 
-static void app_combined_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app);
-static void app_public_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app);
-static void     app_friends_timeline_cb(GtkRadioAction        *action,
-												  GtkRadioAction        *current,
-												  App             *app);
-static void     app_mine_timeline_cb(GtkRadioAction        *action,
-												  GtkRadioAction        *current,
-												  App             *app);
-static void     app_view_direct_messages_cb(GtkRadioAction        *action,
-												  GtkRadioAction        *current,
-												  App             *app);
-static void     app_view_direct_replies_cb(GtkRadioAction        *action,
-												  GtkRadioAction        *current,
-												  App             *app);
-static void     app_friends_timelines_cb(GtkAction *action, App *app); 
-static void     app_about_cb(GtkWidget *window, App *app); 
-static void     app_help_contents_cb(GtkWidget *widget, App *app); 
-static void     app_status_icon_activate_cb(GtkStatusIcon *status_icon, App *app); 
-static void     app_status_icon_popup_menu_cb(GtkStatusIcon         *status_icon,
-												  guint                  button,
-												  guint                  activate_time,
-												  App             *app);
+static void app_preferences_cb(GtkWidget *window, App *app); 
+
+/* Handles all timelines */
+static void app_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app);
+
+
+static void app_about_cb(GtkWidget *window, App *app); 
+static void app_help_contents_cb(GtkWidget *widget, App *app); 
+static void app_status_icon_activate_cb(GtkStatusIcon *status_icon, App *app); 
+static void app_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, App *app);
 
 static void friends_follow(GtkAction *item, App *app);
 static void friends_unfollow(GtkAction *item, App *app);
 static void friends_block(GtkAction *item, App *app);
 
 
-static void     app_connection_items_setup(App *app, GtkBuilder *ui); 
-static void     app_login(App             *app);
+static void app_connection_items_setup(App *app, GtkBuilder *ui); 
+static void app_login(App *app);
 static void app_set_default_timeline(App *app, gchar *timeline);
-static void     app_retrieve_default_timeline(void);
-static void     app_status_icon_create_menu(void);
-static void     app_status_icon_create(void);
-static void     app_check_dir(void);
-static void     app_toggle_visibility(void);
-static gboolean configure_event_timeout_cb(GtkWidget             *widget);
+static void app_retrieve_default_timeline(void);
+static void app_status_icon_create_menu(void);
+static void app_status_icon_create(void);
+static void app_check_dir(void);
+static void app_toggle_visibility(void);
+static gboolean configure_event_timeout_cb(GtkWidget *widget);
 static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, App *app);
-static void app_message_dialog( gchar *message );
 
 
 static App  *app = NULL;
@@ -172,20 +166,11 @@ AppPriv *app_priv=NULL;
 
 G_DEFINE_TYPE(App, app, G_TYPE_OBJECT);
 
-static void
-app_class_init(AppClass *klass)
-{
+static void app_class_init(AppClass *klass){
 	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-
 	object_class->finalize = app_finalize;
-
 	g_type_class_add_private(object_class, sizeof(AppPriv));
 }
-
-
-GList *app_get_widgets_tweet_selected(void){
-	return app_priv->widgets_tweet_selected;
-}//get_widgets_tweet_selected
 
 
 
@@ -221,16 +206,12 @@ static void app_finalize(GObject *object){
 	G_OBJECT_CLASS(app_parent_class)->finalize(object);
 }
 
-static void
-restore_main_window_geometry(GtkWidget *main_window)
-{
+static void restore_main_window_geometry(GtkWidget *main_window){
 	geometry_load_for_main_window(main_window);
 }
 
 
-static void
-disconnect(App *app)
-{
+static void disconnect(App *app){
 	GtkListStore *store = tweet_list_get_store();
 	gtk_list_store_clear(store);
 	network_logout();
@@ -257,40 +238,45 @@ reconnect(App *app)
 	app_login(app);
 }
 
-static void
-app_setup(void)
-{
-	Conf		 *conf;
-	GtkBuilder       *ui;
-	GtkWidget        *scrolled_window;
-	GtkWidget        *expand_vbox;
-	gchar            *timeline;
-	gboolean          login;
-	gboolean		  hidden;
+static void app_setup(void){
+	Conf		*conf;
+	GtkBuilder	*ui;
+	GtkWidget	*scrolled_window;
+	GtkWidget	*expand_vbox;
+	gchar		*timeline;
+	gboolean	login;
+	gboolean	hidden;
 
-	GError           *error = NULL;
-	guint32           result;
-
+	GError		*error=NULL;
+	guint32		result;
+	
 	debug(DEBUG_DOMAIN_SETUP, "Beginning....");
-
+	
 	
 	/* Set up interface */
 	debug(DEBUG_DOMAIN_SETUP, "Initialising interface");
-	ui = gtkbuilder_get_file(GtkBuilderUI,
-							  "main_window", &app_priv->window,
-							  "main_scrolledwindow", &scrolled_window,
-							  "main_statusbar", &app_priv->statusbar,
-							  "view_combined_timeline", &app_priv->menu_combined,
-							  "view_public_timeline", &app_priv->menu_public,
-							  "view_friends_timeline", &app_priv->menu_friends,
-							  "view_my_timeline", &app_priv->menu_mine,
-							  "view_direct_messages", &app_priv->menu_direct_messages,
-							  "view_direct_replies", &app_priv->menu_direct_replies,
-							  "friends_timelines", &app_priv->friends_timelines,
-							  "expand_box", &app_priv->expand_box,
-							  "expand_vbox", &expand_vbox,
-							  "expand_image", &app_priv->expand_image,
-							  NULL);
+	ui = gtkbuilder_get_file(
+				GtkBuilderUI,
+					"main_window", &app_priv->window,
+					"main_scrolledwindow", &scrolled_window,
+					"main_statusbar", &app_priv->statusbar,
+					"view_combined_timeline", &app_priv->timeline_combined,
+					"view_public_timeline", &app_priv->timeline_public,
+					"view_friends_timeline", &app_priv->timeline_friends,
+					"view_my_timeline", &app_priv->timeline_mine,
+					"view_direct_messages", &app_priv->timeline_dm,
+					"view_direct_replies", &app_priv->timeline_replies,
+					"view_favorites_timeline", &app_priv->timeline_favorites,
+					"friends_timelines", &app_priv->friends_timelines,
+					"expand_box", &app_priv->expand_box,
+					"expand_vbox", &expand_vbox,
+					"expand_image", &app_priv->expand_image,
+					"expanded_tweet_reply_button", &app_priv->expanded_tweet_reply_button, 
+					"expanded_tweet_retweet_button", &app_priv->expanded_tweet_retweet_button,
+					"expanded_tweet_dm_button", &app_priv->expanded_tweet_dm_button,
+					"expanded_tweet_make_fave_button", &app_priv->expanded_tweet_make_fave_button,
+				NULL
+	);
 
 	/* Set group for menu radio actions */
 	app_set_radio_group(app, ui);
@@ -309,34 +295,41 @@ app_setup(void)
 	g_free(timeline);
 
 	/* Connect the signals */
-	gtkbuilder_connect(ui, app,
-						"main_window", "destroy", main_window_destroy_cb,
-						"main_window", "delete_event", main_window_delete_event_cb,
-						"main_window", "configure_event", app_window_configure_event_cb,
-						"twitter_connect", "activate", app_connect_cb,
-						"twitter_disconnect", "activate", app_disconnect_cb,
-						"twitter_refresh", "activate", app_refresh_cb,
-						"quit", "activate", app_quit_cb,
-						"tweets_new_tweet", "activate", tweets_new_tweet,
-						"tweets_reply", "activate", tweets_reply,
-						"tweets_retweet", "activate", tweets_retweet,
-						"tweets_new_dm", "activate", tweets_new_dm,
-						"accounts", "activate", app_accounts_cb,
-						"friends_manager", "activate", app_friends_manager_cb,
-						"friends_follow", "activate", friends_follow,
-						"friends_unfollow", "activate", friends_unfollow,
-						"friends_block", "activate", friends_block,
-						"preferences", "activate", app_preferences_cb,
-						"view_combined_timeline", "changed", app_combined_timeline_cb,
-						"view_public_timeline", "changed", app_public_timeline_cb,
-						"view_friends_timeline", "changed", app_friends_timeline_cb,
-						"view_my_timeline", "changed", app_mine_timeline_cb,
-						"view_direct_messages", "changed", app_view_direct_messages_cb,
-						"view_direct_replies", "changed", app_view_direct_replies_cb,
-						"help_contents", "activate", app_help_contents_cb,
-						"friends_timelines", "activate", app_friends_timelines_cb,
-						"help_about", "activate", app_about_cb,
-						NULL);
+	gtkbuilder_connect( ui, app,
+				"main_window", "destroy", main_window_destroy_cb,
+				"main_window", "delete_event", main_window_delete_event_cb,
+				"main_window", "configure_event", app_window_configure_event_cb,
+				"twitter_connect", "activate", app_connect_cb,
+				"twitter_disconnect", "activate", app_disconnect_cb,
+				"twitter_refresh", "activate", app_refresh_cb,
+				"quit", "activate", app_quit_cb,
+				"tweets_new_tweet", "activate", tweets_new_tweet,
+				"tweets_reply", "activate", tweets_reply,
+				"tweets_retweet", "activate", tweets_retweet,
+				"tweets_make_fave", "activate", tweets_make_fave,
+				"tweets_new_dm", "activate", tweets_new_dm,
+				"accounts", "activate", app_accounts_cb,
+				"friends_manager", "activate", app_friends_manager_cb,
+				"friends_follow", "activate", friends_follow,
+				"friends_unfollow", "activate", friends_unfollow,
+				"friends_block", "activate", friends_block,
+				"preferences", "activate", app_preferences_cb,
+				"view_combined_timeline", "changed", app_timeline_cb,
+				"view_public_timeline", "changed", app_timeline_cb,
+				"view_friends_timeline", "changed", app_timeline_cb,
+				"view_my_timeline", "changed", app_timeline_cb,
+				"view_direct_messages", "changed", app_timeline_cb,
+				"view_direct_replies", "changed", app_timeline_cb,
+				"view_favorites_timeline", "changed", app_timeline_cb,
+				"help_contents", "activate", app_help_contents_cb,
+				"friends_timelines", "activate", app_following_viewer,
+				"help_about", "activate", app_about_cb,
+				"expanded_tweet_reply_button", "clicked", tweets_reply,
+				"expanded_tweet_retweet_button", "clicked", tweets_retweet,
+				"expanded_tweet_dm_button", "clicked", tweets_new_dm,
+				"expanded_tweet_make_fave_button", "clicked", tweets_make_fave,
+				NULL
+	);
 
 	/* Set up connected related widgets */
 	app_connection_items_setup(app, ui);
@@ -401,7 +394,7 @@ app_setup(void)
 		app_login(app);
 	
 	unset_selected_tweet();
-	show_tweets_submenu_entries((gboolean)FALSE);
+	tweets_show_submenu_entries((gboolean)FALSE);
 }
 
 static void main_window_destroy_cb(GtkWidget *window, App *app){
@@ -448,6 +441,7 @@ static void app_set_radio_group(App  *app, GtkBuilder *ui){
 		"view_friends_timeline",
 		"view_my_timeline",
 		"view_direct_messages",
+		"view_favorites_timeline",
 		"view_direct_replies"
 	};
 
@@ -521,75 +515,42 @@ static void app_quit_cb(GtkWidget  *widget, App  *app){
 }
 
 static void app_refresh_cb(GtkWidget *window, App *app){
-	show_tweets_submenu_entries((gboolean)FALSE);
+	tweets_show_submenu_entries((gboolean)FALSE);
 	network_refresh();
 }
 
-static void app_combined_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app){
-	if(current!=app_priv->menu_combined) return;
+static void app_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app){
+	if(app_priv->timeline_combined==current)
+		return network_get_combined_timeline();
 	
-	network_get_combined_timeline();
+	if(app_priv->timeline_public==current)
+		return network_get_timeline(API_TWITTER_TIMELINE_PUBLIC);
+
+	if(app_priv->timeline_mine==current)
+		return network_get_user(NULL);
+
+	if(app_priv->timeline_favorites==current)
+		return network_get_timeline(API_TWITTER_FAVORITES);
+
+	if(app_priv->timeline_dm==current)
+		return network_get_timeline(API_TWITTER_DIRECT_MESSAGES);
+
+	if(app_priv->timeline_replies==current) 
+		return network_get_timeline(API_TWITTER_REPLIES);
+	
+	/* just in case, fall back to friends timeline */
+	network_get_timeline(API_TWITTER_TIMELINE_FRIENDS);
 }
 
-static void app_public_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App *app){
-	if(app_priv->menu_public == current)
-		network_get_timeline(API_TWITTER_TIMELINE_PUBLIC);
-}
-	
-static void
-app_friends_timeline_cb(GtkRadioAction *action,
-						 GtkRadioAction *current,
-						 App      *app)
-{
-	
-	
-	if(app_priv->menu_friends == current) 
-		network_get_timeline(API_TWITTER_TIMELINE_FRIENDS);
+
+static void app_following_viewer(GtkAction *action, App *app){
+	following_viewer_show(GTK_WINDOW(app_priv->window));
 }
 
-static void
-app_mine_timeline_cb(GtkRadioAction *action,
-					  GtkRadioAction *current,
-					  App      *app)
-{
-	
-	
-	if(app_priv->menu_mine == current)
-		network_get_user(NULL);
-}
 
-static void
-app_view_direct_messages_cb(GtkRadioAction *action,
-							 GtkRadioAction *current,
-							 App      *app)
-{
-	
-	
-	if(app_priv->menu_direct_messages == current)
-		network_get_timeline(API_TWITTER_DIRECT_MESSAGES);
-}
 
-static void
-app_view_direct_replies_cb(GtkRadioAction *action,
-							GtkRadioAction *current,
-							App      *app)
-{
-	
-	
-	if(app_priv->menu_direct_replies == current) 
-		network_get_timeline(API_TWITTER_REPLIES);
-}
 
-static void
-app_friends_timelines_cb(GtkAction *action,
-							App *app)
-{
-			followers_dialog_show(GTK_WINDOW(app_priv->window));
-}
-
-static char**
-get_account_set_request(App *app)
-{
+static char **get_account_set_request(App *app){
 	static const char* twitter[2] = { TYPE_TWITTER, NULL };
 
 	return(char **)twitter;
@@ -730,17 +691,13 @@ app_create(void)
 	app_setup();
 }
 
-App *
-app_get(void)
-{
+App *app_get(void){
 	g_assert(app != NULL);
 	return app;
 }
  
-static gboolean
-configure_event_timeout_cb(GtkWidget *widget)
-{
-		gint           x, y, w, h;
+static gboolean configure_event_timeout_cb(GtkWidget *widget){
+	gint           x, y, w, h;
 
 	
 	gtk_window_get_size(GTK_WINDOW(widget), &w, &h);
@@ -751,7 +708,7 @@ configure_event_timeout_cb(GtkWidget *widget)
 	app_priv->size_timeout_id = 0;
 
 	
-return FALSE;
+	return FALSE;
 }
 
 static gboolean
@@ -813,40 +770,43 @@ static void app_login(App *a){
  * Function to set the default
  * timeline in the menu.
  */
-static void
-app_set_default_timeline(App *app, gchar *timeline)
-{
+static void app_set_default_timeline(App *app, gchar *timeline){
 	/* This shouldn't happen, but just in case */
 	if(G_STR_EMPTY(timeline)) {
 		g_warning("Default timeline in not set");
 		return;
 	}
 
-	if( !(strcmp( timeline, "combined" )) )
-		return gtk_radio_action_set_current_value( app_priv->menu_combined, 1);
+	if( (g_str_equal(timeline, "combined")) )
+		return gtk_radio_action_set_current_value( app_priv->timeline_combined, 0);
 	
-	if( !(strcmp( timeline, API_TWITTER_TIMELINE_PUBLIC )) )
-		return gtk_radio_action_set_current_value( app_priv->menu_public, 1);
+	if( (g_str_equal(timeline, API_TWITTER_TIMELINE_PUBLIC)) )
+		return gtk_radio_action_set_current_value( app_priv->timeline_public, 0);
 	
-	if( !(strcmp( timeline, API_TWITTER_TIMELINE_MY )) )
-		return gtk_radio_action_set_current_value(app_priv->menu_mine, 1);
+	if( (g_str_equal(timeline, API_TWITTER_TIMELINE_MY)) )
+		return gtk_radio_action_set_current_value(app_priv->timeline_mine, 0);
+		
+	if( (g_str_equal(timeline, API_TWITTER_FAVORITES)) )
+		return gtk_radio_action_set_current_value(app_priv->timeline_favorites, 0);
+	
+	if( (g_str_equal(timeline, API_TWITTER_DIRECT_MESSAGES)) )
+		return gtk_radio_action_set_current_value(app_priv->timeline_dm, 0);
+	
+	if( (g_str_equal(timeline, API_TWITTER_REPLIES)) )
+		return gtk_radio_action_set_current_value(app_priv->timeline_dm, 0);
 	
 	/* Let's fallback to friends timeline */
-	gtk_radio_action_set_current_value(app_priv->menu_friends, 1);
+	gtk_radio_action_set_current_value(app_priv->timeline_friends, 0);
 }
 
 /* Function to retrieve the users default timeline */
-static void
-app_retrieve_default_timeline(void)
-{
+static void app_retrieve_default_timeline(void){
 	gchar         *timeline=NULL;
 
-	conf_get_string(conf_get(),
-							PREFS_TWEETS_HOME_TIMELINE,
-							&timeline);
+	conf_get_string(conf_get(), PREFS_TWEETS_HOME_TIMELINE, &timeline);
 
 	if(G_STR_EMPTY(timeline)){
-		timeline = g_strdup(API_TWITTER_TIMELINE_FRIENDS);
+		timeline=g_strdup(API_TWITTER_TIMELINE_FRIENDS);
 		app_set_default_timeline(app, API_TWITTER_TIMELINE_FRIENDS);
 	}
 
@@ -869,10 +829,13 @@ app_check_dir(void)
 	g_free(file);
 }
 
-static void
-app_connection_items_setup(App  *app,
-							GtkBuilder *ui)
-{
+
+GList *app_get_widgets_tweet_selected(void){
+	return app_priv->widgets_tweet_selected;
+}//get_widgets_tweet_selected
+
+
+static void app_connection_items_setup(App *app, GtkBuilder *ui){
 	GList         *list;
 	gint           i;
 
@@ -888,6 +851,7 @@ app_connection_items_setup(App  *app,
 	};
 
 	const gchar *widgets_tweet_selected[]={
+		"tweets_make_fave",
 		"tweets_reply",
 		"tweets_retweet"
 	};
@@ -926,10 +890,13 @@ GtkWidget *app_get_window(void){
 
 
 void app_statusbar_printf(gchar *msg, ...){
+	gchar *message=NULL;
 	va_list words_and_more;
+	
 	va_start(words_and_more, msg);
-	gchar *message=g_vsprintf(message, msg, words_and_more);
+	g_vsprintf(message, msg, words_and_more);
 	va_end(words_and_more);
+	
 	app_set_statusbar_msg(message);
 	g_free(message);
 }//app_update_status_bar
@@ -953,19 +920,6 @@ void app_set_statusbar_msg(gchar *message){
 	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
 	/* returns the status bar message to the default message */
 	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
-}
-
-static void app_message_dialog( gchar *message ) {
-	GtkWidget *dialog=gtk_message_dialog_new(
-						GTK_WINDOW(app_priv->window),
-						GTK_DIALOG_DESTROY_WITH_PARENT,
-						GTK_MESSAGE_INFO,
-						GTK_BUTTONS_OK,
-						"%s", message
-	);
-	g_signal_connect( dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog );
-	
-	gtk_widget_show_all(dialog);
 }
 
 

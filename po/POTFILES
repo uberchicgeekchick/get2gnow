@@ -1,0 +1,22 @@
+	../data/accounts-dialog.ui \
+	../data/following-viewer.ui \
+	../data/friends-manager.ui \
+	../data/main-window.ui \
+	../data/popup-dialog.ui \
+	../data/preferences.ui \
+	../data/profile-viewer.ui \
+	../data/send-message-dialog.ui \
+	../data/spell-dialog.ui \
+	../data/greet-tweet-know.desktop.in \
+	../data/greet-tweet-know.schemas.in \
+	../src/about.c \
+	../src/app.c \
+	../src/hint.c \
+	../src/main.c \
+	../src/network.c \
+	../src/parser.c \
+	../src/preferences.c \
+	../src/send-message-dialog.c \
+	../src/spell.c \
+	../src/spell-dialog.c \
+	../src/ui-utils.c

@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <libsoup/soup.h>
 #include "friends-manager.h"
 #include "users.h"
 #include "images.h"
@@ -32,10 +33,24 @@
 /* Twitter API */
 #define API_TWITTER_CLIENT_AUTH		"greettweetknow"
 #define API_TWITTER_LOGIN		"https://twitter.com/account/verify_credentials.xml"
+
+/* Twitter Timelines */
+#define API_TWITTER_TIMELINE_PUBLIC	"https://twitter.com/statuses/public_timeline.xml"
+#define API_TWITTER_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
+#define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
+#define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
 #define API_TWITTER_REPLIES		"https://twitter.com/statuses/replies.xml"
 #define API_TWITTER_DIRECT_MESSAGES	"https://twitter.com/direct_messages.xml"
+#define API_TWITTER_FAVORITES		"https://twitter.com/favorites.xml"
+
+/* Twitter actions */
 #define API_TWITTER_POST_STATUS		"https://twitter.com/statuses/update.xml"
 #define API_TWITTER_SEND_MESSAGE	"https://twitter.com/direct_messages/new.xml"
+#define API_TWITTER_SAVE_FAVE		"https://twitter.com/favorites/create/%lu.xml"
+#define API_TWITTER_UNSAVE_FAVE		"https://twitter.com/favorites/destroy/%lu.xml"
+
+
+/* Twitter relationships */
 #define API_TWITTER_FOLLOWING		"https://twitter.com/statuses/friends.xml"
 #define API_TWITTER_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
 
@@ -44,17 +59,12 @@
 #define API_TWITTER_USER_FOLLOW		"https://twitter.com/friendships/create/%s.xml"
 #define API_TWITTER_USER_UNFOLLOW	"https://twitter.com/friendships/destroy/%s.xml"
 #define API_TWITTER_USER_BLOCK		"https://twitter.com/blocks/create/%s.xml"
+#define API_TWITTER_USER_UNBLOCK	"https://twitter.com/blocks/destroy/%s.xml"
 
 
 /* Twitter Details */
 #define API_TWITTER_ABOUT_USER		"https://twitter.com/users/show/%s.xml"
 
-
-/* Twitter Timelines */
-#define API_TWITTER_TIMELINE_PUBLIC	"https://twitter.com/statuses/public_timeline.xml"
-#define API_TWITTER_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
-#define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
-#define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
 
 extern gboolean getting_followers;
 
@@ -82,6 +92,7 @@ void network_get_user( const gchar *username );
 void network_refresh(void);
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
+SoupMessage *network_get( const gchar *url );
 User *network_fetch_profile(const gchar *user_name);
 GList *network_get_friends_and_followers(gboolean use_cache);
 GList *network_get_users_glist(gboolean get_friends);

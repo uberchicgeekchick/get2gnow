@@ -163,9 +163,9 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;
 	GtkTreeIter		iter;
 	if(!( (sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) ))
-		return show_tweets_submenu_entries((gboolean)FALSE);
+		return tweets_show_submenu_entries((gboolean)FALSE);
 	
-	show_tweets_submenu_entries((gboolean)TRUE);
+	tweets_show_submenu_entries((gboolean)TRUE);
 	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 	
 	

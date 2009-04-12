@@ -69,7 +69,7 @@ greet_tweet_know_SOURCES =				\
 	spell.c			spell.h			\
 	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
-	followers-dialog.c	followers-dialog.h	\
+	following-viewer.c	following-viewer.h	\
 	friends-manager.c	friends-manager.h	\
 	images.c		images.h		\
 	users.c			users.h			\
@@ -99,7 +99,7 @@ greet_tweet_know_OBJECTS =			\
 	spell.$(OBJEXT)				\
 	spell-dialog.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)			\
-	followers-dialog.$(OBJEXT)		\
+	following-viewer.$(OBJEXT)		\
 	friends-manager.$(OBJEXT)		\
 	users.$(OBJEXT)				\
 	images.$(OBJEXT)			\

@@ -16,7 +16,7 @@ gtkbuilder_DATA = 			\
 	profile-viewer.ui		\
 	popup-dialog.ui			\
 	friends-manager.ui		\
-	followers-dialog.ui		\
+	following-viewer.ui		\
 	accounts-dialog.ui
 
 icondir = $(datadir)/icons/hicolor/48x48/apps

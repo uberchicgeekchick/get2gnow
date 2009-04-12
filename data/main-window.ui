@@ -59,6 +59,24 @@
           <accelerator key="N" modifiers="GDK_CONTROL_MASK"/>
         </child>
         <child>
+          <object class="GtkAction" id="tweets_new_dm">
+            <property name="stock_id">gtk-leave-fullscreen</property>
+            <property name="name">tweets_new_dm</property>
+            <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
+            <property name="label">New _DM</property>
+          </object>
+          <accelerator key="Return" modifiers="GDK_SHIFT_MASK"/>
+          <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
+        </child>
+        <child>
+          <object class="GtkAction" id="tweets_make_fave">
+            <property name="stock_id">gtk-about</property>
+            <property name="name">tweets_make_fave</property>
+            <property name="tooltip" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
+            <property name="label" translatable="yes">Add to _Faves</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkAction" id="tweets_reply">
             <property name="stock_id">gtk-convert</property>
             <property name="name">tweets_reply</property>
@@ -73,16 +91,6 @@
             <property name="label">_Retweet</property>
           </object>
           <accelerator key="greater"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets_new_dm">
-            <property name="stock_id">gtk-leave-fullscreen</property>
-            <property name="name">tweets_new_dm</property>
-            <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
-            <property name="label">New _DM</property>
-          </object>
-          <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
-          <accelerator key="Return" modifiers="GDK_SHIFT_MASK"/>
         </child>
         <child>
           <object class="GtkAction" id="friends">
@@ -154,7 +162,6 @@
         </child>
         <child>
           <object class="GtkRadioAction" id="view_friends_timeline">
-            <property name="active">True</property>
             <property name="group">view_public_timeline</property>
             <property name="name">view_friends_timeline</property>
             <property name="label" translatable="yes">My _Friends' Tweets</property>
@@ -172,6 +179,14 @@
             <property name="group">view_public_timeline</property>
             <property name="name">view_direct_messages</property>
             <property name="label" translatable="yes">_Direct Messages</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkRadioAction" id="view_favorites_timeline">
+            <property name="group">view_public_timeline</property>
+            <property name="name">view_favorites_timeline</property>
+            <property name="tooltip" translatable="yes">View your favorited, ie starred tweets.	</property>
+            <property name="label" translatable="yes">My _Favorites</property>
           </object>
         </child>
         <child>
@@ -221,9 +236,12 @@
         </menu>
         <menu action="tweets1">
           <menuitem action="tweets_new_tweet"/>
+          <menuitem action="tweets_new_dm"/>
+          <separator/>
+          <menuitem action="tweets_make_fave"/>
+          <separator/>
           <menuitem action="tweets_reply"/>
           <menuitem action="tweets_retweet"/>
-          <menuitem action="tweets_new_dm"/>
         </menu>
         <menu action="friends">
           <menuitem action="friends_manager"/>
@@ -241,6 +259,7 @@
           <separator/>
           <menuitem action="view_direct_replies"/>
           <menuitem action="view_direct_messages"/>
+          <menuitem action="view_favorites_timeline"/>
           <separator/>
           <menuitem action="view_my_timeline"/>
           <menuitem action="view_public_timeline"/>
@@ -316,6 +335,105 @@
               </object>
               <packing>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkVBox" id="vbox3">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="expand_action_box">
+                    <property name="visible">True</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_reply_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="expanded_tweet_reply_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-convert</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_retweet_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="expanded_tweet_retweet_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-redo</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_dm_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="expanded_tweet_dm_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-leave-fullscreen</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_make_fave_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="image15">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-about</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="pack_type">end</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
