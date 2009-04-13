@@ -134,18 +134,6 @@
     </schema>
      
      <schema>
-	<key>/schemas/apps/greet-tweet-know/ui/expand_messages</key>
-	<applyto>/apps/greet-tweet-know/ui/expand_messages</applyto>
-	<owner>greet-tweet-know</owner>
-	<type>bool</type>
-	<default>false</default>
-	<locale name="C">
-	   <short>Expand messages</short>
-	   <long>Expand messages</long>
-	</locale>
-     </schema>
-     
-     <schema>
 	<key>/schemas/apps/greet-tweet-know/ui/notify</key>
 	<applyto>/apps/greet-tweet-know/ui/notify</applyto>
 	<owner>greet-tweet-know</owner>

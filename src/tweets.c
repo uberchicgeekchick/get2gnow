@@ -35,6 +35,7 @@
 #include "network.h"
 #include "send-message-dialog.h"
 #include "tweet-list.h"
+#include "profile-viewer.h"
 
 
 typedef struct SelectedTweet {
@@ -43,12 +44,11 @@ typedef struct SelectedTweet {
 	gchar *tweet;
 } SelectedTweet;//SelectedTweet
 
+static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release);
+
+
 unsigned long int in_reply_to_status_id=0;
 static SelectedTweet *selected_tweet=NULL;
-
-static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release);
-static void tweets_list_move(GdkEventKey *event, TweetList *list);
-
 
 
 void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet){
@@ -60,57 +60,22 @@ void set_selected_tweet(unsigned long int id, const gchar *user_name, const gcha
 	selected_tweet->tweet=g_strdup(tweet);
 }//set_selected_tweets
 
-void unset_selected_tweet(void){
-	if(!selected_tweet) return;
-	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
-	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
-	if(selected_tweet) g_free(selected_tweet);
-}//unset_selected_tweet
+gchar *tweets_get_selected_user_name(void){
+	if(!selected_tweet->user_name)
+			return NULL;
+	return g_strdup(selected_tweet->user_name);
+}//tweets_get_selected_user_name
 
 void tweets_show_submenu_entries(gboolean show){
 	for(GList *l=app_get_widgets_tweet_selected(); l; l = l->next)
 		g_object_set(l->data, "sensitive", show, NULL);
 }//tweets_show_submenu_entries
 
-static void tweets_list_move(GdkEventKey *event, TweetList *list){
-	static int i;
-	static GtkTreePath *path;
-	if(!(i && i>0 && i<20 )) i=1;
-	switch(event->keyval){
-		case GDK_Tab: case GDK_Home:
-			if(path) gtk_tree_path_free(path);
-			break;
-		case GDK_Up:
-			if(path) gtk_tree_path_up(path);
-			break;
-		case GDK_Down:
-			if(path) gtk_tree_path_down(path);
-			break;
-		case GDK_End: i=20; break;
-		case GDK_Page_Down: i+=5; break;
-		default: return;
-	}//switch
-	if(!path)
-		path=gtk_tree_path_new_first();
-	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
-}//tweets_list_move
-
-void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
-	if(event->keyval !=GDK_Return ) return tweets_list_move(event, list);
-	switch(event->state){
-		case GDK_CONTROL_MASK: return tweets_new_tweet();
-		case GDK_MOD1_MASK: return tweets_retweet();
-		case GDK_SHIFT_MASK: return tweets_new_dm();
-		default: tweets_reply();
-	}
-}//tweets_key_pressed
-
-
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
 	send_message_dialog_show(GTK_WINDOW(app_get_window()));
 	message_show_friends(FALSE);
-}
+}//tweets_new_tweet
 
 void tweets_reply(void){
 	if(!selected_tweet)
@@ -118,7 +83,7 @@ void tweets_reply(void){
 	const gchar *tweet=g_strdup_printf("@%s ", selected_tweet->user_name);
 	in_reply_to_status_id=selected_tweet->id;
 	tweets_include_and_begin_to_send(tweet, (gboolean)TRUE);
-}
+}//tweets_reply
 
 void tweets_retweet(void){
 	if(!selected_tweet)
@@ -126,7 +91,7 @@ void tweets_retweet(void){
 	const gchar *tweet=g_strdup_printf("RT @%s %s", selected_tweet->user_name, selected_tweet->tweet);
 	in_reply_to_status_id=selected_tweet->id;
 	tweets_include_and_begin_to_send(tweet, (gboolean)TRUE);
-}
+}//tweets_retweet
 
 static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release){
 	send_message_dialog_show(GTK_WINDOW(app_get_window()));
@@ -139,7 +104,7 @@ static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean releas
 void tweets_new_dm(void){
 	send_message_dialog_show(GTK_WINDOW(app_get_window()));
 	message_show_friends(TRUE);
-}
+}//tweets_new_dm
 
 void tweets_make_fave(void){
 	if(!selected_tweet)
@@ -149,4 +114,21 @@ void tweets_make_fave(void){
 	g_free(url);
 	app_set_statusbar_msg(_("Star'd Tweet."));
 }//tweets_save_fave
+
+void unset_selected_tweet(void){
+	if(!selected_tweet) return;
+	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
+	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
+	if(selected_tweet) g_free(selected_tweet);
+}//unset_selected_tweet
+
+void tweets_view_selected_timeline(void){
+	if(!selected_tweet->user_name) return;
+	network_get_user_timeline(selected_tweet->user_name);
+}//tweets_view_selected_timeline
+
+void tweets_view_selected_profile(void){
+	if(!selected_tweet->user_name) return;
+	view_profile( selected_tweet->user_name, GTK_WINDOW(app_get_window()) );
+}//tweets_view_selected_profile
 

@@ -109,6 +109,11 @@ void view_profile( gchar *user_name, GtkWindow *parent ){
 	gtk_widget_show_all( GTK_WIDGET( profile_viewer->dialog ) );
 	
 	profile_viewer->user=network_fetch_profile(user_name);
+	
+	network_download_avatar( profile_viewer->user->image_url );
+	if(!(g_str_equal("unknown_image", profile_viewer->user->image_filename)))
+		gtk_message_dialog_set_image( profile_viewer->dialog, GTK_WIDGET(profile_viewer->image=images_get_maximized_image_from_filename( profile_viewer->user->image_filename )) );
+	
 	profile_details=g_strdup_printf(
 					"\t<u><b>%s:</b> @%s</u>\n",
 					profile_viewer->user->nick_name, profile_viewer->user->user_name
@@ -156,11 +161,6 @@ void view_profile( gchar *user_name, GtkWindow *parent ){
 	);
 	label_set_text(LABEL(profile_viewer->bio_html), profile_details);
 	g_free( profile_details );
-
-	network_download_avatar( profile_viewer->user->image_url );
-	if(!(g_str_equal("unknown_image", profile_viewer->user->image_filename)))
-		gtk_message_dialog_set_image( profile_viewer->dialog, GTK_WIDGET(profile_viewer->image=images_get_maximized_image_from_filename( profile_viewer->user->image_filename )) );
-	
 	
 	gtk_widget_show_all( GTK_WIDGET( profile_viewer->dialog ) );
 	gtk_widget_hide( GTK_WIDGET( profile_viewer->loading_label ) );

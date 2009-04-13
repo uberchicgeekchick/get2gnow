@@ -46,6 +46,7 @@
 #include "send-message-dialog.h"
 #include "following-viewer.h"
 #include "tweets.h"
+#include "timer.h"
 
 #define DEBUG_DOMAIN	  "Network"
 
@@ -70,9 +71,6 @@ static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth
 
 /* Copyright(C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 gboolean getting_followers=FALSE;
-
-/* request_timer is used to avoid Twitter's rate limit. */
-static GTimer *request_timer=NULL;
 
 static gboolean network_get_users_page(SoupMessage *msg);
 /* My, Kaity G. B., new stuff ends here. */
@@ -162,8 +160,7 @@ void network_new(void) {
 void network_close(void){
 	/* Close all connections */
 	network_stop();
-	g_timer_destroy(request_timer);
-	request_timer=NULL;
+	timer_deinit();
 	/* TODO: it would be nice if this worked without causing a segfault, but it doesn't.
 	 * it segfaults if both 'user_friends' & 'user_followers' are both set.
 	 * user_free_lists();
@@ -182,10 +179,6 @@ void network_stop(void){
 
 /* Login in Twitter */
 void network_login(const char *username, const char *password){
-	/* request_timer is used to avoid Twitter's rate limit. */
-	if( request_timer ) g_timer_destroy(request_timer);
-	request_timer=g_timer_new();
-							
 	debug(DEBUG_DOMAIN, "Begin login.. ");
 
 	if(global_username) g_free(global_username); global_username=NULL;
@@ -196,6 +189,7 @@ void network_login(const char *username, const char *password){
 	app_set_statusbar_msg(_("Connecting..."));
 
 	/* HTTP Basic Authentication */
+	timer_init();
 	g_signal_connect(soup_connection,
 					  "authenticate",
 					  G_CALLBACK(network_cb_on_auth),
@@ -286,7 +280,7 @@ User *network_fetch_profile(const gchar *user_name){
 }//network_fetch_profile
 
 /* Get a user timeline */
-void network_get_user(const gchar *username){
+void network_get_user_timeline(const gchar *username){
 	gchar *user_id;
 
 	if(!username)
@@ -500,27 +494,6 @@ network_post_data(const gchar           *url,
 
 /* Check HTTP response code */
 static gboolean network_check_http( SoupMessage *msg ){
-	/* request_timer is used to avoid Twitters rate limit */
-	g_timer_start(request_timer);
-	gulong request_microseconds=1;
-	const char *rate_limit=NULL;
-	int remaining_requests=99;
-	if(((rate_limit=soup_message_headers_get( msg->response_headers, "X-RateLimit-Remaining" ))) &&(remaining_requests=atoi( rate_limit )) )
-		debug( DEBUG_DOMAIN, "You have %d request left before the API's RateLimit is reached.", remaining_requests );
-		if( remaining_requests < 11 )
-			while( 36.0 >(g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		else if( remaining_requests < 21 )
-			while( 24.0 >(g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		else if( remaining_requests < 41 )
-			while( 12.0 >(g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		else if( remaining_requests < 61 )
-			while( 6.0 >(g_timer_elapsed(request_timer, &request_microseconds)) ){}
-		else
-			while( 1.0 >(g_timer_elapsed(request_timer, &request_microseconds)) ){}
-
-	
-	g_timer_stop(request_timer);
-	
 	
 	const gchar *error=NULL;
 	if(msg->status_code == 401)
@@ -532,8 +505,10 @@ static gboolean network_check_http( SoupMessage *msg ){
 	else if(!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
 		error=_("Stopped");
 
-	else
+	else {
+		timer_main( msg );
 		return TRUE;
+	}
 	
 	gchar *http_message=g_strdup_printf("%s: %s.", error, msg->reason_phrase);
 	app_set_statusbar_msg( http_message );
@@ -568,14 +543,15 @@ network_cb_on_login(SoupSession *session,
 					 SoupMessage *msg,
 					 gpointer     user_data)
 {
-	debug(DEBUG_DOMAIN,
-				  "Login response: %i",msg->status_code);
+	debug(DEBUG_DOMAIN, "Login response: %i",msg->status_code);
 
 	if(network_check_http( msg )) {
+		debug(DEBUG_DOMAIN, "Loading default timeline");
 		app_state_on_connection(TRUE);
 		return;
 	}
 
+	timer_deinit();
 	app_state_on_connection(FALSE);
 }
 

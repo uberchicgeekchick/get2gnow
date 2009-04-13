@@ -23022,6 +23022,7 @@ _ACEOF
 
 
 
+LIBSOUP_REQUIRED=2.26.0
 LIBGLADE_REQUIRED=0.23
 LIBXML_REQUIRED=2.6.16
 GLIB_REQUIRED=2.15.0
@@ -23152,7 +23153,7 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= \$LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_REQUIRED
@@ -23167,7 +23168,7 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23185,7 +23186,7 @@ if test -n "$GREET_TWEET_KNOW_CFLAGS"; then
   (exit $ac_status); }; then
   pkg_cv_GREET_TWEET_KNOW_CFLAGS=`$PKG_CONFIG --cflags "
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23210,7 +23211,7 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= \$LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_REQUIRED
@@ -23225,7 +23226,7 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23243,7 +23244,7 @@ if test -n "$GREET_TWEET_KNOW_LIBS"; then
   (exit $ac_status); }; then
   pkg_cv_GREET_TWEET_KNOW_LIBS=`$PKG_CONFIG --libs "
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23275,7 +23276,7 @@ fi
         if test $_pkg_short_errors_supported = yes; then
 	        GREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23291,7 +23292,7 @@ fi
         else
 	        GREET_TWEET_KNOW_PKG_ERRORS=`$PKG_CONFIG --print-errors "
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23310,7 +23311,7 @@ fi
 
 	{ { echo "$as_me:$LINENO: error: Package requirements (
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED
@@ -23335,7 +23336,7 @@ See the pkg-config man page for more details.
 " >&5
 echo "$as_me: error: Package requirements (
 	    libsexy
-	    libsoup-2.4
+	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_REQUIRED

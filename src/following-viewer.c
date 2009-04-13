@@ -83,6 +83,7 @@ typedef struct {
 	GtkWidget	*user_unfollow;
 	GtkWidget	*user_block;
 	GtkWidget	*view_profile;
+	GtkWidget	*view_timeline;
 } Followers;
 
 /********************************************************
@@ -96,6 +97,7 @@ static Followers *following;
  *          Method  & function prototypes               *
  ********************************************************/
 
+void following_viewer_setup(GtkWindow *parent);
 static void following_rem_response_cb( GtkButton   *button, Followers *following);
 static void following_block_response_cb( GtkButton   *button, Followers *following);
 static void following_response_cb( GtkWidget *widget, gint response, Followers *following);
@@ -106,19 +108,12 @@ static void following_view_profile(GtkButton *button, Followers *following);
  *          My art, code, & programming.                *
  ********************************************************/
 
-static void
-following_response_cb (GtkWidget     *widget,
-				   gint           response,
-				   Followers   *following)
-{
-	gtk_widget_destroy (widget);
+static void following_response_cb(GtkWidget *widget, gint response, Followers *following){
+	gtk_widget_hide(widget);
 }
 
-static void
-following_destroy_cb (GtkWidget    *widget,
-				  Followers  *following)
-{
-	g_free (following);
+static void following_destroy_cb( GtkWidget *widget, Followers *following){
+	g_free(following);
 }
 
 static void following_rem_response_cb( GtkButton *button, Followers *following ){
@@ -184,13 +179,37 @@ static void following_view_profile(GtkButton *button, Followers *following){
 			FOLLOWER_USER, &user_name,
 			-1
 	);
-
+	
 	if(!user_name)
 		return;
 	
 	view_profile( user_name, GTK_WINDOW(following->viewer) );
 	g_free(user_name);
 }//following_view_profile
+
+
+static void following_view_timeline(GtkButton *button, Followers *following){
+	GtkTreeIter iter;
+	gchar *user_name;
+	
+	
+	GtkTreeSelection *selection=gtk_tree_view_get_selection(following->following_list);
+	if(!(gtk_tree_selection_get_selected(selection, NULL, &iter))) return;
+	
+	
+	gtk_tree_model_get(
+			GTK_TREE_MODEL( following->following_list ),
+			&iter,
+			FOLLOWER_USER, &user_name,
+			-1
+	);
+	
+	if(!user_name)
+		return;
+	
+	network_get_user_timeline((const gchar *)user_name);
+	g_free(user_name);
+}//following_view_timeline
 
 
 static void
@@ -212,10 +231,10 @@ list_following_activated_cb (GtkTreeView       *tree_view,
 						-1);
 
 	/* Retrive timeline */
-	network_get_user(user_name);
+	network_get_user_timeline((const gchar *)user_name);
 
 	g_free(user_name);
-	gtk_widget_destroy(following->viewer);
+	gtk_widget_hide(following->viewer);
 	g_free(following);
 }
 
@@ -240,10 +259,15 @@ void following_viewer_load_lists (GList *users){
 	}
 }
 
-void following_viewer_show (GtkWindow *parent){
-	if (following) 
-		return gtk_window_present (GTK_WINDOW (following->viewer));
+void following_viewer_show(GtkWindow *parent){
+	if(!(following->viewer && following->viewer ))
+		return following_viewer_setup(parent);
 	
+	gtk_window_present((GTK_WINDOW( following->viewer )) );
+}//following_viewer_show
+
+
+void following_viewer_setup(GtkWindow *parent){
 	GtkBuilder *ui;
 	GList      *friends;
 	GdkCursor *cursor;
@@ -256,6 +280,7 @@ void following_viewer_show (GtkWindow *parent){
 						"following_list", &following->following_list,
 						"user_unfollow", &following->user_unfollow,
 						"user_block", &following->user_block,
+						"view_timeline", &following->view_timeline,
 						"view_profile", &following->view_profile,
 						NULL);
 	
@@ -267,6 +292,7 @@ void following_viewer_show (GtkWindow *parent){
 						"following_viewer", "response", following_response_cb,
 						"user_unfollow", "clicked", following_rem_response_cb,
 						"user_block", "clicked", following_block_response_cb,
+						"view_timeline", "clicked", following_view_timeline,
 						"view_profile", "clicked", following_view_profile,
 						"following_list", "row-activated", list_following_activated_cb,
 						NULL);

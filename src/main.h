@@ -42,7 +42,6 @@ G_BEGIN_DECLS
 #define PREFS_UI_WIN_POS_X             PREFS_PATH "/ui/main_window_pos_x"
 #define PREFS_UI_WIN_POS_Y             PREFS_PATH "/ui/main_window_pos_y"
 #define PREFS_UI_MAIN_WINDOW_HIDDEN	  PREFS_PATH "/ui/main_window_hidden"
-#define PREFS_UI_EXPAND_MESSAGES       PREFS_PATH "/ui/expand_messages"
 #define PREFS_UI_NOTIFICATION          PREFS_PATH "/ui/notify"
 #define PREFS_UI_SOUND                 PREFS_PATH "/ui/sound"
 #define PREFS_UI_SPELL_LANGUAGES       PREFS_PATH "/ui/spell_checker_languages"

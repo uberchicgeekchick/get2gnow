@@ -51,6 +51,7 @@ greet_tweet_know_SOURCES =				\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
+	tree-view.c 		tree-view.h		\
 	$(keyring_sources)				\
 	main.c			main.h			\
 	about.c			about.h			\
@@ -63,6 +64,7 @@ greet_tweet_know_SOURCES =				\
 	hint.c			hint.h			\
 	label.c			label.h			\
 	network.c		network.h		\
+	timer.c			timer.h			\
 	parser.c		parser.h		\
 	preferences.c		preferences.h		\
 	send-message-dialog.c	send-message-dialog.h	\
@@ -81,6 +83,7 @@ greet_tweet_know_OBJECTS =			\
 	gconf.$(OBJEXT)				\
 	debug.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)			\
+	tree-view.$(OBJEXT)			\
 	$(am__objects_1)			\
 	main.$(OBJEXT)				\
 	about.$(OBJEXT)				\
@@ -92,6 +95,7 @@ greet_tweet_know_OBJECTS =			\
 	geometry.$(OBJEXT)			\
 	hint.$(OBJEXT)				\
 	label.$(OBJEXT)				\
+	timer.$(OBJEXT)				\
 	parser.$(OBJEXT)			\
 	network.$(OBJEXT)			\
 	preferences.$(OBJEXT)			\

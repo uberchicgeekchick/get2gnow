@@ -17,7 +17,7 @@
     <property name="title" translatable="yes">Who you're following:</property>
     <property name="default_width">330</property>
     <property name="default_height">295</property>
-    <property name="type_hint">viewer</property>
+    <property name="type_hint">normal</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="viewer-vbox5">
         <property name="visible">True</property>
@@ -108,10 +108,20 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkButton" id="view_profile">
+                        <property name="label" translatable="yes">gtk-info</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="view_profile">
+                      <object class="GtkButton" id="view_timeline">
                         <property name="label" translatable="yes">gtk-home</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>

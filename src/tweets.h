@@ -39,11 +39,10 @@ extern unsigned long int in_reply_to_status_id;
 G_BEGIN_DECLS
 
 void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet);
+gchar *tweets_get_selected_user_name(void);
 void unset_selected_tweet(void);
 void tweets_show_submenu_entries(gboolean show);
 
-
-void tweets_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
 /* G_CALLBACK_FUNC for Greet-Tweet-Know's "Tweets" menu & the 'extended_tweet_?_button'.
  *	When handled by Greet-Tweet-Know's gtkbuilder.[ch]
  *	UI builder methods.
@@ -53,6 +52,8 @@ void tweets_reply(void);
 void tweets_retweet(void);
 void tweets_new_dm(void);
 void tweets_make_fave(void);
+void tweets_view_selected_timeline(void);
+void tweets_view_selected_profile(void);
 
 G_END_DECLS
 

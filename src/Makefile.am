@@ -25,6 +25,7 @@ greet_tweet_know_SOURCES = 				\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
+	tree-view.c 		tree-view.h		\
 	about.c			about.h			\
 	accounts-dialog.c 	accounts-dialog.h	\
 	profile-viewer.c	profile-viewer.h	\
@@ -35,6 +36,7 @@ greet_tweet_know_SOURCES = 				\
 	hint.c			hint.h			\
 	label.c			label.h			\
 	network.c		network.h		\
+	timer.c			timer.h			\
 	parser.c		parser.h		\
 	preferences.c		preferences.h		\
 	send-message-dialog.c	send-message-dialog.h	\

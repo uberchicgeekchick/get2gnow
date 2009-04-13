@@ -49,7 +49,6 @@ typedef struct {
 	GtkWidget *combo_reload;
 
 	/* Checkbuttons */
-	GtkWidget *expand;
 	GtkWidget *autoconnect;
 	GtkWidget *notify;
 	GtkWidget *sound;
@@ -146,8 +145,6 @@ static void preferences_destroy_cb                 (GtkWidget              *widg
 static void
 preferences_setup_widgets (Prefs *prefs)
 {
-	preferences_hookup_toggle_button( prefs, PREFS_UI_EXPAND_MESSAGES, prefs->expand );
-
 	preferences_hookup_toggle_button( prefs, PREFS_AUTH_AUTO_LOGIN, prefs->autoconnect );
 
 	preferences_hookup_toggle_button( prefs, PREFS_UI_NOTIFICATION, prefs->notify );
@@ -815,7 +812,6 @@ preferences_dialog_show (GtkWindow *parent)
 							  "preferences_notebook", &prefs->notebook,
 							  "combobox_timeline", &prefs->combo_default_timeline,
 							  "combobox_reload", &prefs->combo_reload,
-							  "expand_checkbutton", &prefs->expand,
 							  "autoconnect_checkbutton", &prefs->autoconnect,
 							  "notify_checkbutton", &prefs->notify,
 							  "spell_checkbutton", &prefs->spell,

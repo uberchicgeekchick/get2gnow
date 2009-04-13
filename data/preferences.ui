@@ -35,22 +35,6 @@
                             <property name="visible">True</property>
                             <property name="spacing">6</property>
                             <child>
-                              <object class="GtkCheckButton" id="expand_checkbutton">
-                                <property name="label" translatable="yes">_Expand messages</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">This will show the full status message of the item selected in the list view.</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkCheckButton" id="notify_checkbutton">
                                 <property name="label" translatable="yes">Display _notifications when message recieved</property>
                                 <property name="visible">True</property>
@@ -62,7 +46,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
@@ -77,7 +61,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">2</property>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                             <child>
@@ -92,7 +76,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">3</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>

@@ -86,7 +86,7 @@ void network_get_combined_timeline(void);
 
 /* Retrive a user timeline. If user is null, get
  * authenticated user timeline*/
-void network_get_user( const gchar *username );
+void network_get_user_timeline( const gchar *username );
 
 /* Refresh current timeline */
 void network_refresh(void);

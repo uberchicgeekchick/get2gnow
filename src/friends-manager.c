@@ -107,9 +107,8 @@ static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_mana
 static void friends_manager_destroy(GtkWidget *widget, FriendsManager *friends_manager);
 static void friends_manager_response(GtkWidget *widget, gint response, FriendsManager *friends_manager);
 static void friends_manager_list_clicked(GtkTreeView *tree_view, FriendsManager *friends_manager);
-static void friends_manager_view_profile(GtkButton *button, FriendsManager *friends_manager);
+static void friends_manager_view_profile(void);
 static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager);
-static void friends_manager_friend_selected(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager);
 
 
 static FriendsManager *friends_manager=NULL;
@@ -265,7 +264,16 @@ static void friends_manager_block(GtkButton   *button, FriendsManager *friends_m
 	g_free( following );
 }
 
-static void friends_manager_view_profile(GtkButton *button, FriendsManager *friends_manager){
+/* This handles viewing profiles via button clicks & 'activating the tree_view.
+ * 	optional parameters for button clicks are:
+ *	 	GtkButtion *button
+ *
+ *	 for when the tree_view is activated the optional parameters are:
+ *	 	GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column
+ *
+ *	 both methods are also sent gpointer user_data which is a pointer to FriendsManager *friends_manager
+ */
+void friends_manager_view_profile(void){
 	gchar *user_name=NULL;
 	GtkTreeIter iter;
 
@@ -279,9 +287,7 @@ static void friends_manager_view_profile(GtkButton *button, FriendsManager *frie
 				-1
 	);
 	
-	
 	if(!(user_name)) return;
-	
 	
 	view_profile( user_name, GTK_WINDOW(friends_manager->dialog) );
 	g_free( user_name );
@@ -289,51 +295,23 @@ static void friends_manager_view_profile(GtkButton *button, FriendsManager *frie
 
 
 static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager){
-	GtkTreeIter iter;
 	gchar *user_name;
-	
-	
+	GtkTreeIter iter;
+
 	GtkTreeSelection *selection=gtk_tree_view_get_selection(friends_manager->friends_and_followers);
 	gtk_tree_selection_get_selected(selection, NULL, &iter);
 	
-	
 	gtk_tree_model_get(
-			GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
-			&iter,
-			USER_NAME, &user_name,
-			-1
+				GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
+				&iter,
+				USER_NAME, &user_name,
+				-1
 	);
 	
-	if(!(user_name)) return;
-	
-	network_get_user((const gchar *)user_name);
-	
+	network_get_user_timeline((const gchar *)user_name);
 	g_free(user_name);
 }//friends_manager_view_timeline
 
-
-static void friends_manager_friend_selected( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, FriendsManager *friends_manager ){
-	GtkTreeIter iter;
-	gchar *user_name=NULL;
-	
-	gtk_tree_model_get_iter(
-					GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
-					&iter,
-					path
-				);
-	
-	gtk_tree_model_get(
-				GTK_TREE_MODEL( friends_manager->friends_and_follows_model ),
-				&iter,
-				USER_NAME, &user_name,
-				-1
-	);
-	
-	if(!(user_name)) return;
-	
-	view_profile( user_name, GTK_WINDOW(friends_manager->dialog) );
-	g_free( user_name );
-}//friends_manager_friend_selected
 
 static void friends_manager_display_following_and_followers(void){
 	User		*following, *follower;
@@ -428,7 +406,7 @@ static void friends_manager_setup(GtkWindow *parent){
 						"user_block", "clicked", friends_manager_block,
 						"view_profile", "clicked", friends_manager_view_profile,
 						"view_timeline", "clicked", friends_manager_view_timeline,
-						"friends_and_followers", "row-activated", friends_manager_friend_selected,
+						"friends_and_followers", "row-activated", friends_manager_view_profile,
 						"friends_and_followers", "cursor-changed", friends_manager_list_clicked,
 						NULL
 	);

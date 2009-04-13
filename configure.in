@@ -36,6 +36,7 @@ dnl Library Dependencies, uses pkg-config to detect correct version, etc
 dnl
 dnl -----------------------------------------------------------
 
+LIBSOUP_REQUIRED=2.26.0
 LIBGLADE_REQUIRED=0.23
 LIBXML_REQUIRED=2.6.16
 GLIB_REQUIRED=2.15.0
@@ -80,7 +81,7 @@ dnl -----------------------------------------------------------
 PKG_CHECK_MODULES(GREET_TWEET_KNOW,
 [
 	libsexy
-	libsoup-2.4
+	libsoup-2.4 >= $LIBSOUP_REQUIRED
 	libnotify
 	gnome-vfs-2.0
 	gtk+-2.0 >= $GTK_REQUIRED

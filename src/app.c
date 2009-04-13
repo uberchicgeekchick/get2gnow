@@ -106,13 +106,18 @@ struct _AppPriv {
 	GtkButton		*expanded_tweet_retweet_button;
 	GtkButton		*expanded_tweet_dm_button;
 	GtkButton		*expanded_tweet_make_fave_button;
+	
+	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
+	GtkButton		*expanded_tweet_view_users_profile_button;
+	GtkButton		*expanded_tweet_view_users_timeline_button;
 };
 
-#define DEBUG_DOMAIN_SETUP       "AppSetup"
-#define GtkBuilderUI	"main-window.ui"
-#define DEBUG_QUIT
+#define	GtkBuilderUI		"main-window.ui"
 
-#define TYPE_TWITTER "twitter"
+#define	DEBUG_DOMAIN_SETUP	"AppSetup"
+#define	DEBUG_QUIT
+
+#define	TYPE_TWITTER	"twitter"
 
 static void app_class_init (AppClass *klass);
 static void app_init (App *app);
@@ -188,14 +193,13 @@ static void app_init(App *singleton_app){
 
 static void app_finalize(GObject *object){
 	App	       *app;
-	//AppPriv      *priv;	
+	//AppPriv      *priv=GET_PRIV(app);
 	
 	app = APP(object);
 	app_priv = GET_PRIV(app);
 
-	if(app_priv->size_timeout_id) {
+	if(app_priv->size_timeout_id)
 		g_source_remove(app_priv->size_timeout_id);
-	}
 
 	g_list_free(app_priv->widgets_connected);
 	g_list_free(app_priv->widgets_disconnected);
@@ -218,19 +222,15 @@ static void disconnect(App *app){
 	app_state_on_connection(FALSE);
 }
 
-static void
-reconnect(App *app)
-{
+static void reconnect(App *app){
 	Conf *conf;
 	gboolean login;
 
 	disconnect(app);
-	conf = conf_get();
+	conf=conf_get();
 
 	/*Check to see if we should automatically login */
-	conf_get_bool(conf,
-						  PREFS_AUTH_AUTO_LOGIN,
-						  &login);
+	conf_get_bool(conf, PREFS_AUTH_AUTO_LOGIN, &login);
 
 	if(!login)
 		return;
@@ -275,6 +275,8 @@ static void app_setup(void){
 					"expanded_tweet_retweet_button", &app_priv->expanded_tweet_retweet_button,
 					"expanded_tweet_dm_button", &app_priv->expanded_tweet_dm_button,
 					"expanded_tweet_make_fave_button", &app_priv->expanded_tweet_make_fave_button,
+					"expanded_tweet_view_users_profile_button", &app_priv->expanded_tweet_view_users_timeline_button,
+					"expanded_tweet_view_users_timeline_button", &app_priv->expanded_tweet_view_users_timeline_button,
 				NULL
 	);
 
@@ -328,7 +330,9 @@ static void app_setup(void){
 				"expanded_tweet_retweet_button", "clicked", tweets_retweet,
 				"expanded_tweet_dm_button", "clicked", tweets_new_dm,
 				"expanded_tweet_make_fave_button", "clicked", tweets_make_fave,
-				NULL
+				"expanded_tweet_view_users_profile_button", "clicked", tweets_view_selected_profile,
+				"expanded_tweet_view_users_timeline_button", "clicked", tweets_view_selected_timeline,
+			NULL
 	);
 
 	/* Set up connected related widgets */
@@ -488,12 +492,8 @@ void
 app_set_visibility(gboolean visible)
 {
 	GtkWidget *window;
-
 	window = app_get_window();
-
-	conf_set_bool(conf_get(),
-						  PREFS_UI_MAIN_WINDOW_HIDDEN,
-						  !visible);
+	conf_set_bool(conf_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, !visible);
 
 	if(!visible)
 		gtk_widget_hide(window);
@@ -527,7 +527,7 @@ static void app_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App
 		return network_get_timeline(API_TWITTER_TIMELINE_PUBLIC);
 
 	if(app_priv->timeline_mine==current)
-		return network_get_user(NULL);
+		return network_get_user_timeline(NULL);
 
 	if(app_priv->timeline_favorites==current)
 		return network_get_timeline(API_TWITTER_FAVORITES);
