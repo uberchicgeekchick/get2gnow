@@ -134,12 +134,12 @@
                         <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
-                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image10">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-leave-fullscreen</property>
+                            <property name="stock">gtk-jump-to</property>
                           </widget>
                         </child>
                       </widget>
@@ -180,7 +180,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image8">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-convert</property>
+                            <property name="stock">gtk-redo</property>
                           </widget>
                         </child>
                       </widget>
@@ -196,7 +196,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image9">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-redo</property>
+                            <property name="stock">gtk-convert</property>
                           </widget>
                         </child>
                       </widget>
@@ -474,7 +474,7 @@
                         <child>
                           <widget class="GtkImage" id="expanded_tweet_dm_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-leave-fullscreen</property>
+                            <property name="stock">gtk-jump-to</property>
                           </widget>
                         </child>
                       </widget>
@@ -626,7 +626,7 @@ _Controls</property>
                         <child>
                           <widget class="GtkImage" id="expanded_tweet_reply_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-convert</property>
+                            <property name="stock">gtk-redo</property>
                           </widget>
                         </child>
                       </widget>
@@ -645,7 +645,7 @@ _Controls</property>
                         <child>
                           <widget class="GtkImage" id="expanded_tweet_retweet_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-redo</property>
+                            <property name="stock">gtk-convert</property>
                           </widget>
                         </child>
                       </widget>
@@ -661,6 +661,7 @@ _Controls</property>
                         <property name="orientation">vertical</property>
                       </widget>
                       <packing>
+                        <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">2</property>
                       </packing>

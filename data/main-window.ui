@@ -60,13 +60,13 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_new_dm">
-            <property name="stock_id">gtk-leave-fullscreen</property>
+            <property name="stock_id">gtk-jump-to</property>
             <property name="name">tweets_new_dm</property>
             <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
             <property name="label">New _DM</property>
           </object>
-          <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
           <accelerator key="Return" modifiers="GDK_SHIFT_MASK"/>
+          <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
         </child>
         <child>
           <object class="GtkAction" id="tweets_make_fave">
@@ -78,7 +78,7 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_reply">
-            <property name="stock_id">gtk-convert</property>
+            <property name="stock_id">gtk-redo</property>
             <property name="name">tweets_reply</property>
             <property name="label">New _@ Reply</property>
           </object>
@@ -86,7 +86,7 @@
         </child>
         <child>
           <object class="GtkAction" id="tweets_retweet">
-            <property name="stock_id">gtk-redo</property>
+            <property name="stock_id">gtk-convert</property>
             <property name="name">tweets_retweet</property>
             <property name="label">_Retweet</property>
           </object>
@@ -339,7 +339,7 @@
                         <child>
                           <object class="GtkImage" id="expanded_tweet_dm_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-leave-fullscreen</property>
+                            <property name="stock">gtk-jump-to</property>
                           </object>
                         </child>
                       </object>
@@ -491,7 +491,7 @@ _Controls</property>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_reply_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-convert</property>
+                            <property name="stock">gtk-redo</property>
                           </object>
                         </child>
                       </object>
@@ -510,7 +510,7 @@ _Controls</property>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_retweet_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-redo</property>
+                            <property name="stock">gtk-convert</property>
                           </object>
                         </child>
                       </object>
@@ -526,6 +526,7 @@ _Controls</property>
                         <property name="orientation">vertical</property>
                       </object>
                       <packing>
+                        <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">2</property>
                       </packing>
