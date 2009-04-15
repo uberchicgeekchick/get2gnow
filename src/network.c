@@ -189,7 +189,6 @@ void network_login(const char *username, const char *password){
 	app_set_statusbar_msg(_("Connecting..."));
 
 	/* HTTP Basic Authentication */
-	timer_init();
 	g_signal_connect(soup_connection,
 					  "authenticate",
 					  G_CALLBACK(network_cb_on_auth),
@@ -545,6 +544,7 @@ network_cb_on_login(SoupSession *session,
 {
 	debug(DEBUG_DOMAIN, "Login response: %i",msg->status_code);
 
+	timer_init();
 	if(network_check_http( msg )) {
 		debug(DEBUG_DOMAIN, "Loading default timeline");
 		app_state_on_connection(TRUE);

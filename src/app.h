@@ -62,7 +62,7 @@ App *app_get(void);
 GtkWidget *app_get_window(void);
 GList *app_get_widgets_tweet_selected(void);
 void app_set_visibility(gboolean visible);
-void app_statusbar_printf(gchar *msg, ...);
+void app_statusbar_printf(const gchar *msg, ...);
 void app_set_statusbar_msg(gchar *msg);
 void app_notify_sound(void);
 void app_notify(gchar *msg);

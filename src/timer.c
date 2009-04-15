@@ -68,6 +68,7 @@ typedef struct {
 	gboolean active;
 	GTimer *gtimer;
 	gdouble limit;
+	guint processing;
 	guint requests;
 } RateLimitTimer;
 static RateLimitTimer *timer=NULL;
@@ -88,7 +89,7 @@ static RateLimitTimer *timer=NULL;
 
 void timer_init(void){
 	debug(DEBUG_DOMAIN, "Initalizing network rate limit timer.");
-	if(!g_thread_supported()) g_thread_init(NULL);
+	if(!( g_thread_get_initialized() && g_thread_supported() )) g_thread_init(NULL);
 	
 	if(timer) timer_deinit();
 	
@@ -96,13 +97,13 @@ void timer_init(void){
 	timer=g_new0(RateLimitTimer, 1);
 	timer->limit=10.0;
 	timer->gtimer=g_timer_new();
-	timer->active=TRUE;
+	timer->active=0;
+	timer->processing=FALSE;
 	timer->requests=0;
 	g_timer_start(timer->gtimer);
 }//timer_init
 
 void timer_main(SoupMessage *msg){
-	gdouble time_elapsed=0.0;
 	gulong request_microseconds=1;
 	const char *rate_limit=NULL;
 	int requests_remaining=99;
@@ -118,8 +119,11 @@ void timer_main(SoupMessage *msg){
 	if(timer->requests==1)
 		return;
 	
-	while( (time_elapsed=g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->limit ){
-		//app_statusbar_printf( "To keep your service from locking you out %s limits your requsts 1 ever %u seconds.  You have %u seconds left to wait.", PACKAGE_NAME, timer->limit, (timer->limit - time_elapsed) );
+	while(timer->processing){}
+	
+	timer->processing++;
+	while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->limit ){
+		app_statusbar_printf("One moment please... to keep %s from being locked out requests are limited.", PACKAGE_NAME, NULL );
 	}
 	g_timer_stop(timer->gtimer);
 	
@@ -138,6 +142,7 @@ void timer_main(SoupMessage *msg){
 	
 	g_timer_stop(timer->gtimer);
 	g_timer_start(timer->gtimer);
+	timer->processing--;
 }//timer_main
 
 

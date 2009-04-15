@@ -889,12 +889,12 @@ GtkWidget *app_get_window(void){
 }//app_get_window
 
 
-void app_statusbar_printf(gchar *msg, ...){
+void app_statusbar_printf(const gchar *msg, ...){
 	gchar *message=NULL;
 	va_list words_and_more;
 	
 	va_start(words_and_more, msg);
-	g_vsprintf(message, msg, words_and_more);
+	message=g_strdup_vprintf(msg, words_and_more);
 	va_end(words_and_more);
 	
 	app_set_statusbar_msg(message);
