@@ -70,9 +70,27 @@ typedef struct {
 	gboolean		follower;
 } User;
 
+/* Twitter follwer management */
+typedef enum {
+	Follow,
+	UnFollow,
+	Block,
+	UnBlock,
+	Fave,
+	UnFave,
+} FriendAction;
+
+typedef struct {
+	FriendAction action;
+	gchar *message;
+} FriendRequest;
+
+
 #define usrcasecmp	user_sort
 #define	usrcmp		user_sort
 
+FriendRequest *user_request_new(FriendAction action);
+void user_request_free(FriendRequest *request);
 
 /* Parse a user-list XML( friends, followers,... ) */
 GList *users_new(const gchar *data, gssize length);

@@ -37,56 +37,64 @@
 
 #include "debug.h"
 
-static gchar    **debug_strv;
+static gchar    **debug_strv=NULL;
 static gboolean   all_domains = FALSE;
+static gboolean devel=FALSE;
 
-static void
-debug_init (void)
-{
-	static gboolean inited = FALSE;
+gboolean debug_check_devel(void){
+#ifndef DEBUG
+	if(!( (g_getenv("DEBUG")) && (g_str_equal( (g_getenv("DEBUG")), "DEVEL" )) ))
+		return FALSE;
+#endif
 
-	if (!inited) {
-		const gchar *env;
-		gint         i;
+#ifndef DEBUG	
+#define DEBUG
+#endif
+	devel=TRUE;
+	all_domains=TRUE;
+	debug_strv=g_strsplit_set("all", ":, ", 0);
+	
+	return TRUE;
 
-		env = g_getenv ("DEBUG");
+}//debug_check_devel
 
-		if (env) {
-			debug_strv = g_strsplit_set (env, ":, ", 0);
-		} else {
-			debug_strv = NULL;
-		}
-
-		for (i = 0; debug_strv && debug_strv[i]; i++) {
-			if (strcmp ("all", debug_strv[i]) == 0) {
-				all_domains = TRUE;
-			}
-		}
-
-		inited = TRUE;
-	}
+static void debug_init (void){
+	static gboolean inited=FALSE;
+	if(inited) return;
+	inited=TRUE;
+	if(debug_check_devel()) return;
+	
+	const gchar *env;
+	gint         i;
+	
+	if(!(env=g_getenv("DEBUG")))
+		return;
+	
+	debug_strv=g_strsplit_set (env, ":, ", 0);
+	
+	for(i=0; debug_strv && debug_strv[i]; i++)
+		if (!(strcmp ("all", debug_strv[i])))
+			all_domains=TRUE;
 }
 
-void
-debug_impl (const gchar *domain, const gchar *msg, ...)
-{
+void debug_impl(const gchar *domain, const gchar *msg, ...){
 	gint i;
 
 	g_return_if_fail (domain != NULL);
 	g_return_if_fail (msg != NULL);
 
-	debug_init ();
+	debug_init();
 
 	for (i = 0; debug_strv && debug_strv[i]; i++) {
 		if (all_domains || strcmp (domain, debug_strv[i]) == 0) {
 			va_list args;
-
+			
 			g_print ("%s: ", domain);
-
-			va_start (args, msg);
-			g_vprintf (msg, args);
-			va_end (args);
-
+			
+			va_start(args, msg);
+			g_vprintf(msg, args);
+			va_end(args);
+			
 			g_print ("\n");
 			break;
 		}

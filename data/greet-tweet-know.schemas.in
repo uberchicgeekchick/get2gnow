@@ -2,6 +2,30 @@
   <schemalist>
     
     <schema>
+       <key>/schemas/apps/greet-tweet-know/auth/services</key>
+       <applyto>/apps/greet-tweet-know/auth/services</applyto>
+       <owner>greet-tweet-know</owner>
+       <type>list</type>
+       <default>[https://twitter.com/userName:password,https://identi.ca/username:password]</default>
+       <locale name="C">
+          <short>Services URI (not-yet implemented)</short>
+          <long>Secure HTTP URI for the accounts services, username, and password(if gnome_keyring's not enabled).</long>
+       </locale>
+    </schema>
+
+    <schema>
+       <key>/schemas/apps/greet-tweet-know/auth/service</key>
+       <applyto>/apps/greet-tweet-know/auth/service</applyto>
+       <owner>greet-tweet-know</owner>
+       <type>string</type>
+       <default>https://twitter.com</default>
+       <locale name="C">
+          <short>Services URI</short>
+          <long>Secure HTTP URI for the micro-blogging service.</long>
+       </locale>
+    </schema>
+
+    <schema>
        <key>/schemas/apps/greet-tweet-know/auth/user_id</key>
        <applyto>/apps/greet-tweet-know/auth/user_id</applyto>
        <owner>greet-tweet-know</owner>

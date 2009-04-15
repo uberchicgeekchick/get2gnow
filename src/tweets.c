@@ -52,7 +52,7 @@ static SelectedTweet *selected_tweet=NULL;
 
 
 void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet){
-	/*	id=strtoul( char id, NULL, 0 );	*/
+	/*	id=strtoul( char id, NULL, 10 );	*/
 	if(selected_tweet) g_free(selected_tweet);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->id=id;
@@ -109,10 +109,9 @@ void tweets_new_dm(void){
 void tweets_make_fave(void){
 	if(!selected_tweet)
 		return;
-	gchar *url=NULL;
-	network_get( (url=g_strdup_printf( API_TWITTER_SAVE_FAVE, selected_tweet->id )) );
-	g_free(url);
-	app_set_statusbar_msg(_("Star'd Tweet."));
+	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
+	network_user_request(user_request_new(Fave), fave_tweet_id);
+	g_free(fave_tweet_id);
 }//tweets_save_fave
 
 void unset_selected_tweet(void){

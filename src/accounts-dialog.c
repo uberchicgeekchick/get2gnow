@@ -20,6 +20,11 @@
 
 #include "config.h"
 
+#include <glib/gi18n.h>
+#include <glib/gprintf.h>
+#include <gtk/gtk.h>
+
+
 #include "gconf.h"
 #include "gtkbuilder.h"
 #ifdef HAVE_GNOME_KEYRING
@@ -32,10 +37,12 @@
 #define GtkBuilderUI "accounts-dialog.ui"
 
 typedef struct {
-	GtkWidget *dialog;
-	GtkWidget *username;
-	GtkWidget *password;
-	GtkWidget *show_password;
+	GtkWidget		*dialog;
+	GtkComboBoxEntry	*services;
+	GtkListStore		*services_list;
+	GtkEntry		*username;
+	GtkEntry		*password;
+	GtkCheckButton		*show_password;
 } Account;
 
 static void      accounts_response_cb          (GtkWidget         *widget,
@@ -51,24 +58,20 @@ accounts_response_cb (GtkWidget     *widget,
 					 gint           response,
 					 Account *act)
 {
-	if (response == GTK_RESPONSE_OK) {
-		Conf *conf;
-
-		conf = conf_get ();
-
-		conf_set_string (conf,
-								PREFS_AUTH_USER_ID,
-								gtk_entry_get_text (GTK_ENTRY (act->username)));
+	if(response != GTK_RESPONSE_OK)
+		return gtk_widget_destroy(widget);
+	
+	Conf *conf;
+	
+	conf=conf_get();
+	conf_set_string(conf, PREFS_AUTH_SERVICE, gtk_entry_get_text (GTK_ENTRY (act->services) ));
+	conf_set_string(conf, PREFS_AUTH_USER_ID, gtk_entry_get_text (GTK_ENTRY (act->username) ));
 
 #ifdef HAVE_GNOME_KEYRING
-		keyring_set_password (gtk_entry_get_text (GTK_ENTRY (act->username)),
-									 gtk_entry_get_text (GTK_ENTRY (act->password)));
+	keyring_set_password(gtk_entry_get_text (GTK_ENTRY (act->username)), gtk_entry_get_text(GTK_ENTRY(act->password)));
 #else
-		conf_set_string (conf,
-								PREFS_AUTH_PASSWORD,
-								gtk_entry_get_text (GTK_ENTRY (act->password)));
+	conf_set_string(conf, PREFS_AUTH_PASSWORD, gtk_entry_get_text(GTK_ENTRY (act->password)));
 #endif
-	}
 	gtk_widget_destroy (widget);
 }
 
@@ -92,11 +95,12 @@ accounts_show_password_cb (GtkWidget     *widget,
 void
 accounts_dialog_show (GtkWindow *parent)
 {
-	static Account *act;
-	GtkBuilder           *ui;
-	Conf           *conf;
-	gchar                *username;
-	gchar                *password;
+	static Account	*act;
+	GtkTreeIter	iter;
+	GtkBuilder	*ui;
+	Conf		*conf;
+	gchar		*username;
+	gchar		*password;
 
 	if (act) {
 		gtk_window_present (GTK_WINDOW (act->dialog));
@@ -108,6 +112,8 @@ accounts_dialog_show (GtkWindow *parent)
 	/* Get widgets */
 	ui = gtkbuilder_get_file (GtkBuilderUI,
 						"accounts_dialog", &act->dialog,
+						"services", &act->services,
+						"services_list", &act->services_list,
 						"username_entry", &act->username,
 						"password_entry", &act->password,
 						"show_password_checkbutton", &act->show_password,
@@ -121,6 +127,11 @@ accounts_dialog_show (GtkWindow *parent)
 						NULL);
 
 	g_object_unref (ui);
+	gtk_list_store_append(act->services_list, &iter);
+	gtk_list_store_set(act->services_list, &iter, 0, "https://twitter.com", 1, "Twitter");
+	gtk_list_store_append(act->services_list, &iter);
+	gtk_list_store_set(act->services_list, &iter, 0, "https://identi.ca", 1, "Identica");
+	
 
 	g_object_add_weak_pointer (G_OBJECT (act->dialog), (gpointer) &act);
 

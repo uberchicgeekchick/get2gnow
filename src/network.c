@@ -55,18 +55,14 @@ typedef struct {
 	GtkTreeIter   iter;
 } Image;
 
-static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data);
-static void network_post_data( const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data );
 static gboolean	network_check_http( SoupMessage *msg );
 
 /* libsoup callbacks */
 static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_post( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_message( SoupSession *session, SoupMessage *msg, gpointer user_data );
+static void network_user_request_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
+static void network_tweet_cb( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_add( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_del( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
 
 /* Copyright(C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
@@ -195,13 +191,12 @@ void network_login(const char *username, const char *password){
 					  NULL);
 
 	/* Verify cedentials */
-	network_get_data(API_TWITTER_LOGIN, network_cb_on_login, NULL);
+	network_queue(API_LOGIN, network_cb_on_login, NULL);
 }
 
 
 /* Logout current user */
-void network_logout(void)
-{
+void network_logout(void){
 	network_new();
 	if(global_username) g_free(global_username);
 	if(global_password) g_free(global_password);
@@ -218,17 +213,17 @@ void network_logout(void)
 void network_post_status(const gchar *text){
 	gchar *formdata=NULL;
 	if(!in_reply_to_status_id)
-		formdata=g_strdup_printf( "source=%s&status=%s", API_TWITTER_CLIENT_AUTH, text );
+		formdata=g_strdup_printf( "source=%s&status=%s", API_CLIENT_AUTH, text );
 	else
-		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", API_TWITTER_CLIENT_AUTH, in_reply_to_status_id, text );
-	network_post_data( API_TWITTER_POST_STATUS, formdata, network_cb_on_post, NULL );
+		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", API_CLIENT_AUTH, in_reply_to_status_id, text );
+	network_post_data( API_POST_STATUS, formdata, network_tweet_cb, g_strdup("Tweet") );
 }//network_post_status
 
 
 /* Send a direct message to a follower - text must be Url encoded  */
 void network_send_message( const gchar *friend, const gchar *text ){
-	gchar *formdata=g_strdup_printf( "source=%s&user=%s&text=%s", API_TWITTER_CLIENT_AUTH, friend, text );
-	network_post_data( API_TWITTER_SEND_MESSAGE, formdata, network_cb_on_message, NULL );
+	gchar *formdata=g_strdup_printf( "source=%s&user=%s&text=%s", API_CLIENT_AUTH, friend, text );
+	network_post_data( API_SEND_MESSAGE, formdata, network_tweet_cb, g_strdup("DM") );
 }
 
 void network_refresh(void){
@@ -239,7 +234,7 @@ void network_refresh(void){
 	app_set_statusbar_msg(_("Loading timeline..."));
 
 	processing = TRUE;
-	network_get_data( current_timeline, network_cb_on_timeline, NULL );
+	network_queue(current_timeline, network_cb_on_timeline, NULL );
 }
 
 /* Get and parse a timeline */
@@ -252,11 +247,12 @@ network_get_timeline(const gchar *url_timeline)
 	parser_reset_lastid();
 
 	/* UI */
-	app_set_statusbar_msg(_("Loading timeline..."));
-
 	processing=TRUE;
-	network_get_data(url_timeline, network_cb_on_timeline, g_strdup(url_timeline) );
-	/* network_get_data's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
+	debug(DEBUG_DOMAIN, "Loading timeline: %s", url_timeline);
+	app_set_statusbar_msg(_("Loading timeline..."));
+	
+	network_queue(url_timeline, network_cb_on_timeline, g_strdup(url_timeline) );
+	/* network_queue's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
 }//network_get_timeline
 
 /* Get a user timeline */
@@ -268,7 +264,7 @@ User *network_fetch_profile(const gchar *user_name){
 	User *user=NULL;
 	SoupMessage *msg=NULL;
 	
-	gchar *user_profile=g_strdup_printf( API_TWITTER_ABOUT_USER, user_name );
+	gchar *user_profile=g_strdup_printf( API_ABOUT_USER, user_name );
 	msg=network_get( user_profile ); 
 	g_free( user_profile );
 	
@@ -288,7 +284,7 @@ void network_get_user_timeline(const gchar *username){
 		user_id=g_strdup(username);
 
 	if(!G_STR_EMPTY(user_id)) {
-		gchar *user_timeline=g_strdup_printf( API_TWITTER_TIMELINE_USER, user_id );
+		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_id );
 		network_get_timeline( user_timeline );
 		if(user_timeline) g_free( user_timeline );
 	}
@@ -307,7 +303,7 @@ GList *network_get_users_glist(gboolean get_friends){
 	getting_followers=!get_friends;
 	while(fetching){
 		page++;
-		uri=g_strdup_printf("%s?page=%d",(get_friends?API_TWITTER_FOLLOWING:API_TWITTER_FOLLOWERS), page);
+		uri=g_strdup_printf("%s?page=%d",(get_friends?API_FOLLOWING:API_FOLLOWERS), page);
 		msg=network_get( uri );
 		fetching=network_get_users_page(msg);
 		if(uri) g_free(uri); uri=NULL;
@@ -326,16 +322,15 @@ GList *network_get_users_glist(gboolean get_friends){
 void network_get_combined_timeline(void){
 	SoupMessage *msg;
 	gchar *timelines[]={
-		API_TWITTER_TIMELINE_FRIENDS,
-		API_TWITTER_REPLIES,
-		API_TWITTER_DIRECT_MESSAGES,
+		API_TIMELINE_FRIENDS,
+		API_REPLIES,
+		API_DIRECT_MESSAGES,
 		NULL
 	};
 	
-	for(int i=0; timelines[i]; i++)
-		network_get_data(timelines[i], network_cb_on_timeline, "combined");
-	/*{	msg=network_get( timeline[i] );
-	 }*/
+	for(int i=0; timelines[i]; i++){
+		/* msg=network_get( timeline[i] ); */
+	 }
 	if(current_timeline) g_free(current_timeline);
 	current_timeline=g_strdup("combined");
 }//network_get_combined_timeline
@@ -370,7 +365,7 @@ gboolean network_download_avatar( const gchar *image_url ){
 		return TRUE;
 	debug(DEBUG_DOMAIN, "Downloading Image: %s\nGet: %s", image_filename, image_url);
 
-	SoupMessage *msg=network_get( image_url );
+	SoupMessage *msg=network_get_uri( image_url );
 		
 	debug(DEBUG_DOMAIN, "Image response: %i", msg->status_code);
 
@@ -383,16 +378,26 @@ gboolean network_download_avatar( const gchar *image_url ){
 
 
 /* Get data from net */
-SoupMessage *network_get( const gchar *url ){
+SoupMessage *network_get_uri( const gchar *url ){
 	SoupMessage *msg;
 	debug( DEBUG_DOMAIN, "Get: %s", url );
 	
 	msg=soup_message_new( "GET", url );
 	soup_session_send_message( soup_connection, msg );
-	
 	if(network_check_http( msg ))
 		return msg;
 	return NULL;
+}
+
+
+
+/* Get data from net */
+SoupMessage *network_get( const gchar *url ){
+	const gchar *new_url=g_strdup_printf("%s%s", API_SERVICE, url );
+	SoupMessage *msg=NULL;
+	msg=network_get_uri( new_url );
+	g_free(new_url);
+	return msg;
 }
 
 
@@ -411,50 +416,64 @@ void network_get_image(const gchar *image_url, GtkTreeIter iter ){
 	image->src=image_filename;
 	image->iter=iter;
 	
-	network_get_data( image_url, network_cb_on_image, image );
+	network_queue_uri( image_url, network_cb_on_image, image );
 }//network_get_avatar
 
 
+void network_user_request(FriendRequest *request, gchar *user_data){
+	if((G_STR_EMPTY(user_data)))
+			return;
+	
+	gchar *url=NULL;
+	switch(request->action){
+		case Fave:
+			url=g_strdup_printf(API_FAVE, user_data);
+			break;
+		case UnFave:
+			url=g_strdup_printf(API_UNFAVE, user_data);
+			break;
+		case UnFollow:
+			url=g_strdup_printf(API_USER_UNFOLLOW, user_data);
+			break;
+		case Block:
+			url=g_strdup_printf(API_USER_BLOCK, user_data);
+			break;
+		case UnBlock:
+			url=g_strdup_printf(API_USER_UNBLOCK, user_data);
+			break;
+		case Follow:
+		default:
+			url=g_strdup_printf(API_USER_FOLLOW, user_data);
+			break;
+	}//switch
+	network_post_data(url, NULL, network_user_request_cb, request);
+	g_free(url);
+}//network_process_user
 
 /* Add a user to follow */
-void network_follow_user(const gchar *username){
-	if((G_STR_EMPTY(username)))
-		return;
-	
-	gchar *url=g_strdup_printf(API_TWITTER_USER_FOLLOW, username);
-	network_post_data(url, NULL, network_cb_on_add, NULL);
-	g_free(url);
+void network_follow_user(gchar *username){
+	network_user_request(user_request_new(Follow), username);
 }
 
 
 
 /* Add a user to follow */
-void network_unfollow_user(const gchar *username){
-	if((G_STR_EMPTY(username)))
-		return;
-	
-	gchar *url=g_strdup_printf(API_TWITTER_USER_UNFOLLOW, username);
-	network_post_data(url, NULL, network_cb_on_del, NULL);
-	g_free(url);
+void network_unfollow_user(gchar *username){
+	network_user_request(user_request_new(UnFollow), username);
 }
 
 
 
 /* Block a user from following or messaging. */
-void network_block_user(const gchar *username){
-	if((G_STR_EMPTY(username)))
-		return;
-	
-	gchar *url=g_strdup_printf(API_TWITTER_USER_BLOCK, username);
-	network_post_data(url, NULL, network_cb_on_del, NULL);
-	g_free(url);
+void network_block_user(gchar *username){
+	network_user_request(user_request_new(Block), username);
 }
 
 
-
 /* Get data from net */
-static void network_get_data( const gchar *url, SoupSessionCallback callback, gpointer data){
+void network_queue_uri( const gchar *url, SoupSessionCallback callback, gpointer data){
 	SoupMessage *msg;
+	
 	debug(DEBUG_DOMAIN, "Get: %s",url);
 	
 	msg=soup_message_new( "GET", url );
@@ -462,22 +481,26 @@ static void network_get_data( const gchar *url, SoupSessionCallback callback, gp
 }
 
 
+
+/* Get data from net */
+void network_queue( const gchar *url, SoupSessionCallback callback, gpointer data){
+	const gchar *new_url=g_strdup_printf("%s%s", API_SERVICE, url );
+	network_queue_uri(new_url, callback, data);
+	g_free(new_url);
+}
+
+
 /* Private: Post data to net */
-static void
-network_post_data(const gchar           *url,
-				   gchar                 *formdata,
-				   SoupSessionCallback    callback,
-				   gpointer               data)
-{
+void network_post_uri_data(const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data){
 	SoupMessage *msg;
-
-	debug( DEBUG_DOMAIN, "Post: %s",url );
-
+	
+	debug( DEBUG_DOMAIN, "Post: %s", url );
+	
 	msg=soup_message_new( "POST", url );
 	
 	soup_message_headers_append( msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 	soup_message_headers_append( msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
-
+	
 	if(formdata)
 		soup_message_set_request(
 						msg, 
@@ -489,6 +512,12 @@ network_post_data(const gchar           *url,
 
 	soup_session_queue_message(soup_connection, msg, callback, data);
 }
+
+void network_post_data(const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data){
+	const gchar *new_url=g_strdup_printf("%s%s", API_SERVICE, url );
+	network_post_uri_data(new_url, formdata, callback, data);
+	g_free(new_url);
+}//vnetwork_post_data
 
 
 /* Check HTTP response code */
@@ -505,25 +534,18 @@ static gboolean network_check_http( SoupMessage *msg ){
 		error=_("Stopped");
 
 	else {
-		timer_main( msg );
+		timer_main(msg);
 		return TRUE;
 	}
 	
-	gchar *http_message=g_strdup_printf("%s: %s.", error, msg->reason_phrase);
-	app_set_statusbar_msg( http_message );
-	g_free( http_message );
+	app_statusbar_printf("%s: %s.", error, msg->reason_phrase);
 	
 	return FALSE;
 }
 
 /* HTTP Basic Authentication */
 static void
-network_cb_on_auth(SoupSession  *session,
-					SoupMessage  *msg,
-					SoupAuth     *auth,
-					gboolean      retrying,
-					gpointer      data)
-{
+network_cb_on_auth(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data){
 	/* Don't bother to continue if there is no user_id */
 	if(G_STR_EMPTY(global_username)) {
 		return;
@@ -531,8 +553,7 @@ network_cb_on_auth(SoupSession  *session,
 
 	/* verify that the password has been set */
 	if(!G_STR_EMPTY(global_password))
-		soup_auth_authenticate(auth, global_username, 
-								global_password);
+		soup_auth_authenticate(auth, global_username, global_password);
 }
 
 
@@ -556,32 +577,16 @@ network_cb_on_login(SoupSession *session,
 }
 
 
-/* A tweet's been posted
- *	Optional 3rd argument: 'gpointer user_data' callback data set by: network_post_status
- */
-static void network_cb_on_post(SoupSession *session, SoupMessage *msg, gpointer user_data ){
-	if(network_check_http( msg ))
-		app_set_statusbar_msg(_("Status Sent"));
-	
-	in_reply_to_status_id=0;
-	
-	debug(DEBUG_DOMAIN, "Tweet response: %i",msg->status_code );
-}
-
-
 /* On send a direct message */
-static void
-network_cb_on_message(SoupSession *session,
-					   SoupMessage *msg,
-					   gpointer     user_data)
-{
-	if(network_check_http( msg )) {
-		app_set_statusbar_msg(_("Message Sent"));
-	}
-
-	debug(DEBUG_DOMAIN,
-				  "Message response: %i",msg->status_code);
-}
+static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data){
+	if(network_check_http( msg ))
+		app_statusbar_printf("%s Sent", (const gchar *)user_data);
+	
+	if(in_reply_to_status_id) in_reply_to_status_id=0;
+	
+	debug(DEBUG_DOMAIN, "%s response: %i", ((const gchar *)user_data), msg->status_code);
+	g_free(user_data);
+}//network_tweet_cb
 
 
 /* On get a timeline */
@@ -646,52 +651,39 @@ static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointe
 }
 
 
-/* On add a user */
-static void
-network_cb_on_add(SoupSession *session,
-				   SoupMessage *msg,
-				   gpointer     user_data)
-{
-	User *user;
-
-	debug(DEBUG_DOMAIN,
-				  "Add user response: %i", msg->status_code);
+static void network_user_request_cb(SoupSession *session, SoupMessage *msg, gpointer user_data){
+	FriendRequest *request=(FriendRequest *)user_data;
+	debug(DEBUG_DOMAIN, "%s user response: %i", request->message, msg->status_code);
 	
 	/* Check response */
-	if(!network_check_http( msg ))
+	if(!network_check_http(msg)){
+		app_statusbar_printf("Failed %sing.", request->message, NULL);
+		user_request_free(request);
 		return;
-
-	/* parse new user */
-	debug(DEBUG_DOMAIN, "Parsing new user");
-
-	user=user_parse_new(msg->response_body->data, msg->response_body->length);
-
-	if(user)
-		user_append_friend(user);
-	else
-		app_set_statusbar_msg(_("Failed to add user"));
-}
-
-
-/* On remove a user */
-static void
-network_cb_on_del(SoupSession *session,
-				   SoupMessage *msg,
-				   gpointer     user_data)
-{
-	debug(DEBUG_DOMAIN,
-				  "Delete user response: %i", msg->status_code);
-
-	if(network_check_http( msg )) {		
-		app_set_statusbar_msg(_("Friend Removed"));
-	} else {
-		app_set_statusbar_msg(_("Failed to remove user"));
 	}
 	
-	if(user_data) {
-		user_remove_friend((User *)user_data );
-	}
+	/* parse new user */
+	debug(DEBUG_DOMAIN, "Parsing user response");
+	User *user=user_parse_new(msg->response_body->data, msg->response_body->length);
+	app_statusbar_printf("Successfully %sing.", request->message, NULL);
+	
+	switch(request->action){
+		case UnFollow:
+		case Block:
+			if(user) user_remove_friend(user);
+			break;
+		case Follow:
+			if(user) user_append_friend(user);
+			break;
+		case Fave:
+		case UnFave:
+		case UnBlock:
+			break;
+	}//switch
+	//user_free(user);
+	user_request_free(request);
 }
+
 
 static void network_timeout_new(void){
 	gint minutes;
@@ -704,24 +696,18 @@ static void network_timeout_new(void){
 		g_source_remove(timeout_id);
 	}
 
-	conf_get_int(conf_get(),
-						 PREFS_TWEETS_RELOAD_TIMELINES,
-						 &minutes);
+	conf_get_int(conf_get(), PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
 
 	/* The timeline reload interval shouldn't be less than 3 minutes */
-	if(minutes < 3) {
-		minutes = 3;
-	}
+	if(minutes < 3)
+		minutes=3;
 
 	/* This should be the number of milliseconds */
-	reload_time = minutes * 60 * 1000;
+	reload_time=minutes*60*1000;
 
-	timeout_id = g_timeout_add(reload_time,
-								network_timeout,
-								NULL);
+	timeout_id=g_timeout_add(reload_time, network_timeout, NULL);
 
-	debug(DEBUG_DOMAIN,
-				  "Starting timeout id: %i", timeout_id);
+	debug(DEBUG_DOMAIN, "Starting timeout id: %i", timeout_id);
 }
 
 static gboolean network_timeout(gpointer user_data){
@@ -735,7 +721,7 @@ static gboolean network_timeout(gpointer user_data){
 				  "Auto reloading. Timeout: %i", timeout_id);
 
 	processing = TRUE;
-	network_get_data(current_timeline, network_cb_on_timeline, NULL);
+	network_queue(current_timeline, network_cb_on_timeline, NULL);
 
 	timeout_id = 0;
 

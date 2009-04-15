@@ -78,6 +78,40 @@ static void users_free_foreach(gpointer user, gpointer users_list);
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
+FriendRequest *user_request_new(FriendAction action){
+	FriendRequest *request=g_new(FriendRequest, 1);
+	request->action=action;
+	switch(request->action){
+		case Follow:
+			request->message=g_strdup("follow");
+			break;
+		case UnFollow:
+			request->message=g_strdup("unfollow");
+			break;
+		case Block:
+			request->message=g_strdup("block");
+			break;
+		case UnBlock:
+			request->message=g_strdup("unblock");
+			break;
+		case Fave:
+			request->message=g_strdup("star'");
+			break;
+		case UnFave:
+			request->message=g_strdup("delet");
+			break;
+		default:
+			g_free(request);
+			return NULL;
+	}//switch
+	return request;
+}//user_request_new
+
+void user_request_free(FriendRequest *request){
+	g_free(request->message);
+	g_free(request);
+}//user_request_free
+
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
 User *user_parse_new( const gchar *data, gssize length ){

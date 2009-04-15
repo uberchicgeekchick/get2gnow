@@ -60,6 +60,10 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
 
+#ifndef soup_message_headers_get_one
+#define soup_message_headers_get_one soup_message_headers_get
+#endif
+
 /********************************************************
  *        Objects, structures, and etc typedefs         *
  ********************************************************/

@@ -31,39 +31,39 @@
 #include "images.h"
 
 /* Twitter API */
-#define API_TWITTER_CLIENT_AUTH		"greettweetknow"
-#define API_TWITTER_LOGIN		"https://twitter.com/account/verify_credentials.xml"
+#define API_CLIENT_AUTH		"greettweetknow"
+#define API_SERVICE		"https://twitter.com"
+#define API_LOGIN		"/account/verify_credentials.xml"
 
 /* Twitter Timelines */
-#define API_TWITTER_TIMELINE_PUBLIC	"https://twitter.com/statuses/public_timeline.xml"
-#define API_TWITTER_TIMELINE_FRIENDS	"https://twitter.com/statuses/friends_timeline.xml"
-#define API_TWITTER_TIMELINE_MY		"https://twitter.com/statuses/user_timeline.xml"
-#define API_TWITTER_TIMELINE_USER	"https://twitter.com/statuses/user_timeline/%s.xml"
-#define API_TWITTER_REPLIES		"https://twitter.com/statuses/replies.xml"
-#define API_TWITTER_DIRECT_MESSAGES	"https://twitter.com/direct_messages.xml"
-#define API_TWITTER_FAVORITES		"https://twitter.com/favorites.xml"
+#define API_TIMELINE_PUBLIC	"/statuses/public_timeline.xml"
+#define API_TIMELINE_FRIENDS	"/statuses/friends_timeline.xml"
+#define API_TIMELINE_MY		"/statuses/user_timeline.xml"
+#define API_TIMELINE_USER	"/statuses/user_timeline/%s.xml"
+#define API_REPLIES		"/statuses/replies.xml"
+#define API_DIRECT_MESSAGES	"/direct_messages.xml"
+#define API_FAVORITES		"/favorites.xml"
 
 /* Twitter actions */
-#define API_TWITTER_POST_STATUS		"https://twitter.com/statuses/update.xml"
-#define API_TWITTER_SEND_MESSAGE	"https://twitter.com/direct_messages/new.xml"
-#define API_TWITTER_SAVE_FAVE		"https://twitter.com/favorites/create/%lu.xml"
-#define API_TWITTER_UNSAVE_FAVE		"https://twitter.com/favorites/destroy/%lu.xml"
+#define API_POST_STATUS		"/statuses/update.xml"
+#define API_SEND_MESSAGE	"/direct_messages/new.xml"
+#define API_FAVE		"/favorites/create/%s.xml"
+#define API_UNFAVE		"/favorites/destroy/%s.xml"
 
 
 /* Twitter relationships */
-#define API_TWITTER_FOLLOWING		"https://twitter.com/statuses/friends.xml"
-#define API_TWITTER_FOLLOWERS		"https://twitter.com/statuses/followers.xml"
+#define API_FOLLOWING		"/statuses/friends.xml"
+#define API_FOLLOWERS		"/statuses/followers.xml"
 
 
-/* Twitter follwer management */
-#define API_TWITTER_USER_FOLLOW		"https://twitter.com/friendships/create/%s.xml"
-#define API_TWITTER_USER_UNFOLLOW	"https://twitter.com/friendships/destroy/%s.xml"
-#define API_TWITTER_USER_BLOCK		"https://twitter.com/blocks/create/%s.xml"
-#define API_TWITTER_USER_UNBLOCK	"https://twitter.com/blocks/destroy/%s.xml"
+#define API_USER_FOLLOW		"/friendships/create/%s.xml"
+#define API_USER_UNFOLLOW	"/friendships/destroy/%s.xml"
+#define API_USER_BLOCK		"/blocks/create/%s.xml"
+#define API_USER_UNBLOCK	"/blocks/destroy/%s.xml"
 
 
 /* Twitter Details */
-#define API_TWITTER_ABOUT_USER		"https://twitter.com/users/show/%s.xml"
+#define API_ABOUT_USER		"/users/show/%s.xml"
 
 
 extern gboolean getting_followers;
@@ -92,7 +92,13 @@ void network_get_user_timeline( const gchar *username );
 void network_refresh(void);
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
+void network_user_request(FriendRequest *request, gchar *user_data);
+void network_queue_uri( const gchar *url, SoupSessionCallback callback, gpointer data);
+void network_queue( const gchar *url, SoupSessionCallback callback, gpointer data);
+SoupMessage *network_get_uri( const gchar *url );
 SoupMessage *network_get( const gchar *url );
+void network_post_uri_data(const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data);
+void network_post_data( const gchar *url, gchar *formdata, SoupSessionCallback callback, gpointer data );
 User *network_fetch_profile(const gchar *user_name);
 GList *network_get_friends_and_followers(gboolean use_cache);
 GList *network_get_users_glist(gboolean get_friends);
@@ -104,13 +110,13 @@ gboolean network_download_avatar( const gchar *image_url );
 void network_get_image (const gchar *image_url, GtkTreeIter iter);
 
 /* Add a user to follow */
-void network_follow_user(const gchar *username);
+void network_follow_user(gchar *username);
 
 /* Remove a user */
-void network_unfollow_user(const gchar *username);
+void network_unfollow_user(gchar *username);
 
 /* Remove a user */
-void network_block_user(const gchar *username);
+void network_block_user(gchar *username);
 
 /* Networking */
 void network_new			(void);

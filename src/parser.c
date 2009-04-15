@@ -154,7 +154,7 @@ parser_timeline(const gchar *data,
 		
 		/* Parse node */
 		status=parser_node_status(cur_node->children);
-		sid=strtoul( status->id, NULL, 0 );
+		sid=strtoul( status->id, NULL, 10 );
 		
 		/* the first tweet parsed is the 'newest' */
 		if(last_tweet == 0)

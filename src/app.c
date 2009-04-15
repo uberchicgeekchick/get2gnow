@@ -124,7 +124,6 @@ static void app_init (App *app);
 static void app_finalize(GObject *object);
 static void restore_main_window_geometry(GtkWidget *main_window);
 static void disconnect(App *app);
-static void reconnect(App *app);
 static void app_setup(void);
 static void main_window_destroy_cb(GtkWidget *window, App *app); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app);
@@ -216,7 +215,7 @@ static void restore_main_window_geometry(GtkWidget *main_window){
 
 
 static void disconnect(App *app){
-	GtkListStore *store = tweet_list_get_store();
+	GtkListStore *store=tweet_list_get_store();
 	gtk_list_store_clear(store);
 	network_logout();
 	app_state_on_connection(FALSE);
@@ -352,7 +351,7 @@ static void app_setup(void){
 	restore_main_window_geometry(app_priv->window);
 
 	/* Set-up list view */
-	app_priv->listview = tweet_list_new();
+	app_priv->listview=tweet_list_new();
 	gtk_widget_show(GTK_WIDGET(app_priv->listview));
 	gtk_container_add(GTK_CONTAINER(scrolled_window),
 					   GTK_WIDGET(app_priv->listview));
@@ -390,9 +389,7 @@ static void app_setup(void){
 		gtk_widget_hide(app_priv->window);
 
 	/*Check to see if we should automatically login */
-	conf_get_bool(conf,
-						  PREFS_AUTH_AUTO_LOGIN,
-						  &login);
+	conf_get_bool(conf, PREFS_AUTH_AUTO_LOGIN, &login);
 	
 	if(login) 
 		app_login(app);
@@ -524,22 +521,22 @@ static void app_timeline_cb(GtkRadioAction *action, GtkRadioAction *current, App
 		return network_get_combined_timeline();
 	
 	if(app_priv->timeline_public==current)
-		return network_get_timeline(API_TWITTER_TIMELINE_PUBLIC);
+		return network_get_timeline(API_TIMELINE_PUBLIC);
 
 	if(app_priv->timeline_mine==current)
 		return network_get_user_timeline(NULL);
 
 	if(app_priv->timeline_favorites==current)
-		return network_get_timeline(API_TWITTER_FAVORITES);
+		return network_get_timeline(API_FAVORITES);
 
 	if(app_priv->timeline_dm==current)
-		return network_get_timeline(API_TWITTER_DIRECT_MESSAGES);
+		return network_get_timeline(API_DIRECT_MESSAGES);
 
 	if(app_priv->timeline_replies==current) 
-		return network_get_timeline(API_TWITTER_REPLIES);
+		return network_get_timeline(API_REPLIES);
 	
 	/* just in case, fall back to friends timeline */
-	network_get_timeline(API_TWITTER_TIMELINE_FRIENDS);
+	network_get_timeline(API_TIMELINE_FRIENDS);
 }
 
 
@@ -780,19 +777,19 @@ static void app_set_default_timeline(App *app, gchar *timeline){
 	if( (g_str_equal(timeline, "combined")) )
 		return gtk_radio_action_set_current_value( app_priv->timeline_combined, 0);
 	
-	if( (g_str_equal(timeline, API_TWITTER_TIMELINE_PUBLIC)) )
+	if( (g_str_equal(timeline, API_TIMELINE_PUBLIC)) )
 		return gtk_radio_action_set_current_value( app_priv->timeline_public, 0);
 	
-	if( (g_str_equal(timeline, API_TWITTER_TIMELINE_MY)) )
+	if( (g_str_equal(timeline, API_TIMELINE_MY)) )
 		return gtk_radio_action_set_current_value(app_priv->timeline_mine, 0);
 		
-	if( (g_str_equal(timeline, API_TWITTER_FAVORITES)) )
+	if( (g_str_equal(timeline, API_FAVORITES)) )
 		return gtk_radio_action_set_current_value(app_priv->timeline_favorites, 0);
 	
-	if( (g_str_equal(timeline, API_TWITTER_DIRECT_MESSAGES)) )
+	if( (g_str_equal(timeline, API_DIRECT_MESSAGES)) )
 		return gtk_radio_action_set_current_value(app_priv->timeline_dm, 0);
 	
-	if( (g_str_equal(timeline, API_TWITTER_REPLIES)) )
+	if( (g_str_equal(timeline, API_REPLIES)) )
 		return gtk_radio_action_set_current_value(app_priv->timeline_dm, 0);
 	
 	/* Let's fallback to friends timeline */
@@ -806,8 +803,8 @@ static void app_retrieve_default_timeline(void){
 	conf_get_string(conf_get(), PREFS_TWEETS_HOME_TIMELINE, &timeline);
 
 	if(G_STR_EMPTY(timeline)){
-		timeline=g_strdup(API_TWITTER_TIMELINE_FRIENDS);
-		app_set_default_timeline(app, API_TWITTER_TIMELINE_FRIENDS);
+		timeline=g_strdup(API_TIMELINE_FRIENDS);
+		app_set_default_timeline(app, API_TIMELINE_FRIENDS);
 	}
 
 	network_get_timeline(timeline);
