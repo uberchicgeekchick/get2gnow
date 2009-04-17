@@ -32,8 +32,8 @@
 #define GtkBuilderUI "popup-dialog.ui"
 
 typedef struct {
-	GtkWidget	*dialog;
-	GtkWidget	*entry;
+	GtkWindow	*dialog;
+	GtkEntry	*entry;
 	FriendAction	action;
 } Popup;
 
@@ -75,7 +75,6 @@ static gchar *popup_set_title( FriendAction action ){
 static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 	if( response != GTK_RESPONSE_OK )
 		return gtk_widget_hide(widget);
-	const gchar *username=gtk_entry_get_text(GTK_ENTRY(popup->entry));
 	
 	switch( popup->action ){
 		case Follow:
@@ -84,13 +83,13 @@ static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 		case UnBlock:
 		case ViewTweets:
 		case ViewProfile:
-			user_request_main(popup->action, username);
+			user_request_main(popup->action, popup->dialog, gtk_entry_get_text(GTK_ENTRY(popup->entry)));
 			break;
 		case Fave:
 		case UnFave:
 			break;
 	}//switch
-	gtk_widget_hide(widget);
+	gtk_entry_set_text(GTK_ENTRY(popup->entry), "");
 }//popup_response_cb
 
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
@@ -98,8 +97,8 @@ static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
 }//popup_destroy_cb
 
 static void popup_destroy_and_free( Popup *popup ){
-	gtk_widget_destroy( popup->dialog );
-	gtk_widget_destroy( popup->entry );
+	gtk_widget_destroy( GTK_WIDGET(popup->dialog) );
+	gtk_widget_destroy(GTK_WIDGET(popup->entry));
 	g_free( popup );
 }//popup_destroy_and_free
 
@@ -185,6 +184,6 @@ static void popup_dialog_show(GtkWindow *parent, FriendAction action ){
 	gtk_window_set_transient_for (GTK_WINDOW (popup->dialog), parent);
 
 	/* Now that we're done setting up, let's show the widget */
-	gtk_widget_show (popup->dialog);
+		gtk_window_present(popup->dialog);
 }
 

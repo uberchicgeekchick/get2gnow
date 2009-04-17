@@ -72,7 +72,7 @@
 #include "following-viewer.h"
 #include "profile-viewer.h"
 
-static FriendRequest *user_request_new(FriendAction action, const gchar *user_data);
+static FriendRequest *user_request_new(FriendAction action, GtkWindow *parent, const gchar *user_data);
 static void user_request_process_get(FriendRequest *request);
 static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data);
 static void user_request_free(FriendRequest *request);
@@ -87,11 +87,12 @@ static User *user_constructor( gboolean a_follower );
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
-static FriendRequest *user_request_new(FriendAction action, const gchar *user_data){
+static FriendRequest *user_request_new(FriendAction action, GtkWindow *parent, const gchar *user_data){
 	if(G_STR_EMPTY(user_data))
 		return NULL;
 	
 	FriendRequest *request=g_new(FriendRequest, 1);
+	request->parent=parent;
 	request->user_data=g_strdup(user_data);
 	request->action=action;
 	request->method=POST;
@@ -137,9 +138,9 @@ static FriendRequest *user_request_new(FriendAction action, const gchar *user_da
 	return request;
 }//user_request_new
 
-void user_request_main(FriendAction action, const gchar *user_data){
+void user_request_main(FriendAction action, GtkWindow *parent, const gchar *user_data){
 	FriendRequest *request=NULL;
-	if(!(request=user_request_new(action, user_data)))
+	if(!(request=user_request_new(action, parent, user_data)))
 		return;
 	
 	if(request->method == POST)
@@ -168,7 +169,7 @@ static void user_request_process_get(FriendRequest *request){
 		case ViewTweets:
 			return network_get_user_timeline(request->user_data);
 		case ViewProfile:
-			return view_profile(request->user_data, GTK_WINDOW(app_get_window()));
+			return view_profile(request->user_data, request->parent);
 		case UnFollow:
 		case Block:
 		case Follow:
@@ -215,6 +216,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 
 
 static void user_request_free(FriendRequest *request){
+	request->parent=NULL;
 	g_free(request->uri);
 	g_free(request->message);
 	g_free(request);

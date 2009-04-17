@@ -201,38 +201,38 @@ void tweets_save_fave(void){
 	if(!selected_tweet)
 		return;
 	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
-	user_request_main(Fave, fave_tweet_id);
+	user_request_main(Fave, app_get_window(), fave_tweet_id);
 	g_free(fave_tweet_id);
 }//tweets_save_fave
 
 void tweets_user_view_tweets(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(ViewTweets, selected_tweet->user_name);
+	user_request_main(ViewTweets, app_get_window(), selected_tweet->user_name);
 }//tweets_user_view_tweets
 
 void tweets_user_view_profile(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(ViewProfile, selected_tweet->user_name);
+	user_request_main(ViewProfile, app_get_window(), selected_tweet->user_name);
 }//tweets_user_view_profile
 
 void tweets_user_follow(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(Follow, selected_tweet->user_name);
+	user_request_main(Follow, app_get_window(), selected_tweet->user_name);
 }//tweets_user_follow
 
 void tweets_user_unfollow(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(UnFollow, selected_tweet->user_name);
+	user_request_main(UnFollow, app_get_window(), selected_tweet->user_name);
 }//tweets_user_unfollow
 
 void tweets_user_block(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(Block, selected_tweet->user_name);
+	user_request_main(Block, app_get_window(), selected_tweet->user_name);
 }//tweets_user_block
 
 void tweets_user_unblock(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(UnBlock, selected_tweet->user_name);
+	user_request_main(UnBlock, app_get_window(), selected_tweet->user_name);
 }//tweets_user_unblock
 
 void unset_selected_tweet(void){

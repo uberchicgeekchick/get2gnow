@@ -77,7 +77,7 @@ enum {
 };
 
 typedef struct {
-	GtkWidget	*dialog;
+	GtkWindow	*dialog;
 	GtkTreeView	*friends_and_followers;
 	GtkTreeModel	*friends_and_follows_model;
 	GtkWidget	*user_follow;
@@ -191,7 +191,7 @@ static void friends_manager_follow(GtkButton   *button, FriendsManager *friends_
 	
 	if(!(user_name)) return;
 	
-	user_request_main(Follow, (const gchar *)user_name);
+	user_request_main(Follow, friends_manager->dialog, (const gchar *)user_name);
 	g_free(following);
 	g_free(user_name);
 }
@@ -230,7 +230,7 @@ static void friends_manager_unfollow(GtkButton   *button, FriendsManager *friend
 		friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 	}
 
-	user_request_main(UnFollow, (const gchar *)user_name);
+	user_request_main(UnFollow, friends_manager->dialog, (const gchar *)user_name);
 	
 	g_free(following);
 	g_free(user_name);
@@ -259,7 +259,7 @@ static void friends_manager_block(GtkButton   *button, FriendsManager *friends_m
 	gtk_list_store_remove(GTK_LIST_STORE (friends_manager->friends_and_follows_model), &iter);
 	friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 
-	user_request_main(Block, (const gchar *)user_name);
+	user_request_main(Block, friends_manager->dialog, (const gchar *)user_name);
 	g_free( user_name );
 	g_free( following );
 }
@@ -289,7 +289,7 @@ void friends_manager_view_profile(void){
 	
 	if(!(user_name)) return;
 	
-	view_profile( user_name, GTK_WINDOW(friends_manager->dialog) );
+	user_request_main(ViewProfile, friends_manager->dialog, (const gchar *)user_name);
 	g_free( user_name );
 }//friends_manager_view_profile
 
@@ -418,18 +418,18 @@ static void friends_manager_setup(GtkWindow *parent){
 	gtk_window_set_transient_for(GTK_WINDOW(friends_manager->dialog), parent);
 
 	/* Now that we're done setting up, let's show the widget */
-	gtk_widget_show(friends_manager->dialog);
+	gtk_window_present(friends_manager->dialog);
 	
 	app_set_statusbar_msg(_("Please wait while friends and followers are loaded.  This may take several minutes..."));
 	cursor=gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GTK_WIDGET(friends_manager->dialog)->window, cursor);
-	gtk_widget_set_sensitive(friends_manager->dialog, FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->dialog), FALSE);
 
 	/* Load friends_manager */
 	friends_manager_display_following_and_followers();
 	
 	gdk_window_set_cursor(GTK_WIDGET(friends_manager->dialog)->window, NULL);
-	gtk_widget_set_sensitive(friends_manager->dialog, TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->dialog), TRUE);
 	friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 	app_set_statusbar_msg("");
 }
