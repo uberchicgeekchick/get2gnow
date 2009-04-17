@@ -1,289 +1,365 @@
 <?xml version="1.0"?>
 <interface>
-  <object class="GtkUIManager" id="uimanager1">
-    <child>
-      <object class="GtkActionGroup" id="actiongroup1">
-        <child>
-          <object class="GtkAction" id="services">
-            <property name="name">services</property>
-            <property name="label" translatable="yes">_Services</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="twitter_connect">
-            <property name="stock_id">gtk-connect</property>
-            <property name="name">twitter_connect</property>
-            <property name="label">_Connect</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="twitter_disconnect">
-            <property name="stock_id">gtk-disconnect</property>
-            <property name="name">twitter_disconnect</property>
-            <property name="label">_Disconnect</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="accounts">
-            <property name="stock_id">gtk-dialog-authentication</property>
-            <property name="name">accounts</property>
-            <property name="label" translatable="yes">_Accounts</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="preferences">
-            <property name="stock_id">gtk-preferences</property>
-            <property name="name">preferences</property>
-            <property name="label" translatable="yes">Prefere_nces</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="quit">
-            <property name="stock_id">gtk-quit</property>
-            <property name="name">quit</property>
-            <property name="label">_Quit</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets1">
-            <property name="name">tweets1</property>
-            <property name="label" translatable="yes">_Tweets</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets_new_tweet">
-            <property name="stock_id">gtk-edit</property>
-            <property name="name">tweets_new_tweet</property>
-            <property name="label">New _Tweet</property>
-          </object>
-          <accelerator key="N" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets_new_dm">
-            <property name="stock_id">gtk-jump-to</property>
-            <property name="name">tweets_new_dm</property>
-            <property name="tooltip" translatable="yes">Send a new Direct Message to one of your friends</property>
-            <property name="label">New _DM</property>
-          </object>
-          <accelerator key="Return" modifiers="GDK_SHIFT_MASK"/>
-          <accelerator key="d" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets_make_fave">
-            <property name="stock_id">gtk-about</property>
-            <property name="name">tweets_make_fave</property>
-            <property name="tooltip" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
-            <property name="label" translatable="yes">Add to _Faves</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets_reply">
-            <property name="stock_id">gtk-redo</property>
-            <property name="name">tweets_reply</property>
-            <property name="label">New _@ Reply</property>
-          </object>
-          <accelerator key="at"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="tweets_retweet">
-            <property name="stock_id">gtk-convert</property>
-            <property name="name">tweets_retweet</property>
-            <property name="label">_Retweet</property>
-          </object>
-          <accelerator key="greater"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="friends">
-            <property name="name">friends</property>
-            <property name="label" translatable="yes">_Friends</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="friends_manager">
-            <property name="stock_id">gtk-page-setup</property>
-            <property name="name">friends_manager</property>
-            <property name="tooltip" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
-            <property name="label" translatable="yes">Friends _Manager</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="friends_timelines">
-            <property name="stock_id">gtk-orientation-portrait</property>
-            <property name="name">friends_timelines</property>
-            <property name="tooltip" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
-            <property name="label" translatable="yes">My _Friends' Tweets</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="friends_follow">
-            <property name="stock_id">gtk-add</property>
-            <property name="name">friends_follow</property>
-            <property name="tooltip" translatable="yes">Add / Follow a new friend by entering their username.</property>
-            <property name="label" translatable="yes">_Follow a new friend</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="friends_unfollow">
-            <property name="stock_id">gtk-remove</property>
-            <property name="name">friends_unfollow</property>
-            <property name="tooltip" translatable="yes">Stop following a friend by entering their username.</property>
-            <property name="label" translatable="yes">_Unfollow a friend</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="friends_block">
-            <property name="stock_id">gtk-stop</property>
-            <property name="name">friends_block</property>
-            <property name="tooltip" translatable="yes">Block a friend from seeing any of your tweets or sending youany message by entering their username.</property>
-            <property name="label" translatable="yes">_Block a user</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="view1">
-            <property name="name">view1</property>
-            <property name="tooltip" translatable="yes">Select what tweets you want to see.</property>
-            <property name="label" translatable="yes">_View Tweets</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="twitter_refresh">
-            <property name="stock_id">gtk-refresh</property>
-            <property name="name">twitter_refresh</property>
-          </object>
-          <accelerator key="F5"/>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_combined_timeline">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_combined_timeline</property>
-            <property name="tooltip" translatable="yes">View your friends tweets, @ replies, &amp; dm all in one plane.</property>
-            <property name="label" translatable="yes">_All Tweets to Me</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_friends_timeline">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_friends_timeline</property>
-            <property name="label" translatable="yes">My _Friends' Tweets</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_direct_replies">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_direct_replies</property>
-            <property name="label" translatable="yes">_@ Replies</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_direct_messages">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_direct_messages</property>
-            <property name="label" translatable="yes">_Direct Messages</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_favorites_timeline">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_favorites_timeline</property>
-            <property name="tooltip" translatable="yes">View your favorited, ie starred tweets.	</property>
-            <property name="label" translatable="yes">My _Favorites</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_my_timeline">
-            <property name="group">view_public_timeline</property>
-            <property name="name">view_my_timeline</property>
-            <property name="label" translatable="yes">My Tweet_s</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_public_timeline">
-            <property name="name">view_public_timeline</property>
-            <property name="label" translatable="yes">_Public Timeline</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="help1">
-            <property name="name">help1</property>
-            <property name="label" translatable="yes">_Help</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="help_contents">
-            <property name="stock_id">gtk-help</property>
-            <property name="name">help_contents</property>
-          </object>
-          <accelerator key="F1"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="help_about">
-            <property name="stock_id">gtk-about</property>
-            <property name="name">help_about</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <ui>
-      <menubar name="main_menubar">
-        <menu action="services">
-          <menuitem action="twitter_connect"/>
-          <menuitem action="twitter_disconnect"/>
-          <separator/>
-          <menuitem action="accounts"/>
-          <menuitem action="preferences"/>
-          <separator/>
-          <menuitem action="quit"/>
-        </menu>
-        <menu action="tweets1">
-          <menuitem action="tweets_new_tweet"/>
-          <menuitem action="tweets_new_dm"/>
-          <separator/>
-          <menuitem action="tweets_make_fave"/>
-          <separator/>
-          <menuitem action="tweets_reply"/>
-          <menuitem action="tweets_retweet"/>
-        </menu>
-        <menu action="friends">
-          <menuitem action="friends_manager"/>
-          <menuitem action="friends_timelines"/>
-          <separator/>
-          <menuitem action="friends_follow"/>
-          <menuitem action="friends_unfollow"/>
-          <menuitem action="friends_block"/>
-        </menu>
-        <menu action="view1">
-          <menuitem action="twitter_refresh"/>
-          <separator/>
-          <menuitem action="view_combined_timeline"/>
-          <menuitem action="view_friends_timeline"/>
-          <separator/>
-          <menuitem action="view_direct_replies"/>
-          <menuitem action="view_direct_messages"/>
-          <menuitem action="view_favorites_timeline"/>
-          <separator/>
-          <menuitem action="view_my_timeline"/>
-          <menuitem action="view_public_timeline"/>
-        </menu>
-        <menu action="help1">
-          <menuitem action="help_contents"/>
-          <menuitem action="help_about"/>
-        </menu>
-      </menubar>
-    </ui>
-  </object>
-  <!-- interface-requires gtk+ 2.16 -->
+  <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="main_window">
     <property name="width_request">230</property>
     <property name="height_request">320</property>
     <property name="visible">True</property>
-    <property name="title" translatable="yes">Greet-Tweet-Know</property>
+    <property name="title" translatable="yes">get2gnow</property>
+    <accel-groups>
+      <group name="accelgroup1"/>
+    </accel-groups>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
         <child>
-          <object class="GtkMenuBar" constructor="uimanager1" id="main_menubar">
+          <object class="GtkMenuBar" id="main_menubar">
             <property name="visible">True</property>
+            <child>
+              <object class="GtkMenuItem" id="services">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Services</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="twitter_menu">
+                    <child>
+                      <object class="GtkImageMenuItem" id="twitter_connect">
+                        <property name="label">_Connect</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image4</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="twitter_disconnect">
+                        <property name="label">_Disconnect</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image5</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator2">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="accounts">
+                        <property name="label" translatable="yes">_Accounts</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image14</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="preferences">
+                        <property name="label" translatable="yes">Prefere_nces</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image13</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator3">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="quit">
+                        <property name="label">_Quit</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image6</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                   </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="tweets">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Tweets</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="tweets_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="tweets_new_tweet">
+                        <property name="label">New _Tweet</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image7</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="n" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+	            </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="tweets_new_dm">
+                        <property name="label">New _DM</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Send a new Direct Message to one of your friends [Ctrl+D]</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image10</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="tweets_save_fave">
+                        <property name="label" translatable="yes">Add to _Faves</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image16</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="asterisk" signal="activate"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem3">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="tweets_reply">
+                        <property name="label">New _@ Reply</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image8</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="at" signal="activate"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="tweets_retweet">
+                        <property name="label">_Retweet</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image9</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="greater" signal="activate"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="friends">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Friends</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="friends_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_manager">
+                        <property name="label" translatable="yes">Friends _Manager</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image11</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_timelines">
+                        <property name="label" translatable="yes">My _Friends' Tweets</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image12</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_follow">
+                        <property name="label" translatable="yes">_Follow a new friend</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Add / Follow a new friend by entering their username.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image2</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_unfollow">
+                        <property name="label" translatable="yes">_Unfollow a friend</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Stop following a friend by entering their username.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image1</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_block">
+                        <property name="label" translatable="yes">_Block a user</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Block a friend from seeing any of your tweets or sending youany message by entering their username.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image3</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="users_view_profile">
+                        <property name="label" translatable="yes">Peak @ Someone's _Profile</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image15</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="timelines">
+                <property name="visible">True</property>
+                <property name="tooltip_text" translatable="yes">Select what tweets you want to see.</property>
+                <property name="label" translatable="yes">_View Tweets</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="timelines_menu">
+                    <child>
+                      <object class="GtkImageMenuItem" id="twitter_refresh">
+                        <property name="label">gtk-refresh</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <property name="accel_group">accelgroup1</property>
+                        <accelerator key="F5" signal="activate"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator6">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_combined_timeline">
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View your friends tweets, @ replies, &amp; dm all in one plane.</property>
+                        <property name="label" translatable="yes">_All Tweets to Me</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_friends_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My _Friends' Tweets</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator7">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_direct_replies">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_@ Replies</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_direct_messages">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Direct Messages</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_favorites_timeline">
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View your favorited, ie starred tweets.	</property>
+                        <property name="label" translatable="yes">My _Favorites</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator8">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_my_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_My Tweets</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_public_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Public Timeline</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="help">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Help</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="help_menu">
+                    <child>
+                      <object class="GtkImageMenuItem" id="help_contents">
+                        <property name="label">gtk-help</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <property name="accel_group">accelgroup1</property>
+                        <accelerator key="F1" signal="activate"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="help_about">
+                        <property name="label">gtk-about</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <property name="accel_group">accelgroup1</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -335,7 +411,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip-text" translatable="yes">Send a Direct Message to this user.</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">Send a Direct Message to this user [Ctrl+D].</property>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_dm_image">
                             <property name="visible">True</property>
@@ -365,7 +443,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip-text" translatable="yes">View this user's profile.</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">View this user's profile [Ctrl+I].</property>
+                        <accelerator key="i" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_view_users_profile_image">
                             <property name="visible">True</property>
@@ -395,7 +475,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip-text" translatable="yes">View this users most recent Tweets &amp; status updates.</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">View this users most recent Tweets &amp; status updates [Ctrl+H].</property>
+                        <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_view_users_timeline_image">
                             <property name="visible">True</property>
@@ -487,7 +569,9 @@ _Controls</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip-text" translatable="yes">Reply to this Tweet.</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">Reply to this Tweet [Ctrl+R].</property>
+                        <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_reply_image">
                             <property name="visible">True</property>
@@ -506,7 +590,9 @@ _Controls</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip-text" translatable="yes">Re-Tweet this Tweet.</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">Re-Tweet this Tweet [Ctrl+F].</property>
+                        <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="expanded_tweet_retweet_image">
                             <property name="visible">True</property>
@@ -536,7 +622,9 @@ _Controls</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip-text" translatable="yes">Give this Tweet a *shiny star* and make it one of your favorite Tweet as one of your favorite Tweets.</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">Give this Tweet a *shiny star* and make it one of your favorite Tweet as one of your favorite Tweets [Ctrl+S].</property>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="image15">
                             <property name="visible">True</property>
@@ -586,5 +674,70 @@ _Controls</property>
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkImage" id="image4">
+    <property name="visible">True</property>
+    <property name="stock">gtk-connect</property>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="stock">gtk-disconnect</property>
+  </object>
+  <object class="GtkImage" id="image14">
+    <property name="visible">True</property>
+    <property name="stock">gtk-dialog-authentication</property>
+  </object>
+  <object class="GtkImage" id="image13">
+    <property name="visible">True</property>
+    <property name="stock">gtk-preferences</property>
+  </object>
+  <object class="GtkImage" id="image6">
+    <property name="visible">True</property>
+    <property name="stock">gtk-quit</property>
+  </object>
+  <object class="GtkImage" id="image7">
+    <property name="visible">True</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="image10">
+    <property name="visible">True</property>
+    <property name="stock">gtk-jump-to</property>
+  </object>
+  <object class="GtkImage" id="image16">
+    <property name="visible">True</property>
+    <property name="stock">gtk-about</property>
+  </object>
+  <object class="GtkImage" id="image8">
+    <property name="visible">True</property>
+    <property name="stock">gtk-redo</property>
+  </object>
+  <object class="GtkImage" id="image9">
+    <property name="visible">True</property>
+    <property name="stock">gtk-convert</property>
+  </object>
+  <object class="GtkImage" id="image11">
+    <property name="visible">True</property>
+    <property name="stock">gtk-page-setup</property>
+  </object>
+  <object class="GtkImage" id="image12">
+    <property name="visible">True</property>
+    <property name="stock">gtk-orientation-portrait</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="stock">gtk-add</property>
+  </object>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="stock">gtk-remove</property>
+  </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="stock">gtk-stop</property>
+  </object>
+  <object class="GtkAccelGroup" id="accelgroup1"/>
+  <object class="GtkImage" id="image15">
+    <property name="visible">True</property>
+    <property name="stock">gtk-info</property>
   </object>
 </interface>

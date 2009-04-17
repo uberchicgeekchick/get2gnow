@@ -1,6 +1,6 @@
-# LANGUAGE translation of Greet-Tweet-Know.
-# Copyright (C) 2007 THE Greet-Tweet-Know'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the Greet-Tweet-Know package.
+# LANGUAGE translation of get2gnow.
+# Copyright (C) 2007 THE get2gnow'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the get2gnow package.
 # netocury <EMAIL@ADDRESS>, 2007.
 # , fuzzy
 # netocury <EMAIL@ADDRESS>, 2007.
@@ -8,7 +8,7 @@
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Greet-Tweet-Know VERSION\n"
+"Project-Id-Version: get2gnow VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-12-18 01:36-0200\n"
 "PO-Revision-Date: 2007-12-19 12:11-0200\n"
@@ -138,14 +138,14 @@ msgstr "Isto mostrará a situação da mensagem do item selecionado na lista atu
 msgid "Twitter Account"
 msgstr "Conta Twitter"
 
-#: ../data/main.glade.h:30 ../data/greet-tweet-know.desktop.in.h:2
+#: ../data/main.glade.h:30 ../data/get2gnow.desktop.in.h:2
 #: ../src/main.c:46 ../src/preferences.c:416
-msgid "Greet-Tweet-Know"
-msgstr "Greet-Tweet-Know"
+msgid "get2gnow"
+msgstr "get2gnow"
 
 #: ../data/main.glade.h:31
-msgid "Greet-Tweet-Know Timeline"
-msgstr "Linha de Tempo do Greet-Tweet-Know"
+msgid "get2gnow Timeline"
+msgstr "Linha de Tempo do get2gnow"
 
 #: ../data/main.glade.h:32
 msgid "_Account"
@@ -200,8 +200,8 @@ msgid "_Settings"
 msgstr "_Configurações"
 
 #: ../data/main.glade.h:45
-msgid "_Show Greet-Tweet-Know"
-msgstr "_Mostrar Greet-Tweet-Know"
+msgid "_Show get2gnow"
+msgstr "_Mostrar get2gnow"
 
 #: ../data/main.glade.h:46
 msgid "_Twitter"
@@ -227,138 +227,138 @@ msgstr "gtk-preferences"
 msgid "gtk-quit"
 msgstr "gtk-quit"
 
-#: ../data/greet-tweet-know.desktop.in.h:1
+#: ../data/get2gnow.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Um cliente Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:1
+#: ../data/get2gnow.schemas.in.h:1
 msgid ""
 "Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
 msgstr ""
 "Lista separada por vírgula das linguagens de verificadores ortográficos para usar (ex.: en, fr, es)."
 
-#: ../data/greet-tweet-know.schemas.in.h:2
+#: ../data/get2gnow.schemas.in.h:2
 msgid "Enable spell checking"
 msgstr "Habilitar verificação ortográfica"
 
-#: ../data/greet-tweet-know.schemas.in.h:3
+#: ../data/get2gnow.schemas.in.h:3
 msgid "Enable spell checking."
 msgstr "Habilitar verificação ortográfica."
 
-#: ../data/greet-tweet-know.schemas.in.h:4
+#: ../data/get2gnow.schemas.in.h:4
 msgid "Expand messages"
 msgstr "Expandir mensagens"
 
-#: ../data/greet-tweet-know.schemas.in.h:5
+#: ../data/get2gnow.schemas.in.h:5
 msgid "Is the main window hidden"
 msgstr "Janela principal está escondida"
 
-#: ../data/greet-tweet-know.schemas.in.h:6
+#: ../data/get2gnow.schemas.in.h:6
 msgid "Log automatically into Twitter"
 msgstr "Autentica automaticamente no Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:7
+#: ../data/get2gnow.schemas.in.h:7
 msgid "Log automatically into Twitter."
 msgstr "Autentica automaticamente no Twitter."
 
-#: ../data/greet-tweet-know.schemas.in.h:8
+#: ../data/get2gnow.schemas.in.h:8
 msgid "Main window X position"
 msgstr "Janela principal posição X"
 
-#: ../data/greet-tweet-know.schemas.in.h:9
+#: ../data/get2gnow.schemas.in.h:9
 msgid "Main window X position."
 msgstr "Janela principal posição X."
 
-#: ../data/greet-tweet-know.schemas.in.h:10
+#: ../data/get2gnow.schemas.in.h:10
 msgid "Main window Y position"
 msgstr "Janela principal posição Y"
 
-#: ../data/greet-tweet-know.schemas.in.h:11
+#: ../data/get2gnow.schemas.in.h:11
 msgid "Main window Y position."
 msgstr "Janela principal posição Y."
 
-#: ../data/greet-tweet-know.schemas.in.h:12
+#: ../data/get2gnow.schemas.in.h:12
 msgid "Main window height"
 msgstr "Altura da janela principal"
 
-#: ../data/greet-tweet-know.schemas.in.h:13
+#: ../data/get2gnow.schemas.in.h:13
 msgid "Main window height."
 msgstr "Altura da janela principal."
 
-#: ../data/greet-tweet-know.schemas.in.h:14
+#: ../data/get2gnow.schemas.in.h:14
 msgid "Main window width"
 msgstr "Largura da Janela principal"
 
-#: ../data/greet-tweet-know.schemas.in.h:15
+#: ../data/get2gnow.schemas.in.h:15
 msgid "Main window width."
 msgstr "Largura da janela principal."
 
-#: ../data/greet-tweet-know.schemas.in.h:16
+#: ../data/get2gnow.schemas.in.h:16
 msgid "Minutes between timeline retrievals"
 msgstr "Minutos entre recuperações de linha de tempo"
 
-#: ../data/greet-tweet-know.schemas.in.h:17
+#: ../data/get2gnow.schemas.in.h:17
 msgid ""
 "Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
 "60"
 msgstr "Minutos entre recuperações de linha de tempo. Valores suportados são 3, 5, 15, 30, e 60"
 
-#: ../data/greet-tweet-know.schemas.in.h:18
+#: ../data/get2gnow.schemas.in.h:18
 msgid "Show notification of new Twitter messages"
 msgstr "Mostrar notificações de novas mensagens do Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:19
+#: ../data/get2gnow.schemas.in.h:19
 msgid "Show notification of new Twitter messages."
 msgstr "Mostrar notificações de novas mensagens do Twitter."
 
-#: ../data/greet-tweet-know.schemas.in.h:20
+#: ../data/get2gnow.schemas.in.h:20
 msgid "Spell checking languages"
 msgstr "Linguagens do verificador ortográfico"
 
-#: ../data/greet-tweet-know.schemas.in.h:21
+#: ../data/get2gnow.schemas.in.h:21
 msgid "Twitter password"
 msgstr "Senha no Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:22
+#: ../data/get2gnow.schemas.in.h:22
 msgid "Twitter username"
 msgstr "Nome de usuário Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:23
+#: ../data/get2gnow.schemas.in.h:23
 msgid "User's Twitter account password."
 msgstr "Senhas de usuários no Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:24
+#: ../data/get2gnow.schemas.in.h:24
 msgid "User's Twitter account username."
 msgstr "Nomes de usuários no Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:25
+#: ../data/get2gnow.schemas.in.h:25
 msgid "User's home timeline"
 msgstr "Linhas de tempo do usuário"
 
-#: ../data/greet-tweet-know.schemas.in.h:26
+#: ../data/get2gnow.schemas.in.h:26
 msgid "User's home timeline."
 msgstr "Linhas de tempo do usuário."
 
 #: ../src/about.c:43
 msgid ""
-"Greet-Tweet-Know is free software; you can redistribute it and/or modify it under the "
+"get2gnow is free software; you can redistribute it and/or modify it under the "
 "terms of the GNU General Public License as published by the Free Software "
 "Foundation; either version 2 of the License, or (at your option) any later "
 "version."
 msgstr ""
-"Greet-Tweet-Know é um software livre; você pode redistribuir e/ou modificar sob os "
+"get2gnow é um software livre; você pode redistribuir e/ou modificar sob os "
 "termos GNU General Public License como publicado pela Free Software "
 "Foundation; quer pela versão 2 da Licença, ou (opcionalmente) qulaquer "
 "versão posterior."
 
 #: ../src/about.c:47
 msgid ""
-"Greet-Tweet-Know is distributed in the hope that it will be useful, but WITHOUT ANY "
+"get2gnow is distributed in the hope that it will be useful, but WITHOUT ANY "
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
 "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more "
 "details."
 msgstr ""
-"Greet-Tweet-Know é distribuído na esperaça de ser útil, mas SEM QUALQUER GARATIA;"
+"get2gnow é distribuído na esperaça de ser útil, mas SEM QUALQUER GARATIA;"
 " sem também nenhuma garantia implícita de COMERCIALIZAÇÃO ou AJUSTES "
 "PARA PROPÓSITOS PARTICULARES.  Veja a Licença Pública Geral GNU para mais "
 "detalhes."

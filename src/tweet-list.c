@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
+ * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -50,6 +50,7 @@
 
 
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "config.h"
 
@@ -81,7 +82,7 @@ static void tweet_list_setup_view(TweetList      *list);
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *list);
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *tweet);
 
-static void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
+//static void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
 static void tweet_list_move(GdkEventKey *event, TweetList *list);
 
 
@@ -104,7 +105,7 @@ static void tweet_list_init(TweetList *tweet){
 	g_signal_connect(list, "size_allocate", G_CALLBACK(tweet_list_size_cb), list);
 	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
 	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
-	//g_signal_connect(list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), list);
+	g_signal_connect(list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), list);
 }//tweet_list_init
 
 static void tweet_list_finalize( GObject *object ){
@@ -164,34 +165,32 @@ static void tweet_list_setup_view(TweetList *list){
 
 
 static void tweet_list_move(GdkEventKey *event, TweetList *list){
-	static unsigned int i;
-	static GtkTreePath *path;
-	if(!( i && i<20 )) i=0;
-		switch(event->keyval){
-			case GDK_Tab: case GDK_Home:
-				i=0;
-				if(path) gtk_tree_path_free(path);
-				break;
-			case GDK_Up:
-				i--;
-				if(path) gtk_tree_path_up(path);
-				break;
-			case GDK_Down:
-				i++;
-				if(path) gtk_tree_path_down(path);
-				break;
-			case GDK_End: i=19; break;
-			case GDK_Page_Up: i-=5; break;
-			case GDK_Page_Down: i+=5; break;
-			default: return;
-		}//switch
-		if(!path)
-			path=gtk_tree_path_new_first();
-		gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
+	static gint i=1;
+	switch(event->keyval){
+		case GDK_Tab: case GDK_Home:
+			i=0;
+			break;
+		case GDK_Up:
+			i--;
+			break;
+		case GDK_Down:
+			i++;
+			break;
+		case GDK_End: i=19; break;
+		case GDK_Page_Up: i-=10; break;
+		case GDK_Page_Down: i+=10; break;
+		default: return;
+	}//switch
+	if( i<0 ) i=0;
+	else if( i>19 ) i=19;
+	GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
+	gtk_tree_path_free(path);
 }//tweet_list_move
 
 
-static void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
+void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
+	if( event->state == GDK_CONTROL_MASK ) return tweets_hotkey(event);
 	if(event->keyval !=GDK_Return ) return tweet_list_move(event, list);
 	
 	switch(event->state){
@@ -242,7 +241,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *friends_tweet){
 	TweetList *t=TWEET_LIST(friends_tweet);
-	g_object_set(list_priv->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(list_priv->text_column))-10), NULL);
+	g_object_set(GET_PRIV(t)->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(GET_PRIV(t)->text_column))-10), NULL);
 }
 
 TweetList *tweet_list_new(void){

@@ -1,7 +1,8 @@
 * To-do
 
-- Polish existing features, before adding more!
-- After initial timeline retrieval, only retrieve tweets since last retrieval,
-  and append those to the gtk_list_store
-- Add valgrind suppor Greet-Tweet-Know.
+- Finish adding support for laconica.
+- Implement 'caching' of xml for friends, followers, & timelines.
+	update them only when there's something new or changed.
+- Add 'more' & button for older tweets in timelie
+- Add support for Twitter's search API.
 

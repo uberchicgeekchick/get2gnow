@@ -213,8 +213,8 @@ msgid "A Twitter client for the Gnome desktop"
 msgstr "Ein Twitter-Client für den Gnome-Desktop"
 
 #: ../src/gui.c:636
-msgid "Visit Greet-Tweet-Know web site"
-msgstr "Besuche die Greet-Tweet-Know-Webseite"
+msgid "Visit get2gnow web site"
+msgstr "Besuche die get2gnow-Webseite"
 
 #: ../src/gui.c:638
 msgid "translator-credits"

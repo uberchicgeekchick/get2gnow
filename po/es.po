@@ -101,14 +101,14 @@ msgstr "Timeline Pública"
 msgid "Send Direct Message"
 msgstr "Enviar Mensajes Directos"
 
-#: ../data/main_window.xml.h:10 ../data/greet-tweet-know.desktop.in.h:2
+#: ../data/main_window.xml.h:10 ../data/get2gnow.desktop.in.h:2
 #: ../src/main.c:46 ../src/preferences.c:430
-msgid "Greet-Tweet-Know"
-msgstr "Greet-Tweet-Know"
+msgid "get2gnow"
+msgstr "get2gnow"
 
 #: ../data/main_window.xml.h:11
-msgid "Greet-Tweet-Know Timeline"
-msgstr "Greet-Tweet-Know Timeline"
+msgid "get2gnow Timeline"
+msgstr "get2gnow Timeline"
 
 #: ../data/main_window.xml.h:12
 msgid "_Account"
@@ -240,137 +240,137 @@ msgid "_New Message"
 msgstr "_Nuevo Mensaje"
 
 #: ../data/tray_menu.xml.h:2
-msgid "_Show Greet-Tweet-Know"
-msgstr "_Mostrar Greet-Tweet-Know"
+msgid "_Show get2gnow"
+msgstr "_Mostrar get2gnow"
 
-#: ../data/greet-tweet-know.desktop.in.h:1
+#: ../data/get2gnow.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Un cliente Twitter"
 
-#: ../data/greet-tweet-know.schemas.in.h:1
+#: ../data/get2gnow.schemas.in.h:1
 msgid ""
 "Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:2
+#: ../data/get2gnow.schemas.in.h:2
 msgid "Enable spell checking"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:3
+#: ../data/get2gnow.schemas.in.h:3
 msgid "Enable spell checking."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:4
+#: ../data/get2gnow.schemas.in.h:4
 msgid "Expand messages"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:5
+#: ../data/get2gnow.schemas.in.h:5
 msgid "Hide main window"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:6
+#: ../data/get2gnow.schemas.in.h:6
 msgid "Hide the main window."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:7
+#: ../data/get2gnow.schemas.in.h:7
 msgid "Log automatically into Twitter"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:8
+#: ../data/get2gnow.schemas.in.h:8
 msgid "Log automatically into Twitter."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:9
+#: ../data/get2gnow.schemas.in.h:9
 msgid "Main window X position"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:10
+#: ../data/get2gnow.schemas.in.h:10
 msgid "Main window X position."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:11
+#: ../data/get2gnow.schemas.in.h:11
 msgid "Main window Y position"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:12
+#: ../data/get2gnow.schemas.in.h:12
 msgid "Main window Y position."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:13
+#: ../data/get2gnow.schemas.in.h:13
 msgid "Main window height"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:14
+#: ../data/get2gnow.schemas.in.h:14
 msgid "Main window height."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:15
+#: ../data/get2gnow.schemas.in.h:15
 msgid "Main window width"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:16
+#: ../data/get2gnow.schemas.in.h:16
 msgid "Main window width."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:17
+#: ../data/get2gnow.schemas.in.h:17
 msgid "Minutes between timeline retrievals"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:18
+#: ../data/get2gnow.schemas.in.h:18
 msgid ""
 "Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
 "60"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:19
+#: ../data/get2gnow.schemas.in.h:19
 msgid "Show hint about closing the main window"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:20
+#: ../data/get2gnow.schemas.in.h:20
 msgid "Show notification of new Twitter messages"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:21
+#: ../data/get2gnow.schemas.in.h:21
 msgid "Show notification of new Twitter messages."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:22
+#: ../data/get2gnow.schemas.in.h:22
 msgid "Show user names instead real names"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:23
+#: ../data/get2gnow.schemas.in.h:23
 msgid "Show user names instead real names."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:24
+#: ../data/get2gnow.schemas.in.h:24
 msgid "Spell checking languages"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:25
+#: ../data/get2gnow.schemas.in.h:25
 msgid "Twitter password"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:26
+#: ../data/get2gnow.schemas.in.h:26
 msgid "Twitter username"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:27
+#: ../data/get2gnow.schemas.in.h:27
 msgid "User's Twitter account password."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:28
+#: ../data/get2gnow.schemas.in.h:28
 msgid "User's Twitter account username."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:29
+#: ../data/get2gnow.schemas.in.h:29
 msgid "User's home timeline"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:30
+#: ../data/get2gnow.schemas.in.h:30
 msgid "User's home timeline."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:31
+#: ../data/get2gnow.schemas.in.h:31
 msgid ""
 "Whether or not to show the message dialog about closing the main window with "
 "the 'x' button in the title bar."
@@ -378,7 +378,7 @@ msgstr ""
 
 #: ../src/about.c:43
 msgid ""
-"Greet-Tweet-Know is free software; you can redistribute it and/or modify it under the "
+"get2gnow is free software; you can redistribute it and/or modify it under the "
 "terms of the GNU General Public License as published by the Free Software "
 "Foundation; either version 2 of the License, or (at your option) any later "
 "version."
@@ -386,7 +386,7 @@ msgstr ""
 
 #: ../src/about.c:47
 msgid ""
-"Greet-Tweet-Know is distributed in the hope that it will be useful, but WITHOUT ANY "
+"get2gnow is distributed in the hope that it will be useful, but WITHOUT ANY "
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
 "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more "
 "details."
@@ -412,12 +412,12 @@ msgid "translator-credits"
 msgstr "Daniel Morales <daniminas@gmail.com>"
 
 #: ../src/app.c:407
-msgid "Greet-Tweet-Know is still running, it is just hidden."
-msgstr "Greet-Tweet-Know ahún se está ejecutando, solo está oculto."
+msgid "get2gnow is still running, it is just hidden."
+msgstr "get2gnow ahún se está ejecutando, solo está oculto."
 
 #: ../src/app.c:408
-msgid "Click on the notification area icon to show Greet-Tweet-Know."
-msgstr "Click en el ícono de la bandeja del sistema para mostrar Greet-Tweet-Know."
+msgid "Click on the notification area icon to show get2gnow."
+msgstr "Click en el ícono de la bandeja del sistema para mostrar get2gnow."
 
 #: ../src/app.c:418
 msgid "You were about to quit!"
@@ -426,9 +426,9 @@ msgstr ""
 #: ../src/app.c:419
 msgid ""
 "Since no system or notification tray has been found, this action would "
-"normally quit Greet-Tweet-Know.\n"
+"normally quit get2gnow.\n"
 "\n"
-"This is just a reminder, from now on, Greet-Tweet-Know will quit when performing this "
+"This is just a reminder, from now on, get2gnow will quit when performing this "
 "action unless you uncheck the option below."
 msgstr ""
 

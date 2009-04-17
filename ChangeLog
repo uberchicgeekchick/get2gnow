@@ -30,14 +30,14 @@
 	
 2009-03-13  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* data/: greet-tweet-know.svg & greet-tweet-know.png
-		*uber-w00t!* Greet-Tweet-Know now has its own icon & its def
+	* data/: get2gnow.svg & get2gnow.png
+		*uber-w00t!* get2gnow now has its own icon & its def
 		uber more aesthetic than Twitux's icon ever was.
 
 	* src/*.h: #define(s)
 		I have removed TWITUX from the header defines & from data
 		types.  Now all structures are as application ambigious as
-		possible so if any one wants to fork Greet-Tweet-Know it will
+		possible so if any one wants to fork get2gnow it will
 		be as easy as possible.
 
 2009-03-09  Kaity G. B. <uberChick@uberChicGeekChick.Com>
@@ -47,7 +47,7 @@
 		source that relied on other libraries was being placed.  It
 		was all only useful to the project.  Instead of exposing
 		twitter connection, messaging, & etc methods - which would
-		make sense. As I integrate Greet-Tweet-Know into connectED I
+		make sense. As I integrate get2gnow into connectED I
 		will be customizing the build system, possible via a new
 		configure script, eg ./libconfigure. ~shrug~ I'll cross that
 		bridge when I get to it.
@@ -78,7 +78,7 @@
 
 2009-03-01  Kaity G. B. <uberChick@uberChicGeekChick.Com>
 
-	* ./*: Greet-Tweet-Know forked from Twitux.
+	* ./*: get2gnow forked from Twitux.
 		The changes below where submitted but most where not accepted
 		& again the fact that I'm an artist & those programming are
 		standard ignorant, arogant, engineer wanna be types.
@@ -166,11 +166,11 @@
 		I added export GREP_OPTIONS=""; to both shell execs so it
 		actually finds files in the format it expects.
 	
-	* data/Makefile.in: greet-tweet-know.desktop.in.in
+	* data/Makefile.in: get2gnow.desktop.in.in
 		changed:
-		greet-tweet-know.desktop.in: $(top_builddir)/config.status $(srcdir)/greet-tweet-know.desktop.in.in
+		get2gnow.desktop.in: $(top_builddir)/config.status $(srcdir)/get2gnow.desktop.in.in
 		to
-		greet-tweet-know.desktop: $(top_builddir)/config.status $(srcdir)/greet-tweet-know.desktop.in
+		get2gnow.desktop: $(top_builddir)/config.status $(srcdir)/get2gnow.desktop.in
 	
 	* help/omf.in: depricated.
 
@@ -178,7 +178,7 @@
 
 	* configure: ac_config_files
 		I modified them so they look for 'po/Makefile' and
-		'data/greet-tweet-know.desktop' correctly an will fall back to the
+		'data/get2gnow.desktop' correctly an will fall back to the
 		correct '.in' when needed.
 
 	* po/Makefile.in: clean & dist distdirs
@@ -186,17 +186,17 @@
 		files.  Now po/Makefile's clean & beyond will now work.  Most
 		importantly make clean will now work.
 	
-	* po/POFILES: greet-tweet-know.desktop.in.in
-	* po/POFILES.in: greet-tweet-know.desktop.in.in
-		These were both referencing greet-tweet-know.desktop.in.in which was
-		only a duplicate of greet-tweet-know.desktop.in.  They now correctly
-		look for greet-tweet-know.desktop.in
+	* po/POFILES: get2gnow.desktop.in.in
+	* po/POFILES.in: get2gnow.desktop.in.in
+		These were both referencing get2gnow.desktop.in.in which was
+		only a duplicate of get2gnow.desktop.in.  They now correctly
+		look for get2gnow.desktop.in
 
 	* data/Makefile.am: .PRECIOUS: Makefile and multiple varibles
 	* data/Makefile.in: .PRECIOUS: Makefile and multiple varibles
 		I changed references to Makefile.in.in &
 		desktop.in.in to point to Makefile.in &
-		greet-tweet-know.desktop.in respectfully.  I also removed the unnead
+		get2gnow.desktop.in respectfully.  I also removed the unnead
 		'.in.in' files.
 
 2009-02-09  Kaity G. B. <uberChick@uberChicGeekChick.Com>
@@ -216,7 +216,7 @@
 		tweet list avatar column at a fixed width.
 
 [previous notes on where {?} came from can be found in Twitux's changelog,
-Twitux is the project {?} was forked from.  Why Greet-Tweet-Know was forked can be read at:
+Twitux is the project {?} was forked from.  Why get2gnow was forked can be read at:
 	http://sourceforge.net/tracker2/index.php?func=detail&aid=2648731&group_id=198704&atid=966544
 which is what happened when I tried to submit my 2nd patch to the orginal
 project.]

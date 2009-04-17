@@ -60,7 +60,7 @@ geometry_save_for_main_window (gint x, gint y,
 }
  
 void
-geometry_load_for_main_window (GtkWidget *main_window)
+geometry_load_for_main_window (GtkWindow *main_window)
 {
 	Conf *conf;
 	gint        x, y, w, h;

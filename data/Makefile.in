@@ -34,7 +34,7 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = data
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/greet-tweet-know.desktop.in
+	$(srcdir)/get2gnow.desktop.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gnome-doc-utils.m4 \
 	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/configure.in
@@ -42,7 +42,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = greet-tweet-know.desktop
+CONFIG_CLEAN_FILES = get2gnow.desktop
 SOURCES =
 DIST_SOURCES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -150,8 +150,8 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
-LIBGREET_TWEET_KNOW_CFLAGS = @LIBGREET_TWEET_KNOW_CFLAGS@
-LIBGREET_TWEET_KNOW_LIBS = @LIBGREET_TWEET_KNOW_LIBS@
+LIBget2gnow_CFLAGS = @LIBget2gnow_CFLAGS@
+LIBget2gnow_LIBS = @LIBget2gnow_LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
@@ -180,8 +180,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-GREET_TWEET_KNOW_CFLAGS = @GREET_TWEET_KNOW_CFLAGS@
-GREET_TWEET_KNOW_LIBS = @GREET_TWEET_KNOW_LIBS@
+get2gnow_CFLAGS = @get2gnow_CFLAGS@
+get2gnow_LIBS = @get2gnow_LIBS@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_CFLAGS = @WARN_CFLAGS@
@@ -239,12 +239,12 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 desktopdir = $(datadir)/applications
-desktop_in_files = greet-tweet-know.desktop.in
+desktop_in_files = get2gnow.desktop.in
 desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
 schemasdir = $(GCONF_SCHEMA_FILE_DIR)
-schemas_in_files = greet-tweet-know.schemas.in
+schemas_in_files = get2gnow.schemas.in
 schemas_DATA = $(schemas_in_files:.schemas.in=.schemas)
-gtkbuilderdir = $(datadir)/greet-tweet-know
+gtkbuilderdir = $(datadir)/get2gnow
 gtkbuilder_DATA = 			\
 	preferences.ui			\
 	main-window.ui			\
@@ -256,9 +256,9 @@ gtkbuilder_DATA = 			\
 	accounts-dialog.ui
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
-icon_DATA = greet-tweet-know.png
+icon_DATA = get2gnow.png
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
-svgicon_DATA = greet-tweet-know.svg
+svgicon_DATA = get2gnow.svg
 EXTRA_DIST = \
 	$(gtkbuilder_DATA)	\
 	$(icon_DATA)		\
@@ -303,7 +303,7 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-greet-tweet-know.desktop: $(top_builddir)/config.status $(srcdir)/greet-tweet-know.desktop.in
+get2gnow.desktop: $(top_builddir)/config.status $(srcdir)/get2gnow.desktop.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:

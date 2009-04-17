@@ -32,7 +32,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = greet-tweet-know$(EXEEXT)
+bin_PROGRAMS = get2gnow$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -47,7 +47,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-greet_tweet_know_SOURCES =				\
+get2gnow_SOURCES =				\
 	gconf.c			gconf.h			\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
@@ -79,7 +79,7 @@ greet_tweet_know_SOURCES =				\
 	tweet-list.c		tweet-list.h
 
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
-greet_tweet_know_OBJECTS =			\
+get2gnow_OBJECTS =			\
 	gconf.$(OBJEXT)				\
 	debug.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)			\
@@ -121,8 +121,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(greet_tweet_know_SOURCES)
-DIST_SOURCES = $(greet_tweet_know_SOURCES)
+SOURCES = $(get2gnow_SOURCES)
+DIST_SOURCES = $(get2gnow_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -212,8 +212,8 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
-LIBGREET_TWEET_KNOW_CFLAGS = @LIBGREET_TWEET_KNOW_CFLAGS@
-LIBGREET_TWEET_KNOW_LIBS = @LIBGREET_TWEET_KNOW_LIBS@
+LIBget2gnow_CFLAGS = @LIBget2gnow_CFLAGS@
+LIBget2gnow_LIBS = @LIBget2gnow_LIBS@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
@@ -242,8 +242,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-GREET_TWEET_KNOW_CFLAGS = @GREET_TWEET_KNOW_CFLAGS@
-GREET_TWEET_KNOW_LIBS = @GREET_TWEET_KNOW_LIBS@
+get2gnow_CFLAGS = @get2gnow_CFLAGS@
+get2gnow_LIBS = @get2gnow_LIBS@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_CFLAGS = @WARN_CFLAGS@
@@ -311,12 +311,12 @@ AM_CFLAGS =						\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLIBDIR=\""$(libdir)"\"			\
 	-DLOCALEDIR=\""$(localedir)"\"			\
-	$(GREET_TWEET_KNOW_CFLAGS)			\
+	$(get2gnow_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)
 
-greet_tweet_know_LDADD =				\
-	$(GREET_TWEET_KNOW_LIBS)			\
+get2gnow_LDADD =				\
+	$(get2gnow_LIBS)			\
 	$(ENCHANT_LIBS)
 
 all: all-am
@@ -381,9 +381,9 @@ clean-binPROGRAMS:
 	  rm -f $$p $$f ; \
 	done
 
-greet-tweet-know$(EXEEXT): $(greet_tweet_know_OBJECTS) 
-	@rm -f greet_tweet_know$(EXEEXT)
-	$(LINK) $(greet_tweet_know_OBJECTS) $(greet_tweet_know_LDADD) $(LIBS)
+get2gnow$(EXEEXT): $(get2gnow_OBJECTS) 
+	@rm -f get2gnow$(EXEEXT)
+	$(LINK) $(get2gnow_OBJECTS) $(get2gnow_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

@@ -1,11 +1,11 @@
-# Japanese translation of greet-tweet-know
+# Japanese translation of get2gnow
 # Copyright (C) 2008, package writer
-# This file is distributed under the same license as the greet-tweet-know package.
+# This file is distributed under the same license as the get2gnow package.
 # Hiroshi Miura <miura@da-cha.org>, 2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: greet-tweet-know 0.62\n"
+"Project-Id-Version: get2gnow 0.62\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-09-22 21:45+0900\n"
 "PO-Revision-Date: 2008-09-22 22:29+0900\n"
@@ -99,14 +99,14 @@ msgstr "公開されたメッセージ"
 msgid "Send Direct Message"
 msgstr "ダイレクトメッセージ送信"
 
-#: ../data/main_window.xml.h:10 ../data/greet-tweet-know.desktop.in.h:2
+#: ../data/main_window.xml.h:10 ../data/get2gnow.desktop.in.h:2
 #: ../src/main.c:46 ../src/preferences.c:430
-msgid "Greet-Tweet-Know"
+msgid "get2gnow"
 msgstr ""
 
 #: ../data/main_window.xml.h:11
-msgid "Greet-Tweet-Know Timeline"
-msgstr "Greet-Tweet-Knowタイムライン"
+msgid "get2gnow Timeline"
+msgstr "get2gnowタイムライン"
 
 #: ../data/main_window.xml.h:12
 msgid "_Account"
@@ -238,140 +238,140 @@ msgid "_New Message"
 msgstr "新しいメッセージ(_N)"
 
 #: ../data/tray_menu.xml.h:2
-msgid "_Show Greet-Tweet-Know"
-msgstr "Greet-Tweet-Knowを表示(_S)"
+msgid "_Show get2gnow"
+msgstr "get2gnowを表示(_S)"
 
-#: ../data/greet-tweet-know.desktop.in.h:1
+#: ../data/get2gnow.desktop.in.h:1
 msgid "A Twitter client"
 msgstr "Twitterクライアント"
 
-#: ../data/greet-tweet-know.schemas.in.h:1
+#: ../data/get2gnow.schemas.in.h:1
 msgid ""
 "Comma separated list of spell checker languages to use (e.g. en, fr, nl)."
 msgstr ""
 "スペルチェッカーで使う言語を、カンマ区切りリストでいれる(例： en, fr, nl)"
 
-#: ../data/greet-tweet-know.schemas.in.h:2
+#: ../data/get2gnow.schemas.in.h:2
 msgid "Enable spell checking"
 msgstr "スペルチェックを有効にする"
 
-#: ../data/greet-tweet-know.schemas.in.h:3
+#: ../data/get2gnow.schemas.in.h:3
 msgid "Enable spell checking."
 msgstr "スペルチェック有効。"
 
-#: ../data/greet-tweet-know.schemas.in.h:4
+#: ../data/get2gnow.schemas.in.h:4
 msgid "Expand messages"
 msgstr "メッセージの展開"
 
-#: ../data/greet-tweet-know.schemas.in.h:5
+#: ../data/get2gnow.schemas.in.h:5
 msgid "Hide main window"
 msgstr "メインウインドウを隠す"
 
-#: ../data/greet-tweet-know.schemas.in.h:6
+#: ../data/get2gnow.schemas.in.h:6
 msgid "Hide the main window."
 msgstr "メインウインドウを隠す"
 
-#: ../data/greet-tweet-know.schemas.in.h:7
+#: ../data/get2gnow.schemas.in.h:7
 msgid "Log automatically into Twitter"
 msgstr "自動的にTwitterにログイン"
 
-#: ../data/greet-tweet-know.schemas.in.h:8
+#: ../data/get2gnow.schemas.in.h:8
 msgid "Log automatically into Twitter."
 msgstr "自動的にTwitterにログイン"
 
-#: ../data/greet-tweet-know.schemas.in.h:9
+#: ../data/get2gnow.schemas.in.h:9
 msgid "Main window X position"
 msgstr "メインウインドウのX位置"
 
-#: ../data/greet-tweet-know.schemas.in.h:10
+#: ../data/get2gnow.schemas.in.h:10
 msgid "Main window X position."
 msgstr "メインウインドウのX位置"
 
-#: ../data/greet-tweet-know.schemas.in.h:11
+#: ../data/get2gnow.schemas.in.h:11
 msgid "Main window Y position"
 msgstr "メインウインドウのY位置"
 
-#: ../data/greet-tweet-know.schemas.in.h:12
+#: ../data/get2gnow.schemas.in.h:12
 msgid "Main window Y position."
 msgstr "メインウインドウのY位置"
 
-#: ../data/greet-tweet-know.schemas.in.h:13
+#: ../data/get2gnow.schemas.in.h:13
 msgid "Main window height"
 msgstr "メインウインドウの高さ"
 
-#: ../data/greet-tweet-know.schemas.in.h:14
+#: ../data/get2gnow.schemas.in.h:14
 msgid "Main window height."
 msgstr "メインウインドウの高さ"
 
-#: ../data/greet-tweet-know.schemas.in.h:15
+#: ../data/get2gnow.schemas.in.h:15
 msgid "Main window width"
 msgstr "メインウインドウの幅"
 
-#: ../data/greet-tweet-know.schemas.in.h:16
+#: ../data/get2gnow.schemas.in.h:16
 msgid "Main window width."
 msgstr "メインウインドウの幅"
 
-#: ../data/greet-tweet-know.schemas.in.h:17
+#: ../data/get2gnow.schemas.in.h:17
 msgid "Minutes between timeline retrievals"
 msgstr "タイムラインを取り寄せる時間間隔（分）"
 
-#: ../data/greet-tweet-know.schemas.in.h:18
+#: ../data/get2gnow.schemas.in.h:18
 msgid ""
 "Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and "
 "60"
 msgstr ""
 "タイムラインを取り寄せる間隔を分で設定。可能な値は、3, 5, 15, 30, 60のいずれか"
 
-#: ../data/greet-tweet-know.schemas.in.h:19
+#: ../data/get2gnow.schemas.in.h:19
 msgid "Show hint about closing the main window"
 msgstr ""
 "メインウインドウを閉じるときにヒントを表示"
 
-#: ../data/greet-tweet-know.schemas.in.h:20
+#: ../data/get2gnow.schemas.in.h:20
 msgid "Show notification of new Twitter messages"
 msgstr "新しいTwitterメッセージの通知を表示する"
 
-#: ../data/greet-tweet-know.schemas.in.h:21
+#: ../data/get2gnow.schemas.in.h:21
 msgid "Show notification of new Twitter messages."
 msgstr "新しいTwitterメッセージの通知を表示する。"
 
-#: ../data/greet-tweet-know.schemas.in.h:22
+#: ../data/get2gnow.schemas.in.h:22
 msgid "Show user names instead real names"
 msgstr "実際の名前の代わりにユーザ名を表示"
 
-#: ../data/greet-tweet-know.schemas.in.h:23
+#: ../data/get2gnow.schemas.in.h:23
 msgid "Show user names instead real names."
 msgstr "実際の名前の代わりにユーザ名を表示"
 
-#: ../data/greet-tweet-know.schemas.in.h:24
+#: ../data/get2gnow.schemas.in.h:24
 msgid "Spell checking languages"
 msgstr "スペルチェックを行う言語"
 
-#: ../data/greet-tweet-know.schemas.in.h:25
+#: ../data/get2gnow.schemas.in.h:25
 msgid "Twitter password"
 msgstr "Twitterパスワード"
 
-#: ../data/greet-tweet-know.schemas.in.h:26
+#: ../data/get2gnow.schemas.in.h:26
 msgid "Twitter username"
 msgstr "Twitterユーザ名"
 
-#: ../data/greet-tweet-know.schemas.in.h:27
+#: ../data/get2gnow.schemas.in.h:27
 msgid "User's Twitter account password."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:28
+#: ../data/get2gnow.schemas.in.h:28
 msgid "User's Twitter account username."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:29
+#: ../data/get2gnow.schemas.in.h:29
 msgid "User's home timeline"
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:30
+#: ../data/get2gnow.schemas.in.h:30
 msgid "User's home timeline."
 msgstr ""
 
-#: ../data/greet-tweet-know.schemas.in.h:31
+#: ../data/get2gnow.schemas.in.h:31
 msgid ""
 "Whether or not to show the message dialog about closing the main window with "
 "the 'x' button in the title bar."
@@ -379,7 +379,7 @@ msgstr ""
 
 #: ../src/about.c:43
 msgid ""
-"Greet-Tweet-Know is free software; you can redistribute it and/or modify it under the "
+"get2gnow is free software; you can redistribute it and/or modify it under the "
 "terms of the GNU General Public License as published by the Free Software "
 "Foundation; either version 2 of the License, or (at your option) any later "
 "version."
@@ -387,7 +387,7 @@ msgstr ""
 
 #: ../src/about.c:47
 msgid ""
-"Greet-Tweet-Know is distributed in the hope that it will be useful, but WITHOUT ANY "
+"get2gnow is distributed in the hope that it will be useful, but WITHOUT ANY "
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
 "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more "
 "details."
@@ -413,12 +413,12 @@ msgid "translator-credits"
 msgstr "Hiroshi Miura , 三浦広志 <miura@da-cha.org>"
 
 #: ../src/app.c:407
-msgid "Greet-Tweet-Know is still running, it is just hidden."
-msgstr "Greet-Tweet-Knowは実行し続けますが、隠されます。"
+msgid "get2gnow is still running, it is just hidden."
+msgstr "get2gnowは実行し続けますが、隠されます。"
 
 #: ../src/app.c:408
-msgid "Click on the notification area icon to show Greet-Tweet-Know."
-msgstr "Greet-Tweet-Knowを表示するには通知エリアのアイコンをクリックしてください。"
+msgid "Click on the notification area icon to show get2gnow."
+msgstr "get2gnowを表示するには通知エリアのアイコンをクリックしてください。"
 
 #: ../src/app.c:418
 msgid "You were about to quit!"
@@ -427,9 +427,9 @@ msgstr "終了しようとしています！"
 #: ../src/app.c:419
 msgid ""
 "Since no system or notification tray has been found, this action would "
-"normally quit Greet-Tweet-Know.\n"
+"normally quit get2gnow.\n"
 "\n"
-"This is just a reminder, from now on, Greet-Tweet-Know will quit when performing this "
+"This is just a reminder, from now on, get2gnow will quit when performing this "
 "action unless you uncheck the option below."
 msgstr ""
 "システムないしは通知トレーが見つからなかったため、いったん正常終了します。\n"

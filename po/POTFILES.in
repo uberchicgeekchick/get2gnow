@@ -10,8 +10,8 @@
 [type: gettext/glade]data/profile-viewer.ui
 [type: gettext/glade]data/send-message-dialog.ui
 [type: gettext/glade]data/spell-dialog.ui
-data/greet-tweet-know.desktop.in
-data/greet-tweet-know.schemas.in
+data/get2gnow.desktop.in
+data/get2gnow.schemas.in
 
 src/about.c
 src/app.c

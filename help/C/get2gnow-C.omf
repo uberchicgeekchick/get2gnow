@@ -5,20 +5,20 @@
 			uberChick@uberChicGeekChick.Com (Kaity G. B.)
     </creator>
     <title>
-	Greet-Tweet-Know Manual
+	get2gnow Manual
     </title>
     <date>
 	2009-02-13
     </date>
     <subject category="GNOME|Applications|Internet"/>
     <description>
-	User manual for Greet-Tweet-Know Twitter Client.
+	User manual for get2gnow Twitter Client.
     </description>
     <type>
 	user's guide
     </type>
     <format mime="text/xml" dtd="-//OASIS//DTD DocBook XML V4.1.2//EN"/>
-    <identifier url="greet-tweet-know.xml"/>
+    <identifier url="get2gnow.xml"/>
     <language code="C"/>
     <relation seriesid="0feaf6bd-0768-7724-07f1-6c20eae543c310"/>
     <rights type="GNU FDL" license.version="1.1" holder="Brian Pepple"/>

@@ -1,14 +1,14 @@
 desktopdir 	 = $(datadir)/applications
-desktop_in_files = greet-tweet-know.desktop.in
+desktop_in_files = get2gnow.desktop.in
 desktop_DATA 	 = $(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
 schemasdir	 = $(GCONF_SCHEMA_FILE_DIR)
-schemas_in_files = greet-tweet-know.schemas.in
+schemas_in_files = get2gnow.schemas.in
 schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 @INTLTOOL_SCHEMAS_RULE@
 
-gtkbuilderdir = $(datadir)/greet-tweet-know
+gtkbuilderdir = $(datadir)/get2gnow
 gtkbuilder_DATA = 			\
 	preferences.ui			\
 	main-window.ui			\
@@ -20,9 +20,9 @@ gtkbuilder_DATA = 			\
 	accounts-dialog.ui
 
 icondir = $(datadir)/icons/hicolor/48x48/apps
-icon_DATA = greet-tweet-know.png
+icon_DATA = get2gnow.png
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
-svgicon_DATA = greet-tweet-know.svg
+svgicon_DATA = get2gnow.svg
 	
 EXTRA_DIST =			\
 	$(gtkbuilder_DATA)		\

@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
+ * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -57,6 +57,7 @@
 
 typedef struct {
 	unsigned long int	id;
+	gboolean		has_user_name;
 	gchar			*user_name;
 	gchar			*nick_name;
 	gchar			*location;
@@ -65,7 +66,7 @@ typedef struct {
 	gchar			*image_url;
 	gchar			*image_filename;
 	unsigned long int	tweets;
-	unsigned long int	friends;
+	unsigned long int	following;
 	unsigned long int	followers;
 	gboolean		follower;
 } User;
@@ -86,8 +87,8 @@ typedef struct {
 } FriendRequest;
 
 
-#define usrcasecmp	user_sort
-#define	usrcmp		user_sort
+#define usrcasecmp	user_sort_by_user_name
+#define	usrcmp		user_sort_by_user_name
 
 FriendRequest *user_request_new(FriendAction action);
 void user_request_free(FriendRequest *request);
@@ -114,8 +115,9 @@ void user_free_lists (void);
 
 /* Parse a xml user node. Ex: add/del users responses */
 User *user_parse_new( const gchar *data, gssize length );
-User *user_new(xmlNode *a_node);
-int user_sort( User *a, User *b );
+User *user_fetch_profile(const gchar *user_name);
+User *user_parse_profile(xmlNode *a_node);
+int user_sort_by_user_name( User *a, User *b );
 void user_free(User *user);
 
 #endif //__USER_H__

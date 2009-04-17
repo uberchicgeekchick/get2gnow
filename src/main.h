@@ -27,7 +27,9 @@
 
 G_BEGIN_DECLS
 
+#ifndef G_STR_EMPTY
 #define G_STR_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
+#endif
 
 /* GConf Keys */
 #define PREFS_PATH "/apps/" PACKAGE_TARNAME

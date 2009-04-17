@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -88,6 +88,7 @@ enum {
 GType		tweet_list_get_type(void) G_GNUC_CONST;
 TweetList	*tweet_list_new(void);
 GtkListStore	*tweet_list_get_store(void);
+void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
 
 G_END_DECLS
 

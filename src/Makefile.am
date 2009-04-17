@@ -8,18 +8,18 @@ AM_CFLAGS=						\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLOCALEDIR=\""$(localedir)"\"			\
 	-DLIBDIR=\""$(libdir)"\"			\
-	$(GREET_TWEET_KNOW_CFLAGS)			\
+	$(get2gnow_CFLAGS)			\
 	$(ENCHANT_CFLAGS)				\
 	$(WARN_CFLAGS)					\
 	-std=$(C_STD_MODE)
 
-bin_PROGRAMS = greet-tweet-know
+bin_PROGRAMS = get2gnow
 
 if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 
-greet_tweet_know_SOURCES = 				\
+get2gnow_SOURCES = 				\
 	$(keyring_sources)				\
 	main.c			main.h			\
 	gconf.c			gconf.h			\
@@ -51,6 +51,6 @@ greet_tweet_know_SOURCES = 				\
 	tweet-list.c		tweet-list.h
 
 
-greet_tweet_know_LDADD=			\
-	$(GREET_TWEET_KNOW_LIBS)	\
+get2gnow_LDADD=			\
+	$(get2gnow_LIBS)	\
 	$(ENCHANT_LIBS)

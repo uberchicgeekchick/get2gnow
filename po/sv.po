@@ -1,11 +1,11 @@
-# Swedish translation for greet-tweet-know.
+# Swedish translation for get2gnow.
 # Copyright (C) 2007 Free Software Foundation, Inc.
-# This file is distributed under the same license as the greet-tweet-know package.
+# This file is distributed under the same license as the get2gnow package.
 # Daniel Nylander <po@danielnylander.se>, 2007.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: greet-tweet-know\n"
+"Project-Id-Version: get2gnow\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2007-08-13 09:03-0300\n"
 "PO-Revision-Date: 2007-08-02 14:52-0300\n"
@@ -201,8 +201,8 @@ msgid "A Twitter client for the Gnome desktop"
 msgstr "En Twitter-klient för Gnome-skrivbordet"
 
 #: ../src/gui.c:636
-msgid "Visit Greet-Tweet-Know web site"
-msgstr "Besök Greet-Tweet-Know webbplats"
+msgid "Visit get2gnow web site"
+msgstr "Besök get2gnow webbplats"
 
 #: ../src/gui.c:638
 msgid "translator-credits"

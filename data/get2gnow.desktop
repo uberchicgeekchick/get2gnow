@@ -1,9 +1,9 @@
 [Desktop Entry]
-Version=1.0
-_Name=Greet-Tweet-Know
+Version=0.0.0.a9eC
+_Name=get2gnow
 _Comment=A Twitter client
-Exec=greet-tweet-know
-Icon=greet-tweet-know
+Exec=get2gnow
+Icon=get2gnow
 StartupNotify=true
 Terminal=false
 Type=Application

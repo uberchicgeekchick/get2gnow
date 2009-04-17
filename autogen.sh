@@ -4,7 +4,7 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="greet-tweet-know"
+PKG_NAME="get2gnow"
 REQUIRED_AUTOMAKE_VERSION=1.9
 
 (test -f $srcdir/configure.in) || {

@@ -2,7 +2,7 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkDialog" id="account_dialog">
+  <object class="GtkDialog" id="accounts_dialog">
     <property name="visible">True</property>
     <property name="border_width">6</property>
     <property name="title" translatable="yes">Twitter Account</property>
@@ -81,7 +81,7 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="show_password_checkbutton">
-                <property name="label" translatable="yes">Show Password</property>
+                <property name="label" translatable="yes">Sho_w Password</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -97,18 +97,18 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="service_label">
+              <object class="GtkLabel" id="services_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Server	</property>
+                <property name="label" translatable="yes">_Service:	</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">service_comboboxentry</property>
+                <property name="mnemonic_widget">services</property>
               </object>
               <packing>
                 <property name="y_options"></property>
               </packing>
             </child>
             <child>
-              <object class="GtkComboBoxEntry" id="service_comboboxentry">
+              <object class="GtkComboBoxEntry" id="services">
                 <property name="visible">True</property>
                 <property name="model">services_list</property>
               </object>
@@ -174,8 +174,6 @@
   <object class="GtkListStore" id="services_list">
     <columns>
       <!-- column-name service_uri -->
-      <column type="gchararray"/>
-      <!-- column-name service_name -->
       <column type="gchararray"/>
     </columns>
   </object>

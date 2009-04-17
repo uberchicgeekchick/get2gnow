@@ -32,7 +32,7 @@
 
 #define DEBUG_DOMAIN "Config"
 
-#define CONF_ROOT        "/apps/greet-tweet-know"
+#define CONF_ROOT        "/apps/get2gnow"
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
 
 #define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_CONF, ConfPriv))

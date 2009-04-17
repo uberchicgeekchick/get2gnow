@@ -92,15 +92,12 @@ window_present (GtkWindow *window,
 void
 help_show (GtkWindow *parent)
 {
-	GdkScreen *screen;
-	GError    *error = NULL;
-
+	GdkScreen	*screen;
+	GError		*error = NULL;
+	gchar		*uri=g_strdup_printf("ghelp:%s", PACKAGE_NAME);
 	screen = gtk_widget_get_screen (GTK_WIDGET (parent));
-
-	gtk_show_uri (screen,
-				  "ghelp:greet-tweet-know",
-				  gtk_get_current_event_time (),
-				  &error);
+	gtk_show_uri(screen, uri, gtk_get_current_event_time(), &error);
+	g_free(uri);
 
 	if (error != NULL) {
 		GtkWidget *w;

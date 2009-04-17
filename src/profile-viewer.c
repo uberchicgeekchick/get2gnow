@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
+ * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -108,7 +108,7 @@ void view_profile( gchar *user_name, GtkWindow *parent ){
 	
 	gtk_widget_show_all( GTK_WIDGET( profile_viewer->dialog ) );
 	
-	profile_viewer->user=network_fetch_profile(user_name);
+	profile_viewer->user=user_fetch_profile(user_name);
 	
 	network_download_avatar( profile_viewer->user->image_url );
 	if(!(g_str_equal("unknown_image", profile_viewer->user->image_filename)))
@@ -131,9 +131,9 @@ void view_profile( gchar *user_name, GtkWindow *parent ){
 	g_free( profile_details );
 	
 	profile_details=g_strdup_printf(
-					"\t<b>Tweets:</b> %lu\n\t<b>Friends:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n",
+					"\t<b>Tweets:</b> %lu\n\t<b>Following:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n",
 					profile_viewer->user->tweets,
-					profile_viewer->user->friends,
+					profile_viewer->user->following,
 					profile_viewer->user->followers,
 					profile_viewer->user->location
 	);

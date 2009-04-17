@@ -5,7 +5,7 @@
   <!ENTITY appversion "0.68">
   <!ENTITY manrevision "2.1">
   <!ENTITY date "December 2008">
-  <!ENTITY app "Greet-Tweet-Know">
+  <!ENTITY app "get2gnow">
 ]>
 <!-- 
       (Do not remove this comment block.)
@@ -181,10 +181,10 @@
      If the information about how to get started is very short, you can 
      include it in the Introduction and omit this section. -->
 
-  <sect1 id="greet-tweet-know-getting-started"> 
+  <sect1 id="get2gnow-getting-started"> 
     <title>Getting Started</title> 
 
-    <sect2 id="greet-tweet-know-start">
+    <sect2 id="get2gnow-start">
     <title>To Start &app;</title>
     <para>You can start <application>&app;</application> in the following ways:
     </para> 
@@ -195,7 +195,7 @@
     		  <para>Choose 
     		    <menuchoice>
   		      <guisubmenu>Internet</guisubmenu>
-    		      <guimenuitem>Greet-Tweet-Know</guimenuitem>
+    		      <guimenuitem>get2gnow</guimenuitem>
 	    		</menuchoice>
 			</para>
     		</listitem>
@@ -205,14 +205,14 @@
     		<listitem>
     		<para>
 			To start <application>&app;</application> from a command line,
-			type <command>greet-tweet-know</command> and then press <keycap>Return</keycap>.
+			type <command>get2gnow</command> and then press <keycap>Return</keycap>.
 		</para>
     		</listitem>
     	</varlistentry>
     </variablelist>
     </sect2>
     
-    <sect2 id="greet-tweet-know-start-first">
+    <sect2 id="get2gnow-start-first">
       <title>When You Start &app; the First Time</title>
       <para>
 	When you start <application>&app;</application> the first time, you will be
@@ -240,7 +240,7 @@
       </orderedlist>
     </sect2>	
 
-    <sect2 id="greet-tweet-know-when-start">
+    <sect2 id="get2gnow-when-start">
     <title>When You Start &app;</title>
     <para>When you start <application>&app;</application>, the following window is displayed.</para>
 
@@ -274,7 +274,7 @@
     <!-- for example, the items on the menubar and on the toolbar. This section is optional. -->
 
     <para>
-      <xref linkend="greet-tweet-know-TBL-1"/> describes the components of a browser window.
+      <xref linkend="get2gnow-TBL-1"/> describes the components of a browser window.
     </para>
     <table frame="topbot" id="gossip-TBL-1">
       <title>&app; Main Components</title>
@@ -316,13 +316,13 @@
 <!-- ================ Usage ================================ -->
 <!-- Use this section to describe how to use the application to perform the tasks for 
   which the application is designed. -->
-  <sect1 id="greet-tweet-know-basic-usage"> 
+  <sect1 id="get2gnow-basic-usage"> 
     <title>Basic Usage</title> 
     <!-- TODO: Maybe the next sentence is obsolete, because usage is splitted in 
       different sections -->
     <para>You can use the &app; application to perform the following tasks:</para>
     <!-- ================ Usage Subsection ================================ -->
-    <sect2 id="greet-tweet-know-connect"> 
+    <sect2 id="get2gnow-connect"> 
       <title>Connect to Twitter</title>
       <para>To connect to Twitter, choose 
 	<menuchoice> 
@@ -333,7 +333,7 @@
       </para>
     </sect2>     
     <!-- ================ Usage Subsection ================================ -->
-    <sect2 id="greet-tweet-know-disconnect"> 
+    <sect2 id="get2gnow-disconnect"> 
       <title>Disconnect from Twitter</title>
       <para>To disconnect from Twitter, choose 
 	<menuchoice> 
@@ -344,7 +344,7 @@
       </para>
     </sect2>
     <!-- ================ Usage Subsection ================================ -->
-    <sect2 id="greet-tweet-know-new-message">
+    <sect2 id="get2gnow-new-message">
       <title>Sending A Message</title>
       <para>You can send message to Twitter, in the following ways:</para>
       <itemizedlist>
@@ -370,7 +370,7 @@
       </itemizedlist>
     </sect2>
     <!-- ================ Usage Subsection ================================ -->
-    <sect2 id="greet-tweet-know-direct-message">
+    <sect2 id="get2gnow-direct-message">
       <title>Sending A Direct Message</title>
       <para>You can send direct message to your friends on Twitter, in the following ways:</para>
       <itemizedlist>
@@ -392,7 +392,7 @@
   </sect1>
   <!-- ============= Customization ============================= -->
   <!-- Use this section to describe how to customize the application. -->
-  <sect1 id="greet-tweet-know-prefs"> 
+  <sect1 id="get2gnow-prefs"> 
     <title>Settings</title> 
     <para>
       To configure &app;, choose
@@ -405,7 +405,7 @@
 <!-- =============== Customization Subsection ================ -->
 <!-- Use a new section to describe different tabbed sections on the Settings or Preferences
 	     dialog. -->
-    <sect2 id="greet-tweet-know-prefs-general"> 
+    <sect2 id="get2gnow-prefs-general"> 
       <title>General</title> 
       <variablelist> 
 	<varlistentry> 
@@ -469,7 +469,7 @@
     </sect2>
     <!-- ============= Customization Subsection ===================== -->
     <!-- Another tabbed section on the Preferences dialog. -->
-    <sect2 id="greet-tweet-know-prefs-spelling"> 
+    <sect2 id="get2gnow-prefs-spelling"> 
       <title>Spell Checking</title> 
       <note>
 	<para>
@@ -538,12 +538,12 @@
       section is optional: primary place for this info is "About.." box of
       the program. However, if you do wish to include this info in the
       manual, this is the place to put it. Alternatively, you can put this information in the title page.-->
-  <sect1 id="greet-tweet-know-about"> 
+  <sect1 id="get2gnow-about"> 
     <title>About &app;</title> 
     <para> &app; was written by Kaity G. B.
       To find more information about
       &app;, please visit the 
-      <ulink url="http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know" type="http">&app; Developer
+      <ulink url="http://uberChicGeekChick.Com/?projects=get2gnow" type="http">&app; Developer
 	Page</ulink>.
     </para>
     <para>

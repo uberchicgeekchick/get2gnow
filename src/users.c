@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
+ * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -52,13 +52,15 @@
 #include <strings.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-
+#include <libsoup/soup.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include "main.h"
 #include "debug.h"
 #include "app.h"
 #include "users.h"
+
 #include "gtkbuilder.h"
 #include "network.h"
 #include "images.h"
@@ -71,6 +73,8 @@
 
 
 static void users_free_foreach(gpointer user, gpointer users_list);
+static User *user_constructor( gboolean a_follower );
+
 
 #define GtkBuilderUI "user-profile.ui"
 
@@ -113,6 +117,17 @@ void user_request_free(FriendRequest *request){
 }//user_request_free
 
 
+static User *user_constructor( gboolean a_follower ){
+	User *user=g_new(User, 1);
+	
+	user->follower=a_follower;
+		
+	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
+	
+	return user;
+}//user_constructor
+
+
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
 User *user_parse_new( const gchar *data, gssize length ){
 	xmlDoc *doc=NULL;
@@ -126,7 +141,7 @@ User *user_parse_new( const gchar *data, gssize length ){
 	}
 	
 	if(g_str_equal(root_element->name, "user"))
-		user=user_new(root_element->children);
+		user=user_parse_profile(root_element->children);
 	
 	/* Free memory */
 	xmlFreeDoc(doc);
@@ -136,24 +151,28 @@ User *user_parse_new( const gchar *data, gssize length ){
 }
 
 
-User *user_new(xmlNode *a_node){
+User *user_parse_profile(xmlNode *a_node){
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
 	User     *user;
 	
 	buffer = xmlBufferCreate();
-	user = g_new0(User, 1);
 	
-	user->follower=getting_followers;
+	user=user_constructor( getting_followers );
 	
+	debug(DEBUG_DOMAIN, "Parsing user profile data.");
 	/* Begin 'users' node loop */
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE)
 			continue;
-		if(xmlNodeBufGetContent(buffer, cur_node) != 0)
+		
+		if(xmlNodeBufGetContent(buffer, cur_node))
 			continue;
 		
+		
 		const xmlChar *tmp=xmlBufferContent(buffer);
+
+		debug( DEBUG_DOMAIN, "\n\tFound user's: %s\n\t\tcontent: %s (buffer: %s).", cur_node->name, (gchar *)cur_node->content, (const gchar *)tmp);
 		
 		if(g_str_equal(cur_node->name, "id" ))
 			user->id=strtoul( (const gchar *)tmp, NULL, 0 );
@@ -177,7 +196,7 @@ User *user_new(xmlNode *a_node){
 			user->followers=strtoul( (const char *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "friends_count" ))
-			user->friends=strtoul( (const gchar *)tmp, NULL, 0 );
+			user->following=strtoul( (const gchar *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "statuses_count" ))
 			user->tweets=strtoul( (const gchar *)tmp, NULL, 0 );
@@ -197,20 +216,19 @@ User *user_new(xmlNode *a_node){
 }
 
 
-int user_sort(User *a, User *b){
+int user_sort_by_user_name(User *a, User *b){
 	return strcasecmp( (const char *)a->user_name, (const char *)b->user_name );
 }
 
 
 /* Parse a user-list XML( friends, followers,... ) */
 GList *users_new(const gchar *data, gssize length){
-	xmlDoc		*doc = NULL;
-	xmlNode		*root_element = NULL;
-	xmlNode		*cur_node = NULL;
+	xmlDoc		*doc=NULL;
+	xmlNode		*root_element=NULL;
+	xmlNode		*cur_node=NULL;
 	
-	GList		*friends = NULL;
-	
-	User 	*user;
+	GList		*list=g_list_alloc();
+	User		*user;
 	
 	/* parse the xml */
 	if(!( (doc=parser_parse(data, length, &root_element)) )){
@@ -224,9 +242,9 @@ GList *users_new(const gchar *data, gssize length){
 			continue;
 		if(g_str_equal(cur_node->name, "user")){
 			/* parse user */
-			user=user_new(cur_node->children);
+			user=user_parse_profile(cur_node->children);
 			/* add to list */
-			friends=g_list_append(friends, user);
+			list=g_list_append(list, user);
 		} else if(g_str_equal(cur_node->name, "users")){
 			cur_node = cur_node->children;
 		}
@@ -236,23 +254,37 @@ GList *users_new(const gchar *data, gssize length){
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 
-	return friends;
+	return list;
 }
+
+/* Get a user timeline */
+User *user_fetch_profile(const gchar *user_name){
+	if( !user_name || G_STR_EMPTY(user_name))
+		return NULL;
+			
+	User *user=NULL;
+	SoupMessage *msg=NULL;
+	
+	gchar *user_profile=g_strdup_printf( API_ABOUT_USER, user_name );
+	msg=network_get( user_profile ); 
+	g_free( user_profile );
+	
+	if((user=user_parse_new( msg->response_body->data, msg->response_body->length )) )
+		return user;
+	
+	return NULL;
+}//user_fetch_profile
+
 
 
 void users_free(const char *type, GList *users ){
 	debug( DEBUG_DOMAIN, "Freeing the authenticated user's %s.", type );
-	/* TODO: it would be nice if this worked without causing a segfault, but it doesn't.
-	 * it segfaults if both 'user_friends' & 'user_followers' are both set.
-	 * user_free_lists();
-	 *
-	 * g_list_foreach(users, users_free_foreach, users );
-	 */
+	
+	g_list_foreach(users, users_free_foreach, users );
+	
 	g_list_free(users);
 	users=NULL;
-}//user_free
-
-
+}//users_free
 
 /* Callback to free every element on a User list */
 static void users_free_foreach(gpointer user, gpointer users_list){
@@ -264,13 +296,13 @@ static void users_free_foreach(gpointer user, gpointer users_list){
 /* Free a user struct */
 void user_free(User *user){
 	if(!user) return;
-	if(user->user_name) g_free(user->user_name);
-	if(user->nick_name) g_free(user->nick_name);
-	if(user->location) g_free(user->location);
-	if(user->bio) g_free(user->bio);
-	if(user->url) g_free(user->url);
-	if(user->image_url) g_free(user->image_url);
-	if(user->image_filename) g_free(user->image_filename);
+	if(!(G_STR_EMPTY(user->user_name))) g_free(user->user_name);
+	if(!(G_STR_EMPTY(user->nick_name))) g_free(user->nick_name);
+	if(!(G_STR_EMPTY(user->location))) g_free(user->location);
+	if(!(G_STR_EMPTY(user->bio))) g_free(user->bio);
+	if(!(G_STR_EMPTY(user->url))) g_free(user->url);
+	if(!(G_STR_EMPTY(user->image_url))) g_free(user->image_url);
+	if(!(G_STR_EMPTY(user->image_filename))) g_free(user->image_filename);
 	if(user) g_free(user);
 }//user_free
 

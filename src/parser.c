@@ -261,7 +261,7 @@ parser_node_status(xmlNode *a_node){
 
 		} else if(g_str_equal(cur_node->name, "sender") ||
 			g_str_equal(cur_node->name, "user")) {
-			status->user=user_new(cur_node->children);
+			status->user=user_parse_profile(cur_node->children);
 		}
 
 		/* Free buffer content */

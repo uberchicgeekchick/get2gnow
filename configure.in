@@ -1,4 +1,4 @@
-AC_INIT([greet-tweet-know], [0.0.eCa666], [http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know], [greet-tweet-know])
+AC_INIT([get2gnow], [0.0.0.a9eC], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -36,12 +36,10 @@ dnl Library Dependencies, uses pkg-config to detect correct version, etc
 dnl
 dnl -----------------------------------------------------------
 
-#LIBSOUP_REQUIRED=2.26.0
-LIBSOUP_REQUIRED=2.24.0
-LIBGLADE_REQUIRED=0.23
+LIBSOUP_REQUIRED=2.26.0.9
 LIBXML_REQUIRED=2.6.16
-GLIB_REQUIRED=2.15.0
-GTK_REQUIRED=2.14.0
+GLIB_REQUIRED=2.20.0
+GTK_REQUIRED=2.16.0
 GCONF_REQUIRED=1.2.0
 LIBGIO_REQUIRED=2.15.5
 LIBCANBERRA_REQUIRED=0.4
@@ -79,7 +77,7 @@ AM_CONDITIONAL(HAVE_GNOME_KEYRING, test x$have_gnome_keyring = xyes)
 dnl -----------------------------------------------------------
 dnl Pkg-Config dependency checks
 dnl -----------------------------------------------------------
-PKG_CHECK_MODULES(GREET_TWEET_KNOW,
+PKG_CHECK_MODULES(get2gnow,
 [
 	libsexy
 	libsoup-2.4 >= $LIBSOUP_REQUIRED
@@ -96,8 +94,8 @@ PKG_CHECK_MODULES(GREET_TWEET_KNOW,
 	$gnome_keyring_pkgconfig
 	$iso_codes_pkgconfig
 ])
-AC_SUBST(GREET_TWEET_KNOW_CFLAGS)
-AC_SUBST(GREET_TWEET_KNOW_LIBS)
+AC_SUBST(get2gnow_CFLAGS)
+AC_SUBST(get2gnow_LIBS)
 
 dnl -----------------------------------------------------------
 dnl Enchant
@@ -140,7 +138,7 @@ AM_CONDITIONAL(HAVE_ENCHANT, test "x$have_enchant" = "xyes")
 dnl -----------------------------------------------------------
 dnl Language Support
 dnl -----------------------------------------------------------
-GETTEXT_PACKAGE=greet-tweet-know
+GETTEXT_PACKAGE=get2gnow
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[Gettext package name])
 
@@ -149,7 +147,7 @@ AM_GLIB_GNU_GETTEXT
 AC_OUTPUT([
 Makefile
 data/Makefile
-data/greet-tweet-know.desktop
+data/get2gnow.desktop
 help/Makefile
 src/Makefile
 po/Makefile

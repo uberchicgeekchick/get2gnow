@@ -59,7 +59,11 @@ struct _AppClass {
 GType app_get_type(void) G_GNUC_CONST;
 void app_create                       (void);
 App *app_get(void);
-GtkWidget *app_get_window(void);
+GtkWindow *app_get_window(void);
+TweetList *app_get_tweet_list(void);
+GtkMenuBar *app_get_main_menu(void);
+GtkMenuItem *app_get_menu(const gchar *menu);
+void app_refresh_timeline(GtkWidget *window, App *app); 
 GList *app_get_widgets_tweet_selected(void);
 void app_set_visibility(gboolean visible);
 void app_statusbar_printf(const gchar *msg, ...);

@@ -1,7 +1,7 @@
 include $(top_srcdir)/gnome-doc-utils.make
 dist-hook: doc-dist-hook
 
-DOC_MODULE = greet-tweet-know
+DOC_MODULE = get2gnow
 DOC_ENTITIES = legal.xml
 DOC_INCLUDES = 
 DOC_FIGURES = 					\

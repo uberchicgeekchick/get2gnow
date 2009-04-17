@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
+ * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -73,8 +73,11 @@ gchar *images_get_filename( const gchar *image_url ){
 	
 	/* save using the filename */
 	image_name_info=g_strsplit(image_url, (const gchar *)"/", 7);
-	if(!(image_name_info[5] && image_name_info[6]))
+	if(!(image_name_info[5] && image_name_info[6])){
+		if(image_name_info)
+			g_strfreev(image_name_info);
 		return g_strdup("unknown_image");
+	}
 	
 	image_file=g_strconcat(image_name_info[5], "_", image_name_info[6], NULL);
 	

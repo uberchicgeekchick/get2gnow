@@ -36,6 +36,7 @@
 #include "send-message-dialog.h"
 #include "tweet-list.h"
 #include "profile-viewer.h"
+#include "ui-utils.h"
 
 
 typedef struct SelectedTweet {
@@ -70,6 +71,66 @@ void tweets_show_submenu_entries(gboolean show){
 	for(GList *l=app_get_widgets_tweet_selected(); l; l = l->next)
 		g_object_set(l->data, "sensitive", show, NULL);
 }//tweets_show_submenu_entries
+
+void tweets_hotkey(GdkEventKey *event){
+	switch( event->state ){
+		case GDK_MOD1_MASK:
+			switch(event->keyval){
+				case GDK_Return: return tweets_retweet();
+				case GDK_S: case GDK_s:
+					return g_signal_emit_by_name(app_get_menu("services"), "activate");
+				case GDK_T: case GDK_t:
+					return g_signal_emit_by_name(app_get_menu("tweets"), "activate");
+				case GDK_F: case GDK_f:
+					return g_signal_emit_by_name(app_get_menu("friends"), "activate");
+				case GDK_V: case GDK_v:
+					return g_signal_emit_by_name(app_get_menu("timelines"), "activate");
+				case GDK_H: case GDK_h:
+					return g_signal_emit_by_name(app_get_menu("help"), "activate");
+				/*
+				case GDK_: case GDK_:
+					return g_signal_emit_by_name(app_get_menu(""), "activate");
+				*/
+			}
+		case GDK_SHIFT_MASK:
+			if(event->keyval==GDK_Return)
+				return tweets_new_dm();
+			return;
+		case GDK_CONTROL_MASK:
+			switch( event->keyval ){
+				case GDK_Return:
+				case GDK_N: case GDK_n:
+					return tweets_new_tweet();
+				case GDK_Q: case GDK_q:
+					return gtk_main_quit();
+				case GDK_R: case GDK_r:
+					return tweets_reply();
+				case GDK_F: case GDK_f:
+					return tweets_retweet();
+				case GDK_D: case GDK_d:
+					return tweets_new_dm();
+				case GDK_S: case GDK_s:
+					return tweets_save_fave();
+				case GDK_I: case GDK_i:
+					return tweets_view_selected_profile();
+				case GDK_H: case GDK_h:
+					return tweets_view_selected_timeline();
+				/*
+				case GDK_: case GDK_:
+					return tweets_();
+				*/
+			}
+		default:
+			switch( event->keyval ){
+				case GDK_F1: return help_show( app_get_window() );
+				case GDK_F5: return app_refresh_timeline( GTK_WIDGET(app_get_window()), app_get()); 
+				case GDK_greater: return tweets_retweet();
+				case GDK_at: return tweets_reply();
+				case GDK_asciitilde: return tweets_new_dm();
+			}
+			tweet_list_key_pressed(GTK_WIDGET(app_get_tweet_list()), event, app_get_tweet_list());
+	}
+}//tweets_hotkey
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
@@ -106,7 +167,7 @@ void tweets_new_dm(void){
 	message_show_friends(TRUE);
 }//tweets_new_dm
 
-void tweets_make_fave(void){
+void tweets_save_fave(void){
 	if(!selected_tweet)
 		return;
 	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
