@@ -65,6 +65,7 @@
 #include "popup-dialog.h"
 #include "network.h"
 #include "profile-viewer.h"
+#include "users.h"
 
 
 /********************************************************
@@ -136,7 +137,7 @@ static void following_rem_response_cb( GtkButton *button, Followers *following )
 
 	gtk_list_store_remove( GTK_LIST_STORE( following->following_store ), &iter );
 
-	network_unfollow_user((const gchar *)user_name);
+	user_request_main(UnFollow, (const gchar *)user_name);
 }
 
 
@@ -161,7 +162,7 @@ static void following_block_response_cb( GtkButton *button, Followers *following
 	
 	gtk_list_store_remove( GTK_LIST_STORE( following->following_store ), &iter );
 	
-	network_block_user((const gchar *)user_name);
+	user_request_main(Block, (const gchar *)user_name);
 }
 
 static void following_view_profile(GtkButton *button, Followers *following){
@@ -180,8 +181,7 @@ static void following_view_profile(GtkButton *button, Followers *following){
 			-1
 	);
 	
-	if(!user_name)
-		return;
+	if(!user_name) return;
 	
 	view_profile( user_name, GTK_WINDOW(following->viewer) );
 	g_free(user_name);

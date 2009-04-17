@@ -78,7 +78,7 @@
                         <property name="use_stock">False</property>
                         <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
-                   </child>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -100,7 +100,7 @@
                         <property name="use_stock">False</property>
                         <accelerator key="n" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
-	            </child>
+                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="tweets_new_dm">
                         <property name="label">New _DM</property>
@@ -109,8 +109,8 @@
                         <property name="use_underline">True</property>
                         <property name="image">image10</property>
                         <property name="use_stock">False</property>
-                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -154,87 +154,6 @@
                         <property name="image">image9</property>
                         <property name="use_stock">False</property>
                         <accelerator key="greater" signal="activate"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="friends">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Friends</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="friends_menu">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="friends_manager">
-                        <property name="label" translatable="yes">Friends _Manager</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image11</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="friends_timelines">
-                        <property name="label" translatable="yes">My _Friends' Tweets</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image12</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="friends_follow">
-                        <property name="label" translatable="yes">_Follow a new friend</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Add / Follow a new friend by entering their username.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image2</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="friends_unfollow">
-                        <property name="label" translatable="yes">_Unfollow a friend</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Stop following a friend by entering their username.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image1</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="friends_block">
-                        <property name="label" translatable="yes">_Block a user</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Block a friend from seeing any of your tweets or sending youany message by entering their username.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image3</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem1">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="users_view_profile">
-                        <property name="label" translatable="yes">Peak @ Someone's _Profile</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image15</property>
-                        <property name="use_stock">False</property>
                       </object>
                     </child>
                   </object>
@@ -301,7 +220,7 @@
                     <child>
                       <object class="GtkRadioMenuItem" id="view_favorites_timeline">
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">View your favorited, ie starred tweets.	</property>
+                        <property name="tooltip_text" translatable="yes">View your favorited, ie starred tweets.</property>
                         <property name="label" translatable="yes">My _Favorites</property>
                         <property name="use_underline">True</property>
                         <property name="draw_as_radio">True</property>
@@ -324,6 +243,102 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Public Timeline</property>
                         <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="friends">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Friends</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="friends_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_friends_manager">
+                        <property name="label" translatable="yes">Friends _Manager</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image11</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_timelines">
+                        <property name="label" translatable="yes">My _Friends' Tweets</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image12</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_follow">
+                        <property name="label" translatable="yes">_Follow a new friend</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Add / Follow a new friend by entering their username.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image2</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_unfollow">
+                        <property name="label" translatable="yes">_Unfollow a friend</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Stop following a friend by entering their username.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image1</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_block">
+                        <property name="label" translatable="yes">_Block a user</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Block a friend from seeing any of your tweets or sending youany message by entering their username.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image3</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_tweets">
+                        <property name="label" translatable="yes">View someone's _Tweets</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View someone's recent Tweets.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image17</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="friends_menu_profile">
+                        <property name="label" translatable="yes">View someone's _Profile</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View someone's profile including:
+	Their bio.
+	How many update, messages, dents, tweets, and etc they've posted.
+	How many people are following them.
+	How many other people they're following.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image18</property>
+                        <property name="use_stock">False</property>
                       </object>
                     </child>
                   </object>
@@ -391,15 +406,15 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkImage" id="expand_image">
+                    <property name="width_request">78</property>
+                    <property name="height_request">78</property>
                     <property name="visible">True</property>
-                    <property name="yalign">0</property>
-                    <property name="xpad">7</property>
-                    <property name="ypad">5</property>
-                    <property name="stock">gtk-missing-image</property>
+                    <property name="xpad">3</property>
+                    <property name="ypad">3</property>
+                    <property name="pixel_size">70</property>
+                    <property name="icon_name">get2gnow</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -498,10 +513,71 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkHBox" id="users_control_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_user_follow_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="expanded_tweet_user_follow_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-add</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_user_unfollow_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="expanded_tweet_user_unfollow_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-remove</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="expanded_tweet_user_block_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="user_block_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-delete</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -628,7 +704,7 @@ _Controls</property>
                         <child>
                           <object class="GtkImage" id="image15">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-about</property>
+                            <property name="stock">gtk-info</property>
                           </object>
                         </child>
                       </object>
@@ -737,6 +813,14 @@ _Controls</property>
   </object>
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkImage" id="image15">
+    <property name="visible">True</property>
+    <property name="stock">gtk-info</property>
+  </object>
+  <object class="GtkImage" id="image17">
+    <property name="visible">True</property>
+    <property name="stock">gtk-home</property>
+  </object>
+  <object class="GtkImage" id="image18">
     <property name="visible">True</property>
     <property name="stock">gtk-info</property>
   </object>

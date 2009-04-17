@@ -28,6 +28,7 @@
 
 #include <libnotify/notify.h>
 
+#include "config.h"
 #include "app.h"
 #include "friends-manager.h"
 #include "network.h"
@@ -45,19 +46,19 @@ int main(int argc, char **argv){
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
 
-	g_set_application_name(_("get2gnow"));
+	g_set_application_name(_(PACKAGE_NAME));
 
 	if(!g_thread_supported()) g_thread_init(NULL);
 
 	gtk_init(&argc, &argv);
 
-	gtk_window_set_default_icon_name("get2gnow");
+	gtk_window_set_default_icon_name(PACKAGE_NAME);
 
 	/* Start the network */
 	network_new();
 
 	/* Start libnotify */
-	notifing=notify_init("get2gnow");
+	notifing=notify_init(PACKAGE_NAME);
 
 	/* Create the ui */
 	app_create();

@@ -65,6 +65,7 @@
 #include <gtk/gtk.h>
 
 
+#include "debug.h"
 #include "config.h"
 #include "ipc.h"
 /* Where ever your projects 'main window' is define.
@@ -73,9 +74,13 @@
  */
 #include "app.h"
 
-
+#ifndef DEBUG
 #define PIPE_PREFIX         "%s-%s-"
-#define PIPE_PREFIX_FULL    "%s/%s-%s-%d"
+#else
+#define PIPE_PREFIX		"%s-debug-%s-"
+#endif
+
+#define PIPE_PREFIX_FULL    "%s/" PIPE_PREFIX "%d"
 #define MAX_BUFFER_SIZE 4096
 
 

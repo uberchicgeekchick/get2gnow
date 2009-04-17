@@ -44,7 +44,7 @@ gchar *tweets_get_selected_user_name(void);
 void unset_selected_tweet(void);
 
 void tweets_show_submenu_entries(gboolean show);
-void tweets_hotkey(GdkEventKey *event);
+void tweets_hotkey(GtkWidget *widget, GdkEventKey *event);
 
 /* G_CALLBACK_FUNC for get2gnow's "Tweets" menu & the 'extended_tweet_?_button'.
  *	When handled by get2gnow's gtkbuilder.[ch]
@@ -55,8 +55,14 @@ void tweets_reply(void);
 void tweets_retweet(void);
 void tweets_new_dm(void);
 void tweets_save_fave(void);
-void tweets_view_selected_timeline(void);
-void tweets_view_selected_profile(void);
+
+void tweets_user_follow(void);
+void tweets_user_unfollow(void);
+void tweets_user_block(void);
+void tweets_user_unblock(void);
+
+void tweets_user_view_tweets(void);
+void tweets_user_view_profile(void);
 
 G_END_DECLS
 

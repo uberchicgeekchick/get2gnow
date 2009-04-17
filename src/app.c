@@ -87,8 +87,14 @@ struct _AppPriv {
 	GtkRadioMenuItem	*timeline_replies;
 	GtkRadioMenuItem	*timeline_favorites;
 	
-	GtkAction		*friends_timelines;
-	
+	GtkAction		*friends_menu_friends_manager;
+	GtkAction		*friends_menu_timelines;
+	GtkAction		*friends_menu_follow;
+	GtkAction		*friends_menu_unfollow;
+	GtkAction		*friends_menu_block;
+	GtkAction		*friends_menu_tweets;
+	GtkAction		*friends_menu_profile;
+
 	/* Status Icon */
 	GtkStatusIcon		*status_icon;
 	
@@ -109,15 +115,20 @@ struct _AppPriv {
 	GtkWidget		*expand_title;
 	GtkWidget		*expand_label;
 	
+	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
+	GtkButton		*expanded_tweet_view_users_profile_button;
+	GtkButton		*expanded_tweet_view_users_timeline_button;
+	
+	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
+	GtkButton		*expanded_tweet_user_follow_button;
+	GtkButton		*expanded_tweet_user_unfollow_button;
+	GtkButton		*expanded_tweet_user_block_button;
+
 	/* Buttons for stuff to do with the selected & extend tweet. */
 	GtkButton		*expanded_tweet_reply_button;
 	GtkButton		*expanded_tweet_retweet_button;
 	GtkButton		*expanded_tweet_dm_button;
 	GtkButton		*expanded_tweet_make_fave_button;
-	
-	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
-	GtkButton		*expanded_tweet_view_users_profile_button;
-	GtkButton		*expanded_tweet_view_users_timeline_button;
 };
 
 #define	GtkBuilderUI		"main-window.ui"
@@ -139,9 +150,6 @@ static void app_connect_cb(GtkWidget *window, App *app);
 static void app_disconnect_cb(GtkWidget *window, App *app); 
 static void app_quit_cb(GtkWidget *window, App *app); 
 static void app_accounts_cb(GtkWidget *window, App *app); 
-static void app_key_pressed(GtkWidget *widget, GdkEventKey *event, App *app);
-static void app_following_viewer(GtkAction *action, App *app);
-static void app_friends_manager_cb(GtkWidget *widget, App *app);
 static void app_preferences_cb(GtkWidget *window, App *app); 
 
 /* Handles all timelines */
@@ -153,9 +161,8 @@ static void app_help_contents_cb(GtkWidget *widget, App *app);
 static void app_status_icon_activate_cb(GtkStatusIcon *status_icon, App *app); 
 static void app_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, App *app);
 
-static void friends_follow(GtkAction *item, App *app);
-static void friends_unfollow(GtkAction *item, App *app);
-static void friends_block(GtkAction *item, App *app);
+
+static void friends_menu_request(GtkAction *item, App *app);
 
 
 static void app_connection_items_setup(App *app, GtkBuilder *ui); 
@@ -249,6 +256,7 @@ static void app_setup(void){
 
 					"main_scrolledwindow", &scrolled_window,
 					"main_statusbar", &app_priv->statusbar,
+					
 					"view_combined_timeline", &app_priv->timeline_combined,
 					"view_public_timeline", &app_priv->timeline_public,
 					"view_friends_timeline", &app_priv->timeline_friends,
@@ -256,19 +264,33 @@ static void app_setup(void){
 					"view_direct_messages", &app_priv->timeline_dm,
 					"view_direct_replies", &app_priv->timeline_replies,
 					"view_favorites_timeline", &app_priv->timeline_favorites,
-					"friends_timelines", &app_priv->friends_timelines,
+					
+					"friends_menu_friends_manager", &app_priv->friends_menu_friends_manager,
+					"friends_menu_timelines", &app_priv->friends_menu_timelines,
+					"friends_menu_follow", &app_priv->friends_menu_follow,
+					"friends_menu_unfollow", &app_priv->friends_menu_unfollow,
+					"friends_menu_block", &app_priv->friends_menu_block,
+					"friends_menu_tweets", &app_priv->friends_menu_tweets,
+					"friends_menu_profile", &app_priv->friends_menu_profile,
+
 					"expand_box", &app_priv->expand_box,
 					"expand_vbox", &expand_vbox,
 					"expand_image", &app_priv->expand_image,
-					"expanded_tweet_reply_button", &app_priv->expanded_tweet_reply_button, 
-					"expanded_tweet_retweet_button", &app_priv->expanded_tweet_retweet_button,
+					
 					"expanded_tweet_dm_button", &app_priv->expanded_tweet_dm_button,
-					"expanded_tweet_make_fave_button", &app_priv->expanded_tweet_make_fave_button,
 					"expanded_tweet_view_users_profile_button", &app_priv->expanded_tweet_view_users_timeline_button,
 					"expanded_tweet_view_users_timeline_button", &app_priv->expanded_tweet_view_users_timeline_button,
+					
+					"expanded_tweet_user_follow_button", &app_priv->expanded_tweet_user_follow_button,
+					"expanded_tweet_user_unfollow_button", &app_priv->expanded_tweet_user_unfollow_button,
+					"expanded_tweet_user_block_button", &app_priv->expanded_tweet_user_block_button,
+					
+					"expanded_tweet_reply_button", &app_priv->expanded_tweet_reply_button, 
+					"expanded_tweet_retweet_button", &app_priv->expanded_tweet_retweet_button,
+					"expanded_tweet_make_fave_button", &app_priv->expanded_tweet_make_fave_button,
 				NULL
 	);
-	g_signal_connect(app_priv->window, "key-press-event", G_CALLBACK(app_key_pressed), app);
+	g_signal_connect(app_priv->window, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 
 	/* Grab the conf object */
 	conf = conf_get();
@@ -294,11 +316,6 @@ static void app_setup(void){
 				"tweets_save_fave", "activate", tweets_save_fave,
 				"tweets_new_dm", "activate", tweets_new_dm,
 				
-				"friends_manager", "activate", app_friends_manager_cb,
-				"friends_follow", "activate", friends_follow,
-				"friends_unfollow", "activate", friends_unfollow,
-				"friends_block", "activate", friends_block,
-				
 				"twitter_refresh", "activate", app_refresh_timeline,
 				"view_combined_timeline", "group-changed", app_timeline_cb,
 				"view_public_timeline", "group-changed", app_timeline_cb,
@@ -307,16 +324,29 @@ static void app_setup(void){
 				"view_direct_messages", "group-changed", app_timeline_cb,
 				"view_direct_replies", "group-changed", app_timeline_cb,
 				"view_favorites_timeline", "group-changed", app_timeline_cb,
-				"friends_timelines", "activate", app_following_viewer,
+				
+				"friends_menu_friends_manager", "activate", friends_menu_request,
+				"friends_menu_timelines", "activate", friends_menu_request,
+				"friends_menu_follow", "activate", friends_menu_request,
+				"friends_menu_unfollow", "activate", friends_menu_request,
+				"friends_menu_block", "activate", friends_menu_request,
+				"friends_menu_tweets", "activate", friends_menu_request,
+				"friends_menu_profile", "activate", friends_menu_request,
 				
 				"help_contents", "activate", app_help_contents_cb,
 				"help_about", "activate", app_about_cb,
+				
+				"expanded_tweet_dm_button", "clicked", tweets_new_dm,
+				"expanded_tweet_view_users_profile_button", "clicked", tweets_user_view_profile,
+				"expanded_tweet_view_users_timeline_button", "clicked", tweets_user_view_tweets,
+				
+				"expanded_tweet_user_follow_button", "clicked", tweets_user_follow,
+				"expanded_tweet_user_unfollow_button", "clicked", tweets_user_unfollow,
+				"expanded_tweet_user_block_button", "clicked", tweets_user_block,
+				
 				"expanded_tweet_reply_button", "clicked", tweets_reply,
 				"expanded_tweet_retweet_button", "clicked", tweets_retweet,
-				"expanded_tweet_dm_button", "clicked", tweets_new_dm,
 				"expanded_tweet_make_fave_button", "clicked", tweets_save_fave,
-				"expanded_tweet_view_users_profile_button", "clicked", tweets_view_selected_profile,
-				"expanded_tweet_view_users_timeline_button", "clicked", tweets_view_selected_timeline,
 			NULL
 	);
 
@@ -355,7 +385,7 @@ static void app_setup(void){
 	gtk_box_pack_end(GTK_BOX(expand_vbox),
 					   GTK_WIDGET(app_priv->expand_label),
 					   TRUE, TRUE, 0);
-	gtk_widget_hide(GTK_WIDGET(app_priv->expand_box));
+	//gtk_widget_hide(GTK_WIDGET(app_priv->expand_box));
 
 	/* Initial status of widgets */
 	app_state_on_connection(FALSE);
@@ -439,12 +469,6 @@ static void app_set_radio_group(App  *app, GtkBuilder *ui){
 		app_priv->group=gtk_radio_menu_item_get_group(item);
 	}
 }
-
-static void app_key_pressed(GtkWidget *widget, GdkEventKey *event, App *app){
-	tweets_hotkey(event);
-}//app_key_pressed
-
-
 
 
 static void app_toggle_visibility(void){
@@ -534,17 +558,32 @@ static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
 }
 
 
-static void app_following_viewer(GtkAction *action, App *app){
-	following_viewer_show(GTK_WINDOW(app_priv->window));
+static void friends_menu_request(GtkAction *action, App *app){
+	if(action == app_priv->friends_menu_friends_manager)
+		return friends_manager_show(GTK_WINDOW(app_priv->window));
+	
+	if(action == app_priv->friends_menu_timelines)
+		return following_viewer_show(GTK_WINDOW(app_priv->window));
+	
+	if(action == app_priv->friends_menu_follow)
+		return popup_friend_follow( GTK_WINDOW(app_priv->window) );
+	
+	if(action == app_priv->friends_menu_unfollow)
+		return popup_friend_unfollow( GTK_WINDOW(app_priv->window) );
+	
+	if(action == app_priv->friends_menu_block)
+		return popup_friend_block( GTK_WINDOW(app_priv->window) );
+	
+	if(action == app_priv->friends_menu_profile)
+		return popup_friend_profile( GTK_WINDOW(app_priv->window) );
+	
+	if(action == app_priv->friends_menu_tweets)
+		return popup_friend_tweets( GTK_WINDOW(app_priv->window) );
 }
 
 
 static void app_accounts_cb(GtkWidget *widget, App *app){
 	accounts_dialog_show(GTK_WINDOW(app_priv->window));
-}
-
-static void app_friends_manager_cb(GtkWidget *widget, App *app){
-	friends_manager_show(GTK_WINDOW(app_priv->window));
 }
 
 static void app_preferences_cb(GtkWidget *widget, App *app){
@@ -559,26 +598,11 @@ static void app_help_contents_cb(GtkWidget *widget, App *app){
 	help_show(GTK_WINDOW(app_priv->window));
 }
 
-static void friends_follow(GtkAction *item, App *app){
-	popup_friend_follow( GTK_WINDOW(app_priv->window) );
-}
-
-static void friends_unfollow(GtkAction *item, App *app){
-	popup_friend_unfollow( GTK_WINDOW(app_priv->window) );
-}
-
-static void friends_block(GtkAction *item, App *app){
-	popup_friend_block( GTK_WINDOW(app_priv->window) );
-}
-
 static void app_show_hide_cb( GtkWidget *widget, App *app ){
 	app_toggle_visibility();
 }
 
-static void
-app_status_icon_activate_cb(GtkStatusIcon *status_icon,
-							 App     *app)
-{
+static void app_status_icon_activate_cb(GtkStatusIcon *status_icon, App *app){
 	app_toggle_visibility();
 }
 
@@ -964,10 +988,7 @@ app_notify(gchar *msg)
 	NotifyNotification *notification;
 	GError             *error = NULL;
 
-	notification = notify_notification_new(PACKAGE_NAME,
-										msg,
-										PACKAGE_TARNAME,
-										NULL);
+	notification=notify_notification_new(PACKAGE_NAME, msg, PACKAGE_TARNAME, NULL);
 
 	notify_notification_set_timeout(notification, 8 * 1000);
 	notify_notification_show(notification, &error);
@@ -976,9 +997,7 @@ app_notify(gchar *msg)
 	if(!error)
 		return;
 	
-	debug(DEBUG_DOMAIN,
-				  "Error displaying notification: %s",
-				  error->message);
+	debug(DEBUG_DOMAIN, "Error displaying notification: %s", error->message);
 	g_error_free(error);
 }
 

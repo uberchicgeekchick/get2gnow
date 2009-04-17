@@ -65,8 +65,8 @@ static void accounts_response_cb( GtkWidget *widget, gint response, Account *act
 	
 	Conf *conf;
 	gchar *service=gtk_combo_box_get_active_text(GTK_COMBO_BOX(act->services));
-	gchar *username=(gchar *)gtk_entry_get_text( GTK_ENTRY(act->username) );
-	gchar *password=(gchar *)gtk_entry_get_text( GTK_ENTRY( act->password ) );
+	const gchar *username=gtk_entry_get_text( GTK_ENTRY(act->username) );
+	const gchar *password=gtk_entry_get_text( GTK_ENTRY( act->password ) );
 	
 	conf=conf_get();
 	conf_set_string(conf, PREFS_AUTH_SERVICE, service );
@@ -80,8 +80,6 @@ static void accounts_response_cb( GtkWidget *widget, gint response, Account *act
 	conf_set_string(conf, PREFS_AUTH_PASSWORD, password);
 #endif
 	g_free(service);
-	g_free(username);
-	g_free(password);
 	gtk_widget_destroy (widget);
 }
 

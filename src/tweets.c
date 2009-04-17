@@ -1,24 +1,53 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (C) 2009 Brian Pepple <bpepple@fedoraproject.org>
+ * get2gnow is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * For more information or to find the latest release, visit our
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Writen by an uberChick, other uberChicks please meet me & others @:
+ * 	http://uberChicks.Net/
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * I'm also disabled. I live with a progressive neuro-muscular disease.
+ * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
+ * 	http://Dystonia-DREAMS.Org/
  *
- * Authors: Kaity G. B. <uberChick@uberChicGeekChick.com>
+ *
+ *
+ * Unless explicitly acquired and licensed from Licensor under another
+ * license, the contents of this file are subject to the Reciprocal Public
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * and You may not copy or use this file in either source code or executable
+ * form, except in compliance with the terms and conditions of the RPL.
+ *
+ * All software distributed under the RPL is provided strictly on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND
+ * LICENSOR HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT
+ * LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific
+ * language governing rights and limitations under the RPL.
+ *
+ * The User-Visible Attribution Notice below, when provided, must appear in each
+ * user-visible display as defined in Section 6.4 (d):
+ * 
+ * Initial art work including: design, logic, programming, and graphics are
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * All materials not covered under the terms of the RPL are all still
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
+ * 
+ * Any & all data stored by this Software created, generated and/or uploaded by any User
+ * and any data gathered by the Software that connects back to the User.  All data stored
+ * by this Software is Copyright (C) of the User the data is connected to.
+ * Users may lisences their data under the terms of an OSI approved or Creative Commons
+ * license.  Users must be allowed to select their choice of license for each piece of data
+ * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
+ * select a default license for their data.  All of the Software's data pertaining to each
+ * User must be fully accessible, exportable, and deletable to that User.
  */
+
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -37,6 +66,7 @@
 #include "tweet-list.h"
 #include "profile-viewer.h"
 #include "ui-utils.h"
+#include "users.h"
 
 
 typedef struct SelectedTweet {
@@ -72,7 +102,7 @@ void tweets_show_submenu_entries(gboolean show){
 		g_object_set(l->data, "sensitive", show, NULL);
 }//tweets_show_submenu_entries
 
-void tweets_hotkey(GdkEventKey *event){
+void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 	switch( event->state ){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
@@ -112,9 +142,9 @@ void tweets_hotkey(GdkEventKey *event){
 				case GDK_S: case GDK_s:
 					return tweets_save_fave();
 				case GDK_I: case GDK_i:
-					return tweets_view_selected_profile();
+					return tweets_user_view_profile();
 				case GDK_H: case GDK_h:
-					return tweets_view_selected_timeline();
+					return tweets_user_view_tweets();
 				/*
 				case GDK_: case GDK_:
 					return tweets_();
@@ -171,9 +201,39 @@ void tweets_save_fave(void){
 	if(!selected_tweet)
 		return;
 	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
-	network_user_request(user_request_new(Fave), fave_tweet_id);
+	user_request_main(Fave, fave_tweet_id);
 	g_free(fave_tweet_id);
 }//tweets_save_fave
+
+void tweets_user_view_tweets(void){
+	if(!selected_tweet->user_name) return;
+	user_request_main(ViewTweets, selected_tweet->user_name);
+}//tweets_user_view_tweets
+
+void tweets_user_view_profile(void){
+	if(!selected_tweet->user_name) return;
+	user_request_main(ViewProfile, selected_tweet->user_name);
+}//tweets_user_view_profile
+
+void tweets_user_follow(void){
+	if(!selected_tweet->user_name) return;
+	user_request_main(Follow, selected_tweet->user_name);
+}//tweets_user_follow
+
+void tweets_user_unfollow(void){
+	if(!selected_tweet->user_name) return;
+	user_request_main(UnFollow, selected_tweet->user_name);
+}//tweets_user_unfollow
+
+void tweets_user_block(void){
+	if(!selected_tweet->user_name) return;
+	user_request_main(Block, selected_tweet->user_name);
+}//tweets_user_block
+
+void tweets_user_unblock(void){
+	if(!selected_tweet->user_name) return;
+	user_request_main(UnBlock, selected_tweet->user_name);
+}//tweets_user_unblock
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
@@ -181,14 +241,4 @@ void unset_selected_tweet(void){
 	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
 	if(selected_tweet) g_free(selected_tweet);
 }//unset_selected_tweet
-
-void tweets_view_selected_timeline(void){
-	if(!selected_tweet->user_name) return;
-	network_get_user_timeline(selected_tweet->user_name);
-}//tweets_view_selected_timeline
-
-void tweets_view_selected_profile(void){
-	if(!selected_tweet->user_name) return;
-	view_profile( selected_tweet->user_name, GTK_WINDOW(app_get_window()) );
-}//tweets_view_selected_profile
 

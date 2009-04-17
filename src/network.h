@@ -92,13 +92,13 @@ void network_get_user_timeline( const gchar *username );
 void network_refresh(void);
 
 /* Copyright (C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
-void network_user_request(FriendRequest *request, const gchar *user_data);
 void network_queue_uri( const gchar *uri, SoupSessionCallback callback, gpointer data);
 void network_queue( const gchar *uri, SoupSessionCallback callback, gpointer data);
 SoupMessage *network_get_uri( const gchar *uri );
 SoupMessage *network_get( const gchar *uri );
-void network_post_uri_data(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data);
-void network_post_data( const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data );
+void network_post_uri(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data);
+void network_post( const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data );
+gboolean network_check_http( SoupMessage *msg );		
 User *network_fetch_profile(const gchar *user_name);
 GList *network_get_friends_and_followers(gboolean use_cache);
 GList *network_get_users_glist(gboolean get_friends);
@@ -108,15 +108,6 @@ gboolean network_download_avatar( const gchar *image_uri );
 
 /* Get an image from servers */
 void network_get_image (const gchar *image_uri, GtkTreeIter iter);
-
-/* Add a user to follow */
-void network_follow_user(const gchar *username);
-
-/* Remove a user */
-void network_unfollow_user(const gchar *username);
-
-/* Remove a user */
-void network_block_user(const gchar *username);
 
 /* Networking */
 void network_new			(void);

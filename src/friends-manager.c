@@ -191,7 +191,7 @@ static void friends_manager_follow(GtkButton   *button, FriendsManager *friends_
 	
 	if(!(user_name)) return;
 	
-	network_follow_user(user_name);
+	user_request_main(Follow, (const gchar *)user_name);
 	g_free(following);
 	g_free(user_name);
 }
@@ -230,7 +230,7 @@ static void friends_manager_unfollow(GtkButton   *button, FriendsManager *friend
 		friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 	}
 
-	network_unfollow_user(user_name);
+	user_request_main(UnFollow, (const gchar *)user_name);
 	
 	g_free(following);
 	g_free(user_name);
@@ -259,7 +259,7 @@ static void friends_manager_block(GtkButton   *button, FriendsManager *friends_m
 	gtk_list_store_remove(GTK_LIST_STORE (friends_manager->friends_and_follows_model), &iter);
 	friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 
-	network_block_user(user_name);
+	user_request_main(Block, (const gchar *)user_name);
 	g_free( user_name );
 	g_free( following );
 }

@@ -200,13 +200,13 @@
 	<applyto>/apps/get2gnow/ui/spell</applyto>
 	<owner>get2gnow</owner>
 	<type>bool</type>
-	<default>false</default>
+	<default>true</default>
 	<locale name="C">
 	   <short>Enable spell checking</short>
 	   <long>Enable spell checking.</long>
 	</locale>
      </schema>
-     
+
      <schema>
       <key>/schemas/apps/get2gnow/hints/close_main_window</key>
       <applyto>/apps/get2gnow/hints/close_main_window</applyto>

@@ -70,7 +70,12 @@
 #include "friends-manager.h"
 #include "send-message-dialog.h"
 #include "following-viewer.h"
+#include "profile-viewer.h"
 
+static FriendRequest *user_request_new(FriendAction action, const gchar *user_data);
+static void user_request_process_get(FriendRequest *request);
+static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data);
+static void user_request_free(FriendRequest *request);
 
 static void users_free_foreach(gpointer user, gpointer users_list);
 static User *user_constructor( gboolean a_follower );
@@ -82,26 +87,47 @@ static User *user_constructor( gboolean a_follower );
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
-FriendRequest *user_request_new(FriendAction action){
+static FriendRequest *user_request_new(FriendAction action, const gchar *user_data){
+	if(G_STR_EMPTY(user_data))
+		return NULL;
+	
 	FriendRequest *request=g_new(FriendRequest, 1);
+	request->user_data=g_strdup(user_data);
 	request->action=action;
+	request->method=POST;
 	switch(request->action){
+		case ViewProfile:
+			request->message=g_strdup("profile view");
+			request->uri=g_strdup_printf(API_ABOUT_USER, request->user_data);
+			request->method=GET;
+			break;
+		case ViewTweets:
+			request->message=g_strdup("tweets display");
+			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_data);
+			request->method=GET;
+			break;
 		case Follow:
+			request->uri=g_strdup_printf(API_USER_FOLLOW, request->user_data);
 			request->message=g_strdup("follow");
 			break;
 		case UnFollow:
+			request->uri=g_strdup_printf(API_USER_UNFOLLOW, request->user_data);
 			request->message=g_strdup("unfollow");
 			break;
 		case Block:
+			request->uri=g_strdup_printf(API_USER_BLOCK, request->user_data);
 			request->message=g_strdup("block");
 			break;
 		case UnBlock:
+			request->uri=g_strdup_printf(API_USER_UNBLOCK, request->user_data);
 			request->message=g_strdup("unblock");
 			break;
 		case Fave:
+			request->uri=g_strdup_printf(API_FAVE, request->user_data);
 			request->message=g_strdup("star'");
 			break;
 		case UnFave:
+			request->uri=g_strdup_printf(API_UNFAVE, request->user_data);
 			request->message=g_strdup("delet");
 			break;
 		default:
@@ -111,7 +137,85 @@ FriendRequest *user_request_new(FriendAction action){
 	return request;
 }//user_request_new
 
-void user_request_free(FriendRequest *request){
+void user_request_main(FriendAction action, const gchar *user_data){
+	FriendRequest *request=NULL;
+	if(!(request=user_request_new(action, user_data)))
+		return;
+	
+	if(request->method == POST)
+		return network_post(request->uri, NULL, user_request_main_quit, request);
+	
+	SoupSession *session=NULL;
+	SoupMessage *msg=NULL;
+	user_request_main_quit(session, msg, (gpointer *)request);
+}//user_request_main
+
+void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
+	FriendRequest *request=(FriendRequest *)user_data;
+	switch(request->method){
+		case POST:
+			user_request_process_post(session, msg, user_data);
+			break;
+		case GET:
+			user_request_process_get(user_data);
+			break;
+	}//switch
+	user_request_free(request);
+}//user_request_main_quit
+
+static void user_request_process_get(FriendRequest *request){
+	switch(request->action){
+		case ViewTweets:
+			return network_get_user_timeline(request->user_data);
+		case ViewProfile:
+			return view_profile(request->user_data, GTK_WINDOW(app_get_window()));
+		case UnFollow:
+		case Block:
+		case Follow:
+		case Fave:
+		case UnFave:
+		case UnBlock:
+			break;
+	}//switch
+}//user_request_process_get
+
+static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer request_p){
+	FriendRequest *request=(FriendRequest *)request_p;
+	debug(DEBUG_DOMAIN, "%s user response: %i", request->message, msg->status_code);
+	
+	/* Check response */
+	if(!network_check_http(msg)){
+		app_statusbar_printf("Failed %sing.", request->message, NULL);
+		user_request_free(request);
+		return;
+	}
+	
+	/* parse new user */
+	debug(DEBUG_DOMAIN, "Parsing user response");
+	User *user=user_parse_new(msg->response_body->data, msg->response_body->length);
+	app_statusbar_printf("Successfully %sing.", request->message, NULL);
+	
+	switch(request->action){
+		case UnFollow:
+		case Block:
+			if(user) user_remove_friend(user);
+			break;
+		case Follow:
+			if(user) user_append_friend(user);
+			break;
+		case Fave:
+		case UnFave:
+		case UnBlock:
+		case ViewTweets:
+		case ViewProfile:
+			break;
+	}//switch
+	user_free(user);
+}//user_request_process_post
+
+
+static void user_request_free(FriendRequest *request){
+	g_free(request->uri);
 	g_free(request->message);
 	g_free(request);
 }//user_request_free
@@ -202,7 +306,7 @@ User *user_parse_profile(xmlNode *a_node){
 			user->tweets=strtoul( (const gchar *)tmp, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
-			user->image_filename=images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) );
+			user->image_filename=g_strdup( images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) ) );
 		
 		/* Free buffer content */
 		xmlBufferEmpty(buffer);

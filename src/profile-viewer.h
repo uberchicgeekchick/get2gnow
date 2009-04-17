@@ -55,6 +55,10 @@
 
 #include <glib.h>
 
-void view_profile( gchar *user_name, GtkWindow *parent );
+#ifndef view_profile
+#define view_profile( user_name, parent )	profile_viewer_show( user_name, parent );
+#endif
+
+void profile_viewer_show( const gchar *user_name, GtkWindow *parent );
 
 #endif //__PROFILE_VIEWER_H__

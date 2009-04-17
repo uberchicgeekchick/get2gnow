@@ -55,11 +55,8 @@ typedef struct {
 	GtkTreeIter   iter;
 } Image;
 
-static gboolean	network_check_http( SoupMessage *msg );
-
 /* libsoup callbacks */
 static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_user_request_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
 static void network_tweet_cb( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
@@ -169,6 +166,96 @@ void network_stop(void){
 	soup_session_abort(soup_connection);
 }
 
+/* Get data from net */
+SoupMessage *network_get_uri( const gchar *uri ){
+	SoupMessage *msg;
+	debug( DEBUG_DOMAIN, "Get: %s", uri );
+	
+	msg=soup_message_new( "GET", uri );
+	soup_session_send_message( soup_connection, msg );
+	if(network_check_http( msg ))
+		return msg;
+	return NULL;
+}
+
+
+
+/* Get data from net */
+SoupMessage *network_get( const gchar *uri ){
+	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
+	SoupMessage *msg=network_get_uri( (const gchar *)new_uri );
+	g_free(new_uri);
+	return msg;
+}
+
+/* Get data from net */
+void network_queue_uri( const gchar *uri, SoupSessionCallback callback, gpointer data){
+	debug(DEBUG_DOMAIN, "Get: %s",uri);
+	SoupMessage *msg=soup_message_new( "GET", uri );
+	soup_session_queue_message(soup_connection, msg, callback, data);
+}
+
+
+
+/* Get data from net */
+void network_queue( const gchar *uri, SoupSessionCallback callback, gpointer data){
+	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
+	network_queue_uri((const gchar *)new_uri, callback, data);
+	g_free(new_uri);
+}
+
+
+/* Private: Post data to net */
+void network_post_uri(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data){
+	SoupMessage *msg;
+	
+	debug( DEBUG_DOMAIN, "Post: %s", uri );
+	
+	msg=soup_message_new( "POST", uri );
+	
+	soup_message_headers_append( msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
+	soup_message_headers_append( msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
+	
+	if(formdata)
+		soup_message_set_request(
+						msg,
+						"application/x-www-form-urlencoded",
+						SOUP_MEMORY_TAKE,
+						formdata,
+						strlen( formdata )
+		);
+	
+	soup_session_queue_message(soup_connection, msg, callback, data);
+}
+
+void network_post(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data){
+	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
+	network_post_uri((const gchar *)new_uri, formdata, callback, data);
+	g_free(new_uri);
+}//vnetwork_post_data
+
+
+/* Check HTTP response code */
+gboolean network_check_http( SoupMessage *msg ){
+	const gchar *error=NULL;
+	if(msg->status_code == 401)
+		error=_("Access denied");
+	else if(SOUP_STATUS_IS_CLIENT_ERROR(msg->status_code))
+		error=_("HTTP communication error");
+	else if(SOUP_STATUS_IS_SERVER_ERROR(msg->status_code))
+		error=_("Internal server error");
+	else if(!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
+		error=_("Stopped");
+	else {
+		timer_main(msg);
+		return TRUE;
+	}
+	
+	app_statusbar_printf("%s: %s.", error, msg->reason_phrase);
+	
+	return FALSE;
+}
+
 
 /* Login in Twitter */
 void network_login(const char *username, const char *password){
@@ -211,14 +298,14 @@ void network_post_status(const gchar *text){
 		formdata=g_strdup_printf( "source=%s&status=%s", API_CLIENT_AUTH, text );
 	else
 		formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", API_CLIENT_AUTH, in_reply_to_status_id, text );
-	network_post_data( API_POST_STATUS, formdata, network_tweet_cb, g_strdup("Tweet") );
+	network_post( API_POST_STATUS, formdata, network_tweet_cb, g_strdup("Tweet") );
 }//network_post_status
 
 
 /* Send a direct message to a follower - text must be Url encoded  */
 void network_send_message( const gchar *friend, const gchar *text ){
 	gchar *formdata=g_strdup_printf( "source=%s&user=%s&text=%s", API_CLIENT_AUTH, friend, text );
-	network_post_data( API_SEND_MESSAGE, formdata, network_tweet_cb, g_strdup("DM") );
+	network_post( API_SEND_MESSAGE, formdata, network_tweet_cb, g_strdup("DM") );
 }
 
 void network_refresh(void){
@@ -233,9 +320,7 @@ void network_refresh(void){
 }
 
 /* Get and parse a timeline */
-void
-network_get_timeline(const gchar *uri_timeline)
-{
+void network_get_timeline(const gchar *uri_timeline){
 	if(processing)
 		return;
 
@@ -352,32 +437,6 @@ gboolean network_download_avatar( const gchar *image_uri ){
 }
 
 
-/* Get data from net */
-SoupMessage *network_get_uri( const gchar *uri ){
-	SoupMessage *msg;
-	debug( DEBUG_DOMAIN, "Get: %s", uri );
-	
-	msg=soup_message_new( "GET", uri );
-	soup_session_send_message( soup_connection, msg );
-	if(network_check_http( msg ))
-		return msg;
-	return NULL;
-}
-
-
-
-/* Get data from net */
-SoupMessage *network_get( const gchar *uri ){
-	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
-	SoupMessage *msg=NULL;
-	msg=network_get_uri( (const gchar *)new_uri );
-	g_free(new_uri);
-	return msg;
-}
-
-
-
-
 void network_get_image(const gchar *image_uri, GtkTreeIter iter ){
 	gchar *image_filename=NULL;
 	/* TODO: fix - check if image already exists */
@@ -394,129 +453,6 @@ void network_get_image(const gchar *image_uri, GtkTreeIter iter ){
 	network_queue_uri( image_uri, network_cb_on_image, image );
 }//network_get_image
 
-
-void network_user_request(FriendRequest *request, const gchar *user_data){
-	if((G_STR_EMPTY(user_data)))
-			return;
-	
-	gchar *uri=NULL;
-	switch(request->action){
-		case Fave:
-			uri=g_strdup_printf(API_FAVE, user_data);
-			break;
-		case UnFave:
-			uri=g_strdup_printf(API_UNFAVE, user_data);
-			break;
-		case UnFollow:
-			uri=g_strdup_printf(API_USER_UNFOLLOW, user_data);
-			break;
-		case Block:
-			uri=g_strdup_printf(API_USER_BLOCK, user_data);
-			break;
-		case UnBlock:
-			uri=g_strdup_printf(API_USER_UNBLOCK, user_data);
-			break;
-		case Follow:
-		default:
-			uri=g_strdup_printf(API_USER_FOLLOW, user_data);
-			break;
-	}//switch
-	network_post_data(uri, NULL, network_user_request_cb, request);
-	g_free(uri);
-}//network_process_user
-
-/* Add a user to follow */
-void network_follow_user(const gchar *username){
-	network_user_request(user_request_new(Follow), username);
-}
-
-
-
-/* Add a user to follow */
-void network_unfollow_user(const gchar *username){
-	network_user_request(user_request_new(UnFollow), username);
-}
-
-
-
-/* Block a user from following or messaging. */
-void network_block_user(const gchar *username){
-	network_user_request(user_request_new(Block), username);
-}
-
-
-/* Get data from net */
-void network_queue_uri( const gchar *uri, SoupSessionCallback callback, gpointer data){
-	SoupMessage *msg;
-	
-	debug(DEBUG_DOMAIN, "Get: %s",uri);
-	
-	msg=soup_message_new( "GET", uri );
-	soup_session_queue_message(soup_connection, msg, callback, data);
-}
-
-
-
-/* Get data from net */
-void network_queue( const gchar *uri, SoupSessionCallback callback, gpointer data){
-	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
-	network_queue_uri((const gchar *)new_uri, callback, data);
-	g_free(new_uri);
-}
-
-
-/* Private: Post data to net */
-void network_post_uri_data(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data){
-	SoupMessage *msg;
-	
-	debug( DEBUG_DOMAIN, "Post: %s", uri );
-	
-	msg=soup_message_new( "POST", uri );
-	
-	soup_message_headers_append( msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
-	soup_message_headers_append( msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
-	
-	if(formdata)
-		soup_message_set_request(
-						msg, 
-						"application/x-www-form-urlencoded",
-						SOUP_MEMORY_TAKE,
-						formdata,
-						strlen( formdata )
-		);
-
-	soup_session_queue_message(soup_connection, msg, callback, data);
-}
-
-void network_post_data(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data){
-	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
-	network_post_uri_data((const gchar *)new_uri, formdata, callback, data);
-	g_free(new_uri);
-}//vnetwork_post_data
-
-
-/* Check HTTP response code */
-static gboolean network_check_http( SoupMessage *msg ){
-	
-	const gchar *error=NULL;
-	if(msg->status_code == 401)
-		error=_("Access denied");
-	else if(SOUP_STATUS_IS_CLIENT_ERROR(msg->status_code))
-		error=_("HTTP communication error");
-	else if(SOUP_STATUS_IS_SERVER_ERROR(msg->status_code))
-		error=_("Internal server error");
-	else if(!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
-		error=_("Stopped");
-
-	else {
-		timer_main(msg);
-		return TRUE;
-	}
-	
-	app_statusbar_printf("%s: %s.", error, msg->reason_phrase);
-	
-	return FALSE;
-}
 
 /* HTTP Basic Authentication */
 static void
@@ -624,40 +560,6 @@ static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointe
 	
 	if(image->src) g_free(image->src); image->src=NULL;
 	if(image) g_free(image); image=NULL;
-}
-
-
-static void network_user_request_cb(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	FriendRequest *request=(FriendRequest *)user_data;
-	debug(DEBUG_DOMAIN, "%s user response: %i", request->message, msg->status_code);
-	
-	/* Check response */
-	if(!network_check_http(msg)){
-		app_statusbar_printf("Failed %sing.", request->message, NULL);
-		user_request_free(request);
-		return;
-	}
-	
-	/* parse new user */
-	debug(DEBUG_DOMAIN, "Parsing user response");
-	User *user=user_parse_new(msg->response_body->data, msg->response_body->length);
-	app_statusbar_printf("Successfully %sing.", request->message, NULL);
-	
-	switch(request->action){
-		case UnFollow:
-		case Block:
-			if(user) user_remove_friend(user);
-			break;
-		case Follow:
-			if(user) user_append_friend(user);
-			break;
-		case Fave:
-		case UnFave:
-		case UnBlock:
-			break;
-	}//switch
-	user_free(user);
-	user_request_free(request);
 }
 
 

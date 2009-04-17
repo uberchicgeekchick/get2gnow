@@ -84,7 +84,7 @@ typedef struct {
 
 
 
-void view_profile( gchar *user_name, GtkWindow *parent ){
+void profile_viewer_show( const gchar *user_name, GtkWindow *parent ){
 	gchar	*profile_details;
 	
 	ProfileViewer *profile_viewer=g_new( ProfileViewer, 1 );

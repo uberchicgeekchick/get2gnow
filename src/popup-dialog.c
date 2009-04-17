@@ -26,57 +26,71 @@
 #include "app.h"
 #include "popup-dialog.h"
 #include "network.h"
+#include "users.h"
+#include "profile-viewer.h"
 
 #define GtkBuilderUI "popup-dialog.ui"
 
 typedef struct {
 	GtkWidget	*dialog;
 	GtkWidget	*entry;
-	PopupUsage	usage;
+	FriendAction	action;
 } Popup;
 
-static gchar *popup_set_title( PopupUsage usage );
-static void popup_dialog_show( GtkWindow *parent, PopupUsage usage );
+static gchar *popup_set_title( FriendAction action );
+static void popup_dialog_show( GtkWindow *parent, FriendAction action );
 
 static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup );
 static void popup_destroy_cb( GtkWidget *widget, Popup *popup);
 
-static gboolean popup_validate_and_set_usage(Popup *popup, PopupUsage usage);
+static gboolean popup_validate_and_set_usage(Popup *popup, FriendAction action);
 
 static void popup_destroy_and_free( Popup *popup );
 
 
 
-static gchar *popup_set_title( PopupUsage usage ){
-	switch( usage ){
-		case PopupUnfollow:
-			return g_strdup( "Unfollow a friend:" );
-		case PopupBlock:
-			return g_strdup( "Block a user from reading your tweets and sending you messages:" );
-		case PopupFollow: default:
-			return g_strdup( "Follow a new friend:" );
+static gchar *popup_set_title( FriendAction action ){
+	switch( action ){
+		case Fave:
+		case UnFave:
+			break;
+		case ViewTweets:
+			return g_strdup( "View someone's resent tweets:" );
+		case ViewProfile:
+			return g_strdup( "View someone's profile:" );
+		case UnFollow:
+			return g_strdup( "Unfollow:" );
+		case Block:
+			return g_strdup( "Unblock this user, they'll be ablt to read your tweets and send you messages, again:" );
+		case UnBlock:
+			return g_strdup( "Who do you want to block:" );
+		case Follow:
+			return g_strdup( "Who do you want to follow:" );
 	}
+	return NULL;
 }//popup_set_title
 
 
 
 static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 	if( response != GTK_RESPONSE_OK )
-		return gtk_widget_destroy(widget);
+		return gtk_widget_hide(widget);
+	const gchar *username=gtk_entry_get_text(GTK_ENTRY(popup->entry));
 	
-	switch( popup->usage ){
-		case PopupBlock:
-			network_block_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
+	switch( popup->action ){
+		case Follow:
+		case UnFollow:
+		case Block:
+		case UnBlock:
+		case ViewTweets:
+		case ViewProfile:
+			user_request_main(popup->action, username);
 			break;
-		case PopupUnfollow:
-			network_unfollow_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
-			break;
-		case PopupFollow:
-			network_follow_user( gtk_entry_get_text(GTK_ENTRY(popup->entry)) );
+		case Fave:
+		case UnFave:
 			break;
 	}//switch
-	
-	gtk_widget_destroy(widget);
+	gtk_widget_hide(widget);
 }//popup_response_cb
 
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
@@ -89,46 +103,63 @@ static void popup_destroy_and_free( Popup *popup ){
 	g_free( popup );
 }//popup_destroy_and_free
 
-
 void popup_friend_follow( GtkWindow *parent ){
-	popup_dialog_show( GTK_WINDOW(parent), PopupFollow );
+	popup_dialog_show( GTK_WINDOW(parent), Follow );
 }
 
 void popup_friend_unfollow( GtkWindow *parent ){
-	popup_dialog_show( GTK_WINDOW(parent), PopupUnfollow );
+	popup_dialog_show( GTK_WINDOW(parent), UnFollow );
 }
 
 void popup_friend_block( GtkWindow *parent ){
-	popup_dialog_show( GTK_WINDOW(parent), PopupBlock );
-}//popup_friend_block
+	popup_dialog_show( GTK_WINDOW(parent), Block );
+}
 
-static gboolean popup_validate_and_set_usage(Popup *popup, PopupUsage usage){
-	switch( usage ){
-		case PopupBlock:
-		case PopupUnfollow:
-		case PopupFollow:
-			popup->usage=usage;
+void popup_friend_unblock( GtkWindow *parent ){
+	popup_dialog_show( GTK_WINDOW(parent), UnBlock );
+}//popup_friend_unblock
+
+void popup_friend_tweets( GtkWindow *parent ){
+	popup_dialog_show( GTK_WINDOW(parent), ViewTweets );
+}
+
+void popup_friend_profile( GtkWindow *parent ){
+	popup_dialog_show( GTK_WINDOW(parent), ViewProfile );
+}
+
+
+static gboolean popup_validate_and_set_usage(Popup *popup, FriendAction action){
+	switch( action ){
+		case ViewProfile:
+		case ViewTweets:
+		case Follow:
+		case UnFollow:
+		case Block:
+		case UnBlock:
+			popup->action=action;
 			return TRUE;
-		default:
-			app_statusbar_printf("This is currently not yet supported by %s.", PACKAGE_NAME);
-			return FALSE;
+		case Fave:
+		case UnFave:
+			break;
 	}//switch
+	app_statusbar_printf("This cannot be done using %s's popup prompt.", PACKAGE_NAME);
+	return FALSE;
 }//popup_validate_and_set_usage
 
 
-static void popup_dialog_show(GtkWindow *parent, PopupUsage usage ){
+static void popup_dialog_show(GtkWindow *parent, FriendAction action ){
 	static Popup *popup;
 	GtkBuilder *ui;
 
 	if( popup ){
-		if( popup->usage==usage )
+		if( popup->action==action )
 			return gtk_window_present( GTK_WINDOW(popup->dialog) );
 		popup_destroy_and_free(popup);
 	}
 
 	popup = g_new0(Popup, 1);
 	
-	if(!(popup_validate_and_set_usage(popup, usage)))
+	if(!(popup_validate_and_set_usage(popup, action)))
 		return;
 
 	/* Get widgets */
@@ -145,7 +176,7 @@ static void popup_dialog_show(GtkWindow *parent, PopupUsage usage ){
 
 	g_object_unref (ui);
 	
-	gchar *title=popup_set_title( usage );
+	gchar *title=popup_set_title( action );
 	gtk_window_set_title( GTK_WINDOW(popup->dialog), title );
 	g_free( title );
 	
@@ -156,3 +187,4 @@ static void popup_dialog_show(GtkWindow *parent, PopupUsage usage ){
 	/* Now that we're done setting up, let's show the widget */
 	gtk_widget_show (popup->dialog);
 }
+

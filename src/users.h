@@ -54,6 +54,7 @@
 
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
+#include <libsoup/soup.h>
 
 typedef struct {
 	unsigned long int	id;
@@ -73,6 +74,8 @@ typedef struct {
 
 /* Twitter follwer management */
 typedef enum {
+	ViewProfile,
+	ViewTweets,
 	Follow,
 	UnFollow,
 	Block,
@@ -81,17 +84,25 @@ typedef enum {
 	UnFave,
 } FriendAction;
 
+typedef enum {
+	POST,
+	GET,
+} FriendMethod;
+
 typedef struct {
 	FriendAction action;
+	FriendMethod method;
+	gchar *user_data;
 	gchar *message;
+	gchar *uri;
 } FriendRequest;
 
 
 #define usrcasecmp	user_sort_by_user_name
 #define	usrcmp		user_sort_by_user_name
 
-FriendRequest *user_request_new(FriendAction action);
-void user_request_free(FriendRequest *request);
+void user_request_main(FriendAction action, const gchar *user_data);
+void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 /* Parse a user-list XML( friends, followers,... ) */
 GList *users_new(const gchar *data, gssize length);
