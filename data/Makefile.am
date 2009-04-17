@@ -19,14 +19,11 @@ gtkbuilder_DATA = 			\
 	following-viewer.ui		\
 	accounts-dialog.ui
 
-icondir = $(datadir)/icons/hicolor/48x48/apps
-icon_DATA = get2gnow.png
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = get2gnow.svg
 	
 EXTRA_DIST =			\
-	$(gtkbuilder_DATA)		\
-	$(icon_DATA)		\
+	$(gtkbuilder_DATA)	\
 	$(svgicon_DATA)		\
 	$(desktop_in_files)	\
 	$(schemas_in_files)

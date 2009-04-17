@@ -599,7 +599,7 @@ preferences_notify_sensitivity_cb (Conf  *conf,
 	gboolean value;
 
 	if (conf_get_bool (conf, key, &value)) {
-		gtk_widget_set_sensitive (GTK_WIDGET (user_data), value);
+		gtk_widget_set_sensitive (GTK_WIDGET (user_data), TRUE);
 	}
 }
 

@@ -59,8 +59,7 @@ gtkbuilderDATA_INSTALL = $(INSTALL_DATA)
 iconDATA_INSTALL = $(INSTALL_DATA)
 schemasDATA_INSTALL = $(INSTALL_DATA)
 svgiconDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(desktop_DATA) $(gtkbuilder_DATA) $(icon_DATA) $(schemas_DATA) \
-	$(svgicon_DATA)
+DATA = $(desktop_DATA) $(gtkbuilder_DATA) $(schemas_DATA) $(svgicon_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
@@ -255,13 +254,10 @@ gtkbuilder_DATA = 			\
 	following-viewer.ui		\
 	accounts-dialog.ui
 
-icondir = $(datadir)/icons/hicolor/48x48/apps
-icon_DATA = get2gnow.png
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = get2gnow.svg
 EXTRA_DIST = \
 	$(gtkbuilder_DATA)	\
-	$(icon_DATA)		\
 	$(svgicon_DATA)		\
 	$(desktop_in_files)	\
 	$(schemas_in_files)
@@ -346,23 +342,6 @@ uninstall-gtkbuilderDATA:
 	  f=$(am__strip_dir) \
 	  echo " rm -f '$(DESTDIR)$(gtkbuilderdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(gtkbuilderdir)/$$f"; \
-	done
-install-iconDATA: $(icon_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(icondir)" || $(MKDIR_P) "$(DESTDIR)$(icondir)"
-	@list='$(icon_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(iconDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(icondir)/$$f'"; \
-	  $(iconDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(icondir)/$$f"; \
-	done
-
-uninstall-iconDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(icon_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(icondir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(icondir)/$$f"; \
 	done
 install-schemasDATA: $(schemas_DATA)
 	@$(NORMAL_INSTALL)
