@@ -72,18 +72,18 @@ static gboolean network_get_users_page(SoupMessage *msg);
 static gboolean 	network_timeout			(gpointer user_data);
 static void			network_timeout_new		(void);
 
-static SoupSession			*soup_connection = NULL;
+static SoupSession			*soup_connection=NULL;
 static GList *all_users=NULL;
 static gchar *current_timeline=NULL;
-static gboolean				 processing = FALSE;
+static gboolean				 processing=FALSE;
 static guint				 timeout_id;
-static gchar                *global_username = NULL;
-static gchar                *global_password = NULL;
+static gchar                *global_username=NULL;
+static gchar                *global_password=NULL;
 
 /* This function must be called at startup */
 void network_new(void) {
 	Conf	*conf;
-	gboolean	check_proxy = FALSE;
+	gboolean	check_proxy=FALSE;
 	
 	debug(DEBUG_DOMAIN, "Libsoup %sstarted",(soup_connection?"re-":"") );
 	
@@ -95,11 +95,9 @@ void network_new(void) {
 	soup_connection=soup_session_async_new_with_options( SOUP_SESSION_MAX_CONNS, 8,NULL );
 	
 	/* Set the proxy, if configuration is set */
-	conf = conf_get();
-	conf_get_bool(conf,
-						  PROXY_USE,
-						  &check_proxy);
-
+	conf=conf_get();
+	conf_get_bool(conf, PROXY_USE, &check_proxy);
+	
 	if(!check_proxy) return;
 	
 	gchar *server=NULL;
@@ -108,11 +106,10 @@ void network_new(void) {
 	/* Get proxy */
 	conf_get_string(conf, PROXY_HOST, &server);
 	conf_get_int(conf, PROXY_PORT, &port);
-
-	if(!(server && server[0])){
-		if(server) g_free(server);
+	
+	if(G_STR_EMPTY(server))
 		return;
-	}
+	
 	SoupURI *suri;
 	gchar *proxy_uri=NULL;
 	
@@ -137,12 +134,8 @@ void network_new(void) {
 		
 	/* Setup proxy info */
 	suri=soup_uri_new(proxy_uri);
-	g_object_set( G_OBJECT( soup_connection ),
-				SOUP_SESSION_PROXY_URI,
-				suri,
-				NULL
-	);
-		
+	g_object_set( G_OBJECT( soup_connection ), SOUP_SESSION_PROXY_URI, suri, NULL );
+	
 	soup_uri_free(suri);
 	g_free(server);
 	g_free(proxy_uri);
@@ -315,7 +308,7 @@ void network_refresh(void){
 	/* UI */
 	app_set_statusbar_msg(_("Loading timeline..."));
 
-	processing = TRUE;
+	processing=TRUE;
 	network_queue(current_timeline, network_cb_on_timeline, NULL );
 }
 
@@ -401,13 +394,13 @@ static gboolean network_get_users_page(SoupMessage *msg){
 	
 	/* Check response */
 	if(!network_check_http( msg ))
-		return(gboolean)FALSE;
+		return FALSE;
 
 	/* parse user list */
 	debug(DEBUG_DOMAIN, "Parsing user list");
 	GList *new_users;
 	if(!(new_users=users_new(msg->response_body->data, msg->response_body->length)) )
-		return(gboolean)FALSE;
+		return FALSE;
 	
 	if(!all_users)
 		all_users=new_users;
@@ -503,7 +496,7 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 
 /* On get a timeline */
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data ){
-	gchar        *new_timeline = NULL;
+	gchar        *new_timeline=NULL;
 	
 	if(user_data){
 		new_timeline =(gchar *)user_data;
@@ -511,7 +504,7 @@ static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpoi
 
 	debug( DEBUG_DOMAIN, "Timeline response: %i",msg->status_code);
 
-	processing = FALSE;
+	processing=FALSE;
 
 	/* Timeout */
 	network_timeout_new();
@@ -530,7 +523,7 @@ static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpoi
 
 		if(new_timeline){
 			if(current_timeline) g_free(current_timeline); current_timeline=NULL;
-			current_timeline = g_strdup(new_timeline);
+			current_timeline=g_strdup(new_timeline);
 		}
 	} else {
 		app_set_statusbar_msg(_("Timeline Parser Error."));
@@ -598,10 +591,10 @@ static gboolean network_timeout(gpointer user_data){
 	debug(DEBUG_DOMAIN,
 				  "Auto reloading. Timeout: %i", timeout_id);
 
-	processing = TRUE;
+	processing=TRUE;
 	network_queue(current_timeline, network_cb_on_timeline, NULL);
 
-	timeout_id = 0;
+	timeout_id=0;
 
 	return FALSE;
 }

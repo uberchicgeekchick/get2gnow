@@ -333,8 +333,8 @@ GList *users_new(const gchar *data, gssize length){
 	xmlNode		*root_element=NULL;
 	xmlNode		*cur_node=NULL;
 	
-	GList		*list=g_list_alloc();
-	User		*user;
+	GList		*list=NULL;
+	User		*user=NULL;
 	
 	/* parse the xml */
 	if(!( (doc=parser_parse(data, length, &root_element)) )){
@@ -468,7 +468,7 @@ GList *user_get_friends(void){
  */
 GList *user_get_followers(void){
 	if(user_followers) return user_followers;
-	user_followers=network_get_users_glist((gboolean)FALSE);	
+	user_followers=network_get_users_glist((gboolean)FALSE);
 	message_set_followers(user_followers);
 	return NULL;
 }

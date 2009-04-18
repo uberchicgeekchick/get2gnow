@@ -84,7 +84,7 @@ static SelectedTweet *selected_tweet=NULL;
 
 void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet){
 	/*	id=strtoul( char id, NULL, 10 );	*/
-	if(selected_tweet) g_free(selected_tweet);
+	if(selected_tweet) unset_selected_tweet();
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->id=id;
 	selected_tweet->user_name=g_strdup(user_name);
@@ -239,6 +239,6 @@ void unset_selected_tweet(void){
 	if(!selected_tweet) return;
 	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
 	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
-	if(selected_tweet) g_free(selected_tweet);
+	g_free(selected_tweet);
 }//unset_selected_tweet
 
