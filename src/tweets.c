@@ -122,6 +122,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 					return g_signal_emit_by_name(app_get_menu(""), "activate");
 				*/
 			}
+			return;
 		case GDK_SHIFT_MASK:
 			if(event->keyval==GDK_Return)
 				return tweets_new_dm();
@@ -150,6 +151,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 					return tweets_();
 				*/
 			}
+			return;
 		default:
 			switch( event->keyval ){
 				case GDK_F1: return help_show( app_get_window() );
@@ -159,6 +161,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_asciitilde: return tweets_new_dm();
 			}
 			tweet_list_key_pressed(GTK_WIDGET(app_get_tweet_list()), event, app_get_tweet_list());
+			return;
 	}
 }//tweets_hotkey
 

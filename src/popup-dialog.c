@@ -74,7 +74,7 @@ static gchar *popup_set_title( FriendAction action ){
 
 static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 	if( response != GTK_RESPONSE_OK )
-		return gtk_widget_hide(widget);
+		return gtk_widget_destroy(widget);
 	
 	switch( popup->action ){
 		case Follow:
@@ -98,7 +98,6 @@ static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
 
 static void popup_destroy_and_free( Popup *popup ){
 	gtk_widget_destroy( GTK_WIDGET(popup->dialog) );
-	gtk_widget_destroy(GTK_WIDGET(popup->entry));
 	g_free( popup );
 }//popup_destroy_and_free
 

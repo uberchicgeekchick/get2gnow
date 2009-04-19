@@ -110,7 +110,7 @@ static void following_view_profile(GtkButton *button, Followers *following);
  ********************************************************/
 
 static void following_response_cb(GtkWidget *widget, gint response, Followers *following){
-	gtk_widget_hide(widget);
+	gtk_widget_destroy(widget);
 }
 
 static void following_destroy_cb( GtkWidget *widget, Followers *following){
@@ -234,7 +234,6 @@ list_following_activated_cb (GtkTreeView       *tree_view,
 	network_get_user_timeline((const gchar *)user_name);
 
 	g_free(user_name);
-	gtk_widget_hide(GTK_WIDGET(following->viewer));
 	g_free(following);
 }
 

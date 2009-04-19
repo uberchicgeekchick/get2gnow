@@ -190,8 +190,8 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 
 
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
-	if( event->state == GDK_CONTROL_MASK ) return tweets_hotkey(widget, event);
-	if(event->keyval !=GDK_Return ) return tweet_list_move(event, list);
+	if(event->state == GDK_CONTROL_MASK) return tweets_hotkey(widget, event);
+	if(event->keyval != GDK_Return) return tweet_list_move(event, list);
 	
 	switch(event->state){
 		case GDK_CONTROL_MASK: return tweets_new_tweet();

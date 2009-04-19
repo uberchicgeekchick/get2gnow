@@ -317,13 +317,13 @@ static void app_setup(void){
 				"tweets_new_dm", "activate", tweets_new_dm,
 				
 				"twitter_refresh", "activate", app_refresh_timeline,
-				"view_combined_timeline", "group-changed", app_timeline_cb,
-				"view_public_timeline", "group-changed", app_timeline_cb,
-				"view_friends_timeline", "group-changed", app_timeline_cb,
-				"view_my_timeline", "group-changed", app_timeline_cb,
-				"view_direct_messages", "group-changed", app_timeline_cb,
-				"view_direct_replies", "group-changed", app_timeline_cb,
-				"view_favorites_timeline", "group-changed", app_timeline_cb,
+				"view_combined_timeline", "activate", app_timeline_cb,
+				"view_public_timeline", "activate", app_timeline_cb,
+				"view_friends_timeline", "activate", app_timeline_cb,
+				"view_my_timeline", "activate", app_timeline_cb,
+				"view_direct_messages", "activate", app_timeline_cb,
+				"view_direct_replies", "activate", app_timeline_cb,
+				"view_favorites_timeline", "activate", app_timeline_cb,
 				
 				"friends_menu_friends_manager", "activate", friends_menu_request,
 				"friends_menu_timelines", "activate", friends_menu_request,
@@ -354,9 +354,6 @@ static void app_setup(void){
 	app_connection_items_setup(app, ui);
 	g_object_unref(ui);
 
-	/* Let's hide the main window, while we are setting up the ui */
-	gtk_widget_hide(GTK_WIDGET(app_priv->window));
-
 	/* Set-up the notification area */
 	debug(DEBUG_DOMAIN,
 			"Configuring notification area widget...");
@@ -385,8 +382,7 @@ static void app_setup(void){
 	gtk_box_pack_end(GTK_BOX(expand_vbox),
 					   GTK_WIDGET(app_priv->expand_label),
 					   TRUE, TRUE, 0);
-	//gtk_widget_hide(GTK_WIDGET(app_priv->expand_box));
-
+	
 	/* Initial status of widgets */
 	app_state_on_connection(FALSE);
 
@@ -403,7 +399,7 @@ static void app_setup(void){
 		gtk_widget_show(GTK_WIDGET(app_priv->window));
 	else
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
-
+	
 	/*Check to see if we should automatically login */
 	conf_get_bool(conf, PREFS_AUTH_AUTO_LOGIN, &login);
 	
@@ -500,9 +496,7 @@ static void app_toggle_visibility(void){
 						  visible);
 }
 
-void
-app_set_visibility(gboolean visible)
-{
+void app_set_visibility(gboolean visible){
 	GtkWindow *window=app_get_window();
 	conf_set_bool(conf_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, !visible);
 
@@ -532,6 +526,7 @@ void app_refresh_timeline(GtkWidget *window, App *app){
 }
 
 static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
+	debug(DEBUG_DOMAIN, "Switching timelines. MenuItem selected: %s", gtk_menu_item_get_label(GTK_MENU_ITEM(item)) );
 	if(app_priv->timeline_combined==item)
 		return network_get_combined_timeline();
 	
@@ -651,7 +646,7 @@ app_status_icon_create_menu(void)
 	new_msg = gtk_action_new("tray_new_message", _("_New Tweet"), NULL, "gtk-new");
 	g_signal_connect(G_OBJECT(new_msg), "activate", G_CALLBACK(tweets_new_tweet), app);
 	
-	new_dm = gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-leave-fullscreen");
+	new_dm = gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-jump-to");
 	g_signal_connect(G_OBJECT(new_dm), "activate", G_CALLBACK(tweets_new_dm), app);
 	
 	about = gtk_action_new("tray_about", _("_About"), NULL, "gtk-about");

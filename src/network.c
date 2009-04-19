@@ -47,6 +47,7 @@
 #include "following-viewer.h"
 #include "tweets.h"
 #include "timer.h"
+#include "oauth.h"
 
 #define DEBUG_DOMAIN	  "Network"
 

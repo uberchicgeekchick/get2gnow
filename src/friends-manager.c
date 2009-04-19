@@ -121,7 +121,7 @@ static void friends_manager_destroy(GtkWidget *widget, FriendsManager *friends_m
 
 
 static void friends_manager_response(GtkWidget *widget, gint response, FriendsManager *friends_manager){
-	gtk_widget_hide(widget);
+	gtk_widget_destroy(widget);
 }//friends_message_response
 
 

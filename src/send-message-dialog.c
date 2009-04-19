@@ -233,9 +233,8 @@ void message_set_followers(GList *followers){
 	}
 }
 
-void message_show_friends(gboolean show_friends)
-{
-	dialog_priv->show_friends = show_friends;
+void message_show_friends(gboolean show_friends){
+	dialog_priv->show_friends=show_friends;
 
 	if(!show_friends){
 		gtk_widget_hide( dialog_priv->friends_combo );

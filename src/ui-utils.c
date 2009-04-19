@@ -76,10 +76,9 @@ window_present (GtkWindow *window,
 
 	on_current = window_get_is_on_current_workspace (window);
 
-	if (visible && !on_current) {
-		/* Hide it so present brings it to the current workspace. */
+	if (visible && !on_current)
 		gtk_widget_hide (GTK_WIDGET (window));
-	}
+		/* Hide it so present brings it to the current workspace. */
 
 	timestamp = gtk_get_current_event_time ();
 	if (steal_focus && timestamp != GDK_CURRENT_TIME) {
