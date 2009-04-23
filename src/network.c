@@ -61,7 +61,7 @@ static void network_cb_on_login( SoupSession *session, SoupMessage *msg, gpointe
 static void network_tweet_cb( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
 static void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
-static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data );
+static void network_cb_on_auth( SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data );
 
 /* Copyright(C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 gboolean getting_followers=FALSE;
@@ -78,8 +78,39 @@ static GList *all_users=NULL;
 static gchar *current_timeline=NULL;
 static gboolean				 processing=FALSE;
 static guint				 timeout_id;
-static gchar                *global_username=NULL;
-static gchar                *global_password=NULL;
+
+
+SoupSession *network_get_connection(void){
+	return soup_connection;
+}//network_get_connection
+
+gchar *url_encode_message(gchar *text){
+	const char        *good;
+	static const char  hex[16] = "0123456789ABCDEF";
+	GString           *result;
+	
+	g_return_val_if_fail(text != NULL, NULL);
+	g_return_val_if_fail(*text != '\0', NULL);
+	
+	/* RFC 3986 */ 
+	good = "~-._";
+	
+	result = g_string_new(NULL);
+	while(*text) {
+		unsigned char c = *text++;
+		
+		if(g_ascii_isalnum(c) || strchr(good, c))
+			g_string_append_c(result, c);
+		else {
+			g_string_append_c(result, '%');
+			g_string_append_c(result, hex[c >> 4]);
+			g_string_append_c(result, hex[c & 0xf]);
+		}
+	}
+	
+	return g_string_free(result, FALSE);
+}
+
 
 /* This function must be called at startup */
 void network_new(void) {
@@ -93,7 +124,7 @@ void network_new(void) {
 		network_close();
 
 	/* Async connections */
-	soup_connection=soup_session_async_new_with_options( SOUP_SESSION_MAX_CONNS, 8,NULL );
+	soup_connection=soup_session_async_new_with_options( SOUP_SESSION_MAX_CONNS, 8, NULL );
 	
 	/* Set the proxy, if configuration is set */
 	conf=conf_get();
@@ -130,7 +161,7 @@ void network_new(void) {
 		g_free(user);
 		g_free(password);
 	}
-		
+	
 	debug( DEBUG_DOMAIN, "Proxy uri: %s", proxy_uri );
 		
 	/* Setup proxy info */
@@ -176,7 +207,7 @@ SoupMessage *network_get_uri( const gchar *uri ){
 
 /* Get data from net */
 SoupMessage *network_get( const gchar *uri ){
-	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
+	gchar *new_uri=g_strdup_printf("https://%s%s", API_SERVICE, uri );
 	SoupMessage *msg=network_get_uri( (const gchar *)new_uri );
 	g_free(new_uri);
 	return msg;
@@ -193,7 +224,7 @@ void network_queue_uri( const gchar *uri, SoupSessionCallback callback, gpointer
 
 /* Get data from net */
 void network_queue( const gchar *uri, SoupSessionCallback callback, gpointer data){
-	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
+	gchar *new_uri=g_strdup_printf("https://%s%s", API_SERVICE, uri );
 	network_queue_uri((const gchar *)new_uri, callback, data);
 	g_free(new_uri);
 }
@@ -223,7 +254,7 @@ void network_post_uri(const gchar *uri, gchar *formdata, SoupSessionCallback cal
 }
 
 void network_post(const gchar *uri, gchar *formdata, SoupSessionCallback callback, gpointer data){
-	gchar *new_uri=g_strdup_printf("%s%s", API_SERVICE, uri );
+	gchar *new_uri=g_strdup_printf("https://%s%s", API_SERVICE, uri );
 	network_post_uri((const gchar *)new_uri, formdata, callback, data);
 	g_free(new_uri);
 }//vnetwork_post_data
@@ -252,30 +283,26 @@ gboolean network_check_http( SoupMessage *msg ){
 
 
 /* Login in Twitter */
-void network_login(const char *username, const char *password){
-	debug(DEBUG_DOMAIN, "Begin login.. ");
-
-	if(global_username) g_free(global_username); global_username=NULL;
-	global_username=g_strdup(username);
-	if(global_password) g_free(global_password); global_password=NULL;
-	global_password=g_strdup(password);
-
-	app_set_statusbar_msg(_("Connecting..."));
-
-	debug(DEBUG_DOMAIN, "Authenticating https://%s:%s@ %s ", global_username, global_password, "twitter.com" );
-	/* HTTP Basic Authentication */
-	g_signal_connect(soup_connection, "authenticate", G_CALLBACK(network_cb_on_auth), NULL);
-
-	/* Verify cedentials */
-	network_queue(API_LOGIN, network_cb_on_login, NULL);
+void network_login(OAuthService **services){
+	for(int i=0; services[i]; i++){
+		debug(DEBUG_DOMAIN, "Logging on to %s...", services[i]->account->auth_uri);
+		
+		app_set_statusbar_msg(_("Connecting..."));
+		
+		debug(DEBUG_DOMAIN, "Authenticating https://%s:%s@ %s ", services[i]->account->username, services[i]->account->password, services[i]->account->auth_uri);
+		/* HTTP Basic Authentication */
+		g_signal_connect(soup_connection, "authenticate", G_CALLBACK(network_cb_on_auth), services[i]);
+		
+		/* Verify cedentials */
+		network_queue(API_LOGIN, network_cb_on_login, NULL);
+		break;
+	}
 }
 
 
 /* Logout current user */
 void network_logout(void){
 	network_new();
-	if(global_username) g_free(global_username);
-	if(global_password) g_free(global_password);
 	if(current_timeline) {
 		g_free(current_timeline);
 		current_timeline=NULL;
@@ -333,9 +360,11 @@ void network_get_timeline(const gchar *uri_timeline){
 void network_get_user_timeline(const gchar *username){
 	gchar *user_id;
 
-	if(!username)
-		conf_get_string(conf_get(), PREFS_AUTH_USER_ID, &user_id);
-	else
+	if(!username){
+		gchar *prefs_auth_path=g_strdup_printf( PREFS_AUTH_USERNAME, API_SERVICE );
+		conf_get_string(conf_get(), prefs_auth_path, &user_id);
+		g_free(prefs_auth_path);
+	} else
 		user_id=g_strdup(username);
 
 	if(!G_STR_EMPTY(user_id)) {
@@ -351,11 +380,12 @@ void network_get_user_timeline(const gchar *username){
 GList *network_get_users_glist(gboolean get_friends){
 	SoupMessage *msg;
 	gint page=0; 
-
+	
 	gchar *uri;
 	all_users=NULL;
 	gboolean fetching=TRUE;
 	getting_followers=!get_friends;
+	
 	while(fetching){
 		page++;
 		uri=g_strdup_printf("%s?page=%d",(get_friends?API_FOLLOWING:API_FOLLOWERS), page);
@@ -364,6 +394,7 @@ GList *network_get_users_glist(gboolean get_friends){
 		fetching=network_get_users_page(msg);
 		if(uri) g_free(uri); uri=NULL;
 	}
+	
 	if(!all_users)
 		app_set_statusbar_msg( _("Users parser error.") );
 	else
@@ -449,35 +480,40 @@ void network_get_image(const gchar *image_uri, GtkTreeIter iter ){
 
 
 /* HTTP Basic Authentication */
-static void
-network_cb_on_auth(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer data){
+static void network_cb_on_auth(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data){
+	OAuthService *service=(OAuthService *)user_data;
 	/* Don't bother to continue if there is no user_id */
-	if(G_STR_EMPTY(global_username))
+	if(G_STR_EMPTY(service->account->username))
 		return debug(DEBUG_DOMAIN, "Authentication error: unknown username.");
 
+	if(service->oauth_enabled){
+		soup_auth_update(auth, msg, g_strdup_printf("OAuth realm=\"https://%s/\"", service->account->auth_uri));
+		soup_auth_authenticate(auth, service->account->username, service->account->password);
+	}
 	/* verify that the password has been set */
-	if(G_STR_EMPTY(global_password))
+	if(G_STR_EMPTY(service->account->password))
 		return debug(DEBUG_DOMAIN, "Authentication error: unknown password.");
-
-	soup_auth_authenticate(auth, global_username, global_password);
+	
+	if(service->oauth_enabled){
+		gchar *request_uri=g_strdup_printf("https://%s%s", service->account->auth_uri, API_LOGIN);
+		soup_auth_update(auth, msg, oauth_get_auth_headers(service, GET, request_uri));
+		g_free(request_uri);
+	}
+	soup_auth_authenticate(auth, service->account->username, service->account->password);
 }
 
 
 /* On verify credentials */
-static void
-network_cb_on_login(SoupSession *session,
-					 SoupMessage *msg,
-					 gpointer     user_data)
-{
+static void network_cb_on_login(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	debug(DEBUG_DOMAIN, "Login response: %i",msg->status_code);
-
+	
 	timer_init();
 	if(network_check_http( msg )) {
 		debug(DEBUG_DOMAIN, "Loading default timeline");
 		app_state_on_connection(TRUE);
 		return;
 	}
-
+	
 	timer_deinit();
 	app_state_on_connection(FALSE);
 }

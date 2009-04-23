@@ -275,33 +275,6 @@ void message_set_message(const gchar *message){
 	gtk_window_set_focus(GTK_WINDOW(dialog_priv->dialog), dialog_priv->textview);
 }
 
-static gchar *url_encode_message(gchar *text){
-	const char        *good;
-	static const char  hex[16] = "0123456789ABCDEF";
-	GString           *result;
-
-	g_return_val_if_fail(text != NULL, NULL);
-	g_return_val_if_fail(*text != '\0', NULL);
-
-	/* RFC 3986 */ 
-	good = "~-._";
-
-	result = g_string_new(NULL);
-	while(*text) {
-		unsigned char c = *text++;
-
-		if(g_ascii_isalnum(c) || strchr(good, c))
-			g_string_append_c(result, c);
-		else {
-			g_string_append_c(result, '%');
-			g_string_append_c(result, hex[c >> 4]);
-			g_string_append_c(result, hex[c & 0xf]);
-		}
-	}
-
-	return g_string_free(result, FALSE);
-}
-
 static void message_set_characters_available( GtkTextBuffer *buffer ){
 	gint i;
 	gint count;
@@ -521,7 +494,7 @@ message_response_cb( GtkWidget *widget, gint response ){
 	gchar          *good_msg;
 		
 	text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, TRUE);
-	good_msg = url_encode_message(text);
+	good_msg=url_encode_message(text);
 	g_free(text);
 	
 	if(!dialog_priv->show_friends) {

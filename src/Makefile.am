@@ -2,7 +2,7 @@ C_STD_MODE=gnu99
 AM_CFLAGS=						\
 	-I$(top_srcdir)                          	\
 	-I${top_builddir}				\
-	-DBUILDDIR=\""${top_builddir}"\"		\
+	-DBUILDDIR=\""${abs_top_builddir}"\"		\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"              	\
@@ -35,6 +35,7 @@ get2gnow_SOURCES = 				\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
 	label.c			label.h			\
+	oauth.c			oauth.h			\
 	network.c		network.h		\
 	timer.c			timer.h			\
 	parser.c		parser.h		\

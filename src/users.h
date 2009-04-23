@@ -55,6 +55,7 @@
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
+#include "oauth.h"
 
 typedef struct {
 	unsigned long int	id;
@@ -84,14 +85,9 @@ typedef enum {
 	UnFave,
 } FriendAction;
 
-typedef enum {
-	POST,
-	GET,
-} FriendMethod;
-
 typedef struct {
 	FriendAction action;
-	FriendMethod method;
+	RequestMethod method;
 	GtkWindow *parent;
 	gchar *user_data;
 	gchar *message;

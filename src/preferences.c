@@ -142,11 +142,7 @@ static void preferences_int_combo_changed_cb       (GtkWidget              *comb
 static void preferences_destroy_cb                 (GtkWidget              *widget,
 													Prefs            *prefs);
 
-static void
-preferences_setup_widgets (Prefs *prefs)
-{
-	preferences_hookup_toggle_button( prefs, PREFS_AUTH_AUTO_LOGIN, prefs->autoconnect );
-
+static void preferences_setup_widgets (Prefs *prefs){
 	preferences_hookup_toggle_button( prefs, PREFS_UI_NOTIFICATION, prefs->notify );
 
 	preferences_hookup_toggle_button( prefs, PREFS_UI_SOUND, prefs->sound );

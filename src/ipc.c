@@ -74,7 +74,7 @@
  */
 #include "app.h"
 
-#ifndef DEBUG
+#ifndef GNOME_ENABLE_DEBUG
 #define PIPE_PREFIX         "%s-%s-"
 #else
 #define PIPE_PREFIX		"%s-debug-%s-"

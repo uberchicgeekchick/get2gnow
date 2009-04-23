@@ -58,8 +58,8 @@ typedef struct {
 } Status;
 
 static Status *parser_node_status(xmlNode *a_node);
-static gchar *parser_convert_time (const char *datetime);
-static gboolean display_notification ( gpointer tweet );
+static gchar *parser_convert_time(const char *datetime);
+static gboolean display_notification( gpointer tweet );
 
 /* id of the newest tweet showed */
 static unsigned long int last_id=0;
@@ -99,9 +99,7 @@ static gboolean display_notification(gpointer tweet){
 
 
 /* Parse a timeline XML file */
-gboolean
-parser_timeline(const gchar *data, 
-						gssize       length){
+gboolean parser_timeline(const gchar *data, gssize length){
 	xmlDoc		    *doc          = NULL;
 	xmlNode		    *root_element = NULL;
 	xmlNode		    *cur_node     = NULL;
@@ -218,8 +216,7 @@ parser_timeline(const gchar *data,
 	return TRUE;
 }
 
-static Status *
-parser_node_status(xmlNode *a_node){
+static Status *parser_node_status(xmlNode *a_node){
 	xmlNode		   *cur_node = NULL;
 	xmlBufferPtr	buffer;
 	Status   *status;
@@ -275,8 +272,7 @@ parser_node_status(xmlNode *a_node){
 	return status;
 }
 
-static gchar *
-parser_convert_time(const char *datetime){
+static gchar *parser_convert_time(const char *datetime){
 	struct tm	*ta;
 	struct tm	 post;
 	int			 seconds_local;
@@ -339,7 +335,6 @@ parser_convert_time(const char *datetime){
 }
 
 
-void
-parser_reset_lastid(){
+void parser_reset_lastid(){
 	last_id=0;
 }

@@ -103,8 +103,7 @@ struct _AppPriv {
 	GtkToggleAction		*popup_menu_show_app;
 	
 	/* Account related data */
-	char			*username;
-	char			*password;
+	OAuthService		**services;
 	
 	/* Misc */
 	guint			size_timeout_id;
@@ -166,7 +165,7 @@ static void friends_menu_request(GtkAction *item, App *app);
 
 
 static void app_connection_items_setup(App *app, GtkBuilder *ui); 
-static void app_login(App *app);
+static gboolean app_login(App *app);
 static void app_set_default_timeline(App *app, gchar *timeline);
 static void app_retrieve_default_timeline(void);
 static void app_status_icon_create_menu(void);
@@ -235,7 +234,6 @@ static void app_setup(void){
 	GtkBuilder	*ui;
 	GtkWidget	*scrolled_window;
 	GtkWidget	*expand_vbox;
-	gboolean	login;
 	gboolean	hidden;
 
 	debug(DEBUG_DOMAIN, "Beginning....");
@@ -400,20 +398,14 @@ static void app_setup(void){
 	else
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
 	
-	/*Check to see if we should automatically login */
-	conf_get_bool(conf, PREFS_AUTH_AUTO_LOGIN, &login);
-	
-	if(login) 
-		app_login(app);
-	
 	unset_selected_tweet();
-	tweets_show_submenu_entries((gboolean)FALSE);
+	if(app_login(app))
+		tweets_show_submenu_entries((gboolean)FALSE);
 }
 
 static void main_window_destroy_cb(GtkWidget *window, App *app){
 	unset_selected_tweet();
 	/* Add any clean-up code above this function call */
-	//gtk_main_quit();
 	gtk_widget_destroy( GTK_WIDGET(app_get_window()) );
 }
 
@@ -517,7 +509,6 @@ static void app_disconnect_cb(GtkWidget *widget, App *app){
 
 static void app_quit_cb(GtkWidget  *widget, App  *app){
 	gtk_main_quit();
-	//gtk_widget_destroy(app_priv->window);
 }
 
 void app_refresh_timeline(GtkWidget *window, App *app){
@@ -730,39 +721,27 @@ app_window_configure_event_cb(GtkWidget         *widget,
 return FALSE;
 }
 
-static void
-request_username_password(App *a)
-{
-		Conf    *conf;
-
+static gboolean app_login(App *a){
+	debug(DEBUG_DOMAIN, "Loading accounts.");
+	app_priv->services=g_malloc(sizeof(OAuthService)*1);
+	app_priv->services[0]=oauth_init("twitter.com");
+	debug(DEBUG_DOMAIN, "Accounts loaded.");
 	
-	conf = conf_get();
-
-	g_free(app_priv->username);
-	app_priv->username = NULL;
-	conf_get_string(conf,
-				PREFS_AUTH_USER_ID,
-				&app_priv->username);
-	g_free(app_priv->password);
-#ifdef HAVE_GNOME_KEYRING
-	app_priv->password = NULL;
-	if(G_STR_EMPTY(app_priv->username))
-		app_priv->password = NULL;
-	else if(!(keyring_get_password(app_priv->username, &app_priv->password)))
-		app_priv->password = NULL;
-#else
-	conf_get_string(conf, PREFS_AUTH_PASSWORD, &app_priv->password);
-#endif
-}
-
-static void app_login(App *a){
-	request_username_password(a);
-
-	if(G_STR_EMPTY(app_priv->username) || G_STR_EMPTY(app_priv->password))
-		return app_accounts_cb(NULL, a);
+	if(G_STR_EMPTY(app_priv->services[0]->account->username) || G_STR_EMPTY(app_priv->services[0]->account->password)){
+		debug(DEBUG_DOMAIN, "Loading account dialog for inital account setup.");
+		accounts_dialog_show(GTK_WINDOW(app_priv->window));
+		return FALSE;
+	}
 	
-	network_login(app_priv->username, app_priv->password);
+	if(!app_priv->services[0]->account->auto_connect){
+		debug(DEBUG_DOMAIN, "No account set to auto-connect to.  Returning to main window.");
+		return FALSE;
+	}
+	
+	debug(DEBUG_DOMAIN, "Beginning network login.");
+	network_login(app_priv->services);
 	app_retrieve_default_timeline();
+	return TRUE;
 }//app_login
 
 /*

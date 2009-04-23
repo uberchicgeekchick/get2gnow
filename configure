@@ -732,7 +732,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME='get2gnow'
 PACKAGE_TARNAME='get2gnow'
-PACKAGE_VERSION='0.0.0.eCa9'
+PACKAGE_VERSION='0.0.eC.aDD'
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"
@@ -22897,6 +22897,7 @@ if test -n "$get2gnow_CFLAGS"; then
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= \$LIBSOUP_REQUIRED
 	    libnotify
@@ -22912,6 +22913,7 @@ if test -n "$get2gnow_CFLAGS"; then
 	    \$gnome_keyring_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -22930,6 +22932,7 @@ if test -n "$get2gnow_CFLAGS"; then
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
   pkg_cv_get2gnow_CFLAGS=`$PKG_CONFIG --cflags "
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -22955,6 +22958,7 @@ if test -n "$get2gnow_LIBS"; then
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= \$LIBSOUP_REQUIRED
 	    libnotify
@@ -22970,6 +22974,7 @@ if test -n "$get2gnow_LIBS"; then
 	    \$gnome_keyring_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -22988,6 +22993,7 @@ if test -n "$get2gnow_LIBS"; then
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
   pkg_cv_get2gnow_LIBS=`$PKG_CONFIG --libs "
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -23020,6 +23026,7 @@ else
 fi
         if test $_pkg_short_errors_supported = yes; then
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -23036,6 +23043,7 @@ fi
 " 2>&1`
         else
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -23055,6 +23063,7 @@ fi
 	echo "$get2gnow_PKG_ERRORS" >&5
 
 	{ { echo "$as_me:$LINENO: error: Package requirements (
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify
@@ -23080,6 +23089,7 @@ and get2gnow_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
 echo "$as_me: error: Package requirements (
+	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_REQUIRED
 	    libnotify

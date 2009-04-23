@@ -63,6 +63,7 @@ get2gnow_SOURCES =				\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
 	label.c			label.h			\
+	oauth.c			oauth.h			\
 	network.c		network.h		\
 	timer.c			timer.h			\
 	parser.c		parser.h		\
@@ -97,6 +98,7 @@ get2gnow_OBJECTS =			\
 	label.$(OBJEXT)				\
 	timer.$(OBJEXT)				\
 	parser.$(OBJEXT)			\
+	oauth.$(OBJEXT)				\
 	network.$(OBJEXT)			\
 	preferences.$(OBJEXT)			\
 	send-message-dialog.$(OBJEXT)		\
@@ -305,7 +307,7 @@ AM_CFLAGS =						\
 	-std=$(C_STD_MODE)				\
 	-I$(top_srcdir)                          	\
 	-I${top_builddir}				\
-	-DBUILDDIR=\""${top_builddir}"\"		\
+	-DBUILDDIR=\""${abs_top_builddir}"\"		\
 	-DPREFIX="\"$(prefix)"\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"              	\

@@ -16,7 +16,7 @@
           <object class="GtkTable" id="account_table">
             <property name="visible">True</property>
             <property name="border_width">6</property>
-            <property name="n_rows">4</property>
+            <property name="n_rows">5</property>
             <property name="n_columns">2</property>
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
@@ -52,8 +52,7 @@
             <child>
               <object class="GtkLabel" id="password_label">
                 <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Password:</property>
+                <property name="label" translatable="yes">_Password:	</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">password_entry</property>
               </object>
@@ -67,8 +66,7 @@
             <child>
               <object class="GtkLabel" id="username_label">
                 <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Username:</property>
+                <property name="label" translatable="yes">_Username:	</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">username_entry</property>
               </object>
@@ -104,6 +102,7 @@
                 <property name="mnemonic_widget">services</property>
               </object>
               <packing>
+                <property name="x_options"></property>
                 <property name="y_options"></property>
               </packing>
             </child>
@@ -111,11 +110,27 @@
               <object class="GtkComboBoxEntry" id="services">
                 <property name="visible">True</property>
                 <property name="model">services_list</property>
+                <property name="text_column">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
                 <property name="y_options"></property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="autoconnect_checkbutton">
+                <property name="label" translatable="yes">Connect _automatically</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="use_underline">True</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="right_attach">2</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
               </packing>
             </child>
           </object>
@@ -157,6 +172,20 @@
                 <property name="position">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkButton" id="apply_button">
+                <property name="label" translatable="yes">gtk-apply</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -169,6 +198,7 @@
     <action-widgets>
       <action-widget response="-6">cancelbutton1</action-widget>
       <action-widget response="-5">okbutton1</action-widget>
+      <action-widget response="0">apply_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="services_list">

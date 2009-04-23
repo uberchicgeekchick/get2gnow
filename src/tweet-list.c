@@ -165,7 +165,7 @@ static void tweet_list_setup_view(TweetList *list){
 
 
 static void tweet_list_move(GdkEventKey *event, TweetList *list){
-	static gint i=1;
+	static gint i=0;
 	switch(event->keyval){
 		case GDK_Tab: case GDK_Home:
 			i=0;

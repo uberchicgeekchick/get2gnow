@@ -75,8 +75,12 @@ gboolean debug_check_devel(void){
 		return FALSE;
 	
 #define GNOME_ENABLE_DEBUG
+#else
+	if( (g_getenv("DEBUG")) && (!(g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) ))
+		return FALSE;
+	
 #endif
-
+	
 	devel=TRUE;
 	all_domains=TRUE;
 	debug_strv=g_strsplit_set("all", ":, ", 0);
@@ -104,6 +108,7 @@ static void debug_init (void){
 }
 
 void debug_impl(const gchar *domain, const gchar *msg, ...){
+	static gboolean output_started=FALSE;
 	gint i;
 
 	g_return_if_fail (domain != NULL);
@@ -114,6 +119,10 @@ void debug_impl(const gchar *domain, const gchar *msg, ...){
 	for (i = 0; debug_strv && debug_strv[i]; i++) {
 		if (all_domains || strcmp (domain, debug_strv[i]) == 0) {
 			va_list args;
+			if(!output_started){
+				g_print("\n");
+				output_started=TRUE;
+			}
 			
 			g_print ("%s: ", domain);
 			

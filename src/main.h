@@ -35,10 +35,12 @@ G_BEGIN_DECLS
 #define PREFS_PATH "/apps/" PACKAGE_TARNAME
 
 #define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
-#define	PREFS_AUTH_SERVICE		PREFS_PATH "/auth/service"
-#define	PREFS_AUTH_USER_ID		PREFS_PATH "/auth/user_id"
-#define	PREFS_AUTH_PASSWORD		PREFS_PATH "/auth/password"
-#define	PREFS_AUTH_AUTO_LOGIN		PREFS_PATH "/auth/auto_login"
+#define	PREFS_AUTH_SERVICE		PREFS_PATH "/auth/%s/tld"
+#define	PREFS_AUTH_USERNAME		PREFS_PATH "/auth/%s/username"
+#define	PREFS_AUTH_PASSWORD		PREFS_PATH "/auth/%s/password"
+#define	PREFS_AUTH_ACCESS_TOKEN		PREFS_PATH "/auth/%s/access_token"
+#define	PREFS_AUTH_ACCESS_SECRET	PREFS_PATH "/auth/%s/access_secret"
+#define	PREFS_AUTH_AUTO_CONNECT		PREFS_PATH "/auth/%s/auto_connect"
 
 #define	PREFS_TWEETS_HOME_TIMELINE	PREFS_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES	PREFS_PATH "/tweets/reload_timeline"

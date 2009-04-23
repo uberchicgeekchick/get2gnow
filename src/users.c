@@ -277,7 +277,7 @@ User *user_parse_profile(xmlNode *a_node){
 		
 		
 		const xmlChar *tmp=xmlBufferContent(buffer);
-
+		
 		debug( DEBUG_DOMAIN, "\n\tFound user's: %s\n\t\tcontent: %s (buffer: %s).", cur_node->name, (gchar *)cur_node->content, (const gchar *)tmp);
 		
 		if(g_str_equal(cur_node->name, "id" ))

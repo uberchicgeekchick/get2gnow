@@ -60,18 +60,57 @@
  **********************************************************************/
 #include <glib.h>
 #include <libsoup/soup.h>
-#include <openssl/hmac.h> /* for rsa signing */
 
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
+#define xmalloc(n)	malloc(n)
+#define xcalloc(n, s)	calloc(n, s)
+#define xrealloc(p, n)	realloc(p, n)
+#define	xstrdup(p)	strdup(p)
+typedef enum{
+	POST,
+	GET,
+} RequestMethod;
 
+typedef struct {
+	gchar		*auth_uri;
+	gchar		*username;
+	gchar		*password;
+	gboolean	auto_connect;
+} Account;
+
+
+typedef struct {
+	SoupSession	*connection;
+	
+	Account		*account;
+	
+	gboolean	oauth_enabled;
+	
+	gchar		*authorize_uri;
+	gchar		*token_request_uri;
+	gchar		*token_access_uri;
+	
+	gchar		*consumer_key;
+	gchar		*consumer_secret;
+	
+	gchar		*token;
+	gchar		*token_secret;
+	
+	gchar		*access_token;
+	gchar		*access_secret;
+} OAuthService;
 
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
+OAuthService *oauth_init(const gchar *auth_uri);
+void oauth_account_save(OAuthService *service, const gchar *username, const gchar *password, gboolean auto_connect);
+const gchar *oauth_get_auth_headers(OAuthService *service, RequestMethod method, gchar *request_uri);
+void oauth_deinit(OAuthService *service);
 
 
 #endif /* __OAUTH_H__ */

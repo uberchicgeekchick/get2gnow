@@ -29,10 +29,11 @@
 #include "friends-manager.h"
 #include "users.h"
 #include "images.h"
+#include "oauth.h"
 
 /* Twitter API */
 #define API_CLIENT_AUTH		"greettweetknow"
-#define API_SERVICE		"https://twitter.com"
+#define API_SERVICE		"twitter.com"
 #define API_LOGIN		"/account/verify_credentials.xml"
 
 /* Twitter Timelines */
@@ -68,8 +69,14 @@
 
 extern gboolean getting_followers;
 
+#define	url_encode(t)	url_encode_message(t)
+gchar *url_encode_message(gchar *text);
+
+/* retrieve the active libsoup session */
+SoupSession *network_get_connection(void);
+
 /* Verify user credentials */
-void network_login( const char *username, const char *password );
+void network_login(OAuthService **services);
 
 /* Logout current user */
 void network_logout( void );
