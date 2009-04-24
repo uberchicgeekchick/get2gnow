@@ -76,7 +76,7 @@ gboolean debug_check_devel(void){
 	
 #define GNOME_ENABLE_DEBUG
 #else
-	if( (g_getenv("DEBUG")) && (!(g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) ))
+	if( (g_getenv("DEBUG")) && !(g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) )
 		return FALSE;
 	
 #endif

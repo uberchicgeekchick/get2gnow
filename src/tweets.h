@@ -28,6 +28,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <libsoup/soup.h>
+#include <libsexy/sexy.h>
 
 
 #include "app.h"
@@ -63,6 +64,12 @@ void tweets_user_unblock(void);
 
 void tweets_user_view_tweets(void);
 void tweets_user_view_profile(void);
+
+void tweets_friends_send_dm(GtkButton *button, GtkEntry *entry);
+void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
+void tweets_sexy_send_clicked(GtkButton *button, GtkEntry *entry);
+void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry);
+void tweets_send_sexy(GtkEntry *entry, gpointer user_data);
 
 G_END_DECLS
 

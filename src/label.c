@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <gio/gio.h>
-#include <libsexy/sexy-url-label.h>
+#include <libsexy/sexy.h>
 
 #include "main.h"
 #include "label.h"
@@ -202,6 +202,7 @@ label_msg_get_string (const char* message)
 										 &tokens[i][1], tokens[i], delim, &tokens[i][end+1]);
 				}
 			} else {
+				/* TODO: add a network fetch, check the mime type & have it handle the data as best possible.  */
 				temp = g_strdup_printf ("<a href=\"%s\">%s</a>",
 										tokens[i], tokens[i]);
 			}

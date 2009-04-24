@@ -43,7 +43,6 @@
 #include "users.h"
 #include "images.h"
 #include "app.h"
-#include "send-message-dialog.h"
 #include "following-viewer.h"
 #include "tweets.h"
 #include "timer.h"
@@ -385,6 +384,8 @@ GList *network_get_users_glist(gboolean get_friends){
 	all_users=NULL;
 	gboolean fetching=TRUE;
 	getting_followers=!get_friends;
+	
+	app_statusbar_printf("Please wait while %s loads the users %s...", PACKAGE_NAME, (get_friends?"who are following you":"you're following") );
 	
 	while(fetching){
 		page++;

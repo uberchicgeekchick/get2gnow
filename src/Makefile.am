@@ -40,9 +40,6 @@ get2gnow_SOURCES = 				\
 	timer.c			timer.h			\
 	parser.c		parser.h		\
 	preferences.c		preferences.h		\
-	send-message-dialog.c	send-message-dialog.h	\
-	spell.c			spell.h			\
-	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
 	following-viewer.c	following-viewer.h	\
 	friend-manager.c	friend-manager.h	\

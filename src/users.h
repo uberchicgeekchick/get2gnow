@@ -106,13 +106,13 @@ GList *users_new(const gchar *data, gssize length);
 void users_free(const char *type, GList *users );
 
 /* Get authenticated user's friends(following) */
-GList *user_get_friends(void);
+void user_get_and_set_friends(void);
 void user_append_friend(User *user);
 void user_remove_friend(User *user);
 
 
 /* Get authenticated user's followers */
-GList *user_get_followers(void);
+void user_get_and_set_followers(void);
 void user_append_follower(User *user);
 void user_remove_follower(User *user);
 

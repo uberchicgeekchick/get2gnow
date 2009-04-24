@@ -68,9 +68,6 @@ get2gnow_SOURCES =				\
 	timer.c			timer.h			\
 	parser.c		parser.h		\
 	preferences.c		preferences.h		\
-	send-message-dialog.c	send-message-dialog.h	\
-	spell.c			spell.h			\
-	spell-dialog.c		spell-dialog.h		\
 	ui-utils.c		ui-utils.h		\
 	following-viewer.c	following-viewer.h	\
 	friends-manager.c	friends-manager.h	\
@@ -101,9 +98,6 @@ get2gnow_OBJECTS =			\
 	oauth.$(OBJEXT)				\
 	network.$(OBJEXT)			\
 	preferences.$(OBJEXT)			\
-	send-message-dialog.$(OBJEXT)		\
-	spell.$(OBJEXT)				\
-	spell-dialog.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)			\
 	following-viewer.$(OBJEXT)		\
 	friends-manager.$(OBJEXT)		\
@@ -407,9 +401,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/send-message-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spell-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spell.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@

@@ -37,14 +37,12 @@
 
 #include "main.h"
 #include "preferences.h"
-#include "spell.h"
 
 #define GtkBuilderUI "preferences.ui"
 
 typedef struct {
 	GtkWidget *dialog;
 	GtkWidget *notebook;
-	GtkWidget *treeview_spell_checker;
 	GtkWidget *combo_default_timeline;
 	GtkWidget *combo_reload;
 
@@ -52,7 +50,6 @@ typedef struct {
 	GtkWidget *autoconnect;
 	GtkWidget *notify;
 	GtkWidget *sound;
-	GtkWidget *spell;
 
 	GList     *notify_ids;
 } Prefs;
@@ -85,20 +82,6 @@ enum {
 };
 
 static void     preferences_setup_widgets          (Prefs            *prefs);
-static void     preferences_languages_add          (Prefs            *prefs);
-static void     preferences_languages_save         (Prefs            *prefs);
-static gboolean preferences_languages_save_foreach (GtkTreeModel           *model,
-													GtkTreePath            *path,
-													GtkTreeIter            *iter,
-													gchar                 **languages);
-static void     preferences_languages_load         (Prefs            *prefs);
-static gboolean preferences_languages_load_foreach (GtkTreeModel           *model,
-													GtkTreePath            *path,
-													GtkTreeIter            *iter,
-													gchar                 **languages);
-static void preferences_languages_cell_toggled_cb  (GtkCellRendererToggle  *cell,
-												    gchar                  *path_string,
-												    Prefs            *prefs);
 static void     preferences_timeline_setup         (Prefs            *prefs);
 static void     preferences_widget_sync_bool       (const gchar            *key,
 													GtkWidget              *widget);
@@ -115,9 +98,6 @@ static void     preferences_notify_string_combo_cb (Conf             *conf,
 static void     preferences_notify_int_combo_cb    (Conf             *conf,
 													const gchar            *key,
 													gpointer                user_data);
-static void     preferences_notify_sensitivity_cb  (Conf             *conf,
-													const gchar            *key,
-													gpointer                user_data);
 static void     preferences_hookup_toggle_button   (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
@@ -125,9 +105,6 @@ static void     preferences_hookup_string_combo    (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
 static void     preferences_hookup_int_combo       (Prefs            *prefs,
-													const gchar            *key,
-													GtkWidget              *widget);
-static void     preferences_hookup_sensitivity     (Prefs            *prefs,
 													const gchar            *key,
 													GtkWidget              *widget);
 static void preferences_response_cb                (GtkWidget              *widget,
@@ -147,266 +124,23 @@ static void preferences_setup_widgets (Prefs *prefs){
 
 	preferences_hookup_toggle_button( prefs, PREFS_UI_SOUND, prefs->sound );
 
-	preferences_hookup_toggle_button( prefs, PREFS_UI_SPELL, prefs->spell );
-
-	preferences_hookup_sensitivity( prefs, PREFS_UI_SPELL_LANGUAGES, prefs->treeview_spell_checker );
-
 	preferences_hookup_string_combo( prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline );
 
 	preferences_hookup_int_combo( prefs, PREFS_TWEETS_RELOAD_TIMELINES, prefs->combo_reload );
 }
-static void
-preferences_languages_setup (Prefs *prefs)
-{
-	GtkTreeView       *view;
-	GtkListStore      *store;
-	GtkTreeSelection  *selection;
-	GtkTreeModel      *model;
-	GtkTreeViewColumn *column;
-	GtkCellRenderer   *renderer;
-	guint              col_offset;
 
-	view = GTK_TREE_VIEW (prefs->treeview_spell_checker);
-
-	store = gtk_list_store_new (COL_LANG_COUNT,
-								G_TYPE_BOOLEAN, /*enabled */
-								G_TYPE_STRING,  /* code */
-								G_TYPE_STRING); /* name */
-
-	gtk_tree_view_set_model (view, GTK_TREE_MODEL (store));
-
-	selection = gtk_tree_view_get_selection (view);
-	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-
-	model = GTK_TREE_MODEL (store);
-
-	renderer = gtk_cell_renderer_toggle_new ();
-	g_signal_connect( renderer, "toggled", G_CALLBACK (preferences_languages_cell_toggled_cb), prefs );
-
-	column = gtk_tree_view_column_new_with_attributes (NULL,
-													   renderer,
-													   "active", COL_LANG_ENABLED,
-													   NULL);
-
-	gtk_tree_view_append_column (view, column);
-
-	renderer = gtk_cell_renderer_text_new ();
-	col_offset = gtk_tree_view_insert_column_with_attributes (view,
-															  -1, _("Language"),
-															  renderer,
-															  "text", COL_LANG_NAME,
-															  NULL);
-
-	g_object_set_data (G_OBJECT (renderer),
-					   "column", GINT_TO_POINTER (COL_LANG_NAME));
-
-	column = gtk_tree_view_get_column (view, col_offset -1);
-	gtk_tree_view_column_set_sort_column_id (column, COL_LANG_NAME);
-	gtk_tree_view_column_set_resizable (column, FALSE);
-	gtk_tree_view_column_set_clickable (GTK_TREE_VIEW_COLUMN (column), TRUE);
-
-	g_object_unref (store);
-}
-
-static void
-preferences_languages_add (Prefs *prefs)
-{
-	GtkTreeView  *view;
-	GtkListStore *store;
-	GList        *codes;
-	GList        *l;
-
-	view = GTK_TREE_VIEW (prefs->treeview_spell_checker);
-	store = GTK_LIST_STORE (gtk_tree_view_get_model (view));
-
-	codes = spell_get_language_codes ();
-	for (l = codes; l; l = l->next) {
-		GtkTreeIter  iter;
-		const gchar *code;
-		const gchar *name;
-
-		code = l->data;
-		name = spell_get_language_name (code);
-		if (!name) {
-			continue;
-		}
-
-		gtk_list_store_append (store, &iter);
-		gtk_list_store_set (store, &iter,
-							COL_LANG_CODE, code,
-							COL_LANG_NAME, name,
-							-1);
-	}
-
-	spell_free_language_codes (codes);
-}
-
-static void
-preferences_languages_save (Prefs *prefs)
-{
-	GtkTreeView  *view;
-	GtkTreeModel *model;
-
-	gchar        *languages = NULL;
-
-	view = GTK_TREE_VIEW (prefs->treeview_spell_checker);
-	model = gtk_tree_view_get_model (view);
-
-	gtk_tree_model_foreach (model,
-							(GtkTreeModelForeachFunc)
-							preferences_languages_save_foreach,
-							&languages);
-
-	if (!languages) {
-		/* Default to english */
-		languages = g_strdup ("en");
-	}
-
-	conf_set_string (conf_get (),
-							PREFS_UI_SPELL_LANGUAGES,
-							languages);
-	g_free (languages);
-}
-
-static gboolean
-preferences_languages_save_foreach (GtkTreeModel  *model,
-									GtkTreePath   *path,
-									GtkTreeIter   *iter,
-									gchar        **languages)
-{
-	gboolean  enabled;
-	gchar    *code;
-
-	if (!languages) {
-		return TRUE;
-	}
-
-	gtk_tree_model_get (model, iter, COL_LANG_ENABLED, &enabled, -1);
-	if (!enabled) {
-		return FALSE;
-	}
-
-	gtk_tree_model_get (model, iter, COL_LANG_CODE, &code, -1);
-	if (!code) {
-		return FALSE;
-	}
-
-	if (!(*languages)) {
-		*languages = g_strdup (code);
-	} else {
-		gchar *str = *languages;
-		*languages = g_strdup_printf ("%s,%s", str, code);
-		g_free (str);
-	}
-
-	g_free (code);
-
-	return FALSE;
-}
-
-static void
-preferences_languages_load (Prefs *prefs)
-{
-	GtkTreeView   *view;
-	GtkTreeModel  *model;
-	gchar         *value;
-	gchar        **vlanguages;
-
-	if (!conf_get_string (conf_get (),
-								 PREFS_UI_SPELL_LANGUAGES,
-								 &value) || !value) {
-		return;
-	}
-
-	vlanguages = g_strsplit (value, ",", -1);
-	g_free (value);
-
-	view = GTK_TREE_VIEW (prefs->treeview_spell_checker);
-	model = gtk_tree_view_get_model (view);
-
-	gtk_tree_model_foreach (model,
-							(GtkTreeModelForeachFunc)
-							preferences_languages_load_foreach,
-							vlanguages);
-
-	g_strfreev (vlanguages);
-}
-
-static gboolean
-preferences_languages_load_foreach (GtkTreeModel  *model,
-									GtkTreePath   *path,
-									GtkTreeIter   *iter,
-									gchar        **languages)
-{
-	gchar    *code;
-	gchar    *lang;
-	gint      i;
-	gboolean  found = FALSE;
-
-	if (!languages) {
-		return TRUE;
-	}
-
-	gtk_tree_model_get (model, iter, COL_LANG_CODE, &code, -1);
-	if (!code) {
-		return FALSE;
-	}
-
-	for (i = 0, lang = languages[i]; lang; lang = languages[++i]) {
-		if (strcmp (lang, code) == 0) {
-			found = TRUE;
-		}
-	}
-
-	gtk_list_store_set (GTK_LIST_STORE (model), iter, COL_LANG_ENABLED, found, -1);
-
-	return FALSE;
-}
-
-static void
-preferences_languages_cell_toggled_cb (GtkCellRendererToggle *cell,
-									   gchar                 *path_string,
-									   Prefs           *prefs)
-{
-	GtkTreeView  *view;
-	GtkTreeModel *model;
-	GtkListStore *store;
-	GtkTreePath  *path;
-	GtkTreeIter   iter;
-	gboolean      enabled;
-
-	view = GTK_TREE_VIEW (prefs->treeview_spell_checker);
-	model = gtk_tree_view_get_model (view);
-	store = GTK_LIST_STORE (model);
-
-	path = gtk_tree_path_new_from_string (path_string);
-
-	gtk_tree_model_get_iter (model, &iter, path);
-	gtk_tree_model_get (model, &iter, COL_LANG_ENABLED, &enabled, -1);
-
-	enabled ^= 1;
-
-	gtk_list_store_set (store, &iter, COL_LANG_ENABLED, enabled, -1);
-	gtk_tree_path_free (path);
-
-	preferences_languages_save (prefs);
-}
-
-static void
-preferences_notify_bool_cb (Conf  *conf,
-							const gchar *key,
-							gpointer     user_data)
-{
+static void preferences_notify_bool_cb (Conf *conf, const gchar *key, gpointer user_data){
 	preferences_widget_sync_bool (key, user_data);
 }
 
-static void
-preferences_timeline_setup (Prefs *prefs)
-{
+static void preferences_timeline_setup (Prefs *prefs){
 	static const gchar *timelines[] = {
-		API_TIMELINE_PUBLIC, N_("Public"),
-		API_TIMELINE_FRIENDS, N_("Friends"),
-		API_TIMELINE_MY, N_("Mine"),
+		API_TIMELINE_FRIENDS,	N_("My Friends' Tweets"),
+		API_REPLIES,		N_("@ Replies"),
+		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
+		API_FAVORITES,		N_("My Favorites"),
+		API_TIMELINE_MY,	N_("My Tweets"),
+		API_TIMELINE_PUBLIC,	N_("All Public Tweets"),
 		NULL
 	};
 
@@ -588,18 +322,6 @@ preferences_notify_int_combo_cb (Conf  *conf,
 }
 
 static void
-preferences_notify_sensitivity_cb (Conf  *conf,
-								   const gchar *key,
-								   gpointer     user_data)
-{
-	gboolean value;
-
-	if (conf_get_bool (conf, key, &value)) {
-		gtk_widget_set_sensitive (GTK_WIDGET (user_data), TRUE);
-	}
-}
-
-static void
 preferences_add_id (Prefs *prefs, guint id)
 {
 	prefs->notify_ids = g_list_prepend (prefs->notify_ids,
@@ -679,28 +401,6 @@ preferences_hookup_int_combo (Prefs *prefs,
 	id = conf_notify_add (conf_get (),
 								 key,
 								 preferences_notify_int_combo_cb,
-								 widget);
-
-	if (id) {
-		preferences_add_id (prefs, id);
-	}
-}
-
-static void
-preferences_hookup_sensitivity (Prefs *prefs,
-								const gchar *key,
-								GtkWidget   *widget)
-{
-	gboolean value;
-	guint    id;
-
-	if (conf_get_bool (conf_get (), key, &value)) {
-		gtk_widget_set_sensitive (widget, value);
-	}
-
-	id = conf_notify_add (conf_get (),
-								 key,
-								 preferences_notify_sensitivity_cb,
 								 widget);
 
 	if (id) {
@@ -810,9 +510,7 @@ preferences_dialog_show (GtkWindow *parent)
 							  "combobox_reload", &prefs->combo_reload,
 							  "autoconnect_checkbutton", &prefs->autoconnect,
 							  "notify_checkbutton", &prefs->notify,
-							  "spell_checkbutton", &prefs->spell,
 							  "sound_checkbutton", &prefs->sound,
-							  "spell_treeview", &prefs->treeview_spell_checker,
 							  NULL);
 
 	/* Connect the signals */
@@ -831,18 +529,6 @@ preferences_dialog_show (GtkWindow *parent)
 	preferences_reload_setup (prefs);
 
 	preferences_setup_widgets (prefs);
-
-	preferences_languages_setup (prefs);
-	preferences_languages_add (prefs);
-	preferences_languages_load (prefs);
-
-	/* If compiled with spelling support, show the notebook page */
-	if (spell_supported ()) {
-		GtkWidget *page;
-
-		page = gtk_notebook_get_nth_page (GTK_NOTEBOOK (prefs->notebook), 1);
-		gtk_widget_show (page);
-	}
 
 	gtk_widget_show (prefs->dialog);
 }

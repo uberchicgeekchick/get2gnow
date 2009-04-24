@@ -168,7 +168,7 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		
 		if(sid > last_id && show_notification) {
 			if(multiple_new_tweets != TRUE) {
-				app_notify_sound();
+				app_notify_sound(FALSE);
 				multiple_new_tweets = TRUE;
 			}
 			g_timeout_add_seconds(tweet_display_delay,
@@ -218,56 +218,37 @@ gboolean parser_timeline(const gchar *data, gssize length){
 
 static Status *parser_node_status(xmlNode *a_node){
 	xmlNode		   *cur_node = NULL;
-	xmlBufferPtr	buffer;
+	gchar		*content=NULL;
 	Status   *status;
 
-	buffer = xmlBufferCreate();
 	status = g_new0(Status, 1);
 
 	/* Begin 'status' or 'direct-messages' loop */
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE)
 			continue;
-		if(xmlNodeBufGetContent(buffer, cur_node) != 0)
-			continue;
-		if(g_str_equal(cur_node->name, "created_at")) {
-			const xmlChar *tmp;
-			tmp = xmlBufferContent(buffer);
-			status->created_at = g_strdup((const gchar *)tmp);
-		} else if(g_str_equal(cur_node->name, "id")) {
-			const xmlChar *tmp;
-
-			tmp = xmlBufferContent(buffer);
-			status->id = g_strdup((const gchar *)tmp);
-		} else if(g_str_equal(cur_node->name, "text")) {
-			const xmlChar *msg;
-			gchar *cur;
-
-			msg = xmlBufferContent(buffer);
-
-			status->text = g_markup_escape_text((const char *)msg, -1);
-
-			/* &amp;lt; becomes &lt; */
-			cur = status->text;
+		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(cur_node)) ) ) continue;
+		if(g_str_equal(cur_node->name, "created_at"))
+			status->created_at=g_strdup(content);
+		
+		else if(g_str_equal(cur_node->name, "id"))
+			status->id = g_strdup(content);
+		
+		else if( g_str_equal(cur_node->name, "sender") || g_str_equal(cur_node->name, "user"))
+			status->user=user_parse_profile(cur_node->children);
+		
+		else if(g_str_equal(cur_node->name, "text")) {
+			gchar *cur=status->text=g_markup_escape_text(content, -1);
 			while((cur = strstr(cur, "&amp;"))) {
 				if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
 					g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
 				else
 					cur += 5;
 			}
-
-		} else if(g_str_equal(cur_node->name, "sender") ||
-			g_str_equal(cur_node->name, "user")) {
-			status->user=user_parse_profile(cur_node->children);
 		}
-
-		/* Free buffer content */
-		xmlBufferEmpty(buffer);
+		xmlFree(content);
 
 	} /* End of loop */
-
-	/* Free buffer pointer */
-	xmlBufferFree(buffer);
 	
 	return status;
 }

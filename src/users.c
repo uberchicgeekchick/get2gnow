@@ -68,7 +68,6 @@
 #include "label.h"
 
 #include "friends-manager.h"
-#include "send-message-dialog.h"
 #include "following-viewer.h"
 #include "profile-viewer.h"
 
@@ -258,11 +257,10 @@ User *user_parse_new( const gchar *data, gssize length ){
 
 
 User *user_parse_profile(xmlNode *a_node){
-	xmlNode		   *cur_node = NULL;
-	xmlBufferPtr	buffer;
-	User     *user;
+	xmlNode		*cur_node=NULL;
+	gchar		*content=NULL;
 	
-	buffer = xmlBufferCreate();
+	User		*user;
 	
 	user=user_constructor( getting_followers );
 	
@@ -272,51 +270,43 @@ User *user_parse_profile(xmlNode *a_node){
 		if(cur_node->type != XML_ELEMENT_NODE)
 			continue;
 		
-		if(xmlNodeBufGetContent(buffer, cur_node))
-			continue;
+		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(cur_node)) ) ) continue;
 		
-		
-		const xmlChar *tmp=xmlBufferContent(buffer);
-		
-		debug( DEBUG_DOMAIN, "\n\tFound user's: %s\n\t\tcontent: %s (buffer: %s).", cur_node->name, (gchar *)cur_node->content, (const gchar *)tmp);
+		debug(DEBUG_DOMAIN, "name: %s; content: %s.", cur_node->name, content);
 		
 		if(g_str_equal(cur_node->name, "id" ))
-			user->id=strtoul( (const gchar *)tmp, NULL, 0 );
+			user->id=strtoul( content, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "name" ))
-			user->nick_name=g_strdup((const gchar *)tmp);
+			user->nick_name=g_strdup(content);
 		
 		else if(g_str_equal(cur_node->name, "screen_name" ))
-			user->user_name=g_strdup((const gchar *)tmp);
+			user->user_name=g_strdup(content);
 		
 		else if(g_str_equal(cur_node->name, "location" ))
-			user->location=g_strdup((const gchar *)tmp);
+			user->location=g_strdup(content);
 		
 		else if(g_str_equal(cur_node->name, "description" ))
-			user->bio=g_markup_printf_escaped( "%s", (const gchar *)tmp );
+			user->bio=g_markup_printf_escaped( "%s", content );
 		
 		else if(g_str_equal(cur_node->name, "url" ))
-			user->url=g_strdup((const gchar *)tmp);
+			user->url=g_strdup(content);
 		
 		else if(g_str_equal(cur_node->name, "followers_count" ))
-			user->followers=strtoul( (const char *)tmp, NULL, 0 );
+			user->followers=strtoul( content, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "friends_count" ))
-			user->following=strtoul( (const gchar *)tmp, NULL, 0 );
+			user->following=strtoul( content, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "statuses_count" ))
-			user->tweets=strtoul( (const gchar *)tmp, NULL, 0 );
+			user->tweets=strtoul( content, NULL, 0 );
 		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
-			user->image_filename=g_strdup( images_get_filename( (user->image_url=g_strdup((const gchar *)tmp)) ) );
+			user->image_filename=images_get_filename( (user->image_url=g_strdup(content)) );
 		
-		/* Free buffer content */
-		xmlBufferEmpty(buffer);
+		xmlFree(content);
 		
 	} /* End of loop */
-	
-	/* Free buffer pointer */
-	xmlBufferFree(buffer);
 	
 	return user;
 }
@@ -453,11 +443,10 @@ void user_remove_follower(User *user){
  * 		NULL: Friends will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-GList *user_get_friends(void){
-	if(user_friends) return user_friends;
-	user_friends=network_get_users_glist((gboolean)TRUE);
+void user_get_and_set_friends(void){
+	if(!user_friends)
+		user_friends=network_get_users_glist((gboolean)TRUE);
 	following_viewer_load_lists(user_friends);
-	return NULL;
 }
 
 
@@ -466,13 +455,12 @@ GList *user_get_friends(void){
  * 		NULL: Followers will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-GList *user_get_followers(void){
-	if(user_followers) return user_followers;
+void user_get_and_set_followers(void){
+	if(user_followers) return app_dm_data_show();
+	app_dm_data_show();
 	user_followers=network_get_users_glist((gboolean)FALSE);
-	message_set_followers(user_followers);
-	return NULL;
+	app_dm_data_fill(user_followers);
 }
-
 
 GList *user_get_friends_and_followers(gboolean use_cache){
 	if(following_and_followers && use_cache)

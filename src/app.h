@@ -27,6 +27,7 @@
 
 #include <glib-object.h>
 #include <glib.h>
+#include <libsexy/sexy.h>
 
 #include <gtk/gtk.h>
 #include "parser.h"
@@ -62,13 +63,20 @@ App *app_get(void);
 GtkWindow *app_get_window(void);
 TweetList *app_get_tweet_list(void);
 GtkMenuBar *app_get_main_menu(void);
+GtkComboBox *app_get_friends_combo_box(void);
+SexySpellEntry *app_get_expand_entry(void);
+GtkEntry *app_get_expand_entry_as_gtkentry(void);
+void app_set_expand_entry(gchar *tweet);
 GtkMenuItem *app_get_menu(const gchar *menu);
 void app_refresh_timeline(GtkWidget *window, App *app); 
 GList *app_get_widgets_tweet_selected(void);
+void app_dm_data_fill(GList *followers);
+void app_dm_data_show(void);
+void app_dm_data_hide(void);
 void app_set_visibility(gboolean visible);
 void app_statusbar_printf(const gchar *msg, ...);
 void app_set_statusbar_msg(gchar *msg);
-void app_notify_sound(void);
+void app_notify_sound(gboolean force);
 void app_notify(gchar *msg);
 void app_state_on_connection(gboolean connected);
 void app_set_image( const gchar *file, GtkTreeIter iter );

@@ -268,7 +268,6 @@ void following_viewer_show(GtkWindow *parent){
 
 void following_viewer_setup(GtkWindow *parent){
 	GtkBuilder *ui;
-	GList      *friends;
 	GdkCursor *cursor;
 
 	following = g_new0 (Followers, 1);
@@ -294,7 +293,8 @@ void following_viewer_setup(GtkWindow *parent){
 						"view_timeline", "clicked", following_view_timeline,
 						"view_profile", "clicked", following_view_profile,
 						"following_list", "row-activated", list_following_activated_cb,
-						NULL);
+						NULL
+	);
 
 	g_object_unref(ui);
 	
@@ -311,8 +311,7 @@ void following_viewer_setup(GtkWindow *parent){
 	gtk_widget_set_sensitive(GTK_WIDGET(following->viewer), FALSE);
 	
 	/* Load following */
-	if( (friends=user_get_friends()) )
-		following_viewer_load_lists(friends);
+	user_get_and_set_friends();
 	
 	gdk_window_set_cursor(GTK_WIDGET(following->viewer)->window, NULL);
 	gtk_widget_set_sensitive(GTK_WIDGET(following->viewer), TRUE);

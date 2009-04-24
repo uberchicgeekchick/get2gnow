@@ -47,6 +47,7 @@
 #define __TWEET_LIST_H__
 
 #include <gtk/gtk.h>
+#include <libsexy/sexy.h>
 
 G_BEGIN_DECLS
 
@@ -65,11 +66,11 @@ typedef struct _TweetListClass TweetListClass;
 typedef struct _TweetListPriv  TweetListPriv;
 
 struct _TweetList {
-	GtkTreeView            parent;
+	SexyTreeView            parent;
 };
 
 struct _TweetListClass {
-	GtkTreeViewClass       parent_class;
+	SexyTreeViewClass       parent_class;
 };
 
 /* ListStore columns */

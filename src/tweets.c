@@ -58,11 +58,11 @@
 
 
 #include "debug.h"
+#include "main.h"
 #include "config.h"
 #include "app.h"
 #include "tweets.h"
 #include "network.h"
-#include "send-message-dialog.h"
 #include "tweet-list.h"
 #include "profile-viewer.h"
 #include "ui-utils.h"
@@ -75,7 +75,7 @@ typedef struct SelectedTweet {
 	gchar *tweet;
 } SelectedTweet;//SelectedTweet
 
-static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release);
+static void tweets_include_and_begin_to_send(gchar *tweet, gboolean release);
 
 
 unsigned long int in_reply_to_status_id=0;
@@ -167,37 +167,78 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
-	send_message_dialog_show(GTK_WINDOW(app_get_window()));
-	message_show_friends(FALSE);
+	tweets_include_and_begin_to_send("", FALSE);
 }//tweets_new_tweet
 
 void tweets_reply(void){
 	if(!selected_tweet)
 		return;
-	const gchar *tweet=g_strdup_printf("@%s ", selected_tweet->user_name);
+	gchar *tweet=g_strdup_printf("@%s ", selected_tweet->user_name);
 	in_reply_to_status_id=selected_tweet->id;
-	tweets_include_and_begin_to_send(tweet, (gboolean)TRUE);
+	tweets_include_and_begin_to_send(tweet, TRUE);
 }//tweets_reply
 
 void tweets_retweet(void){
 	if(!selected_tweet)
 		return;
-	const gchar *tweet=g_strdup_printf("RT @%s %s", selected_tweet->user_name, selected_tweet->tweet);
+	gchar *tweet=g_strdup_printf("RT @%s %s", selected_tweet->user_name, selected_tweet->tweet);
 	in_reply_to_status_id=selected_tweet->id;
-	tweets_include_and_begin_to_send(tweet, (gboolean)TRUE);
+	tweets_include_and_begin_to_send(tweet, TRUE);
 }//tweets_retweet
 
-static void tweets_include_and_begin_to_send(const gchar *tweet, gboolean release){
-	send_message_dialog_show(GTK_WINDOW(app_get_window()));
-	message_show_friends(FALSE);
+void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
+	gchar *remaining_characters=NULL;
+	gint character_count=160 - gtk_entry_get_text_length(entry);
+	if(character_count < 0){
+		gtk_widget_error_bell(GTK_WIDGET(entry));
+		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
+	}else
+		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
+	
+	gtk_label_set_markup( tweet_character_counter, remaining_characters );
+}//tweets_update_expanded_count
+
+void tweets_sexy_send_clicked(GtkButton *button, GtkEntry *entry){
+	tweets_send_sexy(entry, NULL);
+}//tweets_sexy_tweet_clicked
+
+void tweets_friends_send_dm(GtkButton *button, GtkEntry *entry){
+	gchar *user_name=NULL;
+	if(!(user_name=gtk_combo_box_get_active_text(app_get_friends_combo_box()))){
+		gtk_widget_error_bell(GTK_WIDGET(entry));
+		return;
+	}
+	tweets_send_sexy(entry, user_name);
+	g_free(user_name);
+}//tweets_friends_send_dm
+
+void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry){
+	tweets_send_sexy(entry, selected_tweet->user_name);
+}//tweets_sexy_dm_clicked
+
+void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
+	if( gtk_entry_get_text_length(entry) > 160 ) {
+		gtk_widget_error_bell(GTK_WIDGET(entry));
+		return;
+	}
+	gchar *tweet=g_strdup(url_encode(entry->text));
+	const gchar *user_name=(const gchar *)user_data;
+	if(G_STR_EMPTY(user_name))
+		network_post_status(tweet);
+	else
+		network_send_message(user_name, (const gchar *)tweet);
+	g_free(tweet);
+	app_set_expand_entry((gchar *)"");
+}//tweets_send_sexy
+
+static void tweets_include_and_begin_to_send(gchar *tweet, gboolean release){
 	if(!tweet) return;
-	message_set_message(tweet);
-	if(release) g_free((gchar *)tweet);
+	app_set_expand_entry(tweet);
+	if(release) g_free(tweet);
 }//tweets_include_and_begin_to_send
 
 void tweets_new_dm(void){
-	send_message_dialog_show(GTK_WINDOW(app_get_window()));
-	message_show_friends(TRUE);
+	user_get_and_set_followers();
 }//tweets_new_dm
 
 void tweets_save_fave(void){

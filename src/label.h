@@ -24,7 +24,7 @@
 #ifndef __LABEL_H__
 #define __LABEL_H__
 
-#include <libsexy/sexy-url-label.h>
+#include <libsexy/sexy.h>
 
 G_BEGIN_DECLS
 

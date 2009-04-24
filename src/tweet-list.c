@@ -51,6 +51,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <libsexy/sexy.h>
 
 #include "config.h"
 
@@ -59,7 +60,6 @@
 
 #include "main.h"
 #include "tweet-list.h"
-#include "send-message-dialog.h"
 #include "label.h"
 #include "app.h"
 #include "tweets.h"
