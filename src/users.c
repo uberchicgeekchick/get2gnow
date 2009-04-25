@@ -96,43 +96,44 @@ static FriendRequest *user_request_new(FriendAction action, GtkWindow *parent, c
 	request->method=POST;
 	switch(request->action){
 		case ViewProfile:
-			request->message=g_strdup("profile view");
+			request->message=g_strdup("viewing profile");
 			request->uri=g_strdup_printf(API_ABOUT_USER, request->user_data);
 			request->method=GET;
 			break;
 		case ViewTweets:
-			request->message=g_strdup("tweets display");
+			request->message=g_strdup("tweets displaying");
 			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_data);
 			request->method=GET;
 			break;
 		case Follow:
 			request->uri=g_strdup_printf(API_USER_FOLLOW, request->user_data);
-			request->message=g_strdup("follow");
+			request->message=g_strdup("following");
 			break;
 		case UnFollow:
 			request->uri=g_strdup_printf(API_USER_UNFOLLOW, request->user_data);
-			request->message=g_strdup("unfollow");
+			request->message=g_strdup("unfollowed");
 			break;
 		case Block:
 			request->uri=g_strdup_printf(API_USER_BLOCK, request->user_data);
-			request->message=g_strdup("block");
+			request->message=g_strdup("blocked");
 			break;
 		case UnBlock:
 			request->uri=g_strdup_printf(API_USER_UNBLOCK, request->user_data);
-			request->message=g_strdup("unblock");
+			request->message=g_strdup("unblocked");
 			break;
 		case Fave:
 			request->uri=g_strdup_printf(API_FAVE, request->user_data);
-			request->message=g_strdup("star'");
+			request->message=g_strdup("star'd");
 			break;
 		case UnFave:
 			request->uri=g_strdup_printf(API_UNFAVE, request->user_data);
-			request->message=g_strdup("delet");
+			request->message=g_strdup("deleted");
 			break;
 		default:
 			g_free(request);
 			return NULL;
 	}//switch
+	debug(DEBUG_DOMAIN, "%sing %s", request->message, request->user_data);
 	return request;
 }//user_request_new
 
@@ -185,7 +186,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	
 	/* Check response */
 	if(!network_check_http(msg)){
-		app_statusbar_printf("Failed %sing.", request->message, NULL);
+		app_statusbar_printf("Failed %s.", request->message, NULL);
 		user_request_free(request);
 		return;
 	}
@@ -193,7 +194,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	/* parse new user */
 	debug(DEBUG_DOMAIN, "Parsing user response");
 	User *user=user_parse_new(msg->response_body->data, msg->response_body->length);
-	app_statusbar_printf("Successfully %sing.", request->message, NULL);
+	app_statusbar_printf("Successfully %s.", request->message, NULL);
 	
 	switch(request->action){
 		case UnFollow:
@@ -210,14 +211,15 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 		case ViewProfile:
 			break;
 	}//switch
-	user_free(user);
+	if(user) user_free(user);
 }//user_request_process_post
 
 
 static void user_request_free(FriendRequest *request){
 	request->parent=NULL;
-	g_free(request->uri);
-	g_free(request->message);
+	if(request->uri) g_free(request->uri);
+	if(request->user_data) g_free(request->user_data);
+	if(request->message) g_free(request->message);
 	g_free(request);
 }//user_request_free
 
