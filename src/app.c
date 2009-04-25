@@ -123,7 +123,7 @@ struct _AppPriv {
 	
 	/* My, Kaity G. B., new libsexy powered tweet entry box. */
 	GtkHBox			*tweet_hbox;
-	SexySpellEntry		*expand_entry;
+	SexySpellEntry		*sexy_entry;
 	GtkLabel		*expanded_tweet_count;
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm;
@@ -416,7 +416,7 @@ static void app_setup(void){
 	unset_selected_tweet();
 	
 	if(app_login(app))
-		tweets_show_submenu_entries((gboolean)FALSE);
+		tweets_show_submenu_entries(FALSE);
 }
 
 static void app_init_expanded_tweet(void){
@@ -437,11 +437,11 @@ static void app_init_expanded_tweet(void){
 				TRUE, TRUE, 0
 	);
 	
-	app_priv->expand_entry=(SexySpellEntry *)sexy_spell_entry_new();
-	gtk_widget_show(GTK_WIDGET(app_priv->expand_entry));
+	app_priv->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
+	gtk_widget_show(GTK_WIDGET(app_priv->sexy_entry));
 	gtk_box_pack_start(
 				GTK_BOX(app_priv->tweet_hbox),
-				GTK_WIDGET(app_priv->expand_entry),
+				GTK_WIDGET(app_priv->sexy_entry),
 				TRUE, TRUE, 0
 	);
 	
@@ -453,7 +453,7 @@ static void app_init_expanded_tweet(void){
 	
 	gtk_box_reorder_child(
 				GTK_BOX(app_priv->tweet_hbox),
-				GTK_WIDGET(app_priv->expand_entry),
+				GTK_WIDGET(app_priv->sexy_entry),
 				1
 	);
 	
@@ -469,12 +469,12 @@ static void app_init_expanded_tweet(void){
 				3
 	);
 
-	g_signal_connect(app_priv->friends_send_dm, "clicked", G_CALLBACK(tweets_friends_send_dm), app_priv->expand_entry);
+	g_signal_connect(app_priv->friends_send_dm, "clicked", G_CALLBACK(tweets_friends_send_dm), app_priv->sexy_entry);
 	
-	g_signal_connect_after(app_priv->expand_entry, "key-release-event", G_CALLBACK(tweets_update_expanded_count), app_priv->expanded_tweet_count);
-	g_signal_connect(app_priv->expand_entry, "activate", G_CALLBACK(tweets_send_sexy), NULL);
-	g_signal_connect(app_priv->sexy_send, "clicked", G_CALLBACK(tweets_sexy_send_clicked), app_priv->expand_entry);
-	g_signal_connect(app_priv->sexy_dm, "clicked", G_CALLBACK(tweets_sexy_dm_clicked), app_priv->expand_entry);
+	g_signal_connect_after(app_priv->sexy_entry, "key-release-event", G_CALLBACK(tweets_update_expanded_count), app_priv->expanded_tweet_count);
+	g_signal_connect(app_priv->sexy_entry, "activate", G_CALLBACK(tweets_send_sexy), NULL);
+	g_signal_connect(app_priv->sexy_send, "clicked", G_CALLBACK(tweets_sexy_send_clicked), app_priv->sexy_entry);
+	g_signal_connect(app_priv->sexy_dm, "clicked", G_CALLBACK(tweets_sexy_dm_clicked), app_priv->sexy_entry);
 }//app_init_expanded_tweet
 
 GtkWindow *app_get_window(void){
@@ -489,15 +489,19 @@ GtkComboBox *app_get_friends_combo_box(void){
 	return app_priv->friends_combo;
 }//app_get_friends_combo_box
 
-SexySpellEntry *app_get_expand_entry(void){
-	return app_priv->expand_entry;
-}//app_get_expand_entry
+SexySpellEntry *app_get_sexy_entry(void){
+	return app_priv->sexy_entry;
+}//app_get_sexy_entry
 
-void app_set_expand_entry(gchar *tweet){
-	gtk_entry_set_text(GTK_ENTRY(app_priv->expand_entry), tweet);
-	gtk_widget_grab_focus(GTK_WIDGET(app_priv->expand_entry));
-	gtk_entry_set_position(GTK_ENTRY(app_priv->expand_entry), -1 );
-}//app_set_expand_entry
+void app_set_sexy_entry(gchar *tweet){
+	gtk_entry_set_text(GTK_ENTRY(app_priv->sexy_entry), tweet);
+	app_select_sexy_entry();
+}//app_set_sexy_entry
+
+void app_select_sexy_entry(void){
+	gtk_widget_grab_focus(GTK_WIDGET(app_priv->sexy_entry));
+	gtk_entry_set_position(GTK_ENTRY(app_priv->sexy_entry), -1 );
+}//app_select_sexy_entry
 
 GtkMenuItem *app_get_menu(const gchar *menu){
 	if( (g_str_equal(menu, "services")) ) return GET_PRIV(app)->menu_services;
@@ -981,6 +985,7 @@ static void app_connection_items_setup(App *app, GtkBuilder *ui){
 		"tweets",
 		"timelines",
 		"friends",
+		"expand_box",
 	};
 
 	const gchar   *widgets_disconnected[] = {
@@ -1016,6 +1021,7 @@ void app_state_on_connection(gboolean connected){
 		g_object_set(l->data, "sensitive", !connected, NULL);
 	
 	g_list_free(l);
+	app_select_sexy_entry();
 }
 
 void app_statusbar_printf(const gchar *msg, ...){
@@ -1048,7 +1054,7 @@ void app_notify_sound(gboolean force){
 		conf_get_bool(conf_get(), PREFS_UI_SOUND, &sound);
 		if(!sound) return;
 	}
-	gtk_widget_error_bell(GTK_WIDGET(app_priv->expand_entry));
+	gtk_widget_error_bell(GTK_WIDGET(app_priv->sexy_entry));
 }
 
 void app_notify(gchar *msg){

@@ -147,6 +147,7 @@ void user_request_main(FriendAction action, GtkWindow *parent, const gchar *user
 	SoupSession *session=NULL;
 	SoupMessage *msg=NULL;
 	user_request_main_quit(session, msg, (gpointer *)request);
+	app_select_sexy_entry();
 }//user_request_main
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){

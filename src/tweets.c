@@ -187,13 +187,17 @@ void tweets_retweet(void){
 }//tweets_retweet
 
 void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
+	static guint excess_count=0;
 	gchar *remaining_characters=NULL;
 	gint character_count=160 - gtk_entry_get_text_length(entry);
 	if(character_count < 0){
-		gtk_widget_error_bell(GTK_WIDGET(entry));
+		if( (++excess_count)%10 )
+			gtk_widget_error_bell(GTK_WIDGET(entry));
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
-	}else
+	}else{
+		if(excess_count) excess_count=0;
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
+	}
 	
 	gtk_label_set_markup( tweet_character_counter, remaining_characters );
 }//tweets_update_expanded_count
@@ -228,12 +232,12 @@ void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
 	else
 		network_send_message(user_name, (const gchar *)tweet);
 	g_free(tweet);
-	app_set_expand_entry((gchar *)"");
+	app_set_sexy_entry((gchar *)"");
 }//tweets_send_sexy
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean release){
 	if(!tweet) return;
-	app_set_expand_entry(tweet);
+	app_set_sexy_entry(tweet);
 	if(release) g_free(tweet);
 }//tweets_include_and_begin_to_send
 

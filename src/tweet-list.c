@@ -167,16 +167,20 @@ static void tweet_list_setup_view(TweetList *list){
 
 static void tweet_list_move(GdkEventKey *event, TweetList *list){
 	switch(event->keyval){
-		case GDK_Tab: case GDK_Home:
+		case GDK_Tab: case GDK_KP_Tab:
+		case GDK_Home: case GDK_KP_Home:
+		case GDK_Begin: case GDK_Escape:
 			tweet_list_index=0;
 			break;
-		case GDK_Up:
+		case GDK_Up: case GDK_KP_Up: case GDK_KP_Prior:
 			tweet_list_index--;
 			break;
-		case GDK_Down:
+		case GDK_Down: case GDK_KP_Down: case GDK_KP_Next:
 			tweet_list_index++;
 			break;
-		case GDK_End: tweet_list_index=19; break;
+		case GDK_End: case GDK_KP_End:
+			tweet_list_index=19;
+			break;
 		case GDK_Page_Up: tweet_list_index-=10; break;
 		case GDK_Page_Down: tweet_list_index+=10; break;
 		default: return;
@@ -186,6 +190,7 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
+	app_select_sexy_entry();
 }//tweet_list_move
 
 void tweet_list_refresh(void){
