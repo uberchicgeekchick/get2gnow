@@ -456,6 +456,7 @@ static void app_init_expanded_tweet(void){
 				GTK_WIDGET(app_priv->sexy_entry),
 				1
 	);
+	g_signal_connect_after(app_priv->sexy_entry, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 	
 	gtk_box_reorder_child(
 				GTK_BOX(app_priv->tweet_hbox),

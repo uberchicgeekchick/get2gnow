@@ -190,7 +190,7 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
-	//app_select_sexy_entry();
+	app_select_sexy_entry();
 }//tweet_list_move
 
 void tweet_list_refresh(void){
