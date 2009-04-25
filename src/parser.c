@@ -140,8 +140,7 @@ gboolean parser_timeline(const gchar *data, gssize length){
 			cur_node = cur_node->children;
 			continue;
 		}
-
-
+		
 		if((!g_str_equal(cur_node->name, "status")) && (!g_str_equal(cur_node->name, "direct_message")) )
 			continue;
 		
@@ -157,7 +156,7 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		/* the first tweet parsed is the 'newest' */
 		if(last_tweet == 0)
 			last_tweet = sid;
-
+		
 		/* Create string for text column */
 		datetime=parser_convert_time( status->created_at );
 		tweet=g_strconcat(
@@ -177,7 +176,7 @@ gboolean parser_timeline(const gchar *data, gssize length){
 
 			tweet_display_delay += tweet_display_interval;
 		}
-
+		
 		/* Append to ListStore */
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter,
@@ -191,10 +190,10 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		
 		/* Free the text column string */
 		g_free(tweet);
-
+		
 		/* Get Image */
 		network_get_image(status->user->image_url, iter);
-
+		
 		/* Free struct */
 		user_free(status->user);
 		if(status->text) g_free(status->text);
@@ -204,15 +203,17 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		g_free(status);
 		g_free(datetime);
 	} /* end of loop */
-
+	
 	/* Remember last id showed */
 	if(last_tweet > 0)
 		last_id=last_tweet;
-
+	
 	/* Free memory */
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-
+	
+	tweet_list_refresh();
+	
 	return TRUE;
 }
 

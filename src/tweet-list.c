@@ -88,6 +88,7 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list);
 
 static TweetList *list = NULL;
 static TweetListPriv *list_priv=NULL;
+static gint tweet_list_index=0;
 
 G_DEFINE_TYPE(TweetList, tweet_list, GTK_TYPE_TREE_VIEW);
 
@@ -165,28 +166,31 @@ static void tweet_list_setup_view(TweetList *list){
 
 
 static void tweet_list_move(GdkEventKey *event, TweetList *list){
-	static gint i=0;
 	switch(event->keyval){
 		case GDK_Tab: case GDK_Home:
-			i=0;
+			tweet_list_index=0;
 			break;
 		case GDK_Up:
-			i--;
+			tweet_list_index--;
 			break;
 		case GDK_Down:
-			i++;
+			tweet_list_index++;
 			break;
-		case GDK_End: i=19; break;
-		case GDK_Page_Up: i-=10; break;
-		case GDK_Page_Down: i+=10; break;
+		case GDK_End: tweet_list_index=19; break;
+		case GDK_Page_Up: tweet_list_index-=10; break;
+		case GDK_Page_Down: tweet_list_index+=10; break;
 		default: return;
 	}//switch
-	if( i<0 ) i=0;
-	else if( i>19 ) i=19;
-	GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+	if( tweet_list_index<0 ) tweet_list_index=0;
+	else if( tweet_list_index>19 ) tweet_list_index=19;
+	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
 }//tweet_list_move
+
+void tweet_list_refresh(void){
+	tweet_list_index=0;
+}//tweet_list_refreshed
 
 
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){

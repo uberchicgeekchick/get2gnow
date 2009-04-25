@@ -89,6 +89,8 @@ enum {
 GType		tweet_list_get_type(void) G_GNUC_CONST;
 TweetList	*tweet_list_new(void);
 GtkListStore	*tweet_list_get_store(void);
+
+void tweet_list_refresh(void);
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
 
 G_END_DECLS
