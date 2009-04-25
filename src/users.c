@@ -76,7 +76,6 @@ static void user_request_process_get(FriendRequest *request);
 static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data);
 static void user_request_free(FriendRequest *request);
 
-static void users_free_foreach(gpointer user, gpointer users_list);
 static User *user_constructor( gboolean a_follower );
 
 
@@ -179,8 +178,8 @@ static void user_request_process_get(FriendRequest *request){
 	}//switch
 }//user_request_process_get
 
-static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer request_p){
-	FriendRequest *request=(FriendRequest *)request_p;
+static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data){
+	FriendRequest *request=(FriendRequest *)user_data;
 	debug(DEBUG_DOMAIN, "%s user response: %i", request->message, msg->status_code);
 	
 	/* Check response */
@@ -376,18 +375,11 @@ User *user_fetch_profile(const gchar *user_name){
 void users_free(const char *type, GList *users ){
 	debug( DEBUG_DOMAIN, "Freeing the authenticated user's %s.", type );
 	
-	g_list_foreach(users, users_free_foreach, users );
+	g_list_foreach(users, (GFunc)user_free, NULL);
 	
 	g_list_free(users);
 	users=NULL;
 }//users_free
-
-/* Callback to free every element on a User list */
-static void users_free_foreach(gpointer user, gpointer users_list){
-	if(!user) return;
-	users_list=g_list_remove(users_list, user);
-	user_free( (User *)user );
-}//users_free_foreach
 
 /* Free a user struct */
 void user_free(User *user){
@@ -417,23 +409,29 @@ void user_free_lists(void){
 
 
 void user_append_friend(User *user){
-	user_friends=g_list_append(user_friends, user );
-	app_set_statusbar_msg (_("Friend Added"));
+	if(user_friends)
+		user_friends=g_list_append(user_friends, user );
+	app_set_statusbar_msg (_("Friend Added."));
 }//user_append_friend
 
 void user_remove_friend(User *user){
-	user_friends=g_list_remove(user_friends, user);
+	if(user_friends)
+		user_friends=g_list_remove(user_friends, user);
+	app_set_statusbar_msg (_("Friend Removed."));
 	user_free(user);
 }//user_remove_friend
 
 
 void user_append_follower(User *user){
-	user_followers=g_list_append(user_followers, user );
-	app_set_statusbar_msg (_("Follower Added"));
+	if(user_followers)
+		user_followers=g_list_append(user_followers, user );
+	app_set_statusbar_msg (_("Follower Added."));
 }//user_append_friend
 
 void user_remove_follower(User *user){
-	user_followers=g_list_remove(user_followers, user);
+	if(user_followers)
+		user_followers=g_list_remove(user_followers, user);
+	app_set_statusbar_msg (_("Follower Removed."));
 	user_free(user);
 }//user_remove_friend
 
