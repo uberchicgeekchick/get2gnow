@@ -221,7 +221,7 @@ void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry){
 }//tweets_sexy_dm_clicked
 
 void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
-	if( gtk_entry_get_text_length(entry) > 160 ) {
+	if( G_STR_EMPTY(entry->text) || gtk_entry_get_text_length(entry) > 160 ) {
 		gtk_widget_error_bell(GTK_WIDGET(entry));
 		return;
 	}
@@ -236,7 +236,7 @@ void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
 }//tweets_send_sexy
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean release){
-	if(!tweet) return;
+	if(G_STR_EMPTY(tweet)) return;
 	app_set_sexy_entry(tweet);
 	if(release) g_free(tweet);
 }//tweets_include_and_begin_to_send

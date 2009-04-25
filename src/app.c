@@ -312,10 +312,10 @@ static void app_setup(void){
 				NULL
 	);
 	g_signal_connect_after(app_priv->window, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
-
+	
 	/* Grab the conf object */
 	conf = conf_get();
-
+	
 	/* Set group for menu radio actions */
 	app_set_radio_group(app, ui);
 	
