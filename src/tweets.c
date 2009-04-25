@@ -191,7 +191,7 @@ void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel 
 	gchar *remaining_characters=NULL;
 	gint character_count=160 - gtk_entry_get_text_length(entry);
 	if(character_count < 0){
-		if( (++excess_count)%10 )
+		if(!( (++excess_count)%10 ))
 			gtk_widget_error_bell(GTK_WIDGET(entry));
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
 	}else{
