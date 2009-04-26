@@ -136,7 +136,7 @@ static void preferences_notify_bool_cb (Conf *conf, const gchar *key, gpointer u
 static void preferences_timeline_setup (Prefs *prefs){
 	static const gchar *timelines[] = {
 		API_TIMELINE_FRIENDS,	N_("My Friends' Tweets"),
-		API_REPLIES,		N_("@ Replies"),
+		API_MENTIONS,		N_("@ Mentions"),
 		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
 		API_FAVORITES,		N_("My Favorites"),
 		API_TIMELINE_MY,	N_("My Tweets"),

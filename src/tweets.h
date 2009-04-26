@@ -36,6 +36,8 @@
 
 #define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
 
+#define	TWEET_MAX_CHARS	140
+
 extern unsigned long int in_reply_to_status_id;
 
 G_BEGIN_DECLS
@@ -70,6 +72,7 @@ void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel 
 void tweets_sexy_send_clicked(GtkButton *button, GtkEntry *entry);
 void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry);
 void tweets_send_sexy(GtkEntry *entry, gpointer user_data);
+void tweets_send(void);
 
 G_END_DECLS
 

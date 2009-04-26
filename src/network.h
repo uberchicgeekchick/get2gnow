@@ -41,7 +41,7 @@
 #define API_TIMELINE_FRIENDS	"/statuses/friends_timeline.xml"
 #define API_TIMELINE_MY		"/statuses/user_timeline.xml"
 #define API_TIMELINE_USER	"/statuses/user_timeline/%s.xml"
-#define API_REPLIES		"/statuses/replies.xml"
+#define API_MENTIONS		"/statuses/mentions.xml"
 #define API_DIRECT_MESSAGES	"/direct_messages.xml"
 #define API_FAVORITES		"/favorites.xml"
 

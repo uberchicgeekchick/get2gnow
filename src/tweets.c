@@ -75,7 +75,7 @@ typedef struct SelectedTweet {
 	gchar *tweet;
 } SelectedTweet;//SelectedTweet
 
-static void tweets_include_and_begin_to_send(gchar *tweet, gboolean release);
+static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, gboolean release);
 
 
 unsigned long int in_reply_to_status_id=0;
@@ -106,9 +106,11 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 	switch( event->state ){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
-				case GDK_Return: return tweets_retweet();
 				case GDK_S: case GDK_s:
-					return g_signal_emit_by_name(app_get_menu("services"), "activate");
+					return tweets_send();
+				case GDK_Return: return tweets_retweet();
+				case GDK_C: case GDK_c:
+					return g_signal_emit_by_name(app_get_menu("connections"), "activate");
 				case GDK_T: case GDK_t:
 					return g_signal_emit_by_name(app_get_menu("tweets"), "activate");
 				case GDK_F: case GDK_f:
@@ -130,6 +132,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
 				case GDK_Return:
+					return app_sexy_append_char('\n');
 				case GDK_N: case GDK_n:
 					return tweets_new_tweet();
 				case GDK_Q: case GDK_q:
@@ -167,15 +170,13 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
-	tweets_include_and_begin_to_send("", FALSE);
+	tweets_include_and_begin_to_send("", FALSE, FALSE);
 }//tweets_new_tweet
 
 void tweets_reply(void){
-	if(!selected_tweet)
-		return;
+	if(!selected_tweet) return;
 	gchar *tweet=g_strdup_printf("@%s ", selected_tweet->user_name);
-	in_reply_to_status_id=selected_tweet->id;
-	tweets_include_and_begin_to_send(tweet, TRUE);
+	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
 }//tweets_reply
 
 void tweets_retweet(void){
@@ -183,23 +184,38 @@ void tweets_retweet(void){
 		return;
 	gchar *tweet=g_strdup_printf("RT @%s %s", selected_tweet->user_name, selected_tweet->tweet);
 	in_reply_to_status_id=selected_tweet->id;
-	tweets_include_and_begin_to_send(tweet, TRUE);
+	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
 }//tweets_retweet
 
-void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
-	static guint excess_count=0;
-	gchar *remaining_characters=NULL;
-	gint character_count=160 - gtk_entry_get_text_length(entry);
-	if(character_count < 0){
-		if(!( (++excess_count)%10 ))
-			gtk_widget_error_bell(GTK_WIDGET(entry));
-		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
-	}else{
-		if(excess_count) excess_count=0;
-		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
+static void tweets_include_and_begin_to_send(gchar *tweet,  gboolean a_response, gboolean release){
+	if(!(tweet)) return;
+	if(a_response) in_reply_to_status_id=selected_tweet->id;
+	app_set_sexy_entry(tweet);
+	if(release) g_free(tweet);
+}//tweets_include_and_begin_to_send
+
+static gshort tweetlen(gchar *tweet){
+	gushort character_count=0;
+	while(*tweet){
+		unsigned char l=*tweet++;
+		if(l=='<' || l=='>')
+			character_count+=3;
+		character_count++;
 	}
+	return TWEET_MAX_CHARS-character_count;
+}//tweets_coun_tweet_length
+
+void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
+	gshort character_count=tweetlen(entry->text);
+	gchar *remaining_characters=NULL;
+	if(character_count < 0){
+		gtk_widget_error_bell(GTK_WIDGET(entry));
+		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
+	}else
+		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
 	
 	gtk_label_set_markup( tweet_character_counter, remaining_characters );
+	g_free(remaining_characters);
 }//tweets_update_expanded_count
 
 void tweets_sexy_send_clicked(GtkButton *button, GtkEntry *entry){
@@ -220,26 +236,36 @@ void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry){
 	tweets_send_sexy(entry, selected_tweet->user_name);
 }//tweets_sexy_dm_clicked
 
-void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
-	if( G_STR_EMPTY(entry->text) || gtk_entry_get_text_length(entry) > 160 ) {
+void tweets_send(void){
+	gchar *user_name=NULL;
+	GtkEntry *entry=app_get_sexy_entry();
+	if(!(entry->text)){
 		gtk_widget_error_bell(GTK_WIDGET(entry));
 		return;
 	}
-	gchar *tweet=g_strdup(url_encode(entry->text));
+	user_name=gtk_combo_box_get_active_text(app_get_friends_combo_box());
+	tweets_send_sexy(entry, user_name);
+	if(user_name) g_free(user_name);
+}//tweet_send
+	
+void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
+	if( G_STR_EMPTY(entry->text) )
+		return tweets_reply();
+	
+	if(gtk_entry_get_text_length(entry) > TWEET_MAX_CHARS ) {
+		gtk_widget_error_bell(GTK_WIDGET(entry));
+		return;
+	}
+	gchar *tweet=url_encode(entry->text);
 	const gchar *user_name=(const gchar *)user_data;
 	if(G_STR_EMPTY(user_name))
 		network_post_status(tweet);
 	else
 		network_send_message(user_name, (const gchar *)tweet);
+	
 	g_free(tweet);
 	app_set_sexy_entry((gchar *)"");
 }//tweets_send_sexy
-
-static void tweets_include_and_begin_to_send(gchar *tweet, gboolean release){
-	if(G_STR_EMPTY(tweet)) return;
-	app_set_sexy_entry(tweet);
-	if(release) g_free(tweet);
-}//tweets_include_and_begin_to_send
 
 void tweets_new_dm(void){
 	user_get_and_set_followers();

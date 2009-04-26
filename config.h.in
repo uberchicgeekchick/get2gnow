@@ -18,9 +18,6 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define if you have libenchant */
-#undef HAVE_ENCHANT
-
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
@@ -59,9 +56,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* ISO codes prefix */
-#undef ISO_CODES_PREFIX
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

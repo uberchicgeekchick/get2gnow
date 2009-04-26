@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <interface>
-  <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="main_window">
     <property name="width_request">230</property>
@@ -17,12 +16,12 @@
           <object class="GtkMenuBar" id="main_menubar">
             <property name="visible">True</property>
             <child>
-              <object class="GtkMenuItem" id="services">
+              <object class="GtkMenuItem" id="connections">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Services</property>
+                <property name="label" translatable="yes">_Connections</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="twitter_menu">
+                  <object class="GtkMenu" id="connections_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="twitter_connect">
                         <property name="label">_Connect</property>
@@ -205,9 +204,9 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="view_direct_replies">
+                      <object class="GtkRadioMenuItem" id="view_mentions">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_@ Replies</property>
+                        <property name="label" translatable="yes">_@ Mentions</property>
                         <property name="use_underline">True</property>
                         <property name="group">view_public_timeline</property>
                       </object>
@@ -359,10 +358,11 @@
                   <object class="GtkMenu" id="help_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="help_contents">
-                        <property name="label">gtk-help</property>
+                        <property name="label">_Help</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="image">image19</property>
+                        <property name="use_stock">False</property>
                         <property name="accel_group">accelgroup1</property>
                         <accelerator key="F1" signal="activate"/>
                       </object>
@@ -607,8 +607,8 @@
                   <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkHBox" id="hbox2">
-                    <property name="visible">True</property>
+                  <object class="GtkHBox" id="friends_hbox">
+                    <property name="sensitive">False</property>
                     <child>
                       <object class="GtkLabel" id="friends_label">
                         <property name="sensitive">False</property>
@@ -1008,5 +1008,9 @@ _Controls</property>
       <!-- column-name user_name -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkImage" id="image19">
+    <property name="visible">True</property>
+    <property name="stock">gtk-help</property>
   </object>
 </interface>

@@ -409,7 +409,7 @@ void network_get_combined_timeline(void){
 	/* SoupMessage *msg; */
 	gchar *timelines[]={
 		API_TIMELINE_FRIENDS,
-		API_REPLIES,
+		API_MENTIONS,
 		API_DIRECT_MESSAGES,
 		NULL
 	};

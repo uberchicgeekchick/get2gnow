@@ -8,8 +8,7 @@ AM_CFLAGS=						\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLOCALEDIR=\""$(localedir)"\"			\
 	-DLIBDIR=\""$(libdir)"\"			\
-	$(get2gnow_CFLAGS)			\
-	$(ENCHANT_CFLAGS)				\
+	$(get2gnow_CFLAGS)				\
 	$(WARN_CFLAGS)					\
 	-std=$(C_STD_MODE)
 
@@ -19,7 +18,7 @@ if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 
-get2gnow_SOURCES = 				\
+get2gnow_SOURCES = 					\
 	$(keyring_sources)				\
 	main.c			main.h			\
 	gconf.c			gconf.h			\
@@ -50,5 +49,4 @@ get2gnow_SOURCES = 				\
 
 
 get2gnow_LDADD=			\
-	$(get2gnow_LIBS)	\
-	$(ENCHANT_LIBS)
+	$(get2gnow_LIBS)

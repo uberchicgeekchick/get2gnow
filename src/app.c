@@ -61,7 +61,7 @@ struct _AppPriv {
 	GtkWindow		*window;
 	
 	GtkMenuBar		*menubar;
-        GtkMenuItem		*menu_services;
+        GtkMenuItem		*menu_connections;
         GtkMenuItem		*menu_tweets;
 	GtkMenuItem		*menu_friends;
 	GtkMenuItem		*menu_timelines;
@@ -84,7 +84,7 @@ struct _AppPriv {
 	GtkRadioMenuItem	*timeline_friends;
 	GtkRadioMenuItem	*timeline_mine;
 	GtkRadioMenuItem	*timeline_dm;
-	GtkRadioMenuItem	*timeline_replies;
+	GtkRadioMenuItem	*timeline_mentions;
 	GtkRadioMenuItem	*timeline_favorites;
 	
 	GtkAction		*friends_menu_friends_manager;
@@ -116,6 +116,7 @@ struct _AppPriv {
 	GtkWidget		*expand_label;
 	
 	/* Stuff for sending a dm to a selected user. */
+	GtkHBox			*friends_hbox;
 	GtkLabel		*friends_label;
 	GtkComboBox		*friends_combo;
 	GtkButton		*friends_send_dm;
@@ -260,7 +261,7 @@ static void app_setup(void){
 					"main_window", &app_priv->window,
 					
 					"main_menubar", &app_priv->menubar,
-					"services", &app_priv->menu_services,
+					"connections", &app_priv->menu_connections,
 					"tweets", &app_priv->menu_tweets,
 					"friends", &app_priv->menu_friends,
 					"timelines", &app_priv->menu_timelines,
@@ -274,7 +275,7 @@ static void app_setup(void){
 					"view_friends_timeline", &app_priv->timeline_friends,
 					"view_my_timeline", &app_priv->timeline_mine,
 					"view_direct_messages", &app_priv->timeline_dm,
-					"view_direct_replies", &app_priv->timeline_replies,
+					"view_mentions", &app_priv->timeline_mentions,
 					"view_favorites_timeline", &app_priv->timeline_favorites,
 					
 					"friends_menu_friends_manager", &app_priv->friends_menu_friends_manager,
@@ -301,6 +302,8 @@ static void app_setup(void){
 					"expanded_tweet_count", &app_priv->expanded_tweet_count,
 					"sexy_send", &app_priv->sexy_send,
 					"sexy_dm", &app_priv->sexy_dm,
+					
+					"friends_hbox", &app_priv->friends_hbox,
 					"friends_combo", &app_priv->friends_combo,
 					"friends_label", &app_priv->friends_label,
 					"friends_send_dm", &app_priv->friends_send_dm,
@@ -321,56 +324,54 @@ static void app_setup(void){
 	
 	/* Connect the signals */
 	gtkbuilder_connect( ui, app,
-				"main_window", "destroy", main_window_destroy_cb,
-				"main_window", "delete_event", main_window_delete_event_cb,
-				"main_window", "configure_event", app_window_configure_event_cb,
-				
-				"twitter_connect", "activate", app_connect_cb,
-				"twitter_disconnect", "activate", app_disconnect_cb,
-				"accounts", "activate", app_accounts_cb,
-				"preferences", "activate", app_preferences_cb,
-				"quit", "activate", app_quit_cb,
-				
-				"tweets_new_tweet", "activate", tweets_new_tweet,
-				"tweets_reply", "activate", tweets_reply,
-				"tweets_retweet", "activate", tweets_retweet,
-				"tweets_save_fave", "activate", tweets_save_fave,
-				"tweets_new_dm", "activate", tweets_new_dm,
-				
-				"twitter_refresh", "activate", app_refresh_timeline,
-				"view_combined_timeline", "activate", app_timeline_cb,
-				"view_public_timeline", "activate", app_timeline_cb,
-				"view_friends_timeline", "activate", app_timeline_cb,
-				"view_my_timeline", "activate", app_timeline_cb,
-				"view_direct_messages", "activate", app_timeline_cb,
-				"view_direct_replies", "activate", app_timeline_cb,
-				"view_favorites_timeline", "activate", app_timeline_cb,
-				
-				"friends_menu_friends_manager", "activate", friends_menu_request,
-				"friends_menu_timelines", "activate", friends_menu_request,
-				"friends_menu_follow", "activate", friends_menu_request,
-				"friends_menu_unfollow", "activate", friends_menu_request,
-				"friends_menu_block", "activate", friends_menu_request,
-				"friends_menu_tweets", "activate", friends_menu_request,
-				"friends_menu_profile", "activate", friends_menu_request,
-				
-				"help_contents", "activate", app_help_contents_cb,
-				"help_about", "activate", app_about_cb,
-				
-				"expanded_tweet_dm_button", "clicked", tweets_new_dm,
-				"expanded_tweet_view_users_profile_button", "clicked", tweets_user_view_profile,
-				"expanded_tweet_view_users_timeline_button", "clicked", tweets_user_view_tweets,
-				
-				"expanded_tweet_user_follow_button", "clicked", tweets_user_follow,
-				"expanded_tweet_user_unfollow_button", "clicked", tweets_user_unfollow,
-				"expanded_tweet_user_block_button", "clicked", tweets_user_block,
-				
-				"dm_data_hide", "clicked", app_dm_data_hide,
-				
-				"expanded_tweet_reply_button", "clicked", tweets_reply,
-				"expanded_tweet_retweet_button", "clicked", tweets_retweet,
-				"expanded_tweet_make_fave_button", "clicked", tweets_save_fave,
-			NULL
+					"main_window", "destroy", main_window_destroy_cb,
+					"main_window", "delete_event", main_window_delete_event_cb,
+					"main_window", "configure_event", app_window_configure_event_cb,
+					
+					"twitter_connect", "activate", app_connect_cb,
+					"twitter_disconnect", "activate", app_disconnect_cb,
+					"accounts", "activate", app_accounts_cb,
+					"preferences", "activate", app_preferences_cb,
+					"quit", "activate", app_quit_cb,
+					
+					"tweets_new_tweet", "activate", tweets_new_tweet,
+				 	"tweets_reply", "activate", tweets_reply,
+					"tweets_retweet", "activate", tweets_retweet,
+					"tweets_save_fave", "activate", tweets_save_fave,
+					"tweets_new_dm", "activate", tweets_new_dm,
+					
+					"twitter_refresh", "activate", app_refresh_timeline,
+					"view_combined_timeline", "activate", app_timeline_cb,
+					"view_public_timeline", "activate", app_timeline_cb,
+					"view_friends_timeline", "activate", app_timeline_cb,
+					"view_my_timeline", "activate", app_timeline_cb,
+					"view_direct_messages", "activate", app_timeline_cb,
+					"view_mentions", "activate", app_timeline_cb,
+					"view_favorites_timeline", "activate", app_timeline_cb,
+					
+					"friends_menu_friends_manager", "activate", friends_menu_request,
+					"friends_menu_timelines", "activate", friends_menu_request,
+					"friends_menu_follow", "activate", friends_menu_request,
+					"friends_menu_unfollow", "activate", friends_menu_request,
+					"friends_menu_block", "activate", friends_menu_request,
+					"friends_menu_tweets", "activate", friends_menu_request,
+					"friends_menu_profile", "activate", friends_menu_request,
+					
+					"help_contents", "activate", app_help_contents_cb,
+					"help_about", "activate", app_about_cb,
+					
+					"expanded_tweet_dm_button", "clicked", tweets_new_dm,
+					"expanded_tweet_view_users_profile_button", "clicked", tweets_user_view_profile,
+					"expanded_tweet_view_users_timeline_button", "clicked", tweets_user_view_tweets,
+					
+					"expanded_tweet_user_follow_button", "clicked", tweets_user_follow,
+					"expanded_tweet_user_unfollow_button", "clicked", tweets_user_unfollow,
+					"expanded_tweet_user_block_button", "clicked", tweets_user_block,
+					
+					"expanded_tweet_reply_button", "clicked", tweets_reply,
+					"expanded_tweet_retweet_button", "clicked", tweets_retweet,
+					"expanded_tweet_make_fave_button", "clicked", tweets_save_fave,
+				NULL
 	);
 
 	/* Set up connected related widgets */
@@ -476,6 +477,7 @@ static void app_init_expanded_tweet(void){
 	g_signal_connect(app_priv->sexy_entry, "activate", G_CALLBACK(tweets_send_sexy), NULL);
 	g_signal_connect(app_priv->sexy_send, "clicked", G_CALLBACK(tweets_sexy_send_clicked), app_priv->sexy_entry);
 	g_signal_connect(app_priv->sexy_dm, "clicked", G_CALLBACK(tweets_sexy_dm_clicked), app_priv->sexy_entry);
+	g_signal_connect(app_priv->dm_data_hide, "clicked", G_CALLBACK(app_dm_data_hide), app_priv->dm_data_hide);
 }//app_init_expanded_tweet
 
 GtkWindow *app_get_window(void){
@@ -490,8 +492,12 @@ GtkComboBox *app_get_friends_combo_box(void){
 	return app_priv->friends_combo;
 }//app_get_friends_combo_box
 
-SexySpellEntry *app_get_sexy_entry(void){
+SexySpellEntry *app_get_sexy(void){
 	return app_priv->sexy_entry;
+}//app_get_sexy_entry
+
+GtkEntry *app_get_sexy_entry(void){
+	return GTK_ENTRY(app_priv->sexy_entry);
 }//app_get_sexy_entry
 
 void app_set_sexy_entry(gchar *tweet){
@@ -504,8 +510,19 @@ void app_select_sexy_entry(void){
 	gtk_entry_set_position(GTK_ENTRY(app_priv->sexy_entry), -1 );
 }//app_select_sexy_entry
 
+void app_sexy_append_char(const char c){
+	gchar *str=g_strdup_printf("%c", c);
+	app_sexy_append_string((const gchar *)str);
+	g_free(str);
+}//app_sexy_append_char
+
+void app_sexy_append_string(const gchar *str){
+	gint position=(gint)gtk_entry_get_text_length(GTK_ENTRY(app_priv->sexy_entry));
+	gtk_editable_insert_text(GTK_EDITABLE(app_priv->sexy_entry), str, -1, &position );
+}//app_sexy_append_string
+
 GtkMenuItem *app_get_menu(const gchar *menu){
-	if( (g_str_equal(menu, "services")) ) return GET_PRIV(app)->menu_services;
+	if( (g_str_equal(menu, "connections")) ) return GET_PRIV(app)->menu_connections;
 	if( (g_str_equal(menu, "tweets")) ) return GET_PRIV(app)->menu_tweets;
 	if( (g_str_equal(menu, "friends")) ) return GET_PRIV(app)->menu_friends;
 	if( (g_str_equal(menu, "timelines")) ) return GET_PRIV(app)->menu_timelines;
@@ -542,6 +559,8 @@ void app_dm_data_fill(GList *followers){
 }
 
 void app_dm_data_show(void){
+	gtk_widget_show( GTK_WIDGET(app_priv->friends_hbox) );
+	gtk_widget_set_sensitive( GTK_WIDGET(app_priv->friends_hbox), TRUE );
 	gtk_widget_show( GTK_WIDGET(app_priv->friends_combo) );
 	gtk_widget_set_sensitive( GTK_WIDGET(app_priv->friends_combo), TRUE );
 	gtk_widget_show( GTK_WIDGET(app_priv->friends_label) );
@@ -554,6 +573,8 @@ void app_dm_data_show(void){
 }
 
 void app_dm_data_hide(void){
+	gtk_widget_hide( GTK_WIDGET(app_priv->friends_hbox) );
+	gtk_widget_set_sensitive( GTK_WIDGET(app_priv->friends_hbox), FALSE );
 	gtk_widget_hide( GTK_WIDGET(app_priv->friends_combo) );
 	gtk_widget_set_sensitive( GTK_WIDGET(app_priv->friends_combo), FALSE );
 	gtk_widget_hide( GTK_WIDGET(app_priv->friends_label) );
@@ -605,7 +626,7 @@ static void app_set_radio_group(App  *app, GtkBuilder *ui){
 	const gchar     *radio_actions[] = {
 		"view_combined_timeline",
 		"view_friends_timeline",
-		"view_direct_replies",
+		"view_mentions",
 		"view_direct_messages",
 		"view_favorites_timeline",
 		"view_my_timeline",
@@ -694,8 +715,8 @@ static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_dm)->active)
 		return network_get_timeline(API_DIRECT_MESSAGES);
 
-	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_replies)->active) 
-		return network_get_timeline(API_REPLIES);
+	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_mentions)->active) 
+		return network_get_timeline(API_MENTIONS);
 	
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_friends)->active) 
 		return network_get_timeline(API_TIMELINE_FRIENDS);
@@ -927,8 +948,8 @@ static void app_set_default_timeline(App *app, gchar *timeline){
 	if( (g_str_equal(timeline, API_TIMELINE_FRIENDS)) )
 		return gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(app_priv->timeline_friends), TRUE);
 	
-	if( (g_str_equal(timeline, API_REPLIES)) )
-		return gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(app_priv->timeline_replies), TRUE);
+	if( (g_str_equal(timeline, API_MENTIONS)) )
+		return gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(app_priv->timeline_mentions), TRUE);
 	
 	if( (g_str_equal(timeline, API_DIRECT_MESSAGES)) )
 		return gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(app_priv->timeline_dm), TRUE);

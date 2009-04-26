@@ -154,8 +154,6 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
-ENCHANT_CFLAGS = @ENCHANT_CFLAGS@
-ENCHANT_LIBS = @ENCHANT_LIBS@
 EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
@@ -307,13 +305,11 @@ AM_CFLAGS =						\
 	-DDATADIR=\""$(datadir)"\"              	\
 	-DLIBDIR=\""$(libdir)"\"			\
 	-DLOCALEDIR=\""$(localedir)"\"			\
-	$(get2gnow_CFLAGS)			\
-	$(ENCHANT_CFLAGS)				\
+	$(get2gnow_CFLAGS)				\
 	$(WARN_CFLAGS)
 
 get2gnow_LDADD =				\
-	$(get2gnow_LIBS)			\
-	$(ENCHANT_LIBS)
+	$(get2gnow_LIBS)
 
 all: all-am
 
