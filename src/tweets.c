@@ -93,6 +93,15 @@ void set_selected_tweet(unsigned long int id, const gchar *user_name, const gcha
 	tweets_selected_widgets_show(TRUE);
 }//set_selected_tweets
 
+void unset_selected_tweet(void){
+	tweets_selected_widgets_show(FALSE);
+	if(!selected_tweet) return;
+	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
+	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
+	g_free(selected_tweet);
+	selected_tweet=NULL;
+}//unset_selected_tweet
+	
 gchar *tweets_get_selected_user_name(void){
 	if(!selected_tweet->user_name)
 			return NULL;
@@ -318,12 +327,4 @@ void tweets_user_unblock(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(UnBlock, app_get_window(), selected_tweet->user_name);
 }//tweets_user_unblock
-
-void unset_selected_tweet(void){
-	tweets_selected_widgets_show(FALSE);
-	if(!selected_tweet) return;
-	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
-	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
-	g_free(selected_tweet);
-}//unset_selected_tweet
 

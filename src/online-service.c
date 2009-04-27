@@ -210,6 +210,7 @@ void online_service_deinit(OnlineService *service){
 	g_free(service->password);
 	
 	g_free(service);
+	service=NULL;
 }//online_service_deinit
 /********************************************************
  *                       eof                            *

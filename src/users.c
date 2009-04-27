@@ -223,6 +223,7 @@ static void user_request_free(FriendRequest *request){
 	if(request->user_data) g_free(request->user_data);
 	if(request->message) g_free(request->message);
 	g_free(request);
+	request=NULL;
 }//user_request_free
 
 
@@ -396,7 +397,8 @@ void user_free(User *user){
 	if(!(G_STR_EMPTY(user->url))) g_free(user->url);
 	if(!(G_STR_EMPTY(user->image_url))) g_free(user->image_url);
 	if(!(G_STR_EMPTY(user->image_filename))) g_free(user->image_filename);
-	if(user) g_free(user);
+	g_free(user);
+	user=NULL;
 }//user_free
 
 /* Free a list of Users */
