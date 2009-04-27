@@ -43,6 +43,7 @@
 #include "accounts-dialog.h"
 #include "popup-dialog.h"
 #include "app.h"
+#include "images.h"
 #include "geometry.h"
 #include "hint.h"
 #include "label.h"
@@ -53,6 +54,7 @@
 #include "following-viewer.h"
 #include "ui-utils.h"
 #include "tweet-list.h"
+#include "tweet-view.h"
 
 #define GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_APP, AppPriv ))
 
@@ -103,17 +105,17 @@ struct _AppPriv {
 	GtkToggleAction		*popup_menu_show_app;
 	
 	/* Account related data */
-	OAuthService		**services;
+	OnlineService		**services;
 	
 	/* Misc */
 	guint			size_timeout_id;
 	
 	/* Expand messages widgets */
-	GtkWidget		*expand_box;
-	GtkWidget		*expand_vbox;
-	GtkWidget		*expand_image;
-	GtkWidget		*expand_title;
-	GtkWidget		*expand_label;
+	GtkHBox			*expand_box;
+	GtkVBox			*expand_vbox;
+	GtkImage		*expand_image;
+	Label			*expand_title;
+	Label			*expand_tweet;
 	
 	/* Stuff for sending a dm to a selected user. */
 	GtkHBox			*friends_hbox;
@@ -123,6 +125,7 @@ struct _AppPriv {
 	GtkButton		*dm_data_hide;
 	
 	/* My, Kaity G. B., new libsexy powered tweet entry box. */
+	GtkHBox			*char_count_hbox;
 	GtkHBox			*tweet_hbox;
 	SexySpellEntry		*sexy_entry;
 	GtkLabel		*expanded_tweet_count;
@@ -158,6 +161,7 @@ static void app_finalize(GObject *object);
 static void disconnect(App *app);
 static void app_setup(void);
 static void app_init_expanded_tweet(void);
+static void app_order_expanded(void);
 static void main_window_destroy_cb(GtkWidget *window, App *app); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app);
 static void app_set_radio_group(App *app, GtkBuilder *ui); 
@@ -298,6 +302,8 @@ static void app_setup(void){
 					"expanded_tweet_user_unfollow_button", &app_priv->expanded_tweet_user_unfollow_button,
 					"expanded_tweet_user_block_button", &app_priv->expanded_tweet_user_block_button,
 					
+					"char_count_hbox", &app_priv->char_count_hbox,
+					
 					"tweet_hbox", &app_priv->tweet_hbox,
 					"expanded_tweet_count", &app_priv->expanded_tweet_count,
 					"sexy_send", &app_priv->sexy_send,
@@ -390,6 +396,12 @@ static void app_setup(void){
 	app_priv->listview=tweet_list_new();
 	gtk_widget_show(GTK_WIDGET(app_priv->listview));
 	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(app_priv->listview));
+
+	/* TODO: implement the use of 'src/tweet-view.c' & 'data/twee-view.ui'
+	 * create this as a true GObject & inherit from GtkWidget.
+	 * gtk_container_add(GTK_CONTAINER(app_priv->expand_box), GTK_WIDGET(tweet_view));
+	 */
+	
 	
 	/* Expand tweet area used to view & send tweets & dm.  */
 	app_init_expanded_tweet();
@@ -417,10 +429,13 @@ static void app_setup(void){
 	unset_selected_tweet();
 	
 	if(app_login(app))
-		tweets_show_submenu_entries(FALSE);
+		tweets_selected_widgets_show(FALSE);
 }
 
 static void app_init_expanded_tweet(void){
+	gint width, height;
+	gtk_window_get_size(GTK_WINDOW(app_priv->window), &width, &height);
+	
 	/* Set-up expand tweet view.  Used to view tweets in detailed & send tweets and DMs. */
 	app_priv->expand_title=label_new();
 	gtk_widget_show(GTK_WIDGET(app_priv->expand_title));
@@ -430,11 +445,11 @@ static void app_init_expanded_tweet(void){
 				TRUE, TRUE, 0
 	);
 	
-	app_priv->expand_label=label_new();
-	gtk_widget_show(GTK_WIDGET(app_priv->expand_label));
+	app_priv->expand_tweet=label_new();
+	gtk_widget_show(GTK_WIDGET(app_priv->expand_tweet));
 	gtk_box_pack_start(
 				GTK_BOX(app_priv->expand_vbox),
-				GTK_WIDGET(app_priv->expand_label),
+				GTK_WIDGET(app_priv->expand_tweet),
 				TRUE, TRUE, 0
 	);
 	
@@ -444,12 +459,6 @@ static void app_init_expanded_tweet(void){
 				GTK_BOX(app_priv->tweet_hbox),
 				GTK_WIDGET(app_priv->sexy_entry),
 				TRUE, TRUE, 0
-	);
-	
-	gtk_box_reorder_child(
-				GTK_BOX(app_priv->expand_vbox),
-				GTK_WIDGET(app_priv->tweet_hbox),
-				2
 	);
 	
 	gtk_box_reorder_child(
@@ -478,7 +487,42 @@ static void app_init_expanded_tweet(void){
 	g_signal_connect(app_priv->sexy_send, "clicked", G_CALLBACK(tweets_sexy_send_clicked), app_priv->sexy_entry);
 	g_signal_connect(app_priv->sexy_dm, "clicked", G_CALLBACK(tweets_sexy_dm_clicked), app_priv->sexy_entry);
 	g_signal_connect(app_priv->dm_data_hide, "clicked", G_CALLBACK(app_dm_data_hide), app_priv->dm_data_hide);
+	g_signal_connect_after(app_priv->friends_combo, "changed", G_CALLBACK(app_sexy_select), app_priv->friends_combo);
+	
+	app_order_expanded();
 }//app_init_expanded_tweet
+
+static void app_order_expanded(void){
+	gtk_box_reorder_child(
+				GTK_BOX(app_priv->expand_vbox),
+				GTK_WIDGET(app_priv->expand_title),
+				0
+	);
+	
+	gtk_box_reorder_child(
+				GTK_BOX(app_priv->expand_vbox),
+				GTK_WIDGET(app_priv->expand_tweet),
+				1
+	);
+	
+	gtk_box_reorder_child(
+				GTK_BOX(app_priv->expand_vbox),
+				GTK_WIDGET(app_priv->char_count_hbox),
+				2
+	);
+	
+	gtk_box_reorder_child(
+				GTK_BOX(app_priv->expand_vbox),
+				GTK_WIDGET(app_priv->tweet_hbox),
+				3
+	);
+	
+	gtk_box_reorder_child(
+				GTK_BOX(app_priv->expand_vbox),
+				GTK_WIDGET(app_priv->friends_hbox),
+				4
+	);
+}//app_reorder_expanded
 
 GtkWindow *app_get_window(void){
 	return app_priv->window;
@@ -492,23 +536,39 @@ GtkComboBox *app_get_friends_combo_box(void){
 	return app_priv->friends_combo;
 }//app_get_friends_combo_box
 
-SexySpellEntry *app_get_sexy(void){
+SexySpellEntry *app_sexy_get(void){
 	return app_priv->sexy_entry;
-}//app_get_sexy_entry
+}//app_sexy_get
 
-GtkEntry *app_get_sexy_entry(void){
-	return GTK_ENTRY(app_priv->sexy_entry);
-}//app_get_sexy_entry
-
-void app_set_sexy_entry(gchar *tweet){
-	gtk_entry_set_text(GTK_ENTRY(app_priv->sexy_entry), tweet);
-	app_select_sexy_entry();
-}//app_set_sexy_entry
-
-void app_select_sexy_entry(void){
+void app_sexy_select(void){
 	gtk_widget_grab_focus(GTK_WIDGET(app_priv->sexy_entry));
 	gtk_entry_set_position(GTK_ENTRY(app_priv->sexy_entry), -1 );
-}//app_select_sexy_entry
+}//app_sexy_select
+
+void app_sexy_prefix_char(const char c){
+	gchar *str=g_strdup_printf("%c", c);
+	app_sexy_prefix_string((const gchar *)str);
+	g_free(str);
+}//app_sexy_prefix_char
+
+void app_sexy_prefix_string(const gchar *str){
+	app_sexy_puts(str, 0);
+}//app_sexy_prefix_string
+
+void app_sexy_set(gchar *tweet){
+	gtk_entry_set_text(GTK_ENTRY(app_priv->sexy_entry), tweet);
+	app_sexy_select();
+}//app_sexy_set
+
+void app_sexy_insert_char(const char c){
+	gchar *str=g_strdup_printf("%c", c);
+	app_sexy_insert_string((const gchar *)str);
+	g_free(str);
+}//app_sexy_insert_char
+
+void app_sexy_insert_string(const gchar *str){
+	app_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(app_priv->sexy_entry)) );
+}//app_sexy_insert_string
 
 void app_sexy_append_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
@@ -517,9 +577,15 @@ void app_sexy_append_char(const char c){
 }//app_sexy_append_char
 
 void app_sexy_append_string(const gchar *str){
-	gint position=(gint)gtk_entry_get_text_length(GTK_ENTRY(app_priv->sexy_entry));
-	gtk_editable_insert_text(GTK_EDITABLE(app_priv->sexy_entry), str, -1, &position );
+	app_sexy_puts(str, (gint)gtk_entry_get_text_length(GTK_ENTRY(app_priv->sexy_entry)) );
 }//app_sexy_append_string
+
+gint app_sexy_puts(const gchar *str, gint position){
+	gtk_editable_insert_text(GTK_EDITABLE(app_priv->sexy_entry), str, -1, &position );
+	gtk_entry_set_position(GTK_ENTRY(app_priv->sexy_entry), position );
+	app_sexy_select();
+	return position;
+}//app_sexy_puts
 
 GtkMenuItem *app_get_menu(const gchar *menu){
 	if( (g_str_equal(menu, "connections")) ) return GET_PRIV(app)->menu_connections;
@@ -544,8 +610,11 @@ void app_dm_data_fill(GList *followers){
 	GtkTreeIter	iter;
 	User		*user;
 	GtkListStore	*model_followers;
+	gchar		*null_friend=g_strdup("");
 	
 	model_followers=GTK_LIST_STORE( gtk_combo_box_get_model( app_priv->friends_combo ) );
+	gtk_list_store_append(model_followers, &iter);
+	gtk_list_store_set( model_followers, &iter, 0, null_friend, -1 );
 	for(list=followers; list; list = list->next) {
 		user =(User *)list->data;
 		gtk_list_store_append(model_followers, &iter);
@@ -642,8 +711,7 @@ static void app_set_radio_group(App  *app, GtkBuilder *ui){
 
 
 static void app_toggle_visibility(void){
-		gboolean       visible;
-
+	gboolean       visible;
 	
 	visible = window_get_is_visible(GTK_WINDOW(app_priv->window));
 
@@ -665,9 +733,7 @@ static void app_toggle_visibility(void){
 		window_present(GTK_WINDOW(app_priv->window), TRUE);
 	}
 	/* Save the window visibility state */
-	conf_set_bool(conf_get(),
-						  PREFS_UI_MAIN_WINDOW_HIDDEN,
-						  visible);
+	conf_set_bool(conf_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, visible);
 }
 
 void app_set_visibility(gboolean visible){
@@ -694,7 +760,7 @@ static void app_quit_cb(GtkWidget  *widget, App  *app){
 }
 
 void app_refresh_timeline(GtkWidget *window, App *app){
-	tweets_show_submenu_entries((gboolean)FALSE);
+	tweets_selected_widgets_show(FALSE);
 	network_refresh();
 }
 
@@ -905,21 +971,11 @@ return FALSE;
 
 static gboolean app_login(App *a){
 	debug(DEBUG_DOMAIN, "Loading accounts.");
-	app_priv->services=g_malloc(sizeof(OAuthService)*1);
-	app_priv->services[0]=oauth_init("twitter.com");
-	debug(DEBUG_DOMAIN, "Accounts loaded.");
-	
-	if(G_STR_EMPTY(app_priv->services[0]->account->username) || G_STR_EMPTY(app_priv->services[0]->account->password)){
-		debug(DEBUG_DOMAIN, "Loading account dialog for inital account setup.");
-		accounts_dialog_show(GTK_WINDOW(app_priv->window));
+	gint active_services=0;
+	if(!( (app_priv->services=online_service_init(&active_services)) && active_services ))
 		return FALSE;
-	}
 	
-	if(!app_priv->services[0]->account->auto_connect){
-		debug(DEBUG_DOMAIN, "No account set to auto-connect to.  Returning to main window.");
-		return FALSE;
-	}
-	
+	debug(DEBUG_DOMAIN, "Attempting to log in to %s...", app_priv->services[0]->auth_uri);
 	debug(DEBUG_DOMAIN, "Beginning network login.");
 	network_login(app_priv->services);
 	app_retrieve_default_timeline();
@@ -1011,13 +1067,28 @@ static void app_connection_items_setup(App *app, GtkBuilder *ui){
 	};
 
 	const gchar   *widgets_disconnected[] = {
-		"twitter_connect"
+		"twitter_connect",
 	};
 
 	const gchar *widgets_tweet_selected[]={
 		"tweets_save_fave",
 		"tweets_reply",
-		"tweets_retweet"
+		"tweets_retweet",
+		
+		"expanded_tweet_dm_button",
+		
+		"expanded_tweet_view_users_profile_button",
+		"expanded_tweet_view_users_timeline_button",
+		
+		"expanded_tweet_user_follow_button",
+		"expanded_tweet_user_unfollow_button",
+		"expanded_tweet_user_block_button",
+		
+		"sexy_dm",
+		
+		"expanded_tweet_reply_button",
+		"expanded_tweet_retweet_button",
+		"expanded_tweet_make_fave_button",
 	};
 	
 	for(i = 0, list = NULL; i < G_N_ELEMENTS(widgets_tweet_selected); i++)
@@ -1037,13 +1108,13 @@ void app_state_on_connection(gboolean connected){
 	GList         *l;
 	
 	for(l = app_priv->widgets_connected; l; l = l->next)
-		g_object_set(l->data, "sensitive", connected, NULL);
+		gtk_widget_set_sensitive( GTK_WIDGET(l->data), connected );
 	
 	for(l = app_priv->widgets_disconnected; l; l = l->next)
-		g_object_set(l->data, "sensitive", !connected, NULL);
+		gtk_widget_set_sensitive( GTK_WIDGET(l->data), !connected );
 	
 	g_list_free(l);
-	app_select_sexy_entry();
+	app_sexy_select();
 }
 
 void app_statusbar_printf(const gchar *msg, ...){
@@ -1109,19 +1180,26 @@ void app_set_image(const gchar *image_filename, GtkTreeIter  iter){
 	g_object_unref(pixbuf);
 }//app_set_image
 
-void app_expand_message(const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf){
-	gchar *title_text=g_strdup_printf("<b>%s ( @%s )</b> - %s", user_nick, user_name, date);
-	label_set_text(LABEL(app_priv->expand_label), tweet);
+void app_expand_tweet(const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf){
+	gchar *title_text=NULL;
+	if(!( G_STR_EMPTY(user_nick) && G_STR_EMPTY(user_name) && G_STR_EMPTY(date) ))
+		title_text=g_strdup_printf("<b>%s ( @%s )</b> - %s", user_nick, user_name, date);
+	else
+		title_text=g_strdup("");
+	
+	label_set_text(LABEL(app_priv->expand_tweet), tweet);
 	label_set_text(LABEL(app_priv->expand_title), title_text);
 	g_free(title_text);
 	
-	if(pixbuf) {
+	if(!pixbuf)
+		gtk_image_set_from_icon_name(app_priv->expand_image, PACKAGE_NAME, ImagesExpanded);
+	else{
 		GdkPixbuf *resized=NULL;
 		resized=images_expand_pixbuf( pixbuf );
-		gtk_image_set_from_pixbuf(GTK_IMAGE(app_priv->expand_image), resized);
+		gtk_image_set_from_pixbuf(app_priv->expand_image, resized);
 		if(resized)
 			g_object_unref(resized);
 	}
-	
-	gtk_widget_show(app_priv->expand_box);
+
+	app_sexy_select();
 }

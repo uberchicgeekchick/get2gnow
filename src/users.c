@@ -148,7 +148,7 @@ void user_request_main(FriendAction action, GtkWindow *parent, const gchar *user
 	SoupSession *session=NULL;
 	SoupMessage *msg=NULL;
 	user_request_main_quit(session, msg, (gpointer *)request);
-	app_select_sexy_entry();
+	app_sexy_select();
 }//user_request_main
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
@@ -161,7 +161,6 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 			user_request_process_get(user_data);
 			break;
 	}//switch
-	user_request_free(request);
 }//user_request_main_quit
 
 static void user_request_process_get(FriendRequest *request){
@@ -178,6 +177,7 @@ static void user_request_process_get(FriendRequest *request){
 		case UnBlock:
 			break;
 	}//switch
+	user_request_free(request);
 }//user_request_process_get
 
 static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data){
@@ -212,10 +212,12 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 			break;
 	}//switch
 	if(user) user_free(user);
+	user_request_free(request);
 }//user_request_process_post
 
 
 static void user_request_free(FriendRequest *request){
+	return;
 	request->parent=NULL;
 	if(request->uri) g_free(request->uri);
 	if(request->user_data) g_free(request->user_data);

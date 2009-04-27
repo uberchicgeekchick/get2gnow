@@ -249,7 +249,7 @@ gtkbuilder_DATA = 			\
 	following-viewer.ui		\
 	friends-manager.ui		\
 	main-window.ui			\
-	oauth-authorize.ui		\
+	tweet-view.ui			\
 	popup-dialog.ui			\
 	preferences.ui			\
 	profile-viewer.ui

@@ -75,11 +75,11 @@ typedef struct {
 	GtkMessageDialog	*dialog;
 	GtkImage		*image;
 	GtkLabel		*loading_label;
-	GtkWidget		*title_vbox;
-	GtkWidget		*user_title;
-	GtkWidget		*profile_vbox;
-	GtkWidget		*url_hyperlink;
-	GtkWidget		*bio_html;
+	GtkVBox			*title_vbox;
+	Label			*user_label;
+	GtkVBox			*profile_vbox;
+	Label			*url_hyperlink;
+	Label			*bio_html;
 } ProfileViewer;
 
 
@@ -120,14 +120,14 @@ void profile_viewer_show( const gchar *user_name, GtkWindow *parent ){
 	);
 	
 	
-	profile_viewer->user_title=label_new();
-	gtk_widget_show(GTK_WIDGET(profile_viewer->user_title));
+	profile_viewer->user_label=label_new();
+	gtk_widget_show(GTK_WIDGET(profile_viewer->user_label));
 	gtk_box_pack_start(
 				GTK_BOX(profile_viewer->title_vbox),
-				GTK_WIDGET(profile_viewer->user_title),
+				GTK_WIDGET(profile_viewer->user_label),
 				TRUE, TRUE, 0
 	);
-	label_set_text(LABEL(profile_viewer->user_title), profile_details);
+	label_set_text(LABEL(profile_viewer->user_label), profile_details);
 	g_free( profile_details );
 	
 	profile_details=g_strdup_printf(

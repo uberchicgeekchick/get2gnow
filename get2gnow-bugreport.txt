@@ -1,0 +1,43 @@
+System: Linux 2.6.27.21-0.1-default #1 SMP 2009-03-31 14:50:44 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Gilouche
+Icon Theme: Lila
+GTK+ Modules: canberra-gtk-module, pk-gtk-module, gnomebreakpad
+
+Memory status: size: 245415936 vsize: 245415936 resident: 16830464 share: 11776000 rss: 16830464 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1240842201 rtime: 22 utime: 18 stime: 4 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/projects/gtk/get2gnow/src/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+0x00007fc464e72575 in waitpid () from /lib64/libpthread.so.0
+#0  0x00007fc464e72575 in waitpid () from /lib64/libpthread.so.0
+#1  0x00007fc4650f1ed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+#2  0x00007fc4650f21e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+#3  0x00007fc4609e4bf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+#4  <signal handler called>
+#5  0x0000000000410085 in network_login ()
+#6  0x000000000040da2c in app_create ()
+#7  0x000000000040918b in main ()
+
+Thread 1 (Thread 0x7fc46b5ad780 (LWP 23373)):
+#0  0x00007fc464e72575 in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007fc4650f1ed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#2  0x00007fc4650f21e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#3  0x00007fc4609e4bf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+No symbol table info available.
+#4  <signal handler called>
+No symbol table info available.
+#5  0x0000000000410085 in network_login ()
+No locals.
+#6  0x000000000040da2c in app_create ()
+No locals.
+#7  0x000000000040918b in main ()
+No locals.
+The program is running.  Quit anyway (and detach it)? (y or n) [answered Y; input not from terminal]

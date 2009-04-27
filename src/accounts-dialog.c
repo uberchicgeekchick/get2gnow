@@ -35,6 +35,7 @@
 #include "accounts-dialog.h"
 #include "debug.h"
 #include "network.h"
+#include "online-service.h"
 
 #define GtkBuilderUI "accounts-dialog.ui"
 #define DEBUG_DOMAIN "AccountDialogs-Dialog"
@@ -44,13 +45,15 @@ enum {
 };
 
 typedef struct {
-	GtkWidget		*dialog;
+	GtkDialog		*dialog;
+	GtkCheckButton		*enabled;
 	GtkComboBoxEntry	*services;
 	GtkListStore		*services_list;
 	GtkEntry		*username;
 	GtkEntry		*password;
 	GtkCheckButton		*show_password;
 	GtkCheckButton		*auto_connect;
+	GtkButton		*apply_button;
 } AccountDialog;
 
 static void accounts_response_cb(GtkWidget *widget, gint response, AccountDialog *act);
@@ -64,7 +67,7 @@ static void accounts_response_cb( GtkWidget *widget, gint response, AccountDialo
 	if(response == GTK_RESPONSE_CLOSE)
 		return gtk_widget_destroy(widget);
 	
-	accounts_apply(GTK_BUTTON(widget), act);
+	accounts_apply(act->apply_button, act);
 	
 	if(response == GTK_RESPONSE_OK)
 		gtk_widget_destroy (widget);
@@ -72,12 +75,16 @@ static void accounts_response_cb( GtkWidget *widget, gint response, AccountDialo
 
 static void accounts_apply(GtkButton *button, AccountDialog *act){
 	gchar *auth_uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(act->services));
-	const gchar *username=gtk_entry_get_text( GTK_ENTRY(act->username) );
-	const gchar *password=gtk_entry_get_text( GTK_ENTRY( act->password ) );
 
-	OAuthService *service=oauth_init(auth_uri);
-	oauth_account_save(service, username, password, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(act->auto_connect)));
-	oauth_deinit(service);
+	OnlineService *service=online_service_new(auth_uri);
+	online_service_save(
+				service,
+				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(act->enabled)),
+				gtk_entry_get_text(GTK_ENTRY(act->username)),
+				gtk_entry_get_text(GTK_ENTRY(act->password)),
+				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(act->auto_connect))
+	);
+	online_service_deinit(service);
 	g_free(auth_uri);
 }
 
@@ -106,6 +113,7 @@ void accounts_dialog_show (GtkWindow *parent){
 	
 	/* Get widgets */
 	ui=gtkbuilder_get_file(GtkBuilderUI,
+					"service_enabled", &act->enabled,
 					"accounts_dialog", &act->dialog,
 					"services", &act->services,
 					"services_list", &act->services_list,
@@ -113,6 +121,7 @@ void accounts_dialog_show (GtkWindow *parent){
 					"password_entry", &act->password,
 					"show_password_checkbutton", &act->show_password,
 					"autoconnect_checkbutton", &act->auto_connect,
+					"apply_button", &act->apply_button,
 					NULL
 	);
 	
@@ -126,6 +135,9 @@ void accounts_dialog_show (GtkWindow *parent){
 	);
 	
 	g_object_unref(ui);
+	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(act->services), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(act->services), renderer, "text", 0, NULL);
 	gtk_combo_box_entry_set_text_column(act->services, 0);
 	gtk_list_store_append(act->services_list, &iter);
 	gtk_list_store_set(act->services_list, &iter, 0, "twitter.com", -1);
@@ -139,13 +151,14 @@ void accounts_dialog_show (GtkWindow *parent){
 	
 	accounts_load_service(GTK_COMBO_BOX(act->services), act);
 	/* Ok, let's go ahead and show it */
-	gtk_widget_show (act->dialog);
+	gtk_widget_show(GTK_WIDGET(act->dialog));
 }
 
 static void accounts_load_service(GtkComboBox *services, AccountDialog *act){
-	OAuthService *service=oauth_init( gtk_combo_box_get_active_text(GTK_COMBO_BOX(act->services)) );
-	gtk_entry_set_text(GTK_ENTRY (act->username), service->account->username ? service->account->username : "");
-	gtk_entry_set_text(GTK_ENTRY(act->password), service->account->password ? service->account->password : "");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(act->auto_connect), service->account->auto_connect);
-	oauth_deinit(service);
+	OnlineService *service=online_service_new( gtk_combo_box_get_active_text(GTK_COMBO_BOX(act->services)) );
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(act->enabled), service->enabled);
+	gtk_entry_set_text(GTK_ENTRY (act->username), service->username ? service->username : "");
+	gtk_entry_set_text(GTK_ENTRY(act->password), service->password ? service->password : "");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(act->auto_connect), service->auto_connect);
+	online_service_deinit(service);
 }//accounts_update_fields

@@ -46,7 +46,7 @@ void set_selected_tweet(unsigned long int id, const gchar *user_name, const gcha
 gchar *tweets_get_selected_user_name(void);
 void unset_selected_tweet(void);
 
-void tweets_show_submenu_entries(gboolean show);
+void tweets_selected_widgets_show(gboolean show);
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event);
 
 /* G_CALLBACK_FUNC for get2gnow's "Tweets" menu & the 'extended_tweet_?_button'.

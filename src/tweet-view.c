@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * get2gnow is:
+ * {project} is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=get2gnow
+ * website at: http://uberChicGeekChick.Com/?projects={project}
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -48,50 +48,40 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __IMAGES_H__
-#define __IMAGES_H__
-
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
 
 
-G_BEGIN_DECLS
 
-enum {
-	ImagesMaximum		=	96,
-	ImagesExpanded		=	72,
-	ImagesDefault		=	48,
-	ImagesMinimum		=	24,
-};
+/********************************************************
+ *        Project headers, eg #include "config.h"       *
+ ********************************************************/
+#include "config.h"
+#include "network.h"
+#include "tweets.h"
+#include "app.h"
 
 
-gchar *images_get_filename( const gchar *url );
+/********************************************************
+ *          Variable definitions.                       *
+ ********************************************************/
 
-GtkImage *images_get_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height );
 
-GtkImage *images_get_expanded_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_maximized_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_default_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename );
 
-GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filename );
+/********************************************************
+ *          Static method & function prototypes         *
+ ********************************************************/
 
-GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_maximize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf );
 
-GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height );
-GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
 
-G_END_DECLS
+/********************************************************
+ *   'Here be Dragons'...art, beauty, fun, & magic.     *
+ ********************************************************/
 
-#endif /* __IMAGES_H__ */
+
+
+/********************************************************
+ *                       eof                            *
+ ********************************************************/
+

@@ -15,6 +15,18 @@
     </schema>
 
     <schema>
+        <key>/schemas/apps/get2gnow/auth/twitter.com/enabled</key>
+    	<applyto>/apps/get2gnow/auth/twitter.com/enabled</applyto>
+    	<owner>get2gnow</owner>
+    	<type>bool</type>
+    	<default>false</default>
+    	<locale name="C">
+    	   <short>Enable Twitter.com account</short>
+       	   <long>Enable's your Twitter.com accout.</long>
+      	</locale>
+    </schema>
+										
+    <schema>
        <key>/schemas/apps/get2gnow/auth/twitter.com/username</key>
        <applyto>/apps/get2gnow/auth/twitter.com/username</applyto>
        <owner>get2gnow</owner>

@@ -63,7 +63,7 @@ get2gnow_SOURCES =				\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
 	label.c			label.h			\
-	oauth.c			oauth.h			\
+	online-service.c	online-service.h	\
 	network.c		network.h		\
 	timer.c			timer.h			\
 	parser.c		parser.h		\
@@ -73,6 +73,7 @@ get2gnow_SOURCES =				\
 	friends-manager.c	friends-manager.h	\
 	images.c		images.h		\
 	users.c			users.h			\
+	tweet-view.c		tweet-view.h		\
 	tweets.c		tweets.h		\
 	tweet-list.c		tweet-list.h
 
@@ -95,7 +96,7 @@ get2gnow_OBJECTS =			\
 	label.$(OBJEXT)				\
 	timer.$(OBJEXT)				\
 	parser.$(OBJEXT)			\
-	oauth.$(OBJEXT)				\
+	online-service.$(OBJEXT)		\
 	network.$(OBJEXT)			\
 	preferences.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)			\
@@ -103,6 +104,7 @@ get2gnow_OBJECTS =			\
 	friends-manager.$(OBJEXT)		\
 	users.$(OBJEXT)				\
 	images.$(OBJEXT)			\
+	tweet-view.$(OBJEXT)			\
 	tweets.$(OBJEXT)			\
 	tweet-list.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -395,9 +397,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-list.Po@am__quote@

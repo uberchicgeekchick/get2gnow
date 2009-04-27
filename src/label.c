@@ -87,20 +87,12 @@ label_url_activated_cb  (GtkWidget *url_label,
 	}
 }
 
-GtkWidget *
-label_new (void)
-{
+Label *label_new (void){
 	return g_object_new (TYPE_LABEL, NULL);
 }
 
-void
-label_set_text (Label  *nav,
-					   const gchar  *text)
-{
+void label_set_text( Label *nav, const gchar  *text ){
 	gchar *parsed_text;
-	
-	if (!text)
-		return;
 	
 	parsed_text = label_msg_get_string (text);
 	
@@ -203,8 +195,7 @@ label_msg_get_string (const char* message)
 				}
 			} else {
 				/* TODO: add a network fetch, check the mime type & have it handle the data as best possible.  */
-				temp = g_strdup_printf ("<a href=\"%s\">%s</a>",
-										tokens[i], tokens[i]);
+				temp=g_strdup_printf ("<a href=\"%s\">%s</a>", tokens[i], tokens[i]);
 			}
 			g_free (tokens[i]);
 			tokens[i] = temp;

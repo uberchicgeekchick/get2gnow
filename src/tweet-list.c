@@ -63,6 +63,7 @@
 #include "label.h"
 #include "app.h"
 #include "tweets.h"
+#include "tweet-view.h"
 
 #define DEBUG_DOMAIN "TweetList"
 
@@ -82,11 +83,10 @@ static void tweet_list_setup_view(TweetList      *list);
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *list);
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *tweet);
 
-//static void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
 static void tweet_list_move(GdkEventKey *event, TweetList *list);
 
 
-static TweetList *list = NULL;
+static TweetList *list=NULL;
 static TweetListPriv *list_priv=NULL;
 static gint tweet_list_index=0;
 
@@ -107,6 +107,7 @@ static void tweet_list_init(TweetList *tweet){
 	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
 	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
 	g_signal_connect(list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), list);
+	//sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW( list ), STRING_TWEET );
 }//tweet_list_init
 
 static void tweet_list_finalize( GObject *object ){
@@ -190,7 +191,7 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
-	app_select_sexy_entry();
+	app_sexy_select();
 }//tweet_list_move
 
 void tweet_list_refresh(void){
@@ -214,10 +215,13 @@ void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *li
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;
 	GtkTreeIter		iter;
-	if(!( (sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) ))
-		return tweets_show_submenu_entries((gboolean)FALSE);
+	if(!( (sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) )){
+		tweets_selected_widgets_show(FALSE);
+		app_sexy_select();
+		return;
+	}
 	
-	tweets_show_submenu_entries((gboolean)TRUE);
+	tweets_selected_widgets_show(TRUE);
 	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 	
 	
@@ -239,7 +243,8 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	
 	set_selected_tweet((unsigned long int)tweet_id, user_name, tweet);
 	
-	app_expand_message(user_name, user_nick, date, tweet, pixbuf);
+	app_sexy_select();
+	app_expand_tweet(user_name, user_nick, date, tweet, pixbuf);
 	
 	g_free(user_name);
 	g_free(tweet);

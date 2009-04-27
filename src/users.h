@@ -55,7 +55,7 @@
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
-#include "oauth.h"
+#include "online-service.h"
 
 typedef struct {
 	unsigned long int	id;

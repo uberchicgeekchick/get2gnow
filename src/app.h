@@ -64,12 +64,15 @@ GtkWindow *app_get_window(void);
 TweetList *app_get_tweet_list(void);
 GtkMenuBar *app_get_main_menu(void);
 GtkComboBox *app_get_friends_combo_box(void);
-SexySpellEntry *app_get_sexy(void);
-GtkEntry *app_get_sexy_entry(void);
-void app_set_sexy_entry(gchar *tweet);
+SexySpellEntry *app_sexy_get(void);
+void app_sexy_prefix_char(const char c);
+void app_sexy_prefix_string(const gchar *str);
+void app_sexy_set(gchar *tweet);
+void app_sexy_insert_char(const char c);
+void app_sexy_insert_string(const gchar *str);
 void app_sexy_append_char(const char c);
 void app_sexy_append_string(const gchar *str);
-void app_select_sexy_entry(void);
+void app_sexy_select(void);
 GtkMenuItem *app_get_menu(const gchar *menu);
 void app_refresh_timeline(GtkWidget *window, App *app); 
 GList *app_get_widgets_tweet_selected(void);
@@ -83,7 +86,6 @@ void app_notify_sound(gboolean force);
 void app_notify(gchar *msg);
 void app_state_on_connection(gboolean connected);
 void app_set_image( const gchar *file, GtkTreeIter iter );
-void app_expand_message( const gchar  *user_name, const gchar  *user_nick, const gchar  *date, const gchar  *tweet, GdkPixbuf    *pixbuf );
 
 G_END_DECLS
 

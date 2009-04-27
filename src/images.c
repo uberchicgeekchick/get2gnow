@@ -56,14 +56,6 @@
 
 #define DEBUG_DOMAIN_SETUP       "Images"
 
-enum {
-	ImagesMaximum		=	96,
-	ImagesExpanded		=	72,
-	ImagesDefault		=	48,
-	ImagesMinimum		=	24,
-};
-
-
 static gint images_validate_width( gint width );
 static gint images_validate_height( gint height );
 

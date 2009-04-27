@@ -64,6 +64,7 @@
 #include "tweets.h"
 #include "network.h"
 #include "tweet-list.h"
+#include "tweet-view.h"
 #include "profile-viewer.h"
 #include "ui-utils.h"
 #include "users.h"
@@ -89,6 +90,7 @@ void set_selected_tweet(unsigned long int id, const gchar *user_name, const gcha
 	selected_tweet->id=id;
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_strdup(tweet);
+	tweets_selected_widgets_show(TRUE);
 }//set_selected_tweets
 
 gchar *tweets_get_selected_user_name(void){
@@ -97,10 +99,10 @@ gchar *tweets_get_selected_user_name(void){
 	return g_strdup(selected_tweet->user_name);
 }//tweets_get_selected_user_name
 
-void tweets_show_submenu_entries(gboolean show){
+void tweets_selected_widgets_show(gboolean show){
 	for(GList *l=app_get_widgets_tweet_selected(); l; l = l->next)
-		g_object_set(l->data, "sensitive", show, NULL);
-}//tweets_show_submenu_entries
+		gtk_widget_set_sensitive( GTK_WIDGET(l->data), show );
+}//tweets_selected_widgets_show
 
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 	switch( event->state ){
@@ -132,7 +134,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
 				case GDK_Return:
-					return app_sexy_append_char('\n');
+					return app_sexy_insert_char('\n');
 				case GDK_N: case GDK_n:
 					return tweets_new_tweet();
 				case GDK_Q: case GDK_q:
@@ -170,7 +172,9 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
-	tweets_include_and_begin_to_send("", FALSE, FALSE);
+	app_expand_tweet("", "", "", "", NULL);
+	app_sexy_set((gchar *)"");
+	unset_selected_tweet();
 }//tweets_new_tweet
 
 void tweets_reply(void){
@@ -190,7 +194,7 @@ void tweets_retweet(void){
 static void tweets_include_and_begin_to_send(gchar *tweet,  gboolean a_response, gboolean release){
 	if(!(tweet)) return;
 	if(a_response) in_reply_to_status_id=selected_tweet->id;
-	app_set_sexy_entry(tweet);
+	app_sexy_prefix_string(tweet);
 	if(release) g_free(tweet);
 }//tweets_include_and_begin_to_send
 
@@ -224,12 +228,14 @@ void tweets_sexy_send_clicked(GtkButton *button, GtkEntry *entry){
 
 void tweets_friends_send_dm(GtkButton *button, GtkEntry *entry){
 	gchar *user_name=NULL;
-	if(!(user_name=gtk_combo_box_get_active_text(app_get_friends_combo_box()))){
+	GtkComboBox *friends_combo_box=app_get_friends_combo_box();
+	if(!( (GTK_WIDGET_IS_SENSITIVE(friends_combo_box)) && (user_name=gtk_combo_box_get_active_text( friends_combo_box )) )){
 		gtk_widget_error_bell(GTK_WIDGET(entry));
 		return;
 	}
 	tweets_send_sexy(entry, user_name);
 	g_free(user_name);
+	gtk_combo_box_set_active(friends_combo_box, 0);
 }//tweets_friends_send_dm
 
 void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry){
@@ -238,14 +244,18 @@ void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry){
 
 void tweets_send(void){
 	gchar *user_name=NULL;
-	GtkEntry *entry=app_get_sexy_entry();
+	GtkEntry *entry=GTK_ENTRY(app_sexy_get());
 	if(!(entry->text)){
 		gtk_widget_error_bell(GTK_WIDGET(entry));
 		return;
 	}
-	user_name=gtk_combo_box_get_active_text(app_get_friends_combo_box());
-	tweets_send_sexy(entry, user_name);
-	if(user_name) g_free(user_name);
+	GtkComboBox *friends_combo_box=app_get_friends_combo_box();
+	if( (GTK_WIDGET_IS_SENSITIVE(friends_combo_box)) && (user_name=gtk_combo_box_get_active_text(friends_combo_box)) ){
+		tweets_send_sexy(entry, user_name);
+		g_free(user_name);
+		gtk_combo_box_set_active(friends_combo_box, 0);
+	}else
+		tweets_send_sexy(entry, NULL);
 }//tweet_send
 	
 void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
@@ -264,7 +274,7 @@ void tweets_send_sexy(GtkEntry *entry, gpointer user_data){
 		network_send_message(user_name, (const gchar *)tweet);
 	
 	g_free(tweet);
-	app_set_sexy_entry((gchar *)"");
+	app_sexy_set((gchar *)"");
 }//tweets_send_sexy
 
 void tweets_new_dm(void){
@@ -310,6 +320,7 @@ void tweets_user_unblock(void){
 }//tweets_user_unblock
 
 void unset_selected_tweet(void){
+	tweets_selected_widgets_show(FALSE);
 	if(!selected_tweet) return;
 	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
 	if(selected_tweet->tweet) g_free(selected_tweet->tweet);

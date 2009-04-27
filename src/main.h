@@ -38,9 +38,8 @@ G_BEGIN_DECLS
 #define	PREFS_AUTH_SERVICE		PREFS_PATH "/auth/%s/tld"
 #define	PREFS_AUTH_USERNAME		PREFS_PATH "/auth/%s/username"
 #define	PREFS_AUTH_PASSWORD		PREFS_PATH "/auth/%s/password"
-#define	PREFS_AUTH_ACCESS_TOKEN		PREFS_PATH "/auth/%s/access_token"
-#define	PREFS_AUTH_ACCESS_SECRET	PREFS_PATH "/auth/%s/access_secret"
 #define	PREFS_AUTH_AUTO_CONNECT		PREFS_PATH "/auth/%s/auto_connect"
+#define	PREFS_AUTH_ENABLED		PREFS_PATH "/auth/%s/enabled"
 
 #define	PREFS_TWEETS_HOME_TIMELINE	PREFS_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES	PREFS_PATH "/tweets/reload_timeline"

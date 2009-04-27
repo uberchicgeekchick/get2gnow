@@ -34,7 +34,7 @@ get2gnow_SOURCES = 					\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
 	label.c			label.h			\
-	oauth.c			oauth.h			\
+	online-service.c	online-service.h	\
 	network.c		network.h		\
 	timer.c			timer.h			\
 	parser.c		parser.h		\
@@ -42,6 +42,7 @@ get2gnow_SOURCES = 					\
 	ui-utils.c		ui-utils.h		\
 	following-viewer.c	following-viewer.h	\
 	friend-manager.c	friend-manager.h	\
+	tweet-view.c		tweet-view.h		\
 	tweets.c		tweets.h		\
 	users.c			users.h			\
 	images.c		images.h		\

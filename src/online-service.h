@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * get2gnow is:
+ * {project} is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=get2gnow
+ * website at: http://uberChicGeekChick.Com/?projects={project}
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -48,50 +48,49 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __IMAGES_H__
-#define __IMAGES_H__
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
+#ifndef __ONLINE_SERVICES_H__
+#define __ONLINE_SERVICES_H__
 
+
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
 #include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <libsoup/soup.h>
 
 
-G_BEGIN_DECLS
+/*********************************************************************
+ *        Objects, structures, and etc typedefs                      *
+ *********************************************************************/
+typedef enum{
+	POST,
+	GET,
+} RequestMethod;
 
-enum {
-	ImagesMaximum		=	96,
-	ImagesExpanded		=	72,
-	ImagesDefault		=	48,
-	ImagesMinimum		=	24,
-};
+typedef struct {
+	SoupSession	*connection;
+		
+	gchar		*auth_uri;
+	gchar		*username;
+	gchar		*password;
+	gboolean	auto_connect;
+	
+	gboolean	enabled;
+} OnlineService;
 
 
-gchar *images_get_filename( const gchar *url );
+/********************************************************
+ *          Global method  & function prototypes        *
+ ********************************************************/
+OnlineService **online_service_init(gint *accounts);
+OnlineService *online_service_new(const gchar *auth_uri);
+void online_service_save(OnlineService *service, gboolean enabled, const gchar *username, const gchar *password, gboolean auto_connect);
+void online_service_reinit(OnlineService *service);
+void online_service_deinit(OnlineService *service);
 
-GtkImage *images_get_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height );
 
-GtkImage *images_get_expanded_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_maximized_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_default_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename );
+#endif /* __ONLINE_SERVICE_H__ */
 
-GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filename );
-
-GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_maximize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf );
-
-GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height );
-GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
-
-G_END_DECLS
-
-#endif /* __IMAGES_H__ */

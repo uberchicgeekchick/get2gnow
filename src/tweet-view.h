@@ -51,67 +51,67 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
-#ifndef __OAUTH_H__
-#define __OAUTH_H__
+#ifndef __TWEET_VIEW_H__
+#define __TWEET_VIEW_H__
 
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include <glib.h>
-#include <libsoup/soup.h>
+#include <gtk/gtk.h>
+#include <libsexy/sexy.h>
+#include "label.h"
 
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-#define xmalloc(n)	malloc(n)
-#define xcalloc(n, s)	calloc(n, s)
-#define xrealloc(p, n)	realloc(p, n)
-#define	xstrdup(p)	strdup(p)
-typedef enum{
-	POST,
-	GET,
-} RequestMethod;
-
 typedef struct {
-	gchar		*auth_uri;
-	gchar		*username;
-	gchar		*password;
-	gboolean	auto_connect;
-} Account;
-
-
-typedef struct {
-	SoupSession	*connection;
+	/* Expand messages widgets */
+	GtkHBox			*expand_box;
+	GtkVBox			*expand_vbox;
+	GtkImage		*expand_image;
+	Label			*expand_title;
+	Label			*expand_tweet;
 	
-	Account		*account;
+	/* Stuff for sending a dm to a selected user. */
+	GtkHBox			*friends_hbox;
+	GtkLabel		*friends_label;
+	GtkComboBox		*friends_combo;
+	GtkButton		*friends_send_dm;
+	GtkButton		*dm_data_hide;
 	
-	gboolean	oauth_enabled;
+	/* My, Kaity G. B., new libsexy powered tweet entry box. */
+	GtkHBox			*char_count_hbox;
+	GtkHBox			*tweet_hbox;
+	SexySpellEntry		*sexy_entry;
+	GtkLabel		*expanded_tweet_count;
+	GtkButton		*sexy_send;
+	GtkButton		*sexy_dm;
 	
-	gchar		*authorize_uri;
-	gchar		*token_request_uri;
-	gchar		*token_access_uri;
+	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
+	GtkButton		*view_users_profile_button;
+	GtkButton		*view_users_timeline_button;
 	
-	gchar		*consumer_key;
-	gchar		*consumer_secret;
+	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
+	GtkButton		*user_follow_button;
+	GtkButton		*user_unfollow_button;
+	GtkButton		*user_block_button;
 	
-	gchar		*token;
-	gchar		*token_secret;
-	
-	gchar		*access_token;
-	gchar		*access_secret;
-} OAuthService;
+	/* Buttons for stuff to do with the selected & extend tweet. */
+	GtkButton		*reply_button;
+	GtkButton		*retweet_button;
+	GtkButton		*dm_button;
+	GtkButton		*make_fave_button;
+} TweetView;
 
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-OAuthService *oauth_init(const gchar *auth_uri);
-void oauth_account_save(OAuthService *service, const gchar *username, const gchar *password, gboolean auto_connect);
-const gchar *oauth_get_auth_headers(OAuthService *service, RequestMethod method, gchar *request_uri);
-void oauth_deinit(OAuthService *service);
+gint app_sexy_puts(const gchar *str, gint position);
+void app_expand_tweet( const gchar  *user_name, const gchar  *user_nick, const gchar  *date, const gchar  *tweet, GdkPixbuf    *pixbuf );
 
-
-#endif /* __OAUTH_H__ */
+#endif /* __TWEET_VIEW_H__ */
 

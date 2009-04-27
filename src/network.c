@@ -46,7 +46,7 @@
 #include "following-viewer.h"
 #include "tweets.h"
 #include "timer.h"
-#include "oauth.h"
+#include "online-service.h"
 
 #define DEBUG_DOMAIN	  "Network"
 
@@ -73,17 +73,15 @@ static gboolean 	network_timeout			(gpointer user_data);
 static void			network_timeout_new		(void);
 
 static SoupSession			*soup_connection=NULL;
-static GList *all_users=NULL;
-static gchar *current_timeline=NULL;
+static OnlineService			*current_service=NULL;
+static GList				*all_users=NULL;
+static gchar				*current_timeline=NULL;
 static gboolean				 processing=FALSE;
 static guint				 timeout_id;
 
 
-SoupSession *network_get_connection(void){
-	return soup_connection;
-}//network_get_connection
 
-gchar *url_encode_message(gchar *text){
+gchar *url_encode_message(const gchar *text){
 	const char        *good;
 	static const char  hex[16] = "0123456789ABCDEF";
 	GString           *result;
@@ -109,6 +107,11 @@ gchar *url_encode_message(gchar *text){
 	
 	return g_string_free(result, FALSE);
 }
+
+
+SoupSession *network_get_connection(void){
+	return soup_connection;
+}//network_get_connection
 
 
 /* This function must be called at startup */
@@ -280,15 +283,18 @@ gboolean network_check_http( SoupMessage *msg ){
 	return FALSE;
 }
 
-
 /* Login in Twitter */
-void network_login(OAuthService **services){
-	for(int i=0; services[i]; i++){
-		debug(DEBUG_DOMAIN, "Logging on to %s...", services[i]->account->auth_uri);
+void network_login(OnlineService **services){
+	debug(DEBUG_DOMAIN, "Beginning network login.");
+	for(int i=0; i<2; i++){
+		debug(DEBUG_DOMAIN, "Attempting to log in to %s...", services[i]->auth_uri);
+		if(!services[i]->enabled) continue;
+		current_service=services[i];
+		debug(DEBUG_DOMAIN, "Logging on to %s...", services[i]->auth_uri);
 		
 		app_set_statusbar_msg(_("Connecting..."));
 		
-		debug(DEBUG_DOMAIN, "Authenticating https://%s:%s@ %s ", services[i]->account->username, services[i]->account->password, services[i]->account->auth_uri);
+		debug(DEBUG_DOMAIN, "Authenticating https://%s:%s@%s/", services[i]->username, services[i]->password, services[i]->auth_uri);
 		/* HTTP Basic Authentication */
 		g_signal_connect(soup_connection, "authenticate", G_CALLBACK(network_cb_on_auth), services[i]);
 		
@@ -482,25 +488,17 @@ void network_get_image(const gchar *image_uri, GtkTreeIter iter ){
 
 /* HTTP Basic Authentication */
 static void network_cb_on_auth(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data){
-	OAuthService *service=(OAuthService *)user_data;
+	OnlineService *service=(OnlineService *)user_data;
+	if(!service->enabled) return;
 	/* Don't bother to continue if there is no user_id */
-	if(G_STR_EMPTY(service->account->username))
+	if(G_STR_EMPTY(service->username))
 		return debug(DEBUG_DOMAIN, "Authentication error: unknown username.");
 
-	if(service->oauth_enabled){
-		soup_auth_update(auth, msg, g_strdup_printf("OAuth realm=\"https://%s/\"", service->account->auth_uri));
-		soup_auth_authenticate(auth, service->account->username, service->account->password);
-	}
 	/* verify that the password has been set */
-	if(G_STR_EMPTY(service->account->password))
+	if(G_STR_EMPTY(service->password))
 		return debug(DEBUG_DOMAIN, "Authentication error: unknown password.");
 	
-	if(service->oauth_enabled){
-		gchar *request_uri=g_strdup_printf("https://%s%s", service->account->auth_uri, API_LOGIN);
-		soup_auth_update(auth, msg, oauth_get_auth_headers(service, GET, request_uri));
-		g_free(request_uri);
-	}
-	soup_auth_authenticate(auth, service->account->username, service->account->password);
+	soup_auth_authenticate(auth, service->username, service->password);
 }
 
 

@@ -8,6 +8,7 @@
 [type: gettext/glade]data/popup-dialog.ui
 [type: gettext/glade]data/preferences.ui
 [type: gettext/glade]data/profile-viewer.ui
+[type: gettext/glade]data/tweet-view.ui
 [type: gettext/glade]data/send-message-dialog.ui
 [type: gettext/glade]data/spell-dialog.ui
 data/get2gnow.desktop.in
