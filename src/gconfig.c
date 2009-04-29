@@ -27,117 +27,94 @@
 
 #include <gconf/gconf-client.h>
 
-#include "gconf.h"
+#include "gconfig.h"
 #include "debug.h"
+#include "preferences.h"
 
-#define DEBUG_DOMAIN "Config"
 
-#define CONF_ROOT        "/apps/get2gnow"
+#define DEBUG_DOMAIN "GConfig"
+
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
 
-#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_CONF, ConfPriv))
+#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_GCONFIG, GConfigPriv))
 
 typedef struct {
 	GConfClient *gconf_client;
-} ConfPriv;
+} GConfigPriv;
 
 typedef struct {
-	Conf           *conf;
-	ConfNotifyFunc  func;
-	gpointer              user_data;
-} ConfNotifyData;
+	GConfig			*gconfig;
+	GConfigNotifyFunc	func;
+	gpointer		user_data;
+} GConfigNotifyData;
 
-static void conf_finalize(GObject *object);
+static void gconfig_finalize(GObject *object);
 
-G_DEFINE_TYPE(Conf, conf, G_TYPE_OBJECT);
+G_DEFINE_TYPE(GConfig, gconfig, G_TYPE_OBJECT);
 
-static Conf *global_conf = NULL;
-static ConfPriv *config_priv=NULL;
+static GConfig *gconfig=NULL;
+static GConfigPriv *gconfig_priv=NULL;
 
-static void
-conf_class_init(ConfClass *class)
-{
+static void gconfig_class_init(GConfigClass *class){
 	GObjectClass *object_class;
-
-	object_class = G_OBJECT_CLASS(class);
-
-	object_class->finalize = conf_finalize;
-
-	g_type_class_add_private(object_class, sizeof(ConfPriv));
+	object_class=G_OBJECT_CLASS(class);
+	object_class->finalize = gconfig_finalize;
+	g_type_class_add_private(object_class, sizeof(GConfigPriv));
 }
 
-static void
-conf_init(Conf *conf)
-{
-	
-	config_priv = GET_PRIV(conf);
+static void gconfig_init(GConfig *gconfig){
+	gconfig_priv=GET_PRIV(gconfig);
+	gconfig_priv->gconf_client = gconf_client_get_default();
 
-	config_priv->gconf_client = gconf_client_get_default();
-
-	gconf_client_add_dir(config_priv->gconf_client,
-						  CONF_ROOT,
+	gconf_client_add_dir(gconfig_priv->gconf_client,
+						  PREFS_PATH,
 						  GCONF_CLIENT_PRELOAD_ONELEVEL,
 						  NULL);
-	gconf_client_add_dir(config_priv->gconf_client,
+	gconf_client_add_dir(gconfig_priv->gconf_client,
 						  DESKTOP_INTERFACE_ROOT,
 						  GCONF_CLIENT_PRELOAD_NONE,
 						  NULL);
 }
 
-static void
-conf_finalize(GObject *object)
-{
+static void gconfig_finalize(GObject *object){
+	gconf_client_remove_dir(gconfig_priv->gconf_client, PREFS_PATH, NULL);
+	gconf_client_remove_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, NULL);
+	g_object_unref(gconfig_priv->gconf_client);
+	G_OBJECT_CLASS(gconfig_parent_class)->finalize(object);
+}
+
+GConfig *gconfig_get(void){
+	if(!gconfig)
+		gconfig=g_object_new(TYPE_GCONFIG, NULL);
+
+	return gconfig;
+}
+
+void gconfig_shutdown(void){
+	if(!gconfig) return;
 	
-	gconf_client_remove_dir(config_priv->gconf_client,
-							 CONF_ROOT,
-							 NULL);
-	gconf_client_remove_dir(config_priv->gconf_client,
-							 DESKTOP_INTERFACE_ROOT,
-							 NULL);
-
-	g_object_unref(config_priv->gconf_client);
-
-	G_OBJECT_CLASS(conf_parent_class)->finalize(object);
+	g_object_unref(gconfig);
+	gconfig=NULL;
 }
 
-Conf *
-conf_get(void)
-{
-	if(!global_conf) {
-		global_conf = g_object_new(TYPE_CONF, NULL);
-	}
-
-	return global_conf;
-}
-
-void
-conf_shutdown(void)
-{
-	if(global_conf) {
-		g_object_unref(global_conf);
-		global_conf = NULL;
-	}
-}
-
-gboolean
-conf_set_int(Conf  *conf,
+gboolean gconfig_set_int(GConfig *gconfig,
 					 const gchar *key,
 					 gint         value)
 {
 	
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	debug(DEBUG_DOMAIN, "Setting int:'%s' to %d", key, value);
 
 	
-	return gconf_client_set_int(config_priv->gconf_client,
+	return gconf_client_set_int(gconfig_priv->gconf_client,
 								 key,
 								 value,
 								 NULL);
 }
 
 gboolean
-conf_get_int(Conf  *conf,
+gconfig_get_int(GConfig *gconfig,
 					 const gchar *key,
 					 gint        *value)
 {
@@ -145,11 +122,11 @@ conf_get_int(Conf  *conf,
 
 	*value = 0;
 
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 	g_return_val_if_fail(value != NULL, FALSE);
 
 	
-	*value = gconf_client_get_int(config_priv->gconf_client,
+	*value = gconf_client_get_int(gconfig_priv->gconf_client,
 								   key,
 								   &error);
 
@@ -165,25 +142,25 @@ conf_get_int(Conf  *conf,
 }
 
 gboolean
-conf_set_bool(Conf  *conf,
+gconfig_set_bool(GConfig *gconfig,
 					  const gchar *key,
 					  gboolean     value)
 {
 	
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	debug(DEBUG_DOMAIN, "Setting bool:'%s' to %d ---> %s",
 				  key, value, value ? "true" : "false");
 
 	
-	return gconf_client_set_bool(config_priv->gconf_client,
+	return gconf_client_set_bool(gconfig_priv->gconf_client,
 								  key,
 								  value,
 								  NULL);
 }
 
 gboolean
-conf_get_bool(Conf  *conf,
+gconfig_get_bool(GConfig *gconfig,
 					  const gchar *key,
 					  gboolean    *value)
 {
@@ -191,11 +168,11 @@ conf_get_bool(Conf  *conf,
 
 	*value = FALSE;
 
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 	g_return_val_if_fail(value != NULL, FALSE);
 
 	
-	*value = gconf_client_get_bool(config_priv->gconf_client,
+	*value = gconf_client_get_bool(gconfig_priv->gconf_client,
 									key,
 									&error);
 
@@ -212,25 +189,25 @@ conf_get_bool(Conf  *conf,
 }
 
 gboolean
-conf_set_string(Conf  *conf,
+gconfig_set_string(GConfig *gconfig,
 						const gchar *key,
 						const gchar *value)
 {
 	
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	debug(DEBUG_DOMAIN, "Setting string:'%s' to '%s'",
 				  key, value);
 
 	
-	return gconf_client_set_string(config_priv->gconf_client,
+	return gconf_client_set_string(gconfig_priv->gconf_client,
 									key,
 									value,
 									NULL);
 }
 
 gboolean
-conf_get_string(Conf   *conf,
+gconfig_get_string(GConfig *gconfig,
 						const gchar  *key,
 						gchar       **value)
 {
@@ -238,10 +215,10 @@ conf_get_string(Conf   *conf,
 
 	*value = NULL;
 
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	
-	*value = gconf_client_get_string(config_priv->gconf_client,
+	*value = gconf_client_get_string(gconfig_priv->gconf_client,
 									  key,
 									  &error);
 
@@ -257,15 +234,15 @@ conf_get_string(Conf   *conf,
 }
 
 gboolean
-conf_set_string_list(Conf  *conf,
+gconfig_set_string_list(GConfig *gconfig,
 							 const gchar *key,
 							 GSList      *value)
 {
 	
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	
-	return gconf_client_set_list(config_priv->gconf_client,
+	return gconf_client_set_list(gconfig_priv->gconf_client,
 								  key,
 								  GCONF_VALUE_STRING,
 								  value,
@@ -273,7 +250,7 @@ conf_set_string_list(Conf  *conf,
 }
 
 gboolean
-conf_get_string_list(Conf   *conf,
+gconfig_get_string_list(GConfig *gconfig,
 							 const gchar  *key,
 							 GSList      **value)
 {
@@ -281,10 +258,10 @@ conf_get_string_list(Conf   *conf,
 
 	*value = NULL;
 
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	
-	*value = gconf_client_get_list(config_priv->gconf_client,
+	*value = gconf_client_get_list(gconfig_priv->gconf_client,
 									key,
 									GCONF_VALUE_STRING,
 									&error);
@@ -296,63 +273,52 @@ conf_get_string_list(Conf   *conf,
 	return TRUE;
 }
 
-static void
-conf_notify_data_free(ConfNotifyData *data)
-{
-	g_object_unref(data->conf);
-	g_slice_free(ConfNotifyData, data);
+static void gconfig_notify_data_free(GConfigNotifyData *data){
+	g_object_unref(data->gconfig);
+	g_slice_free(GConfigNotifyData, data);
 }
 
-static void
-conf_notify_func(GConfClient *client,
-				  guint        id,
-				  GConfEntry  *entry,
-				  gpointer     user_data)
-{
-	ConfNotifyData *data;
-
+static void gconfig_notify_func(GConfClient *client, guint id, GConfEntry  *entry, gpointer user_data){
+	GConfigNotifyData *data;
 	data = user_data;
-
-	data->func(data->conf,
-				gconf_entry_get_key(entry),
-				data->user_data);
+	data->func(data->gconfig, gconf_entry_get_key(entry), data->user_data);
 }
 
 guint
-conf_notify_add(Conf           *conf,
+gconfig_notify_add(GConfig *gconfig,
 						const gchar          *key,
-						ConfNotifyFunc  func,
+						GConfigNotifyFunc  func,
 						gpointer              user_data)
 {
 		guint                 id;
-	ConfNotifyData *data;
+	GConfigNotifyData *data;
 
-	g_return_val_if_fail(IS_CONF(conf), 0);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), 0);
 
 	
-	data = g_slice_new(ConfNotifyData);
+	data = g_slice_new(GConfigNotifyData);
 	data->func = func;
 	data->user_data = user_data;
-	data->conf = g_object_ref(conf);
+	data->gconfig = g_object_ref(gconfig);
 
-	id = gconf_client_notify_add(config_priv->gconf_client,
+	id = gconf_client_notify_add(gconfig_priv->gconf_client,
 								key,
-								conf_notify_func,
+								gconfig_notify_func,
 								data,
-								(GFreeFunc) conf_notify_data_free,
+								(GFreeFunc) gconfig_notify_data_free,
 								NULL);
 
 	return id;
 }
 
 gboolean
-conf_notify_remove(Conf *conf,
+gconfig_notify_remove(GConfig *gconfig,
 						   guint       id)
 {
-	g_return_val_if_fail(IS_CONF(conf), FALSE);
+	g_return_val_if_fail(IS_GCONFIG(gconfig), FALSE);
 
 	
-	gconf_client_notify_remove(config_priv->gconf_client, id);
+	gconf_client_notify_remove(gconfig_priv->gconf_client, id);
 
 	return TRUE;
 }

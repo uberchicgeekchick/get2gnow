@@ -27,8 +27,30 @@
 #ifndef __PREFERENCES_H__
 #define __PREFERENCES_H__
 
+#include <glib.h>
 #include <gtk/gtk.h>
 
+G_BEGIN_DECLS
+
+/* GConf Keys */
+#define PREFS_PATH "/apps/" PACKAGE_TARNAME
+
+#define	PREFS_TWEETS_HOME_TIMELINE	PREFS_PATH "/tweets/home_timeline"
+#define	PREFS_TWEETS_RELOAD_TIMELINES	PREFS_PATH "/tweets/reload_timeline"
+
+#define PREFS_UI_WINDOW_HEIGHT		PREFS_PATH "/ui/main_window_height"
+#define PREFS_UI_WINDOW_WIDTH		PREFS_PATH "/ui/main_window_width"
+#define PREFS_UI_WIN_POS_X		PREFS_PATH "/ui/main_window_pos_x"
+#define PREFS_UI_WIN_POS_Y		PREFS_PATH "/ui/main_window_pos_y"
+#define PREFS_UI_MAIN_WINDOW_HIDDEN	PREFS_PATH "/ui/main_window_hidden"
+#define PREFS_UI_NOTIFICATION		PREFS_PATH "/ui/notify"
+#define PREFS_UI_SOUND			PREFS_PATH "/ui/sound"
+#define PREFS_UI_NO_ALERT		PREFS_PATH "/ui/no_alert"
+
+#define PREFS_HINTS_CLOSE_MAIN_WINDOW	PREFS_PATH "/hints/close_main_window"
+
 void preferences_dialog_show (GtkWindow *parent);
+
+G_END_DECLS
 
 #endif /* __PREFERENCES_H__ */

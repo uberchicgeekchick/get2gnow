@@ -21,12 +21,12 @@ endif
 get2gnow_SOURCES = 					\
 	$(keyring_sources)				\
 	main.c			main.h			\
-	gconf.c			gconf.h			\
+	gconfig.c		gconfig.h		\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	tree-view.c 		tree-view.h		\
 	about.c			about.h			\
-	accounts-dialog.c 	accounts-dialog.h	\
+	services-dialog.c	services-dialog.h	\
 	profile-viewer.c	profile-viewer.h	\
 	popup-dialog.c 		popup-dialog.h		\
 	ipc.c			ipc.h			\

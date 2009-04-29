@@ -70,18 +70,19 @@
 
 #include "app.h"
 #include "main.h"
-#include "gconf.h"
+#include "gconfig.h"
 #include "network.h"
 #include "keyring.h"
 #include "debug.h"
 #include "gtkbuilder.h"
-#include "accounts-dialog.h"
+#include "preferences.h"
+#include "services-dialog.h"
 
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAIN "OnlineService"
+#define DEBUG_DOMAIN "OnlineServices"
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -126,22 +127,22 @@ OnlineService **online_service_init(gint *accounts){
 
 OnlineService *online_service_new(const gchar *auth_uri){
 	debug(DEBUG_DOMAIN, "Loading account: %s", auth_uri );
-	Conf *conf=conf_get();
+	GConfig *gconfig=gconfig_get();
 	OnlineService *service=g_new0(OnlineService, 1);
 	service->auth_uri=g_strdup(auth_uri);
 	
 	gchar *prefs_auth_path=NULL;
 	
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_ENABLED, service->auth_uri);
-	conf_get_bool(conf, prefs_auth_path, &service->enabled);
+	gconfig_get_bool(gconfig, prefs_auth_path, &service->enabled);
 	g_free(prefs_auth_path);
 	
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_AUTO_CONNECT, service->auth_uri);
-	conf_get_bool(conf, prefs_auth_path, &service->auto_connect);
+	gconfig_get_bool(gconfig, prefs_auth_path, &service->auto_connect);
 	g_free(prefs_auth_path);
 	
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_USERNAME, service->auth_uri);
-	conf_get_string(conf, prefs_auth_path, &service->username);
+	gconfig_get_string(gconfig, prefs_auth_path, &service->username);
 	g_free(prefs_auth_path);
 	
 #ifdef HAVE_GNOME_KEYRING
@@ -154,7 +155,7 @@ OnlineService *online_service_new(const gchar *auth_uri){
 	g_free(keyring_key);
 #else
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_PASSWORD, service->auth_uri);
-	conf_get_string(conf, prefs_auth_path, &service->password);
+	gconfig_get_string(gconfig, prefs_auth_path, &service->password);
 	g_free(prefs_auth_path);
 #endif
 	
@@ -164,7 +165,7 @@ OnlineService *online_service_new(const gchar *auth_uri){
 }//online_service_new
 
 void online_service_save(OnlineService *service, gboolean enabled, const gchar *username, const gchar *password, gboolean auto_connect){
-	Conf *conf=conf_get();
+	GConfig *gconfig=gconfig_get();
 	gchar *prefs_auth_path=NULL;
 	
 	service->enabled=enabled;
@@ -173,15 +174,15 @@ void online_service_save(OnlineService *service, gboolean enabled, const gchar *
 	service->password=g_strdup(password);
 	
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_ENABLED, service->auth_uri);
-	conf_set_bool(conf, prefs_auth_path, service->enabled);
+	gconfig_set_bool(gconfig, prefs_auth_path, service->enabled);
 	g_free(prefs_auth_path);
 				
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_AUTO_CONNECT, service->auth_uri);
-	conf_set_bool(conf, prefs_auth_path, service->auto_connect);
+	gconfig_set_bool(gconfig, prefs_auth_path, service->auto_connect);
 	g_free(prefs_auth_path);
 	
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_USERNAME, service->auth_uri);
-	conf_set_string(conf, prefs_auth_path, service->username);
+	gconfig_set_string(gconfig, prefs_auth_path, service->username);
 	g_free(prefs_auth_path);
 
 	debug( DEBUG_DOMAIN, "%s account saved\t\t[%sabled]\n\tusername: %s; password: %s; auto_connect: %s", service->auth_uri, (service->enabled?"en":"dis"), service->username, service->password, (service->auto_connect?"TRUE":"FALSE") );
@@ -192,7 +193,7 @@ void online_service_save(OnlineService *service, gboolean enabled, const gchar *
 	g_free(keyring_key);
 #else
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_PASSWORD, service->auth_uri);
-	conf_set_string(conf, prefs_auth_path, service->password);
+	gconfig_set_string(gconfig, prefs_auth_path, service->password);
 	g_free(prefs_auth_path);
 #endif
 }//online_service_save

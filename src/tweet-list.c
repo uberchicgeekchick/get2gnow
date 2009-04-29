@@ -55,7 +55,6 @@
 
 #include "config.h"
 
-#include "gconf.h"
 #include "debug.h"
 
 #include "main.h"

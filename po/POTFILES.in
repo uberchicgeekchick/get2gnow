@@ -1,7 +1,7 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
-[type: gettext/glade]data/accounts-dialog.ui
+[type: gettext/glade]data/services-dialog.ui
 [type: gettext/glade]data/following-viewer.ui
 [type: gettext/glade]data/friends-manager.ui
 [type: gettext/glade]data/main-window.ui
@@ -9,8 +9,6 @@
 [type: gettext/glade]data/preferences.ui
 [type: gettext/glade]data/profile-viewer.ui
 [type: gettext/glade]data/tweet-view.ui
-[type: gettext/glade]data/send-message-dialog.ui
-[type: gettext/glade]data/spell-dialog.ui
 data/get2gnow.desktop.in
 data/get2gnow.schemas.in
 
@@ -21,8 +19,5 @@ src/main.c
 src/network.c
 src/parser.c
 src/preferences.c
-src/send-message-dialog.c
-src/spell.c
-src/spell-dialog.c
 src/ui-utils.c
 

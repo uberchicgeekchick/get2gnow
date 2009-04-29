@@ -21,7 +21,7 @@
  
 #include <glib/gi18n.h>
 
-#include "gconf.h"
+#include "gconfig.h"
 
 #include "hint.h"
 
@@ -32,25 +32,25 @@ hint_dialog_response_cb (GtkWidget *widget,
 {
 	GFunc        func;
 	gpointer     user_data;
-	const gchar *conf_path;
+	const gchar *gconfig_path;
 	gboolean     hide_hint;
 
-	conf_path = g_object_get_data (G_OBJECT (widget), "conf_path");
+	gconfig_path = g_object_get_data (G_OBJECT (widget), "gconfig_path");
 	func = g_object_get_data (G_OBJECT (widget), "func");
 	user_data = g_object_get_data (G_OBJECT (widget), "user_data");
 
 	hide_hint = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton));
-	conf_set_bool (conf_get (), conf_path, !hide_hint);
+	gconfig_set_bool (gconfig_get (), gconfig_path, !hide_hint);
 
 	gtk_widget_destroy (widget);
 
 	if (func) {
-		(func) ((gpointer) conf_path, user_data);
+		(func) ((gpointer) gconfig_path, user_data);
 	}
 }
 
 gboolean
-hint_dialog_show (const gchar         *conf_path,
+hint_dialog_show (const gchar         *gconfig_path,
 						 const gchar         *message1,
 						 const gchar         *message2,
 						 GtkWindow           *parent,
@@ -63,11 +63,11 @@ hint_dialog_show (const gchar         *conf_path,
 	gboolean   ok;
 	gboolean   show_hint = TRUE;
 
-	g_return_val_if_fail (conf_path != NULL, FALSE);
+	g_return_val_if_fail (gconfig_path != NULL, FALSE);
 	g_return_val_if_fail (message1 != NULL, FALSE);
 
-	ok = conf_get_bool (conf_get (),
-							   conf_path,
+	ok = gconfig_get_bool (gconfig_get (),
+							   gconfig_path,
 							   &show_hint);
 
 	if (ok && !show_hint) {
@@ -91,7 +91,7 @@ hint_dialog_show (const gchar         *conf_path,
 	gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), vbox, FALSE, FALSE, 0);
 
-	g_object_set_data_full (G_OBJECT (dialog), "conf_path", g_strdup (conf_path), g_free);
+	g_object_set_data_full (G_OBJECT (dialog), "gconfig_path", g_strdup (gconfig_path), g_free);
 	g_object_set_data (G_OBJECT (dialog), "user_data", user_data);
 	g_object_set_data (G_OBJECT (dialog), "func", func);
 
@@ -105,14 +105,14 @@ hint_dialog_show (const gchar         *conf_path,
 }
 
 gboolean 
-hint_show (const gchar         *conf_path,
+hint_show (const gchar         *gconfig_path,
 				  const gchar         *message1,
 				  const gchar         *message2,
 				  GtkWindow           *parent,
 				  GFunc                func,
 				  gpointer             user_data)
 {
-	return hint_dialog_show (conf_path,
+	return hint_dialog_show (gconfig_path,
 									message1, message2,
 									parent,
 									func, user_data);

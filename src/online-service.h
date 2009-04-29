@@ -65,6 +65,13 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
+#define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
+#define	PREFS_AUTH_SERVICE		PREFS_PATH "/auth/%s/tld"
+#define	PREFS_AUTH_USERNAME		PREFS_PATH "/auth/%s/username"
+#define	PREFS_AUTH_PASSWORD		PREFS_PATH "/auth/%s/password"
+#define	PREFS_AUTH_AUTO_CONNECT		PREFS_PATH "/auth/%s/auto_connect"
+#define	PREFS_AUTH_ENABLED		PREFS_PATH "/auth/%s/enabled"
+
 typedef enum{
 	POST,
 	GET,

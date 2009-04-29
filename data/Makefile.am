@@ -10,7 +10,7 @@ schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 
 gtkbuilderdir = $(datadir)/get2gnow
 gtkbuilder_DATA = 			\
-	accounts-dialog.ui		\
+	services-dialog.ui		\
 	following-viewer.ui		\
 	friends-manager.ui		\
 	main-window.ui			\

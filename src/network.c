@@ -32,7 +32,7 @@
 #include <libsoup/soup.h>
 
 #include "debug.h"
-#include "gconf.h"
+#include "gconfig.h"
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
 #endif
@@ -43,6 +43,7 @@
 #include "users.h"
 #include "images.h"
 #include "app.h"
+#include "preferences.h"
 #include "following-viewer.h"
 #include "tweets.h"
 #include "timer.h"
@@ -116,7 +117,7 @@ SoupSession *network_get_connection(void){
 
 /* This function must be called at startup */
 void network_new(void) {
-	Conf	*conf;
+	GConfig *gconfig=gconfig_get();
 	gboolean	check_proxy=FALSE;
 	
 	debug(DEBUG_DOMAIN, "Libsoup %sstarted",(soup_connection?"re-":"") );
@@ -129,8 +130,7 @@ void network_new(void) {
 	soup_connection=soup_session_async_new_with_options( SOUP_SESSION_MAX_CONNS, 8, NULL );
 	
 	/* Set the proxy, if configuration is set */
-	conf=conf_get();
-	conf_get_bool(conf, PROXY_USE, &check_proxy);
+	gconfig_get_bool(gconfig, PROXY_USE, &check_proxy);
 	
 	if(!check_proxy) return;
 	
@@ -138,8 +138,8 @@ void network_new(void) {
 	gint port;
 	
 	/* Get proxy */
-	conf_get_string(conf, PROXY_HOST, &server);
-	conf_get_int(conf, PROXY_PORT, &port);
+	gconfig_get_string(gconfig, PROXY_HOST, &server);
+	gconfig_get_int(gconfig, PROXY_PORT, &port);
 	
 	if(G_STR_EMPTY(server))
 		return;
@@ -148,15 +148,15 @@ void network_new(void) {
 	gchar *proxy_uri=NULL;
 	
 	check_proxy=FALSE;
-	conf_get_bool( conf, PROXY_USE_AUTH, &check_proxy);
+	gconfig_get_bool( gconfig, PROXY_USE_AUTH, &check_proxy);
 	
 	/* Get proxy auth data */
 	if(!check_proxy)
 		proxy_uri=g_strdup_printf("http://%s:%d", server, port);
 	else {
 		char *user, *password;
-		conf_get_string( conf, PROXY_USER, &user);
-		conf_get_string( conf, PROXY_PASS, &password);
+		gconfig_get_string( gconfig, PROXY_USER, &user);
+		gconfig_get_string( gconfig, PROXY_PASS, &password);
 		
 		proxy_uri=g_strdup_printf( "http://%s:%s@%s:%d", user, password, server, port);
 		
@@ -367,7 +367,7 @@ void network_get_user_timeline(const gchar *username){
 
 	if(!username){
 		gchar *prefs_auth_path=g_strdup_printf( PREFS_AUTH_USERNAME, API_SERVICE );
-		conf_get_string(conf_get(), prefs_auth_path, &user_id);
+		gconfig_get_string(gconfig_get(), prefs_auth_path, &user_id);
 		g_free(prefs_auth_path);
 	} else
 		user_id=g_strdup(username);
@@ -603,7 +603,7 @@ static void network_timeout_new(void){
 		g_source_remove(timeout_id);
 	}
 
-	conf_get_int(conf_get(), PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
+	gconfig_get_int(gconfig_get(), PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
 
 	/* The timeline reload interval shouldn't be less than 3 minutes */
 	if(minutes < 3)

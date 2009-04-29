@@ -25,20 +25,20 @@
 #include <gtk/gtk.h>
 
 
-#include "gconf.h"
+#include "gconfig.h"
 #include "gtkbuilder.h"
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
 #endif
 
 #include "main.h"
-#include "accounts-dialog.h"
+#include "services-dialog.h"
 #include "debug.h"
 #include "network.h"
 #include "online-service.h"
 
-#define GtkBuilderUI "accounts-dialog.ui"
-#define DEBUG_DOMAIN "AccountDialogs-Dialog"
+#define GtkBuilderUI "services-dialog.ui"
+#define DEBUG_DOMAIN "OnlineServices"
 
 enum {
 	SERVICES_URI

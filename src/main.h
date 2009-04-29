@@ -31,30 +31,6 @@ G_BEGIN_DECLS
 #define G_STR_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
 #endif
 
-/* GConf Keys */
-#define PREFS_PATH "/apps/" PACKAGE_TARNAME
-
-#define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
-#define	PREFS_AUTH_SERVICE		PREFS_PATH "/auth/%s/tld"
-#define	PREFS_AUTH_USERNAME		PREFS_PATH "/auth/%s/username"
-#define	PREFS_AUTH_PASSWORD		PREFS_PATH "/auth/%s/password"
-#define	PREFS_AUTH_AUTO_CONNECT		PREFS_PATH "/auth/%s/auto_connect"
-#define	PREFS_AUTH_ENABLED		PREFS_PATH "/auth/%s/enabled"
-
-#define	PREFS_TWEETS_HOME_TIMELINE	PREFS_PATH "/tweets/home_timeline"
-#define	PREFS_TWEETS_RELOAD_TIMELINES	PREFS_PATH "/tweets/reload_timeline"
-
-#define PREFS_UI_WINDOW_HEIGHT		PREFS_PATH "/ui/main_window_height"
-#define PREFS_UI_WINDOW_WIDTH		PREFS_PATH "/ui/main_window_width"
-#define PREFS_UI_WIN_POS_X		PREFS_PATH "/ui/main_window_pos_x"
-#define PREFS_UI_WIN_POS_Y		PREFS_PATH "/ui/main_window_pos_y"
-#define PREFS_UI_MAIN_WINDOW_HIDDEN	PREFS_PATH "/ui/main_window_hidden"
-#define PREFS_UI_NOTIFICATION		PREFS_PATH "/ui/notify"
-#define PREFS_UI_SOUND			PREFS_PATH "/ui/sound"
-#define PREFS_UI_SPELL_LANGUAGES	PREFS_PATH "/ui/spell_checker_languages"
-#define PREFS_UI_SPELL			PREFS_PATH "/ui/spell"
-
-#define PREFS_HINTS_CLOSE_MAIN_WINDOW	PREFS_PATH "/hints/close_main_window"
 
 /* Proxy configuration */
 #define PROXY				"/system/http_proxy"

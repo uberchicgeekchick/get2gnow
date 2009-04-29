@@ -25,59 +25,55 @@
 
 G_BEGIN_DECLS
 
-#define TYPE_CONF         (conf_get_type ())
-#define CONF(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_CONF, Conf))
-#define CONF_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST ((k), TYPE_CONF, ConfClass))
-#define IS_CONF(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_CONF))
-#define IS_CONF_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_CONF))
-#define CONF_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_CONF, ConfClass))
+#define TYPE_GCONFIG		(gconfig_get_type())
+#define GCONFIG(o)		(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_GCONFIG, GConfig))
+#define GCONFIG_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), TYPE_GCONFIG, GConfigClass))
+#define IS_GCONFIG(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_GCONFIG))
+#define IS_GCONFIG_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_GCONFIG))
+#define GCONFIG_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_GCONFIG, GConfClass))
 
-typedef struct _Conf      Conf;
-typedef struct _ConfClass ConfClass;
 
-struct _Conf  {
+typedef struct{
 	GObject parent;
-};
+} GConfig;
 
-struct _ConfClass {
+typedef struct{
 	GObjectClass parent_class;
-};
+} GConfigClass;
 
-typedef void (*ConfNotifyFunc) (Conf  *conf, 
-									  const gchar *key,
-									  gpointer     user_data);
+typedef void (*GConfigNotifyFunc) (GConfig  *gconfig, const gchar *key, gpointer user_data);
 
-GType       conf_get_type        (void) G_GNUC_CONST;
-Conf *conf_get             (void);
-void        conf_shutdown        (void);
-guint       conf_notify_add      (Conf            *conf,
+GType gconfig_get_type(void) G_GNUC_CONST;
+GConfig *gconfig_get(void);
+void gconfig_shutdown(void);
+guint       gconfig_notify_add      (GConfig *gconfig,
 										 const gchar           *key,
-										 ConfNotifyFunc   func,
+										 GConfigNotifyFunc   func,
 										 gpointer               data);
-gboolean    conf_notify_remove   (Conf            *conf,
+gboolean    gconfig_notify_remove   (GConfig *gconfig,
 										 guint                  id);
-gboolean    conf_set_int         (Conf            *conf,
+gboolean    gconfig_set_int         (GConfig *gconfig,
 										 const gchar           *key,
 										 gint                   value);
-gboolean    conf_get_int         (Conf            *conf,
+gboolean    gconfig_get_int         (GConfig *gconfig,
 										 const gchar           *key,
 										 gint                  *value);
-gboolean    conf_set_bool        (Conf            *conf,
+gboolean    gconfig_set_bool        (GConfig *gconfig,
 										 const gchar           *key,
 										 gboolean               value);
-gboolean    conf_get_bool        (Conf            *conf,
+gboolean    gconfig_get_bool        (GConfig *gconfig,
 										 const gchar           *key,
 										 gboolean              *value);
-gboolean    conf_set_string      (Conf            *conf,
+gboolean    gconfig_set_string      (GConfig *gconfig,
 										 const gchar           *key,
 										 const gchar           *value);
-gboolean    conf_get_string      (Conf            *conf,
+gboolean    gconfig_get_string      (GConfig *gconfig,
 										 const gchar           *key,
 										 gchar                **value);
-gboolean    conf_set_string_list (Conf            *conf,
+gboolean    gconfig_set_string_list (GConfig *gconfig,
 										 const gchar           *key,
 										 GSList                *value);
-gboolean    conf_get_string_list (Conf            *conf,
+gboolean    gconfig_get_string_list (GConfig *gconfig,
 										 const gchar           *key,
 										 GSList              **value);
 

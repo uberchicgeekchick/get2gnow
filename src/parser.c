@@ -38,7 +38,6 @@
 #include <libxml/tree.h>
 
 #include "debug.h"
-#include "gconf.h"
 
 #include "main.h"
 #include "app.h"

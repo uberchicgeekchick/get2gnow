@@ -32,7 +32,7 @@
 #include <libsexy/sexy.h>
 
 #include "debug.h"
-#include "gconf.h"
+#include "gconfig.h"
 #include "gtkbuilder.h"
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
@@ -40,10 +40,11 @@
 
 #include "main.h"
 #include "about.h"
-#include "accounts-dialog.h"
+#include "services-dialog.h"
 #include "popup-dialog.h"
 #include "app.h"
 #include "images.h"
+#include "preferences.h"
 #include "geometry.h"
 #include "hint.h"
 #include "label.h"
@@ -235,7 +236,7 @@ static void app_finalize(GObject *object){
 	g_list_free(app_priv->widgets_disconnected);
 	g_slist_free(app_priv->group);
 
-	conf_shutdown();
+	gconfig_shutdown();
 	
 	G_OBJECT_CLASS(app_parent_class)->finalize(object);
 }
@@ -250,7 +251,7 @@ static void disconnect(App *app){
 }
 
 static void app_setup(void){
-	Conf		*conf;
+	GConfig *gconfig=gconfig_get();
 	GtkBuilder	*ui;
 	GtkWidget	*scrolled_window;
 	gboolean	hidden;
@@ -321,9 +322,6 @@ static void app_setup(void){
 				NULL
 	);
 	g_signal_connect_after(app_priv->window, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
-	
-	/* Grab the conf object */
-	conf = conf_get();
 	
 	/* Set group for menu radio actions */
 	app_set_radio_group(app, ui);
@@ -413,7 +411,7 @@ static void app_setup(void){
 	app_check_dir();
 	
 	/* Get the gconf value for whether the window should be hidden on start-up */
-	conf_get_bool(conf, PREFS_UI_MAIN_WINDOW_HIDDEN, &hidden);
+	gconfig_get_bool(gconfig, PREFS_UI_MAIN_WINDOW_HIDDEN, &hidden);
 	
 	/* Ok, set the window state based on the gconf value */				  
 	if(!hidden)
@@ -733,12 +731,12 @@ static void app_toggle_visibility(void){
 		window_present(GTK_WINDOW(app_priv->window), TRUE);
 	}
 	/* Save the window visibility state */
-	conf_set_bool(conf_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, visible);
+	gconfig_set_bool(gconfig_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, visible);
 }
 
 void app_set_visibility(gboolean visible){
 	GtkWindow *window=app_get_window();
-	conf_set_bool(conf_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, !visible);
+	gconfig_set_bool(gconfig_get(), PREFS_UI_MAIN_WINDOW_HIDDEN, !visible);
 
 	if(!visible)
 		gtk_widget_hide(GTK_WIDGET(window));
@@ -975,8 +973,7 @@ static gboolean app_login(App *a){
 	if(!( (app_priv->services=online_service_init(&active_services)) && active_services ))
 		return FALSE;
 	
-	debug(DEBUG_DOMAIN, "Attempting to log in to %s...", app_priv->services[0]->auth_uri);
-	debug(DEBUG_DOMAIN, "Beginning network login.");
+	debug(DEBUG_DOMAIN, "%d services found.  Attempting log in...", active_services);
 	network_login(app_priv->services);
 	app_retrieve_default_timeline();
 	return TRUE;
@@ -1027,7 +1024,7 @@ static void app_set_default_timeline(App *app, gchar *timeline){
 static void app_retrieve_default_timeline(void){
 	gchar         *timeline=NULL;
 
-	conf_get_string(conf_get(), PREFS_TWEETS_HOME_TIMELINE, &timeline);
+	gconfig_get_string(gconfig_get(), PREFS_TWEETS_HOME_TIMELINE, &timeline);
 
 	if(G_STR_EMPTY(timeline))
 		timeline=g_strdup(API_TIMELINE_FRIENDS);
@@ -1144,7 +1141,7 @@ void app_set_statusbar_msg(gchar *message){
 void app_notify_sound(gboolean force){
 	if(!force){
 		gboolean sound;
-		conf_get_bool(conf_get(), PREFS_UI_SOUND, &sound);
+		gconfig_get_bool(gconfig_get(), PREFS_UI_SOUND, &sound);
 		if(!sound) return;
 	}
 	gtk_widget_error_bell(GTK_WIDGET(app_priv->sexy_entry));
@@ -1152,7 +1149,7 @@ void app_notify_sound(gboolean force){
 
 void app_notify(gchar *msg){
 	gboolean notify;
-	conf_get_bool(conf_get(), PREFS_UI_NOTIFICATION, &notify);
+	gconfig_get_bool(gconfig_get(), PREFS_UI_NOTIFICATION, &notify);
 	if(!notify)
 		return;
 	NotifyNotification *notification;

@@ -5,13 +5,60 @@
        <key>/schemas/apps/get2gnow/auth/services</key>
        <applyto>/apps/get2gnow/auth/services</applyto>
        <owner>get2gnow</owner>
-       <type>list</type>
-       <listtype>string</listtype>
-       <default>[https://twitter.com/userName:password,https://identi.ca/username:password]</default>
+       <type ltype="string">list</type>
+       <default>[twitter.com,identi.ca]</default>
        <locale name="C">
           <short>Services URI (not-yet implemented)</short>
           <long>Secure HTTP URI for the accounts services, username, and password(if gnome_keyring's not enabled).</long>
        </locale>
+    </schema>
+
+    <schema>
+        <key>/schemas/apps/get2gnow/auth/identi.ca/enabled</key>
+    	<applyto>/apps/get2gnow/auth/identi.ca/enabled</applyto>
+    	<owner>get2gnow</owner>
+    	<type>bool</type>
+    	<default>false</default>
+    	<locale name="C">
+    	   <short>Enable identi.ca account</short>
+       	   <long>Enable's your identi.ca accout.</long>
+      	</locale>
+    </schema>
+										
+    <schema>
+       <key>/schemas/apps/get2gnow/auth/identi.ca/username</key>
+       <applyto>/apps/get2gnow/auth/identi.ca/username</applyto>
+       <owner>get2gnow</owner>
+       <type>string</type>
+       <default></default>
+       <locale name="C">
+          <short>identi.ca username</short>
+          <long>User's identi.ca username.</long>
+       </locale>
+    </schema>
+
+    <schema>
+       <key>/schemas/apps/get2gnow/auth/identi.ca/password</key>
+       <applyto>/apps/get2gnow/auth/identi.ca/password</applyto>
+       <owner>get2gnow</owner>
+       <type>string</type>
+       <default></default>
+       <locale name="C">
+          <short>identi.ca password</short>
+          <long>User's identi.ca password.</long>
+       </locale>
+    </schema>
+    
+    <schema>
+    	<key>/schemas/apps/get2gnow/auth/identi.ca/auto_connect</key>
+    	<applyto>/apps/get2gnow/auth/identi.ca/auto_connect</applyto>
+    	<owner>get2gnow</owner>
+    	<type>bool</type>
+    	<default>true</default>
+    	<locale name="C">
+    	   <short>Log on to identi.ca automatically.</short>
+    	   <long>Log on to identi.ca automatically.</long>
+    	</locale>
     </schema>
 
     <schema>
@@ -21,8 +68,8 @@
     	<type>bool</type>
     	<default>false</default>
     	<locale name="C">
-    	   <short>Enable Twitter.com account</short>
-       	   <long>Enable's your Twitter.com accout.</long>
+    	   <short>Enable twitter.com account</short>
+       	   <long>Enable's your twitter.com accout.</long>
       	</locale>
     </schema>
 										
@@ -33,8 +80,8 @@
        <type>string</type>
        <default></default>
        <locale name="C">
-          <short>Twitter username</short>
-          <long>User's Twitter account username.</long>
+          <short>twitter username</short>
+          <long>User's twitter username.</long>
        </locale>
     </schema>
 
@@ -45,8 +92,8 @@
        <type>string</type>
        <default></default>
        <locale name="C">
-          <short>Twitter password</short>
-          <long>User's Twitter account password.</long>
+          <short>twitter password</short>
+          <long>User's twitter password.</long>
        </locale>
     </schema>
     
@@ -57,8 +104,8 @@
     	<type>bool</type>
     	<default>true</default>
     	<locale name="C">
-    	   <short>Log automatically into Twitter</short>
-    	   <long>Log automatically into Twitter.</long>
+    	   <short>Log on to twitter.com automatically.</short>
+    	   <long>Log on to twitter.com automatically.</long>
     	</locale>
     </schema>
 
@@ -170,6 +217,18 @@
 	</locale>
      </schema>
 
+     <schema>
+     	<key>/schemas/apps/get2gnow/ui/no_alert</key>
+	<applyto>/apps/get2gnow/ui/no_alert</applyto>
+	<owner>get2gnow</owner>
+	<type>bool</type>
+	<default>true</default>
+	<locale name="C">
+           <short>Sound notification of long messages</short>
+           <long>Sound notification of long messages.</long>
+   	</locale>
+     </schema>
+									     
      <schema>
       <key>/schemas/apps/get2gnow/hints/close_main_window</key>
       <applyto>/apps/get2gnow/hints/close_main_window</applyto>

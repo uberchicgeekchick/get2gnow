@@ -63,6 +63,8 @@
 #include "app.h"
 #include "tweets.h"
 #include "network.h"
+#include "gconfig.h"
+#include "preferences.h"
 #include "tweet-list.h"
 #include "tweet-view.h"
 #include "profile-viewer.h"
@@ -222,7 +224,10 @@ void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel 
 	gshort character_count=tweetlen(entry->text);
 	gchar *remaining_characters=NULL;
 	if(character_count < 0){
-		gtk_widget_error_bell(GTK_WIDGET(entry));
+		gboolean nobeep=FALSE;
+		gconfig_get_bool(gconfig_get(), PREFS_UI_NO_ALERT, &nobeep);
+		if(!nobeep)
+			gtk_widget_error_bell(GTK_WIDGET(entry));
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
 	}else
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
@@ -239,7 +244,10 @@ void tweets_friends_send_dm(GtkButton *button, GtkEntry *entry){
 	gchar *user_name=NULL;
 	GtkComboBox *friends_combo_box=app_get_friends_combo_box();
 	if(!( (GTK_WIDGET_IS_SENSITIVE(friends_combo_box)) && (user_name=gtk_combo_box_get_active_text( friends_combo_box )) )){
-		gtk_widget_error_bell(GTK_WIDGET(entry));
+		gboolean nobeep=FALSE;
+		gconfig_get_bool(gconfig_get(), PREFS_UI_NO_ALERT, &nobeep);
+		if(!nobeep)
+			gtk_widget_error_bell(GTK_WIDGET(entry));
 		return;
 	}
 	tweets_send_sexy(entry, user_name);

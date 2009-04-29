@@ -47,15 +47,15 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-get2gnow_SOURCES =				\
-	gconf.c			gconf.h			\
+get2gnow_SOURCES =					\
+	gconfig.c		gconfig.h		\
 	debug.c			debug.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	tree-view.c 		tree-view.h		\
 	$(keyring_sources)				\
 	main.c			main.h			\
 	about.c			about.h			\
-	accounts-dialog.c	accounts-dialog.h	\
+	services-dialog.c	services-dialog.h	\
 	profile-viewer.c	profile-viewer.h	\
 	popup-dialog.c		popup-dialog.h		\
 	ipc.c			ipc.h			\
@@ -78,15 +78,15 @@ get2gnow_SOURCES =				\
 	tweet-list.c		tweet-list.h
 
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
-get2gnow_OBJECTS =			\
-	gconf.$(OBJEXT)				\
+get2gnow_OBJECTS =				\
+	gconfig.$(OBJEXT)			\
 	debug.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)			\
 	tree-view.$(OBJEXT)			\
 	$(am__objects_1)			\
 	main.$(OBJEXT)				\
 	about.$(OBJEXT)				\
-	accounts-dialog.$(OBJEXT)		\
+	services-dialog.$(OBJEXT)		\
 	profile-viewer.$(OBJEXT)		\
 	popup-dialog.$(OBJEXT)			\
 	ipc.$(OBJEXT)				\
@@ -386,7 +386,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/accounts-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/services-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/popup-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@

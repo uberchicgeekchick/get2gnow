@@ -23,9 +23,9 @@
 #include "config.h"
 
 #include "debug.h"
-#include "gconf.h"
+#include "gconfig.h"
 
-#include "main.h"
+#include "preferences.h"
 #include "geometry.h"
 
 #define DEBUG_DOMAIN "Geometry"
@@ -34,26 +34,24 @@ void
 geometry_save_for_main_window (gint x, gint y,
 									  gint w, gint h)
 {
-	Conf *conf;
+	GConfig *gconfig=gconfig_get();
 
 	debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, w:%d, h:%d",
 				  x, y, w, h);
 
-	conf = conf_get ();
-
-	conf_set_int (conf,
+	gconfig_set_int (gconfig,
 						 PREFS_UI_WINDOW_HEIGHT,
 						 h);
 
-	conf_set_int (conf,
+	gconfig_set_int (gconfig,
 						 PREFS_UI_WINDOW_WIDTH,
 						 w);
 
-	conf_set_int (conf,
+	gconfig_set_int (gconfig,
 						 PREFS_UI_WIN_POS_X,
 						 x);
 
-	conf_set_int (conf,
+	gconfig_set_int (gconfig,
 						 PREFS_UI_WIN_POS_Y,
 						 y);
 
@@ -62,46 +60,24 @@ geometry_save_for_main_window (gint x, gint y,
 void
 geometry_load_for_main_window (GtkWindow *main_window)
 {
-	Conf *conf;
-	gint        x, y, w, h;
+	GConfig	*gconfig=gconfig_get();
+	gint	x=0, y=0, w=0, h=0;
 
 	debug (DEBUG_DOMAIN, "Loading window geometry...");
+	
 
-	conf = conf_get ();
+	gconfig_get_int(gconfig, PREFS_UI_WINDOW_HEIGHT, &h);
+	gconfig_get_int(gconfig, PREFS_UI_WINDOW_WIDTH, &w);
 
-	conf_get_int (conf,
-						 PREFS_UI_WINDOW_HEIGHT,
-						 &h);
+	gconfig_get_int(gconfig, PREFS_UI_WIN_POS_X, &x);
+	gconfig_get_int(gconfig, PREFS_UI_WIN_POS_Y, &y);
 
-	conf_get_int (conf,
-						 PREFS_UI_WINDOW_WIDTH,
-						 &w);
+	if(!(w >0 && h > 0 && x > 0 && y > 0))
+		return;
 
-	conf_get_int (conf,
-						 PREFS_UI_WIN_POS_X,
-						 &x);
+	debug(DEBUG_DOMAIN, "Resizing window:  width:%d, height: %d", w, h);
+	gtk_window_resize( GTK_WINDOW (main_window), w, h);
 
-	conf_get_int (conf,
-						 PREFS_UI_WIN_POS_Y,
-						 &y);
-
-	if (w >=1 && h >= 1) {
-		/*
-		 * Use the defaults from the glade file
-		 * if we don't have good w, h geometry.
-		 */
-		 debug (DEBUG_DOMAIN,
-					   "Configuring window default size w:%d, h: %d", w, h);
-		 gtk_window_resize (GTK_WINDOW (main_window), w, h);
-	}
-
-	if (x >= 0 && y >= 0) {
-		/*
-		 * Let the window manager position it
-		 * if we don't have good x, y coordinates.
-		 */
-		debug (DEBUG_DOMAIN,
-					  "Configuring window default position x:%d, y:%d", x, y);
-		gtk_window_move (GTK_WINDOW (main_window), x, y);
-	}
+	debug( DEBUG_DOMAIN, "Moving window to: x:%d, y:%d", x, y);
+	gtk_window_move( GTK_WINDOW (main_window), x, y);
  }
