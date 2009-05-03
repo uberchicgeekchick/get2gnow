@@ -66,6 +66,7 @@
 #include "images.h"
 #include "parser.h"
 #include "label.h"
+#include "tweet-view.h"
 
 #include "friends-manager.h"
 #include "following-viewer.h"
@@ -143,12 +144,12 @@ void user_request_main(FriendAction action, GtkWindow *parent, const gchar *user
 		return;
 	
 	if(request->method == POST)
-		return network_post(request->uri, NULL, user_request_main_quit, request);
+		return online_services_request( online_services, POST, request->uri, user_request_main_quit, request, NULL );
 	
 	SoupSession *session=NULL;
 	SoupMessage *msg=NULL;
 	user_request_main_quit(session, msg, (gpointer *)request);
-	app_sexy_select();
+	tweet_view_sexy_select();
 }//user_request_main
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
@@ -159,6 +160,8 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 			break;
 		case GET:
 			user_request_process_get(user_data);
+			break;
+		case QUEUE:
 			break;
 	}//switch
 }//user_request_main_quit
@@ -367,7 +370,7 @@ User *user_fetch_profile(const gchar *user_name){
 	SoupMessage *msg=NULL;
 	
 	gchar *user_profile=g_strdup_printf( API_ABOUT_USER, user_name );
-	msg=network_get( user_profile ); 
+	msg=online_service_request( current_service, GET, user_profile, NULL, NULL, NULL );
 	g_free( user_profile );
 	
 	if((user=user_parse_new( msg->response_body->data, msg->response_body->length )) )
@@ -448,10 +451,10 @@ void user_remove_follower(User *user){
  * 		NULL: Friends will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-void user_get_and_set_friends(void){
-	if(!user_friends)
-		user_friends=network_get_users_glist((gboolean)TRUE);
-	following_viewer_load_lists(user_friends);
+GList *user_get_friends(gboolean refresh){
+	if(user_friends && !refresh)
+		return user_friends;
+	return user_friends=network_get_users_glist(TRUE);
 }
 
 
@@ -460,20 +463,19 @@ void user_get_and_set_friends(void){
  * 		NULL: Followers will be fetched
  * 		GList: The list of friends (fetched previously)
  */
-void user_get_and_set_followers(void){
-	if(user_followers) return app_dm_data_show();
-	app_dm_data_show();
-	user_followers=network_get_users_glist((gboolean)FALSE);
-	app_dm_data_fill(user_followers);
+GList *user_get_followers(gboolean refresh){
+	if(user_followers && !refresh)
+		return user_followers;
+	return user_followers=network_get_users_glist(FALSE);
 }
 
-GList *user_get_friends_and_followers(gboolean use_cache){
-	if(following_and_followers && use_cache)
+GList *user_get_friends_and_followers(gboolean refresh){
+	if(following_and_followers && !refresh)
 		return following_and_followers;
 	
-	if(!(use_cache && user_friends))
+	if( refresh || !user_friends)
 		user_friends=network_get_users_glist( TRUE );
-	if(!(use_cache && user_followers))
+	if( refresh || !user_followers)
 		user_followers=network_get_users_glist( FALSE );
 	
 	following_and_followers=g_list_alloc();

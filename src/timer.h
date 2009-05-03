@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Alacast is:
+ * get2gnow is:
  * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Alacast
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -67,15 +67,22 @@
 /********************************************************
  *        Objects, structures, and etc typedefs         *
  ********************************************************/
+typedef struct {
+	gboolean active;
+	GTimer *gtimer;
+	gdouble limit;
+	guint processing;
+	guint requests;
+} RateLimitTimer;
+
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-void timer_init(void);
-void timer_main(SoupMessage *msg);
+RateLimitTimer *timer_new(void);
+void timer_main(RateLimitTimer *timer, SoupMessage *msg);
 
-void timer_main_quit(void);
-void timer_deinit(void);
+void timer_free(RateLimitTimer *timer);
 
 #endif /* __TIMER_H__  */
 

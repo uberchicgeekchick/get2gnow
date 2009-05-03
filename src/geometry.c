@@ -30,47 +30,27 @@
 
 #define DEBUG_DOMAIN "Geometry"
 
-void
-geometry_save_for_main_window (gint x, gint y,
-									  gint w, gint h)
-{
-	GConfig *gconfig=gconfig_get();
+void geometry_save_for_main_window(gint x, gint y, gint w, gint h){
+	debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, width:%d, height:%d", x, y, w, h);
 
-	debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, w:%d, h:%d",
-				  x, y, w, h);
+	gconfig_set_int(PREFS_UI_WINDOW_HEIGHT, h);
 
-	gconfig_set_int (gconfig,
-						 PREFS_UI_WINDOW_HEIGHT,
-						 h);
+	gconfig_set_int(PREFS_UI_WINDOW_WIDTH, w);
 
-	gconfig_set_int (gconfig,
-						 PREFS_UI_WINDOW_WIDTH,
-						 w);
+	gconfig_set_int(PREFS_UI_WIN_POS_X, x);
 
-	gconfig_set_int (gconfig,
-						 PREFS_UI_WIN_POS_X,
-						 x);
-
-	gconfig_set_int (gconfig,
-						 PREFS_UI_WIN_POS_Y,
-						 y);
-
+	gconfig_set_int(PREFS_UI_WIN_POS_Y, y);
 }
  
-void
-geometry_load_for_main_window (GtkWindow *main_window)
-{
-	GConfig	*gconfig=gconfig_get();
+void geometry_load_for_main_window(GtkWindow *main_window){
+	debug(DEBUG_DOMAIN, "Loading window geometry...");
 	gint	x=0, y=0, w=0, h=0;
 
-	debug (DEBUG_DOMAIN, "Loading window geometry...");
+	gconfig_get_int(PREFS_UI_WINDOW_HEIGHT, &h);
+	gconfig_get_int(PREFS_UI_WINDOW_WIDTH, &w);
 	
-
-	gconfig_get_int(gconfig, PREFS_UI_WINDOW_HEIGHT, &h);
-	gconfig_get_int(gconfig, PREFS_UI_WINDOW_WIDTH, &w);
-
-	gconfig_get_int(gconfig, PREFS_UI_WIN_POS_X, &x);
-	gconfig_get_int(gconfig, PREFS_UI_WIN_POS_Y, &y);
+	gconfig_get_int(PREFS_UI_WIN_POS_X, &x);
+	gconfig_get_int(PREFS_UI_WIN_POS_Y, &y);
 
 	if(!(w >0 && h > 0 && x > 0 && y > 0))
 		return;

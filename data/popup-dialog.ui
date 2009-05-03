@@ -16,6 +16,7 @@
           <object class="GtkTable" id="table2">
             <property name="visible">True</property>
             <property name="border_width">6</property>
+            <property name="n_rows">2</property>
             <property name="n_columns">2</property>
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
@@ -44,6 +45,42 @@
                 <property name="y_options"></property>
               </packing>
             </child>
+            <child>
+              <object class="GtkFrame" id="online_service_frame">
+                <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkAlignment" id="alignment1">
+                    <property name="visible">True</property>
+                    <property name="left_padding">12</property>
+                    <child>
+                      <object class="GtkComboBox" id="online_service_combobox">
+                        <property name="visible">True</property>
+                        <property name="model">online_service_liststore</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel" id="online_service_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">&lt;b&gt;On_line @:&lt;/b&gt;</property>
+                    <property name="use_markup">True</property>
+                    <property name="use_underline">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="right_attach">2</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="y_options"></property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="position">2</property>
@@ -55,7 +92,7 @@
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button1">
-                <property name="label">gtk-close</property>
+                <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
@@ -96,5 +133,23 @@
       <action-widget response="-6">button1</action-widget>
       <action-widget response="-5">button2</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkListStore" id="online_service_liststore">
+    <columns>
+      <!-- column-name url -->
+      <column type="gchararray"/>
+      <!-- column-name OnlineService -->
+      <column type="gpointer"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">twitter.com</col>
+        <col id="1"/>
+      </row>
+      <row>
+        <col id="0" translatable="yes">identi.ca</col>
+        <col id="1"/>
+      </row>
+    </data>
   </object>
 </interface>

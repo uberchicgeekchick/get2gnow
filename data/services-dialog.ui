@@ -2,10 +2,10 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkDialog" id="accounts_dialog">
+  <object class="GtkDialog" id="services_dialog">
     <property name="visible">True</property>
     <property name="border_width">6</property>
-    <property name="title" translatable="yes">Twitter Account</property>
+    <property name="title" translatable="yes">Accounts Setup</property>
     <property name="resizable">False</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
@@ -99,7 +99,6 @@
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Service:	</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">services</property>
               </object>
               <packing>
                 <property name="top_attach">1</property>
@@ -109,7 +108,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkComboBoxEntry" id="services">
+              <object class="GtkComboBoxEntry" id="urls">
                 <property name="visible">True</property>
                 <property name="model">services_list</property>
                 <property name="text_column">0</property>
@@ -220,8 +219,20 @@
   </object>
   <object class="GtkListStore" id="services_list">
     <columns>
-      <!-- column-name service_uri -->
+      <!-- column-name url -->
       <column type="gchararray"/>
+      <!-- column-name OnlineService -->
+      <column type="gpointer"/>
     </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">user@identi.ca</col>
+        <col id="1"/>
+      </row>
+      <row>
+        <col id="0" translatable="yes">user@twitter.com</col>
+        <col id="1"/>
+      </row>
+    </data>
   </object>
 </interface>

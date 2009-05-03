@@ -23,6 +23,6 @@
 
 #include <gtk/gtk.h>
 
-void accounts_dialog_show (GtkWindow *parent);
+void services_dialog_show (GtkWindow *parent);
 
 #endif /* __ACCOUNT_DIALOG_H__ */

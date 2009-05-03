@@ -1,11 +1,11 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /*
- * Copyright (C) 2007-2008 Brian Pepple <bpepple@fedoraproject.org>
+ * Copyright(C) 2007-2008 Brian Pepple <bpepple@fedoraproject.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * License, or(at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -40,125 +40,169 @@
 #define GtkBuilderUI "services-dialog.ui"
 #define DEBUG_DOMAIN "OnlineServices"
 
-enum {
-	SERVICES_URI
-};
-
 typedef struct {
+	OnlineService		*account;
+	
 	GtkDialog		*dialog;
 	GtkCheckButton		*enabled;
-	GtkComboBoxEntry	*services;
-	GtkListStore		*services_list;
+	GtkComboBoxEntry	*urls;
+	GtkListStore		*urls_list;
+	GtkTreeModel		*urls_model;
 	GtkEntry		*username;
 	GtkEntry		*password;
 	GtkCheckButton		*show_password;
 	GtkCheckButton		*auto_connect;
 	GtkButton		*apply_button;
-} AccountDialog;
+} ServicesDialog;
+static ServicesDialog	*services_dialog=NULL;
+static gboolean		okay_to_exit=TRUE;
 
-static void accounts_response_cb(GtkWidget *widget, gint response, AccountDialog *act);
-static void accounts_destroy_cb(GtkWidget *widget, AccountDialog *act);
-static void accounts_show_password_cb(GtkWidget *widget, AccountDialog *act);
-static void accounts_load_service(GtkComboBox *services, AccountDialog *act);
-static void accounts_apply(GtkButton *button, AccountDialog *act);
+static void services_dialog_response_cb(GtkWidget *widget, gint response, ServicesDialog *services_dialog);
+static void services_dialog_destroy_cb(GtkWidget *widget, ServicesDialog *services_dialog);
+static void services_dialog_show_password_cb(GtkWidget *widget, ServicesDialog *services_dialog);
+static void services_dialog_load_service(void);
+static void services_dialog_apply(GtkButton *button, ServicesDialog *services_dialog);
+static void services_dialog_invalid_account(void);
 
 
-static void accounts_response_cb( GtkWidget *widget, gint response, AccountDialog *act){
+static void services_dialog_response_cb( GtkWidget *widget, gint response, ServicesDialog *services_dialog){
 	if(response == GTK_RESPONSE_CLOSE)
 		return gtk_widget_destroy(widget);
 	
-	accounts_apply(act->apply_button, act);
+	services_dialog_apply(services_dialog->apply_button, services_dialog);
 	
-	if(response == GTK_RESPONSE_OK)
-		gtk_widget_destroy (widget);
+	if(response == GTK_RESPONSE_OK && okay_to_exit )
+		gtk_widget_destroy(widget);
 }
 
-static void accounts_apply(GtkButton *button, AccountDialog *act){
-	gchar *auth_uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(act->services));
-
-	OnlineService *service=online_service_new(auth_uri);
-	online_service_save(
-				service,
-				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(act->enabled)),
-				gtk_entry_get_text(GTK_ENTRY(act->username)),
-				gtk_entry_get_text(GTK_ENTRY(act->password)),
-				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(act->auto_connect))
+static void services_dialog_invalid_account(void){
+	GtkDialog *dialog=(GtkDialog *)gtk_dialog_new_with_buttons(
+							"Missing Information",
+							GTK_WINDOW(services_dialog->dialog),
+							GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+							GTK_STOCK_OK,
+							NULL
 	);
-	online_service_deinit(service);
-	g_free(auth_uri);
+	GtkVBox *dialog_content=(GtkVBox *)gtk_dialog_get_content_area(dialog);
+	GtkLabel *dialog_notice=(GtkLabel *)gtk_label_new("You must enter a valid service url (ie identi.ca), username, and password.");
+	gtk_widget_show(GTK_WIDGET(dialog_notice));
+	gtk_box_pack_start(
+				GTK_BOX(dialog_content),
+				GTK_WIDGET(dialog_notice),
+				TRUE, TRUE, 0
+	);
+	gtk_dialog_run(dialog);
+}//services_dailog_invalid_account
+
+static void services_dialog_apply(GtkButton *button, ServicesDialog *services_dialog){
+	gchar *url=gtk_combo_box_get_active_text(GTK_COMBO_BOX(services_dialog->urls));
+	const gchar *username=gtk_entry_get_text(GTK_ENTRY(services_dialog->username));
+	const gchar *password=gtk_entry_get_text(GTK_ENTRY(services_dialog->password));
+	if(!( url && username && password )){
+		services_dialog_invalid_account();
+		okay_to_exit=FALSE;
+		return g_free(url);
+	}
+	
+	online_service_save(
+				services_dialog->account,
+				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(services_dialog->enabled)),
+				(const gchar *)url,
+				username,
+				password,
+				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(services_dialog->auto_connect))
+	);
+	okay_to_exit=TRUE;
+	g_free(url);
 }
 
-static void accounts_destroy_cb (GtkWidget *widget, AccountDialog *act){
-	g_free (act);
+static void services_dialog_destroy_cb(GtkWidget *widget, ServicesDialog *services_dialog){
+	online_service_free(services_dialog->account);
+	g_free(services_dialog);
+	services_dialog=NULL;
 }
 
-static void accounts_show_password_cb(GtkWidget *widget, AccountDialog *act){
+static void services_dialog_show_password_cb(GtkWidget *widget, ServicesDialog *services_dialog){
 	gboolean visible;
 
-	visible = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->show_password));
-	gtk_entry_set_visibility (GTK_ENTRY (act->password), visible);
+	visible=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(services_dialog->show_password));
+	gtk_entry_set_visibility(GTK_ENTRY(services_dialog->password), visible);
 }
 
-void accounts_dialog_show (GtkWindow *parent){
-	static AccountDialog	*act;
-	GtkTreeIter		iter;
+void services_dialog_show(GtkWindow *parent){
 	GtkBuilder		*ui;
 	
-	if(act){
-		gtk_window_present(GTK_WINDOW (act->dialog));
+	if(services_dialog){
+		gtk_window_present(GTK_WINDOW(services_dialog->dialog));
 		return;
 	}
 	
-	act=g_new0(AccountDialog, 1);
+	services_dialog=g_new0(ServicesDialog, 1);
 	
 	/* Get widgets */
 	ui=gtkbuilder_get_file(GtkBuilderUI,
-					"service_enabled", &act->enabled,
-					"accounts_dialog", &act->dialog,
-					"services", &act->services,
-					"services_list", &act->services_list,
-					"username_entry", &act->username,
-					"password_entry", &act->password,
-					"show_password_checkbutton", &act->show_password,
-					"autoconnect_checkbutton", &act->auto_connect,
-					"apply_button", &act->apply_button,
+					"service_enabled", &services_dialog->enabled,
+					"services_dialog", &services_dialog->dialog,
+					"services", &services_dialog->urls,
+					"services_list", &services_dialog->urls_list,
+					"username_entry", &services_dialog->username,
+					"password_entry", &services_dialog->password,
+					"show_password_checkbutton", &services_dialog->show_password,
+					"autoconnect_checkbutton", &services_dialog->auto_connect,
+					"apply_button", &services_dialog->apply_button,
 					NULL
 	);
+	services_dialog->urls_model=gtk_combo_box_get_model(GTK_COMBO_BOX(services_dialog->urls));
 	
 	/* Connect the signals */
-	gtkbuilder_connect(ui, act,
-				"accounts_dialog", "destroy", accounts_destroy_cb,
-				"accounts_dialog", "response", accounts_response_cb,
-				"show_password_checkbutton", "toggled", accounts_show_password_cb,
-				"services", "changed", accounts_load_service,
+	gtkbuilder_connect(ui, services_dialog,
+				"services_dialog", "destroy", services_dialog_destroy_cb,
+				"services_dialog", "response", services_dialog_response_cb,
+				"show_password_checkbutton", "toggled", services_dialog_show_password_cb,
+				"services", "focus-out-event", services_dialog_load_service,
+				"services", "move-active", services_dialog_load_service,
 				NULL
 	);
 	
 	g_object_unref(ui);
-	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(act->services), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(act->services), renderer, "text", 0, NULL);
-	gtk_combo_box_entry_set_text_column(act->services, 0);
-	gtk_list_store_append(act->services_list, &iter);
-	gtk_list_store_set(act->services_list, &iter, 0, "twitter.com", -1);
-	gtk_list_store_append(act->services_list, &iter);
-	gtk_list_store_set(act->services_list, &iter, 0, "identi.ca", -1);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(act->services), 0);
+	debug(DEBUG_DOMAIN, "UI loaded... setting accounts list.");
 	
-	g_object_add_weak_pointer(G_OBJECT(act->dialog), (gpointer) &act);
+	GtkTreeIter		iter;
+	GSList			*accounts=NULL, *l=NULL;
+	gconfig_get_list_string(PREFS_AUTH_ACCOUNTS, &accounts);
+	for(l=accounts; l; l=l->next){
+		const gchar *account_key=(const gchar *)l->data;
+		gchar **account_data=g_strsplit(account_key, "@", 3);
+		debug(DEBUG_DOMAIN, "Appending account: '%s'; server: %s.", account_key, account_data[1]);
+		gtk_list_store_append(services_dialog->urls_list, &iter);
+		gtk_list_store_set(services_dialog->urls_list, &iter, 0, account_data[1], -1);
+		g_strfreev(account_data);
+	}
+	debug(DEBUG_DOMAIN, "Selecting active service.");
+	gtk_combo_box_entry_set_text_column(services_dialog->urls, 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(services_dialog->urls), 0);
+	okay_to_exit=TRUE;
 	
-	gtk_window_set_transient_for(GTK_WINDOW(act->dialog), parent);
+	if(parent){
+		g_object_add_weak_pointer(G_OBJECT(services_dialog->dialog),(gpointer) &services_dialog);
+		gtk_window_set_transient_for(GTK_WINDOW(services_dialog->dialog), parent);
+	}
+	gtk_window_present(GTK_WINDOW(services_dialog->dialog));
 	
-	accounts_load_service(GTK_COMBO_BOX(act->services), act);
-	/* Ok, let's go ahead and show it */
-	gtk_widget_show(GTK_WIDGET(act->dialog));
+	debug(DEBUG_DOMAIN, "Loading default service.");
+	services_dialog_load_service();
 }
 
-static void accounts_load_service(GtkComboBox *services, AccountDialog *act){
-	OnlineService *service=online_service_new( gtk_combo_box_get_active_text(GTK_COMBO_BOX(act->services)) );
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(act->enabled), service->enabled);
-	gtk_entry_set_text(GTK_ENTRY (act->username), service->username ? service->username : "");
-	gtk_entry_set_text(GTK_ENTRY(act->password), service->password ? service->password : "");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(act->auto_connect), service->auto_connect);
-	online_service_deinit(service);
-}//accounts_update_fields
+static void services_dialog_load_service(void){
+	if(!services_dialog) return;
+	
+	if(services_dialog->account)
+		online_service_free(services_dialog->account);
+	
+	services_dialog->account=online_service_load( gtk_combo_box_get_active_text(GTK_COMBO_BOX(services_dialog->urls)) );
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(services_dialog->enabled), services_dialog->account->enabled);
+	gtk_entry_set_text(GTK_ENTRY(services_dialog->username), services_dialog->account->username ? services_dialog->account->username : "");
+	gtk_entry_set_text(GTK_ENTRY(services_dialog->password), services_dialog->account->password ? services_dialog->account->password : "");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(services_dialog->auto_connect), services_dialog->account->auto_connect);
+}//services_dialog_load_service

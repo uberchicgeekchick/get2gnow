@@ -1,7 +1,7 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
@@ -18,7 +18,7 @@
  *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -30,17 +30,17 @@
  * language governing rights and limitations under the RPL.
  *
  * The User-Visible Attribution Notice below, when provided, must appear in each
- * user-visible display as defined in Section 6.4 (d):
+ * user-visible display as defined in Section 6.4(d):
  * 
  * Initial art work including: design, logic, programming, and graphics are
- * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * Copyright(C) 2009 Kaity G. B. and released under the RPL where sapplicable.
  * All materials not covered under the terms of the RPL are all still
- * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Copyright(C) 2009 Kaity G. B. and released under the terms of the
  * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
  * 
  * Any & all data stored by this Software created, generated and/or uploaded by any User
  * and any data gathered by the Software that connects back to the User.  All data stored
- * by this Software is Copyright (C) of the User the data is connected to.
+ * by this Software is Copyright(C) of the User the data is connected to.
  * Users may lisences their data under the terms of an OSI approved or Creative Commons
  * license.  Users must be allowed to select their choice of license for each piece of data
  * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
@@ -66,7 +66,7 @@
 
 #define DEBUG_DOMAIN "TweetList"
 
-#define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPriv))
+#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPriv))
 
 struct _TweetListPriv {
 	GtkListStore      *store;
@@ -92,8 +92,8 @@ static gint tweet_list_index=0;
 G_DEFINE_TYPE(TweetList, tweet_list, GTK_TYPE_TREE_VIEW);
 
 static void tweet_list_class_init( TweetListClass *klass ){
-	GObjectClass   *object_class = G_OBJECT_CLASS(klass);
-	object_class->finalize = tweet_list_finalize;
+	GObjectClass   *object_class=G_OBJECT_CLASS(klass);
+	object_class->finalize=tweet_list_finalize;
 	g_type_class_add_private(object_class, sizeof(TweetListPriv));
 }//tweet_list_class_init
 
@@ -147,11 +147,11 @@ static void tweet_list_setup_view(TweetList *list){
 	g_object_set(list, "rules-hint", TRUE, "reorderable", FALSE, "headers-visible", FALSE, NULL);
 
 	renderer=gtk_cell_renderer_pixbuf_new();
-	gtk_cell_renderer_set_fixed_size( renderer, 48, 48 );
-	avatar_column = gtk_tree_view_column_new_with_attributes( NULL, renderer, "pixbuf", PIXBUF_AVATAR, NULL);
+	gtk_cell_renderer_set_fixed_size( renderer, 53, 48 );
+	avatar_column=gtk_tree_view_column_new_with_attributes( NULL, renderer, "pixbuf", PIXBUF_AVATAR, NULL);
 	gtk_tree_view_column_set_sizing( avatar_column, GTK_TREE_VIEW_COLUMN_FIXED );
-	gtk_tree_view_column_set_min_width( avatar_column, 48 );
-	gtk_tree_view_column_set_fixed_width( avatar_column, 48 );
+	gtk_tree_view_column_set_min_width( avatar_column, 53 );
+	gtk_tree_view_column_set_fixed_width( avatar_column, 53 );
 	gtk_tree_view_append_column( GTK_TREE_VIEW( list ), avatar_column );
 	
 	renderer=gtk_cell_renderer_text_new();
@@ -190,7 +190,7 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
-	app_sexy_select();
+	tweet_view_sexy_select();
 }//tweet_list_move
 
 void tweet_list_refresh(void){
@@ -205,7 +205,7 @@ void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *li
 	switch(event->state){
 		case GDK_CONTROL_MASK: return tweets_new_tweet();
 		case GDK_MOD1_MASK: return tweets_retweet();
-		case GDK_SHIFT_MASK: return tweets_new_dm();
+		case GDK_SHIFT_MASK: return tweet_view_new_dm();
 		default: tweets_reply();
 	}//switch
 }//tweet_list_key_pressed
@@ -214,13 +214,9 @@ void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *li
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;
 	GtkTreeIter		iter;
-	if(!( (sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) )){
-		tweets_selected_widgets_show(FALSE);
-		app_sexy_select();
-		return;
-	}
+	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) ))
+		return tweet_view_sexy_select();
 	
-	tweets_selected_widgets_show(TRUE);
 	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 	
 	
@@ -240,10 +236,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 				-1
 	);
 	
-	set_selected_tweet((unsigned long int)tweet_id, user_name, tweet);
-	
-	app_sexy_select();
-	app_expand_tweet(user_name, user_nick, date, tweet, pixbuf);
+	tweet_view_show_tweet((unsigned long int)tweet_id, user_name, user_nick, date, tweet, pixbuf);
 	
 	g_free(user_name);
 	g_free(tweet);
@@ -264,3 +257,13 @@ TweetList *tweet_list_new(void){
 GtkListStore *tweet_list_get_store(void){
 	return list_priv->store;
 }
+
+void tweet_list_set_image(const gchar *image_filename, GtkTreeIter  iter){
+	GdkPixbuf *pixbuf;
+	if( !(pixbuf=images_get_pixbuf_from_filename( image_filename )) )
+		return;
+	
+	gtk_list_store_set(list_priv->store , &iter, PIXBUF_AVATAR, pixbuf, -1);
+	g_object_unref(pixbuf);
+}//tweet_list_set_image
+

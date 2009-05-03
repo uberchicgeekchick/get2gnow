@@ -4,11 +4,11 @@
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkListStore" id="following_store">
     <columns>
-      <!-- column-name gchararray -->
+      <!-- column-name user_name -->
       <column type="gchararray"/>
-      <!-- column-name gchararray1 -->
+      <!-- column-name user_nick -->
       <column type="gchararray"/>
-      <!-- column-name gpointer -->
+      <!-- column-name User -->
       <column type="gpointer"/>
     </columns>
   </object>
@@ -40,10 +40,14 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">following_store</property>
+                        <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                             <property name="title">User</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn1-renderer1"/>
                               <attributes>
@@ -53,8 +57,22 @@
                           </object>
                         </child>
                         <child>
+                          <object class="GtkTreeViewColumn" id="online_service_treeviewcolumn">
+                            <property name="title">@</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                             <property name="title">Name</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn2-renderer1"/>
                               <attributes>
@@ -75,8 +93,8 @@
                     <property name="visible">True</property>
                     <property name="spacing">5</property>
                     <child>
-                      <object class="GtkButton" id="user_unfollow">
-                        <property name="label" translatable="yes">gtk-remove</property>
+                      <object class="GtkButton" id="refresh">
+                        <property name="label" translatable="yes">gtk-refresh</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -85,8 +103,22 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="padding">5</property>
                         <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="user_unfollow">
+                        <property name="label" translatable="yes">_Unfollow</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">unfollow_image</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="padding">5</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -109,31 +141,33 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="view_profile">
-                        <property name="label" translatable="yes">gtk-info</property>
+                        <property name="label" translatable="yes">_Profile</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="image">view_profile_image</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="view_timeline">
-                        <property name="label" translatable="yes">gtk-home</property>
+                        <property name="label" translatable="yes">_Tweets/Updates</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="image">view_timeline_image</property>
+                        <property name="use_underline">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="padding">5</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">1</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -200,5 +234,17 @@
     <property name="visible">True</property>
     <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
     <property name="stock">gtk-stop</property>
+  </object>
+  <object class="GtkImage" id="unfollow_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-remove</property>
+  </object>
+  <object class="GtkImage" id="view_profile_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-info</property>
+  </object>
+  <object class="GtkImage" id="view_timeline_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-home</property>
   </object>
 </interface>

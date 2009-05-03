@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * {project} is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * get2gnow is:
+ * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects={project}
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -53,11 +53,9 @@
  ********************************************************/
 
 
-
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
-
 
 
 /********************************************************
@@ -65,17 +63,14 @@
  ********************************************************/
 
 
-
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
 
 
-
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-
 
 
 /********************************************************

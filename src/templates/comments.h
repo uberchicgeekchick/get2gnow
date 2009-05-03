@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * {project} is:
+ * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects={project}
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -48,9 +48,9 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/********************************************************
- *          My art, code, & programming.                *
- ********************************************************/
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
 #ifndef __HEADER_H__
 #define __HEADER_H__
 
@@ -60,16 +60,17 @@
  **********************************************************************/
 
 
-
-/*********************************************************************
- *        Objects, structures, and etc typedefs                      *
- *********************************************************************/
-
+/**********************************************************************
+ *        Objects, structures, and etc typedefs                       *
+ **********************************************************************/
 
 
-/********************************************************
- *          Global method  & function prototypes        *
- ********************************************************/
+/**********************************************************************
+ *          Global method  & function prototypes                      *
+ **********************************************************************/
 
 
 #endif /* __HEADER_H__ */
+/**********************************************************************
+ *                               eof                                  *
+ **********************************************************************/

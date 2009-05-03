@@ -2,80 +2,80 @@
   <schemalist>
     
     <schema>
-       <key>/schemas/apps/get2gnow/auth/services</key>
-       <applyto>/apps/get2gnow/auth/services</applyto>
+       <key>/schemas/apps/get2gnow/auth/accounts</key>
+       <applyto>/apps/get2gnow/auth/accounts</applyto>
        <owner>get2gnow</owner>
        <type ltype="string">list</type>
-       <default>[twitter.com,identi.ca]</default>
+       <default>[me@twitter.com,me@identi.ca]</default>
        <locale name="C">
-          <short>Services URI (not-yet implemented)</short>
-          <long>Secure HTTP URI for the accounts services, username, and password(if gnome_keyring's not enabled).</long>
+          <short>A list of your services</short>
+          <long>All of your accounts formated as username@URL for all accounts & services.  All services will be connected to using HTTPS.</long>
        </locale>
     </schema>
 
     <schema>
-        <key>/schemas/apps/get2gnow/auth/identi.ca/enabled</key>
-    	<applyto>/apps/get2gnow/auth/identi.ca/enabled</applyto>
+        <key>/schemas/apps/get2gnow/auth/me@identi.ca/enabled</key>
+    	<applyto>/apps/get2gnow/auth/me@identi.ca/enabled</applyto>
     	<owner>get2gnow</owner>
     	<type>bool</type>
     	<default>false</default>
     	<locale name="C">
-    	   <short>Enable identi.ca account</short>
-       	   <long>Enable's your identi.ca accout.</long>
+    	   <short>Enable me@identi.ca account</short>
+       	   <long>Enable's your me@identi.ca accout.</long>
       	</locale>
     </schema>
 										
     <schema>
-       <key>/schemas/apps/get2gnow/auth/identi.ca/username</key>
-       <applyto>/apps/get2gnow/auth/identi.ca/username</applyto>
+       <key>/schemas/apps/get2gnow/auth/me@identi.ca/username</key>
+       <applyto>/apps/get2gnow/auth/me@identi.ca/username</applyto>
        <owner>get2gnow</owner>
        <type>string</type>
        <default></default>
        <locale name="C">
-          <short>identi.ca username</short>
-          <long>User's identi.ca username.</long>
+          <short>me@identi.ca username</short>
+          <long>User's me@identi.ca username.</long>
        </locale>
     </schema>
 
     <schema>
-       <key>/schemas/apps/get2gnow/auth/identi.ca/password</key>
-       <applyto>/apps/get2gnow/auth/identi.ca/password</applyto>
+       <key>/schemas/apps/get2gnow/auth/me@identi.ca/password</key>
+       <applyto>/apps/get2gnow/auth/me@identi.ca/password</applyto>
        <owner>get2gnow</owner>
        <type>string</type>
        <default></default>
        <locale name="C">
-          <short>identi.ca password</short>
-          <long>User's identi.ca password.</long>
+          <short>me@identi.ca password</short>
+          <long>User's me@identi.ca password.</long>
        </locale>
     </schema>
     
     <schema>
-    	<key>/schemas/apps/get2gnow/auth/identi.ca/auto_connect</key>
-    	<applyto>/apps/get2gnow/auth/identi.ca/auto_connect</applyto>
+    	<key>/schemas/apps/get2gnow/auth/me@identi.ca/auto_connect</key>
+    	<applyto>/apps/get2gnow/auth/me@identi.ca/auto_connect</applyto>
     	<owner>get2gnow</owner>
     	<type>bool</type>
     	<default>true</default>
     	<locale name="C">
-    	   <short>Log on to identi.ca automatically.</short>
-    	   <long>Log on to identi.ca automatically.</long>
+    	   <short>Log on to me@identi.ca automatically.</short>
+    	   <long>Log on to me@identi.ca automatically.</long>
     	</locale>
     </schema>
 
     <schema>
-        <key>/schemas/apps/get2gnow/auth/twitter.com/enabled</key>
-    	<applyto>/apps/get2gnow/auth/twitter.com/enabled</applyto>
+        <key>/schemas/apps/get2gnow/auth/me@twitter.com/enabled</key>
+    	<applyto>/apps/get2gnow/auth/me@twitter.com/enabled</applyto>
     	<owner>get2gnow</owner>
     	<type>bool</type>
     	<default>false</default>
     	<locale name="C">
-    	   <short>Enable twitter.com account</short>
-       	   <long>Enable's your twitter.com accout.</long>
+    	   <short>Enable me@twitter.com account</short>
+       	   <long>Enable's your me@twitter.com accout.</long>
       	</locale>
     </schema>
 										
     <schema>
-       <key>/schemas/apps/get2gnow/auth/twitter.com/username</key>
-       <applyto>/apps/get2gnow/auth/twitter.com/username</applyto>
+       <key>/schemas/apps/get2gnow/auth/me@twitter.com/username</key>
+       <applyto>/apps/get2gnow/auth/me@twitter.com/username</applyto>
        <owner>get2gnow</owner>
        <type>string</type>
        <default></default>
@@ -86,8 +86,8 @@
     </schema>
 
     <schema>
-       <key>/schemas/apps/get2gnow/auth/twitter.com/password</key>
-       <applyto>/apps/get2gnow/auth/twitter.com/password</applyto>
+       <key>/schemas/apps/get2gnow/auth/me@twitter.com/password</key>
+       <applyto>/apps/get2gnow/auth/me@twitter.com/password</applyto>
        <owner>get2gnow</owner>
        <type>string</type>
        <default></default>
@@ -98,14 +98,14 @@
     </schema>
     
     <schema>
-    	<key>/schemas/apps/get2gnow/auth/twitter.com/auto_connect</key>
-    	<applyto>/apps/get2gnow/auth/twitter.com/auto_connect</applyto>
+    	<key>/schemas/apps/get2gnow/auth/me@twitter.com/auto_connect</key>
+    	<applyto>/apps/get2gnow/auth/me@twitter.com/auto_connect</applyto>
     	<owner>get2gnow</owner>
     	<type>bool</type>
     	<default>true</default>
     	<locale name="C">
-    	   <short>Log on to twitter.com automatically.</short>
-    	   <long>Log on to twitter.com automatically.</long>
+    	   <short>Log on to me@twitter.com automatically.</short>
+    	   <long>Log on to me@twitter.com automatically.</long>
     	</locale>
     </schema>
 

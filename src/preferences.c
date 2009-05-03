@@ -90,9 +90,9 @@ static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box);
 static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *combo_box);
 
-static void preferences_notify_bool_cb(GConfig *gconfig, const gchar *key, gpointer user_data);
-static void preferences_notify_string_combo_cb(GConfig *gconfig, const gchar *key, gpointer user_data);
-static void preferences_notify_int_combo_cb(GConfig *gconfig, const gchar *key, gpointer user_data);
+static void preferences_notify_bool_cb(const gchar *key, gpointer user_data);
+static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data);
+static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data);
 
 static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, GtkCheckButton *check_button);
 static void preferences_hookup_string_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box);
@@ -118,7 +118,7 @@ static void preferences_setup_widgets(Prefs *prefs){
 	preferences_hookup_int_combo(prefs, PREFS_TWEETS_RELOAD_TIMELINES, prefs->combo_reload);
 }
 
-static void preferences_notify_bool_cb (GConfig *gconfig, const gchar *key, gpointer user_data){
+static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
 	preferences_widget_sync_bool (key, user_data);
 }
 
@@ -199,11 +199,8 @@ static void preferences_reload_setup(Prefs *prefs){
 
 static void preferences_widget_sync_bool (const gchar *key, GtkCheckButton *check_button){
 	debug(DEBUG_DOMAIN, "Binding CheckButton: %s to preference: %s.", gtk_button_get_label(GTK_BUTTON(check_button)), key );
-	gboolean value;
 
-	if (gconfig_get_bool (gconfig_get (), key, &value)) {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_button), value);
-	}
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key));
 }
 
 static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox *combo_box){
@@ -213,7 +210,7 @@ static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox 
 	GtkTreeIter   iter;
 	gboolean      found;
 
-	if (!gconfig_get_string (gconfig_get (), key, &value)) {
+	if (!gconfig_get_string (key, &value)) {
 		return;
 	}
 
@@ -257,7 +254,7 @@ static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *co
 	GtkTreeIter   iter;
 	gboolean      found;
 
-	if (!gconfig_get_int (gconfig_get (), key, &value)) {
+	if (!gconfig_get_int (key, &value)) {
 		return;
 	}
 
@@ -291,12 +288,12 @@ static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *co
 	}
 }
 
-static void preferences_notify_string_combo_cb( GConfig *gconfig, const gchar *key, gpointer user_data){
+static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
 	debug(DEBUG_DOMAIN, "Saving preference: %s.", key );
 	preferences_widget_sync_string_combo (key, user_data);
 }
 
-static void preferences_notify_int_combo_cb( GConfig *gconfig, const gchar *key, gpointer user_data){
+static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
 	debug(DEBUG_DOMAIN, "Saving preference: %s.", key );
 	preferences_widget_sync_int_combo (key, user_data);
 }
@@ -307,24 +304,21 @@ static void preferences_add_id (Prefs *prefs, guint id){
 
 static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, GtkCheckButton *check_button){
 	guint id;
-
+	
 	preferences_widget_sync_bool (key, check_button);
-
-	g_object_set_data_full (G_OBJECT (check_button), "key",
-							(gchar *)key, NULL);
-
-	g_signal_connect (check_button,
+	
+	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
+	
+	g_signal_connect(check_button,
 					  "toggled",
-					  G_CALLBACK (preferences_toggle_button_toggled_cb),
+					  G_CALLBACK(preferences_toggle_button_toggled_cb),
 					  NULL);
 
-	id=gconfig_notify_add(gconfig_get(), key,
-								 preferences_notify_bool_cb,
-								 check_button);
-
-	if (id) {
-		preferences_add_id (prefs, id);
-	}
+	if( (id=gconfig_notify_add(g_strdup(key),
+					preferences_notify_bool_cb,
+					check_button
+	)) )
+		preferences_add_id(prefs, id);
 }
 
 static void preferences_hookup_string_combo (Prefs *prefs, const gchar *key, GtkComboBox *combo_box){
@@ -332,61 +326,47 @@ static void preferences_hookup_string_combo (Prefs *prefs, const gchar *key, Gtk
 
 	preferences_widget_sync_string_combo (key, combo_box);
 
-	g_object_set_data_full (G_OBJECT (combo_box), "key",
-							(gchar *)key, NULL);
+	g_object_set_data_full(G_OBJECT(combo_box), "key", g_strdup(key), g_free);
 
-	g_signal_connect (combo_box,
-					  "changed",
-					  G_CALLBACK (preferences_string_combo_changed_cb),
-					  NULL);
+	g_signal_connect(combo_box,
+				"changed",
+				G_CALLBACK (preferences_string_combo_changed_cb),
+				NULL
+	);
 
-	id = gconfig_notify_add (gconfig_get (),
-								 key,
-								 preferences_notify_string_combo_cb,
-								 combo_box);
-	if (id) {
-		preferences_add_id (prefs, id);
-	}
+	if( (id=gconfig_notify_add(g_strdup(key),
+					preferences_notify_string_combo_cb,
+					combo_box
+	)) )
+		preferences_add_id(prefs, id);
 }
 
-static void
-preferences_hookup_int_combo (Prefs *prefs,
-								 const gchar *key,
-								 GtkComboBox   *combo_box)
-{
+static void preferences_hookup_int_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box){
 	guint id;
-
+	
 	preferences_widget_sync_int_combo (key, combo_box);
-
-	g_object_set_data_full (G_OBJECT (combo_box), "key",
-							g_strdup (key), g_free);
-
+	
+	g_object_set_data_full(G_OBJECT (combo_box), "key",
+							g_strdup(key), g_free);
+	
 	g_signal_connect (combo_box,
 					  "changed",
 					  G_CALLBACK (preferences_int_combo_changed_cb),
 					  NULL);
-
-	id = gconfig_notify_add (gconfig_get (),
-								 key,
-								 preferences_notify_int_combo_cb,
-								 combo_box);
-
-	if (id) {
+	
+	if( (id=gconfig_notify_add(key,
+					preferences_notify_int_combo_cb,
+					combo_box
+	)) )
 		preferences_add_id (prefs, id);
-	}
 }
 
-static void
-preferences_toggle_button_toggled_cb (GtkCheckButton *check_button,
-									  gpointer   user_data)
-{
+static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button,	gpointer user_data){
 	const gchar *key;
 
-	key = g_object_get_data (G_OBJECT (check_button), "key");
+	key=g_object_get_data(G_OBJECT (check_button), "key");
 
-	gconfig_set_bool (gconfig_get (),
-						  key,
-						  gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_button)));
+	gconfig_set_bool(key, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_button)));
 }
 
 static void
@@ -406,7 +386,7 @@ preferences_string_combo_changed_cb (GtkComboBox *combo_box,
 		gtk_tree_model_get (model, &iter,
 							COL_COMBO_NAME, &name,
 							-1);
-		gconfig_set_string (gconfig_get (), key, name);
+		gconfig_set_string (key, name);
 		g_free (name);
 	}
 }
@@ -429,7 +409,7 @@ preferences_int_combo_changed_cb (GtkComboBox *combo_box,
 							COL_COMBO_NAME, &minutes,
 							-1);
 
-		gconfig_set_int (gconfig_get (), key, minutes);
+		gconfig_set_int (key, minutes);
 	}
 }
 
@@ -444,7 +424,7 @@ static void preferences_destroy_cb(GtkDialog *dialog, Prefs *prefs){
 		guint id;
 
 		id = GPOINTER_TO_UINT (l->data);
-		gconfig_notify_remove (gconfig_get (), id);
+		gconfig_notify_remove (id);
 	}
 
 	g_list_free (prefs->notify_ids);

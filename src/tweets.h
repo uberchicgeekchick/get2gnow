@@ -1,11 +1,11 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (C) 2009 Brian Pepple <bpepple@fedoraproject.org>
+ * Copyright(C) 2009 Brian Pepple <bpepple@fedoraproject.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * License, or(at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,14 +36,12 @@
 
 #define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
 
-#define	TWEET_MAX_CHARS	140
-
 extern unsigned long int in_reply_to_status_id;
 
 G_BEGIN_DECLS
 
 void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet);
-gchar *tweets_get_selected_user_name(void);
+gchar *selected_tweet_get_user_name(void);
 void unset_selected_tweet(void);
 
 void tweets_selected_widgets_show(gboolean show);
@@ -67,14 +65,9 @@ void tweets_user_unblock(void);
 void tweets_user_view_tweets(void);
 void tweets_user_view_profile(void);
 
-void tweets_friends_send_dm(GtkButton *button, GtkEntry *entry);
-void tweets_update_expanded_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
-void tweets_sexy_send_clicked(GtkButton *button, GtkEntry *entry);
-void tweets_sexy_dm_clicked(GtkButton *button, GtkEntry *entry);
-void tweets_send_sexy(GtkEntry *entry, gpointer user_data);
 void tweets_send(void);
 
 G_END_DECLS
 
-#endif
+#endif /* __TWEETS_H__ */
 

@@ -121,12 +121,7 @@ gtkbuilder_get_file (const gchar *filename,
 	return ( ui ? ui : NULL );
 }
 
-void
-gtkbuilder_connect (GtkBuilder *ui,
-                    gpointer    user_data,
-                    gchar      *first_widget,
-                    ...)
-{
+void gtkbuilder_connect(GtkBuilder *ui, gpointer user_data, gchar *first_widget, ...){
 	GObject     *instance;
 	gpointer    *callback;
 	const gchar *signal;

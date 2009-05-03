@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * {project} is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * get2gnow is:
+ * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects={project}
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -18,7 +18,7 @@
  *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -30,17 +30,17 @@
  * language governing rights and limitations under the RPL.
  *
  * The User-Visible Attribution Notice below, when provided, must appear in each
- * user-visible display as defined in Section 6.4 (d):
+ * user-visible display as defined in Section 6.4(d):
  * 
  * Initial art work including: design, logic, programming, and graphics are
- * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * Copyright(C) 2009 Kaity G. B. and released under the RPL where sapplicable.
  * All materials not covered under the terms of the RPL are all still
- * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Copyright(C) 2009 Kaity G. B. and released under the terms of the
  * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
  * 
  * Any & all data stored by this Software created, generated and/or uploaded by any User
  * and any data gathered by the Software that connects back to the User.  All data stored
- * by this Software is Copyright (C) of the User the data is connected to.
+ * by this Software is Copyright(C) of the User the data is connected to.
  * Users may lisences their data under the terms of an OSI approved or Creative Commons
  * license.  Users must be allowed to select their choice of license for each piece of data
  * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
@@ -61,43 +61,73 @@
 #include <glib.h>
 #include <libsoup/soup.h>
 
+#include "timer.h"
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-#define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
-#define	PREFS_AUTH_SERVICE		PREFS_PATH "/auth/%s/tld"
-#define	PREFS_AUTH_USERNAME		PREFS_PATH "/auth/%s/username"
-#define	PREFS_AUTH_PASSWORD		PREFS_PATH "/auth/%s/password"
-#define	PREFS_AUTH_AUTO_CONNECT		PREFS_PATH "/auth/%s/auto_connect"
-#define	PREFS_AUTH_ENABLED		PREFS_PATH "/auth/%s/enabled"
+#ifndef PREFS_PATH
+#if defined GNOME_ENABLE_DEBUG
+#define PREFS_PATH			"/apps/" PACKAGE_TARNAME "/debug"
+#else
+#define	PREFS_PATH			"/apps/" PACKAGE_TARNAME
+#endif
+#endif
+
+
+#define	PREFS_AUTH_ACCOUNTS		PREFS_PATH "/auth/accounts"
+#define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s@%s"
+#define	PREFS_AUTH_URL			PREFS_AUTH_PREFIX "/url"
+#define	PREFS_AUTH_USERNAME		PREFS_AUTH_PREFIX "/username"
+#define	PREFS_AUTH_PASSWORD		PREFS_AUTH_PREFIX "/password"
+#define	PREFS_AUTH_AUTO_CONNECT		PREFS_AUTH_PREFIX "/auto_connect"
+#define	PREFS_AUTH_ENABLED		PREFS_AUTH_PREFIX "/enabled"
 
 typedef enum{
 	POST,
 	GET,
+	QUEUE,
 } RequestMethod;
 
 typedef struct {
 	SoupSession	*connection;
-		
-	gchar		*auth_uri;
-	gchar		*username;
-	gchar		*password;
-	gboolean	auto_connect;
+	RateLimitTimer	*timer;
 	
 	gboolean	enabled;
+	gboolean	auto_connect;
+	
+	gchar		*key;
+	gchar		*url;
+	gchar		*username;
+	gchar		*password;
 } OnlineService;
+
+typedef struct {
+	GSList		*keys;
+	GList		*accounts;
+} OnlineServices;
+extern OnlineServices *online_services;
+extern OnlineService *current_service;
 
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-OnlineService **online_service_init(gint *accounts);
-OnlineService *online_service_new(const gchar *auth_uri);
-void online_service_save(OnlineService *service, gboolean enabled, const gchar *username, const gchar *password, gboolean auto_connect);
-void online_service_reinit(OnlineService *service);
-void online_service_deinit(OnlineService *service);
+OnlineServices *online_services_init(void);
+gboolean online_services_login(OnlineServices *services);
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
+void online_services_deinit(OnlineServices *online_services);
 
+
+/* key is username@url */
+OnlineService *online_service_load(const gchar *account_key);
+OnlineService *online_service_open(const gchar *url, const gchar *username);
+gboolean online_service_save(OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
+
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
+SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
+
+void online_service_free(OnlineService *service);
 
 #endif /* __ONLINE_SERVICE_H__ */
 

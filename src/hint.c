@@ -40,7 +40,7 @@ hint_dialog_response_cb (GtkWidget *widget,
 	user_data = g_object_get_data (G_OBJECT (widget), "user_data");
 
 	hide_hint = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton));
-	gconfig_set_bool (gconfig_get (), gconfig_path, !hide_hint);
+	gconfig_set_bool(gconfig_path, !hide_hint);
 
 	gtk_widget_destroy (widget);
 
@@ -60,19 +60,12 @@ hint_dialog_show (const gchar         *gconfig_path,
 	GtkWidget *dialog;
 	GtkWidget *checkbutton;
 	GtkWidget *vbox;
-	gboolean   ok;
-	gboolean   show_hint = TRUE;
 
 	g_return_val_if_fail (gconfig_path != NULL, FALSE);
 	g_return_val_if_fail (message1 != NULL, FALSE);
 
-	ok = gconfig_get_bool (gconfig_get (),
-							   gconfig_path,
-							   &show_hint);
-
-	if (ok && !show_hint) {
+	if(gconfig_if_bool(gconfig_path))
 		return FALSE;
-	}
 
 	dialog = gtk_message_dialog_new_with_markup (parent,
 												 GTK_DIALOG_DESTROY_WITH_PARENT,

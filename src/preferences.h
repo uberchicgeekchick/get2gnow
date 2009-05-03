@@ -33,7 +33,14 @@
 G_BEGIN_DECLS
 
 /* GConf Keys */
-#define PREFS_PATH "/apps/" PACKAGE_TARNAME
+#ifndef PREFS_PATH
+#if defined GNOME_ENABLE_DEBUG
+#define PREFS_PATH			"/apps/" PACKAGE_TARNAME "/debug"
+#else
+#define	PREFS_PATH			"/apps/" PACKAGE_TARNAME
+#endif
+#endif
+
 
 #define	PREFS_TWEETS_HOME_TIMELINE	PREFS_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES	PREFS_PATH "/tweets/reload_timeline"

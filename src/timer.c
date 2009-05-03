@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Alacast is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * get2gnow is:
+ * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Alacast
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -64,22 +64,13 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-typedef struct {
-	gboolean active;
-	GTimer *gtimer;
-	gdouble limit;
-	guint processing;
-	guint requests;
-} RateLimitTimer;
-static RateLimitTimer *timer=NULL;
-
 #define DEBUG_DOMAIN "Timer"
 
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-
+static void timer_main_quit(RateLimitTimer *timer);
 
 
 /********************************************************
@@ -87,23 +78,22 @@ static RateLimitTimer *timer=NULL;
  ********************************************************/
 
 
-void timer_init(void){
+RateLimitTimer *timer_new(void){
 	debug(DEBUG_DOMAIN, "Initalizing network rate limit timer.");
 	if(!( g_thread_get_initialized() && g_thread_supported() )) g_thread_init(NULL);
 	
-	if(timer) timer_deinit();
-	
 	/* timer->gtimer is used to avoid Twitter's rate limit. */
-	timer=g_new0(RateLimitTimer, 1);
+	RateLimitTimer *timer=g_new0(RateLimitTimer, 1);
 	timer->limit=10.0;
 	timer->gtimer=g_timer_new();
 	timer->active=0;
 	timer->processing=FALSE;
 	timer->requests=0;
 	g_timer_start(timer->gtimer);
-}//timer_init
+	return timer;
+}//timer_new
 
-void timer_main(SoupMessage *msg){
+void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	gulong request_microseconds=1;
 	const char *rate_limit=NULL;
 	int requests_remaining=99;
@@ -146,7 +136,7 @@ void timer_main(SoupMessage *msg){
 }//timer_main
 
 
-void timer_main_quit(void){
+static void timer_main_quit(RateLimitTimer *timer){
 	debug(DEBUG_DOMAIN, "Stopping network timer.");
 	g_timer_stop(timer->gtimer);
 	timer->active=FALSE;
@@ -154,11 +144,13 @@ void timer_main_quit(void){
 
 
 
-void timer_deinit(void){
-	timer_main_quit();
+void timer_free(RateLimitTimer *timer){
+	if(!timer) return;
+	timer_main_quit(timer);
 	debug(DEBUG_DOMAIN, "Shutting down network timer.");
 	g_timer_destroy(timer->gtimer);
 	g_free(timer);
+	timer=NULL;
 }//timer_deinit
 
 

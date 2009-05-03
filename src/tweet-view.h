@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * {project} is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * get2gnow is:
+ * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects={project}
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -18,7 +18,7 @@
  *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -30,17 +30,17 @@
  * language governing rights and limitations under the RPL.
  *
  * The User-Visible Attribution Notice below, when provided, must appear in each
- * user-visible display as defined in Section 6.4 (d):
+ * user-visible display as defined in Section 6.4(d):
  * 
  * Initial art work including: design, logic, programming, and graphics are
- * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * Copyright(C) 2009 Kaity G. B. and released under the RPL where sapplicable.
  * All materials not covered under the terms of the RPL are all still
- * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Copyright(C) 2009 Kaity G. B. and released under the terms of the
  * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
  * 
  * Any & all data stored by this Software created, generated and/or uploaded by any User
  * and any data gathered by the Software that connects back to the User.  All data stored
- * by this Software is Copyright (C) of the User the data is connected to.
+ * by this Software is Copyright(C) of the User the data is connected to.
  * Users may lisences their data under the terms of an OSI approved or Creative Commons
  * license.  Users must be allowed to select their choice of license for each piece of data
  * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
@@ -67,51 +67,88 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
+/* My, Kaity G. B., new uber tweet viewer. */
 typedef struct {
-	/* Expand messages widgets */
-	GtkHBox			*expand_box;
-	GtkVBox			*expand_vbox;
-	GtkImage		*expand_image;
-	Label			*expand_title;
-	Label			*expand_tweet;
+	/* Selected Tweet Widgets */
+	GtkDialog		*tweet_view;
+	GtkHBox			*tweet_view_embed;
 	
 	/* Stuff for sending a dm to a selected user. */
-	GtkHBox			*friends_hbox;
-	GtkLabel		*friends_label;
-	GtkComboBox		*friends_combo;
-	GtkButton		*friends_send_dm;
-	GtkButton		*dm_data_hide;
+	GtkVBox			*user_vbox;
+	GtkImage		*user_image;
+	
+	/* Tweet View */
+	GtkVBox			*status_view_vbox;
+	Label			*sexy_title;
+	Label			*sexy_tweet;
 	
 	/* My, Kaity G. B., new libsexy powered tweet entry box. */
 	GtkHBox			*char_count_hbox;
+	GtkLabel		*char_count;
+	
 	GtkHBox			*tweet_hbox;
 	SexySpellEntry		*sexy_entry;
-	GtkLabel		*expanded_tweet_count;
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm;
 	
-	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
-	GtkButton		*view_users_profile_button;
-	GtkButton		*view_users_timeline_button;
+	GtkHBox			*dm_form_hbox;
+	GtkLabel		*dm_frame_label;
+	GtkButton		*dm_refresh;
+	GtkComboBox		*friends_combo_box;
+	GtkButton		*friends_send_dm;
+	GtkButton		*dm_form_hide;
+	GtkButton		*dm_form_show;
 	
-	/* Buttons for viewing details about the user of the curren selected/extended Twees. */
+	/* Widgets that are enabled when we a tweet is selected */
+	GList			*tweet_selected_buttons;
+			
+	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
+	GtkButton		*view_users_profile_button;
+	GtkButton		*view_users_tweets_button;
+	
+	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkButton		*user_follow_button;
 	GtkButton		*user_unfollow_button;
 	GtkButton		*user_block_button;
 	
-	/* Buttons for stuff to do with the selected & extend tweet. */
+	/* Buttons for stuff to do with the current selected & extended tweet. */
 	GtkButton		*reply_button;
 	GtkButton		*retweet_button;
-	GtkButton		*dm_button;
 	GtkButton		*make_fave_button;
 } TweetView;
+#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
+
+extern unsigned long int in_reply_to_status_id;
 
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-gint app_sexy_puts(const gchar *str, gint position);
-void app_expand_tweet( const gchar  *user_name, const gchar  *user_nick, const gchar  *date, const gchar  *tweet, GdkPixbuf    *pixbuf );
+void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet);
+void unset_selected_tweet(void);
+
+TweetView *tweet_view_new(GtkWindow *parent);
+void tweet_view_show_tweet(unsigned long int id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf );
+
+GtkComboBox *tweet_view_get_friends_combo_box(void);
+
+void tweet_view_sexy_select(void);
+
+void tweet_view_sexy_prefix_char(const char c);
+void tweet_view_sexy_prefix_string(const gchar *str);
+void tweet_view_sexy_set(gchar *tweet);
+void tweet_view_sexy_insert_char(const char c);
+void tweet_view_sexy_insert_string(const gchar *str);
+void tweet_view_sexy_append_char(const char c);
+void tweet_view_sexy_append_string(const gchar *str);
+gint tweet_view_sexy_puts(const gchar *str, gint position);
+
+void tweet_view_new_dm(void);
+void tweet_view_reply(void);
+void tweet_view_send(GtkWidget *activated_widget);
 
 #endif /* __TWEET_VIEW_H__ */
 
+/********************************************************
+ *                       eof                            *
+ ********************************************************/

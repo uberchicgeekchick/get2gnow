@@ -29,9 +29,9 @@
 #include <libnotify/notify.h>
 
 #include "config.h"
+#include "gconfig.h"
 #include "app.h"
-#include "friends-manager.h"
-#include "network.h"
+#include "online-service.h"
 #include "ipc.h"
 
 int main(int argc, char **argv){
@@ -41,40 +41,48 @@ int main(int argc, char **argv){
 		exit(0);
 	}
 	gboolean notifing=FALSE;
-
+	
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
-
+	
 	g_set_application_name(_(PACKAGE_NAME));
-
+	
 	if(!g_thread_supported()) g_thread_init(NULL);
-
+	
 	gtk_init(&argc, &argv);
-
+	
 	gtk_window_set_default_icon_name(PACKAGE_NAME);
-
-	/* Start the network */
-	network_new();
+	
+	/* Connect to gconf */
+	gconfig_start();
+	
+	/* Start the network
+	 * 	from 'online-service.h':
+	 *	extern OnlineServices *online_services;
+	 */
+	online_services=online_services_init();
 
 	/* Start libnotify */
 	notifing=notify_init(PACKAGE_NAME);
-
+	
 	/* Create the ui */
 	app_create();
-
+	
 	gtk_main();
 	
 	/* Close libnotify */
 	if(notifing) notify_uninit();
-
+	
 	/* Close the network */
-	network_close();
-
+	online_services_deinit(online_services);
+	
 	ipc_deinit();
 	
 	/* Clean up the ui */
 	g_object_unref(app_get());
-
+	
+	gconfig_shutdown();
+	
 	return 0;
 }

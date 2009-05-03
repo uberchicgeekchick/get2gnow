@@ -4,19 +4,21 @@
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkListStore" id="friends_manager_store">
     <columns>
-      <!-- column-name gchararray -->
+      <!-- column-name user_name -->
       <column type="gchararray"/>
-      <!-- column-name gchararray1 -->
+      <!-- column-name user_nick -->
       <column type="gchararray"/>
-      <!-- column-name gchararray2 -->
+      <!-- column-name follower -->
       <column type="gchararray"/>
-      <!-- column-name gchararray3 -->
+      <!-- column-name following -->
       <column type="gchararray"/>
-      <!-- column-name gpointer -->
+      <!-- column-name User -->
       <column type="gpointer"/>
     </columns>
   </object>
   <object class="GtkDialog" id="friends_manager">
+    <property name="width_request">780</property>
+    <property name="height_request">300</property>
     <property name="visible">True</property>
     <property name="title" translatable="yes">Friends Manager</property>
     <property name="default_width">450</property>
@@ -45,10 +47,14 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">friends_manager_store</property>
+                        <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                             <property name="title">User</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn1-renderer1"/>
                               <attributes>
@@ -58,8 +64,22 @@
                           </object>
                         </child>
                         <child>
+                          <object class="GtkTreeViewColumn" id="online_service_treeviewcolumn">
+                            <property name="title">@</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                             <property name="title">Name</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn2-renderer1"/>
                               <attributes>
@@ -71,6 +91,9 @@
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn3">
                             <property name="title">Am I following them?</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn3-renderer1"/>
                               <attributes>
@@ -82,6 +105,9 @@
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn4">
                             <property name="title">Are they following me?</property>
+                            <property name="clickable">True</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn4-renderer1"/>
                               <attributes>
@@ -102,33 +128,48 @@
                     <property name="visible">True</property>
                     <property name="spacing">5</property>
                     <child>
+                      <object class="GtkButton" id="refresh">
+                        <property name="label" translatable="yes">gtk-refresh</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkButton" id="user_follow">
-                        <property name="label" translatable="yes">gtk-add</property>
+                        <property name="label" translatable="yes">_Follow</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="image">follow_image</property>
+                        <property name="use_underline">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="padding">5</property>
-                        <property name="position">0</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="user_unfollow">
-                        <property name="label" translatable="yes">gtk-remove</property>
+                        <property name="label" translatable="yes">_Unfollow</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="image">unfollow_image</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="padding">5</property>
                         <property name="position">2</property>
                       </packing>
                     </child>
@@ -139,7 +180,6 @@
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
                         <property name="image">block_image</property>
                         <property name="use_underline">True</property>
                       </object>
@@ -147,41 +187,38 @@
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="padding">6</property>
-                        <property name="position">4</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="view_profile">
-                        <property name="label" translatable="yes">gtk-info</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">View the selected users details including their bio, followers, and etc.</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="pack_type">end</property>
                         <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="view_timeline">
-                        <property name="label" translatable="yes">gtk-home</property>
+                      <object class="GtkButton" id="view_profile">
+                        <property name="label" translatable="yes">_Profile</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">View the selected users tweets/status updates.</property>
-                        <property name="use_stock">True</property>
+                        <property name="image">view_profile_image</property>
+                        <property name="use_underline">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">1</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="view_timeline">
+                        <property name="label" translatable="yes">_Tweets/Updates</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">view_timeline_image</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="padding">5</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -239,11 +276,31 @@
       <action-widget response="-5">lists_close</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkImage" id="follow_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-add</property>
+  </object>
+  <object class="GtkImage" id="unfollow_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-refresh</property>
+  </object>
   <object class="GtkImage" id="block_image">
     <property name="width_request">24</property>
     <property name="height_request">24</property>
     <property name="visible">True</property>
     <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
     <property name="stock">gtk-stop</property>
+  </object>
+  <object class="GtkImage" id="view_profile_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-info</property>
+  </object>
+  <object class="GtkImage" id="view_timeline_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-home</property>
+  </object>
+  <object class="GtkImage" id="view_timeline_image1">
+    <property name="visible">True</property>
+    <property name="stock">gtk-home</property>
   </object>
 </interface>
