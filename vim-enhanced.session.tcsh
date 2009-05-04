@@ -12,4 +12,4 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./src/app.c" "./src/label.c" "./src/network.c" "./src/network.h" "./src/online-service.c" "./src/online-service.h" "./src/tweets.c" "./src/users.c"
+${my_editor} "./src/app.c" "./src/network.c" "./src/online-service.c" "./src/online-service.h" "./src/services-dialog.c"

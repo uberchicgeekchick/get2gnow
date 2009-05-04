@@ -9,7 +9,7 @@
        <default>[me@twitter.com,me@identi.ca]</default>
        <locale name="C">
           <short>A list of your services</short>
-          <long>All of your accounts formated as username@URL for all accounts & services.  All services will be connected to using HTTPS.</long>
+          <long>All of your accounts formated as username@URL for all accounts &amp; services.  All services will be connected to using HTTPS.</long>
        </locale>
     </schema>
 
@@ -25,18 +25,6 @@
       	</locale>
     </schema>
 										
-    <schema>
-       <key>/schemas/apps/get2gnow/auth/me@identi.ca/username</key>
-       <applyto>/apps/get2gnow/auth/me@identi.ca/username</applyto>
-       <owner>get2gnow</owner>
-       <type>string</type>
-       <default></default>
-       <locale name="C">
-          <short>me@identi.ca username</short>
-          <long>User's me@identi.ca username.</long>
-       </locale>
-    </schema>
-
     <schema>
        <key>/schemas/apps/get2gnow/auth/me@identi.ca/password</key>
        <applyto>/apps/get2gnow/auth/me@identi.ca/password</applyto>
@@ -73,18 +61,6 @@
       	</locale>
     </schema>
 										
-    <schema>
-       <key>/schemas/apps/get2gnow/auth/me@twitter.com/username</key>
-       <applyto>/apps/get2gnow/auth/me@twitter.com/username</applyto>
-       <owner>get2gnow</owner>
-       <type>string</type>
-       <default></default>
-       <locale name="C">
-          <short>twitter username</short>
-          <long>User's twitter username.</long>
-       </locale>
-    </schema>
-
     <schema>
        <key>/schemas/apps/get2gnow/auth/me@twitter.com/password</key>
        <applyto>/apps/get2gnow/auth/me@twitter.com/password</applyto>
@@ -202,6 +178,18 @@
 	<locale name="C">
 	   <short>Show notification of new Twitter messages</short>
 	   <long>Show notification of new Twitter messages.</long>
+	</locale>
+     </schema>
+
+     <schema>
+	<key>/schemas/apps/get2gnow/ui/use_tweet_dialog</key>
+	<applyto>/apps/get2gnow/ui/use_tweet_dialog</applyto>
+	<owner>get2gnow</owner>
+	<type>bool</type>
+	<default>false</default>
+	<locale name="C">
+	   <short>To write Twitter messages in a seperate window</short>
+	   <long>To write Twitter messages in a seperate window.</long>
 	</locale>
      </schema>
 

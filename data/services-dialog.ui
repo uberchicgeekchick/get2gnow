@@ -110,8 +110,7 @@
             <child>
               <object class="GtkComboBoxEntry" id="urls">
                 <property name="visible">True</property>
-                <property name="model">services_list</property>
-                <property name="text_column">0</property>
+                <property name="model">urls_list</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -217,22 +216,12 @@
       <action-widget response="0">apply_button</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkListStore" id="services_list">
+  <object class="GtkListStore" id="urls_list">
     <columns>
       <!-- column-name url -->
       <column type="gchararray"/>
       <!-- column-name OnlineService -->
       <column type="gpointer"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">user@identi.ca</col>
-        <col id="1"/>
-      </row>
-      <row>
-        <col id="0" translatable="yes">user@twitter.com</col>
-        <col id="1"/>
-      </row>
-    </data>
   </object>
 </interface>

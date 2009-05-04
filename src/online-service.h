@@ -59,6 +59,7 @@
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include <glib.h>
+#include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
 #include "timer.h"
@@ -75,10 +76,8 @@
 #endif
 
 
-#define	PREFS_AUTH_ACCOUNTS		PREFS_PATH "/auth/accounts"
+#define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
 #define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s@%s"
-#define	PREFS_AUTH_URL			PREFS_AUTH_PREFIX "/url"
-#define	PREFS_AUTH_USERNAME		PREFS_AUTH_PREFIX "/username"
 #define	PREFS_AUTH_PASSWORD		PREFS_AUTH_PREFIX "/password"
 #define	PREFS_AUTH_AUTO_CONNECT		PREFS_AUTH_PREFIX "/auto_connect"
 #define	PREFS_AUTH_ENABLED		PREFS_AUTH_PREFIX "/enabled"
@@ -88,6 +87,15 @@ typedef enum{
 	GET,
 	QUEUE,
 } RequestMethod;
+
+/**
+ *@accounts contains an 'OnlineServics' object for each account that's available.
+ */
+typedef struct {
+	guint		total;
+	GSList		*keys;
+	GList		*accounts;
+} OnlineServices;
 
 typedef struct {
 	SoupSession	*connection;
@@ -102,10 +110,11 @@ typedef struct {
 	gchar		*password;
 } OnlineService;
 
-typedef struct {
-	GSList		*keys;
-	GList		*accounts;
-} OnlineServices;
+typedef enum{
+	UrlString,
+	OnlineServicePointer,
+} OnlineServicesListStoreColumns;
+
 extern OnlineServices *online_services;
 extern OnlineService *current_service;
 
@@ -115,14 +124,16 @@ extern OnlineService *current_service;
  ********************************************************/
 OnlineServices *online_services_init(void);
 gboolean online_services_login(OnlineServices *services);
+gboolean online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
 void online_services_deinit(OnlineServices *online_services);
+
+gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore);
 
 
 /* key is username@url */
 OnlineService *online_service_load(const gchar *account_key);
-OnlineService *online_service_open(const gchar *url, const gchar *username);
-gboolean online_service_save(OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
+OnlineService *online_service_open(const gchar *username, const gchar *url);
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
 SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);

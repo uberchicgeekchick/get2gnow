@@ -104,6 +104,7 @@ static void tweet_view_dm_data_hide(void);
 TweetView *tweet_view_new(GtkWindow *parent){
 	GtkBuilder	*ui;
 	
+	tweet_view=g_new0(TweetView, 1);
 	debug(DEBUG_DOMAIN, "Building Tweet View");
 	ui=gtkbuilder_get_file( GtkBuilderUI,
 				"tweet_view", &tweet_view->tweet_view,
@@ -112,8 +113,10 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"user_vbox", &tweet_view->user_vbox,
 				"user_image", &tweet_view->user_image,
 				
-				"view_users_profile_button", &tweet_view->view_users_profile_button,
-				"view_users_tweets_button", &tweet_view->view_users_tweets_button,
+				"status_view_vbox", &tweet_view->status_view_vbox,
+				
+				"view_user_profile_button", &tweet_view->view_user_profile_button,
+				"view_user_tweets_button", &tweet_view->view_user_tweets_button,
 				
 				"user_follow_button", &tweet_view->user_follow_button,
 				"user_unfollow_button", &tweet_view->user_unfollow_button,
@@ -126,29 +129,33 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"sexy_send", &tweet_view->sexy_send,
 				"sexy_dm", &tweet_view->sexy_dm,
 				
+				"dm_frame", &tweet_view->dm_frame,
 				"dm_form_hbox", &tweet_view->dm_form_hbox,
-				"dm_refresh", &tweet_view->dm_refresh,
 				"dm_frame_label", &tweet_view->dm_frame_label,
+				"dm_refresh", &tweet_view->dm_refresh,
 				"friends_combo_box", &tweet_view->friends_combo_box,
 				"friends_send_dm", &tweet_view->friends_send_dm,
-				"dm_data_hide", &tweet_view->dm_form_hide,
-				"dm_data_show", &tweet_view->dm_form_show,
+				"dm_form_hide", &tweet_view->dm_form_hide,
+				"dm_form_show", &tweet_view->dm_form_show,
 				
 				"reply_button", &tweet_view->reply_button, 
-				"retweet_retweet_button", &tweet_view->retweet_button,
+				"retweet_button", &tweet_view->retweet_button,
 				"make_fave_button", &tweet_view->make_fave_button,
 			NULL
 	);
 	
+	debug(DEBUG_DOMAIN, "Building & setting up new Tweet entry area.");
 	tweet_view_sexy_init();
 	tweet_view_reorder();
+	debug(DEBUG_DOMAIN, "TweetView view & entry area setup.  Grabbing selected widgets.");
 	tweet_view_tweet_selected_buttons_setup(ui);
-	g_signal_connect_after(tweet_view->tweet_view_embed, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 	
 	/* Connect the signals */
+	debug(DEBUG_DOMAIN, "TweetView interface created & setup.  Setting signal handlers.");
+	g_signal_connect_after(tweet_view->tweet_view_embed, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 	gtkbuilder_connect( ui, tweet_view,
-				"view_profile_button", "clicked", tweets_user_view_profile,
-				"view_tweets_button", "clicked", tweets_user_view_tweets,
+				"view_user_profile_button", "clicked", tweets_user_view_profile,
+				"view_user_tweets_button", "clicked", tweets_user_view_tweets,
 				
 				"user_follow_button", "clicked", tweets_user_follow,
 				"user_unfollow_button", "clicked", tweets_user_unfollow,
@@ -167,15 +174,30 @@ TweetView *tweet_view_new(GtkWindow *parent){
 			NULL
 	);
 	
+	/*
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tweet_view->friends_combo_box), renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tweet_view->friends_combo_box), renderer, "text", 0, NULL);
+	*/
+	debug(DEBUG_DOMAIN, "Disabling 'selected widgets' since no tweet could be selected when we 1st start.");
 	tweet_view_tweet_selected_buttons_show(FALSE);
+	
+	if(!( parent && gconfig_if_bool(PREFS_UI_USE_TWEET_DIALOG) )){
+		debug(DEBUG_DOMAIN, "TweetView's set to be embed, no further setup needed.");
+	}else{
+		debug(DEBUG_DOMAIN, "Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
+		gtk_widget_show_all(GTK_WIDGET(tweet_view->tweet_view));
+		g_object_add_weak_pointer(G_OBJECT(tweet_view->tweet_view),(gpointer) &tweet_view);
+		gtk_window_set_transient_for(GTK_WINDOW(tweet_view->tweet_view), parent);
+		//gtk_widget_show_all(GTK_WIDGET(tweet_view->tweet_view_embed));
+	}
+	
 	return tweet_view;
 }
 
 static void tweet_view_sexy_init(void){
 	/* Set-up expand tweet view.  Used to view tweets in detailed & send tweets and DMs. */
+	debug(DEBUG_DOMAIN, "Creating Tweet's title area, 'tweet_view->sexy_title', using sexy label interface.");
 	tweet_view->sexy_title=label_new();
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_title));
 	gtk_box_pack_start(
@@ -184,6 +206,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
+	debug(DEBUG_DOMAIN, "Creating Tweet's view area, 'tweet_view->sexy_tweet', using sexy label interface.");
 	tweet_view->sexy_tweet=label_new();
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_tweet));
 	gtk_box_pack_start(
@@ -192,6 +215,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
+	debug(DEBUG_DOMAIN, "Creating Tweet's entry, 'tweet_view->sexy_entry', using sexy entry.");
 	tweet_view->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_entry));
 	gtk_box_pack_start(
@@ -200,6 +224,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
+	debug(DEBUG_DOMAIN, "Reording Tweet's entry area.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->tweet_hbox),
 			GTK_WIDGET(tweet_view->sexy_entry),
@@ -226,10 +251,8 @@ static void tweet_view_sexy_init(void){
 
 static void tweet_view_tweet_selected_buttons_setup(GtkBuilder *ui){
 	const gchar *tweet_selected_buttons[]={
-		"dm_button",
-		
-		"view_users_profile_button",
-		"view_users_tweets_button",
+		"view_user_profile_button",
+		"view_user_tweets_button",
 		
 		"user_follow_button",
 		"user_unfollow_button",
@@ -254,33 +277,39 @@ static void tweet_view_tweet_selected_buttons_show(gboolean show){
 }//tweet_view_selected_widgets_show
 
 static void tweet_view_reorder(void){
+	debug(DEBUG_DOMAIN, "Reording TweetView.");
+	debug(DEBUG_DOMAIN, "Setting 'sexy_title' as 'status_view_vbox' 1st widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_title),
 			0
 	);
 	
+	debug(DEBUG_DOMAIN, "Setting 'sexy_tweet' as 'status_view_vbox' 2nd widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_tweet),
 			1
 	);
 	
+	debug(DEBUG_DOMAIN, "Setting 'char_count_hbox' as 'status_view_vbox' 3rd widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->char_count_hbox),
 			2
 	);
 	
+	debug(DEBUG_DOMAIN, "Setting 'tweet_hbox' as 'status_view_vbox' 4th widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->tweet_hbox),
 			3
 	);
 	
+	debug(DEBUG_DOMAIN, "Setting 'dm_frame' as 'status_view_vbox' 5th widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
-			GTK_WIDGET(tweet_view->dm_form_hbox),
+			GTK_WIDGET(tweet_view->dm_frame),
 			4
 	);
 }//tweet_view_reorder

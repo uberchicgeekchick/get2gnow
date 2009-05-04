@@ -344,19 +344,14 @@ static void app_setup(void){
 	gtk_widget_show(GTK_WIDGET(app_priv->listview));
 	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(app_priv->listview));
 
-	/* TODO: implement the use of 'src/tweet-view.c' & 'data/twee-view.ui'
-	 * create this as a true GObject & inherit from GtkWidget.
-	 * gtk_container_add(GTK_CONTAINER(app_priv->expand_box), GTK_WIDGET(tweet_view));
-	 */
-	
-	
 	/* Expand tweet area used to view & send tweets & dm.  */
-	app_priv->tweet_view=tweet_view_new(app_priv->window);
-	gtk_box_pack_end(
-			GTK_BOX(app_priv->tweet_view_vbox),
-			GTK_WIDGET(app_priv->tweet_view->tweet_view_embed),
-			TRUE, TRUE, 0
-	);
+	if(!gconfig_if_bool(PREFS_UI_USE_TWEET_DIALOG)){
+		app_priv->tweet_view=tweet_view_new(NULL);
+		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view_vbox));
+		gtk_widget_show(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed));
+	}else{
+		app_priv->tweet_view=tweet_view_new(app_priv->window);
+	}
 	
 	/* Initial status of widgets */
 	app_state_on_connection(FALSE);
@@ -366,7 +361,7 @@ static void app_setup(void){
 	
 	/* Ok, set the window state based on the gconf value */				  
 	if(!gconfig_if_bool(PREFS_UI_MAIN_WINDOW_HIDDEN))
-		gtk_widget_show(GTK_WIDGET(app_priv->window));
+		gtk_widget_show_all(GTK_WIDGET(app_priv->window));
 	else
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
 	

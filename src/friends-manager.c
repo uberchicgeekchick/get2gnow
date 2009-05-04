@@ -316,7 +316,7 @@ void friends_manager_view_profile(void){
 
 static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager){
 	GtkTreeSelection	*selection=NULL;
-	GtkTreeIter		*iter=NULL;
+	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	gchar			*user_name=NULL;
 
 	if(!( (selection=gtk_tree_view_get_selection(friends_manager->friends_and_followers)) && gtk_tree_selection_get_selected(selection, NULL, iter) ))
@@ -331,6 +331,7 @@ static void friends_manager_view_timeline(GtkButton *button, FriendsManager *fri
 	
 	network_get_user_timeline((const gchar *)user_name);
 	g_free(user_name);
+	g_free(iter);
 }//friends_manager_view_timeline
 
 

@@ -51,7 +51,8 @@ typedef struct {
 	/* Checkbuttons */
 	GtkCheckButton *notify;
 	GtkCheckButton *sound;
-	GtkCheckButton *alert;
+	GtkCheckButton *no_alert;
+	GtkCheckButton *use_tweet_dialog;
 	
 	GList     *notify_ids;
 } Prefs;
@@ -111,7 +112,9 @@ static void preferences_setup_widgets(Prefs *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, prefs->sound);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, prefs->alert);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, prefs->no_alert);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_UI_USE_TWEET_DIALOG, prefs->use_tweet_dialog);
 	
 	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -452,7 +455,8 @@ preferences_dialog_show (GtkWindow *parent)
 							"combobox_reload", &prefs->combo_reload,
 							"sound_checkbutton", &prefs->sound,
 							"notify_checkbutton", &prefs->notify,
-							"alert_checkbutton", &prefs->alert,
+							"no_alert_checkbutton", &prefs->no_alert,
+							"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
 						NULL
 	);
 

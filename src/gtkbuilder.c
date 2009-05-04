@@ -91,9 +91,9 @@ static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *fir
 
 	/* Grab the widgets */
 	for (name = first_widget; name; name = va_arg (args, char *)) {
-		pointer = va_arg (args, void *);
+		pointer = va_arg(args, void *);
 		
-		*pointer = gtk_builder_get_object (ui, name);
+		*pointer = gtk_builder_get_object(ui, name);
 		
 		if (!*pointer) {
 			g_warning ("Widget '%s' at '%s' is missing.", name, filename);
@@ -104,18 +104,12 @@ static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *fir
 	return ui;
 }
 
-GtkBuilder *
-gtkbuilder_get_file (const gchar *filename,
-                     const gchar *first_widget,
-                     ...)
-{
+GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widget, ...){
 	GtkBuilder *ui;
 	va_list args;
 
 	va_start(args, first_widget);
-
 	ui=gtkbuilder_load_file(filename, first_widget, args);
-
 	va_end(args);
 
 	return ( ui ? ui : NULL );

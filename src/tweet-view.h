@@ -91,8 +91,9 @@ typedef struct {
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm;
 	
-	GtkHBox			*dm_form_hbox;
+	GtkFrame		*dm_frame;
 	GtkLabel		*dm_frame_label;
+	GtkHBox			*dm_form_hbox;
 	GtkButton		*dm_refresh;
 	GtkComboBox		*friends_combo_box;
 	GtkButton		*friends_send_dm;
@@ -103,8 +104,8 @@ typedef struct {
 	GList			*tweet_selected_buttons;
 			
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
-	GtkButton		*view_users_profile_button;
-	GtkButton		*view_users_tweets_button;
+	GtkButton		*view_user_profile_button;
+	GtkButton		*view_user_tweets_button;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkButton		*user_follow_button;

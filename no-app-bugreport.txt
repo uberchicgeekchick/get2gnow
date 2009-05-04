@@ -1,0 +1,66 @@
+System: Linux 2.6.27.21-0.1-default #1 SMP 2009-03-31 14:50:44 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Gilouche
+Icon Theme: Lila
+GTK+ Modules: canberra-gtk-module, pk-gtk-module, gnomebreakpad
+
+Memory status: size: 228098048 vsize: 228098048 resident: 14782464 share: 10420224 rss: 14782464 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1241341528 rtime: 12 utime: 8 stime: 4 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/projects/gtk/get2gnow/src/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+0x00007f2768bbe575 in waitpid () from /lib64/libpthread.so.0
+#0  0x00007f2768bbe575 in waitpid () from /lib64/libpthread.so.0
+#1  0x00007f2768e3ded9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+#2  0x00007f2768e3e1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+#3  0x00007f2764730bf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+#4  <signal handler called>
+#5  0x000000000040e6bc in online_service_load ()
+#6  0x0000000000409422 in services_dialog_load_service ()
+#7  0x00000000004098a3 in services_dialog_show ()
+#8  0x000000000040ec00 in online_services_init ()
+#9  0x000000000040917f in main ()
+
+Thread 1 (Thread 0x7f276f2fb780 (LWP 9457)):
+#0  0x00007f2768bbe575 in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f2768e3ded9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#2  0x00007f2768e3e1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#3  0x00007f2764730bf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+No symbol table info available.
+#4  <signal handler called>
+No symbol table info available.
+#5  0x000000000040e6bc in online_service_load ()
+No locals.
+#6  0x0000000000409422 in services_dialog_load_service ()
+No locals.
+#7  0x00000000004098a3 in services_dialog_show ()
+No locals.
+#8  0x000000000040ec00 in online_services_init ()
+No locals.
+#9  0x000000000040917f in main ()
+No locals.
+The program is running.  Quit anyway (and detach it)? (y or n) [answered Y; input not from terminal]
+
+
+---- Critical and fatal warnings logged during execution ----
+
+** Gtk **: gtk_tree_model_get_n_columns: assertion `GTK_IS_TREE_MODEL (tree_model)' failed 
+** Gtk **: gtk_combo_box_entry_set_text_column: assertion `text_column < gtk_tree_model_get_n_columns (gtk_combo_box_get_model (GTK_COMBO_BOX (entry_box)))' failed 
+** GLib-GObject **: g_value_type_compatible: assertion `G_TYPE_IS_VALUE (src_type)' failed 
+** GLib-GObject **: g_value_unset: assertion `G_IS_VALUE (value)' failed 
+** GLib-GObject **: g_value_type_compatible: assertion `G_TYPE_IS_VALUE (src_type)' failed 
+** GLib-GObject **: g_value_unset: assertion `G_IS_VALUE (value)' failed 
+** Gtk **: gtk_combo_box_get_model: assertion `GTK_IS_COMBO_BOX (combo_box)' failed 
+** Gtk **: gtk_combo_box_get_model: assertion `GTK_IS_COMBO_BOX (combo_box)' failed 
+** Gtk **: gtk_tree_model_get_n_columns: assertion `GTK_IS_TREE_MODEL (tree_model)' failed 
+** Gtk **: gtk_combo_box_entry_set_text_column: assertion `text_column < gtk_tree_model_get_n_columns (gtk_combo_box_get_model (GTK_COMBO_BOX (entry_box)))' failed 
+** Gtk **: gtk_combo_box_set_active: assertion `GTK_IS_COMBO_BOX (combo_box)' failed 
+** Gtk **: gtk_combo_box_get_active_text: assertion `GTK_IS_COMBO_BOX (combo_box)' failed 
+** GLib **: g_strsplit: assertion `string != NULL' failed 

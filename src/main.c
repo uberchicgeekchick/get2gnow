@@ -61,7 +61,7 @@ int main(int argc, char **argv){
 	 * 	from 'online-service.h':
 	 *	extern OnlineServices *online_services;
 	 */
-	online_services=online_services_init();
+	online_services_init();
 
 	/* Start libnotify */
 	notifing=notify_init(PACKAGE_NAME);

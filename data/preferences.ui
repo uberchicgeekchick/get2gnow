@@ -65,7 +65,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="alert_checkbutton">
+                              <object class="GtkCheckButton" id="no_alert_checkbutton">
                                 <property name="label" translatable="yes">Do not _alert me when my Tweets are to long.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -75,6 +75,29 @@
                               </object>
                               <packing>
                                 <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="use_tweet_dialog_checkbutton">
+                                <property name="label" translatable="yes">Compose Tweets in a separate _window.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="restart_label">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">&lt;u&gt;&lt;b&gt;*you must restart before this takes effect.&lt;/b&gt;&lt;/u&gt;</property>
+                                <property name="use_markup">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">4</property>
                               </packing>
                             </child>
                           </object>

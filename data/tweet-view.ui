@@ -7,11 +7,6 @@
       <!-- column-name user_name -->
       <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes"></col>
-      </row>
-    </data>
   </object>
   <object class="GtkWindow" id="tweet_view">
     <child>
@@ -54,13 +49,13 @@
                 <property name="visible">True</property>
                 <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkButton" id="view_users_profile_button">
+                  <object class="GtkButton" id="view_user_profile_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <accelerator key="i" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
-                      <object class="GtkImage" id="view_users_profile_image">
+                      <object class="GtkImage" id="view_user_profile_image">
                         <property name="visible">True</property>
                         <property name="stock">gtk-info</property>
                       </object>
@@ -73,13 +68,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="view_users_tweets_button">
+                  <object class="GtkButton" id="view_user_tweets_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
-                      <object class="GtkImage" id="view_users_tweets_image">
+                      <object class="GtkImage" id="view_user_tweets_image">
                         <property name="visible">True</property>
                         <property name="stock">gtk-home</property>
                       </object>
@@ -317,7 +312,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBox" id="friends_combo">
+                      <object class="GtkComboBox" id="friends_combo_box">
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="model">friends_liststore</property>
@@ -395,7 +390,7 @@
                     <property name="label" translatable="yes">_DM a friend:</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">friends_combo</property>
+                    <property name="mnemonic_widget">friends_combo_box</property>
                   </object>
                 </child>
               </object>
