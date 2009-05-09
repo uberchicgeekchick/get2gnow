@@ -44,6 +44,7 @@
 #include "network.h"
 #include "parser.h"
 #include "tweet-list.h"
+#include "online-services.h"
 #include "images.h"
 #include "users.h"
 
@@ -56,7 +57,8 @@ typedef struct {
 	gchar		*id;
 } Status;
 
-static Status *parser_node_status(xmlNode *a_node);
+static Status *parser_node_status(OnlineService *service, xmlNode *a_node);
+static void parser_node_status_free(Status *status);
 static gchar *parser_convert_time(const char *datetime);
 static gboolean display_notification( gpointer tweet );
 
@@ -98,14 +100,13 @@ static gboolean display_notification(gpointer tweet){
 
 
 /* Parse a timeline XML file */
-gboolean parser_timeline(const gchar *data, gssize length){
+gboolean parser_timeline(OnlineService *service, const gchar *data, gssize length){
 	xmlDoc		    *doc          = NULL;
 	xmlNode		    *root_element = NULL;
 	xmlNode		    *cur_node     = NULL;
 
 	GtkListStore 	*store        = NULL;
-	GtkTreeIter	     iter;
-
+	
 	Status 	*status;
 
 	/* Count new tweets */
@@ -129,8 +130,7 @@ gboolean parser_timeline(const gchar *data, gssize length){
 	}
 
 	/* Get the ListStore and clear previous */
-	store = tweet_list_get_store();
-	gtk_list_store_clear(store);
+	store=tweet_list_get_store();
 
 	/* get tweets or direct messages */
 	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
@@ -149,7 +149,7 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		unsigned long int   sid;
 		
 		/* Parse node */
-		status=parser_node_status(cur_node->children);
+		status=parser_node_status(service, cur_node->children);
 		sid=strtoul( status->id, NULL, 10 );
 		
 		/* the first tweet parsed is the 'newest' */
@@ -158,10 +158,11 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		
 		/* Create string for text column */
 		datetime=parser_convert_time( status->created_at );
-		tweet=g_strconcat(
-					"<b>",	status->user->nick_name, " ( @",  status->user->user_name, " )", "</b> - ", datetime, "\n",
-					"<small>", status->text, "</small>",
-					NULL
+		tweet=g_strdup_printf(
+					"<span size=\"small\" weight=\"light\" variant=\"smallcaps\">[%s]</span>\n<b>%s ( @%s ) </b> - %s\n<small>%s</small>",
+						service->decoded_key,
+						status->user->nick_name, status->user->user_name, datetime,
+						status->text
 		);
 		
 		if(sid > last_id && show_notification) {
@@ -177,30 +178,34 @@ gboolean parser_timeline(const gchar *data, gssize length){
 		}
 		
 		/* Append to ListStore */
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter,
-							STRING_TEXT, tweet,
-							STRING_NICK,status->user->nick_name,
-							STRING_DATE, datetime,
-							STRING_TWEET, status->text,
-							STRING_USER, status->user->user_name,
-							ULONG_TWEET_ID, (guint)sid,
-							-1);
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		gtk_list_store_append(store, iter);
+		gtk_list_store_set(
+					store, iter,
+						STRING_TEXT, tweet,
+						STRING_NICK,status->user->nick_name,
+						STRING_DATE, datetime,
+						STRING_TWEET, status->text,
+						STRING_USER, status->user->user_name,
+						ULONG_TWEET_ID, (guint)sid,
+						ULONG_USER_ID, (guint)status->user->id,
+						SERVICE_POINTER, service,
+					-1
+		);
 		
 		/* Free the text column string */
 		g_free(tweet);
 		
-		/* Get Image */
-		network_get_image(status->user->image_url, iter);
+		/* network_get_image, or its callback, free's iter once its no longer needed. */
+		network_get_image(service, g_strdup(status->user->image_url), iter);
 		
 		/* Free struct */
-		user_free(status->user);
-		if(status->text) g_free(status->text);
-		if(status->created_at) g_free(status->created_at);
-		if(status->id) g_free(status->id);
+		parser_node_status_free(status);
 		
-		g_free(status);
-		g_free(datetime);
+		if(datetime){
+			g_free(datetime);
+			datetime=NULL;
+		}
 	} /* end of loop */
 	
 	/* Remember last id showed */
@@ -211,12 +216,25 @@ gboolean parser_timeline(const gchar *data, gssize length){
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
-	tweet_list_refresh();
-	
 	return TRUE;
 }
 
-static Status *parser_node_status(xmlNode *a_node){
+static void parser_node_status_free(Status *status){
+	if(!status) return;
+	
+	if(status->user){
+		user_free(status->user);
+		status->user=NULL;
+	}
+	if(status->text) g_free(status->text);
+	if(status->created_at) g_free(status->created_at);
+	if(status->id) g_free(status->id);
+	
+	g_free(status);
+	status=NULL;
+}//parser_status_free
+
+static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
 	xmlNode		   *cur_node = NULL;
 	gchar		*content=NULL;
 	Status   *status;
@@ -235,7 +253,7 @@ static Status *parser_node_status(xmlNode *a_node){
 			status->id = g_strdup(content);
 		
 		else if( g_str_equal(cur_node->name, "sender") || g_str_equal(cur_node->name, "user"))
-			status->user=user_parse_profile(cur_node->children);
+			status->user=user_parse_profile(service, cur_node->children);
 		
 		else if(g_str_equal(cur_node->name, "text")) {
 			gchar *cur=status->text=g_markup_escape_text(content, -1);

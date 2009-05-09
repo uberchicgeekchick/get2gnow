@@ -2,7 +2,7 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="friends_manager_store">
+  <object class="GtkListStore" id="friends_manager_liststore">
     <columns>
       <!-- column-name user_name -->
       <column type="gchararray"/>
@@ -46,7 +46,7 @@
                       <object class="GtkTreeView" id="friends_and_followers">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="model">friends_manager_store</property>
+                        <property name="model">friends_manager_liststore</property>
                         <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <child>

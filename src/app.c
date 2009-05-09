@@ -92,7 +92,7 @@ struct _AppPriv {
 	GtkWindow		*window;
 	
 	GtkMenuBar		*menubar;
-        GtkMenuItem		*menu_connections;
+        GtkMenuItem		*menu_accounts;
         GtkMenuItem		*menu_tweets;
 	GtkMenuItem		*menu_friends;
 	GtkMenuItem		*menu_timelines;
@@ -113,6 +113,7 @@ struct _AppPriv {
 	GtkRadioMenuItem	*timeline_dm;
 	GtkRadioMenuItem	*timeline_mentions;
 	GtkRadioMenuItem	*timeline_favorites;
+	GtkRadioMenuItem	*timeline_replies;
 	
 	GtkAction		*friends_menu_friends_manager;
 	GtkAction		*friends_menu_timelines;
@@ -159,6 +160,7 @@ static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, 
 static void app_set_radio_group(App *app, GtkBuilder *ui); 
 static void app_quit_cb(GtkWidget *window, App *app); 
 static void app_services_cb(GtkWidget *window, App *app); 
+static void app_select_service(GtkMenuItem *item, App *app);
 static void app_preferences_cb(GtkWidget *window, App *app); 
 
 /* Handles all timelines */
@@ -188,7 +190,7 @@ static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigu
 
 
 static App  *app=NULL;
-AppPriv *app_priv=NULL;
+static AppPriv *app_priv=NULL;
 
 G_DEFINE_TYPE(App, app, G_TYPE_OBJECT);
 
@@ -250,7 +252,7 @@ static void app_setup(void){
 					"main_window", &app_priv->window,
 					
 					"main_menubar", &app_priv->menubar,
-					"connections", &app_priv->menu_connections,
+					"accounts", &app_priv->menu_accounts,
 					"tweets", &app_priv->menu_tweets,
 					
 					"timelines", &app_priv->menu_timelines,
@@ -259,6 +261,7 @@ static void app_setup(void){
 					"view_my_timeline", &app_priv->timeline_mine,
 					"view_direct_messages", &app_priv->timeline_dm,
 					"view_mentions", &app_priv->timeline_mentions,
+					"view_replies", &app_priv->timeline_replies,
 					"view_favorites_timeline", &app_priv->timeline_favorites,
 					
 					"friends", &app_priv->menu_friends,
@@ -297,6 +300,7 @@ static void app_setup(void){
 					"services_connect", "activate", app_connect,
 					"services_disconnect", "activate", app_disconnect,
 					"services", "activate", app_services_cb,
+					"select_service", "activate", app_select_service,
 					"preferences", "activate", app_preferences_cb,
 					"quit", "activate", app_quit_cb,
 					
@@ -312,6 +316,7 @@ static void app_setup(void){
 					"view_my_timeline", "activate", app_timeline_cb,
 					"view_direct_messages", "activate", app_timeline_cb,
 					"view_mentions", "activate", app_timeline_cb,
+					"view_replies", "activate", app_timeline_cb,
 					"view_favorites_timeline", "activate", app_timeline_cb,
 					
 					"friends_menu_friends_manager", "activate", friends_menu_request,
@@ -361,11 +366,9 @@ static void app_setup(void){
 	
 	/* Ok, set the window state based on the gconf value */				  
 	if(!gconfig_if_bool(PREFS_UI_MAIN_WINDOW_HIDDEN))
-		gtk_widget_show_all(GTK_WIDGET(app_priv->window));
+		gtk_widget_show(GTK_WIDGET(app_priv->window));
 	else
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
-	
-	unset_selected_tweet();
 	
 	app_connect();
 	
@@ -384,7 +387,7 @@ static void app_accounts_treeview_fill(void){
 }//app_accounts_treeview_fill
 
 GtkMenuItem *app_get_menu(const gchar *menu){
-	if((g_str_equal(menu, "connections")) ) return GET_PRIV(app)->menu_connections;
+	if((g_str_equal(menu, "accounts")) ) return GET_PRIV(app)->menu_accounts;
 	if((g_str_equal(menu, "tweets")) ) return GET_PRIV(app)->menu_tweets;
 	if((g_str_equal(menu, "friends")) ) return GET_PRIV(app)->menu_friends;
 	if((g_str_equal(menu, "timelines")) ) return GET_PRIV(app)->menu_timelines;
@@ -503,7 +506,7 @@ static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
 		return network_get_timeline(API_TIMELINE_PUBLIC);
 
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_mine)->active)
-		return network_get_user_timeline(NULL);
+		return network_get_user_timeline(current_service, NULL);
 
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_favorites)->active)
 		return network_get_timeline(API_FAVORITES);
@@ -513,6 +516,9 @@ static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
 
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_mentions)->active) 
 		return network_get_timeline(API_MENTIONS);
+	
+	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_replies)->active)
+		return network_get_timeline(API_REPLIES);
 	
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_friends)->active) 
 		return network_get_timeline(API_TIMELINE_FRIENDS);
@@ -549,6 +555,10 @@ static void friends_menu_request(GtkAction *action, App *app){
 static void app_services_cb(GtkWidget *widget, App *app){
 	services_dialog_show(GTK_WINDOW(app_priv->window));
 }
+
+static void app_select_service(GtkMenuItem *item, App *app){
+	popup_select_service( GET_PRIV(app)->window );
+}//app_select_service
 
 static void app_preferences_cb(GtkWidget *widget, App *app){
 	preferences_dialog_show(GTK_WINDOW(app_priv->window));
@@ -793,6 +803,8 @@ static void app_connection_items_setup(GtkBuilder *ui){
 }
 
 void app_state_on_connection(gboolean connected){
+	if(!( app_priv && app_priv->widgets_connected && app_priv->widgets_disconnected ))
+		return;
 	GList         *l;
 	
 	for(l=app_priv->widgets_connected; l; l=l->next)
@@ -806,6 +818,9 @@ void app_state_on_connection(gboolean connected){
 }
 
 void app_statusbar_printf(const gchar *msg, ...){
+	if(!( app_priv && app_priv->statusbar && GTK_IS_STATUSBAR(app_priv->statusbar) ))
+		return;
+	
 	gchar *message=NULL;
 	va_list words_and_more;
 	
@@ -820,7 +835,7 @@ void app_statusbar_printf(const gchar *msg, ...){
 
 void app_set_statusbar_msg(gchar *message){
 	/* Avoid some warnings */
-	if(!app_priv->statusbar || !GTK_IS_STATUSBAR(app_priv->statusbar))
+	if(!( app_priv && app_priv->statusbar && GTK_IS_STATUSBAR(app_priv->statusbar) ))
 		return;
 	
 	/* starts displaying the status bar message for 5 seconds before returning to the system default */

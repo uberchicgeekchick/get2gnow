@@ -54,29 +54,44 @@
 #include "main.h"
 #include "debug.h"
 
-#define DEBUG_DOMAIN_SETUP       "Images"
+#define DEBUG_DOMAIN	"Images"
 
 static gint images_validate_width( gint width );
 static gint images_validate_height( gint height );
 
 
-gchar *images_get_filename( const gchar *image_url ){
+gchar *images_get_filename(const gchar *image_url){
+	debug(DEBUG_DOMAIN, "Creating image file name from image url: %s.", image_url);
 	gchar *image_file, **image_name_info, *image_filename;
 	
-	/* save using the filename */
-	image_name_info=g_strsplit(image_url, (const gchar *)"/", 7);
-	if(!(image_name_info[5] && image_name_info[6])){
-		if(image_name_info)
-			g_strfreev(image_name_info);
-		return g_strdup("unknown_image");
-	}
+	/**
+	 * image_name_info[] index explanation:
+	 * 	0 == the url scheme, e.g. https, http, etc.
+	 * 	1 == this is empty as a result of the '://' in url scheme.
+	 * 	2 == the domain name
+	 * 	n || G_N_ELEMENTS == the file part of the url, i.e. the actual image's file name.
+	 */
+	image_name_info=g_strsplit(image_url, (const gchar *)"/", -1);
+	guint n=g_strv_length(image_name_info)-1;
+	debug(DEBUG_DOMAIN, "Found %d elements in the image's url.", n+1);
 	
-	image_file=g_strconcat(image_name_info[5], "_", image_name_info[6], NULL);
+	if(image_name_info[2]==image_name_info[n-1])
+		image_file=g_strconcat(image_name_info[2], "_", image_name_info[n], NULL);
+	else
+		image_file=g_strconcat(image_name_info[2], "_", image_name_info[n-1], "_", image_name_info[n], NULL);
 	
 	if(image_name_info)
 		g_strfreev(image_name_info);
 	
+	if(!image_file){
+		debug(DEBUG_DOMAIN, "**ERROR** Unable to parse url into valid image filename.");
+		return g_strdup("unknown_image");
+	}
+	
+	
 	image_filename=g_build_filename( g_get_home_dir(), ".gnome2", CACHE_IMAGES, image_file, NULL );
+	
+	debug(DEBUG_DOMAIN, "Saving image:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
 	
 	g_free(image_file);
 	
@@ -167,7 +182,7 @@ GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
 	if( (resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR )) )
 		return resized;
 			
-	debug(DEBUG_DOMAIN_SETUP, "Image error: risizing of pixmap to: %d x %d failed.", width, height );
+	debug(DEBUG_DOMAIN, "Image error: risizing of pixmap to: %d x %d failed.", width, height );
 	return NULL;
 }//images_resize_pixbuf
 
@@ -209,7 +224,7 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename
 	if( (pixbuf=gdk_pixbuf_new_from_file(image_filename, &error )) )
 		return pixbuf;
 	
-	debug(DEBUG_DOMAIN_SETUP, "Image error: %s: %s", image_filename, error->message);
+	debug(DEBUG_DOMAIN, "Image error: %s: %s", image_filename, error->message);
 	if(error) g_error_free(error);
 	return NULL;
 }//images_get_full_sized_pixbuf_from_file
@@ -229,7 +244,7 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, 
 	if( (pixbuf=gdk_pixbuf_new_from_file_at_scale(image_filename, width, height, &error )) )
 		return pixbuf;
 	
-	debug(DEBUG_DOMAIN_SETUP, "Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
+	debug(DEBUG_DOMAIN, "Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
 }images_get_scaled_pixbuf_from_file*/

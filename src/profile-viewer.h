@@ -56,9 +56,9 @@
 #include <glib.h>
 
 #ifndef view_profile
-#define view_profile( user_name, parent )	profile_viewer_show( user_name, parent );
+#define view_profile(service, user_name, parent)	profile_viewer_show(service, user_name, parent);
 #endif
 
-void profile_viewer_show( const gchar *user_name, GtkWindow *parent );
+void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
 
 #endif //__PROFILE_VIEWER_H__

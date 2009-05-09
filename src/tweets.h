@@ -37,11 +37,15 @@
 #define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
 
 extern unsigned long int in_reply_to_status_id;
+extern OnlineService *in_reply_to_service;
 
 G_BEGIN_DECLS
 
-void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet);
+void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *tweet);
+OnlineService *selected_tweet_get_service(void);
 gchar *selected_tweet_get_user_name(void);
+unsigned long int selected_tweet_get_user_id(void);
+gchar *selected_tweet_get_reply_to_string(void);
 void unset_selected_tweet(void);
 
 void tweets_selected_widgets_show(gboolean show);

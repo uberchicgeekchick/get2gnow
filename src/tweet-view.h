@@ -79,6 +79,7 @@ typedef struct {
 	
 	/* Tweet View */
 	GtkVBox			*status_view_vbox;
+	Label			*sexy_service;
 	Label			*sexy_title;
 	Label			*sexy_tweet;
 	
@@ -96,6 +97,8 @@ typedef struct {
 	GtkHBox			*dm_form_hbox;
 	GtkButton		*dm_refresh;
 	GtkComboBox		*friends_combo_box;
+	GtkListStore		*friends_liststore;
+	GtkTreeModel		*friends_model;
 	GtkButton		*friends_send_dm;
 	GtkButton		*dm_form_hide;
 	GtkButton		*dm_form_show;
@@ -125,11 +128,8 @@ extern unsigned long int in_reply_to_status_id;
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet);
-void unset_selected_tweet(void);
-
 TweetView *tweet_view_new(GtkWindow *parent);
-void tweet_view_show_tweet(unsigned long int id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf );
+void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf );
 
 GtkComboBox *tweet_view_get_friends_combo_box(void);
 

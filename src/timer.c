@@ -64,7 +64,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAIN "Timer"
+#define DEBUG_DOMAIN "OnlineServices"
 
 
 /********************************************************
@@ -99,11 +99,11 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	int requests_remaining=99;
 	
 	if(!( (g_str_equal( "GET", msg->method)) && ((rate_limit=soup_message_headers_get_one( msg->response_headers, "X-RateLimit-Remaining" ))) &&(requests_remaining=atoi( rate_limit )) )){
-		debug(DEBUG_DOMAIN, "Skipping network timer.\n\tRequest method: %s\n\tX-RateLimit-Remaininng: %s (%d)", msg->method, rate_limit, requests_remaining );
+		debug(DEBUG_DOMAIN, "Skipping network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s (%d)", msg->method, rate_limit, requests_remaining );
 		return;
 	}
 	
-	debug(DEBUG_DOMAIN, "Running network timer.\n\tRequest method: %s\n\tX-RateLimit-Remaininng: %s\n\tRequests left before the API's RateLimit is reached: %d.", msg->method, rate_limit, requests_remaining );
+	debug(DEBUG_DOMAIN, "Running network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s\n\t\tRequests left before the API's RateLimit is reached: %d.", msg->method, rate_limit, requests_remaining );
 	
 	timer->requests++;
 	if(timer->requests==1)

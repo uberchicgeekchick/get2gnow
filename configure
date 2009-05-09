@@ -732,7 +732,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME='get2gnow'
 PACKAGE_TARNAME='get2gnow'
-PACKAGE_VERSION='00.00.eD.a00'
+PACKAGE_VERSION='000.000.DB3.aEC3'
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"
@@ -937,6 +937,7 @@ LIBget2gnow_CFLAGS
 LIBget2gnow_LIBS
 get2gnow_CFLAGS
 get2gnow_LIBS
+debug_CFLAGS
 GETTEXT_PACKAGE
 USE_NLS
 MSGFMT_OPTS
@@ -22738,6 +22739,7 @@ fi
 
 	if test x$enable_debug = xyes ; then
 
+debug_CFLAGS="-g -ggdb"
 cat >>confdefs.h <<\_ACEOF
 #define GNOME_ENABLE_DEBUG 1
 _ACEOF
@@ -25576,6 +25578,7 @@ LIBget2gnow_CFLAGS!$LIBget2gnow_CFLAGS$ac_delim
 LIBget2gnow_LIBS!$LIBget2gnow_LIBS$ac_delim
 get2gnow_CFLAGS!$get2gnow_CFLAGS$ac_delim
 get2gnow_LIBS!$get2gnow_LIBS$ac_delim
+debug_CFLAGS!$debug_CFLAGS$ac_delim
 GETTEXT_PACKAGE!$GETTEXT_PACKAGE$ac_delim
 USE_NLS!$USE_NLS$ac_delim
 MSGFMT_OPTS!$MSGFMT_OPTS$ac_delim
@@ -25593,7 +25596,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 83; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

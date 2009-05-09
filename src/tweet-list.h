@@ -82,6 +82,8 @@ enum {
 	STRING_TWEET,
 	STRING_USER,
 	ULONG_TWEET_ID,
+	ULONG_USER_ID,
+	SERVICE_POINTER,
 	N_COLUMNS
 };
 
@@ -92,7 +94,7 @@ GtkListStore	*tweet_list_get_store(void);
 
 void tweet_list_refresh(void);
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
-void tweet_list_set_image(const gchar *image_filename, GtkTreeIter  iter);
+void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter);
 
 G_END_DECLS
 

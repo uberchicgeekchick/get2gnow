@@ -2,13 +2,13 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="following_store">
+  <object class="GtkListStore" id="following_liststore">
     <columns>
       <!-- column-name user_name -->
       <column type="gchararray"/>
       <!-- column-name user_nick -->
       <column type="gchararray"/>
-      <!-- column-name User -->
+      <!-- column-name User * -->
       <column type="gpointer"/>
     </columns>
   </object>
@@ -39,7 +39,7 @@
                       <object class="GtkTreeView" id="following_list">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="model">following_store</property>
+                        <property name="model">following_liststore</property>
                         <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <child>

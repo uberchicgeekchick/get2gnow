@@ -67,6 +67,14 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
+/* Twitter API */
+#define API_CLIENT_AUTH		"greettweetknow"
+
+/* Laconica API */
+/*#define	OPEN_CLIENT		"<a href=\"http://uberchicgeekchick.com/?projects=" PACKAGE_TARNAME "\">" PACKAGE_TARNAME "</a>"*/
+#define		OPEN_CLIENT		"get2gnow"
+
+
 #ifndef PREFS_PATH
 #if defined GNOME_ENABLE_DEBUG
 #define PREFS_PATH			"/apps/" PACKAGE_TARNAME "/debug"
@@ -77,7 +85,7 @@
 
 
 #define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
-#define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s@%s"
+#define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s"
 #define	PREFS_AUTH_PASSWORD		PREFS_AUTH_PREFIX "/password"
 #define	PREFS_AUTH_AUTO_CONNECT		PREFS_AUTH_PREFIX "/auto_connect"
 #define	PREFS_AUTH_ENABLED		PREFS_AUTH_PREFIX "/enabled"
@@ -93,27 +101,39 @@ typedef enum{
  */
 typedef struct {
 	guint		total;
+	guint		connected;
 	GSList		*keys;
 	GList		*accounts;
 } OnlineServices;
 
 typedef struct {
-	SoupSession	*connection;
+	SoupSession	*session;
 	RateLimitTimer	*timer;
+	
+	gboolean	connected;
+	guint		logins;
 	
 	gboolean	enabled;
 	gboolean	auto_connect;
 	
 	gchar		*key;
+	gchar		*decoded_key;
+	gchar		*service_type;
 	gchar		*url;
 	gchar		*username;
 	gchar		*password;
 } OnlineService;
 
+typedef struct{
+	OnlineService	*service;
+	gpointer	user_data;
+} OnlineServiceCBWrapper;
+
 typedef enum{
 	UrlString,
 	OnlineServicePointer,
 } OnlineServicesListStoreColumns;
+#define MAX_LOGINS 200
 
 extern OnlineServices *online_services;
 extern OnlineService *current_service;
@@ -125,7 +145,13 @@ extern OnlineService *current_service;
 OnlineServices *online_services_init(void);
 gboolean online_services_login(OnlineServices *services);
 gboolean online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
+
+guint online_services_count_connections(OnlineServices *services);
+OnlineService *online_services_get_first_connected(OnlineServices *services);
+OnlineService *online_services_get_last_connected(OnlineServices *services);
+
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+
 void online_services_deinit(OnlineServices *online_services);
 
 gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore);
@@ -133,12 +159,13 @@ gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *
 
 /* key is username@url */
 OnlineService *online_service_load(const gchar *account_key);
-OnlineService *online_service_open(const gchar *username, const gchar *url);
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
-SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer data, gpointer formdata);
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+
+void online_services_free_wrapper(OnlineServices *service, OnlineServiceCBWrapper *service_wrapper);
 
 void online_service_free(OnlineService *service);
 
-#endif /* __ONLINE_SERVICE_H__ */
+#endif /* __ONLINE_SERVICES_H__ */
 

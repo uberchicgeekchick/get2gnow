@@ -66,31 +66,31 @@ enum {
 };
 
 
-gchar *images_get_filename( const gchar *url );
+gchar *images_get_filename(const gchar *url);
 
-GtkImage *images_get_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height );
+GtkImage *images_get_image_from_filename(const gchar *image_filename);
+GtkImage *images_get_scaled_image_from_filename(const gchar *image_filename, gint width, gint height );
 
-GtkImage *images_get_expanded_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_maximized_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_default_image_from_filename( const gchar *image_filename );
-GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename );
+GtkImage *images_get_expanded_image_from_filename(const gchar *image_filename);
+GtkImage *images_get_maximized_image_from_filename(const gchar *image_filename);
+GtkImage *images_get_default_image_from_filename(const gchar *image_filename);
+GtkImage *images_get_minimized_image_from_filename(const gchar *image_filename);
 
-GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filename );
+GdkPixbuf *images_get_expanded_pixbuf_from_filename(const gchar *image_filename);
+GdkPixbuf *images_get_maximized_pixbuf_from_filename(const gchar *image_filename);
+GdkPixbuf *images_get_default_pixbuf_from_filename(const gchar *image_filename);
+GdkPixbuf *images_get_minimized_pixbuf_from_filename(const gchar *image_filename);
 
-GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_maximize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf );
+GdkPixbuf *images_expand_pixbuf(GdkPixbuf *pixbuf);
+GdkPixbuf *images_maximize_pixbuf(GdkPixbuf *pixbuf);
+GdkPixbuf *images_normalize_pixbuf(GdkPixbuf *pixbuf);
+GdkPixbuf *images_minimize_pixbuf(GdkPixbuf *pixbuf);
 
-GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height );
-GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename );
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height );
+GdkPixbuf *images_scale_pixbuf(GdkPixbuf *pixbuf, gint width, gint height);
+GdkPixbuf *images_get_pixbuf_from_filename(const gchar *image_filename);
+GdkPixbuf *images_get_unscaled_pixbuf_from_filename(const gchar *image_filename);
+GdkPixbuf *images_get_scaled_pixbuf_from_filename(const gchar *image_filename, gint width, gint height);
+GdkPixbuf *images_get_and_scale_pixbuf_from_filename(const gchar *image_filename, gint width, gint height);
 
 G_END_DECLS
 

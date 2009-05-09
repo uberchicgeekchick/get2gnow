@@ -34,7 +34,7 @@ get2gnow_SOURCES = 					\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
 	label.c			label.h			\
-	online-service.c	online-service.h	\
+	online-services.c	online-services.h	\
 	network.c		network.h		\
 	timer.c			timer.h			\
 	parser.c		parser.h		\

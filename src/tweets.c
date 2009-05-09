@@ -73,12 +73,18 @@
 
 
 typedef struct SelectedTweet {
+	OnlineService *service;
 	unsigned long int id;
+	unsigned long int user_id;
 	gchar *user_name;
 	gchar *tweet;
+	gchar *reply_to_string;
 } SelectedTweet;//SelectedTweet
 unsigned long int in_reply_to_status_id=0;
+OnlineService *in_reply_to_service=NULL;
 static SelectedTweet *selected_tweet=NULL;
+
+#define DEBUG_DOMAIN "Tweets"
 
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, gboolean release);
@@ -86,23 +92,55 @@ static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-void set_selected_tweet(unsigned long int id, const gchar *user_name, const gchar *tweet){
+void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *tweet){
 	/*	id=strtoul( char id, NULL, 10 );	*/
-	if(selected_tweet) unset_selected_tweet();
+	if(selected_tweet){
+		unset_selected_tweet();
+	}
+	
+	debug(DEBUG_DOMAIN, "Creating 'selected_tweet', tweet id: #%lu from '%s' on '%s'.", id, user_name, service->key);
 	selected_tweet=g_new0(SelectedTweet, 1);
+	selected_tweet->service=service;
 	selected_tweet->id=id;
+	selected_tweet->user_id=user_id;
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_strdup(tweet);
-}//set_selected_tweets
+	selected_tweet->reply_to_string=g_strdup_printf("@%s, on http://%s/%s, ", selected_tweet->user_name, selected_tweet->service->url, selected_tweet->user_name);
+}//set_selected_tweet
+
+OnlineService *selected_tweet_get_service(void){
+	return ( (selected_tweet && selected_tweet->service) ?selected_tweet->service :NULL );
+}//selected_tweet_get_service
 
 gchar *selected_tweet_get_user_name(void){
-	return selected_tweet->user_name;
+	return ( (selected_tweet && selected_tweet->user_name) ?selected_tweet->user_name :NULL );
 }//selected_tweet_get_user_name
+
+unsigned long int selected_tweet_get_user_id(void){
+		return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0 );
+}//selected_tweet_get_user_name
+
+gchar *selected_tweet_get_reply_to_string(void){
+	return ( (selected_tweet && selected_tweet->reply_to_string) ?selected_tweet->reply_to_string :NULL );
+}//selected_tweet_get_reply_to_string
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
-	if(selected_tweet->user_name) g_free(selected_tweet->user_name);
-	if(selected_tweet->tweet) g_free(selected_tweet->tweet);
+	debug(DEBUG_DOMAIN, "Un-Setting selected_tweet.");
+	if(selected_tweet->user_name)
+		g_free(selected_tweet->user_name);
+	selected_tweet->user_name=NULL;
+	
+	if(selected_tweet->reply_to_string)
+		g_free(selected_tweet->reply_to_string);
+	selected_tweet->reply_to_string=NULL;
+	
+	if(selected_tweet->tweet)
+		g_free(selected_tweet->tweet);
+	selected_tweet->tweet=NULL;
+	
+	selected_tweet->service=NULL;
+	
 	g_free(selected_tweet);
 	selected_tweet=NULL;
 }//unset_selected_tweet
@@ -114,8 +152,8 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_S: case GDK_s:
 					return tweet_view_send(NULL);
 				case GDK_Return: return tweets_retweet();
-				case GDK_C: case GDK_c:
-					return g_signal_emit_by_name(app_get_menu("connections"), "activate");
+				case GDK_A: case GDK_a:
+					return g_signal_emit_by_name(app_get_menu("accounts"), "activate");
 				case GDK_T: case GDK_t:
 					return g_signal_emit_by_name(app_get_menu("tweets"), "activate");
 				case GDK_F: case GDK_f:
@@ -175,28 +213,31 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
-	tweet_view_show_tweet(0, "", "", "", "", NULL);
+	if(in_reply_to_service) in_reply_to_service=NULL;
+	tweet_view_show_tweet(current_service, 0, 0, "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
 	unset_selected_tweet();
 }//tweets_new_tweet
 
 void tweets_reply(void){
 	if(!selected_tweet) return;
-	gchar *tweet=g_strdup_printf("@%s ", selected_tweet->user_name);
+	gchar *tweet=g_strdup(selected_tweet->reply_to_string);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
 }//tweets_reply
 
 void tweets_retweet(void){
 	if(!selected_tweet)
 		return;
-	gchar *tweet=g_strdup_printf("RT @%s %s", selected_tweet->user_name, selected_tweet->tweet);
-	in_reply_to_status_id=selected_tweet->id;
+	gchar *tweet=g_strdup_printf("%s RT %s", selected_tweet->reply_to_string, selected_tweet->tweet);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
 }//tweets_retweet
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
 	if(!(tweet)) return;
-	if(in_response) in_reply_to_status_id=selected_tweet->id;
+	if(in_response) {
+		in_reply_to_status_id=selected_tweet->id;
+		in_reply_to_service=selected_tweet->service;
+	}
 	tweet_view_sexy_prefix_string(tweet);
 	if(release) g_free(tweet);
 }//tweets_include_and_begin_to_send
@@ -205,38 +246,38 @@ void tweets_save_fave(void){
 	if(!selected_tweet)
 		return;
 	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
-	user_request_main(Fave, app_get_window(), fave_tweet_id);
+	user_request_main(selected_tweet->service, Fave, app_get_window(), fave_tweet_id);
 	g_free(fave_tweet_id);
 }//tweets_save_fave
 
 void tweets_user_view_tweets(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(ViewTweets, app_get_window(), selected_tweet->user_name);
+	user_request_main(selected_tweet->service, ViewTweets, app_get_window(), selected_tweet->user_name);
 }//tweets_user_view_tweets
 
 void tweets_user_view_profile(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(ViewProfile, app_get_window(), selected_tweet->user_name);
+	user_request_main(selected_tweet->service, ViewProfile, app_get_window(), selected_tweet->user_name);
 }//tweets_user_view_profile
 
 void tweets_user_follow(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(Follow, app_get_window(), selected_tweet->user_name);
+	user_request_main(selected_tweet->service, Follow, app_get_window(), selected_tweet->user_name);
 }//tweets_user_follow
 
 void tweets_user_unfollow(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(UnFollow, app_get_window(), selected_tweet->user_name);
+	user_request_main(selected_tweet->service, UnFollow, app_get_window(), selected_tweet->user_name);
 }//tweets_user_unfollow
 
 void tweets_user_block(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(Block, app_get_window(), selected_tweet->user_name);
+	user_request_main(selected_tweet->service, Block, app_get_window(), selected_tweet->user_name);
 }//tweets_user_block
 
 void tweets_user_unblock(void){
 	if(!selected_tweet->user_name) return;
-	user_request_main(UnBlock, app_get_window(), selected_tweet->user_name);
+	user_request_main(selected_tweet->service, UnBlock, app_get_window(), selected_tweet->user_name);
 }//tweets_user_unblock
 
 /********************************************************

@@ -72,7 +72,8 @@
 #include "following-viewer.h"
 #include "profile-viewer.h"
 
-static FriendRequest *user_request_new(FriendAction action, GtkWindow *parent, const gchar *user_data);
+
+static FriendRequest *user_request_new(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data);
 static void user_request_process_get(FriendRequest *request);
 static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data);
 static void user_request_free(FriendRequest *request);
@@ -80,13 +81,12 @@ static void user_request_free(FriendRequest *request);
 static User *user_constructor( gboolean a_follower );
 
 
+#define DEBUG_DOMAIN "ServiceRequests"
 #define GtkBuilderUI "user-profile.ui"
-
-#define DEBUG_DOMAIN "Users"
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
-static FriendRequest *user_request_new(FriendAction action, GtkWindow *parent, const gchar *user_data){
+static FriendRequest *user_request_new(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data){
 	if(G_STR_EMPTY(user_data))
 		return NULL;
 	
@@ -130,25 +130,27 @@ static FriendRequest *user_request_new(FriendAction action, GtkWindow *parent, c
 			request->uri=g_strdup_printf(API_UNFAVE, request->user_data);
 			request->message=g_strdup("deleted");
 			break;
+		case SelectService:
 		default:
 			g_free(request);
 			return NULL;
 	}//switch
-	debug(DEBUG_DOMAIN, "%sing %s", request->message, request->user_data);
+	request->service=service;
+	debug(DEBUG_DOMAIN, "%sing %s on %s", request->message, request->user_data, request->service->key);
 	return request;
 }//user_request_new
 
-void user_request_main(FriendAction action, GtkWindow *parent, const gchar *user_data){
+void user_request_main(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data){
 	FriendRequest *request=NULL;
-	if(!(request=user_request_new(action, parent, user_data)))
+	if(!(request=user_request_new(service, action, parent, user_data)))
 		return;
 	
-	if(request->method == POST)
-		return online_services_request( online_services, POST, request->uri, user_request_main_quit, request, NULL );
+	if(request->method == POST){
+		online_service_request(request->service, POST, request->uri, user_request_main_quit, request, NULL);
+		return;
+	}
 	
-	SoupSession *session=NULL;
-	SoupMessage *msg=NULL;
-	user_request_main_quit(session, msg, (gpointer *)request);
+	user_request_main_quit(NULL, NULL, (gpointer *)request);
 	tweet_view_sexy_select();
 }//user_request_main
 
@@ -156,10 +158,10 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 	FriendRequest *request=(FriendRequest *)user_data;
 	switch(request->method){
 		case POST:
-			user_request_process_post(session, msg, user_data);
+			user_request_process_post(session, msg, request);
 			break;
 		case GET:
-			user_request_process_get(user_data);
+			user_request_process_get(request);
 			break;
 		case QUEUE:
 			break;
@@ -169,9 +171,10 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 static void user_request_process_get(FriendRequest *request){
 	switch(request->action){
 		case ViewTweets:
-			return network_get_user_timeline(request->user_data);
+			return network_get_user_timeline(request->service, request->user_data);
 		case ViewProfile:
-			return view_profile(request->user_data, request->parent);
+			return view_profile(request->service, request->user_data, request->parent);
+		case SelectService:
 		case UnFollow:
 		case Block:
 		case Follow:
@@ -188,7 +191,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	debug(DEBUG_DOMAIN, "%s user response: %i", request->message, msg->status_code);
 	
 	/* Check response */
-	if(!network_check_http(msg)){
+	if(!network_check_http(request->service, msg)){
 		app_statusbar_printf("Failed %s.", request->message, NULL);
 		user_request_free(request);
 		return;
@@ -196,7 +199,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	
 	/* parse new user */
 	debug(DEBUG_DOMAIN, "Parsing user response");
-	User *user=user_parse_new(msg->response_body->data, msg->response_body->length);
+	User *user=user_parse_new(request->service, msg->response_body->data, msg->response_body->length);
 	app_statusbar_printf("Successfully %s.", request->message, NULL);
 	
 	switch(request->action){
@@ -212,6 +215,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 		case UnBlock:
 		case ViewTweets:
 		case ViewProfile:
+		case SelectService:
 			break;
 	}//switch
 	if(user) user_free(user);
@@ -225,6 +229,7 @@ static void user_request_free(FriendRequest *request){
 	if(request->uri) g_free(request->uri);
 	if(request->user_data) g_free(request->user_data);
 	if(request->message) g_free(request->message);
+	request->service=NULL;
 	g_free(request);
 	request=NULL;
 }//user_request_free
@@ -242,7 +247,7 @@ static User *user_constructor( gboolean a_follower ){
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
-User *user_parse_new( const gchar *data, gssize length ){
+User *user_parse_new(OnlineService *service, const gchar *data, gssize length){
 	xmlDoc *doc=NULL;
 	xmlNode *root_element=NULL;
 	User *user=NULL;
@@ -254,7 +259,7 @@ User *user_parse_new( const gchar *data, gssize length ){
 	}
 	
 	if(g_str_equal(root_element->name, "user"))
-		user=user_parse_profile(root_element->children);
+		user=user_parse_profile(service, root_element->children);
 	
 	/* Free memory */
 	xmlFreeDoc(doc);
@@ -264,7 +269,7 @@ User *user_parse_new( const gchar *data, gssize length ){
 }
 
 
-User *user_parse_profile(xmlNode *a_node){
+User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	xmlNode		*cur_node=NULL;
 	gchar		*content=NULL;
 	
@@ -326,7 +331,7 @@ int user_sort_by_user_name(User *a, User *b){
 
 
 /* Parse a user-list XML( friends, followers,... ) */
-GList *users_new(const gchar *data, gssize length){
+GList *users_new(OnlineService *service, const gchar *data, gssize length){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*cur_node=NULL;
@@ -346,7 +351,7 @@ GList *users_new(const gchar *data, gssize length){
 			continue;
 		if(g_str_equal(cur_node->name, "user")){
 			/* parse user */
-			user=user_parse_profile(cur_node->children);
+			user=user_parse_profile(service, cur_node->children);
 			/* add to list */
 			list=g_list_append(list, user);
 		} else if(g_str_equal(cur_node->name, "users")){
@@ -362,7 +367,7 @@ GList *users_new(const gchar *data, gssize length){
 }
 
 /* Get a user timeline */
-User *user_fetch_profile(const gchar *user_name){
+User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	if( !user_name || G_STR_EMPTY(user_name))
 		return NULL;
 			
@@ -370,10 +375,10 @@ User *user_fetch_profile(const gchar *user_name){
 	SoupMessage *msg=NULL;
 	
 	gchar *user_profile=g_strdup_printf( API_ABOUT_USER, user_name );
-	msg=online_service_request( current_service, GET, user_profile, NULL, NULL, NULL );
+	msg=online_service_request( service, GET, user_profile, NULL, NULL, NULL );
 	g_free( user_profile );
 	
-	if((user=user_parse_new( msg->response_body->data, msg->response_body->length )) )
+	if((user=user_parse_new(service, msg->response_body->data, msg->response_body->length )) )
 		return user;
 	
 	return NULL;
@@ -400,6 +405,7 @@ void user_free(User *user){
 	if(!(G_STR_EMPTY(user->url))) g_free(user->url);
 	if(!(G_STR_EMPTY(user->image_url))) g_free(user->image_url);
 	if(!(G_STR_EMPTY(user->image_filename))) g_free(user->image_filename);
+	user->service=NULL;
 	g_free(user);
 	user=NULL;
 }//user_free

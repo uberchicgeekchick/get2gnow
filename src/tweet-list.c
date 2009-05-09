@@ -129,7 +129,9 @@ static void tweet_list_create_model( TweetList *list ){
 							G_TYPE_STRING,		/* Date string */
 							G_TYPE_STRING,		/* Tweet string */
 							G_TYPE_STRING,		/* Username string */
-							G_TYPE_ULONG		/* Tweet's ID */
+							G_TYPE_ULONG,		/* Tweet's ID */
+							G_TYPE_ULONG,		/* User's ID */
+							G_TYPE_POINTER		/* Service pointer */
 	);
 
 	/* save normal model */
@@ -147,11 +149,11 @@ static void tweet_list_setup_view(TweetList *list){
 	g_object_set(list, "rules-hint", TRUE, "reorderable", FALSE, "headers-visible", FALSE, NULL);
 
 	renderer=gtk_cell_renderer_pixbuf_new();
-	gtk_cell_renderer_set_fixed_size( renderer, 53, 48 );
+	gtk_cell_renderer_set_fixed_size( renderer, 55, 48 );
 	avatar_column=gtk_tree_view_column_new_with_attributes( NULL, renderer, "pixbuf", PIXBUF_AVATAR, NULL);
 	gtk_tree_view_column_set_sizing( avatar_column, GTK_TREE_VIEW_COLUMN_FIXED );
-	gtk_tree_view_column_set_min_width( avatar_column, 53 );
-	gtk_tree_view_column_set_fixed_width( avatar_column, 53 );
+	gtk_tree_view_column_set_min_width( avatar_column, 55 );
+	gtk_tree_view_column_set_fixed_width( avatar_column, 55 );
 	gtk_tree_view_append_column( GTK_TREE_VIEW( list ), avatar_column );
 	
 	renderer=gtk_cell_renderer_text_new();
@@ -166,6 +168,7 @@ static void tweet_list_setup_view(TweetList *list){
 
 
 static void tweet_list_move(GdkEventKey *event, TweetList *list){
+	guint max_tweets=((online_services_count_connections(online_services))*20)-1;
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
 		case GDK_Home: case GDK_KP_Home:
@@ -186,7 +189,8 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 		default: return;
 	}//switch
 	if( tweet_list_index<0 ) tweet_list_index=0;
-	else if( tweet_list_index>19 ) tweet_list_index=19;
+	else if( tweet_list_index>max_tweets ) tweet_list_index=max_tweets;
+	debug(DEBUG_DOMAIN, "Selecting tweet %d, maximum tweets are: %d.", tweet_list_index, max_tweets);
 	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
@@ -194,6 +198,8 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 }//tweet_list_move
 
 void tweet_list_refresh(void){
+	debug(DEBUG_DOMAIN, "Re-setting tweet_list_index.");
+	gtk_list_store_clear(list_priv->store);
 	tweet_list_index=0;
 }//tweet_list_refreshed
 
@@ -213,36 +219,43 @@ void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *li
 
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;
-	GtkTreeIter		iter;
-	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, &iter) ))
-		return tweet_view_sexy_select();
+	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
+	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(widget))) && gtk_tree_selection_get_selected(sel, NULL, iter) )){
+		g_free(iter);
+		tweet_view_sexy_select();
+		return;
+	}
 	
 	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 	
-	
-	gulong		tweet_id;
+	gulong		tweet_id, user_id;
+	OnlineService	*service=NULL;
 	GdkPixbuf	*pixbuf;
 	gchar		*user_name, *user_nick, *date, *tweet;
 
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(list_priv->store),
-				&iter,
+				iter,
 				STRING_NICK, &user_nick,
 				STRING_TWEET, &tweet,
 				STRING_DATE, &date,
 				STRING_USER, &user_name,
 				PIXBUF_AVATAR, &pixbuf,
 				ULONG_TWEET_ID, &tweet_id,
-				-1
+				ULONG_USER_ID, &user_id,
+				SERVICE_POINTER, &service,
+			-1
 	);
 	
-	tweet_view_show_tweet((unsigned long int)tweet_id, user_name, user_nick, date, tweet, pixbuf);
+	debug(DEBUG_DOMAIN, "Displaying tweet: #%lu from '%s'.", tweet_id, service->decoded_key);
+	tweet_view_show_tweet(service, (unsigned long int)tweet_id, user_id, user_name, user_nick, date, tweet, pixbuf);
 	
 	g_free(user_name);
 	g_free(tweet);
 	g_free(date);
 	g_free(user_nick);
 	if(pixbuf) g_object_unref(pixbuf);
+	g_free(iter);
 }
 
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *friends_tweet){
@@ -258,12 +271,13 @@ GtkListStore *tweet_list_get_store(void){
 	return list_priv->store;
 }
 
-void tweet_list_set_image(const gchar *image_filename, GtkTreeIter  iter){
+void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter){
 	GdkPixbuf *pixbuf;
 	if( !(pixbuf=images_get_pixbuf_from_filename( image_filename )) )
 		return;
 	
-	gtk_list_store_set(list_priv->store , &iter, PIXBUF_AVATAR, pixbuf, -1);
+	debug(DEBUG_DOMAIN, "Adding image: '%s' to tweet_view.", image_filename);
+	gtk_list_store_set(list_priv->store , iter, PIXBUF_AVATAR, pixbuf, -1);
 	g_object_unref(pixbuf);
 }//tweet_list_set_image
 

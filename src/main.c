@@ -31,7 +31,7 @@
 #include "config.h"
 #include "gconfig.h"
 #include "app.h"
-#include "online-service.h"
+#include "online-services.h"
 #include "ipc.h"
 
 int main(int argc, char **argv){
@@ -58,7 +58,7 @@ int main(int argc, char **argv){
 	gconfig_start();
 	
 	/* Start the network
-	 * 	from 'online-service.h':
+	 * 	from 'online-services.h':
 	 *	extern OnlineServices *online_services;
 	 */
 	online_services_init();

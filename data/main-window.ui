@@ -29,9 +29,9 @@
           <object class="GtkMenuBar" id="main_menubar">
             <property name="visible">True</property>
             <child>
-              <object class="GtkMenuItem" id="connections">
+              <object class="GtkMenuItem" id="accounts">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Connections</property>
+                <property name="label" translatable="yes">_Accounts</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="connections_menu">
@@ -60,10 +60,19 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="services">
-                        <property name="label" translatable="yes">_Services</property>
+                        <property name="label" translatable="yes">_Accounts</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="image">image14</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="select_service">
+                        <property name="label" translatable="yes">_Select Default Account</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image20</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
@@ -211,8 +220,17 @@
                     <child>
                       <object class="GtkRadioMenuItem" id="view_mentions">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_@ Mentions</property>
+                        <property name="label" translatable="yes">@ _Mentions</property>
                         <property name="use_underline">True</property>
+                        <property name="group">view_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_replies">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">@ _Replies</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
                         <property name="group">view_public_timeline</property>
                       </object>
                     </child>
@@ -398,7 +416,8 @@
             <property name="can_focus">True</property>
             <child>
               <object class="GtkFrame" id="frame1">
-                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="no_show_all">True</property>
                 <property name="label_xalign">0</property>
                 <child>
                   <object class="GtkAlignment" id="alignment1">
@@ -601,5 +620,9 @@
   <object class="GtkImage" id="image19">
     <property name="visible">True</property>
     <property name="stock">gtk-help</property>
+  </object>
+  <object class="GtkImage" id="image20">
+    <property name="visible">True</property>
+    <property name="stock">gtk-indent</property>
   </object>
 </interface>

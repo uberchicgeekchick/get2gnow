@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], [00.00.eD.a00], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
+AC_INIT([get2gnow], [000.000.DB3.aEC3], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -95,6 +95,11 @@ PKG_CHECK_MODULES(get2gnow,
 ])
 AC_SUBST(get2gnow_CFLAGS)
 AC_SUBST(get2gnow_LIBS)
+
+dnl *******************************
+dnl *   debug & gdb support       *
+dnl *******************************
+AM_CONDITIONAL(HAVE_GNOME_KEYRING, test x$have_gnome_keyring = xyes)
 
 dnl -----------------------------------------------------------
 dnl Language Support

@@ -63,7 +63,7 @@ get2gnow_SOURCES =					\
 	geometry.c		geometry.h		\
 	hint.c			hint.h			\
 	label.c			label.h			\
-	online-service.c	online-service.h	\
+	online-services.c	online-services.h	\
 	network.c		network.h		\
 	timer.c			timer.h			\
 	parser.c		parser.h		\
@@ -96,7 +96,7 @@ get2gnow_OBJECTS =				\
 	label.$(OBJEXT)				\
 	timer.$(OBJEXT)				\
 	parser.$(OBJEXT)			\
-	online-service.$(OBJEXT)		\
+	online-services.$(OBJEXT)		\
 	network.$(OBJEXT)			\
 	preferences.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)			\
@@ -238,10 +238,10 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+debug_CFLAGS = @debug_CFLAGS@
 get2gnow_CFLAGS = @get2gnow_CFLAGS@
 get2gnow_LIBS = @get2gnow_LIBS@
 USE_NLS = @USE_NLS@
-VERSION = @VERSION@
 WARN_CFLAGS = @WARN_CFLAGS@
 WARN_CXXFLAGS = @WARN_CXXFLAGS@
 XGETTEXT = @XGETTEXT@
@@ -308,6 +308,7 @@ AM_CFLAGS =						\
 	-DLIBDIR=\""$(libdir)"\"			\
 	-DLOCALEDIR=\""$(localedir)"\"			\
 	$(get2gnow_CFLAGS)				\
+	$(debug_CFLAGS)					\
 	$(WARN_CFLAGS)
 
 get2gnow_LDADD =				\
@@ -397,7 +398,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@

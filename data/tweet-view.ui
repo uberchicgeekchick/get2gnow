@@ -2,17 +2,11 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkListStore" id="friends_liststore">
-    <columns>
-      <!-- column-name user_name -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkWindow" id="tweet_view">
     <child>
       <object class="GtkHBox" id="tweet_view_embed">
         <property name="width_request">375</property>
-        <property name="height_request">150</property>
+        <property name="height_request">175</property>
         <property name="visible">True</property>
         <property name="spacing">1</property>
         <child>
@@ -186,6 +180,9 @@
               <placeholder/>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkHBox" id="char_count_hbox">
                 <property name="visible">True</property>
                 <property name="spacing">15</property>
@@ -221,7 +218,7 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -282,7 +279,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -319,6 +316,9 @@
                         <property name="active">0</property>
                         <child>
                           <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
                         </child>
                       </object>
                       <packing>
@@ -397,7 +397,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </object>
@@ -542,5 +542,13 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
     <property name="page_size">10</property>
+  </object>
+  <object class="GtkListStore" id="friends_liststore">
+    <columns>
+      <!-- column-name user_label -->
+      <column type="gchararray"/>
+      <!-- column-name User * -->
+      <column type="gpointer"/>
+    </columns>
   </object>
 </interface>
