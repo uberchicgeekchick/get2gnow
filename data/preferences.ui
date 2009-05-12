@@ -91,10 +91,13 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="restart_label">
+                              <object class="GtkCheckButton" id="dont_expand_urls_checkbutton">
+                                <property name="label" translatable="yes">Don't expand _URLs to include page titles.</property>
                                 <property name="visible">True</property>
-                                <property name="label" translatable="yes">&lt;u&gt;&lt;b&gt;*you must restart before this takes effect.&lt;/b&gt;&lt;/u&gt;</property>
-                                <property name="use_markup">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
                               </object>
                               <packing>
                                 <property name="position">4</property>

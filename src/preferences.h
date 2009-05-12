@@ -51,11 +51,18 @@ G_BEGIN_DECLS
 #define PREFS_UI_WIN_POS_Y		PREFS_PATH "/ui/main_window_pos_y"
 #define PREFS_UI_MAIN_WINDOW_HIDDEN	PREFS_PATH "/ui/main_window_hidden"
 
+#define PREFS_UI_TWEET_VIEW_HEIGHT		PREFS_PATH "/ui/tweet_view_height"
+#define PREFS_UI_TWEET_VIEW_WIDTH		PREFS_PATH "/ui/tweet_view_width"
+#define PREFS_UI_TWEET_VIEW_POS_X		PREFS_PATH "/ui/tweet_view_pos_x"
+#define PREFS_UI_TWEET_VIEW_POS_Y		PREFS_PATH "/ui/tweet_view_pos_y"
+#define PREFS_UI_TWEET_VIEW_USE_DIALOG		PREFS_PATH "/ui/use_tweet_dialog"
+
+
 /* Values used & setup by the prefernces window */
 #define PREFS_UI_NOTIFICATION		PREFS_PATH "/ui/notify"
 #define PREFS_UI_SOUND			PREFS_PATH "/ui/sound"
 #define PREFS_UI_NO_ALERT		PREFS_PATH "/ui/no_alert"
-#define PREFS_UI_USE_TWEET_DIALOG	PREFS_PATH "/ui/use_tweet_dialog"
+#define PREFS_UI_DONT_EXPAND_URLS	PREFS_PATH "/ui/dont_expand_urls"
 
 #define PREFS_HINTS_CLOSE_MAIN_WINDOW	PREFS_PATH "/hints/close_main_window"
 

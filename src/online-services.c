@@ -71,8 +71,9 @@
 
 #include "app.h"
 #include "main.h"
-#include "gconfig.h"
+#include "parser.h"
 #include "network.h"
+#include "gconfig.h"
 #include "keyring.h"
 #include "debug.h"
 #include "tweets.h"
@@ -124,14 +125,14 @@ OnlineServices *online_services_init(void){
 	services->total=0;
 	
 	gconfig_get_list_string(PREFS_AUTH_SERVICES, &services->keys);
-
+	
 	for( k=services->keys; k; k=k->next ){
 		account_key=(gchar *)k->data;
 		debug(DEBUG_DOMAIN, "Loading  '%s' account.", account_key);
 		services->accounts=g_list_append(services->accounts, (online_service_load( (const gchar *)account_key )) );
 		services->accounts=g_list_last(services->accounts);
 		service=(OnlineService *)services->accounts->data;
-
+		
 		debug(DEBUG_DOMAIN, "Loaded account: '%s'.  Validating & connecting.", service->decoded_key);
 		if(!service->enabled){
 			debug(DEBUG_DOMAIN, "%s account not enabled.", service->decoded_key);
@@ -253,14 +254,14 @@ gboolean online_services_save(OnlineServices *services, OnlineService *service, 
 	online_services_reconnect(services);
 }//online_services_save
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
 		if(service->connected)
-			online_service_request(service, request, resource, callback, user_data, formdata);
+			online_service_request(service, request, uri, callback, user_data, formdata);
 	}
 }//online_services_request
 
@@ -328,7 +329,7 @@ static OnlineService *online_service_open(const gchar *username, const gchar *ur
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_PREFIX, service->key);
 	debug(DEBUG_DOMAIN, "Loading OnlineService settings for: '%s@%s'\n\t\tAccount's gconf path: %s", service->username, service->url, prefs_auth_path );
 	g_free(prefs_auth_path);
-
+	
 	prefs_auth_path=g_strdup_printf(PREFS_AUTH_ENABLED, service->key);
 	gconfig_get_bool(prefs_auth_path, &service->enabled);
 	g_free(prefs_auth_path);
@@ -442,6 +443,22 @@ OnlineService *online_services_get_first_connected(OnlineServices *services){
 	}
 	return service;
 }//online_services_get_first_connected
+
+guint online_services_get_which_connected(OnlineServices *services, OnlineService *which_service){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
+	guint		service_count=0;
+	
+	for(a=g_list_first(services->accounts); a; a=a->next){
+			service=(OnlineService *)a->data;
+			if(service->connected){
+				if(service==which_service)
+					return service_count;
+				service_count++;
+			}
+	}
+	return 0;
+}
 
 OnlineService *online_services_get_last_connected(OnlineServices *services){
 	GList		*a=NULL;
@@ -579,16 +596,16 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 }//online_service_http_authenticate
 
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	if(!(service->connected)) return NULL;
-	gchar *new_uri=g_strdup_printf("https://%s%s%s", service->url, ( (g_str_equal(service->url, "twitter.com")) ?"" :"/api" ), resource );
+	gchar *new_uri=g_strdup_printf("https://%s%s%s", service->url, ( (g_str_equal(service->url, "twitter.com")) ?"" :"/api" ), uri );
 	debug(DEBUG_DOMAIN, "Creating new service request for: '%s', requesting: %s.", service->decoded_key, new_uri);
 	SoupMessage *msg=online_service_request_url(service, request, (const gchar *)new_uri, callback, user_data, formdata);
 	g_free(new_uri);
 	return msg;
 }//online_service_request
 
-SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	if(!(service->connected)) return NULL;
 	if(!SOUP_IS_SESSION(service->session)){
 		online_service_reconnect(service);
@@ -602,8 +619,8 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 	switch(request){
 		case GET:
 		case QUEUE:
-			debug(DEBUG_DOMAIN, "GET: %s", resource);
-			msg=soup_message_new("GET", resource);
+			debug(DEBUG_DOMAIN, "GET: %s", uri);
+			msg=soup_message_new("GET", uri);
 			break;
 		case POST:
 			if((gchar *)formdata){
@@ -620,9 +637,9 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 					}
 				}
 			}
-
-			debug(DEBUG_DOMAIN, "POST: %s\n\t\tformdata:%s", resource, (service_formdata ?service_formdata :(gchar *)formdata));
-			msg=soup_message_new("POST", resource);
+			
+			debug(DEBUG_DOMAIN, "POST: %s\n\t\tformdata:%s", uri, (service_formdata ?service_formdata :(gchar *)formdata));
+			msg=soup_message_new("POST", uri);
 	
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
@@ -651,7 +668,10 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 			if(callback){
 				service_wrapper=g_new0(OnlineServiceCBWrapper, 1);
 				service_wrapper->service=service;
-				service_wrapper->user_data=user_data;
+				if(callback==network_cb_on_image)
+					service_wrapper->user_data=user_data;
+				else
+					service_wrapper->user_data=g_strdup(user_data);
 			}
 			
 			soup_session_queue_message(service->session, msg, callback, service_wrapper);
@@ -665,23 +685,37 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 		case GET:
 			debug(DEBUG_DOMAIN, "Sending libsoup request to service: '%s' & returning libsoup's message.", service->decoded_key);
 			soup_session_send_message(service->session, msg);
-			if(!network_check_http(service, msg))
-				return msg;
 			return msg;
 	}
 	return msg;
 }//online_service_request_url
 
+gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg){
+	*msg=online_service_request_url(service, GET, uri, NULL, NULL, NULL);
+	if(!network_check_http(service, *msg))
+		return g_strdup(uri);
+
+	debug(DEBUG_DOMAIN, "Getting content-type from uri: '%s'.", uri);
+	gchar *content_type=NULL;
+	if(!(content_type=(gchar *)soup_message_headers_get_content_type( (*msg)->response_headers, NULL))){
+		debug(DEBUG_DOMAIN, "Unable to determine the content type from uri: '%s'.", uri);
+		return NULL;
+	}
+	
+	return content_type;
+}/*online_service_get_url_content_type*/
+
 void online_services_free_wrapper(OnlineServices *services, OnlineServiceCBWrapper *service_wrapper){
 	if(!service_wrapper)
 		return;
 	
-	service_wrapper->service=NULL;
-	
-	if( (service_wrapper->service==online_services_get_last_connected(services)) && service_wrapper->user_data ){
+	if(service_wrapper->user_data){
 		g_free(service_wrapper->user_data);
 		service_wrapper->user_data=NULL;
 	}
+	
+	service_wrapper->service=NULL;
+	
 	g_free(service_wrapper);
 	service_wrapper=NULL;
 }//online_service_free_wrapper

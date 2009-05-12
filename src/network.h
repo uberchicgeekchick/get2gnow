@@ -100,6 +100,7 @@ gboolean network_check_http(OnlineService *service, SoupMessage *msg);
 GList *network_get_users_glist(gboolean get_friends);
 gboolean network_download_avatar(OnlineService *service, const gchar *image_uri);
 
+void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
 /* My, Kaity G. B., new stuff ends here. */
 
 /* Get an image from servers */

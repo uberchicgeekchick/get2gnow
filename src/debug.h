@@ -48,6 +48,16 @@ G_BEGIN_DECLS
 #  endif
 #endif
 
+#ifdef DISABLE_DEBUG
+#	define debug_printf
+#elif defined G_HAVE_ISO_VARARGS
+#	define debug_printf(D, ...)	debug_impl (D, __VA_ARGS__)
+#elif defined(G_HAVE_GNUC_VARARGS)
+#	define debug_printf(D, fmt...)	debug_impl(D, fmt)
+#else
+#	define debug_printf(D, x)	debug_impl(D, x)
+#endif
+
 #define	check_devel()	debug_check_devel()
 
 gboolean debug_check_devel(void);

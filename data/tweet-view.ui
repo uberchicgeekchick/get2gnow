@@ -6,7 +6,7 @@
     <child>
       <object class="GtkHBox" id="tweet_view_embed">
         <property name="width_request">375</property>
-        <property name="height_request">175</property>
+        <property name="height_request">225</property>
         <property name="visible">True</property>
         <property name="spacing">1</property>
         <child>
@@ -420,6 +420,30 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <child>
+              <object class="GtkHBox" id="hbox1">
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkToggleButton" id="tweet_view_embed_togglebutton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Switch between viewing &amp; composing Tweets in its own window or inside the program's main window.</property>
+                    <property name="image">tweet_view_embed_image</property>
+                  </object>
+                  <packing>
+                    <property name="fill">False</property>
+                    <property name="pack_type">end</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkHSeparator" id="hseparator2">
                 <property name="visible">True</property>
               </object>
@@ -547,8 +571,12 @@
     <columns>
       <!-- column-name user_label -->
       <column type="gchararray"/>
-      <!-- column-name User * -->
+      <!-- column-name User -->
       <column type="gpointer"/>
     </columns>
+  </object>
+  <object class="GtkImage" id="tweet_view_embed_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-goto-top</property>
   </object>
 </interface>

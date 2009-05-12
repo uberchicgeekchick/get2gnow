@@ -23,66 +23,56 @@
 
 #include "config.h"
 
+#include <glib.h>
 #include <string.h>
 #include <stdlib.h>
 #include <gio/gio.h>
 #include <libsexy/sexy.h>
 
 #include "main.h"
+#include "app.h"
 #include "label.h"
+#include "debug.h"
+#include "tweets.h"
 #include "network.h"
+#include "parser.h"
+#include "gconfig.h"
+#include "online-services.h"
+#include "preferences.h"
 
-static void   label_class_init   (LabelClass *clas);
-static void   label_init         (Label      *label);
-static void   label_finalize     (GObject          *object);
+#define	DEBUG_DOMAIN	"UI:Lable"
 
-static void  label_url_activated_cb     (GtkWidget        *url_label,
-                                         gchar            *url,
-                                         gpointer          user_data);
-static char* label_msg_get_string       (const char       * message);
+static void label_class_init(LabelClass *klass);
+static void label_init(Label *label);
+static void label_finalize(GObject *object);
+
+static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data);
+static char *label_msg_get_string(OnlineService *service, const char *message);
+static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri);
+
 
 G_DEFINE_TYPE (Label, label, SEXY_TYPE_URL_LABEL);
 
-static void
-label_class_init (LabelClass *clas)
-{
-	GObjectClass   *object_class = G_OBJECT_CLASS (clas);
-
+static void label_class_init(LabelClass *klass){
+	GObjectClass   *object_class=G_OBJECT_CLASS(klass);
 	/* Add private */
-
-	object_class->finalize = label_finalize;
+	object_class->finalize=label_finalize;
 }
 
-static void
-label_init (Label *label)
-{
-	gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+static void label_init(Label *label){
+	gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
 	
-	g_object_set (label,
-				  "xalign", 0.0,
-				  "yalign", 0.0,
-				  "xpad", 6,
-				  "ypad", 4,
-				  NULL);
+	g_object_set(label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, NULL);
 	
-	g_signal_connect (label,
-					  "url-activated",
-					  G_CALLBACK (label_url_activated_cb),
-					  NULL);
+	g_signal_connect(label, "url-activated", G_CALLBACK(label_url_activated_cb), NULL);
 }
 
-static void
-label_finalize (GObject *object)
-{
+static void label_finalize(GObject *object){
 	/* Cleanup code */
 }
 
-static void
-label_url_activated_cb  (GtkWidget *url_label,
-						 gchar     *url,
-						 gpointer   user_data)
-{
-	if (g_app_info_launch_default_for_uri (url, NULL, NULL) == FALSE) {
+static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data){
+	if(g_app_info_launch_default_for_uri (url, NULL, NULL) == FALSE){
 			g_warning ("Couldn't show URL: '%s'", url);
 	}
 }
@@ -91,19 +81,13 @@ Label *label_new (void){
 	return g_object_new (TYPE_LABEL, NULL);
 }
 
-void label_set_text( Label *nav, const gchar  *text ){
-	gchar *parsed_text;
-	
-	parsed_text = label_msg_get_string (text);
-	
-	sexy_url_label_set_markup (SEXY_URL_LABEL (nav), parsed_text);
-	
-	g_free (parsed_text);
+void label_set_text(OnlineService *service, Label *my_sexy_label, const gchar  *text){
+	gchar *parsed_text=label_msg_get_string(service, text);
+	sexy_url_label_set_markup(SEXY_URL_LABEL(my_sexy_label), parsed_text);
+	g_free(parsed_text);
 }
 
-static gboolean
-url_check_word (char *word, int len)
-{
+static gboolean url_check_word (char *word, int len){
 #define D(x) (x), ((sizeof (x)) - 1)
 	static const struct {
 		const char *s;
@@ -144,9 +128,7 @@ url_check_word (char *word, int len)
 	return FALSE;
 }
 
-static gssize
-find_first_non_username(const char *str)
-{
+static gssize find_first_non_username(const char *str){
 	gssize i;
 
 	for (i = 0; str[i]; ++i) {
@@ -157,9 +139,7 @@ find_first_non_username(const char *str)
 	return -1;
 }
 
-static char*
-label_msg_get_string (const char* message)
-{
+static char *label_msg_get_string(OnlineService *service, const char* message){
 	gchar **tokens;
 	gchar  *result;
 	gchar  *temp;
@@ -170,6 +150,7 @@ label_msg_get_string (const char* message)
 	}
 	
 	/* TODO: Do we need to escape out <>&"' so that pango markup doesn't get confused? */
+	gchar *at_url_prefix=g_strdup_printf("https://%s", ( (service && service->url) ?service->url :"twitter.com" ));
 	
 	/* surround urls with <a> markup so that sexy-url-label can link it */
 	tokens = g_strsplit_set (message, " \t\n", 0);
@@ -180,22 +161,25 @@ label_msg_get_string (const char* message)
 
 				end  = find_first_non_username (&tokens[i][1]) + 1;
 				if (end == 0) {
-					temp =
-						g_strdup_printf ("<a href=\"http://twitter.com/%s\">%s</a>",
-										 &tokens[i][1],
-										 tokens[i]);
+					temp=g_strdup_printf(
+								"<a href=\"%s/%s\">%s</a>",
+									at_url_prefix,
+									&tokens[i][1],
+									tokens[i]);
 				} else {
 					gchar delim;
 
 					delim = tokens[i][end];
 					tokens[i][end] = '\0';
-					temp =
-						g_strdup_printf ("<a href=\"http://twitter.com/%s\">%s</a>%c%s",
-										 &tokens[i][1], tokens[i], delim, &tokens[i][end+1]);
+					temp=g_strdup_printf(
+								"<a href=\"%s/%s\">%s</a>%c%s",
+									at_url_prefix,
+									&tokens[i][1], tokens[i], delim, &tokens[i][end+1]
+					);
 				}
 			} else {
-				/* TODO: add a network fetch, check the mime type & have it handle the data as best possible.  */
-				temp=g_strdup_printf ("<a href=\"%s\">%s</a>", tokens[i], tokens[i]);
+				debug_printf(DEBUG_DOMAIN, "Attempting to display title for uri: '%s'.", tokens[i]);
+				temp=label_format_hyperlink(service, tokens[i]);
 			}
 			g_free (tokens[i]);
 			tokens[i] = temp;
@@ -203,6 +187,45 @@ label_msg_get_string (const char* message)
 	}
 	result = g_strjoinv(" ", tokens);
 	g_strfreev (tokens);
+	g_free(at_url_prefix);
 	
 	return result;	
 }
+
+static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri){
+	gchar *temp=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
+	
+	if(gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS))
+		return temp;
+	
+	
+	SoupMessage *msg=NULL;
+	gchar *content_type=NULL;
+	
+	
+	app_statusbar_printf("Please wait while %s's title is found.", uri);
+	if(!(content_type=online_service_get_url_content_type(service, uri, &msg))){
+		debug_printf(DEBUG_DOMAIN, "\t\tUnable to determine the content-type from uri: '%s'.", uri);
+		return temp;
+	}
+	
+	
+	if(!g_str_equal(content_type, "text/html")){
+		debug_printf(DEBUG_DOMAIN, "\t\tNon-XHTML content-type from uri: '%s'.", uri);
+		g_free(content_type);
+		return temp;
+	}
+	g_free(content_type);
+	
+	
+	gchar *uri_title=NULL;
+	debug_printf(DEBUG_DOMAIN, "Retriving title for uri: '%s'.", uri);
+	if((uri_title=parser_parse_xpath_content(msg, "html->head->title"))){
+		g_free(temp);
+		debug_printf(DEBUG_DOMAIN, "Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", uri_title, uri);
+		temp=g_strdup_printf("<a href=\"%s\">%s &lt;- %s</a>", uri, uri_title, uri);
+		g_free(uri_title);
+	}
+	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
+	return temp;
+}//label_format_hyperlink

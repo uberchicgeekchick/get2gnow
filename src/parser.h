@@ -25,12 +25,17 @@
 
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
+
+#include <libsoup/soup-message.h>
+
 #include "online-services.h"
 
-xmlDoc *parser_parse(const char *data, gssize length, xmlNode **first_element);
+gchar *parser_get_cache_file_from_uri(const gchar *uri);
 
-/* Returns a liststore for the main treeview to show tweets */
-gboolean parser_timeline(OnlineService *service, const gchar *data, gssize length);
+xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element);
+
+gboolean parser_timeline(OnlineService *service, SoupMessage *xml);
+gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 /* Restet the ID of the last tweet showed */
 void parser_reset_lastid( void );

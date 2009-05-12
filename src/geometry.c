@@ -60,4 +60,37 @@ void geometry_load_for_main_window(GtkWindow *main_window){
 
 	debug( DEBUG_DOMAIN, "Moving window to: x:%d, y:%d", x, y);
 	gtk_window_move( GTK_WINDOW (main_window), x, y);
- }
+}
+
+void geometry_save_for_tweet_view(gint x, gint y, gint w, gint h){
+	if(!(w >0 && h > 0 && x > 0 && y > 0))
+		return;
+		
+	debug (DEBUG_DOMAIN, "Saving for tweet_view: x:%d, y:%d, width:%d, height:%d", x, y, w, h);
+
+	gconfig_set_int(PREFS_UI_TWEET_VIEW_HEIGHT, h);
+	gconfig_set_int(PREFS_UI_TWEET_VIEW_WIDTH, w);
+
+	gconfig_set_int(PREFS_UI_TWEET_VIEW_POS_X, x);
+	gconfig_set_int(PREFS_UI_TWEET_VIEW_POS_Y, y);
+}
+ 
+void geometry_load_for_tweet_view(GtkWindow *tweet_view){
+	debug(DEBUG_DOMAIN, "Loading tweet_view geometry...");
+	gint	x=0, y=0, w=0, h=0;
+	
+	gconfig_get_int(PREFS_UI_TWEET_VIEW_HEIGHT, &h);
+	gconfig_get_int(PREFS_UI_TWEET_VIEW_WIDTH, &w);
+	
+	gconfig_get_int(PREFS_UI_TWEET_VIEW_POS_X, &x);
+	gconfig_get_int(PREFS_UI_TWEET_VIEW_POS_Y, &y);
+	
+	if(!(w >0 && h > 0 && x > 0 && y > 0))
+		return;
+	
+	debug(DEBUG_DOMAIN, "Resizing tweet_view:  width:%d, height: %d", w, h);
+	gtk_window_resize(GTK_WINDOW(tweet_view), w, h);
+	
+	debug( DEBUG_DOMAIN, "Moving tweet_view to: x:%d, y:%d", x, y);
+	gtk_window_move(GTK_WINDOW(tweet_view), x, y);
+}

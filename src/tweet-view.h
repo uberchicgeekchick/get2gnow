@@ -69,7 +69,8 @@
  *********************************************************************/
 /* My, Kaity G. B., new uber tweet viewer. */
 typedef struct {
-	/* Selected Tweet Widgets */
+	guint			size_timeout_id;
+	/* Tweet View Dialog & embeding Widgets */
 	GtkDialog		*tweet_view;
 	GtkHBox			*tweet_view_embed;
 	
@@ -79,8 +80,8 @@ typedef struct {
 	
 	/* Tweet View */
 	GtkVBox			*status_view_vbox;
-	Label			*sexy_service;
-	Label			*sexy_title;
+	Label			*sexy_to;
+	Label			*sexy_from;
 	Label			*sexy_tweet;
 	
 	/* My, Kaity G. B., new libsexy powered tweet entry box. */
@@ -115,6 +116,10 @@ typedef struct {
 	GtkButton		*user_unfollow_button;
 	GtkButton		*user_block_button;
 	
+	/* Togglebutton & image used to indicate & switch between embed tweet-view & floating. */
+	GtkToggleButton		*embed_togglebutton;
+	GtkImage		*embed_image;
+	
 	/* Buttons for stuff to do with the current selected & extended tweet. */
 	GtkButton		*reply_button;
 	GtkButton		*retweet_button;
@@ -130,6 +135,8 @@ extern unsigned long int in_reply_to_status_id;
  ********************************************************/
 TweetView *tweet_view_new(GtkWindow *parent);
 void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf );
+
+void tweet_view_set_embed_toggle_and_image(void);
 
 GtkComboBox *tweet_view_get_friends_combo_box(void);
 

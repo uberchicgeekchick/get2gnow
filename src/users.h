@@ -104,7 +104,7 @@ void user_request_main(OnlineService *service, FriendAction action, GtkWindow *p
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 /* Parse a user-list XML( friends, followers,... ) */
-GList *users_new(OnlineService *service, const gchar *data, gssize length);
+GList *users_new(OnlineService *service, SoupMessage *xml);
 void users_free(const char *type, GList *users );
 
 /* Get authenticated user's friends(following) */
@@ -124,7 +124,7 @@ GList *user_get_friends_and_followers(gboolean refresh);
 void user_free_lists (void);
 
 /* Parse a xml user node. Ex: add/del users responses */
-User *user_parse_new(OnlineService *service, const gchar *data, gssize length);
+User *user_parse_new(OnlineService *service, SoupMessage *xml);
 User *user_parse_profile(OnlineService *service, xmlNode *a_node);
 User *user_fetch_profile(OnlineService *service, const gchar *user_name);
 int user_sort_by_user_name( User *a, User *b );

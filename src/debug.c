@@ -109,30 +109,36 @@ static void debug_init (void){
 
 void debug_impl(const gchar *domain, const gchar *msg, ...){
 	static gboolean output_started=FALSE;
-	gint i;
-
+	gint i=0, x=0;
+	
 	g_return_if_fail (domain != NULL);
 	g_return_if_fail (msg != NULL);
-
+	
 	debug_init();
-
-	for (i = 0; debug_strv && debug_strv[i]; i++) {
-		if (all_domains || strcmp (domain, debug_strv[i]) == 0) {
+	
+	gchar **domains=g_strsplit(domain, ":", -1);
+	for(i=0; debug_strv && debug_strv[i]; i++) {
+		for(x=0; domains && domains[x]; x++){
+			if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
+				continue;
+			
 			va_list args;
 			if(!output_started){
 				g_print("\n");
 				output_started=TRUE;
 			}
 			
-			g_print ("%s: ", domain);
+			g_print ("%s: ", domains[x]);
 			
 			va_start(args, msg);
 			g_vprintf(msg, args);
 			va_end(args);
 			
 			g_print ("\n");
-			break;
+			g_strfreev(domains);
+			return;
 		}
 	}
+	g_strfreev(domains);
 }
 

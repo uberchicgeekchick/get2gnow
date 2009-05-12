@@ -199,7 +199,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	
 	/* parse new user */
 	debug(DEBUG_DOMAIN, "Parsing user response");
-	User *user=user_parse_new(request->service, msg->response_body->data, msg->response_body->length);
+	User *user=user_parse_new(request->service, msg);
 	app_statusbar_printf("Successfully %s.", request->message, NULL);
 	
 	switch(request->action){
@@ -247,13 +247,13 @@ static User *user_constructor( gboolean a_follower ){
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
-User *user_parse_new(OnlineService *service, const gchar *data, gssize length){
+User *user_parse_new(OnlineService *service, SoupMessage *xml){
 	xmlDoc *doc=NULL;
 	xmlNode *root_element=NULL;
 	User *user=NULL;
 	
 	/* parse the xml */
-	if(!( (doc=parser_parse(data, length, &root_element )) )){
+	if(!( (doc=parser_parse(xml, &root_element )) )){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -288,7 +288,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 		debug(DEBUG_DOMAIN, "name: %s; content: %s.", cur_node->name, content);
 		
 		if(g_str_equal(cur_node->name, "id" ))
-			user->id=strtoul( content, NULL, 0 );
+			user->id=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(cur_node->name, "name" ))
 			user->nick_name=g_strdup(content);
@@ -306,13 +306,13 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 			user->url=g_strdup(content);
 		
 		else if(g_str_equal(cur_node->name, "followers_count" ))
-			user->followers=strtoul( content, NULL, 0 );
+			user->followers=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(cur_node->name, "friends_count" ))
-			user->following=strtoul( content, NULL, 0 );
+			user->following=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(cur_node->name, "statuses_count" ))
-			user->tweets=strtoul( content, NULL, 0 );
+			user->tweets=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
 			user->image_filename=images_get_filename( (user->image_url=g_strdup(content)) );
@@ -331,7 +331,7 @@ int user_sort_by_user_name(User *a, User *b){
 
 
 /* Parse a user-list XML( friends, followers,... ) */
-GList *users_new(OnlineService *service, const gchar *data, gssize length){
+GList *users_new(OnlineService *service, SoupMessage *xml){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*cur_node=NULL;
@@ -340,7 +340,7 @@ GList *users_new(OnlineService *service, const gchar *data, gssize length){
 	User		*user=NULL;
 	
 	/* parse the xml */
-	if(!( (doc=parser_parse(data, length, &root_element)) )){
+	if(!( (doc=parser_parse(xml, &root_element)) )){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -362,7 +362,7 @@ GList *users_new(OnlineService *service, const gchar *data, gssize length){
 	/* Free memory */
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-
+	
 	return list;
 }
 
@@ -378,7 +378,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	msg=online_service_request( service, GET, user_profile, NULL, NULL, NULL );
 	g_free( user_profile );
 	
-	if((user=user_parse_new(service, msg->response_body->data, msg->response_body->length )) )
+	if((user=user_parse_new(service, msg)) )
 		return user;
 	
 	return NULL;
@@ -412,13 +412,12 @@ void user_free(User *user){
 
 /* Free a list of Users */
 void user_free_lists(void){
-
 	if(following_and_followers)
 		users_free("friends, ie who the user is following, and the authenticated user's followers", following_and_followers);
 	
 	if(user_friends)
 		users_free("friends, ie who they're following", user_friends);
-
+	
 	if(user_followers)
 		users_free("followers", user_followers);
 }//user_free_lists

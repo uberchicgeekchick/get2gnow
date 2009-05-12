@@ -63,6 +63,7 @@ static gint images_validate_height( gint height );
 gchar *images_get_filename(const gchar *image_url){
 	debug(DEBUG_DOMAIN, "Creating image file name from image url: %s.", image_url);
 	gchar *image_file, **image_name_info, *image_filename;
+	static gchar *stock_unknown_image_filename=NULL;
 	
 	/**
 	 * image_name_info[] index explanation:
@@ -85,7 +86,18 @@ gchar *images_get_filename(const gchar *image_url){
 	
 	if(!image_file){
 		debug(DEBUG_DOMAIN, "**ERROR** Unable to parse url into valid image filename.");
-		return g_strdup("unknown_image");
+		if(!stock_unknown_image_filename){
+			GtkImage *stock_unknown_image=(GtkImage *)gtk_image_new_from_icon_name("gtk-missing-image", ImagesDefault);
+			g_object_get(
+					stock_unknown_image,
+						"file", &stock_unknown_image_filename,
+					NULL
+			);
+			g_object_unref(stock_unknown_image);
+		}
+		
+		debug(DEBUG_DOMAIN, "\t\tUsing stock image: %s.", stock_unknown_image_filename);
+		return g_strdup(stock_unknown_image_filename);
 	}
 	
 	

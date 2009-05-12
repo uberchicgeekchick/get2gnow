@@ -148,9 +148,10 @@ gboolean online_services_save(OnlineServices *services, OnlineService *service, 
 
 guint online_services_count_connections(OnlineServices *services);
 OnlineService *online_services_get_first_connected(OnlineServices *services);
+guint online_services_get_which_connected(OnlineServices *services, OnlineService *which_service);
 OnlineService *online_services_get_last_connected(OnlineServices *services);
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 
 void online_services_deinit(OnlineServices *online_services);
 
@@ -160,8 +161,9 @@ gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *
 /* key is username@url */
 OnlineService *online_service_load(const gchar *account_key);
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
-SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *resource, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 
 void online_services_free_wrapper(OnlineServices *service, OnlineServiceCBWrapper *service_wrapper);
 

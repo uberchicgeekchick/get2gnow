@@ -25,6 +25,7 @@
 #define __LABEL_H__
 
 #include <libsexy/sexy.h>
+#include "online-services.h"
 
 G_BEGIN_DECLS
 
@@ -52,8 +53,7 @@ struct _LabelClass {
 
 GType label_get_type  (void) G_GNUC_CONST;
 Label *label_new       (void);
-void label_set_text  (Label  *nav,
-                                          const gchar  *text);
+void label_set_text(OnlineService *service, Label  *nav, const gchar *text);
 G_END_DECLS
 
 #endif /* __LABEL_H__ */

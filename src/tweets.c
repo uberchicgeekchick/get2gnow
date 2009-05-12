@@ -105,7 +105,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	selected_tweet->user_id=user_id;
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_strdup(tweet);
-	selected_tweet->reply_to_string=g_strdup_printf("@%s, on http://%s/%s, ", selected_tweet->user_name, selected_tweet->service->url, selected_tweet->user_name);
+	selected_tweet->reply_to_string=g_strdup_printf("@%s, on http://%s/%s , ", selected_tweet->user_name, selected_tweet->service->url, selected_tweet->user_name);
 }//set_selected_tweet
 
 OnlineService *selected_tweet_get_service(void){

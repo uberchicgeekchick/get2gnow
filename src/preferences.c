@@ -37,6 +37,7 @@
 #include "gtkbuilder.h"
 
 #include "main.h"
+#include "app.h"
 #include "preferences.h"
 
 #define GtkBuilderUI "preferences.ui"
@@ -53,6 +54,7 @@ typedef struct {
 	GtkCheckButton *sound;
 	GtkCheckButton *no_alert;
 	GtkCheckButton *use_tweet_dialog;
+	GtkCheckButton *dont_expand_urls;
 	
 	GList     *notify_ids;
 } Prefs;
@@ -114,7 +116,9 @@ static void preferences_setup_widgets(Prefs *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, prefs->no_alert);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_USE_TWEET_DIALOG, prefs->use_tweet_dialog);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_TWEET_VIEW_USE_DIALOG, prefs->use_tweet_dialog);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_UI_DONT_EXPAND_URLS, prefs->dont_expand_urls);
 	
 	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -312,10 +316,7 @@ static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, Gtk
 	
 	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
 	
-	g_signal_connect(check_button,
-					  "toggled",
-					  G_CALLBACK(preferences_toggle_button_toggled_cb),
-					  NULL);
+	g_signal_connect(check_button, "toggled", G_CALLBACK(preferences_toggle_button_toggled_cb), NULL);
 
 	if( (id=gconfig_notify_add(g_strdup(key),
 					preferences_notify_bool_cb,
@@ -457,6 +458,7 @@ preferences_dialog_show (GtkWindow *parent)
 							"notify_checkbutton", &prefs->notify,
 							"no_alert_checkbutton", &prefs->no_alert,
 							"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
+							"dont_expand_urls_checkbutton", &prefs->dont_expand_urls,
 						NULL
 	);
 
@@ -464,6 +466,7 @@ preferences_dialog_show (GtkWindow *parent)
 	gtkbuilder_connect (ui, prefs,
 						"preferences_dialog", "destroy", preferences_destroy_cb,
 						"preferences_dialog", "response", preferences_response_cb,
+						"use_tweet_dialog_checkbutton", "toggled", app_tweet_view_set_embed,
 					NULL
 	);
 

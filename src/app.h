@@ -86,16 +86,25 @@ struct _AppClass {
 GType app_get_type(void) G_GNUC_CONST;
 void app_create(void);
 App *app_get(void);
+
+void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data);
+
 GtkWindow *app_get_window(void);
 TweetList *app_get_tweet_list(void);
 GtkMenuBar *app_get_main_menu(void);
 GtkMenuItem *app_get_menu(const gchar *menu);
+
 void app_refresh_timeline(GtkWidget *window, App *app); 
+
+gboolean app_has_status_icon(void);
 void app_set_visibility(gboolean visible);
+
 void app_statusbar_printf(const gchar *msg, ...);
 void app_set_statusbar_msg(gchar *msg);
+
 void app_notify_sound(gboolean force);
 void app_notify(gchar *msg);
+
 void app_state_on_connection(gboolean connected);
 
 G_END_DECLS

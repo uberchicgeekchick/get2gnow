@@ -15,10 +15,10 @@
     </columns>
   </object>
   <object class="GtkWindow" id="main_window">
-    <property name="width_request">700</property>
-    <property name="height_request">700</property>
     <property name="visible">True</property>
     <property name="title" translatable="yes">get2gnow</property>
+    <property name="default_width">700</property>
+    <property name="default_height">700</property>
     <accel-groups>
       <group name="accelgroup1"/>
     </accel-groups>
@@ -130,8 +130,8 @@
                         <property name="use_underline">True</property>
                         <property name="image">image10</property>
                         <property name="use_stock">False</property>
-                        <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                         <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                       </object>
                     </child>
                     <child>

@@ -36,7 +36,7 @@
 
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
 
-#define GET_PRIV(obj)(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_GCONFIG, GConfigPriv))
+#define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_GCONFIG, GConfigPriv))
 
 typedef struct {
 	GConfClient *gconf_client;

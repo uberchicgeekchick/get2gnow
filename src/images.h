@@ -62,7 +62,7 @@ enum {
 	ImagesMaximum		=	96,
 	ImagesExpanded		=	72,
 	ImagesDefault		=	48,
-	ImagesMinimum		=	24,
+	ImagesMinimum		=	GTK_ICON_SIZE_BUTTON,
 };
 
 
