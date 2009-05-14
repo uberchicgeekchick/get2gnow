@@ -21,7 +21,7 @@
  *
  */
 
-#include <config.h>
+#include "config.h"
 
 /*
  * Just make sure we include the prototype for strptime as well
@@ -39,21 +39,22 @@
 
 #include <libsoup/soup-message.h>
 
-#include "debug.h"
-
 #include "main.h"
-#include "app.h"
 #include "network.h"
-#include "parser.h"
-#include "tweet-list.h"
 #include "online-services.h"
-#include "images.h"
 #include "users.h"
+
+#include "app.h"
+#include "tweet-list.h"
+#include "preferences.h"
+#include "images.h"
 #include "label.h"
+#include "gconfig.h"
+
 #include "parser.h"
-#include "network.h"
 
 #define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI"
+#include "debug.h"
 
 typedef struct {
 	User	*user;
@@ -66,14 +67,21 @@ typedef struct {
 static Status *parser_node_status(OnlineService *service, xmlNode *a_node);
 static void parser_node_status_free(Status *status);
 static gchar *parser_convert_time(const char *datetime);
-static gboolean display_notification( gpointer tweet );
-static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml);
+static xmlDoc *parser_parse_dom_content(SoupMessage *xml);
 
 
 /* id of the newest tweet showed */
 static unsigned long int last_id=0;
 
-static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
+
+
+
+gchar *parser_get_cache_file_from_uri(const gchar *uri){
+	return g_strdelimit(g_strdup(uri), ":/&?", '_');
+}//parser_get_cache_file_from_uri
+
+
+static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
 	xmlDoc *doc=NULL;
 	
 	SoupURI	*suri=NULL;
@@ -175,12 +183,12 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	
 	debug(DEBUG_DOMAINS, "XML document parsed.  Returning xmlDoc.");
 	return doc;
-}//parser_parse_content_dom_and_document
+}//parser_parse_dom_content
 
 xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
 	xmlDoc *doc=NULL;
 	
-	if(!(doc=parser_parse_content_dom_and_document(xml))) {
+	if(!(doc=parser_parse_dom_content(xml))) {
 		debug(DEBUG_DOMAINS, "failed to read xml data");
 		return NULL;
 	}
@@ -202,12 +210,6 @@ xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
 	return doc;
 }
 
-
-static gboolean display_notification(gpointer tweet){
-	app_notify(tweet);
-	if(tweet) g_free(tweet);
-	return FALSE;
-}
 
 gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlDoc		*doc=NULL;
@@ -252,9 +254,7 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	return NULL;
 }//parser_get_xpath
 
-gchar *parser_get_cache_file_from_uri(const gchar *uri){
-	return g_strdelimit(g_strdup(uri), ":/&?", '_');
-}//parser_get_cache_file_from_uri
+
 
 /* Parse a timeline XML file */
 gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
@@ -336,18 +336,19 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 						status->text
 		);
 		
-		sexy_tweet=label_msg_get_string(service, status->text);
+		if(!(gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY)))
+			sexy_tweet=label_msg_get_string(service, status->text);
+		else
+			sexy_tweet=g_strdup(status->text);
 		
 		if(sid > last_id && show_notification) {
-			if(multiple_new_tweets != TRUE) {
+			if(!multiple_new_tweets) {
 				app_notify_sound(FALSE);
-				multiple_new_tweets = TRUE;
+				multiple_new_tweets=TRUE;
 			}
-			g_timeout_add_seconds(tweet_display_delay,
-								   display_notification,
-								   g_strdup(tweet));
-								
-			tweet_display_delay += tweet_display_interval;
+			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(tweet) );
+			
+			tweet_display_delay+=tweet_display_interval;
 		}
 		
 		/* Append to ListStore */

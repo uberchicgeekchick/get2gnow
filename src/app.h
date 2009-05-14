@@ -102,6 +102,8 @@ void app_set_visibility(gboolean visible);
 void app_statusbar_printf(const gchar *msg, ...);
 void app_set_statusbar_msg(gchar *msg);
 
+
+gboolean app_notify_on_timeout(gpointer tweet);
 void app_notify_sound(gboolean force);
 void app_notify(gchar *msg);
 

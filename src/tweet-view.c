@@ -475,7 +475,10 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 	 * So we just set it as a SexyLable & bypass Label
 	 */
 	debug(DEBUG_DOMAINS, "Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", sexy_tweet);
-	sexy_url_label_set_markup(SEXY_URL_LABEL(tweet_view->sexy_tweet), sexy_tweet);
+	if(!(gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY)))
+		sexy_url_label_set_markup(SEXY_URL_LABEL(tweet_view->sexy_tweet), sexy_tweet);
+	else
+		label_set_text(service, tweet_view->sexy_tweet, sexy_tweet);
 	
 	if(!pixbuf)
 		gtk_image_set_from_icon_name(tweet_view->user_image, PACKAGE_NAME, ImagesExpanded);

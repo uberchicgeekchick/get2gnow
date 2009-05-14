@@ -166,7 +166,7 @@ gchar *label_msg_get_string(OnlineService *service, const char* message){
 									tokens[i]);
 				} else {
 					gchar delim;
-
+					
 					delim = tokens[i][end];
 					tokens[i][end] = '\0';
 					temp=g_strdup_printf(
@@ -193,7 +193,7 @@ gchar *label_msg_get_string(OnlineService *service, const char* message){
 static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri){
 	gchar *temp=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
 	
-	if(gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS))
+	if(gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED))
 		return temp;
 	
 	

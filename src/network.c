@@ -58,6 +58,12 @@ typedef struct {
 	GtkTreeIter   *iter;
 } Image;
 
+typedef enum {
+	Load,
+	Reload,
+	Timeout,
+} ReloadState;
+
 
 /* Autoreload timeout functions */
 static gboolean network_timeout(gpointer user_data);
@@ -65,6 +71,8 @@ static void network_timeout_new(void);
 
 /* libsoup callbacks */
 static void network_tweet_cb( SoupSession *session, SoupMessage *msg, gpointer user_data );
+
+static void network_set_state_loading_timeline(const gchar *timeline, ReloadState state);
 static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
 
 /* Copyright(C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
@@ -161,15 +169,34 @@ void network_send_message(OnlineService *service, const gchar *friend, const gch
 	g_free(formdata);
 }
 
+static void network_set_state_loading_timeline(const gchar *timeline, ReloadState state){
+	const gchar *notice_prefix=NULL;
+	switch(state){
+		case Timeout:
+			notice_prefix=_("Auto-Reloading");
+			break;
+		
+		case Reload:
+			notice_prefix=_("Reloading");
+			break;
+		
+		case Load:
+		default:
+			notice_prefix=_("Loading");
+			break;
+	}
+	debug(DEBUG_DOMAINS, "%s current timeline: %s", notice_prefix, timeline);
+	app_statusbar_printf("%s: %s.%s", notice_prefix, _("timeline"), timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY) ) ?"" :_("  This may take several moments.") ));
+	
+	processing=TRUE;
+}//network_timeline_loading_notification
+
 void network_refresh(void){
 	if(!current_timeline || processing)
 		return;
 		
 	/* UI */
-	debug(DEBUG_DOMAINS, "Reloading current timeline: %s", current_timeline);
-	app_statusbar_printf("%s: %s.%s", _("Reloading timeline"), current_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
-	
-	processing=TRUE;
+	network_set_state_loading_timeline(current_timeline, Reload);
 	online_services_request( online_services, QUEUE, current_timeline, network_cb_on_timeline, NULL, NULL );
 }
 
@@ -181,11 +208,9 @@ void network_get_timeline(const gchar *uri_timeline){
 	parser_reset_lastid();
 	
 	/* UI */
-	processing=TRUE;
-	debug(DEBUG_DOMAINS, "Loading timeline: %s", uri_timeline);
-	app_statusbar_printf("%s: %s.%s", _("Loading timeline"), uri_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
-	
+	network_set_state_loading_timeline(uri_timeline, Load);
 	gchar *new_timeline=g_strdup(uri_timeline);
+	
 	online_services_request( online_services, QUEUE, uri_timeline, network_cb_on_timeline, new_timeline, NULL );
 	g_free(new_timeline);
 	/* network_queue's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
@@ -206,13 +231,10 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 		return;
 	}
 	
-	processing=TRUE;
-	
 	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user_id);
 	
-	debug(DEBUG_DOMAINS, "Loading timeline: %s", user_timeline);
-	app_statusbar_printf("%s: https://%s%s.%s", _("Loading timeline"), service->url, user_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
-	
+	network_set_state_loading_timeline(user_timeline, Load);
+
 	online_service_request(service, QUEUE, user_timeline, network_cb_on_timeline, user_timeline, NULL);
 	g_free(user_timeline);
 	g_free(user_id);
@@ -445,12 +467,8 @@ static gboolean network_timeout(gpointer user_data){
 		return FALSE;
 	
 	/* UI */
-	debug(DEBUG_DOMAINS, "Auto-reloading current timeline: %s", current_timeline, timeout_id);
-	app_statusbar_printf("%s: %s.%s", _("Auto-reloading timeline"), current_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
-			
-	debug(DEBUG_DOMAINS, "Auto reloading. Timeout: %i");
+	network_set_state_loading_timeline(current_timeline, Timeout);
 	
-	processing=TRUE;
 	online_services_request( online_services, QUEUE, current_timeline, network_cb_on_timeline, NULL, NULL );
 	
 	timeout_id=0;

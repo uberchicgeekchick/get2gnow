@@ -885,6 +885,14 @@ void app_notify_sound(gboolean force){
 	gtk_widget_error_bell(GTK_WIDGET(app_priv->tweet_view->sexy_entry));
 }
 
+gboolean app_notify_on_timeout(gpointer tweet){
+	if(tweet) {
+		app_notify(tweet);
+		g_free(tweet);
+	}
+	return FALSE;
+}
+
 void app_notify(gchar *msg){
 	if(!gconfig_if_bool(PREFS_UI_NOTIFICATION))
 		return;

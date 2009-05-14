@@ -44,19 +44,20 @@
 #define DEBUG_DOMAIN "Preferences"
 
 typedef struct {
-	GtkDialog *dialog;
-	GtkNotebook *notebook;
-	GtkComboBox *combo_default_timeline;
-	GtkComboBox *combo_reload;
+	GtkDialog	*dialog;
+	GtkNotebook	*notebook;
+	GtkComboBox	*combo_default_timeline;
+	GtkComboBox	*combo_reload;
 	
 	/* Checkbuttons */
-	GtkCheckButton *notify;
-	GtkCheckButton *sound;
-	GtkCheckButton *no_alert;
-	GtkCheckButton *use_tweet_dialog;
-	GtkCheckButton *dont_expand_urls;
+	GtkCheckButton	*notify;
+	GtkCheckButton	*sound;
+	GtkCheckButton	*no_alert;
+	GtkCheckButton	*use_tweet_dialog;
+	GtkCheckButton	*expand_urls_disabled_checkbutton;
+	GtkCheckButton	*expand_urls_selected_only_checkbutton;
 	
-	GList     *notify_ids;
+	GList		*notify_ids;
 } Prefs;
 
 typedef struct _reload_time {
@@ -118,7 +119,9 @@ static void preferences_setup_widgets(Prefs *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UI_TWEET_VIEW_USE_DIALOG, prefs->use_tweet_dialog);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_DONT_EXPAND_URLS, prefs->dont_expand_urls);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_DISABLED, prefs->expand_urls_disabled_checkbutton);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, prefs->expand_urls_selected_only_checkbutton);
 	
 	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -446,10 +449,10 @@ preferences_dialog_show (GtkWindow *parent)
 		return;
 	}
 
-	prefs = g_new0 (Prefs, 1);
+	prefs=g_new0 (Prefs, 1);
 
 	/* Get widgets */
-	ui = gtkbuilder_get_file (GtkBuilderUI,
+	ui=gtkbuilder_get_file (GtkBuilderUI,
 							"preferences_dialog", &prefs->dialog,
 							"preferences_notebook", &prefs->notebook,
 							"combobox_timeline", &prefs->combo_default_timeline,
@@ -458,7 +461,8 @@ preferences_dialog_show (GtkWindow *parent)
 							"notify_checkbutton", &prefs->notify,
 							"no_alert_checkbutton", &prefs->no_alert,
 							"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
-							"dont_expand_urls_checkbutton", &prefs->dont_expand_urls,
+							"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
+							"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
 						NULL
 	);
 
