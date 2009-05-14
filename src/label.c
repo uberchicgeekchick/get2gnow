@@ -151,9 +151,9 @@ gchar *label_msg_get_string(OnlineService *service, const char* message){
 	gchar *at_url_prefix=g_strdup_printf("https://%s", ( (service && service->url) ?service->url :"twitter.com" ));
 	
 	/* surround urls with <a> markup so that sexy-url-label can link it */
-	tokens = g_strsplit_set (message, " \t\n", 0);
-	for (i = 0; tokens[i]; i++) {
-		if (url_check_word (tokens[i], strlen (tokens[i]))) {
+	tokens=g_strsplit_set(message, " \t\n", 0);
+	for(i=0; tokens[i]; i++) {
+		if(url_check_word(tokens[i], strlen(tokens[i]))) {
 			if (tokens[i][0] == '@') {
 				gssize end;
 

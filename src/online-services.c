@@ -614,6 +614,13 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 		if(!SOUP_IS_SESSION(service->session))
 			return NULL;
 	}
+	
+	gchar *request_uri=NULL;
+	if(!( g_str_has_prefix(uri, "http") || g_str_has_prefix(uri, "ftp") ))
+		request_uri=g_strdup_printf("http://%s", uri);
+	else
+		request_uri=g_strdup(uri);
+	
 	SoupMessage *msg=NULL;
 	gchar *service_formdata=NULL;
 	gchar *request_string=NULL;
@@ -633,8 +640,8 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 	switch(request){
 		case GET:
 		case QUEUE:
-			debug(DEBUG_DOMAINS, "GET: %s", uri);
-			msg=soup_message_new("GET", uri);
+			debug(DEBUG_DOMAINS, "GET: %s", request_uri);
+			msg=soup_message_new("GET", request_uri);
 			break;
 		
 		case POST:
@@ -653,8 +660,8 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 				}
 			}
 			
-			debug(DEBUG_DOMAINS, "POST: %s\n\t\tformdata:%s", uri, (service_formdata ?service_formdata :(gchar *)formdata));
-			msg=soup_message_new("POST", uri);
+			debug(DEBUG_DOMAINS, "POST: %s\n\t\tformdata:%s", request_uri, (service_formdata ?service_formdata :(gchar *)formdata));
+			msg=soup_message_new("POST", request_uri);
 	
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
@@ -671,9 +678,10 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 	}
 	
 	if(!( SOUP_IS_SESSION(service->session) && SOUP_IS_MESSAGE(msg) )){
-		debug(DEBUG_DOMAINS, "Unable to process libsoup request for service: '%s'.\n\t\tAttempting to %s: %s", service->decoded_key, request_string, uri);
+		debug(DEBUG_DOMAINS, "Unable to process libsoup request for service: '%s'.\n\t\tAttempting to %s: %s", service->decoded_key, request_string, request_uri);
 		if(service_formdata) g_free(service_formdata);
 		g_free(request_string);
+		g_free(request_uri);
 		return NULL;
 	}
 	
@@ -695,17 +703,22 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 			
 			soup_session_queue_message(service->session, msg, callback, service_wrapper);
 			
-			if(service_formdata){
-				g_free(service_formdata);
-				service_formdata=NULL;
-			}
+			if(service_formdata) g_free(service_formdata);
+			g_free(request_string);
+			g_free(request_uri);
 			
 			return msg;
 		case GET:
 			debug(DEBUG_DOMAINS, "Sending libsoup request to service: '%s' & returning libsoup's message.", service->decoded_key);
 			soup_session_send_message(service->session, msg);
+			g_free(request_string);
+			g_free(request_uri);
 			return msg;
 	}
+	
+	if(service_formdata) g_free(service_formdata);
+	g_free(request_string);
+	g_free(request_uri);
 	return msg;
 }//online_service_request_url
 

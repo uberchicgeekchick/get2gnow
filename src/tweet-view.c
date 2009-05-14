@@ -309,7 +309,7 @@ static void tweet_view_sexy_init(void){
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_to),
-			FALSE, FALSE, 0
+			FALSE, FALSE, 5
 	);
 	g_object_set( tweet_view->sexy_to, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_to));
@@ -319,7 +319,7 @@ static void tweet_view_sexy_init(void){
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_from),
-			FALSE, FALSE, 0
+			FALSE, FALSE, 5
 	);
 	g_object_set( tweet_view->sexy_from, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_from));
@@ -329,7 +329,7 @@ static void tweet_view_sexy_init(void){
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_tweet),
-			TRUE, TRUE, 0
+			TRUE, TRUE, 5
 	);
 	g_object_set( tweet_view->sexy_tweet, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_tweet));
