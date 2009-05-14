@@ -137,7 +137,7 @@ extern unsigned long int in_reply_to_status_id;
  ********************************************************/
 TweetView *tweet_view_new(GtkWindow *parent);
 GtkWindow *tweet_view_get_window(void);
-void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf );
+void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
 
 void tweet_view_set_embed_toggle_and_image(void);
 

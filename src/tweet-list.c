@@ -127,17 +127,20 @@ static void tweet_list_create_model( TweetList *list ){
 	if(list_priv->store)
 		g_object_unref(list_priv->store);
 
-	list_priv->store=gtk_list_store_new(N_COLUMNS,
-							GDK_TYPE_PIXBUF,	/* Avatar pixbuf */
-							G_TYPE_STRING,		/* Display string */
-							G_TYPE_STRING,		/* Author name string */
-							G_TYPE_STRING,		/* Date string */
-							G_TYPE_STRING,		/* Tweet string */
-							G_TYPE_STRING,		/* Username string */
-							G_TYPE_ULONG,		/* Tweet's actual data time, used for 'since' */
-							G_TYPE_ULONG,		/* Tweet's ID */
-							G_TYPE_ULONG,		/* User's ID */
-							G_TYPE_POINTER		/* Service pointer */
+	list_priv->store=gtk_list_store_new(
+						N_COLUMNS,
+							GDK_TYPE_PIXBUF,	/*PIXBUF_AVATAR: Avatar pixbuf */
+							G_TYPE_STRING,		/*STRING_TEXT: Display string */
+							G_TYPE_STRING,		/*STRING_NICK: Author name string */
+							G_TYPE_STRING,		/*STRING_DATE: 'Posted ?(seconds|minutes|hours|day) ago */
+							G_TYPE_STRING,		/*STRING_TWEET: Tweet string */
+							G_TYPE_STRING,		/*STRING_USER: Username string */
+							G_TYPE_STRING,		/*SEXY_TWEET: libsexy formatted Tweet for SexyTreeView's tooltip */
+							G_TYPE_STRING,		/*CREATED_DATE: Date string */
+							G_TYPE_ULONG,		/*CREATED_AT: unix timestamp of tweet's posted data time for sorting. */
+							G_TYPE_ULONG,		/*ULONG_TWEET_ID: Tweet's ID */
+							G_TYPE_ULONG,		/*ULONG_USER_ID: User's ID */
+							G_TYPE_POINTER		/*SERVICE_POINTER: Service pointer */
 	);
 
 	/* save normal model */
@@ -149,7 +152,7 @@ static void tweet_list_create_model( TweetList *list ){
 	list_priv->model=model;
 	list_priv->sort_model=sort_model;
 	
-	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(list), STRING_TWEET);
+	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(list), STRING_TEXT);
 }
 
 static void tweet_list_setup_view(TweetList *list){
@@ -258,13 +261,14 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	gulong		tweet_id, user_id;
 	OnlineService	*service=NULL;
 	GdkPixbuf	*pixbuf;
-	gchar		*user_name, *user_nick, *date, *tweet;
+	gchar		*user_name, *user_nick, *date, *sexy_tweet, *text_tweet;
 
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(list_priv->sort_model),
 				iter,
 				STRING_NICK, &user_nick,
-				STRING_TWEET, &tweet,
+				STRING_TWEET, &text_tweet,
+				SEXY_TWEET, &sexy_tweet,
 				STRING_DATE, &date,
 				STRING_USER, &user_name,
 				PIXBUF_AVATAR, &pixbuf,
@@ -275,10 +279,11 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	);
 	
 	debug(DEBUG_DOMAIN, "Displaying tweet: #%lu from '%s'.", tweet_id, service->decoded_key);
-	tweet_view_show_tweet(service, (unsigned long int)tweet_id, user_id, user_name, user_nick, date, tweet, pixbuf);
+	tweet_view_show_tweet(service, (unsigned long int)tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	
 	g_free(user_name);
-	g_free(tweet);
+	g_free(sexy_tweet);
+	g_free(text_tweet);
 	g_free(date);
 	g_free(user_nick);
 	if(pixbuf) g_object_unref(pixbuf);

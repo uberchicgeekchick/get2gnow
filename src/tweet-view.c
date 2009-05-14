@@ -306,33 +306,33 @@ static void tweet_view_sexy_init(void){
 	/* Set-up expand tweet view.  Used to view tweets in detailed & send tweets and DMs. */
 	debug(DEBUG_DOMAINS, "Creating Tweet's service link area, 'tweet_view->sexy_to', using sexy label interface.");
 	tweet_view->sexy_to=label_new();
-	g_object_set( tweet_view->sexy_to, "yalign", 0.0, "xalign", 1.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
-	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_to));
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_to),
 			TRUE, TRUE, 0
 	);
+	g_object_set( tweet_view->sexy_to, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
+	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_to));
 	
 	debug(DEBUG_DOMAINS, "Creating Tweet's title area, 'tweet_view->sexy_from', using sexy label interface.");
 	tweet_view->sexy_from=label_new();
-	g_object_set( tweet_view->sexy_from, "yalign", 0.0, "xalign", 0.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
-	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_from));
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_from),
 			TRUE, TRUE, 0
 	);
+	g_object_set( tweet_view->sexy_from, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
+	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_from));
 	
 	debug(DEBUG_DOMAINS, "Creating Tweet's view area, 'tweet_view->sexy_tweet', using sexy label interface.");
 	tweet_view->sexy_tweet=label_new();
-	g_object_set( tweet_view->sexy_tweet, "yalign", 0.0, "xalign", 0.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
-	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_tweet));
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_tweet),
 			TRUE, TRUE, 0
 	);
+	g_object_set( tweet_view->sexy_tweet, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
+	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_tweet));
 	
 	debug(DEBUG_DOMAINS, "Creating Tweet's entry, 'tweet_view->sexy_entry', using sexy entry.");
 	tweet_view->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
@@ -442,11 +442,11 @@ static void tweet_view_reorder(void){
 }//tweet_view_reorder
 
 
-void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf){
+void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if(!id)
 		unset_selected_tweet();
 	else
-		set_selected_tweet(service, id, user_id, user_name, tweet);
+		set_selected_tweet(service, id, user_id, user_name, text_tweet);
 	
 	debug(DEBUG_DOMAINS, "%sabling 'selected_tweet_buttons'.", (id ?"En" :"Dis") );
 	tweet_view_tweet_selected_buttons_show( (id ?TRUE :FALSE ) );
@@ -470,8 +470,12 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 	g_free(sexy_text);
 	
 	
-	debug(DEBUG_DOMAINS, "Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", tweet);
-	label_set_text(service, tweet_view->sexy_tweet, tweet);
+	/*
+	 * gchar sexy_tweet has already been formatted to include urls, hyperlinks, titles, & etc.
+	 * So we just set it as a SexyLable & bypass Label
+	 */
+	debug(DEBUG_DOMAINS, "Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", sexy_tweet);
+	sexy_url_label_set_markup(SEXY_URL_LABEL(tweet_view->sexy_tweet), sexy_tweet);
 	
 	if(!pixbuf)
 		gtk_image_set_from_icon_name(tweet_view->user_image, PACKAGE_NAME, ImagesExpanded);

@@ -29,9 +29,8 @@
 
 G_BEGIN_DECLS
 
-/*
- * Label
- */ 
+
+/* Label: extended libsexy label.*/ 
 #define TYPE_LABEL         (label_get_type ())
 #define LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_LABEL, Label))
 #define LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_LABEL, LabelClass))
@@ -54,6 +53,9 @@ struct _LabelClass {
 GType label_get_type  (void) G_GNUC_CONST;
 Label *label_new       (void);
 void label_set_text(OnlineService *service, Label  *nav, const gchar *text);
+gchar *label_msg_get_string(OnlineService *service, const char *message);
+
+
 G_END_DECLS
 
 #endif /* __LABEL_H__ */

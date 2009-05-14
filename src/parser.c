@@ -49,6 +49,7 @@
 #include "online-services.h"
 #include "images.h"
 #include "users.h"
+#include "label.h"
 #include "parser.h"
 #include "network.h"
 
@@ -242,7 +243,13 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlCleanupParser();
 	g_strfreev(xpathv);
 	
-	return g_strstrip(xpath_content);
+	if(!G_STR_EMPTY(xpath_content))
+		return g_strstrip(xpath_content);
+	
+	if(xpath_content)
+		g_free(xpath_content);
+	
+	return NULL;
 }//parser_get_xpath
 
 gchar *parser_get_cache_file_from_uri(const gchar *uri){
@@ -296,8 +303,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		debug(DEBUG_DOMAINS, "Parsing tweet.  Its a %s.", (g_str_equal(cur_node->name, "status") ?"status update" :"direct message" ) );
 		
 		/* Timelines and direct messages */
-		gchar	*tweet;
-		gchar	*datetime;
+		gchar	*tweet, *sexy_tweet, *datetime;
 		guint	sid;
 		
 		/* Parse node */
@@ -323,12 +329,14 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		
 		debug(DEBUG_DOMAINS, "Formating status text for display.");
 		tweet=g_strdup_printf(
-					"<span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> - %s\n%s",
-						service->decoded_key,
+					"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span> | %s\n%s",
 						status->user->nick_name, status->user->user_name, service->url,
+						service->decoded_key,
 						datetime,
 						status->text
 		);
+		
+		sexy_tweet=label_msg_get_string(service, status->text);
 		
 		if(sid > last_id && show_notification) {
 			if(multiple_new_tweets != TRUE) {
@@ -351,10 +359,12 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		gtk_list_store_set(
 					store, iter,
 						STRING_TEXT, tweet,
-						STRING_NICK,status->user->nick_name,
+						STRING_NICK, status->user->nick_name,
 						STRING_DATE, datetime,
 						STRING_TWEET, status->text,
 						STRING_USER, status->user->user_name,
+						SEXY_TWEET, sexy_tweet,
+						CREATED_DATE, status->created_at_str,
 						CREATED_AT, status->created_at,
 						ULONG_TWEET_ID, sid,
 						ULONG_USER_ID, status->user->id,
@@ -364,6 +374,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		
 		/* Free the text column string */
 		g_free(tweet);
+		g_free(sexy_tweet);
 		
 		/* network_get_image, or its callback, free's iter once its no longer needed. */
 		network_get_image(service, g_strdup(status->user->image_url), iter);

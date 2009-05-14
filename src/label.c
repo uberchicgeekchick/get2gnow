@@ -47,7 +47,6 @@ static void label_init(Label *label);
 static void label_finalize(GObject *object);
 
 static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data);
-static char *label_msg_get_string(OnlineService *service, const char *message);
 static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri);
 
 
@@ -72,13 +71,12 @@ static void label_finalize(GObject *object){
 }
 
 static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data){
-	if(g_app_info_launch_default_for_uri (url, NULL, NULL) == FALSE){
-			g_warning ("Couldn't show URL: '%s'", url);
-	}
+	if(!g_app_info_launch_default_for_uri(url, NULL, NULL))
+		g_warning("Couldn't show URL: '%s'", url);
 }
 
 Label *label_new (void){
-	return g_object_new (TYPE_LABEL, NULL);
+	return g_object_new(TYPE_LABEL, NULL);
 }
 
 void label_set_text(OnlineService *service, Label *my_sexy_label, const gchar  *text){
@@ -139,7 +137,7 @@ static gssize find_first_non_username(const char *str){
 	return -1;
 }
 
-static char *label_msg_get_string(OnlineService *service, const char* message){
+gchar *label_msg_get_string(OnlineService *service, const char* message){
 	gchar **tokens;
 	gchar  *result;
 	gchar  *temp;

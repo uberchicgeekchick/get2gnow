@@ -74,19 +74,21 @@ struct _TweetListClass {
 };
 
 /* ListStore columns */
-enum {
+typedef enum {
 	PIXBUF_AVATAR,
 	STRING_TEXT,
 	STRING_NICK,
 	STRING_DATE,
 	STRING_TWEET,
 	STRING_USER,
+	SEXY_TWEET,
+	CREATED_DATE,
 	CREATED_AT,
 	ULONG_TWEET_ID,
 	ULONG_USER_ID,
 	SERVICE_POINTER,
-	N_COLUMNS
-};
+	N_COLUMNS, /*Not a column but an incremented value to 'count' the total columns.*/
+} TweetListStoreColumns;
 
 
 GType		tweet_list_get_type(void) G_GNUC_CONST;

@@ -214,7 +214,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
 	if(in_reply_to_service) in_reply_to_service=NULL;
-	tweet_view_show_tweet(current_service, 0, 0, "", "", "", "", NULL);
+	tweet_view_show_tweet(current_service, 0, 0, "", "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
 	unset_selected_tweet();
 }//tweets_new_tweet
