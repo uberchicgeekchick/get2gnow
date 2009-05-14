@@ -28,69 +28,169 @@
 #include "preferences.h"
 #include "geometry.h"
 
-#define DEBUG_DOMAIN "Geometry"
+#include "app.h"
+#include "tweet-view.h"
 
-void geometry_save_for_main_window(gint x, gint y, gint w, gint h){
-	debug (DEBUG_DOMAIN, "Saving for main window: x:%d, y:%d, width:%d, height:%d", x, y, w, h);
+typedef enum{
+	Embed,
+	MainWindow,
+	FloatingTweetView,
+} ViewType;
 
-	gconfig_set_int(PREFS_UI_WINDOW_HEIGHT, h);
+enum {
+	PrefernceWindow,
+	PreferenceWidth,
+	PreferenceHeight,
+	PreferencePositionX,
+	PreferencePositionY,
+	PreferenceTotal,
+};
 
-	gconfig_set_int(PREFS_UI_WINDOW_WIDTH, w);
+static GtkWindow *geometry_get_window(ViewType view);
+static gchar **geometry_get_prefs_path(ViewType view);
+static void geometry_load_for_window(ViewType view);
+static void geometry_save_for_window(ViewType view);
 
-	gconfig_set_int(PREFS_UI_WIN_POS_X, x);
 
-	gconfig_set_int(PREFS_UI_WIN_POS_Y, y);
+#define DEBUG_DOMAINS "Geometry:UI:GtkBuilder:GtkBuildable:Setup:Start-Up"
+
+void geometry_save(void){
+	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG))
+		return geometry_save_for_window(Embed);
+	
+	geometry_save_for_window(MainWindow);
+	geometry_save_for_window(FloatingTweetView);
 }
  
-void geometry_load_for_main_window(GtkWindow *main_window){
-	debug(DEBUG_DOMAIN, "Loading window geometry...");
-	gint	x=0, y=0, w=0, h=0;
-
-	gconfig_get_int(PREFS_UI_WINDOW_HEIGHT, &h);
-	gconfig_get_int(PREFS_UI_WINDOW_WIDTH, &w);
+void geometry_load(void){
+	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG))
+		return geometry_load_for_window(Embed);
 	
-	gconfig_get_int(PREFS_UI_WIN_POS_X, &x);
-	gconfig_get_int(PREFS_UI_WIN_POS_Y, &y);
+	geometry_load_for_window(MainWindow);
+	geometry_load_for_window(FloatingTweetView);
+}//geometry_load
 
-	if(!(w >0 && h > 0 && x > 0 && y > 0))
-		return;
+static void geometry_load_for_window(ViewType view){
+	gint		x=0, y=0, w=0, h=0;
+	GtkWindow	*window=geometry_get_window(view);
+	gchar		**prefs_path=NULL;
+	if(!(prefs_path=geometry_get_prefs_path(view))) return;
+	debug(DEBUG_DOMAINS, "Loading %s window geometry.", prefs_path[PrefernceWindow]);
+	
+	gconfig_get_int(prefs_path[PreferenceWidth], &w);
+	gconfig_get_int(prefs_path[PreferenceHeight], &h);
+	
+	if(!( x >0 && y > 0 )){
+		debug(DEBUG_DOMAINS, "Unable to move %s window, either value is less than zero.\n\tposition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
+	}else{
+		debug( DEBUG_DOMAINS, "Moving %s window to: x: %d, y: %d", prefs_path[PrefernceWindow], x, y);
+		gtk_window_resize(window, w, h);
+	}
+	
+	gconfig_get_int(prefs_path[PreferencePositionX], &x);
+	gconfig_get_int(prefs_path[PreferencePositionY], &y);
+	
+	if(!( x >0 && y > 0 )){
+		debug(DEBUG_DOMAINS, "Unable to move %s window, either value is less than zero.\n\tposition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
+	}else{
+		debug( DEBUG_DOMAINS, "Moving %s window to: x: %d, y: %d", prefs_path[PrefernceWindow], x, y);
+		gtk_window_move(window, x, y);
+	}
+	g_free(prefs_path);
+}//geometry_load_for_window
 
-	debug(DEBUG_DOMAIN, "Resizing window:  width:%d, height: %d", w, h);
-	gtk_window_resize( GTK_WINDOW (main_window), w, h);
+static void geometry_save_for_window(ViewType view){
+	gint		x=0, y=0, w=0, h=0;
+	GtkWindow	*window=geometry_get_window(view);
+	gchar		**prefs_path=NULL;
+	if(!(prefs_path=geometry_get_prefs_path(view))) return;
+	gtk_window_get_size(window, &w, &h);
+	
+	if(!( w >0 && h > 0 )){
+		debug(DEBUG_DOMAINS, "Unable to save height & width for %s, either value is less than zero.\n\twidth: %d, height: %d", prefs_path[PrefernceWindow], w, h);
+	}else{
+		debug(DEBUG_DOMAINS, "Saving height & width for %s\n\twidth: %d, height: %d", prefs_path[PrefernceWindow], w, h);
+		gconfig_set_int(prefs_path[PreferenceWidth], w);
+		gconfig_set_int(prefs_path[PreferenceHeight], h);
+	}
+	
+	gtk_window_get_position(window, &x, &y);
+	if(!( x > 0 && y > 0 )){
+		debug(DEBUG_DOMAINS, "Unable to save height & width for %s, either value is less than zero.\n\tposition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
+	}else{
+		debug(DEBUG_DOMAINS, "Saving position for: %s\n\tpostition x: %d, position y: %d.", prefs_path[PrefernceWindow], x, y);
 
-	debug( DEBUG_DOMAIN, "Moving window to: x:%d, y:%d", x, y);
-	gtk_window_move( GTK_WINDOW (main_window), x, y);
-}
-
-void geometry_save_for_tweet_view(gint x, gint y, gint w, gint h){
-	if(!(w >0 && h > 0 && x > 0 && y > 0))
-		return;
+		gconfig_set_int(prefs_path[PreferencePositionX], x);
+		gconfig_set_int(prefs_path[PreferencePositionY], y);
+	}
+	g_free(prefs_path);
+}//geometry_save_for_window
+ 
+static GtkWindow *geometry_get_window(ViewType view){
+	debug(DEBUG_DOMAINS, "Getting window to set geometry for.");
+	switch(view){
+		case Embed:
+		case MainWindow:
+			return app_get_window();
+		break;
 		
-	debug (DEBUG_DOMAIN, "Saving for tweet_view: x:%d, y:%d, width:%d, height:%d", x, y, w, h);
+		case FloatingTweetView:
+			return tweet_view_get_window();
+		break;
+	}
+	return app_get_window();
+}//geometry_get_window
 
-	gconfig_set_int(PREFS_UI_TWEET_VIEW_HEIGHT, h);
-	gconfig_set_int(PREFS_UI_TWEET_VIEW_WIDTH, w);
-
-	gconfig_set_int(PREFS_UI_TWEET_VIEW_POS_X, x);
-	gconfig_set_int(PREFS_UI_TWEET_VIEW_POS_Y, y);
-}
- 
-void geometry_load_for_tweet_view(GtkWindow *tweet_view){
-	debug(DEBUG_DOMAIN, "Loading tweet_view geometry...");
-	gint	x=0, y=0, w=0, h=0;
+static gchar **geometry_get_prefs_path(ViewType view){
+	gchar **prefs_path=NULL;
 	
-	gconfig_get_int(PREFS_UI_TWEET_VIEW_HEIGHT, &h);
-	gconfig_get_int(PREFS_UI_TWEET_VIEW_WIDTH, &w);
+	if(!( (prefs_path=g_malloc0(sizeof(G_TYPE_STRING)*PreferenceTotal)) )){
+		debug(DEBUG_DOMAINS, "**FATAL-ERROR**: Unable to allocate preference path memory.");
+		return NULL;
+	}
 	
-	gconfig_get_int(PREFS_UI_TWEET_VIEW_POS_X, &x);
-	gconfig_get_int(PREFS_UI_TWEET_VIEW_POS_Y, &y);
+	switch(view){
+		case Embed:
+			prefs_path[PrefernceWindow]=g_strdup("embed");
+		break;
+		
+		case MainWindow:
+			prefs_path[PrefernceWindow]=g_strdup("main_window");
+		break;
+		
+		case FloatingTweetView:
+			prefs_path[PrefernceWindow]=g_strdup("tweet_view");
+		break;
+		
+		default:
+			debug(DEBUG_DOMAINS, "**ERROR**: Setting gconf preference paths.\n\t\tUnsupported geometry: [%d].", view);
+			return NULL;
+		break;
+	}
+	debug(DEBUG_DOMAINS, "Setting gconf preference paths to use for '%s' geometry.", prefs_path[PrefernceWindow]);
 	
-	if(!(w >0 && h > 0 && x > 0 && y > 0))
-		return;
+	if(!(prefs_path[PreferenceWidth]=g_strdup_printf(PREFS_UI_WIDTH, prefs_path[PrefernceWindow]))){
+		debug(DEBUG_DOMAINS, "**ERROR:** Loading '%s' width preference path\t[failed].", prefs_path[PrefernceWindow]);
+		g_strfreev(prefs_path);
+		return NULL;
+	}
+	if(!(prefs_path[PreferenceHeight]=g_strdup_printf(PREFS_UI_HEIGHT, prefs_path[PrefernceWindow]))){
+		debug(DEBUG_DOMAINS, "**ERROR:** Loading '%s' height preference path\t[failed].", prefs_path[PrefernceWindow]);
+		g_strfreev(prefs_path);
+		return NULL;
+	}
+	if(!(prefs_path[PreferencePositionX]=g_strdup_printf(PREFS_UI_POSITION_X, prefs_path[PrefernceWindow]))){
+		debug(DEBUG_DOMAINS, "**ERROR:** Loading '%s' x position preference path\t[failed].", prefs_path[PrefernceWindow]);
+		g_strfreev(prefs_path);
+		return NULL;
+	}
 	
-	debug(DEBUG_DOMAIN, "Resizing tweet_view:  width:%d, height: %d", w, h);
-	gtk_window_resize(GTK_WINDOW(tweet_view), w, h);
+	if(!(prefs_path[PreferencePositionY]=g_strdup_printf(PREFS_UI_POSITION_Y, prefs_path[PrefernceWindow]))){
+		debug(DEBUG_DOMAINS, "**ERROR:** Loading '%s' y position preference path\t[failed].", prefs_path[PrefernceWindow]);
+		g_strfreev(prefs_path);
+		return NULL;
+	}
 	
-	debug( DEBUG_DOMAIN, "Moving tweet_view to: x:%d, y:%d", x, y);
-	gtk_window_move(GTK_WINDOW(tweet_view), x, y);
+	debug(DEBUG_DOMAINS, "Loaded gconf '%s' geometry preference paths.", prefs_path[PrefernceWindow]);
+	return prefs_path;
 }

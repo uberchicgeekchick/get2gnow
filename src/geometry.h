@@ -26,10 +26,7 @@
 
 #include <gtk/gtk.h>
 
-void geometry_load_for_main_window(GtkWindow *main_window);
-void geometry_save_for_main_window(gint x, gint y, gint w, gint h);
-
-void geometry_load_for_tweet_view(GtkWindow *main_window);
-void geometry_save_for_tweet_view(gint x, gint y, gint w, gint h);
+void geometry_load(void);
+void geometry_save(void);
 
 #endif /* __GEOMETRY_H__ */

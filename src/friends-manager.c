@@ -90,7 +90,7 @@ typedef struct {
 	GtkButton	*view_timeline;
 } FriendsManager;
 
-#define DEBUG_DOMAIN "Friends-Manager"
+#define	DEBUG_DOMAINS	"Friends-Manager:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Requests:Users:Setup"
 
 #define GtkBuilderUI "friends-manager.ui"
 
@@ -119,7 +119,7 @@ static FriendsManager *friends_manager=NULL;
 
 
 static void friends_manager_destroy(GtkWidget *widget, FriendsManager *friends_manager){
-	debug(DEBUG_DOMAIN, "Destroying friends manager");
+	debug(DEBUG_DOMAINS, "Destroying friends manager");
 	friends_manager_free();
 }//friends_manager_destroy
 
@@ -418,7 +418,7 @@ static void friends_manager_setup(GtkWindow *parent){
 	GtkBuilder	*ui;
 	GdkCursor	*cursor;
 
-	debug(DEBUG_DOMAIN, "Initialising friends manager");
+	debug(DEBUG_DOMAINS, "Initialising friends manager");
 
 	if(friends_manager) friends_manager_free();
 	

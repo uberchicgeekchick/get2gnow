@@ -75,7 +75,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAIN "TweetView:UI:OnlineServices:Tweets"
+#define	DEBUG_DOMAINS	"TweetView:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Start-Up"
 #define GtkBuilderUI "tweet-view.ui"
 #define	TWEET_MAX_CHARS	140
 
@@ -149,12 +149,7 @@ static gboolean tweet_view_configure_event_timeout_cb(GtkWidget *widget){
 	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG))
 		return FALSE;
 	
-	gint           x, y, w, h;
-	
-	gtk_window_get_size(GTK_WINDOW(tweet_view->tweet_view), &w, &h);
-	gtk_window_get_position(GTK_WINDOW(tweet_view->tweet_view), &x, &y);
-	
-	geometry_save_for_tweet_view(x, y, w, h);
+	geometry_save();
 	
 	tweet_view->size_timeout_id=0;
 	
@@ -174,7 +169,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	GtkBuilder	*ui;
 	
 	tweet_view=g_new0(TweetView, 1);
-	debug(DEBUG_DOMAIN, "Building Tweet View");
+	debug(DEBUG_DOMAINS, "Building Tweet View");
 	ui=gtkbuilder_get_file( GtkBuilderUI,
 				"tweet_view", &tweet_view->tweet_view,
 				"tweet_view_embed", &tweet_view->tweet_view_embed,
@@ -218,14 +213,14 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	);
 	tweet_view->friends_model=gtk_combo_box_get_model(tweet_view->friends_combo_box);
 	
-	debug(DEBUG_DOMAIN, "Building & setting up new Tweet entry area.");
+	debug(DEBUG_DOMAINS, "Building & setting up new Tweet entry area.");
 	tweet_view_sexy_init();
 	tweet_view_reorder();
-	debug(DEBUG_DOMAIN, "TweetView view & entry area setup.  Grabbing selected widgets.");
+	debug(DEBUG_DOMAINS, "TweetView view & entry area setup.  Grabbing selected widgets.");
 	tweet_view_tweet_selected_buttons_setup(ui);
 	
 	/* Connect the signals */
-	debug(DEBUG_DOMAIN, "TweetView interface created & setup.  Setting signal handlers.");
+	debug(DEBUG_DOMAINS, "TweetView interface created & setup.  Setting signal handlers.");
 	g_signal_connect_after(tweet_view->tweet_view_embed, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 	gtkbuilder_connect( ui, tweet_view,
 				"tweet_view", "destroy", tweet_view_destroy_cb,
@@ -261,50 +256,55 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	*/
 	
 	if(!( parent && gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG) )){
-		debug(DEBUG_DOMAIN, "TweetView's set to be embed, no further setup needed.");
+		debug(DEBUG_DOMAINS, "TweetView's set to be embed, no further setup needed.");
 	}else{
-		debug(DEBUG_DOMAIN, "Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
+		debug(DEBUG_DOMAINS, "Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
 		gtk_widget_show_all(GTK_WIDGET(tweet_view->tweet_view));
 		g_object_add_weak_pointer(G_OBJECT(tweet_view->tweet_view),(gpointer) &tweet_view);
 		gtk_window_set_transient_for(GTK_WINDOW(tweet_view->tweet_view), parent);
-		geometry_load_for_tweet_view(GTK_WINDOW(tweet_view->tweet_view));
 	}
 	
-	debug(DEBUG_DOMAIN, "Setting TweetView's embed state indicators.");
+	debug(DEBUG_DOMAINS, "Setting TweetView's embed state indicators.");
 	tweet_view_set_embed_toggle_and_image();
 	
-	debug(DEBUG_DOMAIN, "Disabling 'selected widgets' since no tweet could be selected when we 1st start.");
+	debug(DEBUG_DOMAINS, "Disabling 'selected widgets' since no tweet could be selected when we 1st start.");
 	tweet_view_tweet_selected_buttons_show(FALSE);
 	
-
-	debug(DEBUG_DOMAIN, "Disabling & hiding tweet view's dm form since friends have not yet been loaded.");
+	debug(DEBUG_DOMAINS, "Disabling & hiding tweet view's dm form since friends have not yet been loaded.");
 	tweet_view_dm_data_set_sensitivity(tweet_view->dm_form_hide);
 	
 	unset_selected_tweet();
 	
 	return tweet_view;
-}
+}//tweet_view_new
+
+GtkWindow *tweet_view_get_window(void){
+	return tweet_view->tweet_view;
+}//tweet_view_get_window
 
 void tweet_view_set_embed_toggle_and_image(void){
+	if( gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG)==gtk_toggle_button_get_active(tweet_view->embed_togglebutton))
+		return;
+	
 	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG)){
-		debug(DEBUG_DOMAIN, "Setting TweetView's embed state indicators to split Tweet View off into a floating window.");
-		gtk_toggle_button_set_active(tweet_view->embed_togglebutton, FALSE);
+		debug(DEBUG_DOMAINS, "Setting TweetView's embed state indicators to split Tweet View off into a floating window.");
+		gtk_toggle_button_set_active(tweet_view->embed_togglebutton, TRUE);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(tweet_view->embed_togglebutton), "<span weight=\"bold\">Split Tweet View into its own window.</span>");
 		gtk_image_set_from_icon_name(tweet_view->embed_image, "gtk-goto-top", ImagesMinimum);
 	}else{
-		debug(DEBUG_DOMAIN, "Setting TweetView's embed state indicators to embed Tweet View into %s's main window.", PACKAGE_NAME);
-		gtk_toggle_button_set_active(tweet_view->embed_togglebutton, TRUE);
+		debug(DEBUG_DOMAINS, "Setting TweetView's embed state indicators to embed Tweet View into %s's main window.", PACKAGE_NAME);
+		gtk_toggle_button_set_active(tweet_view->embed_togglebutton, FALSE);
 		gchar *tooltip_markup=g_strdup_printf("<span weight=\"light\">Move Tweet View back into %s's main window.</span>", PACKAGE_NAME);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(tweet_view->embed_togglebutton), tooltip_markup );
 		g_free(tooltip_markup);
 		gtk_image_set_from_icon_name(tweet_view->embed_image, "gtk-goto-bottom", ImagesMinimum);
-		geometry_load_for_tweet_view(GTK_WINDOW(tweet_view->tweet_view));
 	}
+	geometry_load();
 }//tweet_view_set_embed_toggle_and_image
 
 static void tweet_view_sexy_init(void){
 	/* Set-up expand tweet view.  Used to view tweets in detailed & send tweets and DMs. */
-	debug(DEBUG_DOMAIN, "Creating Tweet's service link area, 'tweet_view->sexy_to', using sexy label interface.");
+	debug(DEBUG_DOMAINS, "Creating Tweet's service link area, 'tweet_view->sexy_to', using sexy label interface.");
 	tweet_view->sexy_to=label_new();
 	g_object_set( tweet_view->sexy_to, "yalign", 0.0, "xalign", 1.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_to));
@@ -314,7 +314,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
-	debug(DEBUG_DOMAIN, "Creating Tweet's title area, 'tweet_view->sexy_from', using sexy label interface.");
+	debug(DEBUG_DOMAINS, "Creating Tweet's title area, 'tweet_view->sexy_from', using sexy label interface.");
 	tweet_view->sexy_from=label_new();
 	g_object_set( tweet_view->sexy_from, "yalign", 0.0, "xalign", 0.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_from));
@@ -324,7 +324,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
-	debug(DEBUG_DOMAIN, "Creating Tweet's view area, 'tweet_view->sexy_tweet', using sexy label interface.");
+	debug(DEBUG_DOMAINS, "Creating Tweet's view area, 'tweet_view->sexy_tweet', using sexy label interface.");
 	tweet_view->sexy_tweet=label_new();
 	g_object_set( tweet_view->sexy_tweet, "yalign", 0.0, "xalign", 0.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_tweet));
@@ -334,7 +334,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
-	debug(DEBUG_DOMAIN, "Creating Tweet's entry, 'tweet_view->sexy_entry', using sexy entry.");
+	debug(DEBUG_DOMAINS, "Creating Tweet's entry, 'tweet_view->sexy_entry', using sexy entry.");
 	tweet_view->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_entry));
 	gtk_box_pack_start(
@@ -343,7 +343,7 @@ static void tweet_view_sexy_init(void){
 			TRUE, TRUE, 0
 	);
 	
-	debug(DEBUG_DOMAIN, "Reording Tweet's entry area.");
+	debug(DEBUG_DOMAINS, "Reording Tweet's entry area.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->tweet_hbox),
 			GTK_WIDGET(tweet_view->sexy_entry),
@@ -397,43 +397,43 @@ static void tweet_view_tweet_selected_buttons_show(gboolean show){
 }//tweet_view_selected_widgets_show
 
 static void tweet_view_reorder(void){
-	debug(DEBUG_DOMAIN, "Ordering TweetView.");
-	debug(DEBUG_DOMAIN, "Setting 'sexy_to' as 'status_view_vbox' 1st widget.");
+	debug(DEBUG_DOMAINS, "Ordering TweetView.");
+	debug(DEBUG_DOMAINS, "Setting 'sexy_to' as 'status_view_vbox' 1st widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_to),
 			0
 	);
 	
-	debug(DEBUG_DOMAIN, "Setting 'sexy_from' as 'status_view_vbox' 2nd widget.");
+	debug(DEBUG_DOMAINS, "Setting 'sexy_from' as 'status_view_vbox' 2nd widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_from),
 			1
 	);
 	
-	debug(DEBUG_DOMAIN, "Setting 'sexy_tweet' as 'status_view_vbox' 3rd widget.");
+	debug(DEBUG_DOMAINS, "Setting 'sexy_tweet' as 'status_view_vbox' 3rd widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_tweet),
 			2
 	);
 	
-	debug(DEBUG_DOMAIN, "Setting 'char_count_hbox' as 'status_view_vbox' 4th widget.");
+	debug(DEBUG_DOMAINS, "Setting 'char_count_hbox' as 'status_view_vbox' 4th widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->char_count_hbox),
 			3
 	);
 	
-	debug(DEBUG_DOMAIN, "Setting 'tweet_hbox' as 'status_view_vbox' 5th widget.");
+	debug(DEBUG_DOMAINS, "Setting 'tweet_hbox' as 'status_view_vbox' 5th widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->tweet_hbox),
 			4
 	);
 	
-	debug(DEBUG_DOMAIN, "Setting 'dm_frame' as 'status_view_vbox' 6th widget.");
+	debug(DEBUG_DOMAINS, "Setting 'dm_frame' as 'status_view_vbox' 6th widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->dm_frame),
@@ -448,7 +448,7 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 	else
 		set_selected_tweet(service, id, user_id, user_name, tweet);
 	
-	debug(DEBUG_DOMAIN, "%sabling 'selected_tweet_buttons'.", (id ?"En" :"Dis") );
+	debug(DEBUG_DOMAINS, "%sabling 'selected_tweet_buttons'.", (id ?"En" :"Dis") );
 	tweet_view_tweet_selected_buttons_show( (id ?TRUE :FALSE ) );
 
 	gchar *sexy_text=NULL;
@@ -456,7 +456,7 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 		sexy_text=g_strdup("");
 	else
 		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: [<a href=\"https://%s/%s\">%s</a>]</span>", service->url, service->username, service->decoded_key);
-	debug(DEBUG_DOMAIN, "Setting 'sexy_to' for 'selected_tweet':\n\t\t%s.", sexy_text);
+	debug(DEBUG_DOMAINS, "Setting 'sexy_to' for 'selected_tweet':\n\t\t%s.", sexy_text);
 	label_set_text(service, tweet_view->sexy_to, sexy_text);
 	g_free(sexy_text);
 	
@@ -465,18 +465,18 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 		sexy_text=g_strdup_printf("<b>From: %s &lt; @%s on <a href=\"http://%s/\">%s</a> &gt;</b> - %s", user_nick, service->url, service->url, user_name, date);
 	else
 		sexy_text=g_strdup("");
-	debug(DEBUG_DOMAIN, "Setting 'sexy_from' for 'selected_tweet':\n\t\t%s.", sexy_text);
+	debug(DEBUG_DOMAINS, "Setting 'sexy_from' for 'selected_tweet':\n\t\t%s.", sexy_text);
 	label_set_text(service, tweet_view->sexy_from, sexy_text);
 	g_free(sexy_text);
 	
 	
-	debug(DEBUG_DOMAIN, "Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", tweet);
+	debug(DEBUG_DOMAINS, "Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", tweet);
 	label_set_text(service, tweet_view->sexy_tweet, tweet);
 	
 	if(!pixbuf)
 		gtk_image_set_from_icon_name(tweet_view->user_image, PACKAGE_NAME, ImagesExpanded);
 	else{
-		debug(DEBUG_DOMAIN, "Setting avatar for the user who wrote the 'selected_tweet'.");
+		debug(DEBUG_DOMAINS, "Setting avatar for the user who wrote the 'selected_tweet'.");
 		GdkPixbuf *resized=NULL;
 		resized=images_expand_pixbuf( pixbuf );
 		gtk_image_set_from_pixbuf(tweet_view->user_image, resized);
@@ -484,7 +484,7 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 			g_object_unref(resized);
 	}
 	
-	debug(DEBUG_DOMAIN, "Selecting 'sexy_entry' for entering a new tweet.");
+	debug(DEBUG_DOMAINS, "Selecting 'sexy_entry' for entering a new tweet.");
 	tweet_view_sexy_select();
 }//tweet_view_show_tweet
 

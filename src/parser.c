@@ -52,7 +52,7 @@
 #include "parser.h"
 #include "network.h"
 
-#define DEBUG_DOMAIN       "Parser:Requests:OnlineServices:Tweets:UI"
+#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI"
 
 typedef struct {
 	User	*user;
@@ -78,34 +78,34 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	SoupURI	*suri=NULL;
 	gchar *uri=NULL;
 	if(!( (suri=soup_message_get_uri(xml)) && (uri=soup_uri_to_string(suri, FALSE)) )){
-		debug(DEBUG_DOMAIN, "*WARNING*: Unknown XML document URI.");
+		debug(DEBUG_DOMAINS, "*WARNING*: Unknown XML document URI.");
 		uri=g_strdup("[*unknown*]");
 	}
 	if(suri) soup_uri_free(suri);
 	
 	
 	if(!( xml->response_body && xml->response_body->data && xml->response_body->length )){
-		debug(DEBUG_DOMAIN, "**ERROR**: Cannot parse empty or xml resonse from: %s.", uri);
+		debug(DEBUG_DOMAINS, "**ERROR**: Cannot parse empty or xml resonse from: %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
 	
 	
 	gchar **content_v=NULL;
-	debug(DEBUG_DOMAIN, "Parsing xml document's content-type & DOM information from:\n\t\t%s", uri);
+	debug(DEBUG_DOMAINS, "Parsing xml document's content-type & DOM information from:\n\t\t%s", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=(gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type"))){
-		debug(DEBUG_DOMAIN, "**ERROR**: Failed to determine content-type for:\n\t\t %s.", uri);
+		debug(DEBUG_DOMAINS, "**ERROR**: Failed to determine content-type for:\n\t\t %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
 	
-	debug(DEBUG_DOMAIN, "Parsing content info: [%s] from:\n\t\t%s", content_info, uri);
+	debug(DEBUG_DOMAINS, "Parsing content info: [%s] from:\n\t\t%s", content_info, uri);
 	content_v=g_strsplit(content_info, "; ", -1);
 	g_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug(DEBUG_DOMAIN, "**ERROR**: Failed to determine content-type for:\n\t\t %s.", uri);
+		debug(DEBUG_DOMAINS, "**ERROR**: Failed to determine content-type for:\n\t\t %s.", uri);
 		g_strfreev(content_v);
 		g_free(uri);
 		return NULL;
@@ -114,7 +114,7 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	
 	gchar *charset=NULL;
 	if(!( ((content_v[1])) && (charset=g_strdup(content_v[1])) )){
-		debug(DEBUG_DOMAIN, "**ERROR**: Failed to determine charset for:\n\t\t %s.", uri);
+		debug(DEBUG_DOMAINS, "**ERROR**: Failed to determine charset for:\n\t\t %s.", uri);
 		g_free(content_type);
 		g_strfreev(content_v);
 		g_free(uri);
@@ -123,15 +123,15 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	g_strfreev(content_v);
 	
 	
-	debug(DEBUG_DOMAIN, "Parsing charset: [%s] for:\n\t\t%s", charset, uri);
+	debug(DEBUG_DOMAINS, "Parsing charset: [%s] for:\n\t\t%s", charset, uri);
 	content_v=g_strsplit(charset, "=", -1);
 	g_free(charset);
 	if(!(content_v && content_v[1])){
-		debug(DEBUG_DOMAIN, "Defaulting to charset: [utf-8] for:\n\t\t%s", uri);
+		debug(DEBUG_DOMAINS, "Defaulting to charset: [utf-8] for:\n\t\t%s", uri);
 		charset=g_strdup("utf-8");
 	}else{
 		charset=g_strdup(content_v[1]);
-		debug(DEBUG_DOMAIN, "Setting parsed charset: [%s] for:\n\t\t%s", charset, uri);
+		debug(DEBUG_DOMAINS, "Setting parsed charset: [%s] for:\n\t\t%s", charset, uri);
 	}
 	g_strfreev(content_v);
 	
@@ -145,7 +145,7 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	content_v=g_strsplit(content_type, "/", -1);
 	gchar *dom_base_entity=NULL;
 	if(!( ((content_v[1])) && (dom_base_entity=g_strdup(content_v[1])) )){
-		debug(DEBUG_DOMAIN, "**ERROR**: Failed to determine DOM base entity URL for:\n\t\t%s.", uri);
+		debug(DEBUG_DOMAINS, "**ERROR**: Failed to determine DOM base entity URL for:\n\t\t%s.", uri);
 		g_free(uri);
 		g_free(content_type);
 		g_strfreev(content_v);
@@ -154,12 +154,12 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	g_strfreev(content_v);
 	
 	
-	debug(DEBUG_DOMAIN, "Parsed xml document's information.\n\t\tURI: [%s]\n\t\tcontent-type: [%s]; charset: [%s]; encoding: [%s]; dom element: [%s]", uri, content_type, charset, encoding, dom_base_entity);
+	debug(DEBUG_DOMAINS, "Parsed xml document's information.\n\t\tURI: [%s]\n\t\tcontent-type: [%s]; charset: [%s]; encoding: [%s]; dom element: [%s]", uri, content_type, charset, encoding, dom_base_entity);
 	
 	
-	debug(DEBUG_DOMAIN, "Parsing %s document.", dom_base_entity);
+	debug(DEBUG_DOMAINS, "Parsing %s document.", dom_base_entity);
 	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
-		debug(DEBUG_DOMAIN, "**ERROR**: Failed to parse %s document.", dom_base_entity);
+		debug(DEBUG_DOMAINS, "**ERROR**: Failed to parse %s document.", dom_base_entity);
 		g_free(uri);
 		g_free(content_type);
 		g_free(dom_base_entity);
@@ -172,7 +172,7 @@ static xmlDoc *parser_parse_content_dom_and_document(SoupMessage *xml){
 	g_free(content_type);
 	g_free(charset);
 	
-	debug(DEBUG_DOMAIN, "XML document parsed.  Returning xmlDoc.");
+	debug(DEBUG_DOMAINS, "XML document parsed.  Returning xmlDoc.");
 	return doc;
 }//parser_parse_content_dom_and_document
 
@@ -180,11 +180,11 @@ xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
 	xmlDoc *doc=NULL;
 	
 	if(!(doc=parser_parse_content_dom_and_document(xml))) {
-		debug(DEBUG_DOMAIN, "failed to read xml data");
+		debug(DEBUG_DOMAINS, "failed to read xml data");
 		return NULL;
 	}
 	
-	debug(DEBUG_DOMAIN, "Setting XML nodes.");
+	debug(DEBUG_DOMAINS, "Setting XML nodes.");
 	xmlNode *root_element=NULL;
 	*first_element=NULL;
 	
@@ -192,7 +192,7 @@ xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
 	/* Get first element */
 	root_element=xmlDocGetRootElement(doc);
 	if(root_element==NULL) {
-		debug(DEBUG_DOMAIN, "failed getting first element of xml data");
+		debug(DEBUG_DOMAINS, "failed getting first element of xml data");
 		xmlFreeDoc(doc);
 		return NULL;
 	} else
@@ -220,9 +220,9 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	gchar	*xpath_content=NULL;
 	gchar	**xpathv=g_strsplit(xpath, "->", -1);
 	guint	xpath_index=0, xpath_target_index=g_strv_length(xpathv)-1;
-	debug(DEBUG_DOMAIN, "Searching for xpath: '%s' content.", xpath);
+	debug(DEBUG_DOMAINS, "Searching for xpath: '%s' content.", xpath);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
-		debug(DEBUG_DOMAIN, "Checking current xpath: '%s' against current node: '%s (#%d)'.", xpathv[xpath_index], current_node->name, current_node->type);
+		debug(DEBUG_DOMAINS, "Checking current xpath: '%s' against current node: '%s (#%d)'.", xpathv[xpath_index], current_node->name, current_node->type);
 		
 		if(!g_str_equal(current_node->name, xpathv[xpath_index])) continue;
 		
@@ -282,7 +282,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	store=tweet_list_get_store();
 	
 	/* get tweets or direct messages */
-	debug(DEBUG_DOMAIN, "Parsing %s timeline.", root_element->name);
+	debug(DEBUG_DOMAINS, "Parsing %s timeline.", root_element->name);
 	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE ) continue;
 		if( g_str_equal(cur_node->name, "statuses") ||	g_str_equal(cur_node->name, "direct-messages") ){
@@ -293,7 +293,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		if((!g_str_equal(cur_node->name, "status")) && (!g_str_equal(cur_node->name, "direct_message")) )
 			continue;
 		
-		debug(DEBUG_DOMAIN, "Parsing tweet.  Its a %s.", (g_str_equal(cur_node->name, "status") ?"status update" :"direct message" ) );
+		debug(DEBUG_DOMAINS, "Parsing tweet.  Its a %s.", (g_str_equal(cur_node->name, "status") ?"status update" :"direct message" ) );
 		
 		/* Timelines and direct messages */
 		gchar	*tweet;
@@ -301,7 +301,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		guint	sid;
 		
 		/* Parse node */
-		debug(DEBUG_DOMAIN, "Creating tweet's Status *.");
+		debug(DEBUG_DOMAINS, "Creating tweet's Status *.");
 		status=parser_node_status(service, cur_node->children);
 		if(first_tweet){
 			struct tm	post;
@@ -317,11 +317,11 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 			last_tweet = sid;
 		
 		/* Create string for text column */
-		debug(DEBUG_DOMAIN, "Parsing tweet's 'created_at' time: [%s] to a display ready format.", status->created_at_str);
+		debug(DEBUG_DOMAINS, "Parsing tweet's 'created_at' time: [%s] to a display ready format.", status->created_at_str);
 		datetime=parser_convert_time( status->created_at_str );
-		debug(DEBUG_DOMAIN, "Display time set to: %s.", datetime);
+		debug(DEBUG_DOMAINS, "Display time set to: %s.", datetime);
 		
-		debug(DEBUG_DOMAIN, "Formating status text for display.");
+		debug(DEBUG_DOMAINS, "Formating status text for display.");
 		tweet=g_strdup_printf(
 					"<span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> - %s\n%s",
 						service->decoded_key,
@@ -410,7 +410,7 @@ static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
 	status = g_new0(Status, 1);
 	
 	/* Begin 'status' or 'direct-messages' loop */
-	debug(DEBUG_DOMAIN, "Parsing status & tweet at node: %s", a_node->name);
+	debug(DEBUG_DOMAINS, "Parsing status & tweet at node: %s", a_node->name);
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE) continue;
 		
@@ -423,16 +423,16 @@ static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
 			strptime(content, "%s", &post);
 			post.tm_isdst=-1;
 			status->created_at=mktime(&post);
-			debug(DEBUG_DOMAIN, "Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %u", status->created_at_str, status->created_at);
+			debug(DEBUG_DOMAINS, "Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %u", status->created_at_str, status->created_at);
 		}else if(g_str_equal(cur_node->name, "id")){
-			debug(DEBUG_DOMAIN, "Parsing tweet's 'id': %s", content);
+			debug(DEBUG_DOMAINS, "Parsing tweet's 'id': %s", content);
 			status->id=strtoul( content, NULL, 10 );
 		}else if( g_str_equal(cur_node->name, "sender") || g_str_equal(cur_node->name, "user")){
-			debug(DEBUG_DOMAIN, "Parsing user node: %s.", cur_node->name);
+			debug(DEBUG_DOMAINS, "Parsing user node: %s.", cur_node->name);
 			status->user=user_parse_profile(service, cur_node->children);
-			debug(DEBUG_DOMAIN, "User parsed and created for user: %s.", status->user->user_name);
+			debug(DEBUG_DOMAINS, "User parsed and created for user: %s.", status->user->user_name);
 		}else if(g_str_equal(cur_node->name, "text")) {
-			debug(DEBUG_DOMAIN, "Parsing tweet.");
+			debug(DEBUG_DOMAINS, "Parsing tweet.");
 			gchar *cur=status->text=g_markup_escape_text(content, -1);
 			while((cur = strstr(cur, "&amp;"))) {
 				if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)

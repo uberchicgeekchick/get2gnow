@@ -69,9 +69,11 @@
  *********************************************************************/
 /* My, Kaity G. B., new uber tweet viewer. */
 typedef struct {
+	/* How long to wait before running the configure event, which saves the window(s) width, height, & position. */
 	guint			size_timeout_id;
+	
 	/* Tweet View Dialog & embeding Widgets */
-	GtkDialog		*tweet_view;
+	GtkWindow		*tweet_view;
 	GtkHBox			*tweet_view_embed;
 	
 	/* Stuff for sending a dm to a selected user. */
@@ -134,6 +136,7 @@ extern unsigned long int in_reply_to_status_id;
  *          Global method  & function prototypes        *
  ********************************************************/
 TweetView *tweet_view_new(GtkWindow *parent);
+GtkWindow *tweet_view_get_window(void);
 void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *tweet, GdkPixbuf *pixbuf );
 
 void tweet_view_set_embed_toggle_and_image(void);

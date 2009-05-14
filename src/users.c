@@ -81,7 +81,7 @@ static void user_request_free(FriendRequest *request);
 static User *user_constructor( gboolean a_follower );
 
 
-#define DEBUG_DOMAIN "ServiceRequests"
+#define	DEBUG_DOMAINS	"ServiceRequests"
 #define GtkBuilderUI "user-profile.ui"
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
@@ -136,7 +136,7 @@ static FriendRequest *user_request_new(OnlineService *service, FriendAction acti
 			return NULL;
 	}//switch
 	request->service=service;
-	debug(DEBUG_DOMAIN, "%sing %s on %s", request->message, request->user_data, request->service->key);
+	debug(DEBUG_DOMAINS, "%sing %s on %s", request->message, request->user_data, request->service->key);
 	return request;
 }//user_request_new
 
@@ -188,7 +188,7 @@ static void user_request_process_get(FriendRequest *request){
 
 static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	FriendRequest *request=(FriendRequest *)user_data;
-	debug(DEBUG_DOMAIN, "%s user response: %i", request->message, msg->status_code);
+	debug(DEBUG_DOMAINS, "%s user response: %i", request->message, msg->status_code);
 	
 	/* Check response */
 	if(!network_check_http(request->service, msg)){
@@ -198,7 +198,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	}
 	
 	/* parse new user */
-	debug(DEBUG_DOMAIN, "Parsing user response");
+	debug(DEBUG_DOMAINS, "Parsing user response");
 	User *user=user_parse_new(request->service, msg);
 	app_statusbar_printf("Successfully %s.", request->message, NULL);
 	
@@ -277,7 +277,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	
 	user=user_constructor( getting_followers );
 	
-	debug(DEBUG_DOMAIN, "Parsing user profile data.");
+	debug(DEBUG_DOMAINS, "Parsing user profile data.");
 	/* Begin 'users' node loop */
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE)
@@ -285,7 +285,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 		
 		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(cur_node)) ) ) continue;
 		
-		debug(DEBUG_DOMAIN, "name: %s; content: %s.", cur_node->name, content);
+		debug(DEBUG_DOMAINS, "name: %s; content: %s.", cur_node->name, content);
 		
 		if(g_str_equal(cur_node->name, "id" ))
 			user->id=strtoul( content, NULL, 10 );
@@ -387,7 +387,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 
 
 void users_free(const char *type, GList *users ){
-	debug( DEBUG_DOMAIN, "Freeing the authenticated user's %s.", type );
+	debug( DEBUG_DOMAINS, "Freeing the authenticated user's %s.", type );
 	
 	g_list_foreach(users, (GFunc)user_free, NULL);
 	

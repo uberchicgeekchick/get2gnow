@@ -51,7 +51,7 @@
 #include "timer.h"
 #include "online-services.h"
 
-#define DEBUG_DOMAIN	  "OnlineServices"
+#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Authentication:Setup:Start-Up"
 
 typedef struct {
 	gchar        *src;
@@ -137,7 +137,7 @@ void network_logout(void){
 		current_timeline=NULL;
 	}
 	
-	debug(DEBUG_DOMAIN, "Logout");
+	debug(DEBUG_DOMAINS, "Logout");
 }
 
 
@@ -182,7 +182,7 @@ void network_get_timeline(const gchar *uri_timeline){
 	
 	/* UI */
 	processing=TRUE;
-	debug(DEBUG_DOMAIN, "Loading timeline: %s", uri_timeline);
+	debug(DEBUG_DOMAINS, "Loading timeline: %s", uri_timeline);
 	app_set_statusbar_msg(_("Loading timeline..."));
 	
 	tweet_list_refresh();
@@ -227,7 +227,7 @@ GList *network_get_users_glist(gboolean get_friends){
 	while(fetching){
 		page++;
 		uri=g_strdup_printf("%s?page=%d",(get_friends?API_FOLLOWING:API_FOLLOWERS), page);
-		debug(DEBUG_DOMAIN, "Getting page %d of who%s.", page,(get_friends?"m the user is following":" is following the user") );
+		debug(DEBUG_DOMAINS, "Getting page %d of who%s.", page,(get_friends?"m the user is following":" is following the user") );
 		/* TODO: implement using
 		 * msg=network_get( uri );
 		 */
@@ -249,14 +249,14 @@ GList *network_get_users_glist(gboolean get_friends){
 
 
 static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg){
-	debug(DEBUG_DOMAIN, "Users response: %i",msg->status_code);
+	debug(DEBUG_DOMAINS, "Users response: %i",msg->status_code);
 	
 	/* Check response */
 	if(!network_check_http(service, msg))
 		return FALSE;
 		
 	/* parse user list */
-	debug(DEBUG_DOMAIN, "Parsing user list");
+	debug(DEBUG_DOMAINS, "Parsing user list");
 	GList *new_users;
 	if(!(new_users=users_new(service, msg)) )
 		return FALSE;
@@ -275,11 +275,11 @@ gboolean network_download_avatar(OnlineService *service, const gchar *image_uri)
 	gchar *image_filename=NULL;
 	if(g_file_test((image_filename=images_get_filename(image_uri)), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return TRUE;
-	debug(DEBUG_DOMAIN, "Downloading Image: %s\nGet: %s", image_filename, image_uri);
+	debug(DEBUG_DOMAINS, "Downloading Image: %s\nGet: %s", image_filename, image_uri);
 	
 	SoupMessage *msg=online_service_request_url(service, GET, image_uri, NULL, NULL, NULL);
 		
-	debug(DEBUG_DOMAIN, "Image response: %i", msg->status_code);
+	debug(DEBUG_DOMAINS, "Image response: %i", msg->status_code);
 	
 	/* check response */
 	if(!((network_check_http(service, msg)) &&( g_file_set_contents( image_filename, msg->response_body->data, msg->response_body->length, NULL )) ))
@@ -313,10 +313,10 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 	gchar *status=(gchar *)service_wrapper->user_data;
 	
 	if(!network_check_http(service_wrapper->service, msg)){
-		debug(DEBUG_DOMAIN, "**ERROR**: %s failed.\n\t\tTweet request for: '%s'; http status: %s(#%i)", status, service_wrapper->service->key, msg->reason_phrase, msg->status_code);
+		debug(DEBUG_DOMAINS, "**ERROR**: %s failed.\n\t\tTweet request for: '%s'; http status: %s(#%i)", status, service_wrapper->service->key, msg->reason_phrase, msg->status_code);
 		app_statusbar_printf("%s's %s was not sent.", service_wrapper->service->key, status);
 	}else{
-		debug(DEBUG_DOMAIN, "%s's: 'network_tweet_cb' successfully processed '%s'.\n\t\thttp status: %s(#%i)", service_wrapper->service->key, status, msg->reason_phrase, msg->status_code);
+		debug(DEBUG_DOMAINS, "%s's: 'network_tweet_cb' successfully processed '%s'.\n\t\thttp status: %s(#%i)", service_wrapper->service->key, status, msg->reason_phrase, msg->status_code);
 		app_statusbar_printf("%s's %s successfully sent.", service_wrapper->service->key, status);
 	}
 	
@@ -336,7 +336,7 @@ static void network_cb_on_timeline(SoupSession *session, SoupMessage *msg, gpoin
 	
 	new_timeline=(gchar *)service_wrapper->user_data;
 	
-	debug(DEBUG_DOMAIN, "Timeline response: %i",msg->status_code);
+	debug(DEBUG_DOMAINS, "Timeline response: %i",msg->status_code);
 	
 	if(processing)
 		tweet_list_refresh();
@@ -352,7 +352,7 @@ static void network_cb_on_timeline(SoupSession *session, SoupMessage *msg, gpoin
 		return;
 	}
 	
-	debug(DEBUG_DOMAIN, "Parsing timeline");
+	debug(DEBUG_DOMAINS, "Parsing timeline");
 	
 	/* Parse and set ListStore */
 	if(!(parser_timeline(service_wrapper->service, msg)))
@@ -378,18 +378,18 @@ static void network_cb_on_timeline(SoupSession *session, SoupMessage *msg, gpoin
 void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
 	
-	debug(DEBUG_DOMAIN, "Image response: %i", msg->status_code);
+	debug(DEBUG_DOMAINS, "Image response: %i", msg->status_code);
 	
 	Image *image=(Image *)service_wrapper->user_data;
 	if(!( image && image->src && image->iter )){
-		debug(DEBUG_DOMAIN, "**ERROR**: Missing image information.  Image filename: %s; Image iter: %s", image->src, (image->iter ?"valid" :"unknown") );
+		debug(DEBUG_DOMAINS, "**ERROR**: Missing image information.  Image filename: %s; Image iter: %s", image->src, (image->iter ?"valid" :"unknown") );
 		return;
 	}
 	
 	/* check response */
 	if(network_check_http(service_wrapper->service, msg)) {
 		/* Save image data */
-		debug(DEBUG_DOMAIN, "Saving image to file: %s", image->src);
+		debug(DEBUG_DOMAINS, "Saving image to file: %s", image->src);
 		if(g_file_set_contents(
 					image->src,
 						msg->response_body->data,
@@ -416,7 +416,7 @@ static void network_timeout_new(void){
 	guint reload_time;
 	
 	if(timeout_id) {
-		debug(DEBUG_DOMAIN, "Stopping timeout id: %i", timeout_id);
+		debug(DEBUG_DOMAINS, "Stopping timeout id: %i", timeout_id);
 		g_source_remove(timeout_id);
 	}
 	
@@ -431,7 +431,7 @@ static void network_timeout_new(void){
 	
 	timeout_id=g_timeout_add(reload_time, network_timeout, NULL);
 	
-	debug(DEBUG_DOMAIN, "Starting timeout id: %i", timeout_id);
+	debug(DEBUG_DOMAINS, "Starting timeout id: %i", timeout_id);
 }
 
 static gboolean network_timeout(gpointer user_data){
@@ -441,7 +441,7 @@ static gboolean network_timeout(gpointer user_data){
 	/* UI */
 	app_set_statusbar_msg(_("Reloading timeline..."));
 	
-	debug(DEBUG_DOMAIN, "Auto reloading. Timeout: %i", timeout_id);
+	debug(DEBUG_DOMAINS, "Auto reloading. Timeout: %i", timeout_id);
 	
 	processing=TRUE;
 	online_services_request( online_services, QUEUE, current_timeline, network_cb_on_timeline, NULL, NULL );

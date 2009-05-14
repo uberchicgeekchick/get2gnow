@@ -93,7 +93,7 @@ static TweetList *list=NULL;
 static TweetListPriv *list_priv=NULL;
 static gint tweet_list_index=0;
 
-G_DEFINE_TYPE(TweetList, tweet_list, GTK_TYPE_TREE_VIEW);
+G_DEFINE_TYPE(TweetList, tweet_list, SEXY_TYPE_TREE_VIEW);
 
 static void tweet_list_class_init( TweetListClass *klass ){
 	GObjectClass   *object_class=G_OBJECT_CLASS(klass);
@@ -148,6 +148,8 @@ static void tweet_list_create_model( TweetList *list ){
 	gtk_tree_view_set_model(GTK_TREE_VIEW(list), sort_model);
 	list_priv->model=model;
 	list_priv->sort_model=sort_model;
+	
+	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(list), STRING_TWEET);
 }
 
 static void tweet_list_setup_view(TweetList *list){
@@ -203,8 +205,10 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 
 void tweet_list_goto_top(void){
 	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
-	gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(list), path, NULL, FALSE, 0.0, 0.0);
+	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(list)))
+		gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(list), path, NULL, FALSE, 0.0, 0.0);
 	gtk_tree_path_free(path);
+	tweet_list_index=0;
 }//tweet_list_goto_top
 
 void tweet_list_move_to(gint row_index){

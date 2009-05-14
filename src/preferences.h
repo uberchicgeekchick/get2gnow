@@ -34,37 +34,35 @@ G_BEGIN_DECLS
 
 /* GConf Keys */
 #ifndef PREFS_PATH
-#if defined GNOME_ENABLE_DEBUG
-#define PREFS_PATH			"/apps/" PACKAGE_TARNAME "/debug"
-#else
-#define	PREFS_PATH			"/apps/" PACKAGE_TARNAME
+#	if defined GNOME_ENABLE_DEBUG
+#		define PREFS_PATH		"/apps/" PACKAGE_TARNAME "/debug"
+#	else
+#		define	PREFS_PATH		"/apps/" PACKAGE_TARNAME
+#	endif
 #endif
-#endif
+
+/* Values used & setup by the prefernces window. */
+#define PREFS_UI_NOTIFICATION			PREFS_PATH "/ui/notify"
+#define PREFS_UI_SOUND				PREFS_PATH "/ui/sound"
+#define PREFS_UI_NO_ALERT			PREFS_PATH "/ui/no_alert"
+#define PREFS_UI_DONT_EXPAND_URLS		PREFS_PATH "/ui/dont_expand_urls"
+
+#define	PREFS_TWEETS_HOME_TIMELINE		PREFS_PATH "/tweets/home_timeline"
+#define	PREFS_TWEETS_RELOAD_TIMELINES		PREFS_PATH "/tweets/reload_timeline"
 
 
-#define	PREFS_TWEETS_HOME_TIMELINE	PREFS_PATH "/tweets/home_timeline"
-#define	PREFS_TWEETS_RELOAD_TIMELINES	PREFS_PATH "/tweets/reload_timeline"
-
-#define PREFS_UI_WINDOW_HEIGHT		PREFS_PATH "/ui/main_window_height"
-#define PREFS_UI_WINDOW_WIDTH		PREFS_PATH "/ui/main_window_width"
-#define PREFS_UI_WIN_POS_X		PREFS_PATH "/ui/main_window_pos_x"
-#define PREFS_UI_WIN_POS_Y		PREFS_PATH "/ui/main_window_pos_y"
-#define PREFS_UI_MAIN_WINDOW_HIDDEN	PREFS_PATH "/ui/main_window_hidden"
-
-#define PREFS_UI_TWEET_VIEW_HEIGHT		PREFS_PATH "/ui/tweet_view_height"
-#define PREFS_UI_TWEET_VIEW_WIDTH		PREFS_PATH "/ui/tweet_view_width"
-#define PREFS_UI_TWEET_VIEW_POS_X		PREFS_PATH "/ui/tweet_view_pos_x"
-#define PREFS_UI_TWEET_VIEW_POS_Y		PREFS_PATH "/ui/tweet_view_pos_y"
+/* UI & notification gconf values. */
 #define PREFS_UI_TWEET_VIEW_USE_DIALOG		PREFS_PATH "/ui/use_tweet_dialog"
+#define PREFS_UI_HIDDEN				PREFS_PATH "/ui/hidden"
 
+#define PREFS_HINTS_CLOSE_MAIN_WINDOW		PREFS_PATH "/hints/close_main_window"
 
-/* Values used & setup by the prefernces window */
-#define PREFS_UI_NOTIFICATION		PREFS_PATH "/ui/notify"
-#define PREFS_UI_SOUND			PREFS_PATH "/ui/sound"
-#define PREFS_UI_NO_ALERT		PREFS_PATH "/ui/no_alert"
-#define PREFS_UI_DONT_EXPAND_URLS	PREFS_PATH "/ui/dont_expand_urls"
+/* Window height, width, & position gconf values. */
+#define PREFS_UI_WIDTH			PREFS_PATH "/ui/widths/%s"
+#define PREFS_UI_HEIGHT			PREFS_PATH "/ui/heights/%s"
+#define PREFS_UI_POSITION_X		PREFS_PATH "/ui/positions/%s_x"
+#define PREFS_UI_POSITION_Y		PREFS_PATH "/ui/positions/%s_y"
 
-#define PREFS_HINTS_CLOSE_MAIN_WINDOW	PREFS_PATH "/hints/close_main_window"
 
 void preferences_dialog_show (GtkWindow *parent);
 

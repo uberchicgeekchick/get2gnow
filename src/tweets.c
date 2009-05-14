@@ -84,7 +84,7 @@ unsigned long int in_reply_to_status_id=0;
 OnlineService *in_reply_to_service=NULL;
 static SelectedTweet *selected_tweet=NULL;
 
-#define DEBUG_DOMAIN "Tweets"
+#define	DEBUG_DOMAINS	"Tweets"
 
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, gboolean release);
@@ -98,7 +98,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 		unset_selected_tweet();
 	}
 	
-	debug(DEBUG_DOMAIN, "Creating 'selected_tweet', tweet id: #%lu from '%s' on '%s'.", id, user_name, service->key);
+	debug(DEBUG_DOMAINS, "Creating 'selected_tweet', tweet id: #%lu from '%s' on '%s'.", id, user_name, service->key);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->service=service;
 	selected_tweet->id=id;
@@ -126,7 +126,7 @@ gchar *selected_tweet_get_reply_to_string(void){
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
-	debug(DEBUG_DOMAIN, "Un-Setting selected_tweet.");
+	debug(DEBUG_DOMAINS, "Un-Setting selected_tweet.");
 	if(selected_tweet->user_name)
 		g_free(selected_tweet->user_name);
 	selected_tweet->user_name=NULL;
@@ -228,7 +228,7 @@ void tweets_reply(void){
 void tweets_retweet(void){
 	if(!selected_tweet)
 		return;
-	gchar *tweet=g_strdup_printf("%s RT %s", selected_tweet->reply_to_string, selected_tweet->tweet);
+	gchar *tweet=g_strdup_printf("RT: %s%s", selected_tweet->reply_to_string, selected_tweet->tweet);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
 }//tweets_retweet
 

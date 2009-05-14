@@ -30,7 +30,7 @@
 #include "users.h"
 #include "profile-viewer.h"
 
-#define DEBUG_DOMAIN "ServiceRequests"
+#define	DEBUG_DOMAINS	"ServiceRequests"
 #define GtkBuilderUI "popup-dialog.ui"
 
 typedef struct {
@@ -218,11 +218,11 @@ static Popup *popup_dialog_show(GtkWindow *parent, FriendAction action ){
 
 	g_object_unref(ui);
 	
-	debug(DEBUG_DOMAIN, "Signal handlers set... loading accounts.");
+	debug(DEBUG_DOMAINS, "Signal handlers set... loading accounts.");
 	if(!( online_services_fill_liststore(online_services, popup->online_service_liststore) ))
-		debug(DEBUG_DOMAIN, "No services found to load, new accounts need to be setup.");
+		debug(DEBUG_DOMAINS, "No services found to load, new accounts need to be setup.");
 	else{
-		debug(DEBUG_DOMAIN, "OnlineServices found & loaded.  Selecting active service.");
+		debug(DEBUG_DOMAINS, "OnlineServices found & loaded.  Selecting active service.");
 		gtk_combo_box_set_active(popup->online_service_combobox, 0);
 	}
 

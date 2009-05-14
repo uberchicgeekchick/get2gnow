@@ -75,15 +75,6 @@
 #define		OPEN_CLIENT		"get2gnow"
 
 
-#ifndef PREFS_PATH
-#if defined GNOME_ENABLE_DEBUG
-#define PREFS_PATH			"/apps/" PACKAGE_TARNAME "/debug"
-#else
-#define	PREFS_PATH			"/apps/" PACKAGE_TARNAME
-#endif
-#endif
-
-
 #define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
 #define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s"
 #define	PREFS_AUTH_PASSWORD		PREFS_AUTH_PREFIX "/password"

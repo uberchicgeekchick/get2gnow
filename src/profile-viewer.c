@@ -68,7 +68,7 @@
 
 #define GtkBuilderUI "profile-viewer.ui"
 
-#define DEBUG_DOMAIN "Profile-Viewer"
+#define	DEBUG_DOMAINS	"Profile-Viewer"
 
 typedef struct {
 	User			*user;
