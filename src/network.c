@@ -170,7 +170,6 @@ void network_refresh(void){
 	app_statusbar_printf("%s: %s.%s", _("Reloading timeline"), current_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
 	
 	processing=TRUE;
-	tweet_list_refresh();
 	online_services_request( online_services, QUEUE, current_timeline, network_cb_on_timeline, NULL, NULL );
 }
 
@@ -186,7 +185,6 @@ void network_get_timeline(const gchar *uri_timeline){
 	debug(DEBUG_DOMAINS, "Loading timeline: %s", uri_timeline);
 	app_statusbar_printf("%s: %s.%s", _("Loading timeline"), uri_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
 	
-	tweet_list_refresh();
 	gchar *new_timeline=g_strdup(uri_timeline);
 	online_services_request( online_services, QUEUE, uri_timeline, network_cb_on_timeline, new_timeline, NULL );
 	g_free(new_timeline);
@@ -214,8 +212,6 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 	
 	debug(DEBUG_DOMAINS, "Loading timeline: %s", user_timeline);
 	app_statusbar_printf("%s: https://%s%s.%s", _("Loading timeline"), service->url, user_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
-	
-	tweet_list_refresh();
 	
 	online_service_request(service, QUEUE, user_timeline, network_cb_on_timeline, user_timeline, NULL);
 	g_free(user_timeline);
@@ -452,8 +448,6 @@ static gboolean network_timeout(gpointer user_data){
 	debug(DEBUG_DOMAINS, "Auto-reloading current timeline: %s", current_timeline, timeout_id);
 	app_statusbar_printf("%s: %s.%s", _("Auto-reloading timeline"), current_timeline, ( gconfig_if_bool(PREFS_UI_DONT_EXPAND_URLS) ?"" :_("  This may take several moments.") ));
 			
-	tweet_list_refresh();
-	
 	debug(DEBUG_DOMAINS, "Auto reloading. Timeout: %i");
 	
 	processing=TRUE;
