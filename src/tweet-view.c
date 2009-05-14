@@ -309,7 +309,7 @@ static void tweet_view_sexy_init(void){
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_to),
-			TRUE, TRUE, 0
+			FALSE, FALSE, 0
 	);
 	g_object_set( tweet_view->sexy_to, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_to));
@@ -319,7 +319,7 @@ static void tweet_view_sexy_init(void){
 	gtk_box_pack_start(
 			GTK_BOX(tweet_view->status_view_vbox),
 			GTK_WIDGET(tweet_view->sexy_from),
-			TRUE, TRUE, 0
+			FALSE, FALSE, 0
 	);
 	g_object_set( tweet_view->sexy_from, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_from));
@@ -462,7 +462,7 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 	
 	
 	if(!( G_STR_EMPTY(user_nick) && G_STR_EMPTY(user_name) && G_STR_EMPTY(date) ))
-		sexy_text=g_strdup_printf("<b>From: %s &lt; @%s on <a href=\"http://%s/\">%s</a> &gt;</b> - %s", user_nick, service->url, service->url, user_name, date);
+		sexy_text=g_strdup_printf("<b>From: %s &lt; @%s on <a href=\"http://%s/%s\">%s</a> &gt;</b> - %s", user_nick, user_name, service->url, user_name, service->url, date);
 	else
 		sexy_text=g_strdup("");
 	debug(DEBUG_DOMAINS, "Setting 'sexy_from' for 'selected_tweet':\n\t\t%s.", sexy_text);
