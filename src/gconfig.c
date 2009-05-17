@@ -122,10 +122,10 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 	if(error) {
 		debug("\t\t**ERROR:** %s. Setting default value.", error->message);
 		if(!(gconfig_set_bool(key, bool_default)))
-				debug("\t\t**ERROR:** failed to set '%s' to default value: '%s'.", error->message, (bool_default ?"TRUE" :"FALSE"));
+			debug("\t\t**ERROR:** failed to set '%s' to default value: '%s'.", error->message, (bool_default ?"TRUE" :"FALSE"));
 
 		g_error_free(error);
-		return FALSE;
+		return bool_default;
 	}
 	
 	return value;

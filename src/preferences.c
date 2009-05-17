@@ -317,17 +317,12 @@ static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, gbo
 	guint id;
 	
 	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
-	
 	g_object_set_data_full(G_OBJECT(check_button), "bool_default", g_strdup((bool_default?"TRUE" :"FALSE")), g_free);
 	
 	g_signal_connect(check_button, "toggled", G_CALLBACK(preferences_toggle_button_toggled_cb), NULL);
-	
 	preferences_widget_sync_bool(key, check_button);
 	
-	if( (id=gconfig_notify_add(g_strdup(key),
-					preferences_notify_bool_cb,
-					check_button
-	)) )
+	if( (id=gconfig_notify_add(g_strdup(key), preferences_notify_bool_cb, check_button)) )
 		preferences_add_id(prefs, id);
 }
 
