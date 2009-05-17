@@ -448,7 +448,7 @@ static void network_cb_on_timeline(SoupSession *session, SoupMessage *msg, gpoin
 		
 		if(new_timeline){
 			if(!( current_timeline && g_str_equal(new_timeline, current_timeline) )){
-				g_free(current_timeline);
+				if(current_timeline) g_free(current_timeline);
 				current_timeline=g_strdup(new_timeline);
 			}
 		}

@@ -140,7 +140,11 @@ extern OnlineService *current_service;
  *          Global method  & function prototypes        *
  ********************************************************/
 OnlineServices *online_services_init(void);
+
 gboolean online_services_login(OnlineServices *services);
+gboolean online_services_reconnect(OnlineServices *services);
+void online_services_disconnect(OnlineServices *services);
+
 gboolean online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
 
 guint online_services_count_connections(OnlineServices *services);

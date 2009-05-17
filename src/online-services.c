@@ -84,7 +84,6 @@
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static void online_services_reconnect(OnlineServices *services);
 static gboolean online_service_connect(OnlineService *service);
 static gboolean online_service_login(OnlineService *service);
 static gboolean online_service_reconnect(OnlineService *service);
@@ -218,16 +217,34 @@ gboolean online_services_login(OnlineServices *services){
 }/* online_services_login */
 
 /* Login to services. */
-static void online_services_reconnect(OnlineServices *services){
+gboolean online_services_reconnect(OnlineServices *services){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
+	
+	gboolean	reconnect_success=FALSE;
+	for(a=services->accounts; a; a=a->next){
+		service=(OnlineService *)a->data;
+		if(service->enabled)
+			if(online_service_reconnect(service))
+				if(!(reconnect_success))
+					reconnect_success=TRUE;
+	}
+	app_state_on_connection(reconnect_success);
+	return reconnect_success;
+}/*online_services_reconnect*/
+
+/* Login to services. */
+void online_services_disconnect(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
 		if(service->enabled)
-			online_service_reconnect(service);
+			online_service_disconnect(service);
 	}
-}/* online_services_reconnect */
+}/*online_services_disconnect*/
+
 
 gboolean online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect){
 	if( G_STR_EMPTY(url) || G_STR_EMPTY(username) )

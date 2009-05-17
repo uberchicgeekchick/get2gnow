@@ -181,7 +181,9 @@ static void friends_menu_request(GtkAction *item, App *app);
 
 
 static void app_connection_items_setup(GtkBuilder *ui); 
-static gboolean app_connect(void);
+static void app_login(void);
+static void app_reconnect(GtkMenuItem *item, App *app);
+
 static void app_set_default_timeline(App *app, gchar *timeline);
 static void app_retrieve_default_timeline(void);
 static void app_status_icon_create_menu(void);
@@ -236,6 +238,7 @@ static void app_disconnect(void){
 	GtkListStore *store=tweet_list_get_store();
 	gtk_list_store_clear(store);
 	network_logout();
+	online_services_disconnect(online_services);
 	app_state_on_connection(FALSE);
 }
 
@@ -299,7 +302,7 @@ static void app_setup(void){
 					"main_window", "delete_event", main_window_delete_event_cb,
 					"main_window", "configure_event", app_window_configure_event_cb,
 					
-					"services_connect", "activate", app_connect,
+					"services_connect", "activate", app_reconnect,
 					"services_disconnect", "activate", app_disconnect,
 					"services", "activate", app_services_cb,
 					"select_service", "activate", app_select_service,
@@ -370,10 +373,10 @@ static void app_setup(void){
 	else
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
 	
-	app_connect();
+	app_login();
 	
 	app_accounts_treeview_fill();
-}
+}/*app_setup*/
 
 void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 	gboolean dont_embed=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button));
@@ -646,20 +649,13 @@ app_status_icon_popup_menu_cb(GtkStatusIcon *status_icon,
 					activate_time);
 }
 
-static void
-app_status_icon_create_menu(void)
-{
+static void app_status_icon_create_menu(void){
 	GtkAction       *new_msg, *new_dm, *about, *quit;
 	GtkWidget       *w;
 	
 	
-	app_priv->popup_menu_show_app=gtk_toggle_action_new("tray_show_app",
-								   _("_Show "),
-								   NULL,
-								   NULL);
-	g_signal_connect(G_OBJECT(app_priv->popup_menu_show_app),
-					  "toggled", G_CALLBACK(app_show_hide_cb),
-					  app);
+	app_priv->popup_menu_show_app=gtk_toggle_action_new("tray_show_app", _("_Show "), NULL, NULL);
+	g_signal_connect(G_OBJECT(app_priv->popup_menu_show_app), "toggled", G_CALLBACK(app_show_hide_cb), app);
 					
 	new_msg=gtk_action_new("tray_new_message", _("_New Tweet"), NULL, "gtk-new");
 	g_signal_connect(G_OBJECT(new_msg), "activate", G_CALLBACK(tweets_new_tweet), app);
@@ -731,14 +727,21 @@ static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigu
 	return FALSE;
 }
 
-static gboolean app_connect(void){
+static void app_login(void){
 	debug("Logging into online services.");
 	if(!online_services_login(online_services))
-		return FALSE;
+		return;
 	
 	app_retrieve_default_timeline();
-	return TRUE;
-}/*connect*/
+}/*app_login*/
+
+static void app_reconnect(GtkMenuItem *item, App *app){
+	if(!(online_services_reconnect(online_services)))
+		return;
+	
+	app_retrieve_default_timeline();
+}/*app_reconnect*/
+
 
 /*
  * Function to set the default
