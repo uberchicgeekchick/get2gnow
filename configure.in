@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], [000.000.DBC.aF09], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
+AC_INIT([get2gnow], [00.00.DB.aF9], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -42,7 +42,6 @@ GTK_REQUIRED=2.12.12
 GCONF_REQUIRED=1.2.0
 LIBGIO_REQUIRED=2.15.5
 LIBCANBERRA_REQUIRED=0.4
-ISO_CODES_REQUIRED=0.35
 
 dnl -----------------------------------------------------------
 dnl GNOME Keyring
@@ -91,7 +90,6 @@ PKG_CHECK_MODULES(get2gnow,
 	gthread-2.0
 	gconf-2.0 >= $GCONF_REQUIRED
 	$gnome_keyring_pkgconfig
-	$iso_codes_pkgconfig
 ])
 AC_SUBST(get2gnow_CFLAGS)
 AC_SUBST(get2gnow_LIBS)
