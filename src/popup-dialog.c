@@ -26,11 +26,12 @@
 #include "app.h"
 #include "popup-dialog.h"
 #include "network.h"
-#include "debug.h"
 #include "users.h"
 #include "profile-viewer.h"
 
-#define	DEBUG_DOMAINS	"ServiceRequests"
+#define	DEBUG_DOMAINS	"Popup::UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Requests:Users:Settings"
+#include "debug.h"
+
 #define GtkBuilderUI "popup-dialog.ui"
 
 typedef struct {
@@ -78,7 +79,7 @@ static void popup_set_title(FriendAction action, Popup *popup){
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or id, for whom you want to follow:" );
 			return;
 	}
-}//popup_set_title
+}/* popup_set_title */
 
 
 
@@ -117,16 +118,16 @@ static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 	}//switch
 	gtk_entry_set_text(GTK_ENTRY(popup->entry), "");
 	g_free(iter);
-}//popup_response_cb
+}/* popup_response_cb */
 
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
 	popup_destroy_and_free( popup );
-}//popup_destroy_cb
+}/* popup_destroy_cb */
 
 static void popup_destroy_and_free( Popup *popup ){
 	gtk_widget_destroy( GTK_WIDGET(popup->dialog) );
 	g_free( popup );
-}//popup_destroy_and_free
+}/* popup_destroy_and_free */
 
 void popup_select_service( GtkWindow *parent ){
 	Popup *popup=popup_dialog_show( GTK_WINDOW(parent), SelectService );
@@ -148,7 +149,7 @@ void popup_friend_block( GtkWindow *parent ){
 
 void popup_friend_unblock( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), UnBlock );
-}//popup_friend_unblock
+}/* popup_friend_unblock */
 
 void popup_friend_tweets( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), ViewTweets );
@@ -175,7 +176,7 @@ static gboolean popup_validate_usage(FriendAction action){
 	}//switch
 	app_statusbar_printf("This cannot be done using %s's popup prompt.", PACKAGE_NAME);
 	return FALSE;
-}//popup_validate_usage
+}/* popup_validate_usage */
 
 
 static Popup *popup_dialog_show(GtkWindow *parent, FriendAction action ){
@@ -218,11 +219,11 @@ static Popup *popup_dialog_show(GtkWindow *parent, FriendAction action ){
 
 	g_object_unref(ui);
 	
-	debug(DEBUG_DOMAINS, "Signal handlers set... loading accounts.");
+	debug("Signal handlers set... loading accounts.");
 	if(!( online_services_fill_liststore(online_services, popup->online_service_liststore) ))
-		debug(DEBUG_DOMAINS, "No services found to load, new accounts need to be setup.");
+		debug("No services found to load, new accounts need to be setup.");
 	else{
-		debug(DEBUG_DOMAINS, "OnlineServices found & loaded.  Selecting active service.");
+		debug("OnlineServices found & loaded.  Selecting active service.");
 		gtk_combo_box_set_active(popup->online_service_combobox, 0);
 	}
 

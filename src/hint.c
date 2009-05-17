@@ -64,7 +64,7 @@ hint_dialog_show (const gchar         *gconfig_path,
 	g_return_val_if_fail (gconfig_path != NULL, FALSE);
 	g_return_val_if_fail (message1 != NULL, FALSE);
 
-	if(gconfig_if_bool(gconfig_path))
+	if(gconfig_if_bool(gconfig_path, FALSE))
 		return FALSE;
 
 	dialog = gtk_message_dialog_new_with_markup (parent,
@@ -97,16 +97,3 @@ hint_dialog_show (const gchar         *gconfig_path,
 	return TRUE;
 }
 
-gboolean 
-hint_show (const gchar         *gconfig_path,
-				  const gchar         *message1,
-				  const gchar         *message2,
-				  GtkWindow           *parent,
-				  GFunc                func,
-				  gpointer             user_data)
-{
-	return hint_dialog_show (gconfig_path,
-									message1, message2,
-									parent,
-									func, user_data);
-}

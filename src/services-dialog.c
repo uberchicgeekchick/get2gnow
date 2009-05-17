@@ -33,12 +33,12 @@
 
 #include "main.h"
 #include "services-dialog.h"
-#include "debug.h"
 #include "network.h"
 #include "online-services.h"
 
 #define GtkBuilderUI "services-dialog.ui"
-#define DEBUG_DOMAIN "OnlineServices"
+#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Requests:Authentication:Preferences:Settings:Setup"
+#include "debug.h"
 
 typedef struct {	
 	GtkDialog		*dialog;
@@ -67,13 +67,20 @@ static void services_dialog_invalid_account(void);
 
 
 static void services_dialog_response_cb(GtkDialog *dialog, gint response, ServicesDialog *services_dialog){
-	if(response == GTK_RESPONSE_CLOSE)
-		return gtk_widget_destroy(GTK_WIDGET(dialog));
+	if(response == GTK_RESPONSE_CANCEL){
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+		g_free(services_dialog);
+		services_dialog=NULL;
+		return;
+	}
 	
 	services_dialog_apply(services_dialog->apply_button, services_dialog);
 	
-	if(response == GTK_RESPONSE_OK && okay_to_exit )
+	if(response==GTK_RESPONSE_OK && okay_to_exit ){
 		gtk_widget_destroy(GTK_WIDGET(dialog));
+		g_free(services_dialog);
+		services_dialog=NULL;
+	}
 }
 
 static void services_dialog_invalid_account(void){
@@ -93,15 +100,16 @@ static void services_dialog_invalid_account(void){
 				TRUE, TRUE, 0
 	);
 	gtk_dialog_run(dialog);
-}//services_dailog_invalid_account
+}/*services_dailog_invalid_account*/
 
 static void services_dialog_apply(GtkButton *apply_button, ServicesDialog *services_dialog){
-	debug(DEBUG_DOMAIN, "Saving services.");
+	debug("Saving services.");
+	okay_to_exit=TRUE;
 	gchar *url=gtk_combo_box_get_active_text(GTK_COMBO_BOX(services_dialog->urls));
 	const gchar *username=gtk_entry_get_text(GTK_ENTRY(services_dialog->username));
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(services_dialog->password));
 	if(!( url && username && password )){
-		debug(DEBUG_DOMAIN, "Failed to save current account, server and/or password missing.");
+		debug("Failed to save current account, server and/or password missing.");
 		services_dialog_invalid_account();
 		okay_to_exit=FALSE;
 		g_free(url);
@@ -110,10 +118,12 @@ static void services_dialog_apply(GtkButton *apply_button, ServicesDialog *servi
 	
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	OnlineService		*service=NULL;
+	gboolean		new_service=FALSE;
 	
-	debug(DEBUG_DOMAIN, "Retriving current service.");
+	debug("Retriving current service.");
 	if(!( (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(services_dialog->urls), iter)) )){
-		debug(DEBUG_DOMAIN, "Current service does not have a valid GtkTreeIter, service will be appended later.");
+		debug("Current service does not have a valid GtkTreeIter, service will be appended later.");
+		new_service=TRUE;
 	}else{
 		gtk_tree_model_get(
 					services_dialog->urls_model,
@@ -121,7 +131,7 @@ static void services_dialog_apply(GtkButton *apply_button, ServicesDialog *servi
 					OnlineServicePointer, &service,
 					-1
 		);
-		debug(DEBUG_DOMAIN, "Saving existing service: '%s' as: '%s@%s'.", service->key, username, url);
+		debug("Saving existing service: '%s' as: '%s@%s'.", service->key, username, url);
 	}
 
 	
@@ -135,18 +145,23 @@ static void services_dialog_apply(GtkButton *apply_button, ServicesDialog *servi
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(services_dialog->auto_connect))
 	);
 	
-	if(!iter){
-		debug(DEBUG_DOMAIN, "Saving new service: '%s'.", service->key);
-		gtk_list_store_append(services_dialog->urls_liststore, iter);
-		gtk_list_store_set(services_dialog->urls_liststore, iter,
+	g_free(url);
+	
+	if(!new_service)
+		return;
+	
+	g_free(iter);
+	iter=g_new0(GtkTreeIter, 1);
+	
+	debug("Storing new service: '%s'.", service->key);
+	gtk_list_store_append(services_dialog->urls_liststore, iter);
+	gtk_list_store_set(services_dialog->urls_liststore, iter,
 					UrlString, url,
 					OnlineServicePointer, service,
 					-1
-		);
-		debug(DEBUG_DOMAIN, "New service saved: '%s'.", service->key);
-	}
-	okay_to_exit=TRUE;
-	g_free(url);
+	);
+	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(services_dialog->urls), iter);
+	debug("New service saved: '%s'.", service->key);
 }
 
 static void services_dialog_destroy_cb(GtkDialog *dialog, ServicesDialog *services_dialog){
@@ -165,12 +180,12 @@ void services_dialog_show(GtkWindow *parent){
 	GtkBuilder		*ui;
 	
 	if(services_dialog){
-		debug(DEBUG_DOMAIN, "Service Dialog exists, presenting.");
+		debug("Service Dialog exists, presenting.");
 		gtk_window_present(GTK_WINDOW(services_dialog->dialog));
 		return;
 	}
 	
-	debug(DEBUG_DOMAIN, "Creating Services Dialog from: '%s'.", GtkBuilderUI);
+	debug("Creating Services Dialog from: '%s'.", GtkBuilderUI);
 	services_dialog=g_new0(ServicesDialog, 1);
 	
 	/* Get widgets */
@@ -187,11 +202,11 @@ void services_dialog_show(GtkWindow *parent){
 					"apply_button", &services_dialog->apply_button,
 				NULL
 	);
-	debug(DEBUG_DOMAIN, "UI loaded... setting services tree view model.");
+	debug("UI loaded... setting services tree view model.");
 	services_dialog->urls_model=gtk_combo_box_get_model(GTK_COMBO_BOX(services_dialog->urls));
 	
 	/* Connect the signals */
-	debug(DEBUG_DOMAIN, "Services tree view model retrieved... setting signal handlers.");
+	debug("Services tree view model retrieved... setting signal handlers.");
 	gtkbuilder_connect(ui, services_dialog,
 				"services_dialog", "destroy", services_dialog_destroy_cb,
 				"services_dialog", "response", services_dialog_response_cb,
@@ -202,11 +217,11 @@ void services_dialog_show(GtkWindow *parent){
 	
 	g_object_unref(ui);
 	
-	debug(DEBUG_DOMAIN, "Signal handlers set... loading accounts.");
+	debug("Signal handlers set... loading accounts.");
 	if(!( online_services_fill_liststore(online_services, services_dialog->urls_liststore) ))
-		debug(DEBUG_DOMAIN, "No services found to load, new accounts need to be setup.");
+		debug("No services found to load, new accounts need to be setup.");
 	else{
-		debug(DEBUG_DOMAIN, "OnlineServices found & loaded.  Selecting active service.");
+		debug("OnlineServices found & loaded.  Selecting active service.");
 		gtk_combo_box_entry_set_text_column(services_dialog->urls, 0);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(services_dialog->urls), 0);
 		services_dialog_load_service();
@@ -218,19 +233,11 @@ void services_dialog_show(GtkWindow *parent){
 	}
 	gtk_window_present(GTK_WINDOW(services_dialog->dialog));
 	
-	debug(DEBUG_DOMAIN, "Loading default service.");
+	debug("Loading default service.");
 }
 
 static void services_dialog_load_service(void){
 	if(!services_dialog) return;
-	/*gchar *url=gtk_combo_box_get_active_text(GTK_COMBO_BOX(services_dialog->urls));
-	const gchar *username=gtk_entry_get_text(GTK_ENTRY(services_dialog->username));
-	if(G_STR_EMPTY(url) || G_STR_EMPTY(username) ){
-		debug(DEBUG_DOMAIN, "Server or Username missing, unable to load service.");
-		g_free(url);
-		return;
-	}
-	*/
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	OnlineService		*service=NULL;
 	
@@ -244,7 +251,7 @@ static void services_dialog_load_service(void){
 			-1
 	);
 	
-	debug(DEBUG_DOMAIN, "Loading account information for '%s'.", service->key);
+	debug("Loading account information for '%s'.", service->key);
 	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(services_dialog->enabled), service->enabled);
 	gtk_entry_set_text(GTK_ENTRY(services_dialog->username), service->username ? service->username : "");
@@ -252,4 +259,4 @@ static void services_dialog_load_service(void){
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(services_dialog->auto_connect), service->auto_connect);
 	
 	g_free(iter);
-}//services_dialog_load_service
+}/*services_dialog_load_service*/

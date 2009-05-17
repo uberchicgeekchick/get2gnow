@@ -72,7 +72,7 @@ typedef struct{
 	GObjectClass parent_class;
 } GConfigClass;
 
-typedef void(*GConfigNotifyFunc)(const gchar *key, gpointer user_data);
+typedef void (*GConfigNotifyFunc) (const gchar *key, gpointer user_data);
 
 GType gconfig_get_type(void) G_GNUC_CONST;
 void gconfig_start(void);
@@ -83,7 +83,7 @@ gboolean    gconfig_set_int(const gchar           *key,
 										 gint                   value);
 gboolean    gconfig_get_int(const gchar           *key,
 										 gint                  *value);
-gboolean    gconfig_if_bool(const gchar *key);
+gboolean    gconfig_if_bool(const gchar *key, gboolean default_bool);
 gboolean    gconfig_set_bool(const gchar           *key, gboolean               value);
 gboolean    gconfig_get_bool(const gchar           *key, gboolean              *value);
 gboolean    gconfig_set_string(const gchar           *key,

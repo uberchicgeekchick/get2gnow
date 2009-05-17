@@ -57,7 +57,6 @@
 #include <glib/gprintf.h>
 
 
-#include "debug.h"
 #include "main.h"
 #include "config.h"
 #include "app.h"
@@ -84,7 +83,8 @@ unsigned long int in_reply_to_status_id=0;
 OnlineService *in_reply_to_service=NULL;
 static SelectedTweet *selected_tweet=NULL;
 
-#define	DEBUG_DOMAINS	"Tweets"
+#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users"
+#include "debug.h"
 
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, gboolean release);
@@ -98,7 +98,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 		unset_selected_tweet();
 	}
 	
-	debug(DEBUG_DOMAINS, "Creating 'selected_tweet', tweet id: #%lu from '%s' on '%s'.", id, user_name, service->key);
+	debug("Creating 'selected_tweet', tweet id: #%lu from '%s' on '%s'.", id, user_name, service->key);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->service=service;
 	selected_tweet->id=id;
@@ -106,28 +106,28 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_strdup(tweet);
 	if(!G_STR_EMPTY(selected_tweet->user_name))
-	selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->url, selected_tweet->user_name);
-}//set_selected_tweet
+	selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
+}/* set_selected_tweet */
 
 OnlineService *selected_tweet_get_service(void){
 	return ( (selected_tweet && selected_tweet->service) ?selected_tweet->service :NULL );
-}//selected_tweet_get_service
+}/* selected_tweet_get_service */
 
 gchar *selected_tweet_get_user_name(void){
 	return ( (selected_tweet && selected_tweet->user_name) ?selected_tweet->user_name :NULL );
-}//selected_tweet_get_user_name
+}/* selected_tweet_get_user_name */
 
 unsigned long int selected_tweet_get_user_id(void){
 		return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0 );
-}//selected_tweet_get_user_name
+}/* selected_tweet_get_user_name */
 
 gchar *selected_tweet_get_reply_to_string(void){
 	return ( (selected_tweet && selected_tweet->reply_to_string) ?selected_tweet->reply_to_string :NULL );
-}//selected_tweet_get_reply_to_string
+}/* selected_tweet_get_reply_to_string */
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
-	debug(DEBUG_DOMAINS, "Un-Setting selected_tweet.");
+	debug("Un-Setting selected_tweet.");
 	if(selected_tweet->user_name)
 		g_free(selected_tweet->user_name);
 	selected_tweet->user_name=NULL;
@@ -144,7 +144,7 @@ void unset_selected_tweet(void){
 	
 	g_free(selected_tweet);
 	selected_tweet=NULL;
-}//unset_selected_tweet
+}/* unset_selected_tweet */
 
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 	switch( event->state ){
@@ -210,7 +210,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 			tweet_list_key_pressed(GTK_WIDGET(app_get_tweet_list()), event, app_get_tweet_list());
 			return;
 	}
-}//tweets_hotkey
+}/* tweets_hotkey */
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
@@ -218,20 +218,20 @@ void tweets_new_tweet(void){
 	tweet_view_show_tweet(current_service, 0, 0, "", "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
 	unset_selected_tweet();
-}//tweets_new_tweet
+}/* tweets_new_tweet */
 
 void tweets_reply(void){
 	if(!selected_tweet) return;
 	gchar *tweet=g_strdup(selected_tweet->reply_to_string);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
-}//tweets_reply
+}/* tweets_reply */
 
 void tweets_retweet(void){
 	if(!selected_tweet)
 		return;
 	gchar *tweet=g_strdup_printf("RT: %s%s", selected_tweet->reply_to_string, selected_tweet->tweet);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
-}//tweets_retweet
+}/* tweets_retweet */
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
 	if(!(tweet)) return;
@@ -241,7 +241,7 @@ static void tweets_include_and_begin_to_send(gchar *tweet, gboolean in_response,
 	}
 	tweet_view_sexy_prefix_string(tweet);
 	if(release) g_free(tweet);
-}//tweets_include_and_begin_to_send
+}/* tweets_include_and_begin_to_send */
 
 void tweets_save_fave(void){
 	if(!selected_tweet)
@@ -249,37 +249,37 @@ void tweets_save_fave(void){
 	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
 	user_request_main(selected_tweet->service, Fave, app_get_window(), fave_tweet_id);
 	g_free(fave_tweet_id);
-}//tweets_save_fave
+}/* tweets_save_fave */
 
 void tweets_user_view_tweets(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(selected_tweet->service, ViewTweets, app_get_window(), selected_tweet->user_name);
-}//tweets_user_view_tweets
+}/* tweets_user_view_tweets */
 
 void tweets_user_view_profile(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(selected_tweet->service, ViewProfile, app_get_window(), selected_tweet->user_name);
-}//tweets_user_view_profile
+}/* tweets_user_view_profile */
 
 void tweets_user_follow(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(selected_tweet->service, Follow, app_get_window(), selected_tweet->user_name);
-}//tweets_user_follow
+}/* tweets_user_follow */
 
 void tweets_user_unfollow(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(selected_tweet->service, UnFollow, app_get_window(), selected_tweet->user_name);
-}//tweets_user_unfollow
+}/* tweets_user_unfollow */
 
 void tweets_user_block(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(selected_tweet->service, Block, app_get_window(), selected_tweet->user_name);
-}//tweets_user_block
+}/* tweets_user_block */
 
 void tweets_user_unblock(void){
 	if(!selected_tweet->user_name) return;
 	user_request_main(selected_tweet->service, UnBlock, app_get_window(), selected_tweet->user_name);
-}//tweets_user_unblock
+}/* tweets_user_unblock */
 
 /********************************************************
  *                       eof                            *

@@ -27,12 +27,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <gio/gio.h>
+#include <glib-object.h>
 #include <libsexy/sexy.h>
 
 #include "main.h"
 #include "app.h"
 #include "label.h"
-#include "debug.h"
 #include "tweets.h"
 #include "network.h"
 #include "parser.h"
@@ -41,6 +41,7 @@
 #include "preferences.h"
 
 #define	DEBUG_DOMAIN	"UI:Lable"
+#include "debug.h"
 
 static void label_class_init(LabelClass *klass);
 static void label_init(Label *label);
@@ -148,7 +149,7 @@ gchar *label_msg_get_string(OnlineService *service, const char* message){
 	}
 	
 	/* TODO: Do we need to escape out <>&"' so that pango markup doesn't get confused? */
-	gchar *at_url_prefix=g_strdup_printf("https://%s", ( (service && service->url) ?service->url :"twitter.com" ));
+	gchar *at_url_prefix=g_strdup_printf("https://%s", ( (service && service->uri) ?service->uri :"twitter.com" ));
 	
 	/* surround urls with <a> markup so that sexy-url-label can link it */
 	tokens=g_strsplit_set(message, " \t\n", 0);
@@ -176,7 +177,7 @@ gchar *label_msg_get_string(OnlineService *service, const char* message){
 					);
 				}
 			} else {
-				debug_printf(DEBUG_DOMAIN, "Attempting to display title for uri: '%s'.", tokens[i]);
+				debug("Attempting to display title for uri: '%s'.", tokens[i]);
 				temp=label_format_hyperlink(service, tokens[i]);
 			}
 			g_free (tokens[i]);
@@ -193,7 +194,7 @@ gchar *label_msg_get_string(OnlineService *service, const char* message){
 static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri){
 	gchar *temp=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
 	
-	if(gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED))
+	if(gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE))
 		return temp;
 	
 	
@@ -203,13 +204,13 @@ static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri){
 	
 	app_statusbar_printf("Please wait while %s's title is found.", uri);
 	if(!(content_type=online_service_get_url_content_type(service, uri, &msg))){
-		debug_printf(DEBUG_DOMAIN, "\t\tUnable to determine the content-type from uri: '%s'.", uri);
+		debug("\t\tUnable to determine the content-type from uri: '%s'.", uri);
 		return temp;
 	}
 	
 	
 	if(!g_str_equal(content_type, "text/html")){
-		debug_printf(DEBUG_DOMAIN, "\t\tNon-XHTML content-type from uri: '%s'.", uri);
+		debug("\t\tNon-XHTML content-type from uri: '%s'.", uri);
 		g_free(content_type);
 		return temp;
 	}
@@ -217,10 +218,10 @@ static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri){
 	
 	
 	gchar *uri_title=NULL;
-	debug_printf(DEBUG_DOMAIN, "Retriving title for uri: '%s'.", uri);
+	debug("Retriving title for uri: '%s'.", uri);
 	if((uri_title=parser_parse_xpath_content(msg, "html->head->title"))){
 		g_free(temp);
-		debug_printf(DEBUG_DOMAIN, "Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", uri_title, uri);
+		debug("Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", uri_title, uri);
 		temp=g_strdup_printf("<a href=\"%s\">%s &lt;- %s</a>", uri, uri_title, uri);
 		g_free(uri_title);
 	}

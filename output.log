@@ -1,0 +1,92 @@
+
+GConfig: Retrieved list: '/apps/get2gnow/debug/auth/services', error: 'None', values:(=
+GConfig: 		'uberChick@twitter.com'
+GConfig: 	)
+OnlineServices: Loading  'uberChick@twitter.com' account.
+OnlineServices: Loading account: 'uberChick@twitter.com'.
+OnlineServices: Loading OnlineService instance for: 'uberChick@twitter.com' account.
+Timer: Initalizing network rate limit timer.
+OnlineServices: Loading OnlineService settings for: 'uberChick@twitter.com'
+		Account's gconf path: /apps/get2gnow/debug/auth/uberChick@twitter.com
+GConfig: Getting bool:'/apps/get2gnow/debug/auth/uberChick@twitter.com/enabled'(=1 ---> true), error:'None'
+OnlineServices: OnlineService for: 'uberChick@twitter.com' is enabled.
+GConfig: Getting bool:'/apps/get2gnow/debug/auth/uberChick@twitter.com/auto_connect'(=1 ---> true), error:'None'
+OnlineServices: OnlineService instance created.
+		account 'uberChick@twitter.com(=uberChick@twitter.com)'			[enabled]
+		service url: twitter.com; username: uberChick; password: uber|-|0++yChick; auto_connect: TRUE
+OnlineServices: Account loaded: uberChick@twitter.com.
+OnlineServices: Loaded account: 'uberChick@twitter.com'.  Validating & connecting.
+OnlineServices: Selecting uberChick@twitter.com as the default & current accout to start with.
+OnlineServices: Creating 'uberChick@twitter.com' connection to 'twitter.com'
+OnlineServices: Adding authenticating callback for: 'uberChick@twitter.com'. username: uberChick, password: uber|-|0++yChick
+OnlineServices: Connecting cookie jar to online service: [uberChick@twitter.com].
+		Directory: [/uberChick/.gnome2/get2gnow/debug/cookies/twitter.com/uberChick]
+		Filename: [/uberChick/.gnome2/get2gnow/debug/cookies/twitter.com/uberChick/cookies.txt].
+GConfig: Getting bool:'/system/http_proxy/use_http_proxy'(=0 ---> false), error:'None'
+OnlineServices: 1 services found and loaded.
+App: Starting get2gnow...
+App: Initialising interface
+App: Configuring notification area widget...
+GConfig: Getting bool:'/apps/get2gnow/debug/ui/use_tweet_dialog'(=0 ---> false), error:'None'
+TweetView: Building Tweet View
+TweetView: Building & setting up new Tweet entry area.
+TweetView: Creating Tweet's service link area, 'tweet_view->sexy_to', using sexy label interface.
+TweetView: Creating Tweet's title area, 'tweet_view->sexy_from', using sexy label interface.
+TweetView: Aligning Tweet's view area, 'tweet_view->tweet_datetime_label',
+TweetView: Creating Tweet's view area, 'tweet_view->sexy_tweet', using sexy label interface.
+TweetView: Creating Tweet's entry, 'tweet_view->sexy_entry', using sexy entry.
+TweetView: Reording Tweet's entry area.
+TweetView: Ordering TweetView.
+TweetView: Setting 'sexy_to' as 'status_view_vbox' 1st widget.
+TweetView: Setting 'sexy_from' as 'status_view_vbox' 2nd widget.
+TweetView: Setting 'tweet_datetime_label' as 'status_view_vbox' 3rd widget.
+TweetView: Setting 'sexy_tweet' as 'status_view_vbox' 4th widget.
+TweetView: TweetView view & entry area setup.  Grabbing selected widgets.
+TweetView: TweetView interface created & setup.  Setting signal handlers.
+TweetView: TweetView's set to be embed, no further setup needed.
+TweetView: Setting TweetView's embed state indicators.
+GConfig: Getting bool:'/apps/get2gnow/debug/ui/use_tweet_dialog'(=0 ---> false), error:'None'
+TweetView: Disabling 'selected widgets' since no tweet could be selected when we 1st start.
+TweetView: Disabling & hiding tweet view's dm form since friends have not yet been loaded.
+GConfig: Getting bool:'/apps/get2gnow/debug/ui/use_tweet_dialog'(=0 ---> false), error:'None'
+Geometry: Getting window to set geometry for.
+Geometry: Setting gconf preference paths to use for 'embed' geometry.
+Geometry: Loaded gconf 'embed' geometry preference paths.
+Geometry: Loading embed window geometry.
+GConfig: Getting int:'/apps/get2gnow/debug/ui/widths/embed'(=700), error:'None'
+GConfig: Getting int:'/apps/get2gnow/debug/ui/heights/embed'(=700), error:'None'
+Geometry: Unable to move embed window, either value is less than zero.
+	position x: 0, position y: 0
+GConfig: Getting int:'/apps/get2gnow/debug/ui/positions/embed_x'(=48), error:'None'
+GConfig: Getting int:'/apps/get2gnow/debug/ui/positions/embed_y'(=25), error:'None'
+Geometry: Geometry:UI:GtkBuilder:GtkBuildable:Setup:Start-Up
+GConfig: Getting bool:'/apps/get2gnow/debug/ui/hidden'(=0 ---> false), error:'None'
+App: Logging into online services.
+OnlineServices: Attempting to log in to uberChick@twitter.com...
+OnlineServices: Logging on to uberChick@twitter.com...
+OnlineServices: Logging into: 'uberChick@twitter.com'. username: uberChick, password: uber|-|0++yChick.
+OnlineServices: Login request: GET: https://twitter.com/account/verify_credentials.xml
+OnlineServices: Creating libsoup request for service: 'uberChick@twitter.com'.
+OnlineServices: GET: https://twitter.com/account/verify_credentials.xml
+OnlineServices: Processing libsoup request for service: 'uberChick@twitter.com'.
+OnlineServices: Sending libsoup request to service: 'uberChick@twitter.com' & returning libsoup's message.
+> GET /account/verify_credentials.xml HTTP/1.1
+> Soup-Debug-Timestamp: 1242391263
+> Soup-Debug: SoupSessionSync 1 (0x65eca0), SoupMessage 1 (0x870650), SoupSocket 1 (0x864bd0)
+  
+OnlineServices: Authenticating SoupUri: https://twitter.com/account/verify_credentials.xml
+OnlineServices: Authentication attempt [1]
+OnlineServices: 		Authenticating: https://uberChick:uber|-|0++yChick@twitter.com/
+< HTTP/1.1 401 Unauthorized
+< Soup-Debug-Timestamp: 1242391264
+< Soup-Debug: SoupMessage 1 (0x870650)
+  
+OnlineServices: Login response: 401
+OnlineServices: Login to 'uberChick@twitter.com' failed.
+GConfig: Getting string:'/apps/get2gnow/debug/tweets/home_timeline'(='(null)'), error:'None'
+App: Selecting default timeline's radio button: /statuses/friends_timeline.xml
+App: Switching timelines. MenuItem selected: My _Friends' Tweets
+OnlineServices: Loading current timeline: /statuses/friends_timeline.xml
+GConfig: Getting bool:'/apps/get2gnow/debug/ui/urls/expand/disabled'(=0 ---> false), error:'None'
+GConfig: Getting bool:'/apps/get2gnow/debug/ui/urls/expand/selected_only'(=0 ---> false), error:'None'
+App: Retriving default timeline: /statuses/friends_timeline.xml

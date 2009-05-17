@@ -28,40 +28,37 @@
 
 G_BEGIN_DECLS
 
-#ifdef G_HAVE_ISO_VARARGS
-#  ifdef DISABLE_DEBUG
-#    define debug(...)
-#  else
-#    define debug(...) debug_impl (__VA_ARGS__)
-#  endif
-#elif defined(G_HAVE_GNUC_VARARGS)
-#  if DISABLE_DEBUG
-#    define debug(fmt...)
-#  else
-#    define debug(fmt...) debug_impl(fmt)
-#  endif
-#else
-#  if DISABLE_DEBUG
-#    define debug(x)
-#  else
-#    define debug debug_impl
-#  endif
+#ifndef DEBUG_DOMAINS
+#	if defined GNOME_ENABLE_DEBUG
+#		define DEBUG_DOMAINS "all"
+#	else
+#		define DEBUG_DOMAINS ""
+#	endif
 #endif
 
 #ifdef DISABLE_DEBUG
-#	define debug_printf
-#elif defined G_HAVE_ISO_VARARGS
-#	define debug_printf(D, ...)	debug_impl (D, __VA_ARGS__)
+#	define debug
+#elif defined(G_HAVE_ISO_VARARGS)
+#	define debug(...)	debug_impl(DEBUG_DOMAINS, __VA_ARGS__)
 #elif defined(G_HAVE_GNUC_VARARGS)
-#	define debug_printf(D, fmt...)	debug_impl(D, fmt)
+#	define debug(fmt...)	debug_impl(DEBUG_DOMAINS, fmt)
 #else
-#	define debug_printf(D, x)	debug_impl(D, x)
+#	define debug(x)		debug_impl(DEBUG_DOMAINS, x)
+#endif
+
+
+
+#ifdef DISABLE_DEBUG
+#	define IF_DEBUG
+#else
+#	define IF_DEBUG		debug_if_domain(DEBUG_DOMAINS)
 #endif
 
 #define	check_devel()	debug_check_devel()
 
 gboolean debug_check_devel(void);
 void debug_impl (const gchar *domain, const gchar *msg, ...);
+gboolean debug_if_domain(const gchar *domain);
 
 G_END_DECLS
 

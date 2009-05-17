@@ -28,11 +28,11 @@
 #include <gconf/gconf-client.h>
 
 #include "gconfig.h"
-#include "debug.h"
 #include "preferences.h"
 
 
-#define DEBUG_DOMAIN "GConfig"
+#define DEBUG_DOMAINS "GConfig:OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up"
+#include "debug.h"
 
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
 
@@ -65,14 +65,8 @@ static void gconfig_init(GConfig *gconfig){
 	gconfig_priv=GET_PRIV(gconfig);
 	gconfig_priv->gconf_client=gconf_client_get_default();
 
-	gconf_client_add_dir(gconfig_priv->gconf_client,
-						  PREFS_PATH,
-						  GCONF_CLIENT_PRELOAD_ONELEVEL,
-						  NULL);
-	gconf_client_add_dir(gconfig_priv->gconf_client,
-						  DESKTOP_INTERFACE_ROOT,
-						  GCONF_CLIENT_PRELOAD_NONE,
-						  NULL);
+	gconf_client_add_dir(gconfig_priv->gconf_client, PREFS_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
+	gconf_client_add_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, GCONF_CLIENT_PRELOAD_NONE, NULL);
 }
 
 static void gconfig_finalize(GObject *object){
@@ -94,55 +88,42 @@ void gconfig_shutdown(void){
 	gconfig=NULL;
 }
 
-gboolean gconfig_set_int(const gchar *key,
-					 gint         value)
-{
-	
-
-	debug(DEBUG_DOMAIN, "Setting int:'%s' to %d", key, value);
-
-	
-	return gconf_client_set_int(gconfig_priv->gconf_client,
-								 key,
-								 value,
-								 NULL);
+gboolean gconfig_set_int(const gchar *key, gint value){
+	debug("Setting int:'%s' to %d", key, value);
+	return gconf_client_set_int(gconfig_priv->gconf_client, key, value, NULL);
 }
 
-gboolean
-gconfig_get_int(const gchar *key,
-					 gint        *value)
-{
-		GError         *error=NULL;
-
-	*value=0;
-
-	g_return_val_if_fail(value != NULL, FALSE);
-
+gboolean gconfig_get_int(const gchar *key, gint *value){
+	GError         *error=NULL;
 	
-	*value=gconf_client_get_int(gconfig_priv->gconf_client,
-								   key,
-								   &error);
-
-	debug(DEBUG_DOMAIN, "Getting int:'%s'(=%d), error:'%s'",
-				  key, *value, error ? error->message : "None");
-
-	if(error) {
+	*value=0;
+	
+	g_return_val_if_fail(value != NULL, FALSE);
+	
+	*value=gconf_client_get_int(gconfig_priv->gconf_client, key, &error);
+	
+	debug("Getting int:'%s'(=%d)", key, *value);
+	
+	if(error){
+		debug("\t\t**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
-
+	
 	return TRUE;
 }
 
-gboolean gconfig_if_bool(const gchar *key){
+gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 	GError *error=NULL;
 	gboolean value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
 	
-	debug(DEBUG_DOMAIN, "Getting bool:'%s'(=%d ---> %s), error:'%s'",
-			key, value,(value ?"true" :"false"),
-			error ? error->message : "None");
+	debug("Getting bool: '%s' (=%d ---> %s)", key, value, (value ?"TRUE" :"FALSE"));
 	
 	if(error) {
+		debug("\t\t**ERROR:** %s. Setting default value.", error->message);
+		if(!(gconfig_set_bool(key, bool_default)))
+				debug("\t\t**ERROR:** failed to set '%s' to default value: '%s'.", error->message, (bool_default ?"TRUE" :"FALSE"));
+
 		g_error_free(error);
 		return FALSE;
 	}
@@ -151,14 +132,8 @@ gboolean gconfig_if_bool(const gchar *key){
 }
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
-	debug(DEBUG_DOMAIN, "Setting bool:'%s' to %d ---> %s",
-				  key, value, value ? "true" : "false");
-
-	
-	return gconf_client_set_bool(gconfig_priv->gconf_client,
-								  key,
-								  value,
-								  NULL);
+	debug("Setting bool:'%s' to %s(=%s).", key, (value ? "true" : "false"), value);
+	return gconf_client_set_bool(gconfig_priv->gconf_client, key, value,NULL);
 }
 
 gboolean gconfig_get_bool(const gchar *key, gboolean *value){
@@ -166,15 +141,12 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	*value=FALSE;
 
 	g_return_val_if_fail(value != NULL, FALSE);
-	*value=gconf_client_get_bool(gconfig_priv->gconf_client,
-									key,
-									&error);
+	*value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
 
-	debug(DEBUG_DOMAIN, "Getting bool:'%s'(=%d ---> %s), error:'%s'",
-				  key, *value, *value ? "true" : "false",
-				  error ? error->message : "None");
-
+	debug("Getting bool:'%s'(=%d ---> %s).", key, *value, (*value ? "true" : "false") );
+	
 	if(error) {
+		debug("\t\t**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
@@ -182,39 +154,23 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	return TRUE;
 }
 
-gboolean
-gconfig_set_string(const gchar *key,
-						const gchar *value)
-{
+gboolean gconfig_set_string(const gchar *key, const gchar *value){
+	debug("Setting string:'%s' to '%s'", key, value);
 	
-
-	debug(DEBUG_DOMAIN, "Setting string:'%s' to '%s'",
-				  key, value);
-
-	
-	return gconf_client_set_string(gconfig_priv->gconf_client,
-									key,
-									value,
-									NULL);
+	return gconf_client_set_string(gconfig_priv->gconf_client, key, value, NULL);
 }
 
-gboolean
-gconfig_get_string(const gchar  *key,
-						gchar       **value)
-{
+gboolean gconfig_get_string(const gchar *key, gchar **value){
 	GError         *error=NULL;
 
 	*value=NULL;
-
-
 	
-	*value=gconf_client_get_string(gconfig_priv->gconf_client,
-									  key,
-									  &error);
+	*value=gconf_client_get_string(gconfig_priv->gconf_client, key, &error);
 
-	debug(DEBUG_DOMAIN, "Getting string:'%s'(='%s'), error:'%s'", key, *value,(error ?error->message :"None") );
+	debug("Getting string: '%s'(='%s').", key, *value);
 
 	if(error) {
+		debug("\t\t**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
@@ -236,74 +192,68 @@ gboolean gconfig_get_list_string(const gchar *key, GSList **value){
 static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
 	GSList *l=NULL;
 	if( list_type==GCONF_VALUE_INVALID || list_type==GCONF_VALUE_SCHEMA || list_type==GCONF_VALUE_LIST || list_type==GCONF_VALUE_PAIR ){
-		debug(DEBUG_DOMAIN, "\t\t[undisplayable/mixed values]");
+		debug("\t\t[undisplayable/mixed values]");
 		return;
 	}
 	
 	for(l=value; l; l=l->next)
 		switch(list_type){
 			case GCONF_VALUE_STRING:
-				debug(DEBUG_DOMAIN, "\t\t'%s'",(gchar *)l->data);
+				debug("\t\t\t'%s'",(gchar *)l->data);
 				break;
 			case GCONF_VALUE_INT:
-				debug(DEBUG_DOMAIN, "\t\t'%d'",(gint *)l->data);
+				debug("\t\t\t'%d'",(gint *)l->data);
 				break;
 			case GCONF_VALUE_BOOL:
-				debug(DEBUG_DOMAIN, "\t\t'%s'",((gboolean *)l->data ?"TRUE" :"FALSE" ));
+				debug("\t\t\t'%s'",((gboolean *)l->data ?"TRUE" :"FALSE" ));
 				break;
 			case GCONF_VALUE_FLOAT:
-				debug(DEBUG_DOMAIN, "\t\t'%f'",(gfloat *)l->data);
+				debug("\t\t\t'%f'",(gfloat *)l->data);
 				break;
 			case GCONF_VALUE_INVALID:
 			case GCONF_VALUE_SCHEMA:
 			case GCONF_VALUE_LIST:
 			case GCONF_VALUE_PAIR:
+			default:
 				/* yes we know this is never executed, it catches gcc errors & warning. */
 				break;
 		}
 }//gconfig_print_list
 
 gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_type){
-	debug(DEBUG_DOMAIN, "Saving list: '%s', values:(=", key);
-	gconfig_print_list_values(value, list_type);
-	debug(DEBUG_DOMAIN, "\t)" );
-	return gconf_client_set_list(
-					gconfig_priv->gconf_client,
-					key,
-					list_type,
-					value,
-				NULL
-	);
+	if(IF_DEBUG){
+		debug("Saving list: '%s', values:(=", key);
+		gconfig_print_list_values(value, list_type);
+		debug("\t\t)" );
+	}
+	return gconf_client_set_list(gconfig_priv->gconf_client, key, list_type, value, NULL );
 }
 
 gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list_type){
 	GError *error=NULL;
 	*value=NULL;
 	
-	*value=gconf_client_get_list(
-					gconfig_priv->gconf_client,
-					key,
-					list_type,
-					&error
-	);
-	debug(DEBUG_DOMAIN, "Retrieved list: '%s', error: '%s', values:(=", key,(error ?error->message :"None"));
+	*value=gconf_client_get_list(gconfig_priv->gconf_client, key, list_type, &error);
 	if(error){
-		debug(DEBUG_DOMAIN, "\tan error has occured)" );
+		debug("\t\t**ERROR:** failed to retrieve list: %s, error: %s.", error->message);
 		g_error_free(error);
 		return FALSE;
+	}else if(IF_DEBUG){
+		debug("Retrieved list: '%s':(=", key);
+		gconfig_print_list_values(*value, list_type);
+		debug("\t)" );
 	}
-	
-	gconfig_print_list_values(*value, list_type);
-	debug(DEBUG_DOMAIN, "\t)" );
 	return TRUE;
 }
 
 gboolean gconfig_rm_rf(const gchar *key){
 	GError *error=NULL;
-	debug(DEBUG_DOMAIN, "Removing %s and all keys below it.", key);
+	debug("Removing %s and all keys below it.", key);
 	gboolean success=gconf_client_recursive_unset(gconfig_priv->gconf_client, key, GCONF_UNSET_INCLUDING_SCHEMA_NAMES, &error);
-	if(error)
-		debug(DEBUG_DOMAIN, "**ERROR**: %s", error->message);
+	if(error){
+		debug("\t\t**ERROR**: %s", error->message);
+		g_error_free(error);
+	}
 	return success;
 }//gconfig_rm_rf
 
@@ -318,21 +268,13 @@ static void gconfig_notify_func(GConfClient *client, guint id, GConfEntry  *entr
 }
 
 guint gconfig_notify_add(const gchar *key, GConfigNotifyFunc func, gpointer user_data){
-	guint                 id;
 	GConfigNotifyData *data;
 
 	data=g_slice_new0(GConfigNotifyData);
 	data->func=func;
 	data->user_data=user_data;
 
-	id=gconf_client_notify_add(gconfig_priv->gconf_client,
-								key,
-								gconfig_notify_func,
-								data,
-								(GFreeFunc) gconfig_notify_data_free,
-								NULL);
-	
-	return id;
+	return gconf_client_notify_add(gconfig_priv->gconf_client, key, gconfig_notify_func, data, (GFreeFunc)gconfig_notify_data_free, NULL);
 }
 
 gboolean gconfig_notify_remove(guint id){

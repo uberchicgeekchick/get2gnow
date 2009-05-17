@@ -25,16 +25,13 @@
 
 #include <gnome-keyring.h>
 
-#include "debug.h"
 #include "keyring.h"
+#include "online-services.h"
 
-#define DEBUG_DOMAIN   "Keyring"
+#define DEBUG_DOMAINS   "Keyring:OnlineServices:Authentication:Settings:Setup"
+#include "debug.h"
 
-#define TWITTER_SERVER "twitter.com"
-
-static const gchar *
-account_gnome_keyring_result_to_string (GnomeKeyringResult result)
-{
+static const gchar *account_gnome_keyring_result_to_string (GnomeKeyringResult result){
 	switch (result) {
 	case GNOME_KEYRING_RESULT_OK:
 		return "GNOME_KEYRING_RESULT_OK";
@@ -61,68 +58,67 @@ account_gnome_keyring_result_to_string (GnomeKeyringResult result)
 	return "";
 }
 
-gboolean
-keyring_get_password (gchar  *username,
-							 gchar **password)
-{
+gboolean keyring_get_password(OnlineService **service){
 	GnomeKeyringNetworkPasswordData *data;
 	GnomeKeyringResult               result;
 	GList                           *passwords;
- 
-	result = gnome_keyring_find_network_password_sync (username,       /* User */
-													   NULL,           /* Domain */
-													   TWITTER_SERVER, /* Server */
-													   NULL,           /* Object */
-													   NULL,           /* Protocol */
-													   NULL,           /* Authentication Type */
-													   0,              /* Port */
-													   &passwords);    /* Result */
+	
+	result=gnome_keyring_find_network_password_sync(
+							(*service)->username,       /* User */
+								NULL,           /* Domain */
+								(*service)->uri, /* Server */
+								NULL,           /* Object */
+								NULL,           /* Protocol */
+								NULL,           /* Authentication Type */
+								0,              /* Port */
+							&passwords    /* Result */
+	);
 
-	if (result != GNOME_KEYRING_RESULT_OK) {
-		debug (DEBUG_DOMAIN,
-					  "Could not retrieve password from keyring, result:%d->'%s'",
-					  result, account_gnome_keyring_result_to_string (result));
-
+	if(result != GNOME_KEYRING_RESULT_OK) {
+		debug("**ERROR:** Could not retrieve password from keyring, result:%d->'%s'", result, account_gnome_keyring_result_to_string(result) );
 		return FALSE;
 	}
 
-	if (g_list_length (passwords) > 1) {
-		debug (DEBUG_DOMAIN,
-					  "Found %d matching passwords in keyring, using first available",
-					  g_list_length (passwords));
+	if(g_list_length (passwords) > 1) {
+		debug("Found %d matching passwords in keyring, using first available",
+					  g_list_length(passwords));
 	}
-
-	data = passwords->data;
-	*password = g_strdup (data->password);
-
-	g_list_foreach (passwords, (GFunc) g_free, NULL);
-	g_list_free (passwords);
-
+	
+	data=passwords->data;
+	GList *p=NULL;
+	(*service)->password=g_strdup(data->password);
+	if(IF_DEBUG){
+		debug("Password(s) found for OnlineService: '%s'.\n\t\tUsername: '%s'; Server: %s (=", (*service)->decoded_key, (*service)->username, (*service)->uri);
+		for(p=passwords; p; p=p->next)
+			debug("\t\t'%s'", (gchar *)p->data);
+		debug(")");
+	}
+	
+	g_list_foreach(passwords, (GFunc)g_free, NULL);
+	g_list_free(passwords);
+	
 	return TRUE;
 }
 
-gboolean
-keyring_set_password (const gchar *username,
-							 const gchar *password)
-{
+gboolean keyring_set_password(OnlineService *service){
 	GnomeKeyringResult result;
 	guint              id;
 
-	result = gnome_keyring_set_network_password_sync (NULL,            /* Keyring */
-													  username,        /* User */
-													  NULL,            /* Domain */
-													  TWITTER_SERVER,  /* Server */
-													  NULL,            /* Object */
-													  NULL,            /* Protocol */
-													  NULL,            /* Authentication Type */
-													  0,               /* Port */
-													  password,        /* Password */
-													  &id);            /* Unique ID */
+	result = gnome_keyring_set_network_password_sync(
+								NULL,            /* Keyring */
+								service->username,        /* User */
+								NULL,            /* Domain */
+								service->uri,  /* Server */
+								NULL,            /* Object */
+								NULL,            /* Protocol */
+								NULL,            /* Authentication Type */
+								0,               /* Port */
+								service->password,        /* Password */
+								&id            /* Unique ID */
+	);
 
 	if (result != GNOME_KEYRING_RESULT_OK) {
-		debug (DEBUG_DOMAIN,
-					  "Could not set password to keyring, result:%d->'%s'",
-					  result, account_gnome_keyring_result_to_string (result));
+		debug("Could not set password to keyring, result:%d->'%s'", result, account_gnome_keyring_result_to_string(result));
 
 		return FALSE;
 	}

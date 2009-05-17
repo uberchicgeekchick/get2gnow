@@ -169,87 +169,26 @@
           </packing>
         </child>
         <child>
-          <object class="GtkVBox" id="status_view_vbox">
+          <object class="GtkVBox" id="status_vbox">
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="spacing">2</property>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <object class="GtkHBox" id="char_count_hbox">
+              <object class="GtkVBox" id="status_view_vbox">
                 <property name="visible">True</property>
-                <property name="spacing">15</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel" id="char_count_label">
-                    <property name="visible">True</property>
-                    <property name="yalign">0.89999997615814209</property>
-                    <property name="label" translatable="yes">&lt;small&gt;&lt;u&gt;Characters Left:&lt;/u&gt;&lt;/small&gt;</property>
-                    <property name="use_markup">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="char_count">
-                    <property name="visible">True</property>
-                    <property name="yalign">0.89999997615814209</property>
-                    <property name="xpad">10</property>
-                    <property name="label" translatable="yes">&lt;small&gt;&lt;span color="green"&gt;140&lt;/span&gt;&lt;/small&gt;</property>
-                    <property name="use_markup">True</property>
-                    <property name="justify">right</property>
-                    <property name="single_line_mode">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="pack_type">end</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkHBox" id="tweet_hbox">
-                <property name="visible">True</property>
-                <child>
-                  <object class="GtkImage" id="get2gnow_mini_logo">
-                    <property name="visible">True</property>
-                    <property name="icon_name">get2gnow</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="padding">5</property>
-                    <property name="position">0</property>
-                  </packing>
+                  <placeholder/>
                 </child>
                 <child>
                   <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkButton" id="sexy_send">
+                  <object class="GtkLabel" id="tweet_datetime_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <child>
-                      <object class="GtkImage" id="sexy_send_image">
-                        <property name="visible">True</property>
-                        <property name="stock">gtk-go-forward</property>
-                      </object>
-                    </child>
+                    <property name="xalign">1</property>
+                    <property name="yalign">1</property>
+                    <property name="use_markup">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -258,84 +197,84 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="sexy_dm">
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkVBox" id="status_compose_vbox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkHBox" id="char_count_hbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="spacing">15</property>
                     <child>
-                      <object class="GtkImage" id="sexy_dm_image">
+                      <object class="GtkLabel" id="char_count_label">
                         <property name="visible">True</property>
-                        <property name="stock">gtk-jump-to</property>
+                        <property name="yalign">0.89999997615814209</property>
+                        <property name="label" translatable="yes">&lt;small&gt;&lt;u&gt;Characters Left:&lt;/u&gt;&lt;/small&gt;</property>
+                        <property name="use_markup">True</property>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="char_count">
+                        <property name="visible">True</property>
+                        <property name="yalign">0.89999997615814209</property>
+                        <property name="xpad">10</property>
+                        <property name="label" translatable="yes">&lt;small&gt;&lt;span color="green"&gt;140&lt;/span&gt;&lt;/small&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="justify">right</property>
+                        <property name="single_line_mode">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">3</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkFrame" id="dm_frame">
-                <property name="visible">True</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">none</property>
                 <child>
-                  <object class="GtkHBox" id="dm_form_hbox">
-                    <property name="sensitive">False</property>
+                  <object class="GtkHBox" id="tweet_hbox">
+                    <property name="visible">True</property>
                     <child>
-                      <object class="GtkButton" id="dm_refresh">
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage" id="dm_refresh_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-refresh</property>
-                          </object>
-                        </child>
+                      <object class="GtkImage" id="get2gnow_mini_logo">
+                        <property name="visible">True</property>
+                        <property name="icon_name">get2gnow</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="padding">5</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBox" id="friends_combo_box">
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="model">friends_liststore</property>
-                        <property name="active">0</property>
-                        <child>
-                          <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkButton" id="friends_send_dm">
-                        <property name="sensitive">False</property>
+                      <object class="GtkButton" id="sexy_send">
+                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="relief">half</property>
                         <child>
-                          <object class="GtkImage" id="dm_send_image">
+                          <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
-                            <property name="tooltip_text" translatable="yes">Send this tweet as a DM, direct message, to the selected friend.</property>
-                            <property name="stock">gtk-goto-last</property>
+                            <property name="stock">gtk-go-forward</property>
                           </object>
                         </child>
                       </object>
@@ -346,14 +285,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="dm_form_hide">
-                        <property name="sensitive">False</property>
+                      <object class="GtkButton" id="sexy_dm">
+                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <child>
-                          <object class="GtkImage" id="dm_form_hide_image">
+                          <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-close</property>
+                            <property name="stock">gtk-jump-to</property>
                           </object>
                         </child>
                       </object>
@@ -363,41 +302,136 @@
                         <property name="position">3</property>
                       </packing>
                     </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="dm_frame">
+                    <property name="visible">True</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkButton" id="dm_form_show">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      <object class="GtkHBox" id="dm_form_hbox">
+                        <property name="sensitive">False</property>
                         <child>
-                          <object class="GtkImage" id="dm_form_show_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-fullscreen</property>
+                          <object class="GtkButton" id="dm_refresh">
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="dm_refresh_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-refresh</property>
+                              </object>
+                            </child>
                           </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBox" id="friends_combo_box">
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">friends_liststore</property>
+                            <property name="active">0</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="friends_send_dm">
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="relief">half</property>
+                            <child>
+                              <object class="GtkImage" id="dm_send_image">
+                                <property name="visible">True</property>
+                                <property name="tooltip_text" translatable="yes">Send this tweet as a DM, direct message, to the selected friend.</property>
+                                <property name="stock">gtk-goto-last</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="dm_form_hide">
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="dm_form_hide_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-close</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="dm_form_show">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <child>
+                              <object class="GtkImage" id="dm_form_show_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-fullscreen</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">4</property>
+                          </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">4</property>
-                      </packing>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="dm_frame_label">
+                        <property name="sensitive">False</property>
+                        <property name="label" translatable="yes">_DM a friend:</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">friends_combo_box</property>
+                      </object>
                     </child>
                   </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="dm_frame_label">
-                    <property name="sensitive">False</property>
-                    <property name="label" translatable="yes">_DM a friend:</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">friends_combo_box</property>
-                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">5</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>

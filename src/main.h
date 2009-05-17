@@ -32,20 +32,6 @@ G_BEGIN_DECLS
 #define G_STR_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
 #endif
 
-
-/* Proxy configuration */
-#define PROXY				"/system/http_proxy"
-#define PROXY_USE			PROXY "/use_http_proxy"
-#define PROXY_HOST			PROXY "/host"
-#define PROXY_PORT			PROXY "/port"
-#define PROXY_USE_AUTH			PROXY "/use_authentication"
-#define PROXY_USER			PROXY "/authentication_user"
-#define PROXY_PASS			PROXY "/authentication_password"
-
-/* File storage */
-#define DIRECTORY			PACKAGE_NAME
-#define CACHE_IMAGES			DIRECTORY "/avatars"
-
 G_END_DECLS
 
 #endif /* _MAIN_H_ */

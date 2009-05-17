@@ -65,7 +65,6 @@
 #include <gtk/gtk.h>
 
 
-#include "debug.h"
 #include "config.h"
 #include "ipc.h"
 /* Where ever your projects 'main window' is define.
@@ -92,6 +91,9 @@ typedef struct{
 	GByteArray  *buffer;
 	gboolean     ready;
 } Input;
+
+#define DEBUG_DOMAINS "IPC:CLI:Settings:Setup:Start-Up"
+#include "debug.h"
 
 static Input *input = NULL;
 

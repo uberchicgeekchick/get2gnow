@@ -48,7 +48,7 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#include <config.h>
+#include "config.h"
 #include <sys/stat.h>
 #include <string.h>
 
@@ -59,9 +59,9 @@
 #include <gdk/gdkkeysyms.h>
 #include <libsexy/sexy.h>
 
-#include "debug.h"
 #include "gconfig.h"
 #include "gtkbuilder.h"
+
 #ifdef HAVE_GNOME_KEYRING
 #include "keyring.h"
 #endif
@@ -147,7 +147,9 @@ struct _AppPriv {
 };
 
 
-#define	DEBUG_DOMAINS	"App:UI:Tweets"
+#define	DEBUG_DOMAINS	"App:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up"
+#include "debug.h"
+
 #define	GtkBuilderUI	"main-window.ui"
 
 
@@ -184,7 +186,6 @@ static void app_set_default_timeline(App *app, gchar *timeline);
 static void app_retrieve_default_timeline(void);
 static void app_status_icon_create_menu(void);
 static void app_status_icon_create(void);
-static void app_check_dir(void);
 static void app_toggle_visibility(void);
 static gboolean configure_event_timeout_cb(GtkWidget *widget);
 static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, App *app);
@@ -242,11 +243,11 @@ static void app_setup(void){
 	GtkBuilder	*ui;
 	GtkWidget	*scrolled_window;
 	
-	debug(DEBUG_DOMAINS, "Starting %s...", PACKAGE_NAME);
+	debug("Starting %s...", PACKAGE_NAME);
 	
 	
 	/* Set up interface */
-	debug(DEBUG_DOMAINS, "Initialising interface");
+	debug("Initialising interface");
 	ui=gtkbuilder_get_file(
 				GtkBuilderUI,
 					"main_window", &app_priv->window,
@@ -338,7 +339,7 @@ static void app_setup(void){
 	g_object_unref(ui);
 	
 	/* Set-up the notification area */
-	debug(DEBUG_DOMAINS, "Configuring notification area widget...");
+	debug("Configuring notification area widget...");
 	app_status_icon_create_menu();
 	app_status_icon_create();
 	
@@ -348,7 +349,7 @@ static void app_setup(void){
 	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(app_priv->listview));
 	
 	/* Expand tweet area used to view & send tweets & dm.  */
-	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG)){
+	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE)){
 		app_priv->tweet_view=tweet_view_new(NULL);
 		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view_vbox));
 		gtk_widget_show(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed));
@@ -363,11 +364,8 @@ static void app_setup(void){
 	/* Initial status of widgets */
 	app_state_on_connection(FALSE);
 	
-	/* Check get2gnow directory and images cache */
-	app_check_dir();
-	
 	/* Ok, set the window state based on the gconf value */
-	if(!gconfig_if_bool(PREFS_UI_HIDDEN))
+	if(!gconfig_if_bool(PREFS_UI_HIDDEN, FALSE))
 		gtk_widget_show(GTK_WIDGET(app_priv->window));
 	else
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
@@ -379,8 +377,8 @@ static void app_setup(void){
 
 void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 	gboolean dont_embed=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button));
-	debug(DEBUG_DOMAINS, "Embed TweetView changed:\t[%s].", (dont_embed ?"floating" :"embed" ) );
-	if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG)==dont_embed)
+	debug("Embed TweetView changed:\t[%s].", (dont_embed ?"floating" :"embed" ) );
+	if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE)==dont_embed)
 		return;
 	
 	gconfig_set_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, dont_embed);
@@ -389,7 +387,7 @@ void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 		if(gtk_widget_get_parent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed))==GTK_WIDGET(app_priv->tweet_view->tweet_view))
 			return;
 		
-		debug(DEBUG_DOMAINS, "Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
+		debug("Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
 		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view->tweet_view));
 		gtk_window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view));
 		g_object_add_weak_pointer(G_OBJECT(app_priv->tweet_view->tweet_view),(gpointer) &app_priv->tweet_view->tweet_view);
@@ -399,7 +397,7 @@ void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 		if(gtk_widget_get_parent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed))==GTK_WIDGET(app_priv->tweet_view_vbox))
 			return;
 		
-		debug(DEBUG_DOMAINS, "Embeding TweetView's into %s main window.", PACKAGE_NAME);
+		debug("Embeding TweetView's into %s main window.", PACKAGE_NAME);
 		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view_vbox));
 		gtk_widget_show(GTK_WIDGET(app_priv->expand_box));
 		gtk_widget_show(GTK_WIDGET(app_priv->tweet_view_vbox));
@@ -408,18 +406,18 @@ void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 	}
 	tweet_view_set_embed_toggle_and_image();
 	geometry_load();
-}//app_tweet_view_embed
+}/*app_tweet_view_embed*/
 
 GtkWindow *app_get_window(void){
 	return app_priv->window;
-}//app_get_window
+}/*app_get_window*/
 
 GtkMenuBar *app_get_main_menu(void){
 	return app_priv->menubar;
-}//app_get_main_menu
+}/*app_get_main_menu*/
 
 static void app_accounts_treeview_fill(void){
-}//app_accounts_treeview_fill
+}/*app_accounts_treeview_fill*/
 
 GtkMenuItem *app_get_menu(const gchar *menu){
 	if((g_str_equal(menu, "accounts")) ) return GET_PRIV(app)->menu_accounts;
@@ -429,11 +427,11 @@ GtkMenuItem *app_get_menu(const gchar *menu){
 	if((g_str_equal(menu, "help")) ) return GET_PRIV(app)->menu_help;
 	//if((g_str_equal(menu, "")) ) return GET_PRIV(app)->menu_;
 	return NULL;
-}//app_get_menu
+}/*app_get_menu*/
 
 TweetList *app_get_tweet_list(void){
 	return GET_PRIV(app)->listview;
-}//app_get_tweet_list
+}/*app_get_tweet_list*/
 
 static void main_window_destroy_cb(GtkWidget *window, App *app){
 	unset_selected_tweet();
@@ -443,11 +441,11 @@ static void main_window_destroy_cb(GtkWidget *window, App *app){
 
 gboolean app_has_status_icon(void){
 	return gtk_status_icon_is_embedded(app_priv->status_icon);
-}//app_has_status_icon
+}/*app_has_status_icon*/
 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app){
 	if(app_has_status_icon()) {
-		hint_show(PREFS_HINTS_CLOSE_MAIN_WINDOW,
+		hint_dialog_show(PREFS_HINTS_CLOSE_MAIN_WINDOW,
 						  _("get2gnow is still running, it is just hidden."),
 						  _("Click on the notification area icon to show get2gnow."),
 						   GTK_WINDOW(app_get_window()),
@@ -512,7 +510,7 @@ static void app_toggle_visibility(void){
 		geometry_load();
 		window_present(GTK_WINDOW(app_priv->window), TRUE);
 		
-		if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG))
+		if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE))
 			window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view), TRUE);
 	}
 	/* Save the window visibility state */
@@ -527,7 +525,7 @@ void app_set_visibility(gboolean visible){
 		gtk_widget_hide(GTK_WIDGET(window));
 	else{
 		window_present(GTK_WINDOW(window), TRUE);
-		if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG))
+		if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE))
 			window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view), TRUE);
 	}
 }
@@ -541,7 +539,7 @@ void app_refresh_timeline(GtkWidget *window, App *app){
 }
 
 static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
-	debug(DEBUG_DOMAINS, "Switching timelines. MenuItem selected: %s", gtk_menu_item_get_label(GTK_MENU_ITEM(item)) );
+	debug("Switching timelines. MenuItem selected: %s", gtk_menu_item_get_label(GTK_MENU_ITEM(item)) );
 	
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_public)->active)
 		return network_get_timeline(API_TIMELINE_PUBLIC);
@@ -599,7 +597,7 @@ static void app_services_cb(GtkWidget *widget, App *app){
 
 static void app_select_service(GtkMenuItem *item, App *app){
 	popup_select_service( GET_PRIV(app)->window );
-}//app_select_service
+}/*app_select_service*/
 
 static void app_preferences_cb(GtkWidget *widget, App *app){
 	preferences_dialog_show(GTK_WINDOW(app_priv->window));
@@ -734,13 +732,13 @@ static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigu
 }
 
 static gboolean app_connect(void){
-	debug(DEBUG_DOMAINS, "Logging into online services.");
+	debug("Logging into online services.");
 	if(!online_services_login(online_services))
 		return FALSE;
 	
 	app_retrieve_default_timeline();
 	return TRUE;
-}//connect
+}/*connect*/
 
 /*
  * Function to set the default
@@ -753,10 +751,7 @@ static void app_set_default_timeline(App *app, gchar *timeline){
 		return gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(app_priv->timeline_friends), TRUE);
 	}
 	
-	debug(DEBUG_DOMAINS, "Selecting default timeline's radio button: %s", timeline);
-	/* TODO: Make this actually work as in like change the radio button.
-	 * NOTE: I think I'm going to have to convert these into a GtkRadioMenuItem
-	 * */
+	debug("Selecting default timeline's radio button: %s", timeline);
 	
 	if((g_str_equal(timeline, API_TIMELINE_FRIENDS)) )
 		return gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(app_priv->timeline_friends), TRUE);
@@ -790,26 +785,10 @@ static void app_retrieve_default_timeline(void){
 		timeline=g_strdup(API_TIMELINE_FRIENDS);
 	
 	app_set_default_timeline(app, timeline);
-	debug(DEBUG_DOMAINS, "Retriving default timeline: %s", timeline);
+	debug("Retriving default timeline: %s", timeline);
 	network_get_timeline(timeline);
 	g_free(timeline);
 }
-
-static void
-app_check_dir(void)
-{
-	gchar    *file;
-	
-	file=g_build_filename(g_get_home_dir(), ".gnome2", CACHE_IMAGES, NULL);
-	
-	if(!g_file_test(file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) {
-		debug(DEBUG_DOMAINS, "Making directory: %s", file);
-		g_mkdir_with_parents(file, S_IRUSR|S_IWUSR|S_IXUSR);
-	}
-	
-	g_free(file);
-}
-
 
 static void app_connection_items_setup(GtkBuilder *ui){
 	GList         *list;
@@ -864,7 +843,7 @@ void app_statusbar_printf(const gchar *msg, ...){
 	
 	app_set_statusbar_msg(message);
 	g_free(message);
-}//app_update_status_bar
+}/*app_update_status_bar*/
 
 
 void app_set_statusbar_msg(gchar *message){
@@ -879,7 +858,7 @@ void app_set_statusbar_msg(gchar *message){
 
 
 void app_notify_sound(gboolean force){
-	if(!( force && gconfig_if_bool(PREFS_UI_SOUND) ))
+	if(!( force && gconfig_if_bool(PREFS_UI_SOUND, FALSE) ))
 		return;
 	
 	gtk_widget_error_bell(GTK_WIDGET(app_priv->tweet_view->sexy_entry));
@@ -894,7 +873,7 @@ gboolean app_notify_on_timeout(gpointer tweet){
 }
 
 void app_notify(gchar *msg){
-	if(!gconfig_if_bool(PREFS_UI_NOTIFICATION))
+	if(!gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE))
 		return;
 	
 	NotifyNotification *notification;
@@ -909,7 +888,7 @@ void app_notify(gchar *msg){
 	if(!error)
 		return;
 	
-	debug(DEBUG_DOMAINS, "Error displaying notification: %s", error->message);
+	debug("Error displaying notification: %s", error->message);
 	g_error_free(error);
 }
 

@@ -66,6 +66,7 @@ enum {
 };
 
 
+gchar *images_get_unknown_image_filename(void);
 gchar *images_get_filename(const gchar *url);
 
 GtkImage *images_get_image_from_filename(const gchar *image_filename);

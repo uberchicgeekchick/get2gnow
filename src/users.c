@@ -57,7 +57,6 @@
 #include <libxml/tree.h>
 
 #include "main.h"
-#include "debug.h"
 #include "app.h"
 #include "users.h"
 
@@ -81,7 +80,9 @@ static void user_request_free(FriendRequest *request);
 static User *user_constructor( gboolean a_follower );
 
 
-#define	DEBUG_DOMAINS	"ServiceRequests"
+#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
+#include "debug.h"
+
 #define GtkBuilderUI "user-profile.ui"
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
@@ -136,9 +137,9 @@ static FriendRequest *user_request_new(OnlineService *service, FriendAction acti
 			return NULL;
 	}//switch
 	request->service=service;
-	debug(DEBUG_DOMAINS, "%sing %s on %s", request->message, request->user_data, request->service->key);
+	debug("%sing %s on %s", request->message, request->user_data, request->service->key);
 	return request;
-}//user_request_new
+}/* user_request_new */
 
 void user_request_main(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data){
 	FriendRequest *request=NULL;
@@ -152,7 +153,7 @@ void user_request_main(OnlineService *service, FriendAction action, GtkWindow *p
 	
 	user_request_main_quit(NULL, NULL, (gpointer *)request);
 	tweet_view_sexy_select();
-}//user_request_main
+}/* user_request_main */
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	FriendRequest *request=(FriendRequest *)user_data;
@@ -166,7 +167,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 		case QUEUE:
 			break;
 	}//switch
-}//user_request_main_quit
+}/* user_request_main_quit */
 
 static void user_request_process_get(FriendRequest *request){
 	switch(request->action){
@@ -184,11 +185,11 @@ static void user_request_process_get(FriendRequest *request){
 			break;
 	}//switch
 	user_request_free(request);
-}//user_request_process_get
+}/* user_request_process_get */
 
 static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	FriendRequest *request=(FriendRequest *)user_data;
-	debug(DEBUG_DOMAINS, "%s user response: %i", request->message, msg->status_code);
+	debug("%s user response: %i", request->message, msg->status_code);
 	
 	/* Check response */
 	if(!network_check_http(request->service, msg)){
@@ -198,7 +199,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	}
 	
 	/* parse new user */
-	debug(DEBUG_DOMAINS, "Parsing user response");
+	debug("Parsing user response");
 	User *user=user_parse_new(request->service, msg);
 	app_statusbar_printf("Successfully %s.", request->message, NULL);
 	
@@ -220,7 +221,7 @@ static void user_request_process_post(SoupSession *session, SoupMessage *msg, gp
 	}//switch
 	if(user) user_free(user);
 	user_request_free(request);
-}//user_request_process_post
+}/* user_request_process_post */
 
 
 static void user_request_free(FriendRequest *request){
@@ -232,7 +233,7 @@ static void user_request_free(FriendRequest *request){
 	request->service=NULL;
 	g_free(request);
 	request=NULL;
-}//user_request_free
+}/* user_request_free */
 
 
 static User *user_constructor( gboolean a_follower ){
@@ -243,7 +244,7 @@ static User *user_constructor( gboolean a_follower ){
 	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
 	
 	return user;
-}//user_constructor
+}/* user_constructor */
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
@@ -277,7 +278,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	
 	user=user_constructor( getting_followers );
 	
-	debug(DEBUG_DOMAINS, "Parsing user profile data.");
+	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
 	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE)
@@ -285,7 +286,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 		
 		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(cur_node)) ) ) continue;
 		
-		debug(DEBUG_DOMAINS, "name: %s; content: %s.", cur_node->name, content);
+		debug("name: %s; content: %s.", cur_node->name, content);
 		
 		if(g_str_equal(cur_node->name, "id" ))
 			user->id=strtoul( content, NULL, 10 );
@@ -382,18 +383,18 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 		return user;
 	
 	return NULL;
-}//user_fetch_profile
+}/* user_fetch_profile */
 
 
 
 void users_free(const char *type, GList *users ){
-	debug( DEBUG_DOMAINS, "Freeing the authenticated user's %s.", type );
+	debug("Freeing the authenticated user's %s.", type );
 	
 	g_list_foreach(users, (GFunc)user_free, NULL);
 	
 	g_list_free(users);
 	users=NULL;
-}//users_free
+}/* users_free */
 
 /* Free a user struct */
 void user_free(User *user){
@@ -408,7 +409,7 @@ void user_free(User *user){
 	user->service=NULL;
 	g_free(user);
 	user=NULL;
-}//user_free
+}/* user_free */
 
 /* Free a list of Users */
 void user_free_lists(void){
@@ -420,35 +421,35 @@ void user_free_lists(void){
 	
 	if(user_followers)
 		users_free("followers", user_followers);
-}//user_free_lists
+}/* user_free_lists */
 
 
 void user_append_friend(User *user){
 	if(user_friends)
 		user_friends=g_list_append(user_friends, user );
 	app_set_statusbar_msg (_("Friend Added."));
-}//user_append_friend
+}/* user_append_friend */
 
 void user_remove_friend(User *user){
 	if(user_friends)
 		user_friends=g_list_remove(user_friends, user);
 	app_set_statusbar_msg (_("Friend Removed."));
 	user_free(user);
-}//user_remove_friend
+}/* user_remove_friend */
 
 
 void user_append_follower(User *user){
 	if(user_followers)
 		user_followers=g_list_append(user_followers, user );
 	app_set_statusbar_msg (_("Follower Added."));
-}//user_append_friend
+}/* user_append_friend */
 
 void user_remove_follower(User *user){
 	if(user_followers)
 		user_followers=g_list_remove(user_followers, user);
 	app_set_statusbar_msg (_("Follower Removed."));
 	user_free(user);
-}//user_remove_friend
+}/* user_remove_friend */
 
 
 /* Get authenticating user's friends(following)
@@ -487,5 +488,5 @@ GList *user_get_friends_and_followers(gboolean refresh){
 	following_and_followers=g_list_concat( user_followers, user_friends );
 	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) usrcasecmp);
 	return following_and_followers;
-}//user_get_friends_and_followers
+}/* user_get_friends_and_followers */
 

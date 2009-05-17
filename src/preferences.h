@@ -59,13 +59,6 @@ G_BEGIN_DECLS
 
 #define PREFS_HINTS_CLOSE_MAIN_WINDOW		PREFS_PATH "/hints/close_main_window"
 
-/* Window height, width, & position gconf values. */
-#define PREFS_UI_WIDTH				PREFS_PATH "/ui/widths/%s"
-#define PREFS_UI_HEIGHT				PREFS_PATH "/ui/heights/%s"
-#define PREFS_UI_POSITION_X			PREFS_PATH "/ui/positions/%s_x"
-#define PREFS_UI_POSITION_Y			PREFS_PATH "/ui/positions/%s_y"
-
-
 void preferences_dialog_show (GtkWindow *parent);
 
 G_END_DECLS

@@ -80,13 +80,18 @@ typedef struct {
 	GtkVBox			*user_vbox;
 	GtkImage		*user_image;
 	
+	/* View & Sending Tweets. */
+	GtkVBox			*status_vbox;
+	
 	/* Tweet View */
 	GtkVBox			*status_view_vbox;
 	Label			*sexy_to;
 	Label			*sexy_from;
+	GtkLabel		*tweet_datetime_label;
 	Label			*sexy_tweet;
 	
-	/* My, Kaity G. B., new libsexy powered tweet entry box. */
+	/* Tweet, status, & DM writing area & widgets. */
+	GtkVBox			*status_compose_vbox;
 	GtkHBox			*char_count_hbox;
 	GtkLabel		*char_count;
 	

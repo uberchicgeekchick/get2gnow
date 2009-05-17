@@ -59,7 +59,6 @@
 
 #include "main.h"
 #include "app.h"
-#include "debug.h"
 #include "friends-manager.h"
 #include "popup-dialog.h"
 #include "network.h"
@@ -90,7 +89,8 @@ typedef struct {
 	GtkButton	*view_timeline;
 } FriendsManager;
 
-#define	DEBUG_DOMAINS	"Friends-Manager:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Requests:Users:Setup"
+#define	DEBUG_DOMAINS	"FriendsManager:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Requests:Users:Setup"
+#include "debug.h"
 
 #define GtkBuilderUI "friends-manager.ui"
 
@@ -119,14 +119,14 @@ static FriendsManager *friends_manager=NULL;
 
 
 static void friends_manager_destroy(GtkWidget *widget, FriendsManager *friends_manager){
-	debug(DEBUG_DOMAINS, "Destroying friends manager");
+	debug("Destroying friends manager");
 	friends_manager_free();
-}//friends_manager_destroy
+}/* friends_manager_destroy */
 
 
 static void friends_manager_response(GtkWidget *widget, gint response, FriendsManager *friends_manager){
 	gtk_widget_destroy(widget);
-}//friends_message_response
+}/* friends_message_response */
 
 
 static void friends_manager_free(void){
@@ -164,11 +164,11 @@ static void friends_manager_free(void){
 	
 	g_free(friends_manager);
 	friends_manager=NULL;
-}//friends_manager_free
+}/* friends_manager_free */
 
 static void friends_manager_refresh(GtkButton *button, FriendsManager *friends_manager){
 	friends_manager_display_following_and_followers(TRUE);
-}//friends_manager_refresh
+}/* friends_manager_refresh */
 
 static void friends_manager_follow(GtkButton   *button, FriendsManager *friends_manager){
 	GtkTreeSelection	*sel;
@@ -324,7 +324,7 @@ void friends_manager_view_profile(void){
 	
 	user_request_main(user->service, ViewProfile, friends_manager->dialog, (const gchar *)user_name);
 	g_free( user_name );
-}//friends_manager_view_profile
+}/* friends_manager_view_profile */
 
 
 static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager){
@@ -350,7 +350,7 @@ static void friends_manager_view_timeline(GtkButton *button, FriendsManager *fri
 		g_free(user_name);
 	}
 	if(iter) g_free(iter);
-}//friends_manager_view_timeline
+}/* friends_manager_view_timeline */
 
 
 static void friends_manager_display_following_and_followers(gboolean refresh){
@@ -389,12 +389,12 @@ static void friends_manager_display_following_and_followers(gboolean refresh){
 		);
 		g_free(iter);
 	}
-}//friends_manager_display_following_and_followers
+}/* friends_manager_display_following_and_followers */
 
 
 static void friends_manager_list_clicked(GtkTreeView *tree_view, FriendsManager *friends_manager){
 	friends_manager_set_buttons_sensitivity(friends_manager, TRUE);
-}//friends_manager_list_clicked
+}/* friends_manager_list_clicked */
 
 
 static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_manager, gboolean is_sensitive){
@@ -403,7 +403,7 @@ static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_mana
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->user_block), is_sensitive);
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->view_profile), is_sensitive);
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->view_timeline), is_sensitive);
-}//friends_manager_set_buttons_sensitivity
+}/* friends_manager_set_buttons_sensitivity */
 
 
 void friends_manager_show(GtkWindow *parent){
@@ -411,14 +411,14 @@ void friends_manager_show(GtkWindow *parent){
 		return friends_manager_setup(parent);
 	
 	gtk_window_present((GTK_WINDOW( friends_manager->dialog )) );
-}//friends_manager_show
+}/* friends_manager_show */
 
 
 static void friends_manager_setup(GtkWindow *parent){
 	GtkBuilder	*ui;
 	GdkCursor	*cursor;
 
-	debug(DEBUG_DOMAINS, "Initialising friends manager");
+	debug("Initialising friends manager");
 
 	if(friends_manager) friends_manager_free();
 	

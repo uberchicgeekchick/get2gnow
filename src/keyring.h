@@ -25,13 +25,13 @@
 #define __KEYRING_H__
 
 #include <glib.h>
+#include "online-services.h"
+
 
 G_BEGIN_DECLS
 
-gboolean keyring_get_password (gchar        *username,
-									  gchar       **password);
-gboolean keyring_set_password (const gchar  *username,
-									  const gchar  *password);
+gboolean keyring_get_password(OnlineService **service);
+gboolean keyring_set_password(OnlineService *service);
 
 G_END_DECLS
 

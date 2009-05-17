@@ -50,20 +50,32 @@
 
 
 #include "config.h"
+#include <sys/stat.h>
 #include "images.h"
 #include "main.h"
-#include "debug.h"
 
-#define DEBUG_DOMAIN	"Images"
+#define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"
+#include "debug.h"
 
 static gint images_validate_width( gint width );
 static gint images_validate_height( gint height );
 
+gchar *images_get_unknown_image_filename(void){
+	static gchar *stock_unknown_image_filename=NULL;
+	if(stock_unknown_image_filename!=NULL)
+		return g_strdup(stock_unknown_image_filename);
+				
+	GtkImage *stock_unknown_image=(GtkImage *)gtk_image_new_from_icon_name("gtk-missing-image", ImagesDefault);
+	g_object_get(stock_unknown_image, "file", &stock_unknown_image_filename, NULL );
+	g_object_unref(stock_unknown_image);
+	
+	debug("\t\tUsing stock image: %s.", stock_unknown_image_filename);
+	return g_strdup(stock_unknown_image_filename);
+}
 
 gchar *images_get_filename(const gchar *image_url){
-	debug(DEBUG_DOMAIN, "Creating image file name from image url: %s.", image_url);
+	debug("Creating image file name from image url: %s.", image_url);
 	gchar *image_file, **image_name_info, *image_filename;
-	static gchar *stock_unknown_image_filename=NULL;
 	
 	/**
 	 * image_name_info[] index explanation:
@@ -74,37 +86,32 @@ gchar *images_get_filename(const gchar *image_url){
 	 */
 	image_name_info=g_strsplit(image_url, (const gchar *)"/", -1);
 	guint n=g_strv_length(image_name_info)-1;
-	debug(DEBUG_DOMAIN, "Found %d elements in the image's url.", n+1);
+	debug("Found %d elements in the image's url.", n+1);
 	
 	if(image_name_info[2]==image_name_info[n-1])
-		image_file=g_strconcat(image_name_info[2], "_", image_name_info[n], NULL);
+		image_file=g_strdup(image_name_info[n]);
 	else
-		image_file=g_strconcat(image_name_info[2], "_", image_name_info[n-1], "_", image_name_info[n], NULL);
-	
-	if(image_name_info)
-		g_strfreev(image_name_info);
+		image_file=g_strconcat(image_name_info[n-1], "_", image_name_info[n], NULL);
 	
 	if(!image_file){
-		debug(DEBUG_DOMAIN, "**ERROR** Unable to parse url into valid image filename.");
-		if(!stock_unknown_image_filename){
-			GtkImage *stock_unknown_image=(GtkImage *)gtk_image_new_from_icon_name("gtk-missing-image", ImagesDefault);
-			g_object_get(
-					stock_unknown_image,
-						"file", &stock_unknown_image_filename,
-					NULL
-			);
-			g_object_unref(stock_unknown_image);
-		}
-		
-		debug(DEBUG_DOMAIN, "\t\tUsing stock image: %s.", stock_unknown_image_filename);
-		return g_strdup(stock_unknown_image_filename);
+		debug("**ERROR** Unable to parse url into valid image filename.");
+		g_strfreev(image_name_info);
+		return images_get_unknown_image_filename();
 	}
 	
+	gchar *avatars_dir=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "avatars", image_name_info[2], NULL);
 	
-	image_filename=g_build_filename( g_get_home_dir(), ".gnome2", CACHE_IMAGES, image_file, NULL );
+	if(!g_file_test(avatars_dir, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) {
+		debug("Creating avatars directory: %s", avatars_dir);
+		g_mkdir_with_parents(avatars_dir, S_IRUSR|S_IWUSR|S_IXUSR);
+	}
 	
-	debug(DEBUG_DOMAIN, "Saving image:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
+	image_filename=g_build_filename(avatars_dir, image_file, NULL );
 	
+	debug("Setting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
+	
+	g_strfreev(image_name_info);
+	g_free(avatars_dir);
 	g_free(image_file);
 	
 	return image_filename;
@@ -194,7 +201,7 @@ GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
 	if( (resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR )) )
 		return resized;
 			
-	debug(DEBUG_DOMAIN, "Image error: risizing of pixmap to: %d x %d failed.", width, height );
+	debug("Image error: risizing of pixmap to: %d x %d failed.", width, height );
 	return NULL;
 }//images_resize_pixbuf
 
@@ -236,7 +243,7 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename
 	if( (pixbuf=gdk_pixbuf_new_from_file(image_filename, &error )) )
 		return pixbuf;
 	
-	debug(DEBUG_DOMAIN, "Image error: %s: %s", image_filename, error->message);
+	debug("Image error: %s: %s", image_filename, error->message);
 	if(error) g_error_free(error);
 	return NULL;
 }//images_get_full_sized_pixbuf_from_file
@@ -256,7 +263,7 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, 
 	if( (pixbuf=gdk_pixbuf_new_from_file_at_scale(image_filename, width, height, &error )) )
 		return pixbuf;
 	
-	debug(DEBUG_DOMAIN, "Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
+	debug("Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
 }images_get_scaled_pixbuf_from_file*/

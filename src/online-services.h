@@ -58,7 +58,9 @@
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
+#include <fcntl.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
@@ -97,6 +99,11 @@ typedef struct {
 	GList		*accounts;
 } OnlineServices;
 
+typedef enum {
+	Laconica,
+	Twitter,
+} SupportedREST;
+
 typedef struct {
 	SoupSession	*session;
 	RateLimitTimer	*timer;
@@ -109,8 +116,8 @@ typedef struct {
 	
 	gchar		*key;
 	gchar		*decoded_key;
-	gchar		*service_type;
-	gchar		*url;
+	SupportedREST	which_rest;
+	gchar		*uri;
 	gchar		*username;
 	gchar		*password;
 } OnlineService;
@@ -124,7 +131,6 @@ typedef enum{
 	UrlString,
 	OnlineServicePointer,
 } OnlineServicesListStoreColumns;
-#define MAX_LOGINS 200
 
 extern OnlineServices *online_services;
 extern OnlineService *current_service;
@@ -149,14 +155,11 @@ void online_services_deinit(OnlineServices *online_services);
 gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore);
 
 
-/* key is username@url */
-OnlineService *online_service_load(const gchar *account_key);
-
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 
-void online_services_free_wrapper(OnlineServices *service, OnlineServiceCBWrapper *service_wrapper);
+void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper);
 
 void online_service_free(OnlineService *service);
 

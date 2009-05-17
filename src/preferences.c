@@ -31,7 +31,6 @@
 
 #include <glib/gi18n.h>
 
-#include "debug.h"
 #include "network.h"
 #include "gconfig.h"
 #include "gtkbuilder.h"
@@ -41,7 +40,9 @@
 #include "preferences.h"
 
 #define GtkBuilderUI "preferences.ui"
-#define DEBUG_DOMAIN "Preferences"
+
+#define DEBUG_DOMAINS "Preferences:UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Preferences:Setup"
+#include "debug.h"
 
 typedef struct {
 	GtkDialog	*dialog;
@@ -98,7 +99,7 @@ static void preferences_notify_bool_cb(const gchar *key, gpointer user_data);
 static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data);
 static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data);
 
-static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, GtkCheckButton *check_button);
+static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button);
 static void preferences_hookup_string_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box);
 static void preferences_hookup_int_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box);
 
@@ -110,18 +111,18 @@ static void preferences_response_cb(GtkDialog *dialog, gint response, Prefs *pre
 static void preferences_destroy_cb(GtkDialog *dialog, Prefs *prefs);
 
 static void preferences_setup_widgets(Prefs *prefs){
-	debug(DEBUG_DOMAIN, "Binding widgets to preferences.");
-	preferences_hookup_toggle_button(prefs, PREFS_UI_NOTIFICATION, prefs->notify);
+	debug("Binding widgets to preferences.");
+	preferences_hookup_toggle_button(prefs, PREFS_UI_NOTIFICATION, FALSE, prefs->notify);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, prefs->sound);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, FALSE, prefs->sound);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, prefs->no_alert);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, FALSE, prefs->no_alert);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_TWEET_VIEW_USE_DIALOG, prefs->use_tweet_dialog);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE, prefs->use_tweet_dialog);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_DISABLED, prefs->expand_urls_disabled_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, prefs->expand_urls_selected_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
 	
 	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -129,11 +130,11 @@ static void preferences_setup_widgets(Prefs *prefs){
 }
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
-	preferences_widget_sync_bool (key, user_data);
+	preferences_widget_sync_bool(key, user_data);
 }
 
 static void preferences_timeline_setup (Prefs *prefs){
-	debug(DEBUG_DOMAIN, "Binding timelines to preference.");
+	debug("Binding timelines to preference.");
 	static const gchar *timelines[] = {
 		API_TIMELINE_FRIENDS,	N_("My Friends' Tweets"),
 		API_MENTIONS,		N_("@ Mentions"),
@@ -174,7 +175,7 @@ static void preferences_timeline_setup (Prefs *prefs){
 }
 
 static void preferences_reload_setup(Prefs *prefs){
-	debug(DEBUG_DOMAIN, "Setting-up timeline refresh preference.");
+	debug("Setting-up timeline refresh preference.");
 	GtkListStore    *model;
 	GtkTreeIter      iter;
 	GtkCellRenderer *renderer;
@@ -208,13 +209,13 @@ static void preferences_reload_setup(Prefs *prefs){
 }
 
 static void preferences_widget_sync_bool (const gchar *key, GtkCheckButton *check_button){
-	debug(DEBUG_DOMAIN, "Binding CheckButton: %s to preference: %s.", gtk_button_get_label(GTK_BUTTON(check_button)), key );
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key));
+	debug("Binding CheckButton: %s to preference: %s.", gtk_button_get_label(GTK_BUTTON(check_button)), key );
+	gboolean bool_default=g_str_equal( ((gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default")), "TRUE" );
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key, bool_default));
 }
 
 static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox *combo_box){
-	debug(DEBUG_DOMAIN, "Binding ComboBox to preference: %s.", key );
+	debug("Binding ComboBox to preference: %s.", key );
 	gchar        *value;
 	GtkTreeModel *model;
 	GtkTreeIter   iter;
@@ -258,7 +259,7 @@ static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox 
 }
 
 static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *combo_box){
-	debug(DEBUG_DOMAIN, "Binding ComboBox to preference: %s.", key );
+	debug("Binding ComboBox to preference: %s.", key );
 	gint          value;
 	GtkTreeModel *model;
 	GtkTreeIter   iter;
@@ -299,12 +300,12 @@ static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *co
 }
 
 static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
-	debug(DEBUG_DOMAIN, "Saving preference: %s.", key );
+	debug("Saving preference: %s.", key );
 	preferences_widget_sync_string_combo (key, user_data);
 }
 
 static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
-	debug(DEBUG_DOMAIN, "Saving preference: %s.", key );
+	debug("Saving preference: %s.", key );
 	preferences_widget_sync_int_combo (key, user_data);
 }
 
@@ -312,15 +313,17 @@ static void preferences_add_id (Prefs *prefs, guint id){
 	prefs->notify_ids = g_list_prepend (prefs->notify_ids, GUINT_TO_POINTER (id));
 }
 
-static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, GtkCheckButton *check_button){
+static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button){
 	guint id;
-	
-	preferences_widget_sync_bool (key, check_button);
 	
 	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
 	
+	g_object_set_data_full(G_OBJECT(check_button), "bool_default", g_strdup((bool_default?"TRUE" :"FALSE")), g_free);
+	
 	g_signal_connect(check_button, "toggled", G_CALLBACK(preferences_toggle_button_toggled_cb), NULL);
-
+	
+	preferences_widget_sync_bool(key, check_button);
+	
 	if( (id=gconfig_notify_add(g_strdup(key),
 					preferences_notify_bool_cb,
 					check_button
@@ -370,10 +373,8 @@ static void preferences_hookup_int_combo(Prefs *prefs, const gchar *key, GtkComb
 
 static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button,	gpointer user_data){
 	const gchar *key;
-
-	key=g_object_get_data(G_OBJECT (check_button), "key");
-
-	gconfig_set_bool(key, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_button)));
+	key=g_object_get_data(G_OBJECT(check_button), "key");
+	gconfig_set_bool(key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (check_button)));
 }
 
 static void

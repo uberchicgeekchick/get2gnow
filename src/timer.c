@@ -59,12 +59,12 @@
 #include "config.h"
 #include "timer.h"
 #include "app.h"
-#include "debug.h"
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAIN "OnlineServices"
+#define DEBUG_DOMAINS "Timer:OnlineServices:Networking:Requests:Setup:Start-Up"
+#include "debug.h"
 
 
 /********************************************************
@@ -79,7 +79,7 @@ static void timer_main_quit(RateLimitTimer *timer);
 
 
 RateLimitTimer *timer_new(void){
-	debug(DEBUG_DOMAIN, "Initalizing network rate limit timer.");
+	debug("Initalizing network rate limit timer.");
 	if(!( g_thread_get_initialized() && g_thread_supported() )) g_thread_init(NULL);
 	
 	/* timer->gtimer is used to avoid Twitter's rate limit. */
@@ -99,11 +99,11 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	int requests_remaining=99;
 	
 	if(!( (g_str_equal( "GET", msg->method)) && ((rate_limit=soup_message_headers_get_one( msg->response_headers, "X-RateLimit-Remaining" ))) &&(requests_remaining=atoi( rate_limit )) )){
-		debug(DEBUG_DOMAIN, "Skipping network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s (%d)", msg->method, rate_limit, requests_remaining );
+		debug("Skipping network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s (%d)", msg->method, rate_limit, requests_remaining );
 		return;
 	}
 	
-	debug(DEBUG_DOMAIN, "Running network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s\n\t\tRequests left before the API's RateLimit is reached: %d.", msg->method, rate_limit, requests_remaining );
+	debug("Running network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s\n\t\tRequests left before the API's RateLimit is reached: %d.", msg->method, rate_limit, requests_remaining );
 	
 	timer->requests++;
 	if(timer->requests==1)
@@ -119,7 +119,7 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	
 	g_timer_start(timer->gtimer);
 	
-	debug( DEBUG_DOMAIN, "Requests left before the API's RateLimit is reached: %d.", requests_remaining );
+	debug("Requests left before the API's RateLimit is reached: %d.", requests_remaining );
 	if( requests_remaining < 11 )
 		while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < 36.0 );
 	else if( requests_remaining < 21 )
@@ -137,7 +137,7 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 
 
 static void timer_main_quit(RateLimitTimer *timer){
-	debug(DEBUG_DOMAIN, "Stopping network timer.");
+	debug("Stopping network timer.");
 	g_timer_stop(timer->gtimer);
 	timer->active=FALSE;
 }//timer_main_quit
@@ -147,7 +147,7 @@ static void timer_main_quit(RateLimitTimer *timer){
 void timer_free(RateLimitTimer *timer){
 	if(!timer) return;
 	timer_main_quit(timer);
-	debug(DEBUG_DOMAIN, "Shutting down network timer.");
+	debug("Shutting down network timer.");
 	g_timer_destroy(timer->gtimer);
 	g_free(timer);
 	timer=NULL;

@@ -56,7 +56,6 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include "debug.h"
 #include "friends-manager.h"
 #include "users.h"
 #include "gtkbuilder.h"
@@ -69,6 +68,7 @@
 #define GtkBuilderUI "profile-viewer.ui"
 
 #define	DEBUG_DOMAINS	"Profile-Viewer"
+#include "debug.h"
 
 typedef struct {
 	User			*user;
@@ -167,5 +167,5 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 	
 	user_free( profile_viewer->user );
 	
-}//user_popup_profile
+}/* user_popup_profile */
 

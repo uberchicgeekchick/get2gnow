@@ -1,11 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * get2gnow is:
+ * Greet-Tweet-Know is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=get2gnow
+ * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -48,117 +48,97 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-
-
 #include "config.h"
+#include "this.h"
 
-#include <stdarg.h>
-#include <string.h>
 
-#include <glib.h>
-#include <glib/gprintf.h>
-#include "main.h"
+typedef struct {
+	GtkWindow	*window;
+} ThisPrivate;
 
-/*
- * Set DEBUG to a colon/comma/space separated list of domains, or "all"
- * to get all debug output.
- */
-#define DEBUG_DOMAINS "All"
-#include "debug.h"
+#define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_THIS, ThisPrivate))
 
-static gchar    **debug_strv=NULL;
-static gboolean   all_domains = FALSE;
-static gboolean devel=FALSE;
+#define DEBUG_DOMAINS "This:UI:GtkBuilder:GtkBuildable:Objects:Networking:Requests:Authentication:Setup:Start-Up"
+#define GtkBuilderUI "this.ui"
 
-gboolean debug_check_devel(void){
-#ifndef GNOME_ENABLE_DEBUG
-	if(!( (g_getenv("DEBUG")) && (g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) ))
-		return FALSE;
-	
-#define GNOME_ENABLE_DEBUG
-#else
-	if( (g_getenv("DEBUG")) && !(g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) )
-		return FALSE;
-	
-#endif
-	
-	devel=TRUE;
-	all_domains=TRUE;
-	debug_strv=g_strsplit_set("all", ":, ", 0);
-	
-	return TRUE;
-}//debug_check_devel
+/* GObject methods */
+static void this_class_init(ThisClass *klass);
+static GObject *this_constructor(GType type, guint n_construct_params, GObjectConstructParam *construct_params){
+static void this_init(This *singleton_this);
+static void this_constructed(GOject *object);
+static void this_finalize(GObject *object);
 
-static void debug_init (void){
-	static gboolean inited=FALSE;
-	if(inited) return;
-	inited=TRUE;
-	if(debug_check_devel()) return;
-	
-	const gchar *env;
-	gint         i;
-	
-	if(!(env=g_getenv("DEBUG")))
-		return;
-	
-	debug_strv=g_strsplit_set (env, ":, ", 0);
-	
-	for(i=0; debug_strv && debug_strv[i]; i++)
-		if (!(strcasecmp ("all", debug_strv[i])))
-			all_domains=TRUE;
+static This *this=NULL;
+
+G_DEFINE_TYPE(This, this, G_TYPE_OBJECT);
+/* G_DEFINE_TYPE's third agument needs to be 'This' parent's type as defined in "this.h". */
+/* Commonly Used:
+ *	G_TYPE_OBJECT
+ *	GTK_TYPE_OBJECT
+ *	GTK_TYPE_WIDGET
+ *	GTK_TYPE_CONTAINER
+ *	GTK_TYPE_BIN
+ *	GTK_TYPE_WINDOW
+ *	GTK_TYPE_ITEM
+ *	SEXY_TYPE_URL_LABEL
+*/
+
+
+static void this_class_init(ThisClass *klass){
+	GObjectClass  *object_class=G_OBJECT_CLASS(klass);
+	object_class->finalize=this_finalize;
+	g_type_class_add_private(object_class, sizeof(ThisPrivate));
 }
 
-void debug_impl(const gchar *domain, const gchar *msg, ...){
-	static gboolean output_started=FALSE;
-	gint i=0, x=0;
+static GObject *this_constructor(GType type, guint n_construct_params, GObjectConstructParam *construct_params){
+	GObject *object;
 	
-	g_return_if_fail (domain != NULL);
-	g_return_if_fail (msg != NULL);
-	
-	debug_init();
-	
-	gchar **domains=g_strsplit(domain, ":", -1);
-	for(i=0, x=0; (debug_strv && debug_strv[i]) && (domains && domains[x]); i++, x++) {
-		if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
-			continue;
-			
-		va_list args;
-		if(!output_started){
-			g_print("\n");
-			output_started=TRUE;
-		}
-		
-		g_print ("%s: ", domains[x]);
-		
-		va_start(args, msg);
-		g_vprintf(msg, args);
-		va_end(args);
-		
-		g_print ("\n");
-		g_strfreev(domains);
-		return;
+	if(this)
+	          object=g_object_ref(G_OBJECT(this));
+	else{
+		object=G_OBJECT_CLASS(parent_class)->constructor( type, n_construct_params, construct_params);
+		this=THIS(object);
 	}
-	g_strfreev(domains);
 }
 
-gboolean debug_if_domain(const gchar *domain){
-	gint i=0, x=0;
-	
-	if(G_STR_EMPTY(domain))
-		return FALSE;
-	
-	debug_init();
-	
-	gchar **domains=g_strsplit(domain, ":", -1);
-	for(i=0, x=0; (debug_strv && debug_strv[i]) && (domains && domains[x]); i++, x++) {
-		if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
-			continue;
-		
-		g_strfreev(domains);
-		return TRUE;
-	}
-	g_strfreev(domains);
-	return FALSE;
+static void this_init(This *singleton_this){
+	this=singleton_this;
 }
 
+static void this_constructed(GOject *object){
+	/* Add signal hanlers & etc. */
+	G_OBJECT_CLASS(parent_class)->constructed(object);
+}
+
+static void this_dispose(GObject *object){
+	G_OBJECT_CLASS(parent_class)->dispose(object);
+}
+
+static void this_finalize(GObject *object){
+	G_OBJECT_CLASS(parent_class)->finalize(object);
+}
+
+static void this_response(GtkWidget *widget, gint response){
+	gtk_widget_destroy(widget);
+}//friends_message_response
+
+static void this_destroy(GtkWidget *widget){
+	g_object_unref(this);
+	this=NULL;
+}//this_destroy
+
+This *this_new(void){
+	return g_object_new(TYPE_THIS, NULL);
+}//this_new
+
+This *this_new_from(const gchar *first_property, ...){
+	if(!first_property)
+		return g_object_new(TYPE_THIS, NULL);
+	
+	va_list properties;
+	va_start(first_property, properties);
+	GObject *this=gobject_new(first_property, properties);
+	va_end(properties);
+	return this;
+}//this_new_from
 

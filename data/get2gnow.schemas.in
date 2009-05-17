@@ -4,7 +4,8 @@
 			<key>/schemas/apps/get2gnow/auth/accounts</key>
 			<applyto>/apps/get2gnow/auth/accounts</applyto>
 			<owner>get2gnow</owner>
-			<type ltype="string">list</type>
+			<type>list</type>
+			<list_type>string</list_type>
 			<default>[me@twitter.com,me@identi.ca]</default>
 			<locale name="C">
 				<short>A list of your services</short>
@@ -145,8 +146,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/dont_expand_urls</key>
-			<applyto>/apps/get2gnow/ui/dont_expand_urls</applyto>
+			<key>/schemas/apps/get2gnow/ui/expand/disabled</key>
+			<applyto>/apps/get2gnow/ui/expand/disabled</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -156,6 +157,18 @@
 					Stops URLs from being expanded to include the page title.
 					This is done when a particular tweet is selected.
 				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/selected_only</key>
+			<applyto>/apps/get2gnow/ui/expand/selected_only</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Expand URLs to include paga titles only when a tweet is selected.</short>
+				<long>Expand URLs to include paga titles only when a tweet is selected.</long>
 			</locale>
 		</schema>
 		

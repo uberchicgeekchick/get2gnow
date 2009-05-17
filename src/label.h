@@ -24,6 +24,9 @@
 #ifndef __LABEL_H__
 #define __LABEL_H__
 
+#include <glib.h>
+#include <gtk/gtk.h>
+#include <glib-object.h>
 #include <libsexy/sexy.h>
 #include "online-services.h"
 
