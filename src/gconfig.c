@@ -1,43 +1,72 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright(C) 2006 Imendio AB
+ * get2gnow is:
+ * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or(at your option) any later version.
+ * For more information or to find the latest release, visit our
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Writen by an uberChick, other uberChicks please meet me & others @:
+ * 	http://uberChicks.Net/
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * I'm also disabled. I live with a progressive neuro-muscular disease.
+ * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
+ * 	http://Dystonia-DREAMS.Org/
  *
- * Authors: Richard Hult <richard@imendio.com>
- *			Brian Pepple <bpepple@fedoraproject.org>
+ *
+ *
+ * Unless explicitly acquired and licensed from Licensor under another
+ * license, the contents of this file are subject to the Reciprocal Public
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * and You may not copy or use this file in either source code or executable
+ * form, except in compliance with the terms and conditions of the RPL.
+ *
+ * All software distributed under the RPL is provided strictly on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND
+ * LICENSOR HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT
+ * LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific
+ * language governing rights and limitations under the RPL.
+ *
+ * The User-Visible Attribution Notice below, when provided, must appear in each
+ * user-visible display as defined in Section 6.4 (d):
+ * 
+ * Initial art work including: design, logic, programming, and graphics are
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * All materials not covered under the terms of the RPL are all still
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
+ * 
+ * Any & all data stored by this Software created, generated and/or uploaded by any User
+ * and any data gathered by the Software that connects back to the User.  All data stored
+ * by this Software is Copyright (C) of the User the data is connected to.
+ * Users may lisences their data under the terms of an OSI approved or Creative Commons
+ * license.  Users must be allowed to select their choice of license for each piece of data
+ * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
+ * select a default license for their data.  All of the Software's data pertaining to each
+ * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#include "config.h"
-
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
 #include <string.h>
-
 #include <gconf/gconf-client.h>
+
+
+/********************************************************
+ *        Project headers, eg #include "config.h"       *
+ ********************************************************/
+#include "config.h"
 
 #include "gconfig.h"
 #include "preferences.h"
 
 
-#define DEBUG_DOMAINS "GConfig:OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up"
-#include "debug.h"
-
-#define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
-
-#define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_GCONFIG, GConfigPriv))
-
+/********************************************************
+ *          Variable definitions.                       *
+ ********************************************************/
 typedef struct {
 	GConfClient *gconf_client;
 } GConfigPriv;
@@ -47,13 +76,27 @@ typedef struct {
 	gpointer		user_data;
 } GConfigNotifyData;
 
-static void gconfig_finalize(GObject *object);
+#define DEBUG_DOMAINS "GConfig:OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up"
+#include "debug.h"
 
+#define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
+
+#define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_GCONFIG, GConfigPriv))
 G_DEFINE_TYPE(GConfig, gconfig, G_TYPE_OBJECT);
 
 static GConfig *gconfig=NULL;
 static GConfigPriv *gconfig_priv=NULL;
 
+
+/********************************************************
+ *          Static method & function prototypes         *
+ ********************************************************/
+static void gconfig_finalize(GObject *object);
+
+
+/********************************************************
+ *   'Here be Dragons'...art, beauty, fun, & magic.     *
+ ********************************************************/
 static void gconfig_class_init(GConfigClass *class){
 	GObjectClass *object_class;
 	object_class=G_OBJECT_CLASS(class);
@@ -117,7 +160,7 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 	GError *error=NULL;
 	gboolean value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
 	
-	debug("Getting bool: '%s' (=%d ---> %s)", key, value, (value ?"TRUE" :"FALSE"));
+	debug("Getting boolean: '%s':\n\t\tRetrieved: [%s]\t\tDefault: [%s].", key, (value?"TRUE":"FALSE"), (bool_default?"TRUE":"FALSE"));
 	
 	if(error) {
 		debug("\t\t**ERROR:** %s. Setting default value.", error->message);
@@ -281,4 +324,9 @@ gboolean gconfig_notify_remove(guint id){
 	gconf_client_notify_remove(gconfig_priv->gconf_client, id);
 	return TRUE;
 }
+
+
+/********************************************************
+ *                       eof                            *
+ ********************************************************/
 

@@ -58,26 +58,26 @@
 
 #include "main.h"
 #include "app.h"
+#include "online-services.h"
+#include "network.h"
+
 #include "users.h"
 
 #include "gtkbuilder.h"
-#include "network.h"
 #include "images.h"
 #include "parser.h"
 #include "label.h"
-#include "tweet-view.h"
 
+#include "tweet-view.h"
 #include "friends-manager.h"
 #include "following-viewer.h"
 #include "profile-viewer.h"
 
 
-static FriendRequest *user_request_new(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data);
-static void user_request_process_get(FriendRequest *request);
-static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data);
-static void user_request_free(FriendRequest *request);
+static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const gchar *user_data);
+static void user_request_free(UserRequest *request);
 
-static User *user_constructor( gboolean a_follower );
+static User *user_constructor(gboolean a_follower);
 
 
 #define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
@@ -87,150 +87,153 @@ static User *user_constructor( gboolean a_follower );
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
-static FriendRequest *user_request_new(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data){
-	if(G_STR_EMPTY(user_data))
-		return NULL;
+static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const gchar *user_data){
+	if(action==SelectService || action==ViewProfile || G_STR_EMPTY(user_data)) return NULL;
 	
-	FriendRequest *request=g_new(FriendRequest, 1);
+	UserRequest *request=g_new(UserRequest, 1);
+	
 	request->parent=parent;
 	request->user_data=g_strdup(user_data);
 	request->action=action;
-	request->method=POST;
+	request->method=QUEUE;
+	
 	switch(request->action){
-		case ViewProfile:
-			request->message=g_strdup("viewing profile");
-			request->uri=g_strdup_printf(API_ABOUT_USER, request->user_data);
-			request->method=GET;
-			break;
 		case ViewTweets:
-			request->message=g_strdup("tweets displaying");
+			request->method=QUEUE;
+			request->message=g_strdup("displaying tweets");
 			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_data);
-			request->method=GET;
+			network_set_state_loading_timeline(request->uri, Load);
 			break;
 		case Follow:
+			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_FOLLOW, request->user_data);
-			request->message=g_strdup("following");
+			request->message=g_strdup_printf("started following:");
 			break;
 		case UnFollow:
+			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_UNFOLLOW, request->user_data);
-			request->message=g_strdup("unfollowed");
+			request->message=g_strdup("unfollowed:");
 			break;
 		case Block:
+			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_BLOCK, request->user_data);
-			request->message=g_strdup("blocked");
+			request->message=g_strdup("blocked:");
 			break;
 		case UnBlock:
+			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_UNBLOCK, request->user_data);
-			request->message=g_strdup("unblocked");
+			request->message=g_strdup("unblocked user");
 			break;
 		case Fave:
+			request->method=POST;
 			request->uri=g_strdup_printf(API_FAVE, request->user_data);
-			request->message=g_strdup("star'd");
+			request->message=g_strdup("star'd tweet");
 			break;
 		case UnFave:
+			request->method=POST;
 			request->uri=g_strdup_printf(API_UNFAVE, request->user_data);
-			request->message=g_strdup("deleted");
+			request->message=g_strdup("un-star'd tweet");
 			break;
+		case ViewProfile:
 		case SelectService:
 		default:
+			/*We never get here, but it makes gcc happy.*/
 			g_free(request);
 			return NULL;
 	}//switch
-	request->service=service;
-	debug("%sing %s on %s", request->message, request->user_data, request->service->key);
 	return request;
 }/* user_request_new */
 
-void user_request_main(OnlineService *service, FriendAction action, GtkWindow *parent, const gchar *user_data){
-	FriendRequest *request=NULL;
-	if(!(request=user_request_new(service, action, parent, user_data)))
-		return;
-	
-	if(request->method == POST){
-		online_service_request(request->service, POST, request->uri, user_request_main_quit, request, NULL);
+void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data){
+	if(action==SelectService || G_STR_EMPTY(user_data)) return;
+
+	if(action==ViewProfile){
+		view_profile(service, user_data, parent);
 		return;
 	}
 	
-	user_request_main_quit(NULL, NULL, (gpointer *)request);
+	UserRequest *request=NULL;
+	if(!(request=user_request_new(action, parent, user_data)))
+		return;
+	
+	debug("Processing UserRequest to %s %s on %s", request->message, request->user_data, service->key);
+	
+	switch(request->method){
+		case POST:
+			online_service_request(service, POST, request->uri, user_request_main_quit, request, NULL);
+			break;
+		case GET:
+		case QUEUE:
+		default:
+			online_service_request(service, QUEUE, request->uri, user_request_main_quit, request, NULL);
+			break;
+	}
+	
 	tweet_view_sexy_select();
 }/* user_request_main */
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	FriendRequest *request=(FriendRequest *)user_data;
-	switch(request->method){
-		case POST:
-			user_request_process_post(session, msg, request);
-			break;
-		case GET:
-			user_request_process_get(request);
-			break;
-		case QUEUE:
-			break;
-	}//switch
-}/* user_request_main_quit */
-
-static void user_request_process_get(FriendRequest *request){
-	switch(request->action){
-		case ViewTweets:
-			return network_get_user_timeline(request->service, request->user_data);
-		case ViewProfile:
-			return view_profile(request->service, request->user_data, request->parent);
-		case SelectService:
-		case UnFollow:
-		case Block:
-		case Follow:
-		case Fave:
-		case UnFave:
-		case UnBlock:
-			break;
-	}//switch
-	user_request_free(request);
-}/* user_request_process_get */
-
-static void user_request_process_post(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	FriendRequest *request=(FriendRequest *)user_data;
-	debug("%s user response: %i", request->message, msg->status_code);
+	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
+	UserRequest *request=(UserRequest *)service_wrapper->user_data;
 	
-	/* Check response */
-	if(!network_check_http(request->service, msg)){
-		app_statusbar_printf("Failed %s.", request->message, NULL);
+	if(!network_check_http(service_wrapper->service, msg)){
+		debug("**ERORR:** UserRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_data, service_wrapper->service->decoded_key, msg->status_code);
+		
 		user_request_free(request);
+		service_wrapper->service=NULL;
+		g_free(service_wrapper);
+		
 		return;
 	}
 	
-	/* parse new user */
-	debug("Parsing user response");
-	User *user=user_parse_new(request->service, msg);
-	app_statusbar_printf("Successfully %s.", request->message, NULL);
-	
+	User *user=NULL;
+	OnlineServiceCBWrapper *request_wrapper=NULL;
 	switch(request->action){
+		case ViewTweets:
+			request_wrapper=online_service_wrapper_new(service_wrapper->service, network_display_timeline, request->uri);
+			network_display_timeline(session, msg, request_wrapper);
+			break;
 		case UnFollow:
 		case Block:
-			if(user) user_remove_friend(user);
-			break;
 		case Follow:
-			if(user) user_append_friend(user);
+			/* parse new user */
+			debug("UserRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_wrapper->service->decoded_key);
+			if(!(user=user_parse_new(service_wrapper->service, msg))){
+				debug("\t\t[failed]");
+				app_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_data, service_wrapper->service->decoded_key);
+			}else{
+				debug("\t\t[succeeded]");
+				if(request->action==Follow)
+					user_append_friend(user);
+				else if(request->action==UnFollow || request->action==Block )
+					user_remove_friend(user);
+				app_statusbar_printf("Successfully %s %s on %s.", request->message, request->user_data, service_wrapper->service->decoded_key);
+			}
+			
 			break;
 		case Fave:
 		case UnFave:
 		case UnBlock:
-		case ViewTweets:
-		case ViewProfile:
+			debug("UserRequest to %s %s.  OnlineService: '%s':\n\t\t[successed]", request->message, request->user_data, service_wrapper->service->decoded_key);
+			app_statusbar_printf("Successfully %s on %s.", request->message, service_wrapper->service->decoded_key);
+			break;
 		case SelectService:
+		case ViewProfile:
+		default:
 			break;
 	}//switch
-	if(user) user_free(user);
+	
 	user_request_free(request);
-}/* user_request_process_post */
+	service_wrapper->service=NULL;
+	g_free(service_wrapper);
+}/*user_request_main_quit*/
 
-
-static void user_request_free(FriendRequest *request){
+static void user_request_free(UserRequest *request){
 	return;
 	request->parent=NULL;
 	if(request->uri) g_free(request->uri);
 	if(request->user_data) g_free(request->user_data);
 	if(request->message) g_free(request->message);
-	request->service=NULL;
 	g_free(request);
 	request=NULL;
 }/* user_request_free */
@@ -379,10 +382,10 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	msg=online_service_request( service, GET, user_profile, NULL, NULL, NULL );
 	g_free( user_profile );
 	
-	if((user=user_parse_new(service, msg)) )
-		return user;
+	if(!(user=user_parse_new(service, msg)))
+		return NULL;
 	
-	return NULL;
+	return user;
 }/* user_fetch_profile */
 
 

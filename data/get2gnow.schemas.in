@@ -122,14 +122,44 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/use_tweet_dialog</key>
-			<applyto>/apps/get2gnow/ui/use_tweet_dialog</applyto>
+			<key>/schemas/apps/get2gnow/ui/tweets/use_dialog</key>
+			<applyto>/apps/get2gnow/ui/tweets/use_dialog</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>To write Twitter messages in a seperate window</short>
-				<long>To write Twitter messages in a seperate window.</long>
+				<short>To write &amp; view messages in a seperate window</short>
+				<long>To write &amp; view messages in a seperate window.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweets/direct_reply_only</key>
+			<applyto>/apps/get2gnow/ui/tweets/direct_reply_only</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>How to handle replying to a tweet.</short>
+				<long>
+					Rather to post @ replies to all accounts or just the account/service the user belongs to.
+					This implies 'no_link_in_replies'.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweets/no_link_in_replies</key>
+			<applyto>/apps/get2gnow/ui/tweets/no_link_in_replies</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>How to format replying to a tweet.</short>
+				<long>
+					Rather to add a hyperlink to a user&#039;s profile
+					when replying to a tweet in addition to the normal @user.
+				</long>
 			</locale>
 		</schema>
 		

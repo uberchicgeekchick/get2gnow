@@ -239,7 +239,6 @@ static void app_disconnect(void){
 	gtk_list_store_clear(store);
 	network_logout();
 	online_services_disconnect(online_services);
-	app_state_on_connection(FALSE);
 }
 
 static void app_setup(void){
@@ -384,6 +383,7 @@ void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 	if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE)==dont_embed)
 		return;
 	
+	geometry_save();
 	gconfig_set_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, dont_embed);
 	
 	if(dont_embed){

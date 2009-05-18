@@ -60,6 +60,9 @@
                         <property name="model">online_service_liststore</property>
                         <child>
                           <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
                         </child>
                       </object>
                     </child>

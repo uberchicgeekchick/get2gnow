@@ -89,16 +89,13 @@ static SelectedTweet *selected_tweet=NULL;
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, gboolean release);
 
-/********************************************************
- *   'Here be Dragons'...art, beauty, fun, & magic.     *
- ********************************************************/
+
 void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *tweet){
 	/*	id=strtoul( char id, NULL, 10 );	*/
-	if(selected_tweet){
+	if(selected_tweet)
 		unset_selected_tweet();
-	}
 	
-	debug("Creating 'selected_tweet', tweet id: #%lu from '%s' on '%s'.", id, user_name, service->key);
+	debug("SelectedTweet created from '%s', tweet id: #%lu from '%s' on '%s'.", service->key, id, user_name);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->service=service;
 	selected_tweet->id=id;
@@ -106,7 +103,12 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_strdup(tweet);
 	if(!G_STR_EMPTY(selected_tweet->user_name))
-	selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
+		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, FALSE)) && online_services->connected > 1 ))
+			selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
+		else
+			selected_tweet->reply_to_string=g_strdup_printf("@%s ", selected_tweet->user_name);
+	else
+		selected_tweet->reply_to_string=NULL;
 }/* set_selected_tweet */
 
 OnlineService *selected_tweet_get_service(void){
@@ -118,7 +120,7 @@ gchar *selected_tweet_get_user_name(void){
 }/* selected_tweet_get_user_name */
 
 unsigned long int selected_tweet_get_user_id(void){
-		return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0 );
+	return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0 );
 }/* selected_tweet_get_user_name */
 
 gchar *selected_tweet_get_reply_to_string(void){
@@ -128,6 +130,7 @@ gchar *selected_tweet_get_reply_to_string(void){
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
 	debug("Un-Setting selected_tweet.");
+	
 	if(selected_tweet->user_name)
 		g_free(selected_tweet->user_name);
 	selected_tweet->user_name=NULL;
@@ -221,13 +224,13 @@ void tweets_new_tweet(void){
 }/* tweets_new_tweet */
 
 void tweets_reply(void){
-	if(!selected_tweet) return;
+	if(!(selected_tweet && selected_tweet->reply_to_string)) return;
 	gchar *tweet=g_strdup(selected_tweet->reply_to_string);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
 }/* tweets_reply */
 
 void tweets_retweet(void){
-	if(!selected_tweet)
+	if(!(selected_tweet && selected_tweet->reply_to_string))
 		return;
 	gchar *tweet=g_strdup_printf("RT: %s%s", selected_tweet->reply_to_string, selected_tweet->tweet);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
@@ -281,6 +284,8 @@ void tweets_user_unblock(void){
 	user_request_main(selected_tweet->service, UnBlock, app_get_window(), selected_tweet->user_name);
 }/* tweets_user_unblock */
 
+
 /********************************************************
  *                       eof                            *
  ********************************************************/
+

@@ -1,37 +1,114 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright(C) 2007-2008 Daniel Morales <daniminas@gmail.com>
+ * get2gnow is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or(at your option) any later version.
+ * For more information or to find the latest release, visit our
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Writen by an uberChick, other uberChicks please meet me & others @:
+ * 	http://uberChicks.Net/
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * I'm also disabled. I live with a progressive neuro-muscular disease.
+ * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
+ * 	http://Dystonia-DREAMS.Org/
  *
- * Authors: Daniel Morales <daniminas@gmail.com>
  *
+ *
+ * Unless explicitly acquired and licensed from Licensor under another
+ * license, the contents of this file are subject to the Reciprocal Public
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * and You may not copy or use this file in either source code or executable
+ * form, except in compliance with the terms and conditions of the RPL.
+ *
+ * All software distributed under the RPL is provided strictly on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND
+ * LICENSOR HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT
+ * LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific
+ * language governing rights and limitations under the RPL.
+ *
+ * The User-Visible Attribution Notice below, when provided, must appear in each
+ * user-visible display as defined in Section 6.4 (d):
+ * 
+ * Initial art work including: design, logic, programming, and graphics are
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * All materials not covered under the terms of the RPL are all still
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
+ * 
+ * Any & all data stored by this Software created, generated and/or uploaded by any User
+ * and any data gathered by the Software that connects back to the User.  All data stored
+ * by this Software is Copyright (C) of the User the data is connected to.
+ * Users may lisences their data under the terms of an OSI approved or Creative Commons
+ * license.  Users must be allowed to select their choice of license for each piece of data
+ * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
+ * select a default license for their data.  All of the Software's data pertaining to each
+ * User must be fully accessible, exportable, and deletable to that User.
  */
+
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <libsoup/soup.h>
+
+
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
 #include "config.h"
 #include "friends-manager.h"
 #include "users.h"
 #include "images.h"
 #include "online-services.h"
 
+
+/**********************************************************************
+ *        Objects, structures, and etc typedefs                       *
+ **********************************************************************/
+typedef enum {
+	Load,
+	Reload,
+	Timeout,
+} ReloadState;
+
+extern gboolean getting_followers;
+
+
+/**********************************************************************
+ *          Global method  & function prototypes                      *
+ **********************************************************************/
+gchar *url_encode(const gchar *text);
+gboolean network_check_http(OnlineService *service, SoupMessage *msg);
+void network_set_state_loading_timeline(const gchar *timeline, ReloadState state);
+
+void network_logout( void );
+
+void network_post_status(const gchar *text);
+void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
+
+void network_get_timeline(const gchar *uri_timeline);
+void network_get_user_timeline(OnlineService *service, const gchar *username);
+void network_refresh(void);
+
+GList *network_get_users_glist(gboolean get_friends);
+
+gboolean network_download_avatar(OnlineService *service, const gchar *image_uri);
+void network_get_image(OnlineService *service, const gchar *image_uri, GtkTreeIter *iter);
+void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
+
+void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data);
+
+
+/**********************************************************************
+ *          REST Resources for use with OnlineServices                *
+ **********************************************************************/
 /* Authenication */
 #define API_LOGIN		"/account/verify_credentials.xml"
 
@@ -67,43 +144,8 @@
 #define API_ABOUT_USER		"/users/show/%s.xml"
 
 
-extern gboolean getting_followers;
-
-gchar *url_encode(const gchar *text);
-
-/* Networking */
-
-/* Verify user credentials */
-void network_login(OnlineService **services);
-
-/* Logout current user */
-void network_logout( void );
-
-/* Post a new tweet */
-void network_post_status(const gchar *text);
-
-/* Post a direct message to a follower */
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
-
-/* Get and parse a timeline */
-void network_get_timeline(const gchar *uri_timeline);
-
-/* Retrive a user timeline. If user is null, get
- * authenticated user timeline*/
-void network_get_user_timeline(OnlineService *service, const gchar *username);
-
-/* Refresh current timeline */
-void network_refresh(void);
-
-/* Copyright(C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
-gboolean network_check_http(OnlineService *service, SoupMessage *msg);
-GList *network_get_users_glist(gboolean get_friends);
-gboolean network_download_avatar(OnlineService *service, const gchar *image_uri);
-
-void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
-/* My, Kaity G. B., new stuff ends here. */
-
-/* Get an image from servers */
-void network_get_image(OnlineService *service, const gchar *image_uri, GtkTreeIter *iter);
-
 #endif /*  __NETWORK_H__ */
+/**********************************************************************
+ *                               eof                                  *
+ **********************************************************************/
+

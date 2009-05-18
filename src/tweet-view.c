@@ -429,27 +429,6 @@ static void tweet_view_reorder(void){
 			GTK_WIDGET(tweet_view->sexy_tweet),
 			3
 	);
-	
-	/*debug("Setting 'char_count_hbox' as 'status_view_vbox' 4th widget.");
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->status_view_vbox),
-			GTK_WIDGET(tweet_view->char_count_hbox),
-			3
-	);
-	
-	debug("Setting 'tweet_hbox' as 'status_view_vbox' 5th widget.");
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->status_view_vbox),
-			GTK_WIDGET(tweet_view->tweet_hbox),
-			4
-	);
-	
-	debug("Setting 'dm_frame' as 'status_view_vbox' 6th widget.");
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->status_view_vbox),
-			GTK_WIDGET(tweet_view->dm_frame),
-			5
-	);*/
 }/* tweet_view_reorder */
 
 

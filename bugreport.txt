@@ -7,72 +7,83 @@ GTK+ Theme: Gilouche
 Icon Theme: Lila
 GTK+ Modules: canberra-gtk-module, pk-gtk-module, gnomebreakpad
 
-Memory status: size: 441839616 vsize: 441839616 resident: 24141824 share: 14028800 rss: 24141824 rss_rlim: 18446744073709551615
-CPU usage: start_time: 1242541255 rtime: 52 utime: 40 stime: 12 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+Memory status: size: 541179904 vsize: 541179904 resident: 19337216 share: 7585792 rss: 19337216 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1242583215 rtime: 3977 utime: 3519 stime: 458 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
 
-Backtrace was generated from '/projects/gtk/get2gnow/src/get2gnow'
+Backtrace was generated from '/usr/bin/get2gnow'
 
 [?1034h[Thread debugging using libthread_db enabled]
-[New Thread 0x7f6e059a6950 (LWP 28976)]
-0x00007f6e0b97c5af in waitpid () from /lib64/libpthread.so.0
-#0  0x00007f6e0b97c5af in waitpid () from /lib64/libpthread.so.0
-#1  0x00007f6e0bbfbed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
-#2  0x00007f6e0bbfc1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
-#3  0x00007f6e074eebf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+[New Thread 0x7fa34326f950 (LWP 27567)]
+0x00007fa347e3a5af in waitpid () from /lib64/libpthread.so.0
+#0  0x00007fa347e3a5af in waitpid () from /lib64/libpthread.so.0
+#1  0x00007fa3480b9ed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+#2  0x00007fa3480ba1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+#3  0x00007fa3439acbf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
 #4  <signal handler called>
-#5  0x0000000000000992 in ?? ()
-#6  0x00007f6e0bbc4d9b in ?? () from /usr/lib64/libglib-2.0.so.0
-#7  0x00007f6e0bbc462a in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
-#8  0x00007f6e0bbc7d00 in ?? () from /usr/lib64/libglib-2.0.so.0
-#9  0x00007f6e0bbc81cd in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
-#10 0x00007f6e100f0fa7 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
-#11 0x000000000040a075 in main (argc=1, argv=0x7fff1a0f6478) at main.c:72
+#5  0x00000000004172c4 in images_get_pixbuf_from_filename ()
+#6  0x000000000041a3be in tweet_list_set_image ()
+#7  0x00000000004132b6 in network_cb_on_image ()
+#8  0x00007fa34d9a4302 in ?? () from /usr/lib64/libsoup-2.4.so.1
+#9  0x00007fa34808262a in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
+#10 0x00007fa348085d00 in ?? () from /usr/lib64/libglib-2.0.so.0
+#11 0x00007fa3480861cd in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+#12 0x00007fa34c5aefa7 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
+#13 0x000000000040a1b5 in main ()
 
-Thread 2 (Thread 0x7f6e059a6950 (LWP 28976)):
-#0  0x00007f6e0b6df386 in poll () from /lib64/libc.so.6
+Thread 2 (Thread 0x7fa34326f950 (LWP 27567)):
+#0  0x00007fa347b9d386 in poll () from /lib64/libc.so.6
 No symbol table info available.
-#1  0x00007f6dfca2361d in ?? () from /usr/lib64/libpulse.so.0
+#1  0x00007fa33946861d in ?? () from /usr/lib64/libpulse.so.0
 No symbol table info available.
-#2  0x00007f6dfca16179 in pa_mainloop_poll () from /usr/lib64/libpulse.so.0
+#2  0x00007fa33945b179 in pa_mainloop_poll () from /usr/lib64/libpulse.so.0
 No symbol table info available.
-#3  0x00007f6dfca175e8 in pa_mainloop_iterate () from /usr/lib64/libpulse.so.0
+#3  0x00007fa33945c5e8 in pa_mainloop_iterate () from /usr/lib64/libpulse.so.0
 No symbol table info available.
-#4  0x00007f6dfca176b0 in pa_mainloop_run () from /usr/lib64/libpulse.so.0
+#4  0x00007fa33945c6b0 in pa_mainloop_run () from /usr/lib64/libpulse.so.0
 No symbol table info available.
-#5  0x00007f6dfca2341d in ?? () from /usr/lib64/libpulse.so.0
+#5  0x00007fa33946841d in ?? () from /usr/lib64/libpulse.so.0
 No symbol table info available.
-#6  0x00007f6dfca46720 in ?? () from /usr/lib64/libpulse.so.0
+#6  0x00007fa33948b720 in ?? () from /usr/lib64/libpulse.so.0
 No symbol table info available.
-#7  0x00007f6e0b975070 in start_thread () from /lib64/libpthread.so.0
+#7  0x00007fa347e33070 in start_thread () from /lib64/libpthread.so.0
 No symbol table info available.
-#8  0x00007f6e0b6e810d in clone () from /lib64/libc.so.6
+#8  0x00007fa347ba610d in clone () from /lib64/libc.so.6
 No symbol table info available.
 #9  0x0000000000000000 in ?? ()
 No symbol table info available.
 
-Thread 1 (Thread 0x7f6e120b9780 (LWP 28958)):
-#0  0x00007f6e0b97c5af in waitpid () from /lib64/libpthread.so.0
+Thread 1 (Thread 0x7fa34e577780 (LWP 27556)):
+#0  0x00007fa347e3a5af in waitpid () from /lib64/libpthread.so.0
 No symbol table info available.
-#1  0x00007f6e0bbfbed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+#1  0x00007fa3480b9ed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
 No symbol table info available.
-#2  0x00007f6e0bbfc1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+#2  0x00007fa3480ba1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
 No symbol table info available.
-#3  0x00007f6e074eebf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+#3  0x00007fa3439acbf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
 No symbol table info available.
 #4  <signal handler called>
 No symbol table info available.
-#5  0x0000000000000992 in ?? ()
+#5  0x00000000004172c4 in images_get_pixbuf_from_filename ()
+No locals.
+#6  0x000000000041a3be in tweet_list_set_image ()
+No locals.
+#7  0x00000000004132b6 in network_cb_on_image ()
+No locals.
+#8  0x00007fa34d9a4302 in ?? () from /usr/lib64/libsoup-2.4.so.1
 No symbol table info available.
-#6  0x00007f6e0bbc4d9b in ?? () from /usr/lib64/libglib-2.0.so.0
+#9  0x00007fa34808262a in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
 No symbol table info available.
-#7  0x00007f6e0bbc462a in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
+#10 0x00007fa348085d00 in ?? () from /usr/lib64/libglib-2.0.so.0
 No symbol table info available.
-#8  0x00007f6e0bbc7d00 in ?? () from /usr/lib64/libglib-2.0.so.0
+#11 0x00007fa3480861cd in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
 No symbol table info available.
-#9  0x00007f6e0bbc81cd in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+#12 0x00007fa34c5aefa7 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
 No symbol table info available.
-#10 0x00007f6e100f0fa7 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
-No symbol table info available.
-#11 0x000000000040a075 in main (argc=1, argv=0x7fff1a0f6478) at main.c:72
-	notifing = 1
+#13 0x000000000040a1b5 in main ()
+No locals.
 The program is running.  Quit anyway (and detach it)? (y or n) [answered Y; input not from terminal]
+
+
+---- Critical and fatal warnings logged during execution ----
+
+** GdkPixbuf **: gdk_pixbuf_new_from_file: assertion `filename != NULL' failed 

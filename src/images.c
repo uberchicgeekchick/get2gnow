@@ -57,8 +57,8 @@
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"
 #include "debug.h"
 
-static gint images_validate_width( gint width );
-static gint images_validate_height( gint height );
+static void images_validate_width(gint *width);
+static void images_validate_height(gint *height);
 
 gchar *images_get_unknown_image_filename(void){
 	static gchar *stock_unknown_image_filename=NULL;
@@ -135,9 +135,12 @@ GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename 
 	return images_get_scaled_image_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
 }//images_get_minimize_image_from_filename
 
-
-
 GtkImage *images_get_image_from_filename( const gchar *image_filename ){
+	if(G_STR_EMPTY(image_filename)) {
+		if(image_filename) g_free((gchar *)image_filename);
+		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
+	}
+	
 	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename( image_filename );
 	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
 	g_object_unref( pixbuf );
@@ -147,14 +150,18 @@ GtkImage *images_get_image_from_filename( const gchar *image_filename ){
 
 
 GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height ){
-	width=images_validate_width( width );
-	height=images_validate_height( height );
+	if(G_STR_EMPTY(image_filename)) {
+		if(image_filename) g_free((gchar *)image_filename);
+		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
+	}
+	
+	images_validate_width(&width);
+	images_validate_height(&height);
 	GdkPixbuf *pixbuf=images_get_scaled_pixbuf_from_filename( image_filename, width, height );
 	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
 	g_object_unref( pixbuf );
 	return image;
 }//images_get_image_from_file
-
 
 
 GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename ){
@@ -194,13 +201,13 @@ GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf ){
 
 
 GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
-	width=images_validate_width( width );
-	height=images_validate_height( height );
+	images_validate_width(&width);
+	images_validate_height(&height);
 	
 	GdkPixbuf *resized=NULL;
 	if( (resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR )) )
 		return resized;
-			
+	
 	debug("Image error: risizing of pixmap to: %d x %d failed.", width, height );
 	return NULL;
 }//images_resize_pixbuf
@@ -213,31 +220,32 @@ GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename ){
 
 
 
-static gint images_validate_width( gint width ){
-	if( width < ImagesMinimum )
-		width=ImagesMinimum;
+static void images_validate_width(gint *width){
+	if(*width<ImagesMinimum)
+		*width=ImagesMinimum;
 	
-	if( width > ImagesMaximum )
-		width=ImagesMaximum;
-	
-	return width;
+	if(*width>ImagesMaximum)
+		*width=ImagesMaximum;
 }//images_validate_width
 
 
 
-static gint images_validate_height( gint height ){
-	if( height < ImagesMinimum )
-		height=ImagesMinimum;
-			
-	if( height > ImagesMaximum )
-		height=ImagesMaximum;
-	
-	return height;
+static void images_validate_height(gint *height){
+	if(*height<ImagesMinimum)
+		*height=ImagesMinimum;
+		
+	if(*height>ImagesMaximum)
+		*height=ImagesMaximum;
 }//images_validate_height
 
 
 
 GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename ){
+	if(G_STR_EMPTY(image_filename)) {
+		if(image_filename) g_free((gchar *)image_filename);
+		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
+	}
+	
 	GError *error=NULL;
 	GdkPixbuf *pixbuf=NULL;
 	if( (pixbuf=gdk_pixbuf_new_from_file(image_filename, &error )) )
@@ -249,13 +257,19 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename
 }//images_get_full_sized_pixbuf_from_file
 
 
-/* GNOME 2.6
+#ifdef gdk_pixbuf_new_from_file_at_scale
+/* GNOME 2.6 */
 GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
+	if(G_STR_EMPTY(image_filename)) {
+		if(image_filename) g_free((gchar *)image_filename);
+		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
+	}
+	
 	if( width == ImagesUnscaled || height == ImagesUnscaled )
 		return images_get_unscaled_pixbuf_from_filename( image_filename );
 	
-	width=images_validate_width( width );
-	height=images_validate_height( height );
+	images_validate_width(&width);
+	images_validate_height(&height);
 	
 	GError *error=NULL;
 	GdkPixbuf *pixbuf;
@@ -266,20 +280,22 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, 
 	debug("Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
-}images_get_scaled_pixbuf_from_file*/
+}/*images_get_scaled_pixbuf_from_file*/
 
-/* I am using these last two methods, okay they're function - but they'll become methods soon enough.
- * Any ways I'm using them in place of the one above, which relies on GNOME 2.6, until GNOME 2.6
- * populates to more distros. */
+#else
+
 GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
 	return images_get_and_scale_pixbuf_from_filename( image_filename, width, height );
 }//images_get_scaled_pixbuf_from_file
 
-
-
 GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
-	width=images_validate_width( width );
-	height=images_validate_height( height );
+	if(G_STR_EMPTY(image_filename)) {
+		if(image_filename) g_free((gchar *)image_filename);
+		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
+	}
+	
+	images_validate_width(&width);
+	images_validate_height(&height);
 	
 	GdkPixbuf *pixbuf, *resized;
 	if(!(pixbuf=images_get_unscaled_pixbuf_from_filename(image_filename)))
@@ -289,4 +305,6 @@ GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filenam
 	g_object_unref( pixbuf );
 	return resized;
 }//images_get_and_scale_pixbuf_from_file
+
+#endif
 

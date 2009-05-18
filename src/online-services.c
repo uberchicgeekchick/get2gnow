@@ -107,8 +107,6 @@ static void online_services_proxy_release(void);
 static int online_services_proxy_load(void);
 static gboolean online_service_proxy_init(OnlineService *service);
 
-static OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data);
-
 
 /********************************************************
  *          Variable definitions.                       *
@@ -233,16 +231,16 @@ gboolean online_services_reconnect(OnlineServices *services){
 	return reconnect_success;
 }/*online_services_reconnect*/
 
-/* Login to services. */
 void online_services_disconnect(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(service->enabled)
+		if(service->connected)
 			online_service_disconnect(service);
 	}
+	app_state_on_connection(FALSE);
 }/*online_services_disconnect*/
 
 
@@ -541,8 +539,7 @@ static gboolean online_service_connect(OnlineService *service){
 	if(!( (service->session=soup_session_sync_new_with_options(SOUP_SESSION_MAX_CONNS_PER_HOST, 8, SOUP_SESSION_TIMEOUT, 20, SOUP_SESSION_IDLE_TIMEOUT, 20, NULL)) )){
 		debug("**ERROR:** Failed to creating a new soup session for '%s'.", service->decoded_key);
 		service->session=NULL;
-		service->connected=FALSE;
-		return FALSE;
+		return (service->connected=FALSE);
 	}
 	
 	/* HTTP Basic Authentication */
@@ -566,13 +563,11 @@ static gboolean online_service_connect(OnlineService *service){
 	
 #endif
 	
-	service->connected=TRUE;
-	
 	online_service_proxy_init(service);
 	
-	return TRUE;
-	
 	online_service_cookie_jar_open(service);
+	
+	return (service->connected=TRUE);
 }/* online_service_connect */
 
 static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
@@ -632,7 +627,7 @@ static void online_service_cookie_jar_hands_caught_in_the_cookie_jar(SoupCookieJ
 }/* online_service_hands_caught_in_the_cookie_jar */
 
 static gboolean online_service_reconnect(OnlineService *service){
-	if(service->session)
+	if(service->connected)
 		online_service_disconnect(service);
 	
 	if(online_service_connect(service))
@@ -650,6 +645,7 @@ static void online_service_disconnect(OnlineService *service){
 		g_object_unref(service->session);
 		service->session=NULL;
 	}
+	service->connected=FALSE;
 }/* online_service_disconnect */
 
 /* Login to service. */
@@ -787,10 +783,10 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 						gchar *form_data=(gchar *)formdata;
 						if(G_STR_EMPTY(form_data))
 							return NULL;
-						if( in_reply_to_status_id && in_reply_to_service==service )
-							service_formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", (g_str_equal("twitter.com", service->uri) ?API_CLIENT_AUTH :OPEN_CLIENT ), in_reply_to_status_id, form_data);
+						if(service->which_rest==Twitter && in_reply_to_status_id && in_reply_to_service==service)
+							service_formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", ((service->which_rest==Twitter) ?API_CLIENT_AUTH :OPEN_CLIENT ), in_reply_to_status_id, form_data);
 						else
-							service_formdata=g_strdup_printf( "source=%s&status=%s", (g_str_equal("twitter.com", service->uri) ?API_CLIENT_AUTH :OPEN_CLIENT ), form_data);
+							service_formdata=g_strdup_printf( "source=%s&status=%s", ((service->which_rest==Twitter) ?API_CLIENT_AUTH :OPEN_CLIENT ), form_data);
 					}
 				}
 			}
@@ -867,11 +863,11 @@ gchar *online_service_get_url_content_type(OnlineService *service, const gchar *
 	return content_type;
 }/*online_service_get_url_content_type*/
 
-static OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data){
+OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data){
 	OnlineServiceCBWrapper *service_wrapper=g_new0(OnlineServiceCBWrapper, 1);
 	service_wrapper->service=service;
 	
-	if(callback==network_cb_on_image)
+	if(callback==network_cb_on_image||callback==user_request_main_quit)
 		service_wrapper->user_data=user_data;
 	else if(user_data!=NULL)
 		service_wrapper->user_data=g_strdup(user_data);

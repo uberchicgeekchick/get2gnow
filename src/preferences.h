@@ -51,10 +51,12 @@ G_BEGIN_DECLS
 
 #define	PREFS_TWEETS_HOME_TIMELINE		PREFS_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES		PREFS_PATH "/tweets/reload_timeline"
+#define PREFS_TWEETS_NO_PROFILE_LINK		PREFS_PATH "/tweets/no_link_in_replies"
+#define	PREFS_TWEETS_DIRECT_REPLY_ONLY		PREFS_PATH "/tweets/direct_reply_only"
 
 
 /* UI & notification gconf values. */
-#define PREFS_UI_TWEET_VIEW_USE_DIALOG		PREFS_PATH "/ui/use_tweet_dialog"
+#define PREFS_UI_TWEET_VIEW_USE_DIALOG		PREFS_PATH "/ui/tweets/use_dialog"
 #define PREFS_UI_HIDDEN				PREFS_PATH "/ui/hidden"
 
 #define PREFS_HINTS_CLOSE_MAIN_WINDOW		PREFS_PATH "/hints/close_main_window"

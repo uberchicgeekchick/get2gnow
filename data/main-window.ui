@@ -295,7 +295,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="friends_menu_timelines">
-                        <property name="label" translatable="yes">My _Friends' Tweets</property>
+                        <property name="label" translatable="yes">Friends Tweet _Viewer</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
                         <property name="use_underline">True</property>

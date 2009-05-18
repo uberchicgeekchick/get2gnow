@@ -93,12 +93,11 @@ typedef struct {
 	GtkTreeIter   *iter;
 } Image;
 
-typedef enum {
-	Load,
-	Reload,
-	Timeout,
-} ReloadState;
-
+gboolean getting_followers=FALSE;
+static GList *all_users=NULL;
+static gchar *current_timeline=NULL;
+static gboolean processing=FALSE;
+static guint timeout_id;
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -107,22 +106,9 @@ typedef enum {
 static gboolean network_timeout(gpointer user_data);
 static void network_timeout_new(void);
 
-/* libsoup callbacks */
-static void network_tweet_cb( SoupSession *session, SoupMessage *msg, gpointer user_data );
-
-static void network_set_state_loading_timeline(const gchar *timeline, ReloadState state);
-static void network_cb_on_timeline( SoupSession *session, SoupMessage *msg, gpointer user_data );
-
-/* Copyright(C) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com> */
 static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg);
 
-gboolean getting_followers=FALSE;
-static GList *all_users=NULL;
-/* My, Kaity G. B., new stuff ends here. */
-
-static gchar *current_timeline=NULL;
-static gboolean processing=FALSE;
-static guint timeout_id;
+static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 
 /********************************************************
@@ -201,25 +187,21 @@ void network_logout(void){
 
 /* Post a new tweet - text must be Url encoded */
 void network_post_status(const gchar *text){
-	gchar *formdata=NULL;
-	formdata=g_strdup_printf("source=%s&status=%s", API_CLIENT_AUTH, text);
-	gchar *action=g_strdup("Tweet");
-	online_services_request(online_services, POST, API_POST_STATUS, network_tweet_cb, action, (gchar *)text);
-	g_free(action);
-	g_free(formdata);
+	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, FALSE)))
+		online_services_request(online_services, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)text);
+	else
+		online_service_request(in_reply_to_service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)text);
 }/* network_post_status */
 
 
 /* Send a direct message to a follower - text must be Url encoded  */
 void network_send_message(OnlineService *service, const gchar *friend, const gchar *text){
-	gchar *formdata=g_strdup_printf( "%s&user=%s", text, friend);
-	gchar *action=g_strdup("DM");
-	online_service_request(service, POST, API_SEND_MESSAGE, network_tweet_cb, action, formdata);
-	g_free(action);
+	gchar *formdata=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?API_CLIENT_AUTH :OPEN_CLIENT ), friend, text);
+	online_service_request(service, POST, API_SEND_MESSAGE, network_tweet_cb, "DM", formdata);
 	g_free(formdata);
 }
 
-static void network_set_state_loading_timeline(const gchar *timeline, ReloadState state){
+void network_set_state_loading_timeline(const gchar *timeline, ReloadState state){
 	const gchar *notice_prefix=NULL;
 	switch(state){
 		case Timeout:
@@ -236,18 +218,51 @@ static void network_set_state_loading_timeline(const gchar *timeline, ReloadStat
 			break;
 	}
 	debug("%s current timeline: %s", notice_prefix, timeline);
-	app_statusbar_printf("%s: %s.%s", notice_prefix, _("timeline"), timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
+	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
 	
 	processing=TRUE;
 }/* network_timeline_loading_notification */
 
+
+static void network_timeout_new(void){
+	gint minutes;
+	guint reload_time;
+	
+	if(timeout_id) {
+		debug("Stopping timeout id: %i", timeout_id);
+		g_source_remove(timeout_id);
+	}
+	
+	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
+	
+	/* The timeline reload interval shouldn't be less than 3 minutes */
+	if(minutes < 3)
+		minutes=3;
+	
+	/* This should be the number of milliseconds */
+	reload_time=minutes*60*1000;
+	
+	timeout_id=g_timeout_add(reload_time, network_timeout, NULL);
+	
+	debug("Starting timeout id: %i", timeout_id);
+}
+
+static gboolean network_timeout(gpointer user_data){
+	if(!current_timeline || processing)
+		return FALSE;
+	
+	network_set_state_loading_timeline(current_timeline, Timeout);
+	online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, NULL );
+	timeout_id=0;
+	return FALSE;
+}
+
 void network_refresh(void){
 	if(!current_timeline || processing)
 		return;
-		
-	/* UI */
+	
 	network_set_state_loading_timeline(current_timeline, Reload);
-	online_services_request( online_services, QUEUE, current_timeline, network_cb_on_timeline, current_timeline, NULL );
+	online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, NULL );
 }
 
 /* Get and parse a timeline */
@@ -261,7 +276,7 @@ void network_get_timeline(const gchar *uri_timeline){
 	network_set_state_loading_timeline(uri_timeline, Load);
 	
 	gchar *new_timeline=g_strdup(uri_timeline);
-	online_services_request( online_services, QUEUE, uri_timeline, network_cb_on_timeline, new_timeline, NULL );
+	online_services_request( online_services, QUEUE, uri_timeline, network_display_timeline, new_timeline, NULL );
 	g_free(new_timeline);
 	/* network_queue's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
 }/* network_get_timeline */
@@ -285,7 +300,7 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 	
 	network_set_state_loading_timeline(user_timeline, Load);
 
-	online_service_request(service, QUEUE, user_timeline, network_cb_on_timeline, user_timeline, NULL);
+	online_service_request(service, QUEUE, user_timeline, network_display_timeline, user_timeline, NULL);
 	g_free(user_timeline);
 	g_free(user_id);
 }/* network_get_user_timeline */
@@ -416,7 +431,7 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 
 
 /* On get a timeline */
-static void network_cb_on_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data){
+void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
 	gchar        *new_timeline=NULL;
 	
@@ -429,18 +444,14 @@ static void network_cb_on_timeline(SoupSession *session, SoupMessage *msg, gpoin
 	
 	processing=FALSE;
 	
-	/* Timeout */
 	network_timeout_new();
 	
-	/* Check response */
 	if(!network_check_http(service_wrapper->service, msg)) {
 		online_service_wrapper_free(service_wrapper);
 		return;
 	}
 	
 	debug("Parsing timeline");
-	
-	/* Parse and set ListStore */
 	if(!(parser_timeline(service_wrapper->service, msg)))
 		app_statusbar_printf("Error Parsing %s's Timeline Parser.", service_wrapper->service->decoded_key);
 	else {
@@ -501,44 +512,6 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 	
 	g_free(service_wrapper);
 	service_wrapper=NULL;
-}
-
-
-static void network_timeout_new(void){
-	gint minutes;
-	guint reload_time;
-	
-	if(timeout_id) {
-		debug("Stopping timeout id: %i", timeout_id);
-		g_source_remove(timeout_id);
-	}
-	
-	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
-	
-	/* The timeline reload interval shouldn't be less than 3 minutes */
-	if(minutes < 3)
-		minutes=3;
-	
-	/* This should be the number of milliseconds */
-	reload_time=minutes*60*1000;
-	
-	timeout_id=g_timeout_add(reload_time, network_timeout, NULL);
-	
-	debug("Starting timeout id: %i", timeout_id);
-}
-
-static gboolean network_timeout(gpointer user_data){
-	if(!current_timeline || processing)
-		return FALSE;
-	
-	/* UI */
-	network_set_state_loading_timeline(current_timeline, Timeout);
-	
-	online_services_request( online_services, QUEUE, current_timeline, network_cb_on_timeline, current_timeline, NULL );
-	
-	timeout_id=0;
-	
-	return FALSE;
 }
 
 

@@ -41,43 +41,44 @@ typedef struct {
 	GtkComboBox	*online_service_combobox;
 	GtkListStore	*online_service_liststore;
 	GtkTreeModel	*online_service_model;
-	FriendAction	action;
+	UserAction	action;
 } Popup;
 
-static void popup_set_title(FriendAction action, Popup *popup);
-static Popup *popup_dialog_show(GtkWindow *parent, FriendAction action);
+static void popup_set_title(UserAction action, Popup *popup);
+static Popup *popup_dialog_show(GtkWindow *parent, UserAction action);
 static void popup_response_cb(GtkWidget *widget, gint response, Popup *popup);
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup);
-static gboolean popup_validate_usage(FriendAction action);
+static gboolean popup_validate_usage(UserAction action);
 static void popup_destroy_and_free(Popup *popup);
 
 
-static void popup_set_title(FriendAction action, Popup *popup){
+static void popup_set_title(UserAction action, Popup *popup){
 	switch( action ){
 		case SelectService:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please select which account you want to use:");
-			return;
-		case Fave:
-		case UnFave:
 			break;
 		case ViewTweets:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or user id, who's resent updates you would like to view:" );
-			return;
+			break;
 		case ViewProfile:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or id, for whom you want to view?" );
-			return;
+			break;
 		case Block:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or id, for whom you want to block?  They'll no longer be able to read your tweets, send you messages, and you'll no longer be notified when they 'mention' you, using the @ symbol:" );
-			return;
+			break;
 		case UnBlock:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or id, for whom you want to un-block?  They'll be able to once again read your tweets and you'll see when they mention you, using the @ symbol, again:" );
-			return;
+			break;
 		case UnFollow:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or id, for whom you want to un-follow?" );
-			return;
+			break;
 		case Follow:
 			gtk_window_set_title( GTK_WINDOW(popup->dialog), "Please enter the user name, or id, for whom you want to follow:" );
-			return;
+			break;
+		case Fave:
+		case UnFave:
+		default:
+			break;
 	}
 }/* popup_set_title */
 
@@ -89,8 +90,17 @@ static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 	
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	OnlineService		*service=NULL;
+	const gchar		*username=gtk_entry_get_text(popup->entry);
 	
-	gtk_combo_box_get_active_iter(popup->online_service_combobox, iter);
+	if(G_STR_EMPTY(username)){
+		gtk_widget_error_bell(GTK_WIDGET(popup->entry));
+		return;
+	}
+	
+	if(!(gtk_combo_box_get_active_iter(popup->online_service_combobox, iter))) {
+		if(iter) g_free(iter);
+		return;
+	}
 	
 	gtk_tree_model_get(
 				popup->online_service_model,
@@ -102,15 +112,14 @@ static void popup_response_cb( GtkWidget *widget, gint response, Popup *popup){
 	switch( popup->action ){
 		case SelectService:
 			current_service=service;
-			g_free(iter);
-			return;
+			break;
+		case ViewProfile:
 		case Follow:
 		case UnFollow:
 		case Block:
 		case UnBlock:
 		case ViewTweets:
-		case ViewProfile:
-			user_request_main(service, popup->action, popup->dialog, gtk_entry_get_text(GTK_ENTRY(popup->entry)));
+			user_request_main(service, popup->action, popup->dialog, username);
 			break;
 		case Fave:
 		case UnFave:
@@ -160,7 +169,7 @@ void popup_friend_profile( GtkWindow *parent ){
 }
 
 
-static gboolean popup_validate_usage(FriendAction action){
+static gboolean popup_validate_usage(UserAction action){
 	switch( action ){
 		case SelectService:
 		case ViewProfile:
@@ -179,7 +188,7 @@ static gboolean popup_validate_usage(FriendAction action){
 }/* popup_validate_usage */
 
 
-static Popup *popup_dialog_show(GtkWindow *parent, FriendAction action ){
+static Popup *popup_dialog_show(GtkWindow *parent, UserAction action ){
 	static Popup *popup;
 	GtkBuilder *ui;
 
