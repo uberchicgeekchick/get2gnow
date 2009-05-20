@@ -100,6 +100,10 @@ static void tweet_list_class_init( TweetListClass *klass ){
 	g_type_class_add_private(object_class, sizeof(TweetListPriv));
 }/* tweet_list_class_init */
 
+TweetList *tweet_list_get(void){
+	return list;
+}/*tweet_list_get*/
+
 static void tweet_list_init(TweetList *tweet){
 	list=tweet;
 	list_priv=GET_PRIV(list);
@@ -162,10 +166,11 @@ static void tweet_list_setup_view(TweetList *list){
 	g_object_set(list, "rules-hint", TRUE, "reorderable", TRUE, "headers-visible", FALSE, NULL);
 
 	renderer=gtk_cell_renderer_pixbuf_new();
-	gtk_cell_renderer_set_fixed_size( renderer, 55, 48 );
+	/*'fixed size' along with x & y padding actually fix the image at 48x48.*/
+	gtk_cell_renderer_set_fixed_size( renderer, 55, 53 );
 	avatar_column=gtk_tree_view_column_new_with_attributes( NULL, renderer, "pixbuf", PIXBUF_AVATAR, NULL);
 	g_signal_connect(avatar_column, "clicked", G_CALLBACK(tweet_list_changed_cb), list);
-	g_object_set( renderer, "yalign", 0.0, NULL );
+	g_object_set( renderer, "ypad", 5, "xpad", 5, "yalign", 0.0, NULL );
 	gtk_tree_view_column_set_sizing( avatar_column, GTK_TREE_VIEW_COLUMN_FIXED );
 	gtk_tree_view_column_set_min_width( avatar_column, 55 );
 	gtk_tree_view_column_set_fixed_width( avatar_column, 55 );

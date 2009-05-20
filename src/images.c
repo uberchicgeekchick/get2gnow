@@ -54,26 +54,56 @@
 #include "images.h"
 #include "main.h"
 
+
+
+static gchar *stock_unknown_image_filename=NULL;
+
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"
 #include "debug.h"
 
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
 
+
+void images_free(void){
+	if(!stock_unknown_image_filename)
+		return;
+	
+	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", stock_unknown_image_filename);
+	g_free(stock_unknown_image_filename);
+	stock_unknown_image_filename=NULL;
+}/*images_free_resources*/
+
 gchar *images_get_unknown_image_filename(void){
-	static gchar *stock_unknown_image_filename=NULL;
-	if(stock_unknown_image_filename!=NULL)
+	if(stock_unknown_image_filename!=NULL){
+		debug("Using unkown image: %s.", stock_unknown_image_filename);
 		return g_strdup(stock_unknown_image_filename);
+	}
 				
-	GtkImage *stock_unknown_image=(GtkImage *)gtk_image_new_from_icon_name("gtk-missing-image", ImagesDefault);
-	g_object_get(stock_unknown_image, "file", &stock_unknown_image_filename, NULL );
-	g_object_unref(stock_unknown_image);
+	debug("**NOTICE:** Setting inital unknown image.");
+	GtkImage *stock_unknown_image=NULL;
+	if(!( (stock_unknown_image=(GtkImage *)gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)) )){
+		debug("\t\t**WARNING:** Unable to load stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
+		stock_unknown_image_filename=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "avatars", "unknown_image", NULL);
+	}else{
+		g_object_get(stock_unknown_image, "file", &stock_unknown_image_filename, NULL );
+		g_object_unref(stock_unknown_image);
+		if(G_STR_EMPTY(stock_unknown_image_filename)){
+			debug("\t\t**WARNING:** Unable to get 'file' from stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
+			stock_unknown_image_filename=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "avatars", "unknown_image", NULL);
+		}
+	}
 	
 	debug("\t\tUsing stock image: %s.", stock_unknown_image_filename);
 	return g_strdup(stock_unknown_image_filename);
 }
 
 gchar *images_get_filename(const gchar *image_url){
+	if(G_STR_EMPTY(image_url)){
+		debug("**ERROR** Unable to parse an empty url into an image filename.");
+		return images_get_unknown_image_filename();
+	}
+	
 	debug("Creating image file name from image url: %s.", image_url);
 	gchar *image_file, **image_name_info, *image_filename;
 	
@@ -86,15 +116,16 @@ gchar *images_get_filename(const gchar *image_url){
 	 */
 	image_name_info=g_strsplit(image_url, (const gchar *)"/", -1);
 	guint n=g_strv_length(image_name_info)-1;
-	debug("Found %d elements in the image's url.", n+1);
+	debug("\t\tFound %d elements in the image's url.", n+1);
 	
 	if(image_name_info[2]==image_name_info[n-1])
 		image_file=g_strdup(image_name_info[n]);
 	else
 		image_file=g_strconcat(image_name_info[n-1], "_", image_name_info[n], NULL);
 	
-	if(!image_file){
-		debug("**ERROR** Unable to parse url into valid image filename.");
+	if(G_STR_EMPTY(image_file)){
+		if(image_file) g_free(image_file);
+		debug("\t\t**WARNING:** Unable to parse url into a valid image filename.\n\t\tURL: [%s]", image_url);
 		g_strfreev(image_name_info);
 		return images_get_unknown_image_filename();
 	}
@@ -102,13 +133,13 @@ gchar *images_get_filename(const gchar *image_url){
 	gchar *avatars_dir=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "avatars", image_name_info[2], NULL);
 	
 	if(!g_file_test(avatars_dir, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) {
-		debug("Creating avatars directory: %s", avatars_dir);
+		debug("\t\t**NOTICE:** Creating avatars directory: %s", avatars_dir);
 		g_mkdir_with_parents(avatars_dir, S_IRUSR|S_IWUSR|S_IXUSR);
 	}
 	
 	image_filename=g_build_filename(avatars_dir, image_file, NULL );
 	
-	debug("Setting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
+	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
 	
 	g_strfreev(image_name_info);
 	g_free(avatars_dir);

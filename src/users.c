@@ -142,7 +142,7 @@ static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const
 			return NULL;
 	}//switch
 	return request;
-}/* user_request_new */
+}/*user_request_new*/
 
 void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data){
 	if(action==SelectService || G_STR_EMPTY(user_data)) return;
@@ -170,7 +170,7 @@ void user_request_main(OnlineService *service, UserAction action, GtkWindow *par
 	}
 	
 	tweet_view_sexy_select();
-}/* user_request_main */
+}/*user_request_main*/
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
@@ -236,7 +236,7 @@ static void user_request_free(UserRequest *request){
 	if(request->message) g_free(request->message);
 	g_free(request);
 	request=NULL;
-}/* user_request_free */
+}/*user_request_free*/
 
 
 static User *user_constructor( gboolean a_follower ){
@@ -247,7 +247,7 @@ static User *user_constructor( gboolean a_follower ){
 	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
 	
 	return user;
-}/* user_constructor */
+}/*user_constructor*/
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
@@ -386,7 +386,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 		return NULL;
 	
 	return user;
-}/* user_fetch_profile */
+}/*user_fetch_profile*/
 
 
 
@@ -397,7 +397,7 @@ void users_free(const char *type, GList *users ){
 	
 	g_list_free(users);
 	users=NULL;
-}/* users_free */
+}/*users_free*/
 
 /* Free a user struct */
 void user_free(User *user){
@@ -412,7 +412,7 @@ void user_free(User *user){
 	user->service=NULL;
 	g_free(user);
 	user=NULL;
-}/* user_free */
+}/*user_free*/
 
 /* Free a list of Users */
 void user_free_lists(void){
@@ -424,35 +424,35 @@ void user_free_lists(void){
 	
 	if(user_followers)
 		users_free("followers", user_followers);
-}/* user_free_lists */
+}/*user_free_lists*/
 
 
 void user_append_friend(User *user){
 	if(user_friends)
 		user_friends=g_list_append(user_friends, user );
 	app_set_statusbar_msg (_("Friend Added."));
-}/* user_append_friend */
+}/*user_append_friend*/
 
 void user_remove_friend(User *user){
 	if(user_friends)
 		user_friends=g_list_remove(user_friends, user);
 	app_set_statusbar_msg (_("Friend Removed."));
 	user_free(user);
-}/* user_remove_friend */
+}/*user_remove_friend*/
 
 
 void user_append_follower(User *user){
 	if(user_followers)
 		user_followers=g_list_append(user_followers, user );
 	app_set_statusbar_msg (_("Follower Added."));
-}/* user_append_friend */
+}/*user_append_friend*/
 
 void user_remove_follower(User *user){
 	if(user_followers)
 		user_followers=g_list_remove(user_followers, user);
 	app_set_statusbar_msg (_("Follower Removed."));
 	user_free(user);
-}/* user_remove_friend */
+}/*user_remove_friend*/
 
 
 /* Get authenticating user's friends(following)
@@ -491,5 +491,5 @@ GList *user_get_friends_and_followers(gboolean refresh){
 	following_and_followers=g_list_concat( user_followers, user_friends );
 	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) usrcasecmp);
 	return following_and_followers;
-}/* user_get_friends_and_followers */
+}/*user_get_friends_and_followers*/
 

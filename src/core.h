@@ -48,53 +48,31 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __IMAGES_H__
-#define __IMAGES_H__
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
+#ifndef __CORE_H__
+#define __CORE_H__
 
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
+
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
 
 
-G_BEGIN_DECLS
+/**********************************************************************
+ *        Objects, structures, and etc typedefs                       *
+ **********************************************************************/
 
-enum {
-	ImagesMaximum		=	96,
-	ImagesExpanded		=	72,
-	ImagesDefault		=	48,
-	ImagesDialog		=	GTK_ICON_SIZE_DIALOG,
-	ImagesMinimum		=	GTK_ICON_SIZE_BUTTON,
-};
 
-void images_free(void);
+/**********************************************************************
+ *          Global method  & function prototypes                      *
+ **********************************************************************/
+void get2gnow_init(int argc, char **argv);
+void get2gnow_deinit(void);
 
-gchar *images_get_unknown_image_filename(void);
-gchar *images_get_filename(const gchar *url);
+#endif /* __CORE_H__ */
+/**********************************************************************
+ *                               eof                                  *
+ **********************************************************************/
 
-GtkImage *images_get_image_from_filename(const gchar *image_filename);
-GtkImage *images_get_scaled_image_from_filename(const gchar *image_filename, gint width, gint height );
-
-GtkImage *images_get_expanded_image_from_filename(const gchar *image_filename);
-GtkImage *images_get_maximized_image_from_filename(const gchar *image_filename);
-GtkImage *images_get_default_image_from_filename(const gchar *image_filename);
-GtkImage *images_get_minimized_image_from_filename(const gchar *image_filename);
-
-GdkPixbuf *images_get_expanded_pixbuf_from_filename(const gchar *image_filename);
-GdkPixbuf *images_get_maximized_pixbuf_from_filename(const gchar *image_filename);
-GdkPixbuf *images_get_default_pixbuf_from_filename(const gchar *image_filename);
-GdkPixbuf *images_get_minimized_pixbuf_from_filename(const gchar *image_filename);
-
-GdkPixbuf *images_expand_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_maximize_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_normalize_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_minimize_pixbuf(GdkPixbuf *pixbuf);
-
-GdkPixbuf *images_scale_pixbuf(GdkPixbuf *pixbuf, gint width, gint height);
-GdkPixbuf *images_get_pixbuf_from_filename(const gchar *image_filename);
-GdkPixbuf *images_get_unscaled_pixbuf_from_filename(const gchar *image_filename);
-GdkPixbuf *images_get_scaled_pixbuf_from_filename(const gchar *image_filename, gint width, gint height);
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename(const gchar *image_filename, gint width, gint height);
-
-G_END_DECLS
-
-#endif /* __IMAGES_H__ */

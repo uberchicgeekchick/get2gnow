@@ -191,7 +191,7 @@ void network_post_status(const gchar *text){
 		online_services_request(online_services, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)text);
 	else
 		online_service_request(in_reply_to_service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)text);
-}/* network_post_status */
+}/*network_post_status*/
 
 
 /* Send a direct message to a follower - text must be Url encoded  */
@@ -221,7 +221,7 @@ void network_set_state_loading_timeline(const gchar *timeline, ReloadState state
 	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
 	
 	processing=TRUE;
-}/* network_timeline_loading_notification */
+}/*network_timeline_loading_notification*/
 
 
 static void network_timeout_new(void){
@@ -279,7 +279,7 @@ void network_get_timeline(const gchar *uri_timeline){
 	online_services_request( online_services, QUEUE, uri_timeline, network_display_timeline, new_timeline, NULL );
 	g_free(new_timeline);
 	/* network_queue's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
-}/* network_get_timeline */
+}/*network_get_timeline*/
 
 /* Get a user timeline */
 void network_get_user_timeline(OnlineService *service, const gchar *username){
@@ -303,7 +303,7 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 	online_service_request(service, QUEUE, user_timeline, network_display_timeline, user_timeline, NULL);
 	g_free(user_timeline);
 	g_free(user_id);
-}/* network_get_user_timeline */
+}/*network_get_user_timeline*/
 
 
 GList *network_get_users_glist(gboolean get_friends){
@@ -321,9 +321,6 @@ GList *network_get_users_glist(gboolean get_friends){
 		page++;
 		uri=g_strdup_printf("%s?page=%d",(get_friends?API_FOLLOWING:API_FOLLOWERS), page);
 		debug("Getting page %d of who%s.", page,(get_friends?"m the user is following":" is following the user") );
-		/* TODO: implement using
-		 * msg=network_get( uri );
-		 */
 		msg=online_service_request(current_service, GET, uri, NULL, NULL, NULL );
 		fetching=network_get_users_page(current_service, msg);
 		if(uri){
@@ -338,7 +335,7 @@ GList *network_get_users_glist(gboolean get_friends){
 		all_users=g_list_sort(all_users,(GCompareFunc) usrcasecmp);
 		
 	return all_users;
-}/* network_get_users_glist */
+}/*network_get_users_glist*/
 
 
 static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg){
@@ -360,7 +357,7 @@ static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg)
 		all_users=g_list_concat(all_users, new_users);
 	
 	return TRUE;
-}/* network_get_users_page */
+}/*network_get_users_page*/
 
 
 /* Get an image from servers */
@@ -401,7 +398,7 @@ void network_get_image(OnlineService *service, const gchar *image_uri, GtkTreeIt
 	image->iter=iter;
 	
 	online_service_request_url( service, QUEUE, image_uri, network_cb_on_image, image, NULL );
-}/* network_get_image */
+}/*network_get_image*/
 
 
 /* On send a direct message */
@@ -427,7 +424,7 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 	}
 	
 	online_service_wrapper_free(service_wrapper);
-}/* network_tweet_cb */
+}/*network_tweet_cb*/
 
 
 /* On get a timeline */

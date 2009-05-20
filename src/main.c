@@ -21,68 +21,19 @@
  *
  */
 
-#include <config.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 
-#include <libnotify/notify.h>
-
 #include "config.h"
-#include "gconfig.h"
-#include "app.h"
-#include "online-services.h"
-#include "ipc.h"
+#include "core.h"
 
 int main(int argc, char **argv){
-	if( (ipc_init_check( argc-1, argv-1)) ){
-		g_printf( "%s is already running.  Be sure to check system try for %s's icon.\n", PACKAGE_NAME, PACKAGE_NAME );
-		ipc_deinit();
-		exit(0);
-	}
-	gboolean notifing=FALSE;
-	
-	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
-	
-	g_set_application_name(_(PACKAGE_NAME));
-	
-	if(!g_thread_supported()) g_thread_init(NULL);
-	
-	gtk_init(&argc, &argv);
-	
-	gtk_window_set_default_icon_name(PACKAGE_NAME);
-	
-	/* Connect to gconf */
-	gconfig_start();
-	
-	/* Start the network
-	 * 	from 'online-services.h':
-	 *	extern OnlineServices *online_services;
-	 */
-	online_services_init();
-
-	/* Start libnotify */
-	notifing=notify_init(PACKAGE_NAME);
-	
-	/* Create the ui */
-	app_create();
+	get2gnow_init(argc, argv);
 	
 	gtk_main();
-	
-	/* Close libnotify */
-	if(notifing) notify_uninit();
-	
-	/* Close the network */
-	online_services_deinit(online_services);
-	
-	ipc_deinit();
-	
-	/* Clean up the ui */
-	g_object_unref(app_get());
-	
-	gconfig_shutdown();
+
+	get2gnow_deinit();
 	
 	return 0;
 }

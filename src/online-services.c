@@ -195,7 +195,7 @@ OnlineServices *online_services_init(void){
 		debug("%d services found and loaded.", services->total);
 	
 	return services;
-}/* online_services_init */
+}/*online_services_init*/
 
 /* Login to services. */
 gboolean online_services_login(OnlineServices *services){
@@ -212,7 +212,7 @@ gboolean online_services_login(OnlineServices *services){
 	}
 	app_state_on_connection(login_okay);
 	return login_okay;
-}/* online_services_login */
+}/*online_services_login*/
 
 /* Login to services. */
 gboolean online_services_reconnect(OnlineServices *services){
@@ -313,7 +313,7 @@ gboolean online_services_save(OnlineServices *services, OnlineService *service, 
 	
 	return TRUE;
 	online_services_reconnect(services);
-}/* online_services_save */
+}/*online_services_save*/
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	GList		*a=NULL;
@@ -324,7 +324,7 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 		if(service->enabled)
 			online_service_request(service, request, uri, callback, user_data, formdata);
 	}
-}/* online_services_request */
+}/*online_services_request*/
 
 gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore){
 	if(!online_services->total){
@@ -349,7 +349,7 @@ gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *
 		services_loaded++;
 	}
 	return (services_loaded ?TRUE :FALSE );
-}/* online_services_fill_liststore */
+}/*online_services_fill_liststore*/
 
 
 /*
@@ -415,7 +415,7 @@ static OnlineService *online_service_open(const gchar *account_key){
 	debug("OnlineService instance created.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice url: %s; username: %s; password: %s; auto_connect: %s", service->decoded_key, service->key, (service->enabled?"en":"dis"), service->uri, service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
 	
 	return service;
-}/* online_service_open */
+}/*online_service_open*/
 
 static OnlineService *online_service_new(gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect){
 	debug("Creating new OnlineService for '%s@%s'.", username, url);
@@ -477,7 +477,7 @@ static gboolean online_service_save(OnlineService *service){
 	online_service_reconnect(service);
 	
 	return TRUE;
-}/* online_service_save */
+}/*online_service_save*/
 
 guint online_services_count_connections(OnlineServices *services){
 	GList		*a=NULL;
@@ -491,7 +491,7 @@ guint online_services_count_connections(OnlineServices *services){
 			services->connected++;
 	}
 	return services->connected;
-}/* online_services_count_connections */
+}/*online_services_count_connections*/
 
 OnlineService *online_services_get_first_connected(OnlineServices *services){
 	GList		*a=NULL;
@@ -503,7 +503,7 @@ OnlineService *online_services_get_first_connected(OnlineServices *services){
 			break;
 	}
 	return service;
-}/* online_services_get_first_connected */
+}/*online_services_get_first_connected*/
 
 guint online_services_get_which_connected(OnlineServices *services, OnlineService *which_service){
 	GList		*a=NULL;
@@ -531,7 +531,7 @@ OnlineService *online_services_get_last_connected(OnlineServices *services){
 			break;
 	}
 	return service;
-}/* online_services_get_last_connected */
+}/*online_services_get_last_connected*/
 
 
 static gboolean online_service_connect(OnlineService *service){
@@ -568,7 +568,7 @@ static gboolean online_service_connect(OnlineService *service){
 	online_service_cookie_jar_open(service);
 	
 	return (service->connected=TRUE);
-}/* online_service_connect */
+}/*online_service_connect*/
 
 static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
 	gchar	*cookie_jar_directory=NULL;
@@ -600,7 +600,7 @@ static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
 	
 	g_free(cookie_jar_directory);
 	return cookie_jar_filename;
-}/* online_service_cookie_jar_find_filename */
+}/*online_service_cookie_jar_find_filename*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
 	SoupCookieJar	*cookie_jar=NULL;
@@ -621,10 +621,10 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	return;
 	
 	g_signal_connect_after(cookie_jar, "changed", (GCallback)online_service_cookie_jar_hands_caught_in_the_cookie_jar, service);
-}/* online_servce_open_cookie_jar */
+}/*online_servce_open_cookie_jar*/
 
 static void online_service_cookie_jar_hands_caught_in_the_cookie_jar(SoupCookieJar *cookie_jar, SoupCookie *old_cookie, SoupCookie *new_cookie, OnlineService *service){
-}/* online_service_hands_caught_in_the_cookie_jar */
+}/*online_service_hands_caught_in_the_cookie_jar*/
 
 static gboolean online_service_reconnect(OnlineService *service){
 	if(service->connected)
@@ -634,7 +634,7 @@ static gboolean online_service_reconnect(OnlineService *service){
 		return online_service_login(service);
 	
 	return FALSE;
-}/* online_service_reconnect */
+}/*online_service_reconnect*/
 
 static void online_service_disconnect(OnlineService *service){
 	debug("Closing %s's connection to: %s", service->decoded_key, service->uri);
@@ -646,7 +646,7 @@ static void online_service_disconnect(OnlineService *service){
 		service->session=NULL;
 	}
 	service->connected=FALSE;
-}/* online_service_disconnect */
+}/*online_service_disconnect*/
 
 /* Login to service. */
 gboolean online_service_login(OnlineService *service){
@@ -665,7 +665,7 @@ gboolean online_service_login(OnlineService *service){
 	
 	online_service_request(service, QUEUE, API_LOGIN, online_service_login_success, (gpointer)"Login", NULL);
 	return TRUE;
-}/* online_service_login */
+}/*online_service_login*/
 
 /* On verify credentials */
 static void online_service_login_success(SoupSession *session, SoupMessage *msg, gpointer user_data){
@@ -725,7 +725,7 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 	}else{
 		debug("**ERROR**: Authentication attempts %d exceeded maximum attempts: %d.", service->logins, MAX_LOGINS);
 	}
-}/* online_service_http_authenticate */
+}/*online_service_http_authenticate*/
 
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
@@ -735,7 +735,7 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 	SoupMessage *msg=online_service_request_url(service, request, (const gchar *)new_uri, callback, user_data, formdata);
 	g_free(new_uri);
 	return msg;
-}/* online_service_request */
+}/*online_service_request*/
 
 SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	if(!(service->enabled && service->connected)) return NULL;
@@ -842,7 +842,7 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 	g_free(request_string);
 	g_free(request_uri);
 	return msg;
-}/* online_service_request_url */
+}/*online_service_request_url*/
 
 static void online_service_message_restarted(SoupMessage *msg, gpointer user_data){
 //	OnlineService *service=(OnlineService *)user_data;
@@ -890,7 +890,7 @@ void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper){
 	
 	g_free(service_wrapper);
 	service_wrapper=NULL;
-}/* online_service_free_wrapper */
+}/*online_service_free_wrapper*/
 
 void online_service_free(OnlineService *service){
 	if(!service) return;
@@ -910,7 +910,7 @@ void online_service_free(OnlineService *service){
 	
 	g_free(service);
 	service=NULL;
-}/* online_service_free */
+}/*online_service_free*/
 
 void online_services_deinit(OnlineServices *services){
 	online_services_proxy_release();
@@ -926,7 +926,7 @@ void online_services_deinit(OnlineServices *services){
 	
 	g_free(services);
 	services=NULL;
-}/* online_services_deinit */
+}/*online_services_deinit*/
 
 static gboolean online_service_proxy_init(OnlineService *service){
 	if(!proxy_init)
@@ -937,7 +937,7 @@ static gboolean online_service_proxy_init(OnlineService *service){
 	
 	g_object_set( G_OBJECT(service->session), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
 	return TRUE;
-}/* online_service_proxy_init */
+}/*online_service_proxy_init*/
 
 /**
  *  * Sets SoupUri *proxy_suri for use with a SoupConnection.
@@ -992,7 +992,7 @@ static int online_services_proxy_load(void){
 	g_free(proxy_uri);
 	
 	return 1;
-}/* online_services_proxy_load */
+}/*online_services_proxy_load*/
 
 static void online_services_proxy_release(void){
 	if(proxy_init==1 && proxy_suri){
@@ -1000,7 +1000,7 @@ static void online_services_proxy_release(void){
 		proxy_suri=NULL;
 	}
 	proxy_init=0;
-}/* online_services_proxy_release */
+}/*online_services_proxy_release*/
 
 /********************************************************
  *                       eof                            *

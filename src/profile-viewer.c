@@ -167,5 +167,5 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 	
 	user_free( profile_viewer->user );
 	
-}/* user_popup_profile */
+}/*user_popup_profile*/
 

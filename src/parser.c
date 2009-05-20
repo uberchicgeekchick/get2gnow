@@ -78,7 +78,7 @@ static unsigned long int last_id=0;
 
 gchar *parser_get_cache_file_from_uri(const gchar *uri){
 	return g_strdelimit(g_strdup(uri), ":/&?", '_');
-}/* parser_get_cache_file_from_uri */
+}/*parser_get_cache_file_from_uri*/
 
 
 static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
@@ -183,7 +183,7 @@ static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
 	
 	debug("XML document parsed.  Returning xmlDoc.");
 	return doc;
-}/* parser_parse_dom_content */
+}/*parser_parse_dom_content*/
 
 xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
 	xmlDoc *doc=NULL;
@@ -252,7 +252,7 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 		g_free(xpath_content);
 	
 	return NULL;
-}/* parser_get_xpath */
+}/*parser_get_xpath*/
 
 
 
@@ -412,7 +412,7 @@ static void parser_node_status_free(Status *status){
 	
 	g_free(status);
 	status=NULL;
-}/* parser_status_free */
+}/*parser_status_free*/
 
 static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
 	xmlNode		*cur_node = NULL;
