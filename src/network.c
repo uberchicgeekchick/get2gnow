@@ -368,7 +368,7 @@ gboolean network_download_avatar(User *user){
 	
 	debug("Downloading Image: %s\n\t\tGET: %s", image_filename, user->image_url);
 	
-	SoupMessage *msg=online_service_request_url(user->service, GET, user->image_url, NULL, NULL, NULL);
+	SoupMessage *msg=online_service_request_uri(user->service, GET, user->image_url, NULL, NULL, NULL);
 		
 	debug("Image response: %i", msg->status_code);
 	
@@ -393,7 +393,7 @@ void network_get_image(User *user, GtkTreeIter *iter){
 	image->src=g_strdup(user->image_filename);
 	image->iter=iter;
 	
-	online_service_request_url( user->service, QUEUE, user->image_url, network_cb_on_image, image, NULL );
+	online_service_request_uri(user->service, QUEUE, user->image_url, network_cb_on_image, image, NULL);
 }/*network_get_image*/
 
 
@@ -410,9 +410,13 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 		debug("%s sent successfully to: '%s'.", status, service_wrapper->service->key);
 		app_statusbar_printf("%s's %s sent successfully.", service_wrapper->service->key, status);
 	}
+	
 	debug("\t\tHTTP response: %s(#%i)", msg->reason_phrase, msg->status_code);
 	
 	if(in_reply_to_status_id||in_reply_to_service){
+		if(msg->status_code==404){
+			online_service_request(service_wrapper->service, POST, API_POST_STATUS, network_tweet_cb, "ReTweet", (gchar *)service_wrapper->formdata);
+		}
 		if(service_wrapper->service==online_services_get_last_connected(online_services)){
 			if(in_reply_to_status_id) in_reply_to_status_id=0;
 			if(in_reply_to_service) in_reply_to_service=NULL;

@@ -749,12 +749,12 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 	if(!(service->connected)) return NULL;
 	gchar *new_uri=g_strdup_printf("https://%s%s%s", service->uri, ( (service->which_rest==Twitter) ?"" :"/api" ), uri );
 	debug("Creating new service request for: '%s', requesting: %s.", service->decoded_key, new_uri);
-	SoupMessage *msg=online_service_request_url(service, request, (const gchar *)new_uri, callback, user_data, formdata);
+	SoupMessage *msg=online_service_request_uri(service, request, (const gchar *)new_uri, callback, user_data, formdata);
 	g_free(new_uri);
 	return msg;
 }/*online_service_request*/
 
-SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	if(!(service->enabled && service->connected)) return NULL;
 	
 	if(!SOUP_IS_SESSION(service->session)){
@@ -796,19 +796,24 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 			if((gchar *)formdata){
 				if((gchar *)user_data){
 					gchar *test_data=(gchar *)user_data;
-					if( g_str_equal(test_data, "Tweet") ){
+					if( g_str_equal(test_data, "Tweet") || g_str_equal(test_data, "ReTweet") ){
 						gchar *form_data=(gchar *)formdata;
-						if(G_STR_EMPTY(form_data))
+						if(G_STR_EMPTY(form_data)){
+							g_free(request_string);
+							g_free(request_uri);
 							return NULL;
-						if(service->which_rest==Twitter && in_reply_to_status_id && in_reply_to_service==service)
+						}
+						if( in_reply_to_status_id && in_reply_to_service==service && !g_str_equal(test_data, "ReTweet") )
 							service_formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", ((service->which_rest==Twitter) ?API_CLIENT_AUTH :OPEN_CLIENT ), in_reply_to_status_id, form_data);
-						else
+						else{
 							service_formdata=g_strdup_printf( "source=%s&status=%s", ((service->which_rest==Twitter) ?API_CLIENT_AUTH :OPEN_CLIENT ), form_data);
+							if(g_str_equal(test_data, "ReTweet")) user_data=(gpointer)"Tweet";
+						}
 					}
 				}
 			}
 			
-			debug("POST: %s\n\t\tformdata:%s", request_uri, (service_formdata ?service_formdata :(gchar *)formdata));
+			debug("POST: %s\n\t\tformdata: [%s]", request_uri, (service_formdata ?service_formdata :(gchar *)formdata));
 			msg=soup_message_new("POST", request_uri);
 	
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
@@ -843,7 +848,7 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 			
 			OnlineServiceCBWrapper *service_wrapper=NULL;
 			if(callback!=NULL)
-				service_wrapper=online_service_wrapper_new(service, callback, user_data);
+				service_wrapper=online_service_wrapper_new(service, callback, user_data, formdata);
 			
 			soup_session_queue_message(service->session, msg, callback, service_wrapper);
 			
@@ -859,14 +864,14 @@ SoupMessage *online_service_request_url(OnlineService *service, RequestMethod re
 	g_free(request_string);
 	g_free(request_uri);
 	return msg;
-}/*online_service_request_url*/
+}/*online_service_request_uri*/
 
 static void online_service_message_restarted(SoupMessage *msg, gpointer user_data){
 //	OnlineService *service=(OnlineService *)user_data;
 }/*online_service_message_restarted*/
 
 gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg){
-	*msg=online_service_request_url(service, GET, uri, NULL, NULL, NULL);
+	*msg=online_service_request_uri(service, GET, uri, NULL, NULL, NULL);
 	if(!network_check_http(service, *msg))
 		return g_strdup(uri);
 
@@ -880,7 +885,7 @@ gchar *online_service_get_url_content_type(OnlineService *service, const gchar *
 	return content_type;
 }/*online_service_get_url_content_type*/
 
-OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data){
+OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	OnlineServiceCBWrapper *service_wrapper=g_new0(OnlineServiceCBWrapper, 1);
 	service_wrapper->service=service;
 	
@@ -890,6 +895,11 @@ OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupS
 		service_wrapper->user_data=g_strdup(user_data);
 	else
 		service_wrapper->user_data=NULL;
+	
+	if(formdata!=NULL)
+		service_wrapper->formdata=g_strdup(formdata);
+	else
+		service_wrapper->formdata=NULL;
 	
 	return service_wrapper;
 }
@@ -901,6 +911,11 @@ void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper){
 	if(service_wrapper->user_data!=NULL){
 		g_free(service_wrapper->user_data);
 		service_wrapper->user_data=NULL;
+	}
+	
+	if(service_wrapper->formdata!=NULL){
+		g_free(service_wrapper->formdata);
+		service_wrapper->formdata=NULL;
 	}
 	
 	service_wrapper->service=NULL;

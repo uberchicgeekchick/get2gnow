@@ -210,7 +210,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 	OnlineServiceCBWrapper *request_wrapper=NULL;
 	switch(request->action){
 		case ViewTweets:
-			request_wrapper=online_service_wrapper_new(service_wrapper->service, network_display_timeline, request->uri);
+			request_wrapper=online_service_wrapper_new(service_wrapper->service, network_display_timeline, request->uri, NULL);
 			network_display_timeline(session, msg, request_wrapper);
 			break;
 		case UnFollow:

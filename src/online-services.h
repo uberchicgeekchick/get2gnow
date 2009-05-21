@@ -127,6 +127,7 @@ typedef struct {
 typedef struct{
 	OnlineService	*service;
 	gpointer	user_data;
+	gpointer	formdata;
 } OnlineServiceCBWrapper;
 
 typedef enum{
@@ -161,10 +162,10 @@ void online_services_deinit(OnlineServices *online_services);
 gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore);
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
-SoupMessage *online_service_request_url(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 
-OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data);
+OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper);
 
 void online_service_free(OnlineService *service);
