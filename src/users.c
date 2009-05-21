@@ -77,7 +77,7 @@
 static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const gchar *user_data);
 static void user_request_free(UserRequest *request);
 
-static User *user_constructor(gboolean a_follower);
+static User *user_constructor(OnlineService *service, gboolean a_follower);
 
 
 #define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
@@ -86,6 +86,32 @@ static User *user_constructor(gboolean a_follower);
 #define GtkBuilderUI "user-profile.ui"
 
 static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
+
+gchar *user_action_to_string(UserAction action){
+	switch(action){
+		case ViewTweets:
+			return _("displaying tweets");
+		case Follow:
+			return _("started following:");
+		case UnFollow:
+			return _("unfollowed:");
+		case Block:
+			return _("blocked:");
+		case UnBlock:
+			return _("unblocked user");
+		case Fave:
+			return _("star'ing tweet");
+		case UnFave:
+			return _("un-star'ing tweet");
+		case ViewProfile:
+			return _("viewing user profile");
+		case SelectService:
+			return _("selecting default account");
+		default:
+			/*We never get here, but it makes gcc happy.*/
+			return _("unsupported user action");
+	}//switch
+}/*user_action_to_string*/
 
 static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const gchar *user_data){
 	if(action==SelectService || action==ViewProfile || G_STR_EMPTY(user_data)) return NULL;
@@ -96,43 +122,37 @@ static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const
 	request->user_data=g_strdup(user_data);
 	request->action=action;
 	request->method=QUEUE;
+	request->message=g_strdup(user_action_to_string(action));
 	
 	switch(request->action){
 		case ViewTweets:
 			request->method=QUEUE;
-			request->message=g_strdup("displaying tweets");
 			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_data);
 			network_set_state_loading_timeline(request->uri, Load);
 			break;
 		case Follow:
 			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_FOLLOW, request->user_data);
-			request->message=g_strdup_printf("started following:");
 			break;
 		case UnFollow:
 			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_UNFOLLOW, request->user_data);
-			request->message=g_strdup("unfollowed:");
 			break;
 		case Block:
 			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_BLOCK, request->user_data);
-			request->message=g_strdup("blocked:");
 			break;
 		case UnBlock:
 			request->method=POST;
 			request->uri=g_strdup_printf(API_USER_UNBLOCK, request->user_data);
-			request->message=g_strdup("unblocked user");
 			break;
 		case Fave:
 			request->method=POST;
 			request->uri=g_strdup_printf(API_FAVE, request->user_data);
-			request->message=g_strdup("star'd tweet");
 			break;
 		case UnFave:
 			request->method=POST;
 			request->uri=g_strdup_printf(API_UNFAVE, request->user_data);
-			request->message=g_strdup("un-star'd tweet");
 			break;
 		case ViewProfile:
 		case SelectService:
@@ -239,10 +259,12 @@ static void user_request_free(UserRequest *request){
 }/*user_request_free*/
 
 
-static User *user_constructor( gboolean a_follower ){
+static User *user_constructor(OnlineService *service, gboolean a_follower){
 	User *user=g_new(User, 1);
 	
 	user->follower=a_follower;
+	
+	user->service=service;
 		
 	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
 	
@@ -279,7 +301,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	
 	User		*user;
 	
-	user=user_constructor( getting_followers );
+	user=user_constructor(service, getting_followers);
 	
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
@@ -319,11 +341,13 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 			user->tweets=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(cur_node->name, "profile_image_url"))
-			user->image_filename=images_get_filename( (user->image_url=g_strdup(content)) );
+			user->image_url=g_strdup(content);
 		
 		xmlFree(content);
 		
 	} /* End of loop */
+	
+	user->image_filename=images_get_filename(user);
 	
 	return user;
 }

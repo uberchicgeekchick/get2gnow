@@ -56,92 +56,85 @@
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
-#include <libnotify/notify.h>
-#include <gtk/gtk.h>
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
-
 #include "config.h"
-#include "core.h"
-#include "gconfig.h"
-#include "app.h"
-#include "online-services.h"
-#include "ipc.h"
-#include "tweet-list.h"
-#include "images.h"
+#include "main.h"
 #include "cache.h"
-
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-static gboolean notifing=FALSE;
+#define DEBUG_DOMAINS "Cache:Requests:OnlineServices:Tweets:Users:Images:Files:I/O:Setup:Start-Up"
+#include "debug.h"
+
+static gchar *cache_prefix=NULL;
+
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+static void cache_clean_up_dir_absolute(const gchar *cache_dir);
+static void cache_clean_up_file(const gchar *cache_file);
 
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-void get2gnow_init(int argc, char **argv){
-	if( (ipc_init_check( argc-1, argv-1)) ){
-		g_printf( "%s is already running.  Be sure to check system try for %s's icon.\n", PACKAGE_NAME, PACKAGE_NAME );
-		ipc_deinit();
-		exit(0);
+void cache_init(void){
+	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, NULL);
+}/*cache_init*/
+
+void cache_deinit(void){
+	g_free(cache_prefix);
+}/*cache_deinit*/
+
+static void cache_clean_up_dir_absolute(const gchar *cache_dir_path){
+	static guint depth=0;
+	if(!(g_str_has_prefix(cache_dir_path, cache_prefix)))
+		return;
+	
+	if(!( (g_file_test(cache_dir_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) ))
+		return;
+	
+	debug("Cleaning-up cache directory: [%s].", cache_dir_path);
+	
+	depth++;
+	const gchar *cache_file=NULL;
+	GDir *cache_dir=g_dir_open(cache_dir_path, 0, NULL);
+	while( (cache_file=g_dir_read_name(cache_dir)) ){
+		gchar *cache_file_path=g_strdup_printf("%s/%s", cache_dir_path, cache_file);
+		if(g_file_test(cache_file, G_FILE_TEST_IS_REGULAR))
+			cache_clean_up_file(cache_file_path);
+		else if(g_file_test(cache_file_path, G_FILE_TEST_IS_DIR)){
+			cache_clean_up_dir_absolute(cache_file_path);
+			if(depth>1)
+				cache_clean_up_file(cache_file_path);
+		}
+		g_free(cache_file_path);
 	}
-	
-	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
-	
-	g_set_application_name(_(PACKAGE_NAME));
-	
-	if(!g_thread_supported()) g_thread_init(NULL);
-	
-	gtk_init(&argc, &argv);
-	
-	gtk_window_set_default_icon_name(PACKAGE_NAME);
-	
-	cache_init();
-	
-	/* Connect to gconf */
-	gconfig_start();
-	
-	/* Start's the network & sets extern OnlineServices *online_services; from 'online-services.h'. */
-	online_services_init();
+	g_dir_close(cache_dir);
+	depth--;
+}/*cache_clean_up_absolute_dir*/
 
-	/* Start libnotify */
-	notifing=notify_init(PACKAGE_NAME);
+static void cache_clean_up_file(const gchar *cache_file){
+	if(!(g_str_has_prefix(cache_file, cache_prefix)))
+		return;
 	
-	/* Create the ui */
-	app_create();
-}/*start_up*/
+	GFile *cache_gfile=g_file_new_for_path(cache_file);
+	GFileInfo *cache_gfileinfo=g_file_query_info(cache_gfile, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE, G_FILE_QUERY_INFO_NONE, NULL, NULL);
+	if(g_file_info_get_attribute_boolean(cache_gfileinfo, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE)){
+		debug("\t\tCache clean-up, deleting: [%s].", cache_file);
+		g_file_delete(cache_gfile, NULL, NULL);
+	}
+	g_object_unref(cache_gfile);
+	g_object_unref(cache_gfileinfo);
+}/*cache_clean_up_file*/
 
-
-void get2gnow_deinit(void){
-	/* Close libnotify */
-	if(notifing) notify_uninit();
-	
-	/* Close the network */
-	online_services_deinit(online_services);
-	
-	ipc_deinit();
-	
-	/* Clean up the ui */
-	g_object_unref(tweet_list_get());
-	g_object_unref(app_get());
-	
-	images_free();
-	
-	gconfig_shutdown();
-	
-	cache_deinit();
-}/*shutdown*/
-
+void cache_clean_up_dir(const gchar *cache_subdir){
+	gchar *cache_dir_path=g_build_filename(cache_prefix, cache_subdir, NULL);
+	cache_clean_up_dir_absolute(cache_dir_path);
+	g_free(cache_dir_path);
+}/*cache_clean_up_dir*/
 
 /********************************************************
  *                       eof                            *
  ********************************************************/
-

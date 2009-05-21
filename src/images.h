@@ -54,6 +54,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include "users.h"
 
 
 G_BEGIN_DECLS
@@ -69,7 +70,7 @@ enum {
 void images_free(void);
 
 gchar *images_get_unknown_image_filename(void);
-gchar *images_get_filename(const gchar *url);
+gchar *images_get_filename(User *user);
 
 GtkImage *images_get_image_from_filename(const gchar *image_filename);
 GtkImage *images_get_scaled_image_from_filename(const gchar *image_filename, gint width, gint height );

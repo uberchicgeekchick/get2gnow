@@ -221,8 +221,18 @@ static gchar *label_format_hyperlink(OnlineService *service, const gchar *uri){
 	debug("Retriving title for uri: '%s'.", uri);
 	if((uri_title=parser_parse_xpath_content(msg, "html->head->title"))){
 		g_free(temp);
-		debug("Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", uri_title, uri);
-		temp=g_strdup_printf("<a href=\"%s\">%s &lt;- %s</a>", uri, uri_title, uri);
+		gchar *escaped_title=NULL;
+		gchar *cur=escaped_title=g_markup_escape_text(uri_title, -1);
+		while((cur = strstr(cur, "&amp;"))) {
+			if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
+				g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
+			else
+				cur += 5;
+		}
+
+		debug("Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", escaped_title, uri);
+		temp=g_strdup_printf("<a href=\"%s\">%s &lt;- %s</a>", uri, escaped_title, uri);
+		g_free(escaped_title);
 		g_free(uri_title);
 	}
 	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);

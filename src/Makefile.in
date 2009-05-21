@@ -50,6 +50,7 @@ PROGRAMS = $(bin_PROGRAMS)
 get2gnow_SOURCES =					\
 	gconfig.c		gconfig.h		\
 	debug.c			debug.h			\
+	cache.c			cache.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	tree-view.c 		tree-view.h		\
 	$(keyring_sources)				\
@@ -82,6 +83,7 @@ get2gnow_SOURCES =					\
 get2gnow_OBJECTS =				\
 	gconfig.$(OBJEXT)			\
 	debug.$(OBJEXT)				\
+	cache.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)			\
 	tree-view.$(OBJEXT)			\
 	$(am__objects_1)			\
@@ -388,7 +390,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/services-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/popup-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
@@ -398,8 +404,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@

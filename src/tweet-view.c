@@ -172,6 +172,8 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"tweet_hbox", &tweet_view->tweet_hbox,
 				"sexy_send", &tweet_view->sexy_send,
 				"sexy_dm", &tweet_view->sexy_dm,
+				"sexy_vseparator", &tweet_view->sexy_vseparator,
+				"new_tweet_button", &tweet_view->new_tweet_button,
 				
 				"dm_frame", &tweet_view->dm_frame,
 				"dm_form_hbox", &tweet_view->dm_form_hbox,
@@ -217,6 +219,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"friends_send_dm", "clicked", tweet_view_send,
 				"sexy_send", "clicked", tweet_view_send,
 				"sexy_dm", "clicked", tweet_view_send,
+				"new_tweet_button", "clicked", tweets_new_tweet,
 				
 				"dm_form_hide", "clicked", tweet_view_dm_data_set_sensitivity,
 				"dm_form_show", "clicked", tweet_view_new_dm,
@@ -288,6 +291,7 @@ static void tweet_view_tweet_selected_buttons_setup(GtkBuilder *ui){
 		"user_block_button",
 		
 		"sexy_dm",
+		"new_tweet_button",
 		
 		"reply_button",
 		"retweet_button",
@@ -368,6 +372,18 @@ static void tweet_view_sexy_init(void){
 			GTK_BOX(tweet_view->tweet_hbox),
 			GTK_WIDGET(tweet_view->sexy_dm),
 			3
+	);
+	
+	gtk_box_reorder_child(
+			GTK_BOX(tweet_view->tweet_hbox),
+			GTK_WIDGET(tweet_view->sexy_vseparator),
+			4
+	);
+	
+	gtk_box_reorder_child(
+			GTK_BOX(tweet_view->tweet_hbox),
+			GTK_WIDGET(tweet_view->new_tweet_button),
+			5
 	);
 	
 	g_signal_connect_after(tweet_view->sexy_entry, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
@@ -614,6 +630,7 @@ void tweet_view_dm_data_fill(GList *followers){
 					USER_POINTER, NULL,
 				-1
 	);
+	
 	for(list=followers; list; list=list->next) {
 		user=(User *)list->data;
 		gchar *user_label=g_strdup_printf("%s from %s", user->user_name, user->service->decoded_key);

@@ -85,7 +85,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Authentication:Setup:Start-Up"
+#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Setup:Start-Up"
 #include "debug.h"
 
 typedef struct {
@@ -361,43 +361,39 @@ static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg)
 
 
 /* Get an image from servers */
-gboolean network_download_avatar(OnlineService *service, const gchar *image_uri){
+gboolean network_download_avatar(User *user){
 	gchar *image_filename=NULL;
-	if(g_file_test((image_filename=images_get_filename(image_uri)), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+	if(g_file_test(user->image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return TRUE;
 	
-	debug("Downloading Image: %s\n\t\tGET: %s", image_filename, image_uri);
+	debug("Downloading Image: %s\n\t\tGET: %s", image_filename, user->image_url);
 	
-	SoupMessage *msg=online_service_request_url(service, GET, image_uri, NULL, NULL, NULL);
+	SoupMessage *msg=online_service_request_url(user->service, GET, user->image_url, NULL, NULL, NULL);
 		
 	debug("Image response: %i", msg->status_code);
 	
 	/* check response */
-	if(!((network_check_http(service, msg)) &&( g_file_set_contents( image_filename, msg->response_body->data, msg->response_body->length, NULL )) ))
+	if(!( (network_check_http(user->service, msg)) && (g_file_set_contents(user->image_filename, msg->response_body->data, msg->response_body->length, NULL)) ))
 		return FALSE;
 	
 	return TRUE;
 }
 
 
-void network_get_image(OnlineService *service, const gchar *image_uri, GtkTreeIter *iter){
-	gchar *image_filename=images_get_filename(image_uri);
-	
-	debug("Downloading Image: %s\n\t\tGET: %s", image_filename, image_uri);
-	
-	if(g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)){
+void network_get_image(User *user, GtkTreeIter *iter){
+	if(g_file_test(user->image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)){
 		/* Set image from file here */
-		tweet_list_set_image(image_filename, iter);
-		g_free(image_filename);
+		tweet_list_set_image(user->image_filename, iter);
 		g_free(iter);
 		return;
 	}
 	
+	debug("Downloading Image: %s\n\t\tGET: %s", user->image_filename, user->image_url);
 	Image *image=g_new0(Image, 1);
-	image->src=image_filename;
+	image->src=g_strdup(user->image_filename);
 	image->iter=iter;
 	
-	online_service_request_url( service, QUEUE, image_uri, network_cb_on_image, image, NULL );
+	online_service_request_url( user->service, QUEUE, user->image_url, network_cb_on_image, image, NULL );
 }/*network_get_image*/
 
 

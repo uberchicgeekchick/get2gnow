@@ -99,6 +99,8 @@ typedef struct {
 	SexySpellEntry		*sexy_entry;
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm;
+	GtkVSeparator		*sexy_vseparator;
+	GtkButton		*new_tweet_button;
 	
 	GtkFrame		*dm_frame;
 	GtkLabel		*dm_frame_label;

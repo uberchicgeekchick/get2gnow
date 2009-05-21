@@ -110,7 +110,8 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 	
 	profile_viewer->user=user_fetch_profile(service, user_name);
 	
-	network_download_avatar(service, profile_viewer->user->image_url);
+	network_download_avatar(profile_viewer->user);
+	
 	if(!(g_str_equal("unknown_image", profile_viewer->user->image_filename)))
 		gtk_message_dialog_set_image( profile_viewer->dialog, GTK_WIDGET(profile_viewer->image=images_get_maximized_image_from_filename( profile_viewer->user->image_filename )) );
 	

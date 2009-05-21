@@ -366,6 +366,15 @@ static OnlineService *online_service_open(const gchar *account_key){
 	service->uri=g_strdup(account_data[1]);
 	service->username=g_strdup(account_data[0]);
 	g_strfreev(account_data);
+	
+	
+	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
+	service->server=g_strdup(parsed_uri[0]);
+	if(G_STR_EMPTY(parsed_uri[1]))
+		service->path=g_strdup("");
+	else
+		service->path=g_strdup(parsed_uri[1]);
+	g_strfreev(parsed_uri);
 
 	service->connected=FALSE;
 	service->session=NULL;
@@ -429,9 +438,17 @@ static OnlineService *online_service_new(gboolean enabled, const gchar *url, con
 	service->auto_connect=auto_connect;
 	
 	service->decoded_key=g_strdup_printf("%s@%s", username, url );
-	service->uri=g_strdup(url);
 	service->username=g_strdup(username);
 	service->password=g_strdup(password);
+	
+	service->uri=g_strdup(url);
+	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
+	service->server=g_strdup(parsed_uri[0]);
+	if(G_STR_EMPTY(parsed_uri[1]))
+		service->path=g_strdup("");
+	else
+		service->path=g_strdup(parsed_uri[1]);
+	g_strfreev(parsed_uri);
 	
 	gchar *encoded_username=g_uri_escape_string(username, NULL, TRUE);
 	gchar *encoded_url=g_uri_escape_string(url, NULL, TRUE);

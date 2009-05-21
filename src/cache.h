@@ -51,101 +51,31 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __NETWORK_H__
-#define __NETWORK_H__
-
-#include <gtk/gtk.h>
-#include <glib.h>
-#include <libsoup/soup.h>
+#ifndef __CACHE_H__
+#define __CACHE_H__
 
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-#include "config.h"
-#include "friends-manager.h"
-#include "users.h"
-#include "images.h"
-#include "online-services.h"
-
+#include <sys/stat.h>
+#include <glib.h>
+#include <gio/gio.h>
+#include <glib/gstdio.h>
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
-typedef enum {
-	Load,
-	Reload,
-	Timeout,
-} ReloadState;
-
-extern gboolean getting_followers;
 
 
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
-gchar *url_encode(const gchar *text);
-gboolean network_check_http(OnlineService *service, SoupMessage *msg);
-void network_set_state_loading_timeline(const gchar *timeline, ReloadState state);
+void cache_init(void);
+void cache_clean_up_dir(const gchar *cache_subdir);
+void cache_deinit(void);
 
-void network_logout(void);
-
-void network_post_status(const gchar *text);
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
-
-void network_get_timeline(const gchar *uri_timeline);
-void network_get_user_timeline(OnlineService *service, const gchar *username);
-void network_refresh(void);
-
-GList *network_get_users_glist(gboolean get_friends);
-
-gboolean network_download_avatar(User *user);
-void network_get_image(User *user, GtkTreeIter *iter);
-void network_cb_on_image( SoupSession *session, SoupMessage *msg, gpointer user_data );
-
-void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data);
-
-
-/**********************************************************************
- *          REST Resources for use with OnlineServices                *
- **********************************************************************/
-/* Authenication */
-#define API_LOGIN		"/account/verify_credentials.xml"
-
-/* Twitter Timelines */
-#define API_TIMELINE_PUBLIC	"/statuses/public_timeline.xml"
-#define API_TIMELINE_FRIENDS	"/statuses/friends_timeline.xml"
-#define API_TIMELINE_MY		"/statuses/user_timeline.xml"
-#define API_TIMELINE_USER	"/statuses/user_timeline/%s.xml"
-#define API_MENTIONS		"/statuses/mentions.xml"
-#define API_REPLIES		"/statuses/replies.xml"
-#define API_DIRECT_MESSAGES	"/direct_messages.xml"
-#define API_FAVORITES		"/favorites.xml"
-
-/* Twitter actions */
-#define API_POST_STATUS		"/statuses/update.xml"
-#define API_SEND_MESSAGE	"/direct_messages/new.xml"
-#define API_FAVE		"/favorites/create/%s.xml"
-#define API_UNFAVE		"/favorites/destroy/%s.xml"
-
-
-/* Twitter relationships */
-#define API_FOLLOWING		"/statuses/friends.xml"
-#define API_FOLLOWERS		"/statuses/followers.xml"
-
-
-#define API_USER_FOLLOW		"/friendships/create/%s.xml"
-#define API_USER_UNFOLLOW	"/friendships/destroy/%s.xml"
-#define API_USER_BLOCK		"/blocks/create/%s.xml"
-#define API_USER_UNBLOCK	"/blocks/destroy/%s.xml"
-
-
-/* Twitter Details */
-#define API_ABOUT_USER		"/users/show/%s.xml"
-
-
-#endif /*  __NETWORK_H__ */
+#endif /* __CACHE_H__ */
 /**********************************************************************
  *                               eof                                  *
  **********************************************************************/
-

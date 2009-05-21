@@ -378,7 +378,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		g_free(sexy_tweet);
 		
 		/* network_get_image, or its callback, free's iter once its no longer needed. */
-		network_get_image(service, g_strdup(status->user->image_url), iter);
+		network_get_image(status->user, iter);
 		
 		/* Free struct */
 		parser_node_status_free(status);

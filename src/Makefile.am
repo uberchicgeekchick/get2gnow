@@ -24,6 +24,7 @@ get2gnow_SOURCES = 					\
 	main.c			main.h			\
 	gconfig.c		gconfig.h		\
 	debug.c			debug.h			\
+	cache.c			cache.h			\
 	gtkbuilder.c		gtkbuilder.h		\
 	tree-view.c 		tree-view.h		\
 	about.c			about.h			\

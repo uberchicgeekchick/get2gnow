@@ -181,9 +181,10 @@ static gboolean popup_validate_usage(UserAction action){
 			return TRUE;
 		case Fave:
 		case UnFave:
+		default:
 			break;
 	}//switch
-	app_statusbar_printf("This cannot be done using %s's popup prompt.", PACKAGE_NAME);
+	app_statusbar_printf("%s is not supported by %s's popup prompt.", user_action_to_string(action), PACKAGE_NAME);
 	return FALSE;
 }/*popup_validate_usage*/
 

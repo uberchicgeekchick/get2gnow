@@ -99,6 +99,7 @@ typedef struct {
 #define usrcasecmp	user_sort_by_user_name
 #define	usrcmp		user_sort_by_user_name
 
+gchar *user_action_to_string(UserAction action);
 void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data);
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
 

@@ -118,6 +118,8 @@ typedef struct {
 	gchar		*decoded_key;
 	SupportedREST	which_rest;
 	gchar		*uri;
+	gchar		*server;
+	gchar		*path;
 	gchar		*username;
 	gchar		*password;
 } OnlineService;
