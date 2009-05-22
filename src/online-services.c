@@ -76,6 +76,7 @@
 #include "gconfig.h"
 #include "keyring.h"
 #include "tweets.h"
+#include "users.h"
 #include "gtkbuilder.h"
 #include "preferences.h"
 #include "services-dialog.h"
@@ -122,10 +123,10 @@ static gboolean online_service_proxy_init(OnlineService *service);
 static int proxy_init=0;
 static SoupURI *proxy_suri=NULL;
 static OnlineServices *services=NULL;
+OnlineService *selected_service=NULL;
 
 OnlineServices *online_services=NULL;
 
-OnlineService *current_service=NULL;
 #define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication"
 #include "debug.h"
 
@@ -171,11 +172,6 @@ OnlineServices *online_services_init(void){
 		if(!service->auto_connect){
 			debug("%s account in not set to auto-connect.", service->decoded_key);
 			continue;
-		}
-		
-		if(!current_service){
-			debug("Selecting %s as the default & current account to start with.", service->decoded_key);
-			current_service=service;
 		}
 		
 		if(service->connected){
@@ -367,6 +363,7 @@ static OnlineService *online_service_open(const gchar *account_key){
 	service->username=g_strdup(account_data[0]);
 	g_strfreev(account_data);
 	
+	service->friends=service->followers=service->friends_and_followers=NULL;
 	
 	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
 	service->server=g_strdup(parsed_uri[0]);
@@ -441,6 +438,8 @@ static OnlineService *online_service_new(gboolean enabled, const gchar *url, con
 	service->username=g_strdup(username);
 	service->password=g_strdup(password);
 	
+	service->friends=service->followers=service->friends_and_followers=NULL;
+	
 	service->uri=g_strdup(url);
 	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
 	service->server=g_strdup(parsed_uri[0]);
@@ -510,7 +509,7 @@ guint online_services_count_connections(OnlineServices *services){
 	return services->connected;
 }/*online_services_count_connections*/
 
-OnlineService *online_services_get_first_connected(OnlineServices *services){
+OnlineService *online_services_connected_get_first(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
@@ -520,9 +519,9 @@ OnlineService *online_services_get_first_connected(OnlineServices *services){
 			break;
 	}
 	return service;
-}/*online_services_get_first_connected*/
+}/*online_services_connected_get_first*/
 
-guint online_services_get_which_connected(OnlineServices *services, OnlineService *which_service){
+guint online_services_connected_get_service_index(OnlineServices *services, OnlineService *which_service){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	guint		service_count=0;
@@ -536,9 +535,9 @@ guint online_services_get_which_connected(OnlineServices *services, OnlineServic
 		}
 	}
 	return 0;
-}
+}/*online_services_connected_get_service_index*/
 
-OnlineService *online_services_get_last_connected(OnlineServices *services){
+OnlineService *online_services_connected_get_last(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
@@ -548,7 +547,7 @@ OnlineService *online_services_get_last_connected(OnlineServices *services){
 			break;
 	}
 	return service;
-}/*online_services_get_last_connected*/
+}/*online_services_connected_get_last*/
 
 
 static gboolean online_service_connect(OnlineService *service){
@@ -796,18 +795,19 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			if((gchar *)formdata){
 				if((gchar *)user_data){
 					gchar *test_data=(gchar *)user_data;
-					if( g_str_equal(test_data, "Tweet") || g_str_equal(test_data, "ReTweet") ){
+					if( g_str_equal(test_data, "Tweet") ){
 						gchar *form_data=(gchar *)formdata;
 						if(G_STR_EMPTY(form_data)){
 							g_free(request_string);
 							g_free(request_uri);
 							return NULL;
 						}
-						if( in_reply_to_status_id && in_reply_to_service==service && !g_str_equal(test_data, "ReTweet") )
+						if( in_reply_to_status_id && in_reply_to_service==service ){
+							debug("Replying to Tweet/Status [#%lu] on: [%s].\n\t\tTweet: [%s].", in_reply_to_status_id, service->decoded_key, form_data);
 							service_formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", ((service->which_rest==Twitter) ?API_CLIENT_AUTH :OPEN_CLIENT ), in_reply_to_status_id, form_data);
-						else{
+						}else{
+							debug("Submitting Tweet/Status update to: [%s].\n\t\tTweet: [%s].", service->decoded_key, form_data);
 							service_formdata=g_strdup_printf( "source=%s&status=%s", ((service->which_rest==Twitter) ?API_CLIENT_AUTH :OPEN_CLIENT ), form_data);
-							if(g_str_equal(test_data, "ReTweet")) user_data=(gpointer)"Tweet";
 						}
 					}
 				}
@@ -936,6 +936,7 @@ void online_service_free(OnlineService *service){
 	g_free(service->uri);
 	g_free(service->username);
 	g_free(service->password);
+	user_free_lists(service);
 	
 	timer_free(service->timer);
 	service->timer=NULL;
@@ -946,10 +947,6 @@ void online_service_free(OnlineService *service){
 
 void online_services_deinit(OnlineServices *services){
 	online_services_proxy_release();
-	
-	user_free_lists();
-	
-	current_service=NULL;
 	
 	g_list_foreach(services->accounts, (GFunc)online_service_free, NULL);
 	

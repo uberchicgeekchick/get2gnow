@@ -71,7 +71,7 @@
 #include "network.h"
 #include "parser.h"
 #include "users.h"
-#include "images.h"
+#include "cache.h"
 #include "app.h"
 #include "preferences.h"
 #include "following-viewer.h"
@@ -80,6 +80,7 @@
 #include "tweets.h"
 #include "timer.h"
 #include "online-services.h"
+#include "popup-dialog.h"
 
 
 /********************************************************
@@ -94,9 +95,9 @@ typedef struct {
 } Image;
 
 gboolean getting_followers=FALSE;
-static GList *all_users=NULL;
 static gchar *current_timeline=NULL;
 static gboolean processing=FALSE;
+static gboolean fetching_users=FALSE;
 static guint timeout_id;
 
 /********************************************************
@@ -106,7 +107,7 @@ static guint timeout_id;
 static gboolean network_timeout(gpointer user_data);
 static void network_timeout_new(void);
 
-static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg);
+static void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
@@ -114,33 +115,6 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-gchar *url_encode(const gchar *text){
-	const char        *good;
-	static const char  hex[16]="0123456789ABCDEF";
-	GString           *result;
-	
-	g_return_val_if_fail(text != NULL, NULL);
-	g_return_val_if_fail(*text != '\0', NULL);
-	
-	/* RFC 3986 */ 
-	good="~-._";
-	
-	result=g_string_new(NULL);
-	while(*text) {
-		unsigned char c=*text++;
-		
-		if(g_ascii_isalnum(c) || strchr(good, c))
-			g_string_append_c(result, c);
-		else {
-			g_string_append_c(result, '%');
-			g_string_append_c(result, hex[c >> 4]);
-			g_string_append_c(result, hex[c & 0xf]);
-		}
-	}
-	
-	return g_string_free(result, FALSE);
-}
-
 /* Check HTTP response code */
 gboolean network_check_http(OnlineService *service, SoupMessage *msg){
 	if(!( SOUP_IS_MESSAGE(msg) )){
@@ -283,6 +257,11 @@ void network_get_timeline(const gchar *uri_timeline){
 
 /* Get a user timeline */
 void network_get_user_timeline(OnlineService *service, const gchar *username){
+	if(!service){
+		popup_select_service(app_get_window());
+		service=selected_service;
+	}
+	
 	gchar *user_id=NULL;
 	
 	if(!username)
@@ -306,58 +285,81 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 }/*network_get_user_timeline*/
 
 
-GList *network_get_users_glist(gboolean get_friends){
-	SoupMessage *msg;
+GList *network_users_glist_get(gboolean get_friends, gboolean refresh){
+	static OnlineService *service=NULL;
+	
+	if(!selected_service)
+		return NULL;
+	
+	if( !refresh && service && service==selected_service ){
+		if(get_friends && service->friends)
+			return service->friends;
+		else if( !get_friends && service->followers )
+			return service->followers;
+	}
+	
+	if(fetching_users){
+		return NULL;
+	}
+	
+	fetching_users=TRUE;
+	service=selected_service;
 	gint page=0; 
 	
 	gchar *uri;
-	all_users=NULL;
-	gboolean fetching=TRUE;
 	getting_followers=!get_friends;
 	
-	app_statusbar_printf("Please wait while %s loads the users %s...", PACKAGE_NAME,(get_friends?"who are following you":"you're following") );
+	app_statusbar_printf("Please wait while %s downloads the users %s...", PACKAGE_NAME,(get_friends?"who are following you":"you're following") );
 	
-	while(fetching){
+	const gchar *getting_message=NULL;
+	if(!get_friends)
+		getting_message=_("friends");
+	else
+		getting_message=_("followers");
+	
+	while(fetching_users){
 		page++;
 		uri=g_strdup_printf("%s?page=%d",(get_friends?API_FOLLOWING:API_FOLLOWERS), page);
 		debug("Getting page %d of who%s.", page,(get_friends?"m the user is following":" is following the user") );
-		msg=online_service_request(current_service, GET, uri, NULL, NULL, NULL );
-		fetching=network_get_users_page(current_service, msg);
-		if(uri){
-			g_free(uri);
-			uri=NULL;
-		}
+		online_service_request(service, QUEUE, uri, network_users_glist_save, (gpointer)getting_message, NULL );
+		g_free(uri);
 	}
 	
-	if(!all_users)
-		app_set_statusbar_msg( _("Users parser error.") );
-	else
-		all_users=g_list_sort(all_users,(GCompareFunc) usrcasecmp);
-		
-	return all_users;
-}/*network_get_users_glist*/
+	return NULL;
+}/*network_users_glist_get*/
 
 
-static gboolean network_get_users_page(OnlineService *service, SoupMessage *msg){
+static void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data){
+	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
+	gchar *getting=(gchar *)service_wrapper->user_data;
 	debug("Users response: %i",msg->status_code);
 	
 	/* Check response */
-	if(!network_check_http(service, msg))
-		return FALSE;
-		
+	if(!network_check_http(service_wrapper->service, msg)){
+		fetching_users=FALSE;
+		return;
+	}
+	
 	/* parse user list */
 	debug("Parsing user list");
 	GList *new_users;
-	if(!(new_users=users_new(service, msg)) )
-		return FALSE;
+	if(!(new_users=users_new(service_wrapper->service, msg)) ){
+		fetching_users=FALSE;
+		return;
+	}
 	
-	if(!all_users)
-		all_users=new_users;
-	else
-		all_users=g_list_concat(all_users, new_users);
-	
-	return TRUE;
-}/*network_get_users_page*/
+	if(g_str_equal(getting, "friends")){
+		if(!service_wrapper->service->friends)
+			service_wrapper->service->friends=new_users;
+		else
+			service_wrapper->service->friends=g_list_concat(service_wrapper->service->friends, new_users);
+	}else{
+		if(!service_wrapper->service->followers)
+			service_wrapper->service->followers=new_users;
+		else
+			service_wrapper->service->followers=g_list_concat(service_wrapper->service->followers, new_users);
+	}
+}/*network_users_glist_save*/
 
 
 /* Get an image from servers */
@@ -413,13 +415,14 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 	
 	debug("\t\tHTTP response: %s(#%i)", msg->reason_phrase, msg->status_code);
 	
-	if(in_reply_to_status_id||in_reply_to_service){
-		if(msg->status_code==404){
-			online_service_request(service_wrapper->service, POST, API_POST_STATUS, network_tweet_cb, "ReTweet", (gchar *)service_wrapper->formdata);
-		}
-		if(service_wrapper->service==online_services_get_last_connected(online_services)){
-			if(in_reply_to_status_id) in_reply_to_status_id=0;
-			if(in_reply_to_service) in_reply_to_service=NULL;
+	if(in_reply_to_service){
+		if(service_wrapper->service==in_reply_to_service){
+			in_reply_to_service=NULL;
+			in_reply_to_status_id=0;
+			if(msg->status_code==404){
+				debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", service_wrapper->service->decoded_key);
+				online_service_request(service_wrapper->service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)service_wrapper->formdata);
+			}
 		}
 	}
 	
@@ -444,6 +447,8 @@ void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer u
 	network_timeout_new();
 	
 	if(!network_check_http(service_wrapper->service, msg)) {
+		if(msg->status_code==100)
+			online_service_request(service_wrapper->service, QUEUE, new_timeline, network_display_timeline, new_timeline, NULL);
 		online_service_wrapper_free(service_wrapper);
 		return;
 	}
@@ -483,7 +488,7 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 	/* check response */
 	gchar *image_filename=NULL;
 	if(!(network_check_http(service_wrapper->service, msg)))
-		image_filename=images_get_unknown_image_filename();
+		image_filename=cache_images_get_unknown_image_filename();
 	else{
 		/* Save image data */
 		debug("Saving avatar to file: %s", image->src);
@@ -493,7 +498,7 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 						msg->response_body->length,
 					NULL
 		)))
-			image_filename=images_get_unknown_image_filename();
+			image_filename=cache_images_get_unknown_image_filename();
 		else
 			image_filename=g_strdup(image->src);
 	}

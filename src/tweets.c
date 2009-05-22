@@ -101,7 +101,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	selected_tweet->id=id;
 	selected_tweet->user_id=user_id;
 	selected_tweet->user_name=g_strdup(user_name);
-	selected_tweet->tweet=g_strdup(tweet);
+	selected_tweet->tweet=g_uri_unescape_string(tweet, NULL);
 	if(!G_STR_EMPTY(selected_tweet->user_name))
 		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, FALSE)) && online_services->connected > 1 ))
 			selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
@@ -218,7 +218,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
 	if(in_reply_to_service) in_reply_to_service=NULL;
-	tweet_view_show_tweet(current_service, 0, 0, "", "", "", "", "", NULL);
+	tweet_view_show_tweet(online_services_connected_get_first(online_services), 0, 0, "", "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
 	unset_selected_tweet();
 }/*tweets_new_tweet*/

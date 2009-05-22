@@ -15,7 +15,8 @@ data/get2gnow.schemas.in
 src/about.c
 src/app.c
 src/hint.c
-src/main.c
+src/core.c
+src/tweet-view.c
 src/network.c
 src/parser.c
 src/preferences.c

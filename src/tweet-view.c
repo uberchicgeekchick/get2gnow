@@ -69,6 +69,7 @@
 #include "geometry.h"
 #include "preferences.h"
 #include "tweet-view.h"
+#include "popup-dialog.h"
 
 
 /********************************************************
@@ -104,8 +105,6 @@ static void tweet_view_tweet_selected_buttons_show(gboolean show);
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
 static void tweet_view_sexy_send(gpointer service, gpointer user_data);
 
-static void tweet_view_dm_data_fill(GList *followers);
-static void tweet_view_dm_data_set_sensitivity(GtkButton *button);
 static void tweet_view_dm_data_show(void);
 static void tweet_view_dm_data_hide(void);
 
@@ -232,11 +231,9 @@ TweetView *tweet_view_new(GtkWindow *parent){
 			NULL
 	);
 	
-	/*
-	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tweet_view->friends_combo_box), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tweet_view->friends_combo_box), renderer, "text", 0, NULL);
-	*/
+	gchar *tweet_view_title=g_strdup_printf("%s - TweetView", _(GETTEXT_PACKAGE));
+	gtk_window_set_title(tweet_view->tweet_view, tweet_view_title);
+	g_free(tweet_view_title);
 	
 	if(!( parent && gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE) )){
 		debug("TweetView's set to be embed, no further setup needed.");
@@ -599,7 +596,7 @@ static void tweet_view_sexy_send(gpointer service, gpointer user_data){
 		return;
 	}
 	
-	gchar *tweet=url_encode(GTK_ENTRY(tweet_view->sexy_entry)->text);
+	gchar *tweet=g_uri_escape_string(GTK_ENTRY(tweet_view->sexy_entry)->text, NULL, TRUE);
 	const gchar *user_name=(const gchar *)user_data;
 	if(G_STR_EMPTY(user_name))
 		network_post_status(tweet);
@@ -611,8 +608,7 @@ static void tweet_view_sexy_send(gpointer service, gpointer user_data){
 }/*tweet_view_sexy_send*/
 
 void tweet_view_new_dm(void){
-	tweet_view_dm_data_set_sensitivity(tweet_view->dm_form_show);
-	tweet_view_dm_data_fill( user_get_followers(FALSE) );
+	popup_select_service( (gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE) ?tweet_view->tweet_view :app_get_window()) );
 }/*tweets_new_dm*/
 
 void tweet_view_dm_data_fill(GList *followers){
@@ -648,7 +644,11 @@ void tweet_view_dm_data_fill(GList *followers){
 	}
 }/*tweet_view_dm_data_fill*/
 
-static void tweet_view_dm_data_set_sensitivity(GtkButton *button){
+GtkButton *tweet_view_get_dm_form_show_button(void){
+	return tweet_view->dm_form_show;
+}/*tweet_view_get_dm_form_show_button*/
+
+void tweet_view_dm_data_set_sensitivity(GtkButton *button){
 	gboolean dm_activate=( button==tweet_view->dm_form_show ?TRUE :FALSE );
 	gtk_widget_set_sensitive( GTK_WIDGET(tweet_view->dm_form_hbox), dm_activate );
 	gtk_widget_set_sensitive( GTK_WIDGET(tweet_view->friends_combo_box), dm_activate );

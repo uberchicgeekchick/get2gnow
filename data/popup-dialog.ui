@@ -55,9 +55,9 @@
                     <property name="visible">True</property>
                     <property name="left_padding">12</property>
                     <child>
-                      <object class="GtkComboBox" id="online_service_combobox">
+                      <object class="GtkComboBox" id="online_services_combo_box">
                         <property name="visible">True</property>
-                        <property name="model">online_service_liststore</property>
+                        <property name="model">online_services_list_store</property>
                         <child>
                           <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
                           <attributes>
@@ -137,7 +137,7 @@
       <action-widget response="-5">button2</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkListStore" id="online_service_liststore">
+  <object class="GtkListStore" id="online_services_list_store">
     <columns>
       <!-- column-name url -->
       <column type="gchararray"/>

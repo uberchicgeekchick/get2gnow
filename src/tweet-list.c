@@ -314,7 +314,7 @@ GtkListStore *tweet_list_get_store(void){
 
 void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter){
 	GdkPixbuf *pixbuf;
-	if( !(pixbuf=images_get_pixbuf_from_filename( image_filename )) )
+	if( !(pixbuf=images_get_pixbuf_from_filename((gchar *)image_filename)) )
 		return;
 	
 	debug("Adding image: '%s' to tweet_view.", image_filename);

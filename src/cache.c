@@ -63,15 +63,17 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAINS "Cache:Requests:OnlineServices:Tweets:Users:Images:Files:I/O:Setup:Start-Up"
+#define DEBUG_DOMAINS "Cache:Requests:OnlineServices:Tweets:Users:Images:Files:I/O:Setup:Start-Up:Shutdown"
 #include "debug.h"
 
 static gchar *cache_prefix=NULL;
+static gchar *unknown_image_filename=NULL;
 
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+static void cache_clean_up_dir(const gchar *cache_subdir);
 static void cache_clean_up_dir_absolute(const gchar *cache_dir);
 static void cache_clean_up_file(const gchar *cache_file);
 
@@ -81,10 +83,16 @@ static void cache_clean_up_file(const gchar *cache_file);
  ********************************************************/
 void cache_init(void){
 	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, NULL);
+	cache_images_get_unknown_image_filename();
 }/*cache_init*/
 
 void cache_deinit(void){
+	debug("**SHUTDOWN:** releasing memory of cache prefix: %s.", cache_prefix);
 	g_free(cache_prefix);
+	
+	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", unknown_image_filename);
+	g_free(unknown_image_filename);
+	unknown_image_filename=NULL;
 }/*cache_deinit*/
 
 static void cache_clean_up_dir_absolute(const gchar *cache_dir_path){
@@ -129,11 +137,100 @@ static void cache_clean_up_file(const gchar *cache_file){
 	g_object_unref(cache_gfileinfo);
 }/*cache_clean_up_file*/
 
-void cache_clean_up_dir(const gchar *cache_subdir){
+static void cache_clean_up_dir(const gchar *cache_subdir){
 	gchar *cache_dir_path=g_build_filename(cache_prefix, cache_subdir, NULL);
 	cache_clean_up_dir_absolute(cache_dir_path);
 	g_free(cache_dir_path);
 }/*cache_clean_up_dir*/
+
+gchar *cache_images_get_unknown_image_filename(void){
+	if(unknown_image_filename){
+		debug("Using unkown image: %s.", unknown_image_filename);
+		return g_strdup(unknown_image_filename);
+	}
+	
+	debug("**NOTICE:** Setting inital unknown image.");
+	
+	gchar *home_unknown_image_filename=NULL;
+#ifdef GNOME_ENABLE_DEBUG
+	home_unknown_image_filename=g_build_filename(BUILDDIR, "data", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
+#else
+	home_unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
+	if(!(g_file_test(home_unknown_image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR ))){
+		g_free(home_unknown_image_filename);
+		home_unknown_image_filename=g_build_filename(BUILDDIR, "data", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
+	}
+#endif
+	
+	
+	GtkImage *stock_unknown_image=NULL;
+	if(!( (stock_unknown_image=(GtkImage *)gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)) )){
+		debug("\t\t**WARNING:** Unable to load stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
+		unknown_image_filename=g_strdup(home_unknown_image_filename);
+	}else{
+		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
+		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
+		g_object_unref(stock_unknown_image);
+		if(G_STR_EMPTY(unknown_image_filename)){
+			debug("\t\t**WARNING:** Unable to get 'file' from stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
+			unknown_image_filename=g_strdup(home_unknown_image_filename);
+		}
+	}
+	
+	g_free(home_unknown_image_filename);
+	
+	return cache_images_get_unknown_image_filename();
+}/*cache_images_get_unknown_image_filename*/
+
+gchar *cache_images_get_filename(User *user){
+	if(G_STR_EMPTY(user->user_name) || G_STR_EMPTY(user->image_url)){
+		debug("**ERROR** Unable to parse an empty url into an image filename.");
+		return cache_images_get_unknown_image_filename();
+	}
+	
+	debug("Creating image file name for '%s@%s' from image url: %s.", user->user_name, user->service->server, user->image_url);
+	
+	/*
+	 * image_name_info[] index explanation:
+	 *	0 == the url scheme, e.g. https, http, etc.
+	 *	1 == this is empty as a result of the '://' in url scheme.
+	 *	2 == the domain name
+	 *	n == the finale part of the url, i.e. the actual image's file name.
+	 */
+	gchar *image_file=NULL, **image_info=NULL;
+	image_info=g_strsplit(user->image_url, "/", -1);
+	guint n=g_strv_length(image_info)-1;
+	image_file=g_strdup(image_info[n]);
+	g_strfreev(image_info);
+	
+	if(G_STR_EMPTY(image_file)){
+		if(image_file) g_free(image_file);
+		debug("\t\t**WARNING:** Unable to parse url into a valid image filename.\n\t\tURL: [%s]", user->image_url);
+		return cache_images_get_unknown_image_filename();
+	}
+	
+	gchar *avatar_dir=g_build_filename(user->service->server, user->user_name, "avatars", NULL);
+	gchar *avatar_path=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, avatar_dir, NULL);
+	gchar *image_filename=g_build_filename(avatar_path, image_file, NULL );
+	if(!g_file_test(avatar_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)){
+		debug("\t\t*NOTICE:* Creating avatars directory: %s", avatar_path);
+		if(g_mkdir_with_parents(avatar_path, S_IRUSR|S_IWUSR|S_IXUSR)){
+			debug("***ERROR:*** Failed to create avatar directory: [%s].", avatar_path);
+			return cache_images_get_unknown_image_filename();
+		}
+	}else if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) ))
+		cache_clean_up_dir(avatar_dir);
+	
+	
+	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", user->image_url, image_file, image_filename);
+	
+	g_free(avatar_path);
+	g_free(avatar_dir);
+	g_free(image_file);
+	
+	return image_filename;
+}/*cache_get_image_filename*/
+
 
 /********************************************************
  *                       eof                            *

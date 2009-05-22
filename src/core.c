@@ -96,7 +96,7 @@ void get2gnow_init(int argc, char **argv){
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
 	
-	g_set_application_name(_(PACKAGE_NAME));
+	g_set_application_name(_(GETTEXT_PACKAGE));
 	
 	if(!g_thread_supported()) g_thread_init(NULL);
 	
@@ -132,8 +132,6 @@ void get2gnow_deinit(void){
 	/* Clean up the ui */
 	g_object_unref(tweet_list_get());
 	g_object_unref(app_get());
-	
-	images_free();
 	
 	gconfig_shutdown();
 	

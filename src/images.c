@@ -56,133 +56,41 @@
 #include "cache.h"
 
 
-static gchar *unknown_image_filename=NULL;
-
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"
 #include "debug.h"
 
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
+static void images_validate_filename(gchar **image_filename);
 
 
-void images_free(void){
-	if(!unknown_image_filename)
+
+static void images_validate_filename(gchar **image_filename){
+	if(!G_STR_EMPTY(*image_filename))
 		return;
 	
-	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", unknown_image_filename);
-	g_free(unknown_image_filename);
-	unknown_image_filename=NULL;
-}/*images_free_resources*/
+	if(*image_filename) g_free(*image_filename);
+	*image_filename=cache_images_get_unknown_image_filename();
+}/*images_validate_filename*/
 
-gchar *images_get_unknown_image_filename(void){
-	if(unknown_image_filename){
-		debug("Using unkown image: %s.", unknown_image_filename);
-		return g_strdup(unknown_image_filename);
-	}
-				
-	debug("**NOTICE:** Setting inital unknown image.");
-	
-	gchar *home_unknown_image_filename=NULL;
-#ifdef GNOME_ENABLE_DEBUG
-	home_unknown_image_filename=g_build_filename(BUILDDIR, "data", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-#else
-	home_unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-	if(!(g_file_test(home_unknown_image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR ))){
-		g_free(home_unknown_image_filename);
-		home_unknown_image_filename=g_build_filename(BUILDDIR, "data", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-	}
-#endif
-	
-	GtkImage *stock_unknown_image=NULL;
-	if(!( (stock_unknown_image=(GtkImage *)gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)) )){
-		debug("\t\t**WARNING:** Unable to load stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
-		unknown_image_filename=g_strdup(home_unknown_image_filename);
-	}else{
-		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
-		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
-		g_object_unref(stock_unknown_image);
-		if(G_STR_EMPTY(unknown_image_filename)){
-			debug("\t\t**WARNING:** Unable to get 'file' from stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
-			unknown_image_filename=g_strdup(home_unknown_image_filename);
-		}
-	}
-	
-	g_free(home_unknown_image_filename);
-	
-	return images_get_unknown_image_filename();
-}
-
-gchar *images_get_filename(User *user){
-	if(G_STR_EMPTY(user->user_name) || G_STR_EMPTY(user->image_url)){
-		debug("**ERROR** Unable to parse an empty url into an image filename.");
-		return images_get_unknown_image_filename();
-	}
-	
-	debug("Creating image file name for '%s@%s' from image url: %s.", user->user_name, user->service->server, user->image_url);
-	
-	/**
-	 * image_name_info[] index explanation:
-	 * 	0 == the url scheme, e.g. https, http, etc.
-	 * 	1 == this is empty as a result of the '://' in url scheme.
-	 * 	2 == the domain name
-	 * 	n || G_N_ELEMENTS == the file part of the url, i.e. the actual image's file name.
-	 */
-	gchar *image_file=NULL, **image_info=NULL;
-	image_info=g_strsplit(user->image_url, "/", -1);
-	guint n=g_strv_length(image_info)-1;
-	image_file=g_strdup(image_info[n]);
-	g_strfreev(image_info);
-	
-	if(G_STR_EMPTY(image_file)){
-		if(image_file) g_free(image_file);
-		debug("\t\t**WARNING:** Unable to parse url into a valid image filename.\n\t\tURL: [%s]", user->image_url);
-		return images_get_unknown_image_filename();
-	}
-	
-	gchar *avatar_dir=g_build_filename("avatars", user->service->server, user->user_name, NULL);
-	gchar *avatar_path=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, avatar_dir, NULL);
-	gchar *image_filename=g_build_filename(avatar_path, image_file, NULL );
-	if(!g_file_test(avatar_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)){
-		debug("\t\t*NOTICE:* Creating avatars directory: %s", avatar_path);
-		if(g_mkdir_with_parents(avatar_path, S_IRUSR|S_IWUSR|S_IXUSR)){
-			debug("***ERROR:*** Failed to create avatar directory: [%s].", avatar_path);
-			return images_get_unknown_image_filename();
-		}
-	}else if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) ))
-		cache_clean_up_dir(avatar_dir);
-	
-	
-	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", user->image_url, image_file, image_filename);
-	
-	g_free(avatar_path);
-	g_free(avatar_dir);
-	g_free(image_file);
-	
-	return image_filename;
-}//images_get_filename
-
-
-GtkImage *images_get_expanded_image_from_filename( const gchar *image_filename ){
+GtkImage *images_get_expanded_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesExpanded, ImagesExpanded );
 }//images_get_expanded_image_from_filename
 
-GtkImage *images_get_maximized_image_from_filename( const gchar *image_filename ){
+GtkImage *images_get_maximized_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesMaximum, ImagesMaximum );
 }//images_get_maximize_image_from_filename
 
-GtkImage *images_get_default_image_from_filename( const gchar *image_filename ){
+GtkImage *images_get_default_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesDefault, ImagesDefault );
 }//images_get_default_image_from_filename
 
-GtkImage *images_get_minimized_image_from_filename( const gchar *image_filename ){
+GtkImage *images_get_minimized_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
 }//images_get_minimize_image_from_filename
 
-GtkImage *images_get_image_from_filename( const gchar *image_filename ){
-	if(G_STR_EMPTY(image_filename)) {
-		if(image_filename) g_free((gchar *)image_filename);
-		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
-	}
+GtkImage *images_get_image_from_filename( gchar *image_filename ){
+	images_validate_filename(&image_filename);
 	
 	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename( image_filename );
 	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
@@ -192,11 +100,8 @@ GtkImage *images_get_image_from_filename( const gchar *image_filename ){
 
 
 
-GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gint width, gint height ){
-	if(G_STR_EMPTY(image_filename)) {
-		if(image_filename) g_free((gchar *)image_filename);
-		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
-	}
+GtkImage *images_get_scaled_image_from_filename( gchar *image_filename, gint width, gint height ){
+	images_validate_filename(&image_filename);
 	
 	images_validate_width(&width);
 	images_validate_height(&height);
@@ -207,19 +112,19 @@ GtkImage *images_get_scaled_image_from_filename( const gchar *image_filename, gi
 }//images_get_image_from_file
 
 
-GdkPixbuf *images_get_maximized_pixbuf_from_filename( const gchar *image_filename ){
+GdkPixbuf *images_get_maximized_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesMaximum, ImagesMaximum );
 }//images_get_maximize_pixbuf_from_filename
 
-GdkPixbuf *images_get_expanded_pixbuf_from_filename( const gchar *image_filename ){
+GdkPixbuf *images_get_expanded_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesExpanded, ImagesExpanded );
 }//images_get_expanded_pixbuf_from_filename
 
-GdkPixbuf *images_get_default_pixbuf_from_filename( const gchar *image_filename ){
+GdkPixbuf *images_get_default_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDefault, ImagesDefault );
 }//images_get_default_pixbuf_from_filename
 
-GdkPixbuf *images_get_minimized_pixbuf_from_filename( const gchar *image_filename ){
+GdkPixbuf *images_get_minimized_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
 }//images_get_minimize_pixbuf_from_filename
 
@@ -257,7 +162,7 @@ GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
 
 
 
-GdkPixbuf *images_get_pixbuf_from_filename( const gchar *image_filename ){
+GdkPixbuf *images_get_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDefault, ImagesDefault );
 }//images_get_from_filename
 
@@ -283,11 +188,8 @@ static void images_validate_height(gint *height){
 
 
 
-GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename ){
-	if(G_STR_EMPTY(image_filename)) {
-		if(image_filename) g_free((gchar *)image_filename);
-		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
-	}
+GdkPixbuf *images_get_unscaled_pixbuf_from_filename( gchar *image_filename ){
+	images_validate_filename(&image_filename);
 	
 	GError *error=NULL;
 	GdkPixbuf *pixbuf=NULL;
@@ -302,11 +204,8 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( const gchar *image_filename
 
 #ifdef gdk_pixbuf_new_from_file_at_scale
 /* GNOME 2.6 */
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
-	if(G_STR_EMPTY(image_filename)) {
-		if(image_filename) g_free((gchar *)image_filename);
-		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
-	}
+GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
+	images_validate_filename(&image_filename);
 	
 	if( width == ImagesUnscaled || height == ImagesUnscaled )
 		return images_get_unscaled_pixbuf_from_filename( image_filename );
@@ -327,15 +226,12 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, 
 
 #else
 
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
+GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
 	return images_get_and_scale_pixbuf_from_filename( image_filename, width, height );
 }//images_get_scaled_pixbuf_from_file
 
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename( const gchar *image_filename, gint width, gint height ){
-	if(G_STR_EMPTY(image_filename)) {
-		if(image_filename) g_free((gchar *)image_filename);
-		image_filename=g_strdup((const gchar *)images_get_unknown_image_filename());
-	}
+GdkPixbuf *images_get_and_scale_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
+	images_validate_filename(&image_filename);
 	
 	images_validate_width(&width);
 	images_validate_height(&height);

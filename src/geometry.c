@@ -99,6 +99,7 @@ enum {
  ********************************************************/
 static GtkWindow *geometry_get_window(ViewType view);
 static gchar **geometry_get_prefs_path(ViewType view);
+static void prefs_path_free(gchar **prefs_path);
 static void geometry_load_for_window(ViewType view);
 static void geometry_save_for_window(ViewType view);
 
@@ -148,7 +149,7 @@ static void geometry_load_for_window(ViewType view){
 		debug("Moving %s window to: x: %d, y: %d", prefs_path[PrefernceWindow], x, y);
 		gtk_window_move(window, x, y);
 	}
-	g_free(prefs_path);
+	prefs_path_free(prefs_path);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
@@ -176,7 +177,7 @@ static void geometry_save_for_window(ViewType view){
 		gconfig_set_int(prefs_path[PreferencePositionX], x);
 		gconfig_set_int(prefs_path[PreferencePositionY], y);
 	}
-	g_free(prefs_path);
+	prefs_path_free(prefs_path);
 }//geometry_save_for_window
  
 static GtkWindow *geometry_get_window(ViewType view){
@@ -248,6 +249,14 @@ static gchar **geometry_get_prefs_path(ViewType view){
 	return prefs_path;
 }
 
+static void prefs_path_free(gchar **prefs_path){
+	for(int i=0; i<PreferenceTotal; i++){
+		g_free(prefs_path[i]);
+		prefs_path[i]=NULL;
+	}
+	g_free(prefs_path);
+	prefs_path=NULL;
+}/*prefs_path_free*/
 
 /********************************************************
  *                       eof                            *

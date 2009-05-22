@@ -64,7 +64,7 @@
 #include "users.h"
 
 #include "gtkbuilder.h"
-#include "images.h"
+#include "cache.h"
 #include "parser.h"
 #include "label.h"
 
@@ -85,7 +85,7 @@ static User *user_constructor(OnlineService *service, gboolean a_follower);
 
 #define GtkBuilderUI "user-profile.ui"
 
-static GList *user_friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
+GList *friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
 gchar *user_action_to_string(UserAction action){
 	switch(action){
@@ -347,7 +347,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 		
 	} /* End of loop */
 	
-	user->image_filename=images_get_filename(user);
+	user->image_filename=cache_images_get_filename(user);
 	
 	return user;
 }
@@ -439,41 +439,44 @@ void user_free(User *user){
 }/*user_free*/
 
 /* Free a list of Users */
-void user_free_lists(void){
-	if(following_and_followers)
-		users_free("friends, ie who the user is following, and the authenticated user's followers", following_and_followers);
+void user_free_lists(OnlineService *service){
+	if(service->friends_and_followers)
+		users_free("friends, ie who the user is following, and the authenticated user's followers", service->friends_and_followers);
+	service->friends_and_followers=NULL;
 	
-	if(user_friends)
-		users_free("friends, ie who they're following", user_friends);
+	if(service->friends)
+		users_free("friends, ie who they're following", service->friends);
+	service->friends=NULL;
 	
-	if(user_followers)
-		users_free("followers", user_followers);
+	if(service->followers)
+		users_free("followers", service->followers);
+	service->followers=NULL;
 }/*user_free_lists*/
 
 
 void user_append_friend(User *user){
-	if(user_friends)
-		user_friends=g_list_append(user_friends, user );
+	if(user->service->friends)
+		user->service->friends=g_list_append(user->service->friends, user );
 	app_set_statusbar_msg (_("Friend Added."));
 }/*user_append_friend*/
 
 void user_remove_friend(User *user){
-	if(user_friends)
-		user_friends=g_list_remove(user_friends, user);
+	if(user->service->friends)
+		user->service->friends=g_list_remove(user->service->friends, user);
 	app_set_statusbar_msg (_("Friend Removed."));
 	user_free(user);
 }/*user_remove_friend*/
 
 
 void user_append_follower(User *user){
-	if(user_followers)
-		user_followers=g_list_append(user_followers, user );
+	if(user->service->followers)
+		user->service->followers=g_list_append(user->service->followers, user );
 	app_set_statusbar_msg (_("Follower Added."));
 }/*user_append_friend*/
 
 void user_remove_follower(User *user){
-	if(user_followers)
-		user_followers=g_list_remove(user_followers, user);
+	if(user->service->followers)
+		user->service->followers=g_list_remove(user->service->followers, user);
 	app_set_statusbar_msg (_("Follower Removed."));
 	user_free(user);
 }/*user_remove_friend*/
@@ -485,9 +488,7 @@ void user_remove_follower(User *user){
  * 		GList: The list of friends (fetched previously)
  */
 GList *user_get_friends(gboolean refresh){
-	if(user_friends && !refresh)
-		return user_friends;
-	return user_friends=network_get_users_glist(TRUE);
+	return network_users_glist_get(TRUE, refresh);
 }
 
 
@@ -497,23 +498,22 @@ GList *user_get_friends(gboolean refresh){
  * 		GList: The list of friends (fetched previously)
  */
 GList *user_get_followers(gboolean refresh){
-	if(user_followers && !refresh)
-		return user_followers;
-	return user_followers=network_get_users_glist(FALSE);
+	return network_users_glist_get(FALSE, refresh);
 }
 
 GList *user_get_friends_and_followers(gboolean refresh){
-	if(following_and_followers && !refresh)
-		return following_and_followers;
+	if(selected_service && selected_service->friends_and_followers && !refresh)
+		return selected_service->friends_and_followers;
 	
-	if( refresh || !user_friends)
-		user_friends=network_get_users_glist( TRUE );
-	if( refresh || !user_followers)
-		user_followers=network_get_users_glist( FALSE );
+	if( refresh || !selected_service->friends)
+		network_users_glist_get(TRUE, refresh);
 	
-	following_and_followers=g_list_alloc();
-	following_and_followers=g_list_concat( user_followers, user_friends );
-	following_and_followers=g_list_sort(following_and_followers, (GCompareFunc) usrcasecmp);
-	return following_and_followers;
+	if( refresh || !selected_service->followers)
+		network_users_glist_get(FALSE, refresh);
+	
+	selected_service->friends_and_followers=g_list_alloc();
+	selected_service->friends_and_followers=g_list_concat(selected_service->followers, selected_service->friends);
+	selected_service->friends_and_followers=g_list_sort(selected_service->friends_and_followers, (GCompareFunc)usrcasecmp);
+	return selected_service->friends_and_followers;
 }/*user_get_friends_and_followers*/
 

@@ -548,7 +548,7 @@ static void app_timeline_cb(GtkRadioMenuItem *item, App *app){
 		return network_get_timeline(API_TIMELINE_PUBLIC);
 		
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_mine)->active)
-		return network_get_user_timeline(current_service, NULL);
+		return network_get_user_timeline(NULL, NULL);
 		
 	if(GTK_CHECK_MENU_ITEM(app_priv->timeline_favorites)->active)
 		return network_get_timeline(API_FAVORITES);

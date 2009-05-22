@@ -254,13 +254,14 @@ static void following_refresh_response_cb(GtkButton *button, Followers *followin
 }//following_refresh_response_cb
 
 void following_viewer_load_lists(GList *users){
-	User		*user;
-	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
-	GList		*list;
-
+	User		*user=NULL;
+	GList		*list=NULL;
+	
+	popup_select_service(following->viewer);
 	/* Following */
 	for(list=users; list; list = list->next){
 		user = (User *)list->data;
+		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append( GTK_LIST_STORE(following->following_store), iter);
 
 		gtk_list_store_set(
@@ -271,8 +272,8 @@ void following_viewer_load_lists(GList *users){
 					USER_POINTER, user,
 					-1
 		);
+		g_free(iter);
 	}
-	g_free(iter);
 }
 
 void following_viewer_show(GtkWindow *parent){

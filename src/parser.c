@@ -283,7 +283,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		xmlCleanupParser();
 		return FALSE;
 	}
-	guint service_store_index=(online_services_get_which_connected(online_services, service)*20);
+	guint service_store_index=(online_services_connected_get_service_index(online_services, service)*20);
 	
 	/* Get the ListStore and clear previous */
 	store=tweet_list_get_store();

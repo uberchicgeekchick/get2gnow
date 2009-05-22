@@ -84,7 +84,6 @@ extern gboolean getting_followers;
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
-gchar *url_encode(const gchar *text);
 gboolean network_check_http(OnlineService *service, SoupMessage *msg);
 void network_set_state_loading_timeline(const gchar *timeline, ReloadState state);
 
@@ -97,7 +96,7 @@ void network_get_timeline(const gchar *uri_timeline);
 void network_get_user_timeline(OnlineService *service, const gchar *username);
 void network_refresh(void);
 
-GList *network_get_users_glist(gboolean get_friends);
+GList *network_users_glist_get(gboolean get_friends, gboolean refresh);
 
 gboolean network_download_avatar(User *user);
 void network_get_image(User *user, GtkTreeIter *iter);

@@ -148,7 +148,10 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 
 void tweet_view_set_embed_toggle_and_image(void);
 
+GtkButton *tweet_view_get_dm_form_show_button(void);
 GtkComboBox *tweet_view_get_friends_combo_box(void);
+void tweet_view_dm_data_set_sensitivity(GtkButton *button);
+void tweet_view_dm_data_fill(GList *followers);
 
 void tweet_view_sexy_select(void);
 

@@ -356,7 +356,9 @@ static void friends_manager_view_timeline(GtkButton *button, FriendsManager *fri
 static void friends_manager_display_following_and_followers(gboolean refresh){
 	User		*following=NULL, *follower=NULL;
 	GList		*list=NULL;
-
+	
+	popup_select_service(friends_manager->dialog);
+	
 	GList *friends_and_followers=user_get_friends_and_followers(refresh);
 	
 	gboolean following_too=FALSE, follower_too=FALSE;
@@ -410,7 +412,7 @@ void friends_manager_show(GtkWindow *parent){
 	if(!(friends_manager && friends_manager->dialog ))
 		return friends_manager_setup(parent);
 	
-	gtk_window_present((GTK_WINDOW( friends_manager->dialog )) );
+	gtk_window_present(friends_manager->dialog);
 }/*friends_manager_show*/
 
 

@@ -122,6 +122,10 @@ typedef struct {
 	gchar		*path;
 	gchar		*username;
 	gchar		*password;
+	
+	GList		*friends;
+	GList		*followers;
+	GList		*friends_and_followers;
 } OnlineService;
 
 typedef struct{
@@ -136,7 +140,7 @@ typedef enum{
 } OnlineServicesListStoreColumns;
 
 extern OnlineServices *online_services;
-extern OnlineService *current_service;
+extern OnlineService *selected_service;
 
 
 /********************************************************
@@ -151,9 +155,9 @@ void online_services_disconnect(OnlineServices *services);
 gboolean online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
 
 guint online_services_count_connections(OnlineServices *services);
-OnlineService *online_services_get_first_connected(OnlineServices *services);
-guint online_services_get_which_connected(OnlineServices *services, OnlineService *which_service);
-OnlineService *online_services_get_last_connected(OnlineServices *services);
+OnlineService *online_services_connected_get_first(OnlineServices *services);
+guint online_services_connected_get_service_index(OnlineServices *services, OnlineService *which_service);
+OnlineService *online_services_connected_get_last(OnlineServices *services);
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 

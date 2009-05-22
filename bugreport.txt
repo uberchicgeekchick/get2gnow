@@ -1,0 +1,204 @@
+System: Linux 2.6.27.21-0.1-default #1 SMP 2009-03-31 14:50:44 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Gilouche
+Icon Theme: Lila
+GTK+ Modules: canberra-gtk-module, pk-gtk-module, gnomebreakpad
+
+Memory status: size: 313208832 vsize: 313208832 resident: 23752704 share: 13680640 rss: 23752704 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1242931469 rtime: 46 utime: 37 stime: 9 cutime:1 cstime: 1 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/projects/gtk/get2gnow/src/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+[New Thread 0x7f92c054a950 (LWP 5403)]
+[New Thread 0x7f92c42a4950 (LWP 5401)]
+[New Thread 0x7f92c56af950 (LWP 5397)]
+[New Thread 0x7f92c5eb0950 (LWP 5396)]
+0x00007f92caa7b5af in waitpid () from /lib64/libpthread.so.0
+#0  0x00007f92caa7b5af in waitpid () from /lib64/libpthread.so.0
+#1  0x00007f92cacfaed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+#2  0x00007f92cacfb1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+#3  0x00007f92c65edbf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+#4  <signal handler called>
+#5  0x00000000004123d7 in online_service_request ()
+#6  0x0000000000413e2b in network_get_users_glist ()
+#7  0x00000000004167bd in user_get_followers ()
+#8  0x000000000041831a in tweet_view_new_dm ()
+#9  0x00007f92cf1f61e8 in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+#10 0x00007f92cb7bc36d in g_closure_invoke () from /usr/lib64/libgobject-2.0.so.0
+#11 0x00007f92cb7d247c in ?? () from /usr/lib64/libgobject-2.0.so.0
+#12 0x00007f92cb7d337d in g_signal_emit_valist () from /usr/lib64/libgobject-2.0.so.0
+#13 0x00007f92cb7d3a13 in g_signal_emit () from /usr/lib64/libgobject-2.0.so.0
+#14 0x00007f92cf2fe01e in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+#15 0x00007f92cf3102cb in gtk_window_propagate_key_event () from /usr/lib64/libgtk-x11-2.0.so.0
+#16 0x00007f92cf31333b in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+#17 0x00007f92cf1f61e8 in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+#18 0x00007f92cb7bc36d in g_closure_invoke () from /usr/lib64/libgobject-2.0.so.0
+#19 0x00007f92cb7d1bde in ?? () from /usr/lib64/libgobject-2.0.so.0
+#20 0x00007f92cb7d337d in g_signal_emit_valist () from /usr/lib64/libgobject-2.0.so.0
+#21 0x00007f92cb7d3a13 in g_signal_emit () from /usr/lib64/libgobject-2.0.so.0
+#22 0x00007f92cf2fe01e in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+#23 0x00007f92cf1eeb4d in gtk_propagate_event () from /usr/lib64/libgtk-x11-2.0.so.0
+#24 0x00007f92cf1efb93 in gtk_main_do_event () from /usr/lib64/libgtk-x11-2.0.so.0
+#25 0x00007f92cee69bac in ?? () from /usr/lib64/libgdk-x11-2.0.so.0
+#26 0x00007f92cacc362a in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
+#27 0x00007f92cacc6d00 in ?? () from /usr/lib64/libglib-2.0.so.0
+#28 0x00007f92cacc71cd in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+#29 0x00007f92cf1effa7 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
+#30 0x000000000040a6ce in main ()
+
+Thread 5 (Thread 0x7f92c5eb0950 (LWP 5396)):
+#0  0x00007f92caa77d59 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f92d05d3a44 in soup_dns_lookup_resolve () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#2  0x00007f92d05c5b5f in soup_address_resolve_sync () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#3  0x00007f92d05e5389 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#4  0x00007f92d05e57b9 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#5  0x00007f92cacecc84 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007f92caa74070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#7  0x00007f92ca7e710d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#8  0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 4 (Thread 0x7f92c56af950 (LWP 5397)):
+#0  0x00007f92ca7de386 in poll () from /lib64/libc.so.6
+No symbol table info available.
+#1  0x00007f92c97c1864 in ?? () from /lib64/libresolv.so.2
+No symbol table info available.
+#2  0x00007f92c97bfb80 in __libc_res_nquery () from /lib64/libresolv.so.2
+No symbol table info available.
+#3  0x00007f92c97c01ad in ?? () from /lib64/libresolv.so.2
+No symbol table info available.
+#4  0x00007f92c97c03a3 in __libc_res_nsearch () from /lib64/libresolv.so.2
+No symbol table info available.
+#5  0x00007f92c4aa8ff4 in _nss_dns_gethostbyname3_r () from /lib64/libnss_dns.so.2
+No symbol table info available.
+#6  0x00007f92ca7d15d4 in ?? () from /lib64/libc.so.6
+No symbol table info available.
+#7  0x00007f92ca7d35d2 in getaddrinfo () from /lib64/libc.so.6
+No symbol table info available.
+#8  0x00007f92d05d3e14 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#9  0x00007f92cacecc84 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#10 0x00007f92caa74070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#11 0x00007f92ca7e710d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#12 0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 3 (Thread 0x7f92c42a4950 (LWP 5401)):
+#0  0x00007f92caa77d59 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f92d05d3a44 in soup_dns_lookup_resolve () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#2  0x00007f92d05c5b5f in soup_address_resolve_sync () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#3  0x00007f92d05e5389 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#4  0x00007f92d05e57b9 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#5  0x00007f92cacecc84 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007f92caa74070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#7  0x00007f92ca7e710d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#8  0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 2 (Thread 0x7f92c054a950 (LWP 5403)):
+#0  0x00007f92caa77d59 in pthread_cond_wait@@GLIBC_2.3.2 () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f92d05d3a44 in soup_dns_lookup_resolve () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#2  0x00007f92d05c5b5f in soup_address_resolve_sync () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#3  0x00007f92d05e5389 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#4  0x00007f92d05e57b9 in ?? () from /usr/lib64/libsoup-2.4.so.1
+No symbol table info available.
+#5  0x00007f92cacecc84 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007f92caa74070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#7  0x00007f92ca7e710d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#8  0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 1 (Thread 0x7f92d11b8780 (LWP 5394)):
+#0  0x00007f92caa7b5af in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f92cacfaed9 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#2  0x00007f92cacfb1e8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#3  0x00007f92c65edbf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+No symbol table info available.
+#4  <signal handler called>
+No symbol table info available.
+#5  0x00000000004123d7 in online_service_request ()
+No locals.
+#6  0x0000000000413e2b in network_get_users_glist ()
+No locals.
+#7  0x00000000004167bd in user_get_followers ()
+No locals.
+#8  0x000000000041831a in tweet_view_new_dm ()
+No locals.
+#9  0x00007f92cf1f61e8 in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#10 0x00007f92cb7bc36d in g_closure_invoke () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#11 0x00007f92cb7d247c in ?? () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#12 0x00007f92cb7d337d in g_signal_emit_valist () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#13 0x00007f92cb7d3a13 in g_signal_emit () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#14 0x00007f92cf2fe01e in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#15 0x00007f92cf3102cb in gtk_window_propagate_key_event () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#16 0x00007f92cf31333b in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#17 0x00007f92cf1f61e8 in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#18 0x00007f92cb7bc36d in g_closure_invoke () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#19 0x00007f92cb7d1bde in ?? () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#20 0x00007f92cb7d337d in g_signal_emit_valist () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#21 0x00007f92cb7d3a13 in g_signal_emit () from /usr/lib64/libgobject-2.0.so.0
+No symbol table info available.
+#22 0x00007f92cf2fe01e in ?? () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#23 0x00007f92cf1eeb4d in gtk_propagate_event () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#24 0x00007f92cf1efb93 in gtk_main_do_event () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#25 0x00007f92cee69bac in ?? () from /usr/lib64/libgdk-x11-2.0.so.0
+No symbol table info available.
+#26 0x00007f92cacc362a in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#27 0x00007f92cacc6d00 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#28 0x00007f92cacc71cd in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#29 0x00007f92cf1effa7 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#30 0x000000000040a6ce in main ()
+No locals.
+The program is running.  Quit anyway (and detach it)? (y or n) [answered Y; input not from terminal]

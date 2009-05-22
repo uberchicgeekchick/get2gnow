@@ -23,12 +23,12 @@
 
 #include <gtk/gtk.h>
 
-void popup_select_service( GtkWindow *parent );
-void popup_friend_profile( GtkWindow *parent );
-void popup_friend_tweets( GtkWindow *parent );
-void popup_friend_follow( GtkWindow *parent );
-void popup_friend_unfollow( GtkWindow *parent );
-void popup_friend_block( GtkWindow *parent );
-void popup_friend_unblock( GtkWindow *parent );
+void popup_select_service(GtkWindow *parent);
+void popup_friend_profile(GtkWindow *parent);
+void popup_friend_tweets(GtkWindow *parent);
+void popup_friend_follow(GtkWindow *parent);
+void popup_friend_unfollow(GtkWindow *parent);
+void popup_friend_block(GtkWindow *parent);
+void popup_friend_unblock(GtkWindow *parent);
 
 #endif /* __POPUP_DIALOG_H__ */

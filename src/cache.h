@@ -63,6 +63,9 @@
 #include <gio/gio.h>
 #include <glib/gstdio.h>
 
+#include "users.h"
+#include "images.h"
+
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
@@ -72,7 +75,8 @@
  *          Global method  & function prototypes                      *
  **********************************************************************/
 void cache_init(void);
-void cache_clean_up_dir(const gchar *cache_subdir);
+gchar *cache_images_get_unknown_image_filename(void);
+gchar *cache_images_get_filename(User *user);
 void cache_deinit(void);
 
 #endif /* __CACHE_H__ */
