@@ -184,6 +184,7 @@ static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
 static void popup_destroy_and_free( Popup *popup ){
 	gtk_widget_destroy( GTK_WIDGET(popup->dialog) );
 	g_free( popup );
+	popup=NULL;
 }/*popup_destroy_and_free*/
 
 void popup_select_service( GtkWindow *parent ){
@@ -301,8 +302,11 @@ static void popup_dialog_show(GtkWindow *parent, UserAction action ){
 		gtk_widget_hide( GTK_WIDGET(popup->username_label) );
 		gtk_widget_hide( GTK_WIDGET(popup->entry) );
 		gtk_window_set_modal(GTK_WINDOW(popup->dialog), TRUE);
-		gtk_dialog_run(popup->dialog);
-		return;
+		switch(gtk_dialog_run(popup->dialog)){
+			default:
+				gtk_widget_destroy(popup->dialog);
+				return;
+		}
 	}
 	
 	gtk_window_present(GTK_WINDOW(popup->dialog));

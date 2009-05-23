@@ -148,8 +148,6 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 
 void tweet_view_set_embed_toggle_and_image(void);
 
-GtkComboBox *tweet_view_get_friends_combo_box(void);
-
 void tweet_view_sexy_select(void);
 
 void tweet_view_sexy_prefix_char(const char c);
