@@ -121,9 +121,6 @@ static void popup_response_cb(GtkWidget *widget, gint response, Popup *popup){
 		return;
 	}
 	
-	if( response != GTK_RESPONSE_OK )
-		return gtk_widget_destroy(widget);
-	
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	OnlineService		*service=NULL;
 	const gchar		*username=gtk_entry_get_text(popup->entry);
@@ -296,19 +293,13 @@ static void popup_dialog_show(GtkWindow *parent, UserAction action ){
 	g_object_add_weak_pointer(G_OBJECT(popup->dialog), (gpointer) &popup);
 	gtk_window_set_transient_for(GTK_WINDOW(popup->dialog), parent);
 	
-	gtk_widget_show_all(GTK_WIDGET(popup->dialog));
-	
 	if(popup->action==SelectService){
-		gtk_widget_hide( GTK_WIDGET(popup->username_label) );
-		gtk_widget_hide( GTK_WIDGET(popup->entry) );
-		gtk_window_set_modal(GTK_WINDOW(popup->dialog), TRUE);
-		switch(gtk_dialog_run(popup->dialog)){
-			default:
-				gtk_widget_destroy(popup->dialog);
-				return;
-		}
+		gtk_widget_hide(GTK_WIDGET(popup->username_label));
+		gtk_widget_hide(GTK_WIDGET(popup->entry));
+		gtk_dialog_run(popup->dialog);
+		return;
 	}
 	
-	gtk_window_present(GTK_WINDOW(popup->dialog));
+	gtk_widget_show_all(GTK_WIDGET(popup->dialog));
 }/*popup_dialog_show*/
 
