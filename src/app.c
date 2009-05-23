@@ -232,15 +232,6 @@ static void app_finalize(GObject *object){
 	G_OBJECT_CLASS(app_parent_class)->finalize(object);
 }
 
-
-
-static void app_disconnect(void){
-	GtkListStore *store=tweet_list_get_store();
-	gtk_list_store_clear(store);
-	network_logout();
-	online_services_disconnect(online_services);
-}
-
 static void app_setup(void){
 	GtkBuilder	*ui;
 	GtkWidget	*scrolled_window;
@@ -736,12 +727,18 @@ static void app_login(void){
 }/*app_login*/
 
 static void app_reconnect(GtkMenuItem *item, App *app){
-	if(!(online_services_reconnect(online_services)))
+	if(!(online_services_relogin(online_services)))
 		return;
 	
 	app_retrieve_default_timeline();
 }/*app_reconnect*/
 
+static void app_disconnect(void){
+	GtkListStore *store=tweet_list_get_store();
+	gtk_list_store_clear(store);
+	network_logout();
+	online_services_disconnect(online_services);
+}/*app_disconnect*/
 
 /*
  * Function to set the default

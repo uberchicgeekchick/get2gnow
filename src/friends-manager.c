@@ -166,10 +166,6 @@ static void friends_manager_free(void){
 	friends_manager=NULL;
 }/*friends_manager_free*/
 
-static void friends_manager_refresh(GtkButton *button, FriendsManager *friends_manager){
-	friends_manager_display_following_and_followers(TRUE);
-}/*friends_manager_refresh*/
-
 static void friends_manager_follow(GtkButton   *button, FriendsManager *friends_manager){
 	GtkTreeSelection	*sel;
 	GtkTreeIter		*iter=g_new(GtkTreeIter, 1);
@@ -326,7 +322,6 @@ void friends_manager_view_profile(void){
 	g_free( user_name );
 }/*friends_manager_view_profile*/
 
-
 static void friends_manager_view_timeline(GtkButton *button, FriendsManager *friends_manager){
 	GtkTreeSelection	*selection=NULL;
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
@@ -352,14 +347,22 @@ static void friends_manager_view_timeline(GtkButton *button, FriendsManager *fri
 	if(iter) g_free(iter);
 }/*friends_manager_view_timeline*/
 
+static void friends_manager_refresh(GtkButton *button, FriendsManager *friends_manager){
+	popup_select_service(friends_manager->dialog);
+	friends_manager_display_following_and_followers(TRUE);
+}/*friends_manager_refresh*/
 
 static void friends_manager_display_following_and_followers(gboolean refresh){
+	popup_select_service(friends_manager->dialog);
+	if(!(selected_service)) return;
+	
 	User		*following=NULL, *follower=NULL;
 	GList		*list=NULL;
 	
-	popup_select_service(friends_manager->dialog);
+	GList *friends_and_followers=NULL;
 	
-	GList *friends_and_followers=user_get_friends_and_followers(refresh);
+	if(!(friends_and_followers=user_get_friends_and_followers(refresh)))
+		return;
 	
 	gboolean following_too=FALSE, follower_too=FALSE;
 	for( list=friends_and_followers; list; list=list->next ){
@@ -409,6 +412,10 @@ static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_mana
 
 
 void friends_manager_show(GtkWindow *parent){
+	popup_select_service(friends_manager->dialog);
+	
+	if(!(selected_service)) return;
+	
 	if(!(friends_manager && friends_manager->dialog ))
 		return friends_manager_setup(parent);
 	

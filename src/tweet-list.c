@@ -205,8 +205,8 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 		case GDK_End: case GDK_KP_End:
 			tweet_list_index=19;
 			break;
-		case GDK_Page_Up: tweet_list_index-=5; break;
-		case GDK_Page_Down: tweet_list_index+=5; break;
+		case GDK_Page_Up: tweet_list_index-=10; break;
+		case GDK_Page_Down: tweet_list_index+=10; break;
 		default: return;
 	}//switch
 	

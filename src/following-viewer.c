@@ -119,8 +119,9 @@ static void following_response_cb(GtkDialog *dialog, gint response, Followers *f
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
-static void following_destroy_cb(GtkDialog *dialog, Followers *following){
+static void following_destroy_cb(GtkDialog *dialog, Followers *following_viewer){
 	g_free(following);
+	following=NULL;
 }
 
 static void following_rem_response_cb( GtkButton *button, Followers *following ){
@@ -250,14 +251,16 @@ static void list_following_activated_cb(GtkTreeView *tree_view, GtkTreePath *pat
 }
 
 static void following_refresh_response_cb(GtkButton *button, Followers *following){
+	popup_select_service(following->viewer);
 	following_viewer_load_lists( user_get_friends(TRUE) );
 }//following_refresh_response_cb
 
 void following_viewer_load_lists(GList *users){
+	if(!(users)) return;
+	
 	User		*user=NULL;
 	GList		*list=NULL;
 	
-	popup_select_service(following->viewer);
 	/* Following */
 	for(list=users; list; list = list->next){
 		user = (User *)list->data;
@@ -277,6 +280,10 @@ void following_viewer_load_lists(GList *users){
 }
 
 void following_viewer_show(GtkWindow *parent){
+	popup_select_service(following->viewer);
+	
+	if(!(selected_service)) return;
+	
 	if(!(following->viewer && following->viewer ))
 		return following_viewer_setup(parent);
 	

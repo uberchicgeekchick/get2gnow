@@ -127,7 +127,7 @@ void user_free_lists(OnlineService *service);
 User *user_parse_new(OnlineService *service, SoupMessage *xml);
 User *user_parse_profile(OnlineService *service, xmlNode *a_node);
 User *user_fetch_profile(OnlineService *service, const gchar *user_name);
-int user_sort_by_user_name( User *a, User *b );
+int user_sort_by_user_name(User *a, User *b);
 void user_free(User *user);
 
 #endif //__USER_H__

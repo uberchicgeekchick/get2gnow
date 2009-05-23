@@ -96,6 +96,9 @@ static gboolean tweet_view_delete_event_cb(GtkWidget *window, GdkEvent *event, T
 static gboolean tweet_view_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, TweetView *tweet_view);
 static gboolean tweet_view_configure_event_timeout_cb(GtkWidget *widget);
 
+static void tweet_view_dm_data_set_sensitivity(GtkButton *button);
+static void tweet_view_dm_data_fill(GList *followers);
+
 static void tweet_view_sexy_init(void);
 static void tweet_view_reorder(void);
 
@@ -105,6 +108,7 @@ static void tweet_view_tweet_selected_buttons_show(gboolean show);
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
 static void tweet_view_sexy_send(gpointer service, gpointer user_data);
 
+static void tweet_view_dm_refresh(void);
 static void tweet_view_dm_data_show(void);
 static void tweet_view_dm_data_hide(void);
 
@@ -222,6 +226,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				
 				"dm_form_hide", "clicked", tweet_view_dm_data_set_sensitivity,
 				"dm_form_show", "clicked", tweet_view_new_dm,
+				"dm_refresh", "clicked", tweet_view_dm_refresh,
 				
 				"reply_button", "clicked", tweets_reply,
 				"retweet_button", "clicked", tweets_retweet,
@@ -609,9 +614,23 @@ static void tweet_view_sexy_send(gpointer service, gpointer user_data){
 
 void tweet_view_new_dm(void){
 	popup_select_service( (gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE) ?tweet_view->tweet_view :app_get_window()) );
+	
+	if(!(selected_service)) return;
+	
+	tweet_view_dm_data_set_sensitivity(tweet_view->dm_form_show);
+	tweet_view_dm_data_fill( user_get_followers(FALSE) );
 }/*tweets_new_dm*/
 
-void tweet_view_dm_data_fill(GList *followers){
+static void tweet_view_dm_refresh(void){
+	popup_select_service( (gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE) ?tweet_view->tweet_view :app_get_window()) );
+	tweet_view_dm_data_fill( user_get_followers(TRUE) );
+}/*tweet_view_dm_refresh*/
+
+static void tweet_view_dm_data_fill(GList *followers){
+	if(!(followers)) {
+		return;
+	}
+	
 	GList		*list;
 	User		*user;
 	GtkListStore	*model_followers;
@@ -626,10 +645,12 @@ void tweet_view_dm_data_fill(GList *followers){
 					USER_POINTER, NULL,
 				-1
 	);
+	g_free(iter);
 	
 	for(list=followers; list; list=list->next) {
 		user=(User *)list->data;
-		gchar *user_label=g_strdup_printf("%s from %s", user->user_name, user->service->decoded_key);
+		gchar *user_label=g_strdup_printf("%s <%s> from %s", user->user_name, user->nick_name, user->service->decoded_key);
+		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(model_followers, iter);
 		gtk_list_store_set(
 				model_followers,
@@ -644,11 +665,7 @@ void tweet_view_dm_data_fill(GList *followers){
 	}
 }/*tweet_view_dm_data_fill*/
 
-GtkButton *tweet_view_get_dm_form_show_button(void){
-	return tweet_view->dm_form_show;
-}/*tweet_view_get_dm_form_show_button*/
-
-void tweet_view_dm_data_set_sensitivity(GtkButton *button){
+static void tweet_view_dm_data_set_sensitivity(GtkButton *button){
 	gboolean dm_activate=( button==tweet_view->dm_form_show ?TRUE :FALSE );
 	gtk_widget_set_sensitive( GTK_WIDGET(tweet_view->dm_form_hbox), dm_activate );
 	gtk_widget_set_sensitive( GTK_WIDGET(tweet_view->friends_combo_box), dm_activate );

@@ -211,6 +211,26 @@ gboolean online_services_login(OnlineServices *services){
 }/*online_services_login*/
 
 /* Login to services. */
+gboolean online_services_relogin(OnlineServices *services){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
+	
+	gboolean	relogin_okay=FALSE;
+	for(a=services->accounts; a; a=a->next){
+		service=(OnlineService *)a->data;
+		if(!service->connected && service->auto_connect)
+			online_service_reconnect(service);
+		
+		if(service->connected){
+			online_service_login(service);
+			if(!relogin_okay) relogin_okay=TRUE;
+		}
+	}
+	app_state_on_connection(relogin_okay);
+	return relogin_okay;
+}/*online_services_relogin*/
+
+/* Reconnect to services. */
 gboolean online_services_reconnect(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
@@ -231,6 +251,7 @@ void online_services_disconnect(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
+	selected_service=NULL;
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
 		if(service->connected)
@@ -240,7 +261,7 @@ void online_services_disconnect(OnlineServices *services){
 }/*online_services_disconnect*/
 
 
-gboolean online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect){
+OnlineService *online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect){
 	if( G_STR_EMPTY(url) || G_STR_EMPTY(username) )
 		return FALSE;
 	
@@ -256,7 +277,10 @@ gboolean online_services_save(OnlineServices *services, OnlineService *service, 
 			service->password=g_strdup(password);
 			service->auto_connect=auto_connect;
 			if( (online_service_save(service)) )
-				return online_service_reconnect(service);
+				if(online_service_reconnect(service))
+					return service;
+			debug("Unable to save existing OnlineService for: [%s].", service->decoded_key);
+			return NULL;
 		}
 	}
 	
@@ -270,32 +294,30 @@ gboolean online_services_save(OnlineServices *services, OnlineService *service, 
 	debug("Adding '%s' to OnlineServices keys.", service->decoded_key);
 	if(!( (services->keys=g_slist_append(services->keys, service->key)) )){
 		debug("**ERROR**: Failed to append new service's key: '%s', to OnlineServices' keys.", service->decoded_key);
-		return FALSE;
+		return NULL;
 	}
 	
 	debug("Saving accounts & services list: '%s'.", PREFS_AUTH_SERVICES);
 	if(!( (gconfig_set_list_string(PREFS_AUTH_SERVICES, services->keys)) )){
 		debug("**ERROR**: Failed to save new service: '%s', couldn't save gconf's services list.", service->decoded_key);
-		return FALSE;
+		return NULL;
 	}
 	
-	debug("Adding new service: '%s' to online service.", service->decoded_key);
-	services->accounts=g_list_last(services->accounts);
+	debug("Adding new service: '%s' to OnlineServices.", service->decoded_key);
 	if(!( (services->accounts=g_list_append(services->accounts, service)) )){
 		debug("**ERROR**: Failed to add: '%s', to OnlineServices' accounts.", service->decoded_key);
-		return FALSE;
+		return NULL;
 	}
 	
-	/*
 	debug("Retrieving new service: '%s' from OnlineServices accounts.", service->decoded_key);
-	service=g_list_nth_data(services->accounts, services->total);
-	*/
+	services->accounts=g_list_last(services->accounts);
+	service=(OnlineService *)services->accounts->data;
+	services->accounts=g_list_first(services->accounts);
 	
 	debug("Saving OnlineService: '%s' reloaded from OnlineServices accounts.", service->decoded_key);
-	
 	if(!( online_service_save(service) )){
 		debug("**ERROR**: Failed saving new service: '%s@%s'.", username, url);
-		return FALSE;
+		return NULL;
 	}
 	
 	debug("Saving accounts & services successful.");
@@ -307,8 +329,7 @@ gboolean online_services_save(OnlineServices *services, OnlineService *service, 
 	
 	debug("Saving '%s' service complete.  Total services: %d; Total connected: %d", service->decoded_key, services->total, services->connected);
 	
-	return TRUE;
-	online_services_reconnect(services);
+	return service;
 }/*online_services_save*/
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
@@ -590,7 +611,6 @@ static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
 	gchar	*cookie_jar_directory=NULL;
 	gchar	*cookie_jar_filename=NULL;
 	
-	debug("\t\tCreating cookie jar path and filename.\n\t\tDirectory: [%s]\n\t\tFilename: [%s].", service->key, cookie_jar_directory, cookie_jar_filename );
 #ifndef GNOME_ENABLE_DEBUG
 		cookie_jar_directory=g_build_filename( g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "cookies", service->uri, service->username, NULL );
 #else
@@ -613,6 +633,7 @@ static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
 			return NULL;
 		}
 				
+	debug("\t\tCreated cookie jar for [%s].\n\t\tDirectory: [%s]\n\t\tFilename: [%s].", service->key, cookie_jar_directory, cookie_jar_filename );
 	
 	g_free(cookie_jar_directory);
 	return cookie_jar_filename;
@@ -646,10 +667,7 @@ static gboolean online_service_reconnect(OnlineService *service){
 	if(service->connected)
 		online_service_disconnect(service);
 	
-	if(online_service_connect(service))
-		return online_service_login(service);
-	
-	return FALSE;
+	return online_service_connect(service);
 }/*online_service_reconnect*/
 
 static void online_service_disconnect(OnlineService *service){
@@ -726,16 +744,11 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 	if(G_STR_EMPTY(service->password))
 		return debug("\t\t**WARNING:** Could not authenticate: %s, unknown password.", service->decoded_key);
 	
-	if(retrying){
+	if(retrying)
 		service->logins++;
-		/*if(!network_check_http(service, msg)){
-			debug("\t\t**ERROR**: 2nd Authentication attempt failed.");
-			return;
-		}*/
-	}
 	
 	if(service->logins < MAX_LOGINS ){
-		debug("Authenticating OnlineService: [%s]\n\t\tAttempt #%d of %d maximum allowed attempts.\n\t\tUsername: [%s]; Password: [%s]; Server: [%s].", service->key, service->logins, MAX_LOGINS, service->username, service->password, service->uri);
+		debug("Authenticating OnlineService: [%s]\n\t\t\tAttempt #%d of %d maximum allowed attempts.\n\t\t\tUsername: [%s]; Password: [%s]; Server: [%s].", service->key, service->logins, MAX_LOGINS, service->username, service->password, service->uri);
 		soup_auth_update(auth, msg, "WWW-Authenticate");
 		soup_auth_authenticate(auth, service->username, service->password);
 	}else{

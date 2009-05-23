@@ -221,8 +221,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="apply_button">
-                <property name="label" translatable="yes">gtk-apply</property>
+              <object class="GtkButton" id="save_button">
+                <property name="label" translatable="yes">gtk-save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -246,7 +246,7 @@
     <action-widgets>
       <action-widget response="-6">cancelbutton1</action-widget>
       <action-widget response="-5">okbutton1</action-widget>
-      <action-widget response="0">apply_button</action-widget>
+      <action-widget response="0">save_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="urls_liststore">

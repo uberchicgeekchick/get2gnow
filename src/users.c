@@ -189,6 +189,7 @@ void user_request_main(OnlineService *service, UserAction action, GtkWindow *par
 			break;
 	}
 	
+	/*user_request_free(request);*/
 	tweet_view_sexy_select();
 }/*user_request_main*/
 

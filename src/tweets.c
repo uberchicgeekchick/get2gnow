@@ -174,7 +174,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 			return;
 		case GDK_SHIFT_MASK:
 			if(event->keyval==GDK_Return)
-				return tweet_view_new_dm();
+				return tweets_new_dm();
 			return;
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
@@ -189,7 +189,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_F: case GDK_f:
 					return tweets_retweet();
 				case GDK_D: case GDK_d:
-					return tweet_view_new_dm();
+					return tweets_new_dm();
 				case GDK_S: case GDK_s:
 					return tweets_save_fave();
 				case GDK_I: case GDK_i:
@@ -208,7 +208,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_F5: return app_refresh_timeline( GTK_WIDGET(app_get_window()), app_get()); 
 				case GDK_greater: return tweets_retweet();
 				case GDK_at: return tweets_reply();
-				case GDK_asciitilde: return tweet_view_new_dm();
+				case GDK_asciitilde: return tweets_new_dm();
 			}
 			tweet_list_key_pressed(GTK_WIDGET(app_get_tweet_list()), event, app_get_tweet_list());
 			return;
@@ -246,6 +246,10 @@ static void tweets_include_and_begin_to_send(gchar *tweet, gboolean in_response,
 	if(release) g_free(tweet);
 }/*tweets_include_and_begin_to_send*/
 
+void tweets_new_dm(void){
+	tweet_view_new_dm();
+}/*tweets_new_dm*/
+	
 void tweets_save_fave(void){
 	if(!selected_tweet)
 		return;

@@ -47,6 +47,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">View this user's profile.</property>
                     <accelerator key="i" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
                       <object class="GtkImage" id="view_user_profile_image">
@@ -66,6 +67,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">View this user's most recent Tweets/Updates.</property>
                     <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
                       <object class="GtkImage" id="view_user_tweets_image">
@@ -96,6 +98,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Follow this user.</property>
                     <child>
                       <object class="GtkImage" id="user_follow_image">
                         <property name="visible">True</property>
@@ -114,6 +117,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Stop following this user.</property>
                     <child>
                       <object class="GtkImage" id="user_unfollow_image">
                         <property name="visible">True</property>
@@ -132,6 +136,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Block this user.</property>
                     <child>
                       <object class="GtkImage" id="user_block_image">
                         <property name="visible">True</property>
@@ -271,6 +276,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Tweet/Update your status.</property>
                         <child>
                           <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
@@ -289,6 +295,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Send your message as a direct message to this user.</property>
                         <child>
                           <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
@@ -318,6 +325,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Clear the selected tweet &amp; start over.</property>
                         <child>
                           <object class="GtkImage" id="image1">
                             <property name="visible">True</property>
@@ -351,6 +359,7 @@
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Reload your friends list.</property>
                             <child>
                               <object class="GtkImage" id="dm_refresh_image">
                                 <property name="visible">True</property>
@@ -368,6 +377,7 @@
                           <object class="GtkComboBox" id="friends_combo_box">
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
+                            <property name="tooltip_text" translatable="yes">Friends you can send direct messages to.</property>
                             <property name="model">friends_liststore</property>
                             <property name="active">0</property>
                             <child>
@@ -386,6 +396,8 @@
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Send your message as direct message to
+&lt;-- this user.</property>
                             <property name="relief">half</property>
                             <child>
                               <object class="GtkImage" id="dm_send_image">
@@ -406,6 +418,7 @@
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Close/Hide the direct messaging controls.</property>
                             <child>
                               <object class="GtkImage" id="dm_form_hide_image">
                                 <property name="visible">True</property>
@@ -424,6 +437,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Send a new direct message by selecting from you list of friends.</property>
                             <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="dm_form_show_image">
@@ -542,6 +556,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Reply to this user's tweet/update.</property>
                     <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
                       <object class="GtkImage" id="reply_button_image">
@@ -561,6 +576,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Re-Tweet this user's tweet.</property>
                     <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
                       <object class="GtkImage" id="retweet_button_image">
@@ -591,6 +607,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Mark this Tweet/Update as one of your favorites.</property>
                     <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
                       <object class="GtkImage" id="make_fave_image">
