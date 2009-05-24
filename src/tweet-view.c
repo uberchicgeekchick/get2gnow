@@ -537,7 +537,7 @@ static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, Gtk
 	gchar *remaining_characters=NULL;
 	if(character_count < 0){
 		if(!gconfig_if_bool(PREFS_UI_NO_ALERT, FALSE))
-			gtk_widget_error_bell(GTK_WIDGET(entry));
+			tweet_view_beep();
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
 	}else
 		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
@@ -545,6 +545,10 @@ static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, Gtk
 	gtk_label_set_markup( tweet_character_counter, remaining_characters );
 	g_free(remaining_characters);
 }/*tweet_view_count_tweet_char*/
+
+void tweet_view_beep(void){
+	gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
+}/*tweet_view_beep*/
 
 void tweet_view_sexy_select(void){
 	gtk_widget_grab_focus(GTK_WIDGET(tweet_view->sexy_entry));
@@ -583,7 +587,7 @@ void tweet_view_sexy_append_char(const char c){
 }/*tweet_view_sexy_append_char*/
 
 void tweet_view_sexy_append_string(const gchar *str){
-	tweet_view_sexy_puts(str,(gint)gtk_entry_get_text_length(GTK_ENTRY(tweet_view->sexy_entry)) );
+	tweet_view_sexy_puts(str, (gint)gtk_entry_get_text_length(GTK_ENTRY(tweet_view->sexy_entry)) );
 }/*tweet_view_sexy_append_string*/
 
 gint tweet_view_sexy_puts(const gchar *str, gint position){

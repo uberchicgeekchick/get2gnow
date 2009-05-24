@@ -84,6 +84,7 @@ typedef enum {
 	SEXY_TWEET,
 	CREATED_DATE,
 	CREATED_AT,
+	SINCE_CREATED,
 	ULONG_TWEET_ID,
 	ULONG_USER_ID,
 	SERVICE_POINTER,
@@ -95,10 +96,17 @@ GType		tweet_list_get_type(void) G_GNUC_CONST;
 TweetList	*tweet_list_new(void);
 TweetList	*tweet_list_get(void);
 GtkListStore	*tweet_list_get_store(void);
+
 void tweet_list_refresh(void);
-void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list);
+
+guint tweet_list_store_total_get(void);
+void tweet_list_store_total_set(guint list_store_count);
+
+void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event);
+
 void tweet_list_goto_top(void);
 void tweet_list_move_to(gint row_index);
+
 void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter);
 
 G_END_DECLS

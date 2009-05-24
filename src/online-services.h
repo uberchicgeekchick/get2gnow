@@ -156,10 +156,7 @@ void online_services_disconnect(OnlineServices *services);
 
 OnlineService *online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
 
-guint online_services_count_connections(OnlineServices *services);
 OnlineService *online_services_connected_get_first(OnlineServices *services);
-guint online_services_connected_get_service_index(OnlineServices *services, OnlineService *which_service);
-OnlineService *online_services_connected_get_last(OnlineServices *services);
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 

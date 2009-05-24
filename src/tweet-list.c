@@ -85,12 +85,13 @@ static void tweet_list_setup_view(TweetList      *list);
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *list);
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *tweet);
 
-static void tweet_list_move(GdkEventKey *event, TweetList *list);
+static void tweet_list_move(GtkWidget *widget, GdkEventKey *event);
 
 
 static TweetList *list=NULL;
 static TweetListPriv *list_priv=NULL;
 static gint tweet_list_index=0;
+static guint list_store_total=0;
 
 G_DEFINE_TYPE(TweetList, tweet_list, SEXY_TYPE_TREE_VIEW);
 
@@ -112,7 +113,7 @@ static void tweet_list_init(TweetList *tweet){
 	g_signal_connect(list, "size_allocate", G_CALLBACK(tweet_list_size_cb), list);
 	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
 	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
-	g_signal_connect(list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), list);
+	g_signal_connect(list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), FALSE);
 	//sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW( list ), STRING_TWEET );
 }/* tweet_list_init */
 
@@ -132,24 +133,25 @@ static void tweet_list_create_model( TweetList *list ){
 
 	list_priv->store=gtk_list_store_new(
 						N_COLUMNS,
-							GDK_TYPE_PIXBUF,	/*PIXBUF_AVATAR: Avatar pixbuf */
-							G_TYPE_STRING,		/*STRING_TEXT: Display string */
-							G_TYPE_STRING,		/*STRING_NICK: Author name string */
-							G_TYPE_STRING,		/*STRING_DATE: 'Posted ?(seconds|minutes|hours|day) ago */
-							G_TYPE_STRING,		/*STRING_TWEET: Tweet string */
-							G_TYPE_STRING,		/*STRING_USER: Username string */
-							G_TYPE_STRING,		/*SEXY_TWEET: libsexy formatted Tweet for SexyTreeView's tooltip */
-							G_TYPE_STRING,		/*CREATED_DATE: Date string */
+							GDK_TYPE_PIXBUF,	/*PIXBUF_AVATAR: Avatar pixbuf.*/
+							G_TYPE_STRING,		/*STRING_TEXT: Display string.*/
+							G_TYPE_STRING,		/*STRING_NICK: Author name string.*/
+							G_TYPE_STRING,		/*STRING_DATE: 'Posted ?(seconds|minutes|hours|day) ago.*/
+							G_TYPE_STRING,		/*STRING_TWEET: Tweet string.*/
+							G_TYPE_STRING,		/*STRING_USER: Username string.*/
+							G_TYPE_STRING,		/*SEXY_TWEET: libsexy formatted Tweet for SexyTreeView's tooltip.*/
+							G_TYPE_STRING,		/*CREATED_DATE: Date string.*/
+							G_TYPE_UINT,		/*SINCE_CREATED: Seconds since the post was postet.*/
 							G_TYPE_ULONG,		/*CREATED_AT: unix timestamp of tweet's posted data time for sorting. */
-							G_TYPE_ULONG,		/*ULONG_TWEET_ID: Tweet's ID */
-							G_TYPE_ULONG,		/*ULONG_USER_ID: User's ID */
-							G_TYPE_POINTER		/*SERVICE_POINTER: Service pointer */
+							G_TYPE_ULONG,		/*ULONG_TWEET_ID: Tweet's ID.*/
+							G_TYPE_ULONG,		/*ULONG_USER_ID: User's ID.*/
+							G_TYPE_POINTER		/*SERVICE_POINTER: Service pointer.*/
 	);
 
 	/* save normal model */
 	model=GTK_TREE_MODEL(list_priv->store);
 	sort_model=gtk_tree_model_sort_new_with_model(model);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sort_model), CREATED_AT, GTK_SORT_DESCENDING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sort_model), SINCE_CREATED, GTK_SORT_ASCENDING);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(list), sort_model);
 	list_priv->model=model;
@@ -188,8 +190,26 @@ static void tweet_list_setup_view(TweetList *list){
 	list_priv->text_renderer=renderer;
 }
 
+void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event){
+	if(event->keyval != GDK_Return) return tweet_list_move(widget, event);
+	
+	switch(event->state){
+		case GDK_CONTROL_MASK:
+			tweets_new_tweet();
+			break;
+		case GDK_MOD1_MASK:
+			tweets_retweet();
+			break;
+		case GDK_SHIFT_MASK:
+			tweet_view_new_dm();
+			break;
+		default:
+			tweets_reply();
+			break;
+	}//switch
+}/* tweet_list_key_pressed */
 
-static void tweet_list_move(GdkEventKey *event, TweetList *list){
+static void tweet_list_move(GtkWidget *widget, GdkEventKey *event){
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
 		case GDK_Home: case GDK_KP_Home:
@@ -205,9 +225,12 @@ static void tweet_list_move(GdkEventKey *event, TweetList *list){
 		case GDK_End: case GDK_KP_End:
 			tweet_list_index=19;
 			break;
-		case GDK_Page_Up: tweet_list_index-=10; break;
-		case GDK_Page_Down: tweet_list_index+=10; break;
-		default: return;
+		case GDK_Page_Up:
+			tweet_list_index-=10; break;
+		case GDK_Page_Down:
+			tweet_list_index+=10; break;
+		default:
+			return;
 	}//switch
 	
 	tweet_list_move_to(tweet_list_index);
@@ -222,11 +245,15 @@ void tweet_list_goto_top(void){
 }/* tweet_list_goto_top */
 
 void tweet_list_move_to(gint row_index){
-	guint max_tweets=((online_services_count_connections(online_services))*20)-1;
-	if( row_index<0 ) row_index=0;
-	else if( row_index>max_tweets ) row_index=max_tweets;
+	if(row_index<0) {
+		tweets_beep();
+		row_index=0;
+	}else if(row_index>list_store_total){
+		tweets_beep();
+		row_index=list_store_total;
+	}
 	
-	debug("Selecting tweet %d, maximum tweets are: %d.", row_index, max_tweets);
+	debug("Selecting tweet %d, maximum tweets are: %d.", row_index, list_store_total);
 	GtkTreePath *path=gtk_tree_path_new_from_indices(row_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
@@ -238,21 +265,16 @@ void tweet_list_refresh(void){
 	debug("Re-setting tweet_list_index.");
 	gtk_list_store_clear(list_priv->store);
 	tweet_list_index=0;
+	list_store_total=0;
 }/* tweet_list_refreshed */
 
+guint tweet_list_store_total_get(void){
+	return list_store_total;
+}/*tweet_list_store_count_get();*/
 
-void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event, TweetList *list){
-	if(event->state == GDK_CONTROL_MASK) return tweets_hotkey(widget, event);
-	if(event->keyval != GDK_Return) return tweet_list_move(event, list);
-	
-	switch(event->state){
-		case GDK_CONTROL_MASK: return tweets_new_tweet();
-		case GDK_MOD1_MASK: return tweets_retweet();
-		case GDK_SHIFT_MASK: return tweet_view_new_dm();
-		default: tweets_reply();
-	}//switch
-}/* tweet_list_key_pressed */
-
+void tweet_list_store_total_set(guint list_store_count){
+	list_store_total=list_store_count;
+}/*tweet_list_store_count_set(list_store_count);*/
 
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;

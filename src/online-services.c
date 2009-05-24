@@ -520,20 +520,6 @@ static gboolean online_service_save(OnlineService *service){
 	return TRUE;
 }/*online_service_save*/
 
-guint online_services_count_connections(OnlineServices *services){
-	GList		*a=NULL;
-	OnlineService	*service=NULL;
-	
-	services->connected=0;
-	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
-		if(service->connected)
-			services->connected++;
-	}
-	return services->connected;
-}/*online_services_count_connections*/
-
 OnlineService *online_services_connected_get_first(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
@@ -545,35 +531,6 @@ OnlineService *online_services_connected_get_first(OnlineServices *services){
 	}
 	return service;
 }/*online_services_connected_get_first*/
-
-guint online_services_connected_get_service_index(OnlineServices *services, OnlineService *which_service){
-	GList		*a=NULL;
-	OnlineService	*service=NULL;
-	guint		service_count=0;
-	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
-		if(service->connected){
-			if(service==which_service)
-				return service_count;
-			service_count++;
-		}
-	}
-	return 0;
-}/*online_services_connected_get_service_index*/
-
-OnlineService *online_services_connected_get_last(OnlineServices *services){
-	GList		*a=NULL;
-	OnlineService	*service=NULL;
-	
-	for(a=g_list_last(services->accounts); a; a=a->prev){
-		service=(OnlineService *)a->data;
-		if(service->connected)
-			break;
-	}
-	return service;
-}/*online_services_connected_get_last*/
-
 
 static gboolean online_service_connect(OnlineService *service){
 	debug("Creating '%s' connection to '%s'", service->decoded_key, service->uri);

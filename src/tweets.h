@@ -51,6 +51,8 @@ void unset_selected_tweet(void);
 void tweets_selected_widgets_show(gboolean show);
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event);
 
+void tweets_beep(void);
+
 /* G_CALLBACK_FUNC for get2gnow's "Tweets" menu & the 'extended_tweet_?_button'.
  *	When handled by get2gnow's gtkbuilder.[ch]
  *	UI builder methods.

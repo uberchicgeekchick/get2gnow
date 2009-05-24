@@ -66,7 +66,7 @@ typedef struct {
 
 static Status *parser_node_status(OnlineService *service, xmlNode *a_node);
 static void parser_node_status_free(Status *status);
-static gchar *parser_convert_time(const char *datetime);
+static gchar *parser_convert_time(const char *datetime, guint *my_diff);
 static xmlDoc *parser_parse_dom_content(SoupMessage *xml);
 
 
@@ -283,7 +283,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		xmlCleanupParser();
 		return FALSE;
 	}
-	guint service_store_index=(online_services_connected_get_service_index(online_services, service)*20);
+	guint list_store_count=tweet_list_store_total_get();
 	gboolean urls_only=gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE);
 	
 	/* Get the ListStore and clear previous */
@@ -306,6 +306,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		/* Timelines and direct messages */
 		gchar	*tweet, *sexy_tweet, *datetime;
 		guint	sid;
+		guint	created_at;
 		
 		/* Parse node */
 		debug("Creating tweet's Status *.");
@@ -325,7 +326,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		
 		/* Create string for text column */
 		debug("Parsing tweet's 'created_at' time: [%s] to a display ready format.", status->created_at_str);
-		datetime=parser_convert_time( status->created_at_str );
+		datetime=parser_convert_time(status->created_at_str, &created_at);
 		debug("Display time set to: %s.", datetime);
 		
 		debug("Formating status text for display.");
@@ -366,7 +367,8 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		
 		/* find where to place this tweet's data. */
-		gtk_list_store_insert(store, iter, service_store_index++);
+		list_store_count++;
+		gtk_list_store_append(store, iter);
 		
 		gtk_list_store_set(
 					store, iter,
@@ -378,6 +380,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 						SEXY_TWEET, sexy_tweet,
 						CREATED_DATE, status->created_at_str,
 						CREATED_AT, status->created_at,
+						SINCE_CREATED, created_at,
 						ULONG_TWEET_ID, sid,
 						ULONG_USER_ID, status->user->id,
 						SERVICE_POINTER, service,
@@ -400,6 +403,8 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	/* Remember last id showed */
 	if(last_tweet > 0)
 		last_id=last_tweet;
+	
+	tweet_list_store_total_set(list_store_count);
 	
 	/* Free memory */
 	xmlFreeDoc(doc);
@@ -468,7 +473,7 @@ static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
 	return status;
 }
 
-static gchar *parser_convert_time(const char *datetime){
+static gchar *parser_convert_time(const char *datetime, guint *my_diff){
 	struct tm	*ta;
 	struct tm	post;
 	int			 seconds_local;
@@ -490,7 +495,7 @@ static gchar *parser_convert_time(const char *datetime){
 	
 	setlocale(LC_TIME, oldenv);
 	
-	diff = difftime(seconds_local, seconds_post);
+	(*my_diff)=diff=difftime(seconds_local, seconds_post);
 	
 	if(diff < 2) {
 		return g_strdup(_("1 second ago"));

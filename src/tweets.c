@@ -153,67 +153,90 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 	switch( event->state ){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
+				case GDK_Return:
+					tweets_retweet();
+					break;
 				case GDK_S: case GDK_s:
-					return tweet_view_send(NULL);
-				case GDK_Return: return tweets_retweet();
+					tweet_view_send(NULL);
+					break;
 				case GDK_A: case GDK_a:
-					return g_signal_emit_by_name(app_get_menu("accounts"), "activate");
+					g_signal_emit_by_name(app_get_menu("accounts"), "activate");
+					break;
 				case GDK_T: case GDK_t:
-					return g_signal_emit_by_name(app_get_menu("tweets"), "activate");
+					g_signal_emit_by_name(app_get_menu("tweets"), "activate");
+					break;
 				case GDK_F: case GDK_f:
-					return g_signal_emit_by_name(app_get_menu("friends"), "activate");
+					g_signal_emit_by_name(app_get_menu("friends"), "activate");
+					break;
 				case GDK_V: case GDK_v:
-					return g_signal_emit_by_name(app_get_menu("timelines"), "activate");
+					g_signal_emit_by_name(app_get_menu("timelines"), "activate");
+					break;
 				case GDK_H: case GDK_h:
-					return g_signal_emit_by_name(app_get_menu("help"), "activate");
-				/*
-				case GDK_: case GDK_:
-					return g_signal_emit_by_name(app_get_menu(""), "activate");
-				*/
+					g_signal_emit_by_name(app_get_menu("help"), "activate");
+					break;
 			}
-			return;
+			break;
 		case GDK_SHIFT_MASK:
 			if(event->keyval==GDK_Return)
-				return tweets_new_dm();
-			return;
+				tweets_new_dm();
+			break;
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
 				case GDK_Return:
-					return tweet_view_sexy_insert_char('\n');
+					tweet_view_sexy_insert_char('\n');
+					break;
 				case GDK_N: case GDK_n:
-					return tweets_new_tweet();
+					tweets_new_tweet();
+					break;
 				case GDK_Q: case GDK_q:
-					return gtk_main_quit();
+					gtk_main_quit();
+					break;
 				case GDK_R: case GDK_r:
-					return tweets_reply();
+					tweets_reply();
+					break;
 				case GDK_F: case GDK_f:
-					return tweets_retweet();
+					tweets_retweet();
+					break;
 				case GDK_D: case GDK_d:
-					return tweets_new_dm();
+					tweets_new_dm();
+					break;
 				case GDK_S: case GDK_s:
-					return tweets_save_fave();
+					tweets_save_fave();
+					break;
 				case GDK_I: case GDK_i:
-					return tweets_user_view_profile();
+					tweets_user_view_profile();
+					break;
 				case GDK_H: case GDK_h:
-					return tweets_user_view_tweets();
-				/*
-				case GDK_: case GDK_:
-					return tweets_();
-				*/
+					tweets_user_view_tweets();
+					break;
 			}
-			return;
+			break;
 		default:
 			switch( event->keyval ){
-				case GDK_F1: return help_show( app_get_window() );
-				case GDK_F5: return app_refresh_timeline( GTK_WIDGET(app_get_window()), app_get()); 
-				case GDK_greater: return tweets_retweet();
-				case GDK_at: return tweets_reply();
-				case GDK_asciitilde: return tweets_new_dm();
+				case GDK_F1:
+					help_show( app_get_window() );
+					break;
+				case GDK_F5:
+					app_refresh_timeline( GTK_WIDGET(app_get_window()), app_get()); 
+					break;
+				case GDK_greater:
+					tweets_retweet();
+					break;
+				case GDK_at:
+					tweets_reply();
+					break;
+				case GDK_asciitilde:
+					tweets_new_dm();
+					break;
 			}
-			tweet_list_key_pressed(GTK_WIDGET(app_get_tweet_list()), event, app_get_tweet_list());
-			return;
+			tweet_list_key_pressed(widget, event);
+			break;
 	}
 }/*tweets_hotkey*/
+
+void tweets_beep(void){
+	tweet_view_beep();
+}/*tweets_beep();*/
 
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
