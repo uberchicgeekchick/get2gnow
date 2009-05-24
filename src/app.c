@@ -59,14 +59,10 @@
 #include <gdk/gdkkeysyms.h>
 #include <libsexy/sexy.h>
 
+#include "main.h"
 #include "gconfig.h"
 #include "gtkbuilder.h"
 
-#ifdef HAVE_GNOME_KEYRING
-#include "keyring.h"
-#endif
-
-#include "main.h"
 #include "about.h"
 #include "services-dialog.h"
 #include "popup-dialog.h"

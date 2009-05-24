@@ -130,6 +130,7 @@ typedef struct {
 
 typedef struct{
 	OnlineService	*service;
+	gchar		*requested_uri;
 	gpointer	user_data;
 	gpointer	formdata;
 } OnlineServiceCBWrapper;
@@ -170,7 +171,7 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 
-OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper);
 
 void online_service_free(OnlineService *service);

@@ -207,7 +207,7 @@ void network_set_state_loading_timeline(const gchar *timeline, ReloadState state
 			break;
 	}
 	debug("%s current timeline: %s", notice_prefix, timeline);
-	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
+	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE) ) ?"" :_("  This may take several moments.") ));
 	
 	processing=TRUE;
 }/*network_timeline_loading_notification*/
@@ -334,13 +334,12 @@ GList *network_users_glist_get(gboolean get_friends, gboolean refresh){
 		page++;
 		uri=g_strdup_printf("%s?page=%d", (get_friends ?API_FOLLOWING :API_FOLLOWERS), page);
 		debug("Getting page %d of who%s.", page, (get_friends ?"m the user is following" :" is following the user") );
-		/*
-		online_service_request(service, QUEUE, uri, network_users_glist_save, (gpointer)getting_message, NULL );
-		*/
 		SoupMessage *msg=online_service_request(service, GET, uri, network_users_glist_save, getting_message, NULL );
-		OnlineServiceCBWrapper *request_wrapper=request_wrapper=online_service_wrapper_new(service, network_users_glist_save, getting_message, NULL);
+		gchar *full_uri=g_strdup_printf("https://%s%s%s", service->uri, ( (service->which_rest==Twitter) ?"" :"/api" ), uri );
+		OnlineServiceCBWrapper *request_wrapper=request_wrapper=online_service_wrapper_new(service, full_uri, network_users_glist_save, getting_message, NULL);
 		network_users_glist_save(service->session, msg, request_wrapper);
 		g_free(uri);
+		g_free(full_uri);
 	}
 	
 	if(get_friends){

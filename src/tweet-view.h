@@ -102,19 +102,22 @@ typedef struct {
 	GtkVSeparator		*sexy_vseparator;
 	GtkButton		*new_tweet_button;
 	
+	/*The list & actual GtkWidgets for sending DMs.*/
+	GList			*dm_send_widgets;
 	GtkFrame		*dm_frame;
 	GtkLabel		*dm_frame_label;
 	GtkHBox			*dm_form_hbox;
 	GtkButton		*dm_refresh;
-	GtkComboBox		*friends_combo_box;
-	GtkListStore		*friends_liststore;
-	GtkTreeModel		*friends_model;
-	GtkButton		*friends_send_dm;
+	GtkComboBox		*followers_combo_box;
+	GtkListStore		*followers_list_store;
+	GtkTreeModel		*followers_model;
+	GtkButton		*followers_send_dm;
 	GtkButton		*dm_form_hide;
+	
 	GtkButton		*dm_form_show;
 	
 	/* Widgets that are enabled when we a tweet is selected */
-	GList			*tweet_selected_buttons;
+	GList			*selected_tweet_buttons;
 			
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkButton		*view_user_profile_button;

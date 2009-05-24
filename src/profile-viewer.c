@@ -128,7 +128,7 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 				GTK_WIDGET(profile_viewer->user_label),
 				TRUE, TRUE, 0
 	);
-	label_set_text(service, LABEL(profile_viewer->user_label), profile_details);
+	label_set_text(service, LABEL(profile_viewer->user_label), profile_details, TRUE, TRUE);
 	g_free( profile_details );
 	
 	profile_details=g_strdup_printf(
@@ -149,7 +149,7 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 				GTK_WIDGET(profile_viewer->url_hyperlink),
 				TRUE, TRUE, 0
 	);
-	label_set_text(service, LABEL(profile_viewer->url_hyperlink), profile_details);
+	label_set_text(service, LABEL(profile_viewer->url_hyperlink), profile_details, TRUE, TRUE);
 	g_free( profile_details );
 	
 	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", profile_viewer->user->bio );
@@ -160,7 +160,7 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 				GTK_WIDGET(profile_viewer->bio_html),
 				TRUE, TRUE, 0
 	);
-	label_set_text(service, LABEL(profile_viewer->bio_html), profile_details);
+	label_set_text(service, LABEL(profile_viewer->bio_html), profile_details, TRUE, TRUE);
 	g_free( profile_details );
 	
 	gtk_widget_show_all( GTK_WIDGET( profile_viewer->dialog ) );

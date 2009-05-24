@@ -55,9 +55,8 @@ struct _LabelClass {
 
 GType label_get_type  (void) G_GNUC_CONST;
 Label *label_new       (void);
-void label_set_text(OnlineService *service, Label  *nav, const gchar *text);
-gchar *label_msg_get_string(OnlineService *service, const char *message);
-
+void label_set_text(OnlineService *service, Label  *nav, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+gchar *label_msg_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS
 

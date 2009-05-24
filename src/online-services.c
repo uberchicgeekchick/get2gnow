@@ -68,13 +68,17 @@
 
 #include "config.h"
 #include "online-services.h"
+#include "network.h"
+
+#ifdef HAVE_GNOME_KEYRING
+#include "keyring.h"
+#endif
 
 #include "app.h"
 #include "main.h"
 #include "parser.h"
-#include "network.h"
 #include "gconfig.h"
-#include "keyring.h"
+#include "cache.h"
 #include "tweets.h"
 #include "users.h"
 #include "gtkbuilder.h"
@@ -608,33 +612,32 @@ static gboolean online_service_connect(OnlineService *service){
 }/*online_service_connect*/
 
 static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
+	gchar	*cookie_jar_dir=NULL;
 	gchar	*cookie_jar_directory=NULL;
+	
+	gchar	*cookie_jar_file=NULL;
 	gchar	*cookie_jar_filename=NULL;
 	
-#ifndef GNOME_ENABLE_DEBUG
-		cookie_jar_directory=g_build_filename( g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "cookies", service->uri, service->username, NULL );
-#else
-		cookie_jar_directory=g_build_filename( g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "debug", "cookies", service->uri, service->username, NULL );
-#endif
+	cookie_jar_dir=g_build_filename("services", service->uri, "cookies", service->username, NULL);
 	
-	if(!(g_file_test(cookie_jar_directory, ( G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR )) ))
-		if(!(g_mkdir_with_parents(cookie_jar_directory, S_IRUSR|S_IWUSR|S_IXUSR))){
+	if(!( (cookie_jar_directory=cache_dir_test(cookie_jar_dir, TRUE)) )){
 			debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar's directory: [%s].", cookie_jar_directory);
-			g_free(cookie_jar_directory);
+			g_free(cookie_jar_dir);
 			return NULL;
 		}
 	
-	cookie_jar_filename=g_build_filename(cookie_jar_directory, "cookies.txt", NULL);
-	if(!(g_file_test(cookie_jar_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)))
-		if(!(g_creat(cookie_jar_filename, S_IRUSR|S_IWUSR))){
-			debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar: [%s].", cookie_jar_filename);
-			g_free(cookie_jar_directory);
-			g_free(cookie_jar_filename);
-			return NULL;
-		}
+	cookie_jar_file=g_build_filename(cookie_jar_dir, "cookies.txt", NULL);
+	if(!( (cookie_jar_filename=cache_file_touch(cookie_jar_file)) )){
+		debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar: [%s].", cookie_jar_filename);
+		g_free(cookie_jar_dir);
+		g_free(cookie_jar_directory);
+		g_free(cookie_jar_filename);
+		return NULL;
+	}
 				
 	debug("\t\tCreated cookie jar for [%s].\n\t\tDirectory: [%s]\n\t\tFilename: [%s].", service->key, cookie_jar_directory, cookie_jar_filename );
 	
+	g_free(cookie_jar_dir);
 	g_free(cookie_jar_directory);
 	return cookie_jar_filename;
 }/*online_service_cookie_jar_find_filename*/
@@ -861,7 +864,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			
 			OnlineServiceCBWrapper *service_wrapper=NULL;
 			if(callback!=NULL)
-				service_wrapper=online_service_wrapper_new(service, callback, user_data, formdata);
+				service_wrapper=online_service_wrapper_new(service, request_uri, callback, user_data, formdata);
 			
 			soup_session_queue_message(service->session, msg, callback, service_wrapper);
 			
@@ -898,9 +901,12 @@ gchar *online_service_get_url_content_type(OnlineService *service, const gchar *
 	return content_type;
 }/*online_service_get_url_content_type*/
 
-OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	OnlineServiceCBWrapper *service_wrapper=g_new0(OnlineServiceCBWrapper, 1);
+	
 	service_wrapper->service=service;
+
+	service_wrapper->requested_uri=g_strdup(request_uri);
 	
 	if(callback==network_cb_on_image||callback==user_request_main_quit)
 		service_wrapper->user_data=user_data;
@@ -920,6 +926,9 @@ OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, SoupS
 void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper){
 	if(service_wrapper==NULL)
 		return;
+	
+	g_free(service_wrapper->requested_uri);
+	service_wrapper->requested_uri=NULL;
 	
 	if(service_wrapper->user_data!=NULL){
 		g_free(service_wrapper->user_data);

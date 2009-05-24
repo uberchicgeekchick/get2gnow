@@ -17,7 +17,7 @@
             <property name="visible">True</property>
             <property name="border_width">6</property>
             <property name="n_rows">7</property>
-            <property name="n_columns">2</property>
+            <property name="n_columns">3</property>
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
             <child>
@@ -29,7 +29,7 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
+                <property name="right_attach">3</property>
                 <property name="top_attach">4</property>
                 <property name="bottom_attach">5</property>
                 <property name="y_options"></property>
@@ -43,7 +43,7 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
+                <property name="right_attach">3</property>
                 <property name="top_attach">3</property>
                 <property name="bottom_attach">4</property>
                 <property name="y_options"></property>
@@ -87,7 +87,7 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="right_attach">2</property>
+                <property name="right_attach">3</property>
                 <property name="top_attach">5</property>
                 <property name="bottom_attach">6</property>
                 <property name="x_options">GTK_FILL</property>
@@ -131,7 +131,7 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="right_attach">2</property>
+                <property name="right_attach">3</property>
                 <property name="top_attach">6</property>
                 <property name="bottom_attach">7</property>
               </packing>
@@ -146,7 +146,7 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="right_attach">2</property>
+                <property name="right_attach">3</property>
               </packing>
             </child>
             <child>
@@ -176,9 +176,29 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
+                <property name="right_attach">3</property>
                 <property name="top_attach">2</property>
                 <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="delete_service_button">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+		<property name="receives_default">True</property>
+		<property name="tooltip_text" translatable="yes">Delete this account.</property>
+		<child>
+			<object class="GtkImage" id="delete_service_image">
+				<property name="visible">True</property>
+				<property name="stock">gnome-stock-trash</property>
+			</object>
+		</child>
+	      </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
               </packing>
             </child>
           </object>
@@ -191,7 +211,7 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="cancelbutton1">
+              <object class="GtkButton" id="cancel_button">
                 <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -206,7 +226,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="okbutton1">
+              <object class="GtkButton" id="okay_button">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -244,8 +264,8 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-6">cancelbutton1</action-widget>
-      <action-widget response="-5">okbutton1</action-widget>
+      <action-widget response="-6">cancel_button</action-widget>
+      <action-widget response="-5">okay_button</action-widget>
       <action-widget response="0">save_button</action-widget>
     </action-widgets>
   </object>

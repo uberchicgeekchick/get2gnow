@@ -271,18 +271,17 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	gchar		*user_name, *user_nick, *date, *sexy_tweet, *text_tweet;
 
 	gtk_tree_model_get(
-				GTK_TREE_MODEL(list_priv->sort_model),
-				iter,
-				STRING_NICK, &user_nick,
-				STRING_TWEET, &text_tweet,
-				SEXY_TWEET, &sexy_tweet,
-				STRING_DATE, &date,
-				STRING_USER, &user_name,
-				PIXBUF_AVATAR, &pixbuf,
-				ULONG_TWEET_ID, &tweet_id,
-				ULONG_USER_ID, &user_id,
-				SERVICE_POINTER, &service,
-			-1
+				GTK_TREE_MODEL(list_priv->sort_model), iter,
+					STRING_NICK, &user_nick,
+					STRING_TWEET, &text_tweet,
+					SEXY_TWEET, &sexy_tweet,
+					STRING_DATE, &date,
+					STRING_USER, &user_name,
+					PIXBUF_AVATAR, &pixbuf,
+					ULONG_TWEET_ID, &tweet_id,
+					ULONG_USER_ID, &user_id,
+					SERVICE_POINTER, &service,
+				-1
 	);
 	
 	debug("Displaying tweet: #%lu from '%s'.", tweet_id, service->decoded_key);

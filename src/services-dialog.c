@@ -23,13 +23,10 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
-
+#include <libgnomeui/libgnomeui.h>
 
 #include "gconfig.h"
 #include "gtkbuilder.h"
-#ifdef HAVE_GNOME_KEYRING
-#include "keyring.h"
-#endif
 
 #include "main.h"
 #include "services-dialog.h"

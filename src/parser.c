@@ -93,7 +93,7 @@ static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
 	if(suri) soup_uri_free(suri);
 	
 	
-	if(!( xml->response_body && xml->response_body->data && xml->response_body->length )){
+	if(!( xml->response_headers && xml->response_body && xml->response_body->data && xml->response_body->length )){
 		debug("**ERROR**: Cannot parse empty or xml resonse from: %s.", uri);
 		g_free(uri);
 		return NULL;
@@ -284,6 +284,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		return FALSE;
 	}
 	guint service_store_index=(online_services_connected_get_service_index(online_services, service)*20);
+	gboolean urls_only=gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE);
 	
 	/* Get the ListStore and clear previous */
 	store=tweet_list_get_store();
@@ -328,6 +329,21 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		debug("Display time set to: %s.", datetime);
 		
 		debug("Formating status text for display.");
+		gchar *sexy_status_text=NULL;
+		if(!urls_only){
+			sexy_tweet=label_msg_format_urls(service, status->text, TRUE, TRUE);
+			sexy_status_text=label_msg_format_urls(service, status->text, TRUE, FALSE);
+			g_free(status->text);
+			status->text=sexy_status_text;
+			sexy_status_text=NULL;
+		}else{
+			sexy_tweet=g_strdup(status->text);
+			sexy_status_text=label_msg_format_urls(service, status->text, FALSE, FALSE);
+			g_free(status->text);
+			status->text=sexy_status_text;
+			sexy_status_text=NULL;
+		}
+		
 		tweet=g_strdup_printf(
 					"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
 						status->user->nick_name, status->user->user_name, service->uri,
@@ -335,11 +351,6 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 						datetime,
 						status->text
 		);
-		
-		if(!(gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)))
-			sexy_tweet=label_msg_get_string(service, status->text);
-		else
-			sexy_tweet=g_strdup(status->text);
 		
 		if(sid > last_id && show_notification) {
 			if(!multiple_new_tweets) {
@@ -383,10 +394,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		/* Free struct */
 		parser_node_status_free(status);
 		
-		if(datetime){
-			g_free(datetime);
-			datetime=NULL;
-		}
+		g_free(datetime);
 	} /* end of loop */
 	
 	/* Remember last id showed */
@@ -525,4 +533,4 @@ static gchar *parser_convert_time(const char *datetime){
 
 void parser_reset_lastid(){
 	last_id=0;
-}
+}/*parser_reset_lastid*/

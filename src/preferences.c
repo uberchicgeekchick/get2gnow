@@ -125,7 +125,7 @@ static void preferences_setup_widgets(Prefs *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE, prefs->expand_urls_selected_only_checkbutton);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_DIRECT_REPLY_ONLY, FALSE, prefs->post_reply_to_service_only_checkbutton);
 	
