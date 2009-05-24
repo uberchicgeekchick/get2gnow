@@ -380,7 +380,7 @@ void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
 		debug("Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
 		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view->tweet_view));
 		gtk_window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view));
-		g_object_add_weak_pointer(G_OBJECT(app_priv->tweet_view->tweet_view),(gpointer) &app_priv->tweet_view->tweet_view);
+		g_object_add_weak_pointer(G_OBJECT(app_priv->tweet_view->tweet_view), (gpointer)&app_priv->tweet_view->tweet_view);
 		gtk_window_set_transient_for(GTK_WINDOW(app_priv->tweet_view->tweet_view), app_priv->window);
 		gtk_widget_hide(GTK_WIDGET(app_priv->expand_box));
 	}else{
@@ -803,11 +803,11 @@ static void app_connection_items_setup(GtkBuilder *ui){
 	};
 	
 	for(i=0, list=NULL; i < G_N_ELEMENTS(widgets_connected); i++)
-		list=g_list_prepend(list,(gtk_builder_get_object(ui, widgets_connected[i])) );
+		list=g_list_prepend(list, (gtk_builder_get_object(ui, widgets_connected[i])) );
 	app_priv->widgets_connected=list;
 	
 	for(i=0, list=NULL; i < G_N_ELEMENTS(widgets_disconnected); i++)
-		list=g_list_prepend(list,(gtk_builder_get_object(ui, widgets_disconnected[i])) );
+		list=g_list_prepend(list, (gtk_builder_get_object(ui, widgets_disconnected[i])) );
 	app_priv->widgets_disconnected=list;
 }
 

@@ -242,16 +242,16 @@ static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
 	for(l=value; l; l=l->next)
 		switch(list_type){
 			case GCONF_VALUE_STRING:
-				debug("\t\t\t'%s'",(gchar *)l->data);
+				debug("\t\t\t'%s'", (gchar *)l->data);
 				break;
 			case GCONF_VALUE_INT:
-				debug("\t\t\t'%d'",(gint *)l->data);
+				debug("\t\t\t'%d'", (gint *)l->data);
 				break;
 			case GCONF_VALUE_BOOL:
-				debug("\t\t\t'%s'",((gboolean *)l->data ?"TRUE" :"FALSE" ));
+				debug("\t\t\t'%s'", ((gboolean *)l->data ?"TRUE" :"FALSE" ));
 				break;
 			case GCONF_VALUE_FLOAT:
-				debug("\t\t\t'%f'",(gfloat *)l->data);
+				debug("\t\t\t'%f'", (gfloat *)l->data);
 				break;
 			case GCONF_VALUE_INVALID:
 			case GCONF_VALUE_SCHEMA:

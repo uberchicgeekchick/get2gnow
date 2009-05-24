@@ -247,7 +247,7 @@ void services_dialog_show(GtkWindow *parent){
 	}
 	
 	if(parent){
-		g_object_add_weak_pointer(G_OBJECT(services_dialog->dialog),(gpointer) &services_dialog);
+		g_object_add_weak_pointer(G_OBJECT(services_dialog->dialog), (gpointer)&services_dialog);
 		gtk_window_set_transient_for(GTK_WINDOW(services_dialog->dialog), parent);
 	}
 	gtk_window_present(GTK_WINDOW(services_dialog->dialog));

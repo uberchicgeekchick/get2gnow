@@ -322,7 +322,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *friends_tweet){
 	TweetList *t=TWEET_LIST(friends_tweet);
-	g_object_set(GET_PRIV(t)->text_renderer, "wrap-width",((gtk_tree_view_column_get_width(GET_PRIV(t)->text_column))-10), NULL);
+	g_object_set(GET_PRIV(t)->text_renderer, "wrap-width", ((gtk_tree_view_column_get_width(GET_PRIV(t)->text_column))-10), NULL);
 }
 
 TweetList *tweet_list_new(void){

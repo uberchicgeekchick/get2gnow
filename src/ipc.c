@@ -235,7 +235,7 @@ static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition conditio
 					bytes_read = read(input->pipe, &c, 1);
 					
 					if(bytes_read == 1){
-						g_byte_array_append(input->buffer,(guint8*) &c, 1);
+						g_byte_array_append(input->buffer, (guint8 *)&c, 1);
 						
 						if(!c){
 							got_zero = TRUE;

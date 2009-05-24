@@ -527,7 +527,7 @@ static gchar *parser_convert_time(const char *datetime, guint *my_diff){
 				} else if(diff < 60) {
 					return g_strdup(_("1 month ago"));
 				} else {
-					return g_strdup_printf(_("%i months ago"),(diff/30));
+					return g_strdup_printf(_("%i months ago"), (diff/30));
 				}
 			}
 		}

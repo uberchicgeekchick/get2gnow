@@ -244,7 +244,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	}else{
 		debug("Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
 		gtk_widget_show_all(GTK_WIDGET(tweet_view->tweet_view));
-		g_object_add_weak_pointer(G_OBJECT(tweet_view->tweet_view),(gpointer) &tweet_view);
+		g_object_add_weak_pointer(G_OBJECT(tweet_view->tweet_view), (gpointer)&tweet_view);
 		gtk_window_set_transient_for(GTK_WINDOW(tweet_view->tweet_view), parent);
 	}
 	
