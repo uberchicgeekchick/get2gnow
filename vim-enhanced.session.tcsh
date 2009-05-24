@@ -12,4 +12,4 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./TODO" "./src/online-services.c" "./src/network.c" "./src/parser.c" "./src/images.c" "./src/cache.c" "./src/oauth.c" "./dev/oauth.c.dev" "./src/friends-manager.c"
+${my_editor} "./TODO" "./src/online-services.c" "./src/network.c" "./src/parser.c" "./src/popup-dialog.c" "./src/cache.c" "./src/oauth.c" "./dev/oauth.c.dev" "./src/friends-manager.c"

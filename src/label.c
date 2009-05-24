@@ -81,6 +81,11 @@ Label *label_new (void){
 }
 
 void label_set_text(OnlineService *service, Label *my_sexy_label, const gchar  *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
+	if(G_STR_EMPTY(text)){
+		sexy_url_label_set_markup(SEXY_URL_LABEL(my_sexy_label), "");
+		return;
+	}
+	
 	gchar *parsed_text=label_msg_format_urls(service, text, expand_hyperlinks, make_hyperlinks);
 	sexy_url_label_set_markup(SEXY_URL_LABEL(my_sexy_label), parsed_text);
 	g_free(parsed_text);
@@ -139,14 +144,12 @@ static gssize find_first_non_username(const char *str){
 }
 
 gchar *label_msg_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks){
+	if(G_STR_EMPTY(message)) return g_strdup("");
+	
 	gchar **tokens;
 	gchar  *result;
 	gchar  *temp;
 	gint 	i;
-	
-	if (G_STR_EMPTY (message)) {
-		return NULL;
-	}
 	
 	/* TODO: Do we need to escape out <>&"' so that pango markup doesn't get confused? */
 	gchar *at_url_prefix=g_strdup_printf("http://%s", ( (service && service->uri) ?service->uri :"twitter.com" ));

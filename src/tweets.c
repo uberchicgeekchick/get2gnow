@@ -241,7 +241,7 @@ void tweets_beep(void){
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
 	if(in_reply_to_service) in_reply_to_service=NULL;
-	tweet_view_show_tweet(online_services_connected_get_first(online_services), 0, 0, "", "", "", "", "", NULL);
+	tweet_view_show_tweet((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
 	unset_selected_tweet();
 }/*tweets_new_tweet*/
