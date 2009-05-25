@@ -97,8 +97,8 @@ static gboolean tweet_view_configure_event_cb(GtkWidget *widget, GdkEventConfigu
 static gboolean tweet_view_configure_event_timeout_cb(GtkWidget *widget);
 
 static void tweet_view_dm_send_widgets_setup(GtkBuilder *ui);
-static void tweet_view_dm_data_set_sensitivity(GtkButton *button);
-static void tweet_view_dm_data_fill(GList *followers);
+static void tweet_view_dm_show(GtkToggleButton *toggle_button);
+static void tweet_view_dm_form_activate(gboolean dm_activate);
 static void tweet_view_dm_refresh(void);
 
 static void tweet_view_sexy_init(void);
@@ -183,8 +183,9 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"followers_combo_box", &tweet_view->followers_combo_box,
 				"followers_list_store", &tweet_view->followers_list_store,
 				"followers_send_dm", &tweet_view->followers_send_dm,
-				"dm_form_hide", &tweet_view->dm_form_hide,
-				"dm_form_show", &tweet_view->dm_form_show,
+				
+				"dm_form_active_togglebutton", &tweet_view->dm_form_active_togglebutton,
+				"dm_form_active_image", &tweet_view->dm_form_active_image,
 				
 				"tweet_view_embed_togglebutton", &tweet_view->embed_togglebutton,
 				"tweet_view_embed_image", &tweet_view->embed_image,
@@ -223,9 +224,8 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"sexy_dm", "clicked", tweet_view_send,
 				"new_tweet_button", "clicked", tweets_new_tweet,
 				
-				"dm_form_hide", "clicked", tweet_view_dm_data_set_sensitivity,
-				"dm_form_show", "clicked", tweets_new_dm,
 				"dm_refresh", "clicked", tweet_view_dm_refresh,
+				"dm_form_active_togglebutton", "toggled", tweet_view_dm_show,
 				
 				"reply_button", "clicked", tweets_reply,
 				"retweet_button", "clicked", tweets_retweet,
@@ -255,7 +255,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	tweet_view_selected_tweet_buttons_show(FALSE);
 	
 	debug("Disabling & hiding tweet view's dm form since friends have not yet been loaded.");
-	tweet_view_dm_data_set_sensitivity(tweet_view->dm_form_hide);
+	tweet_view_dm_form_activate(FALSE);
 	
 	unset_selected_tweet();
 	
@@ -315,7 +315,6 @@ static void tweet_view_dm_send_widgets_setup(GtkBuilder *ui){
 	const gchar *dm_send_widgets[]={
 		"dm_frame",
 		"dm_frame_label",
-		"dm_form_hbox",
 		"dm_refresh",
 		"followers_combo_box",
 		"followers_send_dm",
@@ -326,8 +325,21 @@ static void tweet_view_dm_send_widgets_setup(GtkBuilder *ui){
 	tweet_view->dm_send_widgets=w;
 }/*tweet_void_dm_send_widgets_setup*/
 
-static void tweet_view_dm_data_set_sensitivity(GtkButton *button){
-	gboolean dm_activate=( button==tweet_view->dm_form_show ?TRUE :FALSE );
+static void tweet_view_dm_form_set_toggle_and_image(void){
+	if(!gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton)){
+		debug("Setting TweetView's dm form toggle button to enable the DM form.");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(tweet_view->dm_form_active_togglebutton), "<span weight=\"bold\">Compose DM's to any of your friends.</span>");
+		gtk_image_set_from_icon_name(tweet_view->dm_form_active_image, "gtk-fullscreen", ImagesMinimum);
+	}else{
+		debug("Setting TweetView's dm form toggle button to disable the DM form.");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(tweet_view->dm_form_active_togglebutton), "<span weight=\"light\">Hide the DM form &amp; area.  You'll still be able to send DMs in the future by clicking this button again.</span>");
+		gtk_image_set_from_icon_name(tweet_view->dm_form_active_image, "gtk-close", ImagesMinimum);
+	}
+}/*tweet_view_dm_form_set_toggle_and_image*/
+
+static void tweet_view_dm_form_activate(gboolean dm_activate){
+	tweet_view_dm_form_set_toggle_and_image();
+	/*
 	GList *w=NULL;
 	for(w=tweet_view->dm_send_widgets; w; w=w->next){
 		gtk_widget_set_sensitive( GTK_WIDGET(w->data), dm_activate);
@@ -336,15 +348,16 @@ static void tweet_view_dm_data_set_sensitivity(GtkButton *button){
 		else
 			gtk_widget_show( GTK_WIDGET(w->data) );
 	}
+	*/
 	
 	if(!dm_activate){
-		gtk_widget_show( GTK_WIDGET(tweet_view->dm_form_show) );
+		gtk_widget_hide( GTK_WIDGET(tweet_view->dm_frame) );
 		gtk_widget_grab_focus(GTK_WIDGET(tweet_view->sexy_entry));
 	}else{
-		gtk_widget_hide( GTK_WIDGET(tweet_view->dm_form_show) );
+		gtk_widget_show( GTK_WIDGET(tweet_view->dm_frame) );
 		gtk_widget_grab_focus(GTK_WIDGET(tweet_view->followers_combo_box));
 	}
-}/*tweet_view_dm_data_set_sensitivity*/
+}/*tweet_view_dm_form_activate*/
 
 static void tweet_view_sexy_init(void){
 	/* Set-up expand tweet view.  Used to view tweets in detailed & send tweets and DMs. */
@@ -651,20 +664,34 @@ static void tweet_view_sexy_send(gpointer service, gpointer user_data){
 }/*tweet_view_sexy_send*/
 
 void tweet_view_new_dm(void){
+	gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, !gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton));
+}/*tweet_view_new_dm*/
+
+static void tweet_view_dm_show(GtkToggleButton *toggle_button){
+	if(!gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton)){
+		debug("Disabled TweetView's dm form.");
+		tweet_view_dm_form_activate(FALSE);
+		return;
+	}
 	popup_select_service( (gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE) ?tweet_view->tweet_view :app_get_window()) );
 	
-	if(!(selected_service)) return;
+	if(!(selected_service)) {
+		if(gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton))
+			gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, FALSE);
+		return;
+	}
 	
-	tweet_view_dm_data_set_sensitivity(tweet_view->dm_form_show);
-	tweet_view_dm_data_fill( user_get_followers(FALSE) );
-}/*tweets_new_dm*/
+	debug("Enabling TweetView's dm form.");
+	tweet_view_dm_form_activate(TRUE);
+	user_get_followers(FALSE, tweet_view_dm_data_fill);
+}/*tweet_view_dm_show*/
 
 static void tweet_view_dm_refresh(void){
 	popup_select_service( (gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE) ?tweet_view->tweet_view :app_get_window()) );
-	tweet_view_dm_data_fill( user_get_followers(TRUE) );
+	user_get_followers(TRUE, tweet_view_dm_data_fill);
 }/*tweet_view_dm_refresh*/
 
-static void tweet_view_dm_data_fill(GList *followers){
+void tweet_view_dm_data_fill(GList *followers){
 	if(!(followers)) {
 		return;
 	}

@@ -64,17 +64,6 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="online_service_treeviewcolumn">
-                            <property name="title">@</property>
-                            <property name="clickable">True</property>
-                            <property name="reorderable">True</property>
-                            <property name="sort_indicator">True</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                             <property name="title">Name</property>
                             <property name="clickable">True</property>

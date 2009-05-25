@@ -339,6 +339,24 @@
                         <property name="position">5</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkToggleButton" id="dm_form_active_togglebutton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <child>
+                          <object class="GtkImage" id="dm_form_active_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-fullscreen</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">6</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -348,25 +366,22 @@
                 </child>
                 <child>
                   <object class="GtkFrame" id="dm_frame">
-                    <property name="sensitive">False</property>
                     <property name="no_show_all">True</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
                       <object class="GtkHBox" id="dm_form_hbox">
-                        <property name="sensitive">False</property>
-                        <property name="no_show_all">True</property>
+                        <property name="visible">True</property>
                         <child>
-                          <object class="GtkButton" id="dm_form_show">
+                          <object class="GtkButton" id="dm_refresh">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Send a new direct message by selecting from you list of friends.</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <property name="tooltip_text" translatable="yes">Reload your friends list.</property>
                             <child>
-                              <object class="GtkImage" id="dm_form_show_image">
+                              <object class="GtkImage" id="dm_refresh_image">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-fullscreen</property>
+                                <property name="stock">gtk-refresh</property>
                               </object>
                             </child>
                           </object>
@@ -377,41 +392,9 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="dm_form_hide">
-                            <property name="sensitive">False</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="no_show_all">True</property>
-                            <property name="tooltip_text" translatable="yes">Close/Hide the direct messaging controls.</property>
-                            <child>
-                              <object class="GtkImage" id="dm_form_hide_image">
-                                <property name="visible">True</property>
-                                <property name="stock">gtk-close</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkVSeparator" id="dm_show_vseparator">
-                            <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkComboBox" id="followers_combo_box">
-                            <property name="sensitive">False</property>
+                            <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="no_show_all">True</property>
                             <property name="tooltip_text" translatable="yes">Friends you can send direct messages to.</property>
                             <property name="model">followers_list_store</property>
                             <property name="active">0</property>
@@ -423,15 +406,14 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="position">3</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="followers_send_dm">
-                            <property name="sensitive">False</property>
+                            <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="no_show_all">True</property>
                             <property name="tooltip_text" translatable="yes">Send your message as direct message to
 &lt;-- this user.</property>
                             <property name="relief">half</property>
@@ -446,35 +428,14 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="dm_refresh">
-                            <property name="sensitive">False</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="no_show_all">True</property>
-                            <property name="tooltip_text" translatable="yes">Reload your friends list.</property>
-                            <child>
-                              <object class="GtkImage" id="dm_refresh_image">
-                                <property name="visible">True</property>
-                                <property name="stock">gtk-refresh</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">5</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
                     </child>
                     <child type="label">
                       <object class="GtkLabel" id="dm_frame_label">
-                        <property name="sensitive">False</property>
-                        <property name="no_show_all">True</property>
+                        <property name="visible">True</property>
                         <property name="label" translatable="yes">_DM a friend:</property>
                         <property name="use_markup">True</property>
                         <property name="use_underline">True</property>

@@ -70,12 +70,15 @@
 #include "main.h"
 #include "network.h"
 #include "parser.h"
-#include "users.h"
 #include "cache.h"
 #include "app.h"
 #include "preferences.h"
+
+#include "users.h"
+#include "friends-manager.h"
 #include "following-viewer.h"
 #include "tweet-view.h"
+
 #include "tweet-list.h"
 #include "tweets.h"
 #include "timer.h"
@@ -98,7 +101,8 @@ gboolean getting_followers=FALSE;
 static gchar *current_timeline=NULL;
 static gboolean processing=FALSE;
 static gboolean fetching_users=FALSE;
-static guint timeout_id;
+static guint which_pass=0;
+static guint timeout_id=0;
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -108,8 +112,6 @@ static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image);
 
 static gboolean network_timeout(gpointer user_data);
 static void network_timeout_new(void);
-
-static void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
@@ -298,90 +300,129 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 }/*network_get_user_timeline*/
 
 
-GList *network_users_glist_get(gboolean get_friends, gboolean refresh){
+GList *network_users_glist_get(UsersGListGetWhich get_which_list, gboolean refresh, UsersGListLoadFunc func){
 	static OnlineService *service=NULL;
+	static guint page=0;
+	static UsersGListLoadFunc on_load_func=NULL;
 	
 	if(!selected_service)
 		return NULL;
 	
-	if( !refresh && service && service==selected_service ){
-		if(get_friends && service->friends)
-			return service->friends;
-		else if( !get_friends && service->followers )
-			return service->followers;
-	}
-	
-	if(fetching_users){
-		return NULL;
+	if(!fetching_users){
+		page=0;
+		if(!which_pass){
+			on_load_func=func;
+			service=selected_service;
+		}
+		
+		if( !refresh && service && service==selected_service ){
+			switch(get_which_list){
+				case GetFriends:
+					if(!service->friends) break;
+					debug("Displaying & loading, %d pages, friends list for: [%s].", page, service->decoded_key);
+					which_pass=0;
+					if(on_load_func!=NULL)
+						on_load_func(service->friends);
+					return service->friends;
+				case GetFollowers:
+					if(!service->followers) break;
+					debug("Displaying & loading, %d pages, followers list for: [%s].", page, service->decoded_key);
+					which_pass=0;
+					if(on_load_func!=NULL)
+						on_load_func(service->followers);
+					return service->followers;
+				case GetBoth:
+					if(!(service->friends && service->followers)) break;
+					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, service->decoded_key);
+					if(which_pass<2) break;
+					which_pass=0;
+				
+					selected_service->friends_and_followers=g_list_alloc();
+					selected_service->friends_and_followers=g_list_concat(selected_service->followers, selected_service->friends);
+					selected_service->friends_and_followers=g_list_sort(selected_service->friends_and_followers, (GCompareFunc)usrcasecmp);
+					if(on_load_func!=NULL)
+						on_load_func(service->friends_and_followers);
+					return service->friends_and_followers;
+			}
+		}
 	}
 	
 	fetching_users=TRUE;
-	service=selected_service;
-	gint page=0; 
+	page++;
+	debug("Please wait while %s downloads %s page #%d.", GETTEXT_PACKAGE, ( (get_which_list==GetFollowers||which_pass) ?"followers" :"friends"), page );
+	app_statusbar_printf("Please wait while %s downloads page #%d of users %s.", GETTEXT_PACKAGE, page, ( (get_which_list==GetFollowers||which_pass) ?"who're following you" :"you're following") );
 	
-	gchar *uri;
-	getting_followers=!get_friends;
-	
-	app_statusbar_printf("Please wait while %s downloads the users %s...", GETTEXT_PACKAGE, (get_friends ?"who are following you" :"you're following") );
-	
-	gchar *getting_message=NULL;
-	if(get_friends)
-		getting_message=_("friends");
-	else
-		getting_message=_("followers");
-	
-	while(fetching_users){
-		page++;
-		uri=g_strdup_printf("%s?page=%d", (get_friends ?API_FOLLOWING :API_FOLLOWERS), page);
-		debug("Getting page %d of who%s.", page, (get_friends ?"m the user is following" :" is following the user") );
-		SoupMessage *msg=online_service_request(service, GET, uri, network_users_glist_save, getting_message, NULL );
-		gchar *full_uri=g_strdup_printf("https://%s%s%s", service->uri, ( (service->which_rest==Twitter) ?"" :"/api" ), uri );
-		OnlineServiceCBWrapper *request_wrapper=request_wrapper=online_service_wrapper_new(service, full_uri, network_users_glist_save, getting_message, NULL);
-		network_users_glist_save(service->session, msg, request_wrapper);
-		g_free(uri);
-		g_free(full_uri);
-	}
-	
-	if(get_friends){
-		service->friends=g_list_sort(service->friends, (GCompareFunc)usrcasecmp);
-		return service->friends;
+	gchar *uri=NULL;
+	if( (get_which_list==GetFriends || (get_which_list==GetBoth && !which_pass && !service->friends) ) ){
+		getting_followers=FALSE;
+		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
 	}else{
-		service->followers=g_list_sort(service->followers, (GCompareFunc)usrcasecmp);
-		return service->followers;
+		which_pass=1;
+		if(get_which_list==GetBoth && service->friends && service->followers){
+			which_pass=2;
+			fetching_users=FALSE;
+			return network_users_glist_get(get_which_list, FALSE, NULL);
+		}
+		getting_followers=TRUE;
+		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
 	}
+	
+	debug("Getting users page, uri:  %s.", uri );
+	online_service_request(service, QUEUE, uri, network_users_glist_save, (gpointer)get_which_list, NULL );
+	g_free(uri);
+	return NULL;
 }/*network_users_glist_get*/
 
-
-static void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data){
+void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
-	gchar *getting=(gchar *)service_wrapper->user_data;
-	debug("Users response: %i",msg->status_code);
+	
+	UsersGListGetWhich get_which_list=(UsersGListGetWhich)service_wrapper->user_data;
+	OnlineService *service=service_wrapper->service;
+	g_free(service_wrapper->requested_uri);
+	g_free(service_wrapper);
+	service_wrapper=NULL;
+	
+	GList *new_users;
+	debug("Users response: %i", msg->status_code);
 	
 	/* Check response */
-	if(!network_check_http(service_wrapper->service, msg)){
+	if(!network_check_http(service, msg)){
+		debug("Now more %s where downloaded so we're assuming we're finished.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
 		fetching_users=FALSE;
+		which_pass++;
+		network_users_glist_get(get_which_list, FALSE, NULL);
 		return;
 	}
 	
 	/* parse user list */
 	debug("Parsing user list");
-	GList *new_users;
-	if(!(new_users=users_new(service_wrapper->service, msg)) ){
+	if(!(new_users=users_new(service, msg)) ){
+		debug("Now more %s where found, yippies we've got'em all.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
 		fetching_users=FALSE;
+		which_pass++;
+		network_users_glist_get(get_which_list, FALSE, NULL);
 		return;
 	}
 	
-	if(g_str_equal(getting, "friends")){
-		if(!service_wrapper->service->friends)
-			service_wrapper->service->friends=new_users;
+	if(!which_pass){
+		debug("Appending users to friends list.");
+		if(!service->friends)
+			service->friends=new_users;
 		else
-			service_wrapper->service->friends=g_list_concat(service_wrapper->service->friends, new_users);
+			service->friends=g_list_concat(service->friends, new_users);
+		service->friends=g_list_sort(service->friends, (GCompareFunc)usrcasecmp);
 	}else{
-		if(!service_wrapper->service->followers)
-			service_wrapper->service->followers=new_users;
+		debug("Addending users to followers list.");
+		if(!service->followers)
+			service->followers=new_users;
 		else
-			service_wrapper->service->followers=g_list_concat(service_wrapper->service->followers, new_users);
+			service->followers=g_list_concat(service->followers, new_users);
+		service->followers=g_list_sort(service->followers, (GCompareFunc)usrcasecmp);
 	}
+	/*now we get the next page - or send the results where they belong.*/
+	service=NULL;
+	debug("Retrieving the next list of friends.");
+	network_users_glist_get(get_which_list, FALSE, NULL);
 }/*network_users_glist_save*/
 
 
@@ -536,6 +577,7 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 	
 	network_tweet_list_image_dl_free(image);
 	
+	g_free(service_wrapper->requested_uri);
 	g_free(service_wrapper);
 	service_wrapper=NULL;
 }

@@ -347,7 +347,7 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 	}
 }/*online_services_request*/
 
-gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore){
+gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore, gboolean connected_only){
 	if(!online_services->total){
 		debug("No services found to load, new accounts need to be setup.");
 		return FALSE;
@@ -359,6 +359,8 @@ gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *
 	debug("Loading services into tree view. total services: '%d'.", online_services->total);
 	for(a=services->accounts; a; a=a->next){
 		OnlineService *service=(OnlineService *)a->data;
+		if( connected_only && !service->connected ) continue;
+		
 		debug("Appending account: '%s'; server: %s.", service->decoded_key, service->uri);
 		gtk_list_store_append(liststore, iter);
 		gtk_list_store_set(
@@ -865,7 +867,7 @@ OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, gchar
 
 	service_wrapper->requested_uri=g_strdup(request_uri);
 	
-	if(callback==network_cb_on_image||callback==user_request_main_quit)
+	if(callback==network_cb_on_image||callback==user_request_main_quit||callback==network_users_glist_save)
 		service_wrapper->user_data=user_data;
 	else if(user_data!=NULL)
 		service_wrapper->user_data=g_strdup(user_data);
@@ -924,15 +926,21 @@ void online_service_free(OnlineService *service){
 	service=NULL;
 }/*online_service_free*/
 
-void online_services_deinit(OnlineServices *services){
+void online_services_deinit(OnlineServices *o_services){
 	online_services_proxy_release();
 	
-	g_list_foreach(services->accounts, (GFunc)online_service_free, NULL);
+	debug("**SHUTDOWN:** Closing & releasing %d accounts.", o_services->total);
+	g_list_foreach(o_services->accounts, (GFunc)online_service_free, NULL);
+
+	debug("**SHUTDOWN:** freeing OnlineServices keys.");
+	g_slist_free(o_services->keys);
+	o_services->keys=NULL;
 	
-	g_slist_free(services->keys);
-	services->keys=NULL;
+	g_free(o_services);
+	o_services=NULL;
 	
-	g_free(services);
+	selected_service=NULL;
+	
 	services=NULL;
 }/*online_services_deinit*/
 
@@ -1004,6 +1012,7 @@ static int online_services_proxy_load(void){
 
 static void online_services_proxy_release(void){
 	if(proxy_init==1 && proxy_suri){
+		debug("**SHUTDOWN:** closing proxy connection");
 		soup_uri_free(proxy_suri);
 		proxy_suri=NULL;
 	}

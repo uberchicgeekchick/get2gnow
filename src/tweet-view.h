@@ -112,9 +112,9 @@ typedef struct {
 	GtkListStore		*followers_list_store;
 	GtkTreeModel		*followers_model;
 	GtkButton		*followers_send_dm;
-	GtkButton		*dm_form_hide;
 	
-	GtkButton		*dm_form_show;
+	GtkToggleButton		*dm_form_active_togglebutton;
+	GtkImage		*dm_form_active_image;
 	
 	/* Widgets that are enabled when we a tweet is selected */
 	GList			*selected_tweet_buttons;
@@ -151,6 +151,8 @@ GtkWindow *tweet_view_get_window(void);
 void tweet_view_beep(void);
 
 void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+
+void tweet_view_dm_data_fill(GList *followers);
 
 void tweet_view_set_embed_toggle_and_image(void);
 

@@ -39,13 +39,18 @@ typedef struct {
 	UserAction	action;
 	GtkDialog	*dialog;
 	GtkLabel	*used_for_label;
+	GtkFrame	*username_frame;
 	GtkLabel	*username_label;
 	GtkEntry	*entry;
+	GtkFrame	*online_services_frame;
 	GtkComboBox	*online_services_combo_box;
 	GtkListStore	*online_services_list_store;
 	GtkTreeModel	*online_service_model;
 	GtkButton	*cancel_button;
 } Popup;
+
+static Popup *popup=NULL;
+
 
 static void popup_set_title_and_label(UserAction action, Popup *popup);
 
@@ -58,14 +63,16 @@ static gboolean popup_validate_usage(UserAction action);
 
 static void popup_set_selected_service(GtkComboBox *combo_box, Popup *popup);
 
-static void popup_destroy_and_free(Popup *popup);
+static void popup_destroy_and_free(void);
 
 
 static void popup_set_title_and_label(UserAction action, Popup *popup){
 	switch( action ){
 		case SelectService:
-			gtk_window_set_title(GTK_WINDOW(popup->dialog), "Which account do you want to use?");
-			gtk_label_set_text(popup->used_for_label, "Please select the 'default' account you want to use for sending direct messages, managing friends, and etc.  You can select a different account at any time by selecting 'Select Default Account' from the 'Accounts' file menu:");
+			gtk_window_set_title(GTK_WINDOW(popup->dialog), "Please select account to use:");
+			gchar *title_markup=g_markup_printf_escaped("Please select the 'default' account you want to use for sending direct messages, managing friends, and etc.\n\n<span weight=\"bold\">NOTE: You're being asked this before %s loads your friends, followers, or both.  This may take a while, so after selecting your account, please be patient while you're friends, followers, or both are download.  They will be displeyed, it may just take awhile.</span>\n\nYou can select a different account at any time by selecting 'Select Default Account' from the 'Accounts' file menu:", GETTEXT_PACKAGE);
+			gtk_label_set_markup(popup->used_for_label, title_markup);
+			g_free(title_markup);
 			break;
 		case ViewTweets:
 			gtk_window_set_title(GTK_WINDOW(popup->dialog), "Who's tweets do you want to see?" );
@@ -175,30 +182,36 @@ static void popup_set_selected_service(GtkComboBox *combo_box, Popup *popup){
 }/*popup_set_selected_service*/
 
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup){
-	popup_destroy_and_free(popup);
+	popup_destroy_and_free();
 }/*popup_destroy_cb*/
 
-static void popup_destroy_and_free( Popup *popup ){
+static void popup_destroy_and_free(void){
 	gtk_widget_destroy( GTK_WIDGET(popup->dialog) );
-	g_free( popup );
+	g_free(popup);
 	popup=NULL;
 }/*popup_destroy_and_free*/
 
 void popup_select_service( GtkWindow *parent ){
+	if(online_services->connected==1){
+		if(selected_service) return;
+		selected_service=online_services_connected_get_first(online_services);
+		return;
+	}
+	
 	popup_dialog_show( GTK_WINDOW(parent), SelectService );
 }/*popup_select_service*/
 
 void popup_friend_follow( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), Follow );
-}
+}/*popup_friend_follow*/
 
 void popup_friend_unfollow( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), UnFollow );
-}
+}/*popup_friend_unfollow*/
 
 void popup_friend_block( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), Block );
-}
+}/*popup_friend_block*/
 
 void popup_friend_unblock( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), UnBlock );
@@ -206,11 +219,11 @@ void popup_friend_unblock( GtkWindow *parent ){
 
 void popup_friend_tweets( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), ViewTweets );
-}
+}/*popup_friend_tweets*/
 
 void popup_friend_profile( GtkWindow *parent ){
 	popup_dialog_show( GTK_WINDOW(parent), ViewProfile );
-}
+}/*popup_friend_profile*/
 
 
 static gboolean popup_validate_usage(UserAction action){
@@ -234,18 +247,18 @@ static gboolean popup_validate_usage(UserAction action){
 
 
 static void popup_dialog_show(GtkWindow *parent, UserAction action ){
-	GtkBuilder *ui;
-
-	if(!(popup_validate_usage(action)))
-		return;
+	if(!(popup_validate_usage(action))) return;
 	
-	static Popup *popup=NULL;
 	if(popup){
-		if(popup->action==action)
+		if(action!=SelectService && popup->action==action){
+			debug("Displaying existing popup instance.");
 			return gtk_window_present(GTK_WINDOW(popup->dialog));
+		}
 		
-		popup_destroy_and_free(popup);
+		popup_destroy_and_free();
 	}
+	
+	GtkBuilder *ui;
 	
 	popup=g_new0(Popup, 1);
 	popup->action=action;
@@ -255,8 +268,10 @@ static void popup_dialog_show(GtkWindow *parent, UserAction action ){
 					GtkBuilderUI,
 						"entry_popup", &popup->dialog,
 						"used_for_label", &popup->used_for_label,
+						"username_frame", &popup->username_frame,
 						"entry", &popup->entry,
 						"username_label", &popup->username_label,
+						"online_services_frame", &popup->online_services_frame,
 						"online_services_combo_box", &popup->online_services_combo_box,
 						"online_services_list_store", &popup->online_services_list_store,
 						"cancel_button", &popup->cancel_button,
@@ -275,31 +290,29 @@ static void popup_dialog_show(GtkWindow *parent, UserAction action ){
 	g_object_unref(ui);
 	
 	debug("Signal handlers set... loading accounts.");
-	if(!( online_services_fill_liststore(online_services, popup->online_services_list_store) ))
+	if(!( online_services_fill_liststore(online_services, popup->online_services_list_store, TRUE) ))
 		debug("No services found to load, new accounts need to be setup.");
 	else{
 		debug("OnlineServices found & loaded.  Selecting active service.");
 		gtk_combo_box_set_active(popup->online_services_combo_box, 0);
 	}
-
-	if(popup->action==SelectService){
-		debug("Connecting online_services_combo_box's \"GtkComboBox::changed\" to 'popup_set_selected_service' method.");
-		g_signal_connect(popup->online_services_combo_box, "changed", (GCallback)popup_set_selected_service, popup);
+	
+	if(online_services->connected==1){
+		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
+		gtk_widget_hide(GTK_WIDGET(popup->online_services_frame));
 	}
 	
 	popup_set_title_and_label(action, popup);
 	
 	/* Set the parent */
-	g_object_add_weak_pointer(G_OBJECT(popup->dialog), (gpointer) &popup);
+	g_object_add_weak_pointer(G_OBJECT(popup->dialog), (gpointer)&popup);
 	gtk_window_set_transient_for(GTK_WINDOW(popup->dialog), parent);
 	
-	if(popup->action==SelectService){
-		gtk_widget_hide(GTK_WIDGET(popup->username_label));
-		gtk_widget_hide(GTK_WIDGET(popup->entry));
+	if(popup->action!=SelectService)
+		gtk_window_present(GTK_WINDOW(popup->dialog));
+	else{
+		gtk_widget_hide(GTK_WIDGET(popup->username_frame));
 		gtk_dialog_run(popup->dialog);
-		return;
 	}
-	
-	gtk_widget_show_all(GTK_WIDGET(popup->dialog));
 }/*popup_dialog_show*/
 

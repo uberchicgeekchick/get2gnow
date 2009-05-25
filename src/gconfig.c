@@ -175,7 +175,7 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 }
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
-	debug("Setting bool:'%s' to %s(=%s).", key, (value ? "true" : "false"), value);
+	debug("Setting bool:'%s' to %s(=%d).", key, (value ? "TRUE" : "FALSE"), value);
 	return gconf_client_set_bool(gconfig_priv->gconf_client, key, value,NULL);
 }
 
@@ -186,7 +186,7 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	g_return_val_if_fail(value != NULL, FALSE);
 	*value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
 
-	debug("Getting bool:'%s'(=%d ---> %s).", key, *value, (*value ? "true" : "false") );
+	debug("Getting bool:'%s' to %s(=%d).", key, (*value ? "TRUE" : "FALSE"), *value);
 	
 	if(error) {
 		debug("\t\t**ERROR:** %s", error->message);

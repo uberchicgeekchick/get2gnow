@@ -237,7 +237,7 @@ void services_dialog_show(GtkWindow *parent){
 	g_object_unref(ui);
 	
 	debug("Signal handlers set... loading accounts.");
-	if(!( online_services_fill_liststore(online_services, services_dialog->urls_liststore) ))
+	if(!( online_services_fill_liststore(online_services, services_dialog->urls_liststore, FALSE) ))
 		debug("No services found to load, new accounts need to be setup.");
 	else{
 		debug("OnlineServices found & loaded.  Selecting active service.");

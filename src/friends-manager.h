@@ -25,5 +25,6 @@
 #include <gtk/gtk.h>
 
 void friends_manager_show(GtkWindow *parent);
+void friends_manager_display_following_and_followers(GList *friends_and_followers);
 
 #endif /* __FRIENDS_MANAGER_H__ */

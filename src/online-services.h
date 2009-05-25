@@ -162,7 +162,7 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 
 void online_services_deinit(OnlineServices *online_services);
 
-gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore);
+gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore, gboolean connected_only);
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);

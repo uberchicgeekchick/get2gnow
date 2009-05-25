@@ -272,7 +272,7 @@ static void tweets_include_and_begin_to_send(gchar *tweet, gboolean in_response,
 void tweets_new_dm(void){
 	tweet_view_new_dm();
 }/*tweets_new_dm*/
-	
+
 void tweets_save_fave(void){
 	if(!selected_tweet)
 		return;

@@ -63,7 +63,6 @@
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include "config.h"
-#include "friends-manager.h"
 #include "users.h"
 #include "images.h"
 #include "online-services.h"
@@ -96,7 +95,8 @@ void network_get_timeline(const gchar *uri_timeline);
 void network_get_user_timeline(OnlineService *service, const gchar *username);
 void network_refresh(void);
 
-GList *network_users_glist_get(gboolean get_friends, gboolean refresh);
+GList *network_users_glist_get(UsersGListGetWhich get_which_list, gboolean refresh, UsersGListLoadFunc func);
+void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 gboolean network_download_avatar(User *user);
 void network_get_image(User *user, GtkTreeIter *iter);

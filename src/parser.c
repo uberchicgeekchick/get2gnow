@@ -227,6 +227,8 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		debug("Checking current xpath: '%s' against current node: '%s (#%d)'.", xpathv[xpath_index], current_node->name, current_node->type);
 		
+		if(xpath_index>xpath_target_index) break;
+		
 		if(!g_str_equal(current_node->name, xpathv[xpath_index])) continue;
 		
 		if(xpath_index<xpath_target_index){
@@ -258,48 +260,52 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 /* Parse a timeline XML file */
 gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
-	GtkListStore	*store=NULL;
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
+		
+	if(!(doc=parser_parse(xml, &root_element))){
+		xmlCleanupParser();
+		return FALSE;
+	}
+	
 	xmlNode		*cur_node=NULL;
 	
 	Status 	*status=NULL;
 	
 	/* Count new tweets */
-	gboolean		show_notification =(last_id > 0);
-	unsigned long int	last_tweet = 0;
+	gboolean		show_notification=(last_id>0);
+	unsigned long int	last_tweet=0;
 	/*
 	 * On multiple tweet updates we only want to 
 	 * play the sound notification once.
 	 */
-	gboolean	multiple_new_tweets = FALSE;
 	gboolean	first_tweet=TRUE;
 	
-	gint		tweet_display_delay = 0;
-	const int	tweet_display_interval = 5;
-	
-	/* parse the xml */
-	if(!(doc=parser_parse(xml, &root_element))){
-		xmlCleanupParser();
-		return FALSE;
-	}
+	gint		tweet_display_delay=0;
+	const int	tweet_display_interval=5;
 	guint list_store_count=tweet_list_store_total_get();
 	gboolean urls_only=gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE);
-	
-	/* Get the ListStore and clear previous */
-	store=tweet_list_get_store();
+	GtkListStore *store=tweet_list_get_store();
+	gchar *needle_tweet_mentions=g_strdup_printf("@%s", service->username);
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
 	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE ) continue;
+		
 		if( g_str_equal(cur_node->name, "statuses") ||	g_str_equal(cur_node->name, "direct-messages") ){
+			if(!cur_node->children) continue;
 			cur_node = cur_node->children;
 			continue;
 		}
 		
-		if((!g_str_equal(cur_node->name, "status")) && (!g_str_equal(cur_node->name, "direct_message")) )
+		if(!( g_str_equal(cur_node->name, "status") || g_str_equal(cur_node->name, "direct_message") ))
 			continue;
+		
+		if(!cur_node->children){
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", cur_node->name);
+			continue;
+		}
 		
 		debug("Parsing tweet.  Its a %s.", (g_str_equal(cur_node->name, "status") ?"status update" :"direct message" ) );
 		
@@ -330,36 +336,35 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		debug("Display time set to: %s.", datetime);
 		
 		debug("Formating status text for display.");
-		gchar *sexy_status_text=NULL;
-		if(!urls_only){
-			sexy_tweet=label_msg_format_urls(service, status->text, TRUE, TRUE);
-			sexy_status_text=label_msg_format_urls(service, status->text, TRUE, FALSE);
-			g_free(status->text);
-			status->text=sexy_status_text;
-			sexy_status_text=NULL;
-		}else{
-			sexy_tweet=g_strdup(status->text);
-			sexy_status_text=label_msg_format_urls(service, status->text, FALSE, FALSE);
-			g_free(status->text);
-			status->text=sexy_status_text;
-			sexy_status_text=NULL;
+		gchar *sexy_status_text=NULL, *sexy_status_swap=NULL;
+		gchar *cur=sexy_status_swap=g_markup_escape_text(status->text, -1);
+		while((cur = strstr(cur, "&amp;"))) {
+			if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
+				g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
+			else
+				cur += 5;
 		}
+		if(!urls_only){
+			sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
+			sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
+		}else{
+			sexy_tweet=g_strdup(sexy_status_swap);
+			sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
+		}
+		g_free(sexy_status_swap);
+		sexy_status_swap=NULL;
 		
 		tweet=g_strdup_printf(
 					"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
 						status->user->nick_name, status->user->user_name, service->uri,
 						service->decoded_key,
 						datetime,
-						status->text
+						sexy_status_text
 		);
 		
-		if(sid > last_id && show_notification) {
-			if(!multiple_new_tweets) {
-				app_notify_sound(FALSE);
-				multiple_new_tweets=TRUE;
-			}
-			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(tweet) );
-			
+		if( (sid > last_id && show_notification) || (g_strrstr(status->text, needle_tweet_mentions)) ){
+			app_notify_sound(TRUE);
+			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(tweet));
 			tweet_display_delay+=tweet_display_interval;
 		}
 		
@@ -390,6 +395,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		/* Free the text column string */
 		g_free(tweet);
 		g_free(sexy_tweet);
+		g_free(sexy_status_text);
 		
 		/* network_get_image, or its callback, free's iter once its no longer needed. */
 		network_get_image(status->user, iter);
@@ -409,6 +415,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	/* Free memory */
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
+	g_free(needle_tweet_mentions);
 	
 	return TRUE;
 }
@@ -453,18 +460,16 @@ static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
 			debug("Parsing tweet's 'id': %s", content);
 			status->id=strtoul( content, NULL, 10 );
 		}else if( g_str_equal(cur_node->name, "sender") || g_str_equal(cur_node->name, "user")){
+			if(!cur_node->children){
+				debug("*WARNING:* Cannot parse user profile %s does not have any child nodes.", cur_node->name);
+				continue;
+			}
 			debug("Parsing user node: %s.", cur_node->name);
 			status->user=user_parse_profile(service, cur_node->children);
 			debug("User parsed and created for user: %s.", status->user->user_name);
 		}else if(g_str_equal(cur_node->name, "text")) {
 			debug("Parsing tweet.");
-			gchar *cur=status->text=g_markup_escape_text(content, -1);
-			while((cur = strstr(cur, "&amp;"))) {
-				if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
-					g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
-				else
-					cur += 5;
-			}
+			status->text=g_strdup(content);
 		}
 		xmlFree(content);
 		

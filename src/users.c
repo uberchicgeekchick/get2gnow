@@ -79,6 +79,10 @@ static void user_request_free(UserRequest *request);
 
 static User *user_constructor(OnlineService *service, gboolean a_follower);
 
+static void users_free_friends_and_followers(OnlineService *service);
+static void users_free_followers(OnlineService *service);
+static void users_free_friends(OnlineService *service);
+
 
 #define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
 #include "debug.h"
@@ -202,7 +206,9 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 		
 		user_request_free(request);
 		service_wrapper->service=NULL;
+		g_free(service_wrapper->requested_uri);
 		g_free(service_wrapper);
+		service_wrapper=NULL;
 		
 		return;
 	}
@@ -246,7 +252,9 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 	
 	user_request_free(request);
 	service_wrapper->service=NULL;
+	g_free(service_wrapper->requested_uri);
 	g_free(service_wrapper);
+	service_wrapper=NULL;
 }/*user_request_main_quit*/
 
 static void user_request_free(UserRequest *request){
@@ -369,22 +377,24 @@ GList *users_new(OnlineService *service, SoupMessage *xml){
 	User		*user=NULL;
 	
 	/* parse the xml */
-	if(!( (doc=parser_parse(xml, &root_element)) )){
+	debug("Parsing users xml.");
+	if(!( (doc=parser_parse(xml, &root_element)) && root_element )){
 		xmlCleanupParser();
 		return NULL;
 	}
 	
-	/* get users */
+	debug("\t\t\tParsing new users. Starting with: '%s' node.", root_element->name);
 	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
 		if(cur_node->type != XML_ELEMENT_NODE)
 			continue;
 		if(g_str_equal(cur_node->name, "user")){
-			/* parse user */
+			debug("\t\t\tCreating User * from current node.");
 			user=user_parse_profile(service, cur_node->children);
-			/* add to list */
+			debug("\t\t\tAdding user: [%s] to user list.", user->user_name);
 			list=g_list_append(list, user);
 		} else if(g_str_equal(cur_node->name, "users")){
-			cur_node = cur_node->children;
+			if(cur_node->children)
+				cur_node=cur_node->children;
 		}
 	} /* End of loop */
 	
@@ -401,11 +411,10 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 		return NULL;
 			
 	User *user=NULL;
-	SoupMessage *msg=NULL;
 	
-	gchar *user_profile=g_strdup_printf( API_ABOUT_USER, user_name );
-	msg=online_service_request( service, GET, user_profile, NULL, NULL, NULL );
-	g_free( user_profile );
+	gchar *user_profile_uri=g_strdup_printf( API_ABOUT_USER, user_name );
+	SoupMessage *msg=online_service_request( service, GET, user_profile_uri, NULL, NULL, NULL );
+	g_free( user_profile_uri );
 	
 	if(!(user=user_parse_new(service, msg)))
 		return NULL;
@@ -441,19 +450,42 @@ void user_free(User *user){
 
 /* Free a list of Users */
 void user_free_lists(OnlineService *service){
-	if(service->friends_and_followers)
-		users_free("friends, ie who the user is following, and the authenticated user's followers", service->friends_and_followers);
-	service->friends_and_followers=NULL;
+	if(service->friends_and_followers){
+		users_free_friends_and_followers(service);
+		return;
+	}
 	
 	if(service->friends)
-		users_free("friends, ie who they're following", service->friends);
-	service->friends=NULL;
+		users_free_friends(service);
 	
 	if(service->followers)
-		users_free("followers", service->followers);
-	service->followers=NULL;
+		users_free_followers(service);
 }/*user_free_lists*/
 
+static void users_free_friends_and_followers(OnlineService *service){
+	if(!service->friends_and_followers)
+		return;
+	
+	users_free("friends, ie you're following, and who's following you", service->friends_and_followers);
+	service->friends_and_followers=NULL;
+}/*users_free_friends_and_followers*/
+
+static void users_free_followers(OnlineService *service){
+	if(!service->followers)
+		return;
+	
+	users_free("who's following you", service->followers);
+	service->followers=NULL;
+}/*users_free_followers*/
+
+
+static void users_free_friends(OnlineService *service){
+	if(!service->friends)
+		return;
+	
+	users_free("friends, ie you're following", service->friends);
+	service->friends=NULL;
+}/*users_free_friends*/
 
 void user_append_friend(User *user){
 	if(user->service->friends)
@@ -483,38 +515,27 @@ void user_remove_follower(User *user){
 }/*user_remove_friend*/
 
 
-/* Get authenticating user's friends(following)
- * Returns:
- * 		NULL: Friends will be fetched
- * 		GList: The list of friends (fetched previously)
- */
-GList *user_get_friends(gboolean refresh){
-	return network_users_glist_get(TRUE, refresh);
+GList *user_get_friends(gboolean refresh, UsersGListLoadFunc func){
+	if(!selected_service) return NULL;
+	
+	if(refresh && selected_service->friends) users_free_friends(selected_service);
+	
+	return network_users_glist_get(GetFriends, refresh, func);
 }
 
+GList *user_get_followers(gboolean refresh, UsersGListLoadFunc func){
+	if(!selected_service) return NULL;
+	
+	if(refresh && selected_service->followers) users_free_followers(selected_service);
+	
+	return network_users_glist_get(GetFollowers, refresh, func);
+}/*users_get_followers*/
 
-/* Get the authenticating user's followers
- * Returns:
- * 		NULL: Followers will be fetched
- * 		GList: The list of friends (fetched previously)
- */
-GList *user_get_followers(gboolean refresh){
-	return network_users_glist_get(FALSE, refresh);
-}
-
-GList *user_get_friends_and_followers(gboolean refresh){
-	if(selected_service && selected_service->friends_and_followers && !refresh)
-		return selected_service->friends_and_followers;
+GList *user_get_friends_and_followers(gboolean refresh, UsersGListLoadFunc func){
+	if(!selected_service) return NULL;
 	
-	if( refresh || !selected_service->friends)
-		network_users_glist_get(TRUE, refresh);
+	if(refresh && selected_service->friends_and_followers) users_free_friends_and_followers(selected_service);
 	
-	if( refresh || !selected_service->followers)
-		network_users_glist_get(FALSE, refresh);
-	
-	selected_service->friends_and_followers=g_list_alloc();
-	selected_service->friends_and_followers=g_list_concat(selected_service->followers, selected_service->friends);
-	selected_service->friends_and_followers=g_list_sort(selected_service->friends_and_followers, (GCompareFunc)usrcasecmp);
-	return selected_service->friends_and_followers;
+	return network_users_glist_get(GetBoth, refresh, func);
 }/*user_get_friends_and_followers*/
 
