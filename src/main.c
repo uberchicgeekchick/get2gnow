@@ -26,7 +26,7 @@
 #include <glib/gprintf.h>
 
 #include "config.h"
-#include "core.h"
+#include "program.h"
 
 int main(int argc, char **argv){
 	get2gnow_init(argc, argv);

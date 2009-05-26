@@ -503,7 +503,7 @@ void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer u
 	debug("Timeline response: %i",msg->status_code);
 	
 	if(processing)
-		tweet_list_refresh();
+		tweet_list_clear();
 	
 	processing=FALSE;
 	

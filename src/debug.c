@@ -66,9 +66,10 @@
 #define DEBUG_DOMAINS "All"
 #include "debug.h"
 
-static gchar    **debug_strv=NULL;
-static gboolean   all_domains = FALSE;
+static gchar **debug_strv=NULL;
+static gboolean all_domains=FALSE;
 static gboolean devel=FALSE;
+static gchar *debug_last_domain=NULL;
 
 gboolean debug_check_devel(void){
 #ifndef GNOME_ENABLE_DEBUG
@@ -84,15 +85,12 @@ gboolean debug_check_devel(void){
 	
 	devel=TRUE;
 	all_domains=TRUE;
-	debug_strv=g_strsplit_set("all", ":, ", 0);
+	debug_strv=g_strsplit("all", ":", 1);
 	
 	return TRUE;
 }//debug_check_devel
 
-static void debug_init (void){
-	static gboolean inited=FALSE;
-	if(inited) return;
-	inited=TRUE;
+void debug_init (void){
 	if(debug_check_devel()) return;
 	
 	const gchar *env;
@@ -115,26 +113,28 @@ void debug_impl(const gchar *domain, const gchar *msg, ...){
 	g_return_if_fail (domain != NULL);
 	g_return_if_fail (msg != NULL);
 	
-	debug_init();
-	
 	gchar **domains=g_strsplit(domain, ":", -1);
 	for(i=0, x=0; (debug_strv && debug_strv[i]) && (domains && domains[x]); i++, x++) {
 		if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
 			continue;
-			
-		va_list args;
+		
 		if(!output_started){
-			g_print("\n");
 			output_started=TRUE;
+			g_printf("\n");
 		}
 		
-		g_print ("%s: ", domains[x]);
+		if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
+			if(debug_last_domain) g_free(debug_last_domain);
+			debug_last_domain=g_strdup(domains[x]);
+			g_printf("\n%s: ", domains[x]);
+		}else
+			g_printf("\n\t\t\t");
 		
+		va_list args;
 		va_start(args, msg);
 		g_vprintf(msg, args);
 		va_end(args);
 		
-		g_print ("\n");
 		g_strfreev(domains);
 		return;
 	}
@@ -161,4 +161,8 @@ gboolean debug_if_domain(const gchar *domain){
 	return FALSE;
 }
 
+void debug_deinit(void){
+	if(debug_last_domain) g_free(debug_last_domain);
+	g_strfreev(debug_strv);
+}/*debug_deinit*/
 

@@ -34,6 +34,9 @@ gchar *parser_get_cache_file_from_uri(const gchar *uri);
 
 xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element);
 
+gchar *parser_escape_text(gchar *status);
+gchar *parser_convert_time(const gchar *datetime, guint *my_diff);
+
 gboolean parser_timeline(OnlineService *service, SoupMessage *xml);
 gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 

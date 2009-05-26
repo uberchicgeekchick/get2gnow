@@ -62,7 +62,8 @@
 #include <glib/gprintf.h>
 
 #include "config.h"
-#include "core.h"
+#include "program.h"
+#include "debug.h"
 #include "gconfig.h"
 #include "app.h"
 #include "online-services.h"
@@ -96,13 +97,15 @@ void get2gnow_init(int argc, char **argv){
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
 	textdomain(GETTEXT_PACKAGE);
 	
-	g_set_application_name(_(GETTEXT_PACKAGE));
+	g_set_application_name(GETTEXT_PACKAGE);
 	
 	if(!g_thread_supported()) g_thread_init(NULL);
 	
 	gtk_init(&argc, &argv);
 	
 	gtk_window_set_default_icon_name(PACKAGE_NAME);
+	
+	debug_init();
 	
 	cache_init();
 	
@@ -136,6 +139,8 @@ void get2gnow_deinit(void){
 	gconfig_shutdown();
 	
 	cache_deinit();
+
+	debug_deinit();
 }/*shutdown*/
 
 

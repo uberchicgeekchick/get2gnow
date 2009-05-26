@@ -48,33 +48,39 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
 #ifndef __USER_H__
 #define __USER_H__
 
+
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
 #include "online-services.h"
 
-typedef struct {
-	OnlineService		*service;
-	unsigned long int	id;
-	gchar			*user_name;
-	gchar			*nick_name;
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	gchar			*image_url;
-	gchar			*image_filename;
-	unsigned long int	tweets;
-	unsigned long int	following;
-	unsigned long int	followers;
-	gboolean		follower;
-} User;
 
-/* Twitter follwer management */
-typedef enum {
+/**********************************************************************
+ *        Objects, structures, and etc typedefs                       *
+ **********************************************************************/
+typedef void (*UsersGListLoadFunc) (GList *users);
+
+typedef struct _User User;
+typedef struct _UserStatus UserStatus;
+typedef struct _UserRequest UserRequest;
+
+typedef enum _UsersGListGetWhich UsersGListGetWhich;
+typedef enum _UserAction UserAction;
+
+#define usrcasecmp	user_sort_by_user_name
+#define	usrcmp		user_sort_by_user_name
+
+
+enum _UserAction{
 	SelectService,
 	ViewProfile,
 	ViewTweets,
@@ -84,31 +90,78 @@ typedef enum {
 	UnBlock,
 	Fave,
 	UnFave,
-} UserAction;
+};
 
-typedef struct {
+enum _UsersGListGetWhich{
+	GetFriends,
+	GetFollowers,
+	GetBoth,
+};
+
+
+struct _UserStatus {
+	OnlineService	*service;
+	
+	User		*user;
+	guint		id;
+	guint		in_reply_to_status_id;
+	
+	gchar		*text;
+	gchar		*tweet;
+	gchar		*sexy_tweet;
+	
+	gchar		*source;
+	
+	gchar		*created_at_str;
+	gchar		*created_how_long_ago;
+	
+	guint		created_at;
+	guint		created_seconds_ago;
+};
+
+struct _User {
+	OnlineService		*service;
+	
+	unsigned long int	id;
+	gchar			*user_name;
+	gchar			*nick_name;
+	
+	UserStatus		*status;
+	
+	gchar			*location;
+	gchar			*bio;
+	gchar			*url;
+	
+	gchar			*image_url;
+	gchar			*image_filename;
+	
+	unsigned long int	tweets;
+	unsigned long int	following;
+	unsigned long int	followers;
+	
+	gboolean		follower;
+};
+
+struct _UserRequest{
 	UserAction action;
 	RequestMethod method;
 	GtkWindow *parent;
 	gchar *user_data;
 	gchar *message;
 	gchar *uri;
-} UserRequest;
+};
 
-typedef enum {
-	GetFriends,
-	GetFollowers,
-	GetBoth,
-} UsersGListGetWhich;
 
-typedef void (*UsersGListLoadFunc) (GList *users);
-
-#define usrcasecmp	user_sort_by_user_name
-#define	usrcmp		user_sort_by_user_name
-
+/**********************************************************************
+ *          Global method & function prototypes                      *
+ **********************************************************************/
 gchar *user_action_to_string(UserAction action);
 void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data);
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
+
+UserStatus *user_status_new(OnlineService *service, xmlNode *a_node);
+void user_status_format_tweet(UserStatus *status, User *user);
+void user_status_free(UserStatus *status);
 
 /* Parse a user-list XML( friends, followers,... ) */
 GList *users_new(OnlineService *service, SoupMessage *xml);
@@ -137,4 +190,10 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name);
 int user_sort_by_user_name(User *a, User *b);
 void user_free(User *user);
 
-#endif //__USER_H__
+
+
+#endif /*__USER_H__*/
+/**********************************************************************
+ *                               eof                                  *
+ **********************************************************************/
+

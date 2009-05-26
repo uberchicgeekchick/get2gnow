@@ -730,8 +730,7 @@ static void app_reconnect(GtkMenuItem *item, App *app){
 }/*app_reconnect*/
 
 static void app_disconnect(void){
-	GtkListStore *store=tweet_list_get_store();
-	gtk_list_store_clear(store);
+	tweet_list_clear();
 	network_logout();
 	online_services_disconnect(online_services);
 }/*app_disconnect*/

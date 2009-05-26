@@ -54,7 +54,7 @@ get2gnow_SOURCES =					\
 	gtkbuilder.c		gtkbuilder.h		\
 	tree-view.c 		tree-view.h		\
 	$(keyring_sources)				\
-	core.c			core.h			\
+	program.c			program.h			\
 	main.c			main.h			\
 	about.c			about.h			\
 	services-dialog.c	services-dialog.h	\
@@ -87,7 +87,7 @@ get2gnow_OBJECTS =				\
 	gtkbuilder.$(OBJEXT)			\
 	tree-view.$(OBJEXT)			\
 	$(am__objects_1)			\
-	core.$(OBJEXT)				\
+	program.$(OBJEXT)				\
 	main.$(OBJEXT)				\
 	about.$(OBJEXT)				\
 	services-dialog.$(OBJEXT)		\
@@ -393,7 +393,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/services-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/popup-dialog.Po@am__quote@

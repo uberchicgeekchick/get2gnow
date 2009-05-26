@@ -56,9 +56,11 @@ G_BEGIN_DECLS
 
 #define	check_devel()	debug_check_devel()
 
+void debug_init(void);
 gboolean debug_check_devel(void);
 void debug_impl (const gchar *domain, const gchar *msg, ...);
 gboolean debug_if_domain(const gchar *domain);
+void debug_deinit(void);
 
 G_END_DECLS
 

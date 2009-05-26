@@ -27,7 +27,6 @@
  * Just make sure we include the prototype for strptime as well
  */
 #define _XOPEN_SOURCE
-#include <time.h>
 #include <string.h> /* for g_memmove - memmove */
 #include <strings.h>
 
@@ -56,24 +55,13 @@
 #define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI"
 #include "debug.h"
 
-typedef struct {
-	User	*user;
-	gchar	*text;
-	gchar	*created_at_str;
-	guint	created_at;
-	guint	id;
-} Status;
 
-static Status *parser_node_status(OnlineService *service, xmlNode *a_node);
-static void parser_node_status_free(Status *status);
-static gchar *parser_convert_time(const char *datetime, guint *my_diff);
+static gchar *parser_xml_node_type_to_string(xmlElementType type);
 static xmlDoc *parser_parse_dom_content(SoupMessage *xml);
 
 
 /* id of the newest tweet showed */
 static unsigned long int last_id=0;
-
-
 
 
 gchar *parser_get_cache_file_from_uri(const gchar *uri){
@@ -210,6 +198,32 @@ xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
 	return doc;
 }
 
+static gchar *parser_xml_node_type_to_string(xmlElementType type){
+	switch(type){
+		case XML_ELEMENT_NODE: return _("XML_ELEMENT_NODE");
+		case XML_ATTRIBUTE_NODE: return _("XML_ATTRIBUTE_NODE");
+		case XML_TEXT_NODE: return _("XML_TEXT_NODE");
+		case XML_CDATA_SECTION_NODE: return _("XML_CDATA_SECTION_NODE");
+		case XML_ENTITY_REF_NODE: return _("XML_ENTITY_REF_NODE");
+		case XML_ENTITY_NODE: return _("XML_ENTITY_NODE");
+		case XML_PI_NODE: return _("XML_PI_NODE");
+		case XML_COMMENT_NODE: return _("XML_COMMENT_NODE");
+		case XML_DOCUMENT_NODE: return _("XML_DOCUMENT_NODE");
+		case XML_DOCUMENT_TYPE_NODE: return _("XML_DOCUMENT_TYPE_NODE");
+		case XML_DOCUMENT_FRAG_NODE: return _("XML_DOCUMENT_FRAG_NODE");
+		case XML_NOTATION_NODE: return _("XML_NOTATION_NODE");
+		case XML_HTML_DOCUMENT_NODE: return _("XML_HTML_DOCUMENT_NODE");
+		case XML_DTD_NODE: return _("XML_DTD_NODE");
+		case XML_ELEMENT_DECL: return _("XML_ELEMENT_DECL");
+		case XML_ATTRIBUTE_DECL: return _("XML_ATTRIBUTE_DECL");
+		case XML_ENTITY_DECL: return _("XML_ENTITY_DECL");
+		case XML_NAMESPACE_DECL: return _("XML_NAMESPACE_DECL");
+		case XML_XINCLUDE_START: return _("XML_XINCLUDE_START");
+		case XML_XINCLUDE_END: return _("XML_XINCLUDE_END");
+		case XML_DOCB_DOCUMENT_NODE: return _("XML_DOCB_DOCUMENT_NODE");
+		default: return _("XML_TYPE_UNKNOWN");
+	}
+}/*parser_xml_node_type_to_string(node->type);*/
 
 gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlDoc		*doc=NULL;
@@ -221,11 +235,13 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	
 	xmlNode	*current_node=NULL;
 	gchar	*xpath_content=NULL;
+	
 	gchar	**xpathv=g_strsplit(xpath, "->", -1);
 	guint	xpath_index=0, xpath_target_index=g_strv_length(xpathv)-1;
+	
 	debug("Searching for xpath: '%s' content.", xpath);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
-		debug("Checking current xpath: '%s' against current node: '%s (#%d)'.", xpathv[xpath_index], current_node->name, current_node->type);
+		debug("Checking current xpath: '%s' against current node: '%s'\n\t\t\txmlElementType: enum typdef %s(#%d)'.", xpathv[xpath_index], current_node->name, parser_xml_node_type_to_string(current_node->type), current_node->type);
 		
 		if(xpath_index>xpath_target_index) break;
 		
@@ -268,9 +284,8 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		return FALSE;
 	}
 	
-	xmlNode		*cur_node=NULL;
-	
-	Status 	*status=NULL;
+	xmlNode		*current_node=NULL;
+	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
 	gboolean		show_notification=(last_id>0);
@@ -279,138 +294,57 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	 * On multiple tweet updates we only want to 
 	 * play the sound notification once.
 	 */
-	gboolean	first_tweet=TRUE;
-	
 	gint		tweet_display_delay=0;
 	const int	tweet_display_interval=5;
-	guint list_store_count=tweet_list_store_total_get();
-	gboolean urls_only=gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE);
-	GtkListStore *store=tweet_list_get_store();
 	gchar *needle_tweet_mentions=g_strdup_printf("@%s", service->username);
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
-	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
-		if(cur_node->type != XML_ELEMENT_NODE ) continue;
+	for(current_node = root_element; current_node; current_node = current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
-		if( g_str_equal(cur_node->name, "statuses") ||	g_str_equal(cur_node->name, "direct-messages") ){
-			if(!cur_node->children) continue;
-			cur_node = cur_node->children;
+		if( g_str_equal(current_node->name, "statuses") ||	g_str_equal(current_node->name, "direct-messages") ){
+			if(!current_node->children) continue;
+			current_node = current_node->children;
 			continue;
 		}
 		
-		if(!( g_str_equal(cur_node->name, "status") || g_str_equal(cur_node->name, "direct_message") ))
+		if(!( g_str_equal(current_node->name, "status") || g_str_equal(current_node->name, "direct_message") ))
 			continue;
 		
-		if(!cur_node->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", cur_node->name);
+		if(!current_node->children){
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_node->name);
 			continue;
 		}
 		
-		debug("Parsing tweet.  Its a %s.", (g_str_equal(cur_node->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing tweet.  Its a %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
 		
 		/* Timelines and direct messages */
-		gchar	*tweet, *sexy_tweet, *datetime;
 		guint	sid;
-		guint	created_at;
 		
 		/* Parse node */
 		debug("Creating tweet's Status *.");
-		status=parser_node_status(service, cur_node->children);
-		if(first_tweet){
-			struct tm	post;
-			strptime(status->created_at_str, "%s", &post);
-			post.tm_isdst=-1;
-			status->created_at=mktime(&post);
-			first_tweet=FALSE;
-		}
+		status=user_status_new(service, current_node->children);
+		user_status_format_tweet(status, status->user);
 		sid=status->id;
 		
 		/* the first tweet parsed is the 'newest' */
-		if(last_tweet == 0)
-			last_tweet = sid;
-		
-		/* Create string for text column */
-		debug("Parsing tweet's 'created_at' time: [%s] to a display ready format.", status->created_at_str);
-		datetime=parser_convert_time(status->created_at_str, &created_at);
-		debug("Display time set to: %s.", datetime);
-		
-		debug("Formating status text for display.");
-		gchar *sexy_status_text=NULL, *sexy_status_swap=NULL;
-		gchar *cur=sexy_status_swap=g_markup_escape_text(status->text, -1);
-		while((cur = strstr(cur, "&amp;"))) {
-			if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
-				g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
-			else
-				cur += 5;
-		}
-		if(!urls_only){
-			sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
-			sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
-		}else{
-			sexy_tweet=g_strdup(sexy_status_swap);
-			sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
-		}
-		g_free(sexy_status_swap);
-		sexy_status_swap=NULL;
-		
-		tweet=g_strdup_printf(
-					"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
-						status->user->nick_name, status->user->user_name, service->uri,
-						service->decoded_key,
-						datetime,
-						sexy_status_text
-		);
+		if(last_tweet == 0) last_tweet=sid;
 		
 		if( (sid > last_id && show_notification) || (g_strrstr(status->text, needle_tweet_mentions)) ){
 			app_notify_sound(TRUE);
-			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(tweet));
+			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(status->tweet));
 			tweet_display_delay+=tweet_display_interval;
 		}
 		
 		/* Append to ListStore */
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		
-		/* find where to place this tweet's data. */
-		list_store_count++;
-		gtk_list_store_append(store, iter);
-		
-		gtk_list_store_set(
-					store, iter,
-						STRING_TEXT, tweet,
-						STRING_NICK, status->user->nick_name,
-						STRING_DATE, datetime,
-						STRING_TWEET, status->text,
-						STRING_USER, status->user->user_name,
-						SEXY_TWEET, sexy_tweet,
-						CREATED_DATE, status->created_at_str,
-						CREATED_AT, status->created_at,
-						SINCE_CREATED, created_at,
-						ULONG_TWEET_ID, sid,
-						ULONG_USER_ID, status->user->id,
-						SERVICE_POINTER, service,
-					-1
-		);
-		
-		/* Free the text column string */
-		g_free(tweet);
-		g_free(sexy_tweet);
-		g_free(sexy_status_text);
-		
-		/* network_get_image, or its callback, free's iter once its no longer needed. */
-		network_get_image(status->user, iter);
-		
-		/* Free struct */
-		parser_node_status_free(status);
-		
-		g_free(datetime);
+		tweet_list_store_append(service, status);
+		user_status_free(status);
 	} /* end of loop */
 	
 	/* Remember last id showed */
 	if(last_tweet > 0)
 		last_id=last_tweet;
-	
-	tweet_list_store_total_set(list_store_count);
 	
 	/* Free memory */
 	xmlFreeDoc(doc);
@@ -420,65 +354,19 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	return TRUE;
 }
 
-static void parser_node_status_free(Status *status){
-	if(!status) return;
-	
-	if(status->user){
-		user_free(status->user);
-		status->user=NULL;
+gchar *parser_escape_text(gchar *status){
+	gchar *escaped_status=NULL;
+	gchar *cur=escaped_status=g_markup_escape_text(status, -1);
+	while((cur = strstr(cur, "&amp;"))) {
+		if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
+			g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
+		else
+			cur += 5;
 	}
-	if(status->text) g_free(status->text);
-	if(status->created_at_str) g_free(status->created_at_str);
-	
-	g_free(status);
-	status=NULL;
-}/*parser_status_free*/
+	return escaped_status;
+}/*parser_escape_tweet(status->text);*/
 
-static Status *parser_node_status(OnlineService *service, xmlNode *a_node){
-	xmlNode		*cur_node = NULL;
-	gchar		*content=NULL;
-	Status		*status;
-	
-	status = g_new0(Status, 1);
-	
-	/* Begin 'status' or 'direct-messages' loop */
-	debug("Parsing status & tweet at node: %s", a_node->name);
-	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
-		if(cur_node->type != XML_ELEMENT_NODE) continue;
-		
-		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(cur_node)) ) ) continue;
-		
-		
-		if(g_str_equal(cur_node->name, "created_at")){
-			struct tm	post;
-			status->created_at_str=g_strdup(content);
-			strptime(content, "%s", &post);
-			post.tm_isdst=-1;
-			status->created_at=mktime(&post);
-			debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %u", status->created_at_str, status->created_at);
-		}else if(g_str_equal(cur_node->name, "id")){
-			debug("Parsing tweet's 'id': %s", content);
-			status->id=strtoul( content, NULL, 10 );
-		}else if( g_str_equal(cur_node->name, "sender") || g_str_equal(cur_node->name, "user")){
-			if(!cur_node->children){
-				debug("*WARNING:* Cannot parse user profile %s does not have any child nodes.", cur_node->name);
-				continue;
-			}
-			debug("Parsing user node: %s.", cur_node->name);
-			status->user=user_parse_profile(service, cur_node->children);
-			debug("User parsed and created for user: %s.", status->user->user_name);
-		}else if(g_str_equal(cur_node->name, "text")) {
-			debug("Parsing tweet.");
-			status->text=g_strdup(content);
-		}
-		xmlFree(content);
-		
-	} /* End of loop */
-	
-	return status;
-}
-
-static gchar *parser_convert_time(const char *datetime, guint *my_diff){
+gchar *parser_convert_time(const gchar *datetime, guint *my_diff){
 	struct tm	*ta;
 	struct tm	post;
 	int			 seconds_local;

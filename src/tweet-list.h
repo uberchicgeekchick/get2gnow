@@ -48,6 +48,8 @@
 
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
+#include "online-services.h"
+#include "users.h"
 
 G_BEGIN_DECLS
 
@@ -95,12 +97,10 @@ typedef enum {
 GType		tweet_list_get_type(void) G_GNUC_CONST;
 TweetList	*tweet_list_new(void);
 TweetList	*tweet_list_get(void);
-GtkListStore	*tweet_list_get_store(void);
 
-void tweet_list_refresh(void);
+void tweet_list_clear(void);
 
-guint tweet_list_store_total_get(void);
-void tweet_list_store_total_set(guint list_store_count);
+void tweet_list_store_append(OnlineService *service, UserStatus *status);
 
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event);
 

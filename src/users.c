@@ -49,6 +49,8 @@
  */
 
 
+#define _XOPEN_SOURCE
+#include <time.h>
 #include <strings.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
@@ -63,6 +65,8 @@
 
 #include "users.h"
 
+#include "gconfig.h"
+#include "preferences.h"
 #include "gtkbuilder.h"
 #include "cache.h"
 #include "parser.h"
@@ -79,6 +83,8 @@ static void user_request_free(UserRequest *request);
 
 static User *user_constructor(OnlineService *service, gboolean a_follower);
 
+static void user_status_format_dates(UserStatus *status);
+
 static void users_free_friends_and_followers(OnlineService *service);
 static void users_free_followers(OnlineService *service);
 static void users_free_friends(OnlineService *service);
@@ -88,8 +94,6 @@ static void users_free_friends(OnlineService *service);
 #include "debug.h"
 
 #define GtkBuilderUI "user-profile.ui"
-
-GList *friends=NULL, *user_followers=NULL, *following_and_followers=NULL;
 
 gchar *user_action_to_string(UserAction action){
 	switch(action){
@@ -274,7 +278,9 @@ static User *user_constructor(OnlineService *service, gboolean a_follower){
 	user->follower=a_follower;
 	
 	user->service=service;
-		
+	
+	user->status=NULL;
+	
 	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
 	
 	return user;
@@ -305,7 +311,7 @@ User *user_parse_new(OnlineService *service, SoupMessage *xml){
 
 
 User *user_parse_profile(OnlineService *service, xmlNode *a_node){
-	xmlNode		*cur_node=NULL;
+	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	
 	User		*user;
@@ -314,64 +320,187 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
-	for(cur_node = a_node; cur_node; cur_node = cur_node->next) {
-		if(cur_node->type != XML_ELEMENT_NODE)
+	for(current_node = a_node; current_node; current_node = current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE)
 			continue;
 		
-		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(cur_node)) ) ) continue;
+		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ) continue;
 		
-		debug("name: %s; content: %s.", cur_node->name, content);
+		debug("name: %s; content: %s.", current_node->name, content);
 		
-		if(g_str_equal(cur_node->name, "id" ))
+		if(g_str_equal(current_node->name, "id" ))
 			user->id=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(cur_node->name, "name" ))
+		else if(g_str_equal(current_node->name, "name" ))
 			user->nick_name=g_strdup(content);
 		
-		else if(g_str_equal(cur_node->name, "screen_name" ))
+		else if(g_str_equal(current_node->name, "screen_name" ))
 			user->user_name=g_strdup(content);
 		
-		else if(g_str_equal(cur_node->name, "location" ))
+		else if(g_str_equal(current_node->name, "location" ))
 			user->location=g_strdup(content);
 		
-		else if(g_str_equal(cur_node->name, "description" ))
+		else if(g_str_equal(current_node->name, "description" ))
 			user->bio=g_markup_printf_escaped( "%s", content );
 		
-		else if(g_str_equal(cur_node->name, "url" ))
+		else if(g_str_equal(current_node->name, "url" ))
 			user->url=g_strdup(content);
 		
-		else if(g_str_equal(cur_node->name, "followers_count" ))
+		else if(g_str_equal(current_node->name, "followers_count" ))
 			user->followers=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(cur_node->name, "friends_count" ))
+		else if(g_str_equal(current_node->name, "friends_count" ))
 			user->following=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(cur_node->name, "statuses_count" ))
+		else if(g_str_equal(current_node->name, "statuses_count" ))
 			user->tweets=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(cur_node->name, "profile_image_url"))
+		else if(g_str_equal(current_node->name, "profile_image_url"))
 			user->image_url=g_strdup(content);
+		
+		else if(g_str_equal(current_node->name, "status") && current_node->children)
+			user->status=user_status_new(service, current_node->children);
 		
 		xmlFree(content);
 		
 	} /* End of loop */
+	if(user->status)
+		user_status_format_tweet(user->status, user);
 	
 	user->image_filename=cache_images_get_filename(user);
 	
 	return user;
 }
 
+UserStatus *user_status_new(OnlineService *service, xmlNode *status_node){
+	xmlNode		*current_node = NULL;
+	gchar		*content=NULL;
+	UserStatus	*status=g_new0(UserStatus, 1);
+	
+	status->service=service;
+	status->user=NULL;
+	status->text=status->tweet=status->sexy_tweet=NULL;
+	status->created_at_str=status->created_how_long_ago=NULL;
+	status->id=status->in_reply_to_status_id=0;
+	status->created_at=status->created_seconds_ago=0;
+	
+	/* Begin 'status' or 'direct-messages' loop */
+	debug("Parsing status & tweet at node: %s", status_node->name);
+	for(current_node=status_node; current_node; current_node=current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE) continue;
+		
+		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ){
+			if(content) g_free(content);
+			continue;
+		}
+		
+		if(g_str_equal(current_node->name, "created_at")){
+			status->created_at_str=g_strdup(content);
+			user_status_format_dates(status);
+		}else if(g_str_equal(current_node->name, "id")){
+			debug("Parsing tweet's 'id': %s", content);
+			status->id=strtoul(content, NULL, 10);
+		}else if(g_str_equal(current_node->name, "in_reply_to_status_id")){
+			debug("Parsing tweet's 'id': %s", content);
+			status->in_reply_to_status_id=strtoul(content, NULL, 10);
+		}else if(g_str_equal(current_node->name, "source")){
+			debug("Adding tweet's source: %s", current_node->name);
+			status->source=g_strdup(content);
+		}else if(g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")){
+			if(!current_node->children){
+				debug("*WARNING:* Cannot parse user profile %s does not have any child nodes.", current_node->name);
+				continue;
+			}
+			debug("Parsing user node: %s.", current_node->name);
+			status->user=user_parse_profile(service, current_node->children);
+			debug("User parsed and created for user: %s.", status->user->user_name);
+		}else if(g_str_equal(current_node->name, "text")) {
+			debug("Parsing tweet.");
+			status->text=g_strdup(content);
+		}
+		xmlFree(content);
+		
+	}
+	return status;
+}/*user_status_new(service, status_node);*/
 
+static void user_status_format_dates(UserStatus *status){
+	struct tm	post;
+	strptime(status->created_at_str, "%s", &post);
+	post.tm_isdst=-1;
+	status->created_at=mktime(&post);
+	
+	strptime(status->created_at_str, "%s", &post);
+	post.tm_isdst=-1;
+	status->created_at=mktime(&post);									
+	
+	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %u", status->created_at_str, status->created_at);
+	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
+	debug("Display time set to: %s, %lu.", status->created_how_long_ago, status->created_seconds_ago);
+}/*user_status_format_dates*/
+
+void user_status_format_tweet(UserStatus *status, User *user){
+	if(G_STR_EMPTY(status->text)) return;
+	debug("Formating status text for display.");
+	
+	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
+	if(!gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE)){
+		status->sexy_tweet=label_msg_format_urls(status->service, sexy_status_swap, TRUE, TRUE);
+		sexy_status_text=label_msg_format_urls(status->service, sexy_status_swap, TRUE, FALSE);
+	}else{
+		status->sexy_tweet=g_strdup(sexy_status_swap);
+		sexy_status_text=label_msg_format_urls(status->service, sexy_status_swap, FALSE, FALSE);
+	}
+	g_free(sexy_status_swap);
+	sexy_status_swap=NULL;
+	
+	status->tweet=g_strdup_printf(
+			"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
+			user->nick_name, user->user_name, status->service->uri,
+			status->service->decoded_key,
+			status->created_how_long_ago,
+			sexy_status_text
+	);
+	g_free(sexy_status_text);
+}/*user_status_format_tweet(status, user);*/
+
+void user_status_free(UserStatus *status){
+	if(!status) return;
+	
+	if(status->user) user_free(status->user);
+	
+	if(status->text) g_free(status->text);
+	if(status->tweet) g_free(status->tweet);
+	if(status->source) g_free(status->source);
+	
+	if(status->sexy_tweet) g_free(status->sexy_tweet);
+	
+	if(status->created_at_str) g_free(status->created_at_str);
+	if(status->created_how_long_ago) g_free(status->created_how_long_ago);
+	
+	status->text=status->tweet=status->sexy_tweet=NULL;
+	status->created_at_str=status->created_how_long_ago=NULL;
+	
+	status->service=NULL;
+	
+	g_free(status);
+	status=NULL;
+}/*user_status_free*/
+
+
+/**
+ *returns: 1 if a is different from b, -1 if b is different from a, 0 if they're the same
+ */
 int user_sort_by_user_name(User *a, User *b){
 	return strcasecmp( (const char *)a->user_name, (const char *)b->user_name );
-}
+}/*user_sort_by_user_name(l1->data, l2->data);*/
 
 
 /* Parse a user-list XML( friends, followers,... ) */
 GList *users_new(OnlineService *service, SoupMessage *xml){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	xmlNode		*cur_node=NULL;
+	xmlNode		*current_node=NULL;
 	
 	GList		*list=NULL;
 	User		*user=NULL;
@@ -384,17 +513,17 @@ GList *users_new(OnlineService *service, SoupMessage *xml){
 	}
 	
 	debug("\t\t\tParsing new users. Starting with: '%s' node.", root_element->name);
-	for(cur_node = root_element; cur_node; cur_node = cur_node->next) {
-		if(cur_node->type != XML_ELEMENT_NODE)
+	for(current_node=root_element; current_node; current_node=current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE)
 			continue;
-		if(g_str_equal(cur_node->name, "user")){
+		
+		if(g_str_equal(current_node->name, "user")){
 			debug("\t\t\tCreating User * from current node.");
-			user=user_parse_profile(service, cur_node->children);
+			user=user_parse_profile(service, current_node->children);
 			debug("\t\t\tAdding user: [%s] to user list.", user->user_name);
 			list=g_list_append(list, user);
-		} else if(g_str_equal(cur_node->name, "users")){
-			if(cur_node->children)
-				cur_node=cur_node->children;
+		}else if(g_str_equal(current_node->name, "users") && current_node->children){
+			current_node=current_node->children;
 		}
 	} /* End of loop */
 	
@@ -436,13 +565,21 @@ void users_free(const char *type, GList *users ){
 /* Free a user struct */
 void user_free(User *user){
 	if(!user) return;
+	
+	if(user->status) user_status_free(user->status);
+	
 	if(!(G_STR_EMPTY(user->user_name))) g_free(user->user_name);
 	if(!(G_STR_EMPTY(user->nick_name))) g_free(user->nick_name);
+	
 	if(!(G_STR_EMPTY(user->location))) g_free(user->location);
 	if(!(G_STR_EMPTY(user->bio))) g_free(user->bio);
 	if(!(G_STR_EMPTY(user->url))) g_free(user->url);
+	
 	if(!(G_STR_EMPTY(user->image_url))) g_free(user->image_url);
 	if(!(G_STR_EMPTY(user->image_filename))) g_free(user->image_filename);
+	
+	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
+	
 	user->service=NULL;
 	g_free(user);
 	user=NULL;

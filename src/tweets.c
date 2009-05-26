@@ -95,7 +95,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	if(selected_tweet)
 		unset_selected_tweet();
 	
-	debug("SelectedTweet created from '%s', tweet id: #%lu from '%s' on '%s'.", service->key, id, user_name);
+	debug("SelectedTweet created from '%s', tweet id: #%lu from '%s' on '%s'.", service->key, id, user_name, service->server);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->service=service;
 	selected_tweet->id=id;
@@ -150,7 +150,7 @@ void unset_selected_tweet(void){
 }/*unset_selected_tweet*/
 
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
-	switch( event->state ){
+	switch(event->state){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
 				case GDK_Return:
@@ -185,6 +185,9 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_Return:
 					tweet_view_sexy_insert_char('\n');
 					break;
+				case GDK_Tab:
+					tweet_view_sexy_insert_char('\t');
+					break;
 				case GDK_N: case GDK_n:
 					tweets_new_tweet();
 					break;
@@ -214,10 +217,10 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 		default:
 			switch( event->keyval ){
 				case GDK_F1:
-					help_show( app_get_window() );
+					help_show(app_get_window());
 					break;
 				case GDK_F5:
-					app_refresh_timeline( GTK_WIDGET(app_get_window()), app_get()); 
+					app_refresh_timeline(GTK_WIDGET(app_get_window()), app_get()); 
 					break;
 				case GDK_greater:
 					tweets_retweet();
@@ -229,9 +232,9 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 					tweets_new_dm();
 					break;
 			}
-			tweet_list_key_pressed(widget, event);
 			break;
 	}
+	tweet_list_key_pressed(widget, event);
 }/*tweets_hotkey*/
 
 void tweets_beep(void){

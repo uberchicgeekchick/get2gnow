@@ -20,7 +20,7 @@ endif
 
 get2gnow_SOURCES = 					\
 	$(keyring_sources)				\
-	core.c			core.h			\
+	program.c			program.h			\
 	main.c			main.h			\
 	gconfig.c		gconfig.h		\
 	debug.c			debug.h			\
