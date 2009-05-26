@@ -513,7 +513,7 @@ void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigne
 	 * So we just set it as a SexyLable & bypass Label
 	 */
 	debug("Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", sexy_tweet);
-	if(!(gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE)))
+	if(!(gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)))
 		sexy_url_label_set_markup(SEXY_URL_LABEL(tweet_view->sexy_tweet), sexy_tweet);
 	else
 		label_set_text(service, tweet_view->sexy_tweet, sexy_tweet, TRUE, TRUE);

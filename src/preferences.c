@@ -55,8 +55,12 @@ typedef struct {
 	GtkCheckButton	*sound;
 	GtkCheckButton	*no_alert;
 	GtkCheckButton	*use_tweet_dialog;
+	
 	GtkCheckButton	*expand_urls_disabled_checkbutton;
 	GtkCheckButton	*expand_urls_selected_only_checkbutton;
+	GtkCheckButton	*titles_only_checkbutton;
+	GtkCheckButton	*expand_users_checkbutton;
+	
 	GtkCheckButton	*tweets_no_profile_link_checkbutton;
 	GtkCheckButton	*post_reply_to_service_only_checkbutton;
 	
@@ -115,21 +119,20 @@ static void preferences_destroy_cb(GtkDialog *dialog, Prefs *prefs);
 
 static void preferences_setup_widgets(Prefs *prefs){
 	debug("Binding widgets to preferences.");
-	preferences_hookup_toggle_button(prefs, PREFS_UI_NOTIFICATION, FALSE, prefs->notify);
-	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, FALSE, prefs->sound);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_NOTIFICATION, TRUE, prefs->notify);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, TRUE, prefs->sound);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, FALSE, prefs->no_alert);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE, prefs->use_tweet_dialog);
 	
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE, prefs->expand_urls_selected_only_checkbutton);
-	
-	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_DIRECT_REPLY_ONLY, FALSE, prefs->post_reply_to_service_only_checkbutton);
-	
-	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_NO_PROFILE_LINK, FALSE, prefs->tweets_no_profile_link_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_NO_PROFILE_LINK, TRUE, prefs->tweets_no_profile_link_checkbutton);
 	
 	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -283,16 +286,14 @@ static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox 
 static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *combo_box){
 	debug("Binding ComboBox to preference: %s.", key );
 	gint          value;
+	if(!gconfig_get_int(key, &value)) return;
 	GtkTreeModel *model;
 	GtkTreeIter   iter;
 	gboolean      found;
-
-	if (!gconfig_get_int (key, &value)) {
-		return;
-	}
-
-	model = gtk_combo_box_get_model(combo_box);
-
+	
+	
+	model=gtk_combo_box_get_model(combo_box);
+	
 	found = FALSE;
 	if (value && gtk_tree_model_get_iter_first (model, &iter)) {
 		gint minutes;
@@ -447,16 +448,23 @@ preferences_dialog_show (GtkWindow *parent)
 	ui=gtkbuilder_get_file (GtkBuilderUI,
 							"preferences_dialog", &prefs->dialog,
 							"preferences_notebook", &prefs->notebook,
+							
+							"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
+							
 							"combobox_timeline", &prefs->combo_default_timeline,
 							"combobox_reload", &prefs->combo_reload,
+							
 							"sound_checkbutton", &prefs->sound,
 							"notify_checkbutton", &prefs->notify,
 							"no_alert_checkbutton", &prefs->no_alert,
-							"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
-							"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
-							"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
+							
 							"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
 							"tweets_no_profile_link_checkbutton", &prefs->tweets_no_profile_link_checkbutton,
+							
+							"titles_only_checkbutton", &prefs->titles_only_checkbutton,
+							"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
+							"expand_users_checkbutton", &prefs->expand_users_checkbutton,
+							"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
 						NULL
 	);
 

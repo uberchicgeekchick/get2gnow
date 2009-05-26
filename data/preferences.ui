@@ -22,8 +22,161 @@
                 <property name="border_width">12</property>
                 <property name="spacing">18</property>
                 <child>
+                  <object class="GtkFrame" id="tweet_view_frame">
+                    <property name="visible">True</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">none</property>
+                    <child>
+                      <object class="GtkAlignment" id="alignment4">
+                        <property name="visible">True</property>
+                        <property name="left_padding">12</property>
+                        <child>
+                          <object class="GtkVBox" id="vbox5">
+                            <property name="visible">True</property>
+                            <property name="spacing">6</property>
+                            <child>
+                              <object class="GtkCheckButton" id="use_tweet_dialog_checkbutton">
+                                <property name="label" translatable="yes">Use a separate _window to view &amp; compose updates/tweets.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="tweet_view_dont_embed_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;b&gt;_Windows&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">use_tweet_dialog_checkbutton</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="expand_urls_frame">
+                    <property name="visible">True</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">none</property>
+                    <child>
+                      <object class="GtkAlignment" id="alignment2">
+                        <property name="visible">True</property>
+                        <property name="left_padding">12</property>
+                        <child>
+                          <object class="GtkVBox" id="expand_urls_vbox">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkCheckButton" id="titles_only_checkbutton">
+                                <property name="label" translatable="yes">Use _titles, instead of URLs/web addresses, for links.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="expand_urls_selected_only_checkbutton">
+                                <property name="label" translatable="yes">_Only show link titles when a Tweet's selected.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="expand_users_checkbutton">
+                                <property name="label" translatable="yes">Include user's detail's in @ links, for user profiles.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="expand_urls_disabled_checkbutton">
+                                <property name="label" translatable="yes">_Disable titles from appearing in links.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="url_expand_framee_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;b&gt;URLs, hyperlinks, &amp;amp; web addresses&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="look_and_feel_label">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Look &amp; _Feel</property>
+                <property name="use_underline">True</property>
+              </object>
+              <packing>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkVBox" id="vbox1">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
                   <object class="GtkFrame" id="frame4">
                     <property name="visible">True</property>
+                    <property name="border_width">5</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -67,7 +220,7 @@
                               <object class="GtkLabel" id="default_timeline_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">At _start-up show:</property>
+                                <property name="label" translatable="yes">At start-up _load:</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">combobox_timeline</property>
                               </object>
@@ -107,70 +260,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame3">
-                    <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
-                    <child>
-                      <object class="GtkAlignment" id="alignment4">
-                        <property name="visible">True</property>
-                        <property name="left_padding">12</property>
-                        <child>
-                          <object class="GtkVBox" id="vbox5">
-                            <property name="visible">True</property>
-                            <property name="spacing">6</property>
-                            <child>
-                              <object class="GtkCheckButton" id="use_tweet_dialog_checkbutton">
-                                <property name="label" translatable="yes">_Show the send &amp; view tweet 'area' in its own window.</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="tweet_view_dont_embed_label">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;Appearance&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel" id="general_label">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Appearance</property>
-                <property name="use_underline">True</property>
-              </object>
-              <packing>
-                <property name="tab_fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkVBox" id="vbox1">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <child>
                   <object class="GtkFrame" id="frame1">
                     <property name="visible">True</property>
+                    <property name="border_width">5</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -180,6 +272,7 @@
                         <child>
                           <object class="GtkVBox" id="vbox2">
                             <property name="visible">True</property>
+                            <property name="border_width">5</property>
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="notify_checkbutton">
@@ -225,7 +318,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
               </object>
@@ -236,7 +329,7 @@
             <child type="tab">
               <object class="GtkLabel" id="alerts_tab_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Alerts</property>
+                <property name="label" translatable="yes">_New messages</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
@@ -247,11 +340,13 @@
             <child>
               <object class="GtkVBox" id="vbox3">
                 <property name="visible">True</property>
+                <property name="border_width">5</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">20</property>
                 <child>
                   <object class="GtkFrame" id="frame5">
                     <property name="visible">True</property>
+                    <property name="border_width">5</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -262,21 +357,6 @@
                           <object class="GtkVBox" id="vbox7">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
-                            <child>
-                              <object class="GtkCheckButton" id="post_reply_to_service_only_checkbutton">
-                                <property name="label" translatable="yes">Only send _@ replies to the service the user's a member of.</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
                             <child>
                               <object class="GtkCheckButton" id="no_alert_checkbutton">
                                 <property name="label" translatable="yes">Do not _beep to alert me when my Tweets are to long.</property>
@@ -289,20 +369,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="tweets_no_profile_link_checkbutton">
-                                <property name="label" translatable="yes">_Reply using @username only.</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="position">2</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                           </object>
@@ -310,7 +377,7 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="tweet_compose_label">
+                      <object class="GtkLabel" id="tweet_compose_alert_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">&lt;b&gt;Composition&lt;/b&gt;</property>
                         <property name="use_markup">True</property>
@@ -324,21 +391,22 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkFrame" id="frame2">
+                  <object class="GtkFrame" id="replies_frame">
                     <property name="visible">True</property>
+                    <property name="border_width">5</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment2">
+                      <object class="GtkAlignment" id="alignment6">
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox6">
+                          <object class="GtkVBox" id="vbox8">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="expand_urls_disabled_checkbutton">
-                                <property name="label" translatable="yes">_Never show page titles, only URLs, for links.</property>
+                              <object class="GtkCheckButton" id="tweets_no_profile_link_checkbutton">
+                                <property name="label" translatable="yes">Start _replies with @username only.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -352,8 +420,8 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="expand_urls_selected_only_checkbutton">
-                                <property name="label" translatable="yes">_Only show page titles in links when a Tweet's selected.</property>
+                              <object class="GtkCheckButton" id="post_reply_to_service_only_checkbutton">
+                                <property name="label" translatable="yes">Only _post @ replies to the service the user's on.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -371,17 +439,14 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="url_expand_framee_label">
+                      <object class="GtkLabel" id="replies_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;Viewing Tweets&lt;/b&gt;</property>
+                        <property name="label" translatable="yes">&lt;b&gt;Replies&lt;/b&gt;</property>
                         <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
                       </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -391,9 +456,9 @@
               </packing>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="tweets_tab_label">
+              <object class="GtkLabel" id="composition_tab_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Tweets</property>
+                <property name="label" translatable="yes">_Composition</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
@@ -411,8 +476,8 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="closebutton1">
-                <property name="label">gtk-close</property>
+              <object class="GtkButton" id="okay_button">
+                <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
@@ -435,7 +500,7 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-7">closebutton1</action-widget>
+      <action-widget response="-7">okay_button</action-widget>
     </action-widgets>
   </object>
 </interface>

@@ -29,11 +29,13 @@
 #include <libsoup/soup-message.h>
 
 #include "online-services.h"
+#include "users.h"
 
 gchar *parser_get_cache_file_from_uri(const gchar *uri);
 
 xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element);
 
+void parser_format_tweet(OnlineService *service, User *user, UserStatus *status);
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, guint *my_diff);
 

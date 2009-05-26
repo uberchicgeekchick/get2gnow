@@ -138,7 +138,7 @@
 			<applyto>/apps/get2gnow/ui/tweets/direct_reply_only</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
 				<short>How to handle replying to a tweet.</short>
 				<long>
@@ -153,7 +153,7 @@
 			<applyto>/apps/get2gnow/ui/tweets/no_link_in_replies</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
 				<short>How to format replying to a tweet.</short>
 				<long>
@@ -168,7 +168,7 @@
 			<applyto>/apps/get2gnow/ui/notify</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
 				<short>Show notification of new Twitter messages</short>
 				<long>Show notification of new Twitter messages.</long>
@@ -195,10 +195,34 @@
 			<applyto>/apps/get2gnow/ui/expand/selected_only</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Expand URLs to include page titles only when a tweet is selected.</short>
+				<long>Expand URLs to include page titles only when a tweet is selected.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/user_profiles</key>
+			<applyto>/apps/get2gnow/ui/expand/user_profiles</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Expand URLs to include user profile titles for @ links.</short>
+				<long>Expand URLs to include user profile titles for @ links.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/replace_with_titles</key>
+			<applyto>/apps/get2gnow/ui/expand/replace_with_titles</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Expand URLs to include paga titles only when a tweet is selected.</short>
-				<long>Expand URLs to include paga titles only when a tweet is selected.</long>
+				<short>Replace hyperlink URLs with page titles without including the URI.</short>
+				<long>Replace hyperlink URLs with page titles without including the URI.</long>
 			</locale>
 		</schema>
 		
@@ -207,7 +231,7 @@
 			<applyto>/apps/get2gnow/ui/sound</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
 				<short>Sound notification of new Twitter messages</short>
 				<long>Sound notification of new Twitter messages.</long>

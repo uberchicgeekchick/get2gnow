@@ -365,7 +365,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 		
 	} /* End of loop */
 	if(user->status)
-		user_status_format_tweet(user->status, user);
+		parser_format_tweet(service, user, user->status);
 	
 	user->image_filename=cache_images_get_filename(user);
 	
@@ -438,31 +438,6 @@ static void user_status_format_dates(UserStatus *status){
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
 	debug("Display time set to: %s, %lu.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
-
-void user_status_format_tweet(UserStatus *status, User *user){
-	if(G_STR_EMPTY(status->text)) return;
-	debug("Formating status text for display.");
-	
-	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
-	if(!gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE)){
-		status->sexy_tweet=label_msg_format_urls(status->service, sexy_status_swap, TRUE, TRUE);
-		sexy_status_text=label_msg_format_urls(status->service, sexy_status_swap, TRUE, FALSE);
-	}else{
-		status->sexy_tweet=g_strdup(sexy_status_swap);
-		sexy_status_text=label_msg_format_urls(status->service, sexy_status_swap, FALSE, FALSE);
-	}
-	g_free(sexy_status_swap);
-	sexy_status_swap=NULL;
-	
-	status->tweet=g_strdup_printf(
-			"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
-			user->nick_name, user->user_name, status->service->uri,
-			status->service->decoded_key,
-			status->created_how_long_ago,
-			sexy_status_text
-	);
-	g_free(sexy_status_text);
-}/*user_status_format_tweet(status, user);*/
 
 void user_status_free(UserStatus *status){
 	if(!status) return;

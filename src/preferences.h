@@ -46,8 +46,10 @@ G_BEGIN_DECLS
 #define	PREFS_UI_SOUND				PREFS_PATH "/ui/sound"
 #define	PREFS_UI_NO_ALERT			PREFS_PATH "/ui/no_alert"
 
-#define	PREFS_URLS_EXPAND_DISABLED		PREFS_PATH "/ui/urls/expand/disabled"
 #define	PREFS_URLS_EXPAND_SELECTED_ONLY		PREFS_PATH "/ui/urls/expand/selected_only"
+#define PREFS_URLS_EXPAND_REPLACE_WITH_TITLES	PREFS_PATH "/ui/urls/expand/replace_with_titles"
+#define	PREFS_URLS_EXPAND_USER_PROFILES		PREFS_PATH "/ui/urls/expand/user_profiles"
+#define	PREFS_URLS_EXPAND_DISABLED		PREFS_PATH "/ui/urls/expand/disabled"
 
 #define	PREFS_TWEETS_HOME_TIMELINE		PREFS_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES		PREFS_PATH "/tweets/reload_timeline"

@@ -103,7 +103,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_uri_unescape_string(tweet, NULL);
 	if(!G_STR_EMPTY(selected_tweet->user_name))
-		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, FALSE)) && online_services->connected > 1 ))
+		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services->connected > 1 ))
 			selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
 		else
 			selected_tweet->reply_to_string=g_strdup_printf("@%s ", selected_tweet->user_name);

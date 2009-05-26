@@ -853,37 +853,38 @@ void app_set_statusbar_msg(gchar *message){
 
 
 void app_notify_sound(gboolean force){
-	if(!( force && gconfig_if_bool(PREFS_UI_SOUND, FALSE) ))
+	if(!( force && gconfig_if_bool(PREFS_UI_SOUND, TRUE) ))
 		return;
 	
 	gtk_widget_error_bell(GTK_WIDGET(app_priv->tweet_view->sexy_entry));
 }
 
 gboolean app_notify_on_timeout(gpointer tweet){
-	if(tweet) {
+	if(tweet)
 		app_notify(tweet);
-		g_free(tweet);
-	}
+	
 	return FALSE;
-}
+}/*app_notifiy_on_timeout(tweet);*/
 
-void app_notify(gchar *msg){
-	if(!gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE))
+void app_notify(gchar *tweet){
+	if(G_STR_EMPTY(tweet)){
+		if(tweet) g_free(tweet);
 		return;
+	}
 	
 	NotifyNotification *notification;
 	GError             *error=NULL;
 	
-	notification=notify_notification_new(PACKAGE_NAME, msg, PACKAGE_TARNAME, NULL);
-	
+	notification=notify_notification_new(PACKAGE_TARNAME, tweet, PACKAGE_TARNAME, NULL);
 	notify_notification_set_timeout(notification, 8 * 1000);
 	notify_notification_show(notification, &error);
-	g_object_unref(G_OBJECT(notification));
 	
-	if(!error)
-		return;
+	g_object_unref(G_OBJECT(notification));
+	g_free(tweet);
+	
+	if(!error) return;
 	
 	debug("Error displaying notification: %s", error->message);
 	g_error_free(error);
-}
+}/*app_notify(tweet);*/
 

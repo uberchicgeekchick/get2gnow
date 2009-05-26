@@ -288,14 +288,15 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
-	gboolean		show_notification=(last_id>0);
+	gboolean		new_messages=(last_id>0);
+	gboolean		notify=gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE);
 	unsigned long int	last_tweet=0;
 	/*
 	 * On multiple tweet updates we only want to 
 	 * play the sound notification once.
 	 */
 	gint		tweet_display_delay=0;
-	const int	tweet_display_interval=5;
+	const int	tweet_display_interval=15;
 	gchar *needle_tweet_mentions=g_strdup_printf("@%s", service->username);
 	
 	/* get tweets or direct messages */
@@ -325,13 +326,13 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		/* Parse node */
 		debug("Creating tweet's Status *.");
 		status=user_status_new(service, current_node->children);
-		user_status_format_tweet(status, status->user);
+		parser_format_tweet(service, status->user, status);
 		sid=status->id;
 		
 		/* the first tweet parsed is the 'newest' */
 		if(last_tweet == 0) last_tweet=sid;
 		
-		if( (sid > last_id && show_notification) || (g_strrstr(status->text, needle_tweet_mentions)) ){
+		if( (sid > last_id && new_messages && notify) || (g_strrstr(status->text, needle_tweet_mentions)) ){
 			app_notify_sound(TRUE);
 			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(status->tweet));
 			tweet_display_delay+=tweet_display_interval;
@@ -365,6 +366,32 @@ gchar *parser_escape_text(gchar *status){
 	}
 	return escaped_status;
 }/*parser_escape_tweet(status->text);*/
+
+void parser_format_tweet(OnlineService *service, User *user, UserStatus *status){
+	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
+	debug("Formating status text for display.");
+	
+	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
+	if(!gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)){
+		status->sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
+		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
+	}else{
+		status->sexy_tweet=g_strdup(sexy_status_swap);
+		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
+	}
+	g_free(sexy_status_swap);
+	sexy_status_swap=NULL;
+	
+	status->tweet=g_strdup_printf(
+			"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
+			user->nick_name, user->user_name, service->uri,
+			status->service->decoded_key,
+			status->created_how_long_ago,
+			sexy_status_text
+	);
+	
+	g_free(sexy_status_text);
+}/*parser_format_tweet(status, user);*/
 
 gchar *parser_convert_time(const gchar *datetime, guint *my_diff){
 	struct tm	*ta;

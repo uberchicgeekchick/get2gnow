@@ -32,6 +32,11 @@ G_BEGIN_DECLS
 #define G_STR_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
 #endif
 
+
+#ifndef G_STR_N_EMPTY
+#define G_STR_N_EMPTY(x) (!((x) == NULL || (x)[0] == '\0'))
+#endif
+
 G_END_DECLS
 
 #endif /* _MAIN_H_ */

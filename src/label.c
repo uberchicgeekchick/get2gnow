@@ -48,7 +48,7 @@ static void label_init(Label *label);
 static void label_finalize(GObject *object);
 
 static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data);
-static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean include_uris);
 
 
 G_DEFINE_TYPE (Label, label, SEXY_TYPE_URL_LABEL);
@@ -151,34 +151,40 @@ gchar *label_msg_format_urls(OnlineService *service, const char *message, gboole
 	gchar  *temp;
 	gint 	i;
 	
-	/* TODO: Do we need to escape out <>&"' so that pango markup doesn't get confused? */
 	gchar *at_url_prefix=g_strdup_printf("http://%s", ( (service && service->uri) ?service->uri :"twitter.com" ));
 	
-	/* surround urls with <a> markup so that sexy-url-label can link it */
 	tokens=g_strsplit_set(message, " \t\n", 0);
 	for(i=0; tokens[i]; i++) {
 		if(url_check_word(tokens[i], strlen(tokens[i]))) {
 			if(tokens[i][0]=='@') {
 				gssize end;
-				gchar *title2=NULL;
-				gchar *uri=g_strdup_printf("%s/%s", at_url_prefix, &tokens[i][1]);
-				gchar *title_test=NULL;
-				if(!make_hyperlinks)
-					title_test=g_strdup_printf("<u>%s</u>", uri);
-				else
-					title_test=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
 				
-				gchar *title=label_find_uri_title(service, uri, expand_hyperlinks, make_hyperlinks);
-				if(!g_str_equal(title, title_test)){
-					title2=g_strdup_printf("%s ", title);
-					g_free(title);
-					title=title2;
-					title2=NULL;
-				}else{
-					g_free(title);
+				gchar *title=NULL;
+				gchar *uri=g_strdup_printf("%s/%s", at_url_prefix, &tokens[i][1]);
+				if(!(gconfig_if_bool(PREFS_URLS_EXPAND_USER_PROFILES, TRUE)))
 					title=g_strdup("");
+				else {
+					gchar *title2=NULL;
+					gchar *title_test=NULL;
+					
+					if(!make_hyperlinks)
+						title_test=g_strdup_printf("<u>%s</u>", uri);
+					else
+						title_test=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
+					
+					title=label_find_uri_title(service, uri, expand_hyperlinks, make_hyperlinks, FALSE);
+					
+					if(!g_str_equal(title, title_test)){
+						title2=g_strdup_printf("%s ", title);
+						g_free(title);
+						title=title2;
+						title2=NULL;
+					}else{
+						g_free(title);
+						title=g_strdup("");
+					}
+					g_free(title_test);
 				}
-				g_free(title_test);
 				if(!make_hyperlinks)
 					temp=g_strdup_printf("<u>%s%s</u>", title, tokens[i]);
 				else
@@ -202,7 +208,7 @@ gchar *label_msg_format_urls(OnlineService *service, const char *message, gboole
 				g_free(title);
 			} else {
 				debug("Attempting to display title for uri: '%s'.", tokens[i]);
-				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks);
+				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks, (gconfig_if_bool(PREFS_URLS_EXPAND_REPLACE_WITH_TITLES, TRUE)));
 			}
 			app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
 			g_free(tokens[i]);
@@ -216,7 +222,7 @@ gchar *label_msg_format_urls(OnlineService *service, const char *message, gboole
 	return result;	
 }/*label_msg_format_urls*/
 
-static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks){
+static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean include_uris){
 	gchar *temp=NULL;
 	if(!(make_hyperlinks))
 		temp=g_strdup_printf("<u>%s</u>", uri);
@@ -258,10 +264,15 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	g_free(uri_title);
 	
 	debug("Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", escaped_title, uri);
+	gchar *hyperlink_suffix=NULL;
+	if(!include_uris)
+		hyperlink_suffix=g_strdup_printf(" &lt;- %s", uri);
+	
 	if(!make_hyperlinks)
-		temp=g_strdup_printf("<u>%s &lt;- %s</u>", escaped_title, uri);
+		temp=g_strdup_printf("<u>%s%s</u>", escaped_title, (hyperlink_suffix ?hyperlink_suffix :""));
 	else
-		temp=g_strdup_printf("<a href=\"%s\">%s &lt;- %s</a>", uri, escaped_title, uri);
+		temp=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, escaped_title, (hyperlink_suffix ?hyperlink_suffix :""));
+	if(hyperlink_suffix) g_free(hyperlink_suffix);
 	
 	g_free(escaped_title);
 	

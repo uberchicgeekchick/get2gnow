@@ -160,7 +160,6 @@ void user_request_main(OnlineService *service, UserAction action, GtkWindow *par
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 UserStatus *user_status_new(OnlineService *service, xmlNode *a_node);
-void user_status_format_tweet(UserStatus *status, User *user);
 void user_status_free(UserStatus *status);
 
 /* Parse a user-list XML( friends, followers,... ) */

@@ -173,24 +173,24 @@ void network_logout(void){
 	}
 	
 	debug("Logout");
-}
+}/*network_logout();*/
 
 
 /* Post a new tweet - text must be Url encoded */
-void network_post_status(const gchar *text){
-	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, FALSE)))
-		online_services_request(online_services, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)text);
+void network_post_status(const gchar *update){
+	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE)))
+		online_services_request(online_services, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)update);
 	else
-		online_service_request(in_reply_to_service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)text);
-}/*network_post_status*/
+		online_service_request(in_reply_to_service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)update);
+}/*network_post_status(tweet);*/
 
 
 /* Send a direct message to a follower - text must be Url encoded  */
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *text){
-	gchar *formdata=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?API_CLIENT_AUTH :OPEN_CLIENT ), friend, text);
+void network_send_message(OnlineService *service, const gchar *friend, const gchar *dm){
+	gchar *formdata=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?API_CLIENT_AUTH :OPEN_CLIENT ), friend, dm);
 	online_service_request(service, POST, API_SEND_MESSAGE, network_tweet_cb, "DM", formdata);
 	g_free(formdata);
-}
+}/*network_send_message(service, friend, dm);*/
 
 void network_set_state_loading_timeline(const gchar *timeline, ReloadState state){
 	const gchar *notice_prefix=NULL;
