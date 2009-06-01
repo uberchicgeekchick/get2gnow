@@ -1,15 +1,9 @@
 * TODO
 
-- Improve my network process for requesting multiple pages if possible
-	have it use 'network_queue' and soup's callback to generate the glist.
-	eg. 'src/user.c'->'users_get_users_glist'.
-	
 - Implement 'caching' of xml for friends, followers, & timelines.
 	update them only when there's something new or changed.
 	
-- When a new avatar is downloaded have a clean-up method remove old avatars.
-
-- Add 'more' & button for older tweets in timelie
+- Add 'more' & button for older tweets in timelines.
 
 - Add support for Twitter's search API.
 

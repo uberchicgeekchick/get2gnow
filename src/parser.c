@@ -39,7 +39,6 @@
 #include <libsoup/soup-message.h>
 
 #include "main.h"
-#include "network.h"
 #include "online-services.h"
 #include "users.h"
 
@@ -58,15 +57,6 @@
 
 static gchar *parser_xml_node_type_to_string(xmlElementType type);
 static xmlDoc *parser_parse_dom_content(SoupMessage *xml);
-
-
-/* id of the newest tweet showed */
-static unsigned long int last_id=0;
-
-
-gchar *parser_get_cache_file_from_uri(const gchar *uri){
-	return g_strdelimit(g_strdup(uri), ":/&?", '_');
-}/*parser_get_cache_file_from_uri*/
 
 
 static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
@@ -275,7 +265,7 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
+gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonitors timeline){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 		
@@ -287,24 +277,38 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 	xmlNode		*current_node=NULL;
 	UserStatus 	*status=NULL;
 	
+	gint minutes=0;
+	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
+	if(minutes < 3) minutes=3;
+	
 	/* Count new tweets */
-	gboolean		new_messages=(last_id>0);
-	gboolean		notify=gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE);
-	unsigned long int	last_tweet=0;
-	/*
-	 * On multiple tweet updates we only want to 
-	 * play the sound notification once.
-	 */
-	gint		tweet_display_delay=0;
-	const int	tweet_display_interval=15;
-	gchar *needle_tweet_mentions=g_strdup_printf("@%s", service->username);
+	gboolean	notify;
+	gboolean	display=FALSE;
+	guint		last_tweet_id=0, tweet_id=0;
+	switch(timeline){
+		case DMs:
+			notify=gconfig_if_bool(PREFS_UI_DM_NOTIFY, TRUE);
+			tweet_id=service->id_last_dm;
+			break;
+		case Replies:
+			notify=gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE);
+			tweet_id=service->id_last_reply;
+			break;
+		case Tweets:
+		default:
+			display=TRUE;
+			notify=gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE);
+			tweet_id=service->id_last_tweet;
+			break;
+	}
+	const int	tweet_display_interval=10;
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
-		if( g_str_equal(current_node->name, "statuses") ||	g_str_equal(current_node->name, "direct-messages") ){
+		if( g_str_equal(current_node->name, "statuses") || g_str_equal(current_node->name, "direct-messages") ){
 			if(!current_node->children) continue;
 			current_node = current_node->children;
 			continue;
@@ -321,36 +325,48 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml){
 		debug("Parsing tweet.  Its a %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
 		
 		/* Timelines and direct messages */
-		guint	sid;
 		
 		/* Parse node */
 		debug("Creating tweet's Status *.");
+		gboolean free_status=TRUE;
 		status=user_status_new(service, current_node->children);
-		parser_format_tweet(service, status->user, status);
-		sid=status->id;
+		parser_format_user_status(service, status->user, status);
 		
 		/* the first tweet parsed is the 'newest' */
-		if(last_tweet == 0) last_tweet=sid;
+		if(!last_tweet_id) last_tweet_id=status->id;
 		
-		if( (sid > last_id && new_messages && notify) || (g_strrstr(status->text, needle_tweet_mentions)) ){
-			app_notify_sound(TRUE);
-			g_timeout_add_seconds(tweet_display_delay, app_notify_on_timeout, g_strdup(status->tweet));
-			tweet_display_delay+=tweet_display_interval;
+		if( (notify) && (status->id > tweet_id) && (strcasecmp(status->user->user_name, service->username)) ){
+			free_status=FALSE;
+			app_notify_sound();
+			g_timeout_add_seconds_full(timeline, tweet_list_notify_delay, app_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
 		/* Append to ListStore */
-		tweet_list_store_append(service, status);
-		user_status_free(status);
-	} /* end of loop */
+		if(display)
+			tweet_list_store_status(service, status);
+		
+		if(free_status) user_status_free(status);
+	} /*end of loop*/
 	
 	/* Remember last id showed */
-	if(last_tweet > 0)
-		last_id=last_tweet;
+	if(last_tweet_id) {
+		switch(timeline){
+			case DMs:
+				service->id_last_dm=last_tweet_id;
+				break;
+			case Replies:
+				service->id_last_reply=last_tweet_id;
+				break;
+			case Tweets:
+				service->id_last_tweet=last_tweet_id;
+				break;
+		}
+	}
 	
 	/* Free memory */
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-	g_free(needle_tweet_mentions);
 	
 	return TRUE;
 }
@@ -367,7 +383,7 @@ gchar *parser_escape_text(gchar *status){
 	return escaped_status;
 }/*parser_escape_tweet(status->text);*/
 
-void parser_format_tweet(OnlineService *service, User *user, UserStatus *status){
+void parser_format_user_status(OnlineService *service, User *user, UserStatus *status){
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
 	debug("Formating status text for display.");
 	
@@ -383,15 +399,24 @@ void parser_format_tweet(OnlineService *service, User *user, UserStatus *status)
 	sexy_status_swap=NULL;
 	
 	status->tweet=g_strdup_printf(
-			"<small><u><b>From:</b></u><b> %s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s\n%s",
+			"<small><u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s<i>[%s]</i>\n%s",
 			user->nick_name, user->user_name, service->uri,
 			status->service->decoded_key,
+			app_tabs_to_right_align(),
 			status->created_how_long_ago,
 			sexy_status_text
 	);
 	
+	status->notification=g_strdup_printf(
+			"<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n\t<i><u>To:</u></i> <i>&lt;%s&gt;</i>\n<b>%s</b>",
+			status->created_how_long_ago,
+			user->nick_name, user->user_name, service->uri,
+			status->service->decoded_key,
+			sexy_status_text
+	);
+	
 	g_free(sexy_status_text);
-}/*parser_format_tweet(status, user);*/
+}/*parser_format_user_status(status, user);*/
 
 gchar *parser_convert_time(const gchar *datetime, guint *my_diff){
 	struct tm	*ta;
@@ -455,7 +480,3 @@ gchar *parser_convert_time(const gchar *datetime, guint *my_diff){
 	return NULL;
 }
 
-
-void parser_reset_lastid(){
-	last_id=0;
-}/*parser_reset_lastid*/

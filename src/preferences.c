@@ -53,7 +53,11 @@ typedef struct {
 	/* Checkbuttons */
 	GtkCheckButton	*notify;
 	GtkCheckButton	*sound;
-	GtkCheckButton	*no_alert;
+	GtkCheckButton	*no_length_alert;
+	
+	GtkCheckButton	*notify_at_mentions_check_button;
+	GtkCheckButton	*notify_dms_check_button;
+	
 	GtkCheckButton	*use_tweet_dialog;
 	
 	GtkCheckButton	*expand_urls_disabled_checkbutton;
@@ -122,9 +126,12 @@ static void preferences_setup_widgets(Prefs *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_UI_NOTIFICATION, TRUE, prefs->notify);
 	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, TRUE, prefs->sound);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_NO_ALERT, FALSE, prefs->no_alert);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_AT_NOTIFY, TRUE, prefs->notify_at_mentions_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_UI_DM_NOTIFY, TRUE, prefs->notify_dms_check_button);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE, prefs->use_tweet_dialog);
+	preferences_hookup_toggle_button(prefs, PREFS_TWEET_LENGTH_ALERT, FALSE, prefs->no_length_alert);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_TWEET_VIEW_DIALOG, FALSE, prefs->use_tweet_dialog);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
@@ -140,7 +147,18 @@ static void preferences_setup_widgets(Prefs *prefs){
 }
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
+	debug("Saving preference: %s.", key );
 	preferences_widget_sync_bool(key, user_data);
+}
+
+static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
+	debug("Saving preference: %s.", key );
+	preferences_widget_sync_string_combo (key, user_data);
+}
+
+static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
+	debug("Saving preference: %s.", key );
+	preferences_widget_sync_int_combo (key, user_data);
 }
 
 static void preferences_direct_reply_toggled(GtkToggleButton *check_button, Prefs *prefs){
@@ -233,9 +251,10 @@ static void preferences_reload_setup(Prefs *prefs){
 	g_object_unref (model);
 }
 
-static void preferences_widget_sync_bool (const gchar *key, GtkCheckButton *check_button){
-	debug("Binding CheckButton: %s to preference: %s.", gtk_button_get_label(GTK_BUTTON(check_button)), key );
-	gboolean bool_default=g_str_equal( ((gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default")), "TRUE" );
+static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button){
+	gchar *pref_bool_default=(gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default");
+	gboolean bool_default=g_str_equal( pref_bool_default, "TRUE" );
+	debug("Binding CheckButton: %s to preference: %s; default value: %s(=%s).", gtk_button_get_label(GTK_BUTTON(check_button)), key, (bool_default?"TRUE":"FALSE"), pref_bool_default );
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key, bool_default));
 }
 
@@ -320,16 +339,6 @@ static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *co
 			gtk_combo_box_set_active_iter (combo_box, &iter);
 		}
 	}
-}
-
-static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s.", key );
-	preferences_widget_sync_string_combo (key, user_data);
-}
-
-static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s.", key );
-	preferences_widget_sync_int_combo (key, user_data);
 }
 
 static void preferences_add_id (Prefs *prefs, guint id){
@@ -445,36 +454,42 @@ preferences_dialog_show (GtkWindow *parent)
 	prefs=g_new0 (Prefs, 1);
 
 	/* Get widgets */
-	ui=gtkbuilder_get_file (GtkBuilderUI,
-							"preferences_dialog", &prefs->dialog,
-							"preferences_notebook", &prefs->notebook,
-							
-							"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
-							
-							"combobox_timeline", &prefs->combo_default_timeline,
-							"combobox_reload", &prefs->combo_reload,
-							
-							"sound_checkbutton", &prefs->sound,
-							"notify_checkbutton", &prefs->notify,
-							"no_alert_checkbutton", &prefs->no_alert,
-							
-							"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
-							"tweets_no_profile_link_checkbutton", &prefs->tweets_no_profile_link_checkbutton,
-							
-							"titles_only_checkbutton", &prefs->titles_only_checkbutton,
-							"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
-							"expand_users_checkbutton", &prefs->expand_users_checkbutton,
-							"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
-						NULL
+	ui=gtkbuilder_get_file(
+				GtkBuilderUI,
+					"preferences_dialog", &prefs->dialog,
+					"preferences_notebook", &prefs->notebook,
+					
+					"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
+					
+					"combobox_timeline", &prefs->combo_default_timeline,
+					"combobox_reload", &prefs->combo_reload,
+					
+					"sound_checkbutton", &prefs->sound,
+					"notify_checkbutton", &prefs->notify,
+					
+					"notify_dms_check_button", &prefs->notify_dms_check_button,
+					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,
+					
+					"no_length_alert_checkbutton", &prefs->no_length_alert,
+					
+					"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
+					"tweets_no_profile_link_checkbutton", &prefs->tweets_no_profile_link_checkbutton,
+					
+					"titles_only_checkbutton", &prefs->titles_only_checkbutton,
+					"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
+					"expand_users_checkbutton", &prefs->expand_users_checkbutton,
+					"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
+				NULL
 	);
 
 	/* Connect the signals */
-	gtkbuilder_connect (ui, prefs,
-						"preferences_dialog", "destroy", preferences_destroy_cb,
-						"preferences_dialog", "response", preferences_response_cb,
-						"use_tweet_dialog_checkbutton", "toggled", app_tweet_view_set_embed,
-						"post_reply_to_service_only_checkbutton", "toggled", preferences_direct_reply_toggled,
-					NULL
+	gtkbuilder_connect(
+				ui, prefs,
+					"preferences_dialog", "destroy", preferences_destroy_cb,
+					"preferences_dialog", "response", preferences_response_cb,
+					"use_tweet_dialog_checkbutton", "toggled", app_tweet_view_set_embed,
+					"post_reply_to_service_only_checkbutton", "toggled", preferences_direct_reply_toggled,
+				NULL
 	);
 
 	g_object_unref (ui);

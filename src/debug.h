@@ -58,7 +58,7 @@ G_BEGIN_DECLS
 
 void debug_init(void);
 gboolean debug_check_devel(void);
-void debug_impl (const gchar *domain, const gchar *msg, ...);
+void debug_impl (const gchar *domain, const gchar *msg, ...) G_GNUC_PRINTF(2, 3);
 gboolean debug_if_domain(const gchar *domain);
 void debug_deinit(void);
 

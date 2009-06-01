@@ -77,10 +77,7 @@ typedef struct SelectedTweet {
 	unsigned long int user_id;
 	gchar *user_name;
 	gchar *tweet;
-	gchar *reply_to_string;
 } SelectedTweet;//SelectedTweet
-unsigned long int in_reply_to_status_id=0;
-OnlineService *in_reply_to_service=NULL;
 static SelectedTweet *selected_tweet=NULL;
 
 #define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users"
@@ -102,46 +99,35 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 	selected_tweet->user_id=user_id;
 	selected_tweet->user_name=g_strdup(user_name);
 	selected_tweet->tweet=g_uri_unescape_string(tweet, NULL);
-	if(!G_STR_EMPTY(selected_tweet->user_name))
-		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services->connected > 1 ))
-			selected_tweet->reply_to_string=g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
-		else
-			selected_tweet->reply_to_string=g_strdup_printf("@%s ", selected_tweet->user_name);
-	else
-		selected_tweet->reply_to_string=NULL;
 }/*set_selected_tweet*/
 
 OnlineService *selected_tweet_get_service(void){
 	return ( (selected_tweet && selected_tweet->service) ?selected_tweet->service :NULL );
-}/*selected_tweet_get_service*/
+}/*selected_tweet_get_service();*/
 
 gchar *selected_tweet_get_user_name(void){
 	return ( (selected_tweet && selected_tweet->user_name) ?selected_tweet->user_name :NULL );
-}/*selected_tweet_get_user_name*/
+}/*selected_tweet_get_user_name();*/
 
 unsigned long int selected_tweet_get_user_id(void){
 	return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0 );
-}/*selected_tweet_get_user_name*/
+}/*selected_tweet_get_user_id();*/
 
-gchar *selected_tweet_get_reply_to_string(void){
-	return ( (selected_tweet && selected_tweet->reply_to_string) ?selected_tweet->reply_to_string :NULL );
-}/*selected_tweet_get_reply_to_string*/
+gchar *selected_tweet_reply_to_strdup(void){
+	if(!(G_STR_N_EMPTY(selected_tweet->user_name)))
+		return NULL;
+	
+	if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services->connected > 1 ))
+		return g_strdup_printf("@%s ( http://%s/%s ) ", selected_tweet->user_name, selected_tweet->service->uri, selected_tweet->user_name);
+	return g_strdup_printf("@%s ", selected_tweet->user_name);
+}/*selected_tweet_reply_to_strdup();*/
 
 void unset_selected_tweet(void){
 	if(!selected_tweet) return;
 	debug("Un-Setting selected_tweet.");
 	
-	if(selected_tweet->user_name)
-		g_free(selected_tweet->user_name);
-	selected_tweet->user_name=NULL;
-	
-	if(selected_tweet->reply_to_string)
-		g_free(selected_tweet->reply_to_string);
-	selected_tweet->reply_to_string=NULL;
-	
-	if(selected_tweet->tweet)
-		g_free(selected_tweet->tweet);
-	selected_tweet->tweet=NULL;
+	if(selected_tweet->user_name) uber_free(selected_tweet->user_name);
+	if(selected_tweet->tweet) uber_free(selected_tweet->tweet);
 	
 	selected_tweet->service=NULL;
 	
@@ -220,7 +206,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 					help_show(app_get_window());
 					break;
 				case GDK_F5:
-					app_refresh_timeline(GTK_WIDGET(app_get_window()), app_get()); 
+					network_refresh(); 
 					break;
 				case GDK_greater:
 					tweets_retweet();
@@ -250,26 +236,35 @@ void tweets_new_tweet(void){
 }/*tweets_new_tweet*/
 
 void tweets_reply(void){
-	if(!(selected_tweet && selected_tweet->reply_to_string)) return;
-	gchar *tweet=g_strdup(selected_tweet->reply_to_string);
-	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
+	if(!(selected_tweet && selected_tweet->user_name)) return;
+	tweets_include_and_begin_to_send(selected_tweet_reply_to_strdup(), TRUE, TRUE);
 }/*tweets_reply*/
 
 void tweets_retweet(void){
-	if(!(selected_tweet && selected_tweet->reply_to_string))
+	if(!(selected_tweet && selected_tweet->user_name))
 		return;
-	gchar *tweet=g_strdup_printf("RT: %s%s", selected_tweet->reply_to_string, selected_tweet->tweet);
+	gchar *reply_to_str=selected_tweet_reply_to_strdup();
+	gchar *tweet=g_strdup_printf("%s: %s%s", (selected_tweet->service->which_rest==Twitter ?"RT" :"RE"), reply_to_str, selected_tweet->tweet);
 	tweets_include_and_begin_to_send(tweet, TRUE, TRUE);
+	uber_free(reply_to_str);
 }/*tweets_retweet*/
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
-	if(!(tweet)) return;
-	if(in_response) {
+	if(!( ( tweet && G_STR_N_EMPTY(tweet) ) )){
+		if(tweet) uber_free(tweet);
+		return;
+	}
+	
+	if(in_response){
 		in_reply_to_status_id=selected_tweet->id;
 		in_reply_to_service=selected_tweet->service;
 	}
+	
 	tweet_view_sexy_prefix_string(tweet);
-	if(release) g_free(tweet);
+	
+	if(!release) return;
+	
+	uber_free(tweet);
 }/*tweets_include_and_begin_to_send*/
 
 void tweets_new_dm(void){

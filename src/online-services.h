@@ -69,47 +69,46 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-/* Twitter API */
-#define API_CLIENT_AUTH		"greettweetknow"
+typedef struct _OnlineServices OnlineServices;
+typedef struct _OnlineService OnlineService;
 
-/* Laconica API */
-/*#define	OPEN_CLIENT		"<a href=\"http://uberchicgeekchick.com/?projects=" PACKAGE_TARNAME "\">" PACKAGE_TARNAME "</a>"*/
-#define		OPEN_CLIENT		"get2gnow"
+typedef struct _OnlineServiceCBWrapper OnlineServiceCBWrapper;
 
+typedef enum _SupportedREST SupportedREST;
+typedef enum _RequestMethod RequestMethod;
+typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
 
-#define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
-#define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s"
-#define	PREFS_AUTH_PASSWORD		PREFS_AUTH_PREFIX "/password"
-#define	PREFS_AUTH_AUTO_CONNECT		PREFS_AUTH_PREFIX "/auto_connect"
-#define	PREFS_AUTH_ENABLED		PREFS_AUTH_PREFIX "/enabled"
-
-typedef enum{
+enum _RequestMethod {
 	POST,
 	GET,
 	QUEUE,
-} RequestMethod;
+};
 
 /**
  *@accounts contains an 'OnlineServics' object for each account that's available.
  */
-typedef struct {
+struct _OnlineServices{
 	guint		total;
 	guint		connected;
 	GSList		*keys;
 	GList		*accounts;
-} OnlineServices;
+};
 
-typedef enum {
+enum _SupportedREST{
 	Laconica,
 	Twitter,
-} SupportedREST;
+};
 
-typedef struct {
+struct _OnlineService{
 	SoupSession	*session;
 	RateLimitTimer	*timer;
 	
 	gboolean	connected;
 	guint		logins;
+	
+	guint		id_last_tweet;
+	guint		id_last_dm;
+	guint		id_last_reply;
 	
 	gboolean	enabled;
 	gboolean	auto_connect;
@@ -117,6 +116,8 @@ typedef struct {
 	gchar		*key;
 	gchar		*decoded_key;
 	SupportedREST	which_rest;
+	
+	gboolean	https;
 	gchar		*uri;
 	gchar		*server;
 	gchar		*path;
@@ -126,22 +127,32 @@ typedef struct {
 	GList		*friends;
 	GList		*followers;
 	GList		*friends_and_followers;
-} OnlineService;
+};
 
-typedef struct{
+struct _OnlineServiceCBWrapper {
 	OnlineService	*service;
 	gchar		*requested_uri;
 	gpointer	user_data;
 	gpointer	formdata;
-} OnlineServiceCBWrapper;
+};
 
-typedef enum{
+enum _OnlineServicesListStoreColumns{
 	UrlString,
 	OnlineServicePointer,
-} OnlineServicesListStoreColumns;
+};
+
+/* Twitter*/
+#define SOURCE_TWITTER		"greettweetknow"
+
+/* Laconica*/
+/*#define	SOURCE_LACONICA		"<a href=\"http://uberchicgeekchick.com/?projects=" PACKAGE_TARNAME "\">" PACKAGE_TARNAME "</a>"*/
+#define		SOURCE_LACONICA		"get2gnow"
 
 extern OnlineServices *online_services;
 extern OnlineService *selected_service;
+extern OnlineService *in_reply_to_service;
+
+extern unsigned long int in_reply_to_status_id;
 
 
 /********************************************************
@@ -154,15 +165,19 @@ gboolean online_services_relogin(OnlineServices *services);
 gboolean online_services_reconnect(OnlineServices *services);
 void online_services_disconnect(OnlineServices *services);
 
-OnlineService *online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, const gchar *username, const gchar *password, gboolean auto_connect);
+OnlineService *online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
+void online_services_delete(OnlineServices *services, OnlineService *service);
 
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 
+void online_service_load_tweet_ids(OnlineService *service, const gchar *uri);
+void online_service_save_tweet_ids(OnlineService *service, const gchar *uri);
+
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 
-void online_services_deinit(OnlineServices *online_services);
+void online_services_deinit(OnlineServices *services);
 
-gboolean online_services_fill_liststore(OnlineServices *services, GtkListStore *liststore, gboolean connected_only);
+gboolean online_services_fill_list_store(OnlineServices *services, GtkListStore *liststore, gboolean connected_only);
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);

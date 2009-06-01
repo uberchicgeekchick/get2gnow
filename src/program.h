@@ -68,8 +68,9 @@
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
-void get2gnow_init(int argc, char **argv);
-void get2gnow_deinit(void);
+void program_init(int argc, char **argv);
+void program_timeout_remove(guint *id, const gchar *usage);
+void program_deinit(void);
 
 #endif /* __CORE_H__ */
 /**********************************************************************

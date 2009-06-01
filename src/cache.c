@@ -56,6 +56,7 @@
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
+#include <errno.h>
 #include "config.h"
 #include "main.h"
 #include "cache.h"
@@ -63,7 +64,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAINS "Cache:Requests:OnlineServices:Tweets:Users:Images:Files:I/O:Setup:Start-Up:Shutdown"
+#define DEBUG_DOMAINS "OnlineServices:Requests:Tweets:Users:Images:Files:I/O:Setup:Start-Up:Shutdown:Cache"
 #include "debug.h"
 
 static gchar *cache_prefix=NULL;
@@ -73,8 +74,7 @@ static gchar *unknown_image_filename=NULL;
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static void cache_dir_clean_up(const gchar *cache_subdir);
-static void cache_dir_absolute_clean_up(const gchar *cache_dir);
+static void cache_dir_absolute_clean_up(const gchar *cache_dir, gboolean rm_parent);
 static void cache_file_clean_up(const gchar *cache_file);
 
 
@@ -115,8 +115,7 @@ gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir){
 	return cache_path;
 }/*cache_dir_test*/
 
-static void cache_dir_absolute_clean_up(const gchar *cache_dir_path){
-	static guint depth=0;
+static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm_parent){
 	if(!(g_str_has_prefix(cache_dir_path, cache_prefix)))
 		return;
 	
@@ -125,7 +124,6 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path){
 	
 	debug("Cleaning-up cache directory: [%s].", cache_dir_path);
 	
-	depth++;
 	const gchar *cache_file=NULL;
 	GDir *cache_dir=g_dir_open(cache_dir_path, 0, NULL);
 	while( (cache_file=g_dir_read_name(cache_dir)) ){
@@ -133,15 +131,22 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path){
 		if(g_file_test(cache_file, G_FILE_TEST_IS_REGULAR))
 			cache_file_clean_up(cache_file_path);
 		else if(g_file_test(cache_file_path, G_FILE_TEST_IS_DIR)){
-			cache_dir_absolute_clean_up(cache_file_path);
-			if(depth>1)
+			cache_dir_absolute_clean_up(cache_file_path, TRUE);
+			if(rm_parent)
 				cache_file_clean_up(cache_file_path);
 		}
 		g_free(cache_file_path);
 	}
 	g_dir_close(cache_dir);
-	depth--;
 }/*cache_dir_absolute_clean_up*/
+
+void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent){
+	gchar *cache_dir_path=g_build_filename(cache_prefix, cache_subdir, NULL);
+	cache_dir_absolute_clean_up(cache_dir_path, rm_parent);
+	g_free(cache_dir_path);
+	if(rm_parent)
+		cache_file_clean_up(cache_dir_path);
+}/*cache_dir_clean_up*/
 
 gchar *cache_file_touch(const gchar *cache_file){
 	gchar *cache_filename=NULL;
@@ -169,17 +174,18 @@ static void cache_file_clean_up(const gchar *cache_file){
 	GFileInfo *cache_gfileinfo=g_file_query_info(cache_gfile, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE, G_FILE_QUERY_INFO_NONE, NULL, NULL);
 	if(g_file_info_get_attribute_boolean(cache_gfileinfo, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE)){
 		debug("\t\tCache clean-up, deleting: [%s].", cache_file);
-		g_file_delete(cache_gfile, NULL, NULL);
+		g_remove(cache_file);
 	}
 	g_object_unref(cache_gfile);
 	g_object_unref(cache_gfileinfo);
 }/*cache_file_clean_up*/
 
-static void cache_dir_clean_up(const gchar *cache_subdir){
-	gchar *cache_dir_path=g_build_filename(cache_prefix, cache_subdir, NULL);
-	cache_dir_absolute_clean_up(cache_dir_path);
-	g_free(cache_dir_path);
-}/*cache_dir_clean_up*/
+gchar *cache_filename_get_from_uri(const gchar *uri){
+	gchar *cache_file=g_strdelimit(g_strdup(uri), ":/&?", '_');
+	gchar *cache_filename=g_build_filename(cache_prefix, cache_file, NULL);
+	uber_free(cache_file);
+	return cache_filename;
+}/*cache_file_from_uri*/
 
 gchar *cache_images_get_unknown_image_filename(void){
 	if(unknown_image_filename){
@@ -203,14 +209,14 @@ gchar *cache_images_get_unknown_image_filename(void){
 	
 	GtkImage *stock_unknown_image=NULL;
 	if(!( (stock_unknown_image=(GtkImage *)gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)) )){
-		debug("\t\t**WARNING:** Unable to load stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
+		debug("\t\t**WARNING:** Unable to load stock icon: GTK_STOCK_MISSING_IMAGE(%s).", GTK_STOCK_MISSING_IMAGE);
 		unknown_image_filename=g_strdup(home_unknown_image_filename);
 	}else{
 		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
 		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
 		g_object_unref(stock_unknown_image);
 		if(G_STR_EMPTY(unknown_image_filename)){
-			debug("\t\t**WARNING:** Unable to get 'file' from stock icon: GTK_STOCK_MISSING_IMAGE(%d).", GTK_STOCK_MISSING_IMAGE);
+			debug("\t\t**WARNING:** Unable to get 'file' from stock icon: GTK_STOCK_MISSING_IMAGE(%s).", GTK_STOCK_MISSING_IMAGE);
 			unknown_image_filename=g_strdup(home_unknown_image_filename);
 		}
 	}
@@ -247,13 +253,13 @@ gchar *cache_images_get_filename(User *user){
 		return cache_images_get_unknown_image_filename();
 	}
 	
-	gchar *avatar_dir=g_build_filename("services", user->service->uri, "avatars", user->user_name, NULL);
+	gchar *avatar_dir=g_build_filename("services", user->service->uri, user->service->username, "avatars", user->user_name, NULL);
 	gchar *image_filename=NULL;
 	gchar *avatar_path=NULL;
 	if(!( (avatar_path=cache_dir_test(avatar_dir, TRUE)) && (image_filename=g_build_filename(avatar_path, image_file, NULL)) ))
 		return cache_images_get_unknown_image_filename();
 	else if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) ))
-		cache_dir_clean_up(avatar_dir);
+		cache_dir_clean_up(avatar_dir, FALSE);
 	
 	
 	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", user->image_url, image_file, image_filename);

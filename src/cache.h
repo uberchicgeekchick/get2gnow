@@ -77,12 +77,15 @@
 void cache_init(void);
 void cache_deinit(void);
 
+gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir);
+void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent);
+
+gchar *cache_filename_get_from_uri(const gchar *uri);
+gchar *cache_file_touch(const gchar *cache_file);
+
 gchar *cache_images_get_unknown_image_filename(void);
 gchar *cache_images_get_filename(User *user);
 
-gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir);
-
-gchar *cache_file_touch(const gchar *cache_file);
 #endif /* __CACHE_H__ */
 /**********************************************************************
  *                               eof                                  *

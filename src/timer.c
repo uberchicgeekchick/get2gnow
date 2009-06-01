@@ -63,7 +63,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAINS "Timer:OnlineServices:Networking:Requests:Setup:Start-Up"
+#define DEBUG_DOMAINS "OnlineServices:Networking:Requests:Setup:Start-Up:Timer"
 #include "debug.h"
 
 
@@ -113,7 +113,7 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	
 	timer->processing++;
 	while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->limit ){
-		app_statusbar_printf("One moment please... to keep %s from being locked out requests are limited.", PACKAGE_NAME, NULL );
+		app_statusbar_printf("One moment please... to keep %s from being locked out requests are limited.", PACKAGE_NAME);
 	}
 	g_timer_stop(timer->gtimer);
 	

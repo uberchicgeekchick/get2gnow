@@ -59,6 +59,7 @@
 #include <libxml/tree.h>
 
 #include "main.h"
+#include "program.h"
 #include "app.h"
 #include "online-services.h"
 #include "network.h"
@@ -82,12 +83,16 @@ static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const
 static void user_request_free(UserRequest *request);
 
 static User *user_constructor(OnlineService *service, gboolean a_follower);
+static User *user_parse_new(OnlineService *service, SoupMessage *xml);
+static User *user_parse_profile(OnlineService *service, xmlNode *a_node);
 
 static void user_status_format_dates(UserStatus *status);
+static void users_free(UsersGListGetWhich users_glist_get_which, OnlineService *service);
 
-static void users_free_friends_and_followers(OnlineService *service);
-static void users_free_followers(OnlineService *service);
-static void users_free_friends(OnlineService *service);
+static void user_append_friend(User *user);
+static void user_remove_friend(User *user);
+
+static void user_remove_follower(User *user);
 
 
 #define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
@@ -221,7 +226,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 	OnlineServiceCBWrapper *request_wrapper=NULL;
 	switch(request->action){
 		case ViewTweets:
-			request_wrapper=online_service_wrapper_new(service_wrapper->service, service_wrapper->requested_uri, network_display_timeline, request->uri, NULL);
+			request_wrapper=online_service_wrapper_new(service_wrapper->service, service_wrapper->requested_uri, network_display_timeline, request->uri, (gpointer)Tweets);
 			network_display_timeline(session, msg, request_wrapper);
 			break;
 		case UnFollow:
@@ -236,9 +241,14 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 				debug("\t\t[succeeded]");
 				if(request->action==Follow)
 					user_append_friend(user);
-				else if(request->action==UnFollow || request->action==Block )
+				else if(request->action==UnFollow)
 					user_remove_friend(user);
+				else if(request->action==Block){
+					user_remove_friend(user);
+					user_remove_follower(user);
+				}
 				app_statusbar_printf("Successfully %s %s on %s.", request->message, request->user_data, service_wrapper->service->decoded_key);
+				user_free(user);
 			}
 			
 			break;
@@ -288,7 +298,7 @@ static User *user_constructor(OnlineService *service, gboolean a_follower){
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
-User *user_parse_new(OnlineService *service, SoupMessage *xml){
+static User *user_parse_new(OnlineService *service, SoupMessage *xml){
 	xmlDoc *doc=NULL;
 	xmlNode *root_element=NULL;
 	User *user=NULL;
@@ -310,7 +320,7 @@ User *user_parse_new(OnlineService *service, SoupMessage *xml){
 }
 
 
-User *user_parse_profile(OnlineService *service, xmlNode *a_node){
+static User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	
@@ -365,7 +375,7 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 		
 	} /* End of loop */
 	if(user->status)
-		parser_format_tweet(service, user, user->status);
+		parser_format_user_status(service, user, user->status);
 	
 	user->image_filename=cache_images_get_filename(user);
 	
@@ -379,7 +389,7 @@ UserStatus *user_status_new(OnlineService *service, xmlNode *status_node){
 	
 	status->service=service;
 	status->user=NULL;
-	status->text=status->tweet=status->sexy_tweet=NULL;
+	status->text=status->tweet=status->notification=status->sexy_tweet=NULL;
 	status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0;
 	status->created_at=status->created_seconds_ago=0;
@@ -436,7 +446,7 @@ static void user_status_format_dates(UserStatus *status){
 	
 	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %u", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
-	debug("Display time set to: %s, %lu.", status->created_how_long_ago, status->created_seconds_ago);
+	debug("Display time set to: %s, %u.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
 
 void user_status_free(UserStatus *status){
@@ -444,21 +454,17 @@ void user_status_free(UserStatus *status){
 	
 	if(status->user) user_free(status->user);
 	
-	if(status->text) g_free(status->text);
-	if(status->tweet) g_free(status->tweet);
-	if(status->source) g_free(status->source);
+	if(status->text) uber_free(status->text);
+	if(status->tweet) uber_free(status->tweet);
+	if(status->source) uber_free(status->source);
 	
-	if(status->sexy_tweet) g_free(status->sexy_tweet);
+	if(status->sexy_tweet) uber_free(status->sexy_tweet);
+	if(status->notification) uber_free(status->notification);
 	
-	if(status->created_at_str) g_free(status->created_at_str);
-	if(status->created_how_long_ago) g_free(status->created_how_long_ago);
+	if(status->created_at_str) uber_free(status->created_at_str);
+	if(status->created_how_long_ago) uber_free(status->created_how_long_ago);
 	
-	status->text=status->tweet=status->sexy_tweet=NULL;
-	status->created_at_str=status->created_how_long_ago=NULL;
-	
-	status->service=NULL;
-	
-	g_free(status);
+	uber_free(status);
 	status=NULL;
 }/*user_status_free*/
 
@@ -516,8 +522,8 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 			
 	User *user=NULL;
 	
-	gchar *user_profile_uri=g_strdup_printf( API_ABOUT_USER, user_name );
-	SoupMessage *msg=online_service_request( service, GET, user_profile_uri, NULL, NULL, NULL );
+	gchar *user_profile_uri=g_strdup_printf(API_ABOUT_USER, user_name);
+	SoupMessage *msg=online_service_request(service, QUEUE, user_profile_uri, NULL, NULL, NULL);
 	g_free( user_profile_uri );
 	
 	if(!(user=user_parse_new(service, msg)))
@@ -526,15 +532,61 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	return user;
 }/*user_fetch_profile*/
 
-
-
-void users_free(const char *type, GList *users ){
-	debug("Freeing the authenticated user's %s.", type );
+/* Free a list of Users */
+void user_free_lists(OnlineService *service){
+	if(service->friends_and_followers){
+		users_free(GetBoth, service);
+		return;
+	}
 	
-	g_list_foreach(users, (GFunc)user_free, NULL);
+	users_free(GetFriends, service);
+	users_free(GetFollowers, service);
+}/*user_free_lists*/
+
+static void users_free(UsersGListGetWhich users_glist_get_which, OnlineService *service){
+	GList *glist_free=NULL;
+	switch(users_glist_get_which){
+		case GetBoth:
+			if(!service->friends_and_followers) return;
+			glist_free=service->friends_and_followers;
+			break;
+		case GetFriends:
+			if(!service->friends) return;
+			glist_free=service->friends;
+			break;
+		case GetFollowers:
+			if(!service->followers) return;
+			glist_free=service->followers;
+			break;
+	}
+	if(!glist_free) return;
 	
-	g_list_free(users);
-	users=NULL;
+	if(IF_DEBUG){
+		gchar *type=NULL;
+		switch(users_glist_get_which){
+			case GetBoth:
+				type=g_strdup_printf("%s, %s %s", _("friends, ie you're following"), _("and"), _("who's following you"));
+				break;
+			
+			case GetFriends:
+				type=g_strdup(_("friends, ie you're following"));
+				break;
+			
+			case GetFollowers:
+				type=g_strdup(_("who's following you"));
+				break;
+		}
+		debug("Freeing the authenticated user's %s.", type );
+		uber_free(type);
+	}
+	
+	g_list_foreach(glist_free, (GFunc)user_free, NULL);
+	
+	uber_list_free(glist_free);
+	if(users_glist_get_which!=GetBoth) return;
+	
+	uber_list_free(service->friends);
+	uber_list_free(service->followers);
 }/*users_free*/
 
 /* Free a user struct */
@@ -543,111 +595,35 @@ void user_free(User *user){
 	
 	if(user->status) user_status_free(user->status);
 	
-	if(!(G_STR_EMPTY(user->user_name))) g_free(user->user_name);
-	if(!(G_STR_EMPTY(user->nick_name))) g_free(user->nick_name);
+	if(user->user_name) uber_free(user->user_name);
+	if(user->nick_name) uber_free(user->nick_name);
 	
-	if(!(G_STR_EMPTY(user->location))) g_free(user->location);
-	if(!(G_STR_EMPTY(user->bio))) g_free(user->bio);
-	if(!(G_STR_EMPTY(user->url))) g_free(user->url);
+	if(user->location) uber_free(user->location);
+	if(user->bio) uber_free(user->bio);
+	if(user->url) uber_free(user->url);
 	
-	if(!(G_STR_EMPTY(user->image_url))) g_free(user->image_url);
-	if(!(G_STR_EMPTY(user->image_filename))) g_free(user->image_filename);
+	if(user->image_url) uber_free(user->image_url);
+	if(user->image_filename) uber_free(user->image_filename);
 	
-	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
-	
-	user->service=NULL;
-	g_free(user);
-	user=NULL;
+	uber_free(user);
 }/*user_free*/
 
-/* Free a list of Users */
-void user_free_lists(OnlineService *service){
-	if(service->friends_and_followers){
-		users_free_friends_and_followers(service);
-		return;
-	}
-	
-	if(service->friends)
-		users_free_friends(service);
-	
-	if(service->followers)
-		users_free_followers(service);
-}/*user_free_lists*/
-
-static void users_free_friends_and_followers(OnlineService *service){
-	if(!service->friends_and_followers)
-		return;
-	
-	users_free("friends, ie you're following, and who's following you", service->friends_and_followers);
-	service->friends_and_followers=NULL;
-}/*users_free_friends_and_followers*/
-
-static void users_free_followers(OnlineService *service){
-	if(!service->followers)
-		return;
-	
-	users_free("who's following you", service->followers);
-	service->followers=NULL;
-}/*users_free_followers*/
-
-
-static void users_free_friends(OnlineService *service){
-	if(!service->friends)
-		return;
-	
-	users_free("friends, ie you're following", service->friends);
-	service->friends=NULL;
-}/*users_free_friends*/
-
-void user_append_friend(User *user){
+static void user_append_friend(User *user){
 	if(user->service->friends)
 		user->service->friends=g_list_append(user->service->friends, user );
 	app_set_statusbar_msg (_("Friend Added."));
 }/*user_append_friend*/
 
-void user_remove_friend(User *user){
+static void user_remove_friend(User *user){
 	if(user->service->friends)
 		user->service->friends=g_list_remove(user->service->friends, user);
 	app_set_statusbar_msg (_("Friend Removed."));
-	user_free(user);
 }/*user_remove_friend*/
 
 
-void user_append_follower(User *user){
-	if(user->service->followers)
-		user->service->followers=g_list_append(user->service->followers, user );
-	app_set_statusbar_msg (_("Follower Added."));
-}/*user_append_friend*/
-
-void user_remove_follower(User *user){
+static void user_remove_follower(User *user){
 	if(user->service->followers)
 		user->service->followers=g_list_remove(user->service->followers, user);
 	app_set_statusbar_msg (_("Follower Removed."));
-	user_free(user);
 }/*user_remove_friend*/
-
-
-GList *user_get_friends(gboolean refresh, UsersGListLoadFunc func){
-	if(!selected_service) return NULL;
-	
-	if(refresh && selected_service->friends) users_free_friends(selected_service);
-	
-	return network_users_glist_get(GetFriends, refresh, func);
-}
-
-GList *user_get_followers(gboolean refresh, UsersGListLoadFunc func){
-	if(!selected_service) return NULL;
-	
-	if(refresh && selected_service->followers) users_free_followers(selected_service);
-	
-	return network_users_glist_get(GetFollowers, refresh, func);
-}/*users_get_followers*/
-
-GList *user_get_friends_and_followers(gboolean refresh, UsersGListLoadFunc func){
-	if(!selected_service) return NULL;
-	
-	if(refresh && selected_service->friends_and_followers) users_free_friends_and_followers(selected_service);
-	
-	return network_users_glist_get(GetBoth, refresh, func);
-}/*user_get_friends_and_followers*/
 

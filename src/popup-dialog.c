@@ -290,7 +290,7 @@ static void popup_dialog_show(GtkWindow *parent, UserAction action ){
 	g_object_unref(ui);
 	
 	debug("Signal handlers set... loading accounts.");
-	if(!( online_services_fill_liststore(online_services, popup->online_services_list_store, TRUE) ))
+	if(!( online_services_fill_list_store(online_services, popup->online_services_list_store, TRUE) ))
 		debug("No services found to load, new accounts need to be setup.");
 	else{
 		debug("OnlineServices found & loaded.  Selecting active service.");

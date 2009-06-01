@@ -62,13 +62,19 @@
 #include <glib/gprintf.h>
 
 #include "config.h"
+#include "main.h"
+
 #include "program.h"
 #include "debug.h"
 #include "gconfig.h"
+
 #include "app.h"
+
 #include "online-services.h"
 #include "ipc.h"
+
 #include "tweet-list.h"
+#include "tweets.h"
 #include "images.h"
 #include "cache.h"
 
@@ -86,7 +92,7 @@ static gboolean notifing=FALSE;
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-void get2gnow_init(int argc, char **argv){
+void program_init(int argc, char **argv){
 	if( (ipc_init_check( argc-1, argv-1)) ){
 		g_printf( "%s is already running.  Be sure to check system try for %s's icon.\n", PACKAGE_NAME, PACKAGE_NAME );
 		ipc_deinit();
@@ -103,7 +109,7 @@ void get2gnow_init(int argc, char **argv){
 	
 	gtk_init(&argc, &argv);
 	
-	gtk_window_set_default_icon_name(PACKAGE_NAME);
+	gtk_window_set_default_icon_name(PACKAGE_TARNAME);
 	
 	debug_init();
 	
@@ -116,21 +122,27 @@ void get2gnow_init(int argc, char **argv){
 	online_services_init();
 
 	/* Start libnotify */
-	notifing=notify_init(PACKAGE_NAME);
+	notifing=notify_init(PACKAGE_TARNAME);
+	
+	/*Start background monitoring*/
+	network_init();
 	
 	/* Create the ui */
 	app_create();
-}/*start_up*/
+}/*program_init*/
 
 
-void get2gnow_deinit(void){
+void program_timeout_remove(guint *id, const gchar *usage){
+	if(!( (*id)>0 )) return;
+	
+	debug("Stopping %s monitoring.  Timeout id: %i.", ( G_STR_N_EMPTY(usage) ?usage :"[unknown pthread timer]" ), (*id) );
+	g_source_remove( (*id) );
+	*id=0;
+}/*program_timeout_remove(&id, _("message"));*/
+
+void program_deinit(void){
 	/* Close libnotify */
 	if(notifing) notify_uninit();
-	
-	/* Close the network */
-	online_services_deinit(online_services);
-	
-	ipc_deinit();
 	
 	/* Clean up the ui */
 	g_object_unref(tweet_list_get());
@@ -141,8 +153,14 @@ void get2gnow_deinit(void){
 	cache_deinit();
 
 	debug_deinit();
-}/*shutdown*/
-
+	
+	/* Close the network */
+	unset_selected_tweet();
+	network_deinit(TRUE);
+	online_services_deinit(online_services);
+	
+	ipc_deinit();
+}/*program_deinit();*/
 
 /********************************************************
  *                       eof                            *

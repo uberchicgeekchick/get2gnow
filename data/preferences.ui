@@ -84,7 +84,7 @@
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="titles_only_checkbutton">
-                                <property name="label" translatable="yes">Use _titles, instead of URLs/web addresses, for links.</property>
+                                <property name="label" translatable="yes">When _titles are found hide its URLs/web address.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -93,6 +93,19 @@
                               </object>
                               <packing>
                                 <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="expand_users_checkbutton">
+                                <property name="label" translatable="yes">_Include user profile details in @ links.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                             <child>
@@ -107,19 +120,6 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="expand_users_checkbutton">
-                                <property name="label" translatable="yes">Include user's detail's in @ links, for user profiles.</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
                                 <property name="position">2</property>
                               </packing>
                             </child>
@@ -220,7 +220,7 @@
                               <object class="GtkLabel" id="default_timeline_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">At start-up _load:</property>
+                                <property name="label" translatable="yes">At _start-up load:</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">combobox_timeline</property>
                               </object>
@@ -276,7 +276,7 @@
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="notify_checkbutton">
-                                <property name="label" translatable="yes">_Popup new messages when they're recieved.</property>
+                                <property name="label" translatable="yes">_Notify me of all new messages.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -290,8 +290,34 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkCheckButton" id="notify_dms_check_button">
+                                <property name="label" translatable="yes">Notify me of new _Direct Messages (DMs)</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="notify_at_mentions_check_button">
+                                <property name="label" translatable="yes">Notify me of new _replies.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkCheckButton" id="sound_checkbutton">
-                                <property name="label" translatable="yes">_Beep to alert me when I get new messages.</property>
+                                <property name="label" translatable="yes">_Beep when notifying me.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -301,7 +327,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                           </object>
@@ -329,7 +355,7 @@
             <child type="tab">
               <object class="GtkLabel" id="alerts_tab_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_New messages</property>
+                <property name="label" translatable="yes">New _Messages</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
@@ -358,7 +384,7 @@
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="no_alert_checkbutton">
+                              <object class="GtkCheckButton" id="no_length_alert_checkbutton">
                                 <property name="label" translatable="yes">Do not _beep to alert me when my Tweets are to long.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -458,7 +484,7 @@
             <child type="tab">
               <object class="GtkLabel" id="composition_tab_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Composition</property>
+                <property name="label" translatable="yes">Posting _Updates</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
@@ -477,7 +503,7 @@
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="okay_button">
-                <property name="label">gtk-ok</property>
+                <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>

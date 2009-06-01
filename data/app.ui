@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <interface>
+  <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkListStore" id="accounts_liststore">
     <columns>
@@ -129,8 +130,8 @@
                         <property name="use_underline">True</property>
                         <property name="image">image10</property>
                         <property name="use_stock">False</property>
-                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                        <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -410,85 +411,117 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHPaned" id="hpaned1">
+          <object class="GtkVPaned" id="tweet_vpaned">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkFrame" id="frame1">
-                <property name="sensitive">False</property>
-                <property name="no_show_all">True</property>
-                <property name="label_xalign">0</property>
+              <object class="GtkHPaned" id="hpaned">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
                 <child>
-                  <object class="GtkAlignment" id="alignment1">
-                    <property name="visible">True</property>
-                    <property name="left_padding">12</property>
+                  <object class="GtkFrame" id="frame1">
+                    <property name="sensitive">False</property>
+                    <property name="no_show_all">True</property>
+                    <property name="label_xalign">0</property>
                     <child>
-                      <object class="GtkTreeView" id="accounts_treeview">
+                      <object class="GtkAlignment" id="alignment1">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="model">accounts_liststore</property>
-                        <property name="headers_visible">False</property>
-                        <property name="headers_clickable">False</property>
-                        <property name="reorderable">True</property>
-                        <property name="search_column">1</property>
+                        <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkTreeViewColumn" id="online_service_enabled_treeviewcolumn">
-                            <property name="title">_Use</property>
-                            <property name="clickable">True</property>
+                          <object class="GtkTreeView" id="accounts_treeview">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">accounts_liststore</property>
+                            <property name="headers_visible">False</property>
+                            <property name="headers_clickable">False</property>
                             <property name="reorderable">True</property>
+                            <property name="search_column">1</property>
                             <child>
-                              <object class="GtkCellRendererToggle" id="online_service_active_cellrenderercombo"/>
-                              <attributes>
-                                <attribute name="sensitive">3</attribute>
-                                <attribute name="visible">3</attribute>
-                                <attribute name="activatable">3</attribute>
-                                <attribute name="active">0</attribute>
-                              </attributes>
+                              <object class="GtkTreeViewColumn" id="online_service_enabled_treeviewcolumn">
+                                <property name="title">_Use</property>
+                                <property name="clickable">True</property>
+                                <property name="reorderable">True</property>
+                                <child>
+                                  <object class="GtkCellRendererToggle" id="online_service_active_cellrenderercombo"/>
+                                  <attributes>
+                                    <attribute name="sensitive">3</attribute>
+                                    <attribute name="visible">3</attribute>
+                                    <attribute name="activatable">3</attribute>
+                                    <attribute name="active">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
                             </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="online_service_key_treeviewcolumn">
-                            <property name="title">_Account</property>
                             <child>
-                              <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
-                              <attributes>
-                                <attribute name="text">1</attribute>
-                              </attributes>
+                              <object class="GtkTreeViewColumn" id="online_service_key_treeviewcolumn">
+                                <property name="title">_Account</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
                             </child>
                           </object>
                         </child>
                       </object>
                     </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="acconts_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;b&gt;_Accounts&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">accounts_treeview</property>
+                      </object>
+                    </child>
                   </object>
+                  <packing>
+                    <property name="resize">False</property>
+                    <property name="shrink">True</property>
+                  </packing>
                 </child>
-                <child type="label">
-                  <object class="GtkLabel" id="acconts_label">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;b&gt;_Accounts&lt;/b&gt;</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">accounts_treeview</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="resize">False</property>
-                <property name="shrink">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="main_scrolledwindow">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">never</property>
-                <property name="shadow_type">etched-out</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkScrolledWindow" id="main_scrolledwindow">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hscrollbar_policy">never</property>
+                    <property name="shadow_type">etched-out</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">True</property>
+                  </packing>
                 </child>
               </object>
               <packing>
                 <property name="resize">True</property>
+                <property name="shrink">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="expand_box">
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkVBox" id="tweet_view_vbox">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">False</property>
                 <property name="shrink">True</property>
               </packing>
             </child>
@@ -498,46 +531,13 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHBox" id="expand_box">
-            <property name="visible">True</property>
-            <property name="spacing">1</property>
-            <child>
-              <object class="GtkVBox" id="tweet_view_vbox">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkHSeparator" id="hseparator1">
-                    <property name="visible">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="padding">6</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkStatusbar" id="main_statusbar">
             <property name="visible">True</property>
             <property name="spacing">2</property>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="position">3</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

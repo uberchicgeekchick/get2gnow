@@ -30,14 +30,7 @@
 #include <libsoup/soup.h>
 #include <libsexy/sexy.h>
 
-
-#include "app.h"
-#include "tweet-list.h"
-
-#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
-
-extern unsigned long int in_reply_to_status_id;
-extern OnlineService *in_reply_to_service;
+#include "online-services.h"
 
 G_BEGIN_DECLS
 
@@ -45,7 +38,7 @@ void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned l
 OnlineService *selected_tweet_get_service(void);
 gchar *selected_tweet_get_user_name(void);
 unsigned long int selected_tweet_get_user_id(void);
-gchar *selected_tweet_get_reply_to_string(void);
+gchar *selected_tweet_reply_to_strdup(void);
 void unset_selected_tweet(void);
 
 void tweets_selected_widgets_show(gboolean show);

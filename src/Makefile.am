@@ -20,7 +20,7 @@ endif
 
 get2gnow_SOURCES = 					\
 	$(keyring_sources)				\
-	program.c			program.h			\
+	program.		program.h		\
 	main.c			main.h			\
 	gconfig.c		gconfig.h		\
 	debug.c			debug.h			\
@@ -34,7 +34,7 @@ get2gnow_SOURCES = 					\
 	ipc.c			ipc.h			\
 	app.c			app.h			\
 	geometry.c		geometry.h		\
-	hint.c			hint.h			\
+	confirm.c		confirm.h		\
 	label.c			label.h			\
 	online-services.c	online-services.h	\
 	network.c		network.h		\

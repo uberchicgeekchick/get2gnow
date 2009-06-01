@@ -273,7 +273,7 @@ void following_viewer_refresh_response_cb(GtkButton *button, FollowingViewer *fo
 	gtk_widget_set_sensitive(GTK_WIDGET(following_viewer->viewer), FALSE);
 	
 	popup_select_service(following_viewer->viewer);
-	user_get_friends(TRUE, following_viewer_load_lists);
+	network_users_glist_get(GetFriends, TRUE, following_viewer_load_lists);
 }//following_refresh_response_cb
 
 void following_viewer_load_lists(GList *users){
@@ -365,5 +365,5 @@ static void following_viewer_setup(GtkWindow *parent){
 	gtk_widget_set_sensitive(GTK_WIDGET(following_viewer->viewer), FALSE);
 	
 	/* Load following */
-	user_get_friends(FALSE, following_viewer_load_lists);
+	network_users_glist_get(GetFriends, FALSE, following_viewer_load_lists);
 }/*following_viewer_setup*/

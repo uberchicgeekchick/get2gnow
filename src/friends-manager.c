@@ -324,7 +324,7 @@ static void friends_manager_refresh(GtkButton *button, FriendsManager *friends_m
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->dialog), FALSE);
 	
 	popup_select_service(friends_manager->dialog);
-	user_get_friends_and_followers(TRUE, friends_manager_display_following_and_followers);
+	network_users_glist_get(GetBoth, TRUE, friends_manager_display_following_and_followers);
 }/*friends_manager_refresh*/
 
 void friends_manager_display_following_and_followers(GList *friends_and_followers){
@@ -452,5 +452,5 @@ static void friends_manager_setup(GtkWindow *parent){
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->dialog), FALSE);
 	
 	/* Load friends_manager */
-	user_get_friends_and_followers(FALSE, friends_manager_display_following_and_followers);
+	network_users_glist_get(GetBoth, FALSE, friends_manager_display_following_and_followers);
 }/*friends_manager_setup*/

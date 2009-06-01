@@ -730,9 +730,9 @@ MAKEFLAGS=
 SHELL=${CONFIG_SHELL-/bin/sh}
 
 # Identity of this package.
-PACKAGE_NAME='get2gnow'
-PACKAGE_TARNAME='get2gnow'
-PACKAGE_VERSION='00.00.DB.aFF'
+PACKAGE_NAME="get2gnow"
+PACKAGE_TARNAME="get2gnow"
+PACKAGE_VERSION="#0000DDa01"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"
@@ -22765,7 +22765,6 @@ GTK_MIN_VERSION=2.12.12
 GCONF_MIN_VERSION=1.2.0
 LIBGIO_MIN_VERSION=2.15.5
 LIBCANBERRA_MIN_VERSION=0.4
-LIBGNOMEUI_MIN_VERSION=2.24
 
 
 # Check whether --enable-gnome_keyring was given.
@@ -22891,7 +22890,6 @@ if test -n "$get2gnow_CFLAGS"; then
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_MIN_VERSION
-	    libgnomeui-2.0 >= \$LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= \$GLIB_MIN_VERSION
 	    gio-2.0 >= \$LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= \$LIBCANBERRA_MIN_VERSION
@@ -22908,7 +22906,6 @@ if test -n "$get2gnow_CFLAGS"; then
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -22928,7 +22925,6 @@ if test -n "$get2gnow_CFLAGS"; then
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -22955,7 +22951,6 @@ if test -n "$get2gnow_LIBS"; then
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_MIN_VERSION
-	    libgnomeui-2.0 >= \$LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= \$GLIB_MIN_VERSION
 	    gio-2.0 >= \$LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= \$LIBCANBERRA_MIN_VERSION
@@ -22972,7 +22967,6 @@ if test -n "$get2gnow_LIBS"; then
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -22992,7 +22986,6 @@ if test -n "$get2gnow_LIBS"; then
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -23026,7 +23019,6 @@ fi
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -23044,7 +23036,6 @@ fi
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -23065,7 +23056,6 @@ fi
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
@@ -23092,7 +23082,6 @@ echo "$as_me: error: Package requirements (
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_MIN_VERSION
-	    libgnomeui-2.0 >= $LIBGNOMEUI_MIN_VERSION
 	    glib-2.0 >= $GLIB_MIN_VERSION
 	    gio-2.0 >= $LIBGIO_MIN_VERSION
 	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION

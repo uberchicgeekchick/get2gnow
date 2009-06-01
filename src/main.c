@@ -29,11 +29,11 @@
 #include "program.h"
 
 int main(int argc, char **argv){
-	get2gnow_init(argc, argv);
+	program_init(argc, argv);
 	
 	gtk_main();
 
-	get2gnow_deinit();
+	program_deinit();
 	
 	return 0;
 }

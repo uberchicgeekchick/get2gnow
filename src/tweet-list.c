@@ -92,7 +92,8 @@ static void tweet_list_move(GtkWidget *widget, GdkEventKey *event);
 static TweetList *list=NULL;
 static TweetListPriv *list_priv=NULL;
 static gint tweet_list_index=0;
-static guint list_store_total=0;
+static guint tweet_list_store_total=0;
+guint tweet_list_notify_delay=0;
 
 G_DEFINE_TYPE(TweetList, tweet_list, SEXY_TYPE_TREE_VIEW);
 
@@ -160,13 +161,13 @@ static void tweet_list_create_model(TweetList *list){
 	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(list), STRING_TEXT);
 }/*tweet_list_create_model(list);*/
 
-void tweet_list_store_append(OnlineService *service, UserStatus *status){
+void tweet_list_store_status(OnlineService *service, UserStatus *status){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		
-		list_store_total++;
 		debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %d; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", service->decoded_key, status->user->user_name, service->server, status->id, status->created_at_str, status->text, status->sexy_tweet);
-		gtk_list_store_append(list_priv->store, iter);
 		
+		/*gtk_list_store_insert(list_priv->store, iter, tweet_list_store_total);*/
+		gtk_list_store_append(list_priv->store, iter);
 		gtk_list_store_set(
 				list_priv->store, iter,
 					STRING_TEXT, status->tweet,
@@ -183,6 +184,7 @@ void tweet_list_store_append(OnlineService *service, UserStatus *status){
 					SERVICE_POINTER, service,
 				-1
 		);
+		tweet_list_store_total++;
 		
 		/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 		network_get_image(status->user, iter);
@@ -251,7 +253,7 @@ static void tweet_list_move(GtkWidget *widget, GdkEventKey *event){
 			tweet_list_index++;
 			break;
 		case GDK_End: case GDK_KP_End:
-			tweet_list_index=19;
+			tweet_list_index=tweet_list_store_total;
 			break;
 		case GDK_Page_Up:
 			tweet_list_index-=10; break;
@@ -276,24 +278,25 @@ void tweet_list_move_to(gint row_index){
 	if(row_index<0) {
 		tweets_beep();
 		row_index=0;
-	}else if(row_index>list_store_total){
+	}else if(row_index>tweet_list_store_total){
 		tweets_beep();
-		row_index=list_store_total;
+		row_index=tweet_list_store_total;
 	}
 	
-	debug("Selecting tweet %d, maximum tweets are: %d.", row_index, list_store_total);
+	debug("Selecting tweet %d, maximum tweets are: %d.", row_index, tweet_list_store_total);
 	GtkTreePath *path=gtk_tree_path_new_from_indices(row_index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
 	
 	tweet_view_sexy_select();
-}/* tweet_list_move_to */
+}/*tweet_list_move_to(20);*/
 
 void tweet_list_clear(void){
 	debug("Re-setting tweet_list_index.");
 	gtk_list_store_clear(list_priv->store);
 	tweet_list_index=0;
-	list_store_total=0;
+	tweet_list_store_total=0;
+	tweet_list_notify_delay=0;
 }/* tweet_list_refreshed */
 
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
@@ -305,7 +308,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 		return;
 	}
 	
-	app_set_statusbar_msg(TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG);
+	app_set_statusbar_msg(NULL);
 	
 	gulong		tweet_id, user_id;
 	OnlineService	*service=NULL;

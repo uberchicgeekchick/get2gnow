@@ -60,6 +60,7 @@
 #include <libsexy/sexy.h>
 
 #include "main.h"
+#include "program.h"
 #include "gconfig.h"
 #include "gtkbuilder.h"
 
@@ -70,7 +71,7 @@
 #include "images.h"
 #include "preferences.h"
 #include "geometry.h"
-#include "hint.h"
+#include "confirm.h"
 #include "label.h"
 #include "network.h"
 #include "preferences.h"
@@ -127,6 +128,7 @@ struct _AppPriv {
 	 * Actually they're in the TweetView.
 	 * The main-window's GtkVBox contains them.
 	 */
+	GtkVPaned		*tweet_vpaned;
 	GtkHBox			*expand_box;
 	GtkVBox			*tweet_view_vbox;
 	TweetView		*tweet_view;
@@ -146,7 +148,7 @@ struct _AppPriv {
 #define	DEBUG_DOMAINS	"App:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up"
 #include "debug.h"
 
-#define	GtkBuilderUI	"main-window.ui"
+#define	GtkBuilderUI	"app.ui"
 
 
 static void app_class_init(AppClass *klass);
@@ -162,35 +164,38 @@ static void app_services_cb(GtkWidget *window, App *app);
 static void app_select_service(GtkMenuItem *item, App *app);
 static void app_preferences_cb(GtkWidget *window, App *app); 
 
-/* Handles all timelines */
-static void app_timeline_cb(GtkRadioMenuItem *item, App *app);
 static void app_accounts_treeview_fill(void);
-
 
 static void app_about_cb(GtkWidget *window, App *app); 
 static void app_help_contents_cb(GtkWidget *widget, App *app); 
 static void app_status_icon_activate_cb(GtkStatusIcon *status_icon, App *app); 
 static void app_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, App *app);
 
-
 static void friends_menu_request(GtkAction *item, App *app);
-
 
 static void app_connection_items_setup(GtkBuilder *ui); 
 static void app_login(void);
 static void app_reconnect(GtkMenuItem *item, App *app);
 
+/* Handles all timelines */
+static void app_timeline_cb(GtkRadioMenuItem *item, App *app);
 static void app_set_default_timeline(App *app, gchar *timeline);
+static void app_refresh_timeline(GtkWidget *window, App *app); 
 static void app_retrieve_default_timeline(void);
+
 static void app_status_icon_create_menu(void);
 static void app_status_icon_create(void);
+
+static void app_set_visibility(gboolean visible);
 static void app_toggle_visibility(void);
+
 static gboolean configure_event_timeout_cb(GtkWidget *widget);
 static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, App *app);
 
 
 static App  *app=NULL;
 static AppPriv *app_priv=NULL;
+static gchar *app_tabs=NULL;
 
 G_DEFINE_TYPE(App, app, G_TYPE_OBJECT);
 
@@ -210,6 +215,7 @@ static void app_init(App *singleton_app){
 	app_priv->widgets_disconnected=NULL;
 	app_priv->group=NULL;
 	unset_selected_tweet();
+	app_tabs=g_strdup("\t");
 }
 
 static void app_finalize(GObject *object){
@@ -218,12 +224,13 @@ static void app_finalize(GObject *object){
 	app=APP(object);
 	app_priv=GET_PRIV(app);
 	
-	if(app_priv->size_timeout_id)
-		g_source_remove(app_priv->size_timeout_id);
-		
+	program_timeout_remove(&app_priv->size_timeout_id, _("main window configuration"));
+	
 	g_list_free(app_priv->widgets_connected);
 	g_list_free(app_priv->widgets_disconnected);
 	g_slist_free(app_priv->group);
+	
+	if(app_tabs) uber_free(app_tabs);
 	
 	G_OBJECT_CLASS(app_parent_class)->finalize(object);
 }
@@ -271,6 +278,7 @@ static void app_setup(void){
 					
 					"main_scrolledwindow", &scrolled_window,
 					
+					"tweet_vpaned", &app_priv->tweet_vpaned,
 					"expand_box", &app_priv->expand_box,
 					"tweet_view_vbox", &app_priv->tweet_view_vbox,
 					
@@ -338,7 +346,7 @@ static void app_setup(void){
 	gtk_container_add(GTK_CONTAINER(scrolled_window), GTK_WIDGET(app_priv->listview));
 	
 	/* Expand tweet area used to view & send tweets & dm.  */
-	if(!gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE)){
+	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)){
 		app_priv->tweet_view=tweet_view_new(NULL);
 		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view_vbox));
 		gtk_widget_show(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed));
@@ -364,16 +372,16 @@ static void app_setup(void){
 	app_accounts_treeview_fill();
 }/*app_setup*/
 
-void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data){
-	gboolean dont_embed=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button));
-	debug("Embed TweetView changed:\t[%s].", (dont_embed ?"floating" :"embed" ) );
-	if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE)==dont_embed)
+void app_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
+	gboolean embed=gtk_toggle_button_get_active(toggle_button);
+	if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)==embed)
 		return;
 	
+	debug("Embed TweetView changed:\t[%s].", (embed ?"embed" :"floating" ) );
 	geometry_save();
-	gconfig_set_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, dont_embed);
+	gconfig_set_bool(PREFS_TWEET_VIEW_DIALOG, embed);
 	
-	if(dont_embed){
+	if(embed){
 		if(gtk_widget_get_parent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed))==GTK_WIDGET(app_priv->tweet_view->tweet_view))
 			return;
 		
@@ -402,11 +410,12 @@ GtkWindow *app_get_window(void){
 	return app_priv->window;
 }/*app_get_window*/
 
-GtkMenuBar *app_get_main_menu(void){
-	return app_priv->menubar;
-}/*app_get_main_menu*/
+GtkPaned *app_get_tweet_paned(void){
+	return GTK_PANED(app_priv->tweet_vpaned);
+}/*app_get_tweet_paned();*/
 
 static void app_accounts_treeview_fill(void){
+	/*for future, as in very soon, use to have finer control over multiple accounts.*/
 }/*app_accounts_treeview_fill*/
 
 GtkMenuItem *app_get_menu(const gchar *menu){
@@ -415,13 +424,8 @@ GtkMenuItem *app_get_menu(const gchar *menu){
 	if((g_str_equal(menu, "friends")) ) return GET_PRIV(app)->menu_friends;
 	if((g_str_equal(menu, "timelines")) ) return GET_PRIV(app)->menu_timelines;
 	if((g_str_equal(menu, "help")) ) return GET_PRIV(app)->menu_help;
-	//if((g_str_equal(menu, "")) ) return GET_PRIV(app)->menu_;
 	return NULL;
 }/*app_get_menu*/
-
-TweetList *app_get_tweet_list(void){
-	return GET_PRIV(app)->listview;
-}/*app_get_tweet_list*/
 
 static void main_window_destroy_cb(GtkWidget *window, App *app){
 	unset_selected_tweet();
@@ -429,35 +433,31 @@ static void main_window_destroy_cb(GtkWidget *window, App *app){
 	gtk_widget_destroy( GTK_WIDGET(GET_PRIV(app)->window) );
 }
 
-gboolean app_has_status_icon(void){
-	return gtk_status_icon_is_embedded(app_priv->status_icon);
-}/*app_has_status_icon*/
-
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app){
-	if(app_has_status_icon()) {
-		hint_dialog_show(PREFS_HINTS_CLOSE_MAIN_WINDOW,
-						  _("get2gnow is still running, it is just hidden."),
-						  _("Click on the notification area icon to show get2gnow."),
-						   GTK_WINDOW(app_get_window()),
-						   NULL, NULL);
+	if(gtk_status_icon_is_embedded(app_priv->status_icon)) {
+		confirm_dialog_show(PREFS_HINTS_CLOSE_MAIN_WINDOW,
+						_("get2gnow is still running, it is just hidden."),
+						_("Click on the notification area icon to show get2gnow."),
+						GTK_WINDOW(app_get_window()),
+						FALSE,
+						NULL, NULL
+		);
 		
 		app_set_visibility(FALSE);
 		return TRUE;
 	}
 	
-	if((hint_dialog_show(
+	if((confirm_dialog_show(
 				PREFS_HINTS_CLOSE_MAIN_WINDOW,
 				_("You were about to quit!"),
 				_(
 					"Since no system or notification tray has been "
-					"found, this action would normally quit get2gnow.\n\n"
-					"This is just a reminder, from now on, get2gnow will "
-					"quit when performing this action unless you uncheck "
-					"the option below."
+					"found, this action would normally quit get2gnow."
 				),
-				GTK_WINDOW(app_get_window()),
-				NULL, NULL)
-	)) return TRUE;
+				app_priv->window,
+				FALSE,
+				NULL, NULL
+	))) return TRUE;
 	
 	return FALSE;
 }
@@ -492,22 +492,19 @@ static void app_toggle_visibility(void){
 		
 		gtk_widget_hide(GTK_WIDGET(app_priv->window));
 		
-		if(app_priv->size_timeout_id){
-			g_source_remove(app_priv->size_timeout_id);
-			app_priv->size_timeout_id=0;
-		}
+		program_timeout_remove(&app_priv->size_timeout_id, _("main window configuration"));
 	} else {
 		geometry_load();
 		window_present(GTK_WINDOW(app_priv->window), TRUE);
 		
-		if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE))
+		if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
 			window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view), TRUE);
 	}
 	/* Save the window visibility state */
 	gconfig_set_bool(PREFS_UI_HIDDEN, visible);
 }
 
-void app_set_visibility(gboolean visible){
+static void app_set_visibility(gboolean visible){
 	GtkWindow *window=app_get_window();
 	gconfig_set_bool(PREFS_UI_HIDDEN, !visible);
 	
@@ -515,7 +512,7 @@ void app_set_visibility(gboolean visible){
 		gtk_widget_hide(GTK_WIDGET(window));
 	else{
 		window_present(GTK_WINDOW(window), TRUE);
-		if(gconfig_if_bool(PREFS_UI_TWEET_VIEW_USE_DIALOG, FALSE))
+		if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
 			window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view), TRUE);
 	}
 }
@@ -524,7 +521,7 @@ static void app_quit_cb(GtkWidget  *widget, App  *app){
 	gtk_main_quit();
 }
 
-void app_refresh_timeline(GtkWidget *window, App *app){
+static void app_refresh_timeline(GtkWidget *window, App *app){
 	network_refresh();
 }
 
@@ -702,8 +699,9 @@ static gboolean configure_event_timeout_cb(GtkWidget *widget){
 }
 
 static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, App *app){
-	if(app_priv->size_timeout_id)
-		g_source_remove(app_priv->size_timeout_id);
+	geometry_save();
+	
+	program_timeout_remove(&app_priv->size_timeout_id, _("main window configuration"));
 	
 	app_priv->size_timeout_id=g_timeout_add(
 						500,
@@ -716,8 +714,10 @@ static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigu
 
 static void app_login(void){
 	debug("Logging into online services.");
-	if(!online_services_login(online_services))
+	if(!online_services_login(online_services)){
+		services_dialog_show(app_priv->window);
 		return;
+	}
 	
 	app_retrieve_default_timeline();
 }/*app_login*/
@@ -731,7 +731,7 @@ static void app_reconnect(GtkMenuItem *item, App *app){
 
 static void app_disconnect(void){
 	tweet_list_clear();
-	network_logout();
+	network_deinit(TRUE);
 	online_services_disconnect(online_services);
 }/*app_disconnect*/
 
@@ -846,45 +846,71 @@ void app_set_statusbar_msg(gchar *message){
 	if(!( app_priv && app_priv->statusbar && GTK_IS_STATUSBAR(app_priv->statusbar) ))
 		return;
 	
-	/* starts displaying the status bar message for 5 seconds before returning to the system default */
 	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
-	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, message );
+	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, (G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
 }
 
 
-void app_notify_sound(gboolean force){
-	if(!( force && gconfig_if_bool(PREFS_UI_SOUND, TRUE) ))
-		return;
-	
-	gtk_widget_error_bell(GTK_WIDGET(app_priv->tweet_view->sexy_entry));
-}
+void app_notify_sound(void){
+	if(gconfig_if_bool(PREFS_UI_SOUND, TRUE))
+		tweets_beep();
+}/*app_notify_sound*/
 
-gboolean app_notify_on_timeout(gpointer tweet){
-	if(tweet)
-		app_notify(tweet);
-	
-	return FALSE;
-}/*app_notifiy_on_timeout(tweet);*/
-
-void app_notify(gchar *tweet){
-	if(G_STR_EMPTY(tweet)){
-		if(tweet) g_free(tweet);
-		return;
+gboolean app_notify_on_timeout(gpointer data){
+	UserStatus *status=(UserStatus *)data;
+	if(!(status && G_STR_N_EMPTY(status->notification))){
+		return FALSE;
 	}
 	
+	gchar *needle_tweet_mentions=g_strdup_printf("@%s", status->service->username);
+	if(!( (gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE)) || (gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE) && g_strrstr(status->text, needle_tweet_mentions)) )){
+		uber_free(needle_tweet_mentions);
+		return FALSE;
+	}
+	
+	uber_free(needle_tweet_mentions);
 	NotifyNotification *notification;
 	GError             *error=NULL;
 	
-	notification=notify_notification_new(PACKAGE_TARNAME, tweet, PACKAGE_TARNAME, NULL);
+	if(!gtk_status_icon_is_embedded(app_priv->status_icon))
+		notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
+	else
+		notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, app_priv->status_icon);
+	
 	notify_notification_set_timeout(notification, 8 * 1000);
 	notify_notification_show(notification, &error);
 	
 	g_object_unref(G_OBJECT(notification));
-	g_free(tweet);
 	
-	if(!error) return;
+	if(error){
+		debug("Error displaying notification: %s", error->message);
+		g_error_free(error);
+	}
+	return FALSE;
+}/*app_notify_on_timeout - only used as a callback to g_timer_add_seconds*/
+
+const gchar *app_tabs_to_right_align(void){
+	static int tab_count=0;
+	gint w=0, h=0, test_tab_count=0;
+	gtk_window_get_size(app_priv->window, &w, &h);
+	if(!( (( w>0 && h>0 )) && ( (test_tab_count=w/100) >1) )) return app_tabs;
+	if(tab_count==test_tab_count && G_STR_N_EMPTY(app_tabs) ) return app_tabs;
 	
-	debug("Error displaying notification: %s", error->message);
-	g_error_free(error);
-}/*app_notify(tweet);*/
+	tab_count=test_tab_count;
+	gchar *tabs=NULL, *tabs_swap=NULL;
+	if(app_tabs) uber_free(app_tabs);
+	
+	for(int i=0; i<=tab_count; i++){
+		if(tabs){
+			if(tabs_swap) uber_free(tabs_swap);
+			tabs_swap=tabs;
+		}
+		tabs=g_strdup_printf("%s\t", (tabs_swap ?tabs_swap :"") );
+	}
+	
+	if(tabs_swap) uber_free(tabs_swap);
+	app_tabs=tabs;
+	
+	return app_tabs;
+}/*app_tabs_to_right_align();*/
 

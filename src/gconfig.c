@@ -59,6 +59,7 @@
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
 #include "config.h"
+#include "main.h"
 
 #include "gconfig.h"
 #include "preferences.h"
@@ -76,7 +77,7 @@ typedef struct {
 	gpointer		user_data;
 } GConfigNotifyData;
 
-#define DEBUG_DOMAINS "GConfig:OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up"
+#define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:GConfig"
 #include "debug.h"
 
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
@@ -87,10 +88,15 @@ G_DEFINE_TYPE(GConfig, gconfig, G_TYPE_OBJECT);
 static GConfig *gconfig=NULL;
 static GConfigPriv *gconfig_priv=NULL;
 
+static gchar *cached_bool_key=NULL;
+static gboolean cached_bool_value=FALSE;
+
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+static void gconfig_class_init(GConfigClass *class);
+static void gconfig_init(GConfig *gconfig);
 static void gconfig_finalize(GObject *object);
 
 
@@ -120,15 +126,13 @@ static void gconfig_finalize(GObject *object){
 }
 
 void gconfig_start(void){
-	if(gconfig) return;
-	gconfig=g_object_new(TYPE_GCONFIG, NULL);
+	if(!gconfig) gconfig=g_object_new(TYPE_GCONFIG, NULL);
+	if(!cached_bool_key) cached_bool_key=g_strdup("");
 }
 
 void gconfig_shutdown(void){
-	if(!gconfig) return;
-	
-	g_object_unref(gconfig);
-	gconfig=NULL;
+	if(cached_bool_key) uber_free(cached_bool_key);
+	if(gconfig) uber_unref(gconfig);
 }
 
 gboolean gconfig_set_int(const gchar *key, gint value){
@@ -157,24 +161,32 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 }
 
 gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
+	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
+		return cached_bool_value;
+	
 	GError *error=NULL;
 	gboolean value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
+	uber_free(cached_bool_key);
+	cached_bool_key=g_strdup(key);
 	
 	debug("Getting boolean: '%s':\n\t\tRetrieved: [%s]\t\tDefault: [%s].", key, (value?"TRUE":"FALSE"), (bool_default?"TRUE":"FALSE"));
 	
 	if(error) {
-		debug("\t\t**ERROR:** %s. Setting default value.", error->message);
+		debug("**ERROR:** %s. Setting default value.", error->message);
 		if(!(gconfig_set_bool(key, bool_default)))
-			debug("\t\t**ERROR:** failed to set '%s' to default value: '%s'.", error->message, (bool_default ?"TRUE" :"FALSE"));
-
+			debug("**ERROR:** failed to set '%s' to default value: '%s'.", error->message, (bool_default ?"TRUE" :"FALSE"));
+		
 		g_error_free(error);
-		return bool_default;
+		value=bool_default;
 	}
 	
-	return value;
+	return (cached_bool_value=value);
 }
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
+	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
+		cached_bool_value=value;
+	
 	debug("Setting bool:'%s' to %s(=%d).", key, (value ? "TRUE" : "FALSE"), value);
 	return gconf_client_set_bool(gconfig_priv->gconf_client, key, value,NULL);
 }
@@ -242,16 +254,12 @@ static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
 	for(l=value; l; l=l->next)
 		switch(list_type){
 			case GCONF_VALUE_STRING:
-				debug("\t\t\t'%s'", (gchar *)l->data);
-				break;
 			case GCONF_VALUE_INT:
-				debug("\t\t\t'%d'", (gint *)l->data);
+			case GCONF_VALUE_FLOAT:
+				debug("\t'%s'", (gchar *)l->data);
 				break;
 			case GCONF_VALUE_BOOL:
-				debug("\t\t\t'%s'", ((gboolean *)l->data ?"TRUE" :"FALSE" ));
-				break;
-			case GCONF_VALUE_FLOAT:
-				debug("\t\t\t'%f'", (gfloat *)l->data);
+				debug("\t'%s'", (g_str_equal( (gchar *)l->data, "true") ?"TRUE" :"FALSE" ));
 				break;
 			case GCONF_VALUE_INVALID:
 			case GCONF_VALUE_SCHEMA:
@@ -278,7 +286,7 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 	
 	*value=gconf_client_get_list(gconfig_priv->gconf_client, key, list_type, &error);
 	if(error){
-		debug("\t\t**ERROR:** failed to retrieve list: %s, error: %s.", error->message);
+		debug("\t\t**ERROR:** failed to retrieve list: %s, error: %s.", key, error->message);
 		g_error_free(error);
 		return FALSE;
 	}else if(IF_DEBUG){

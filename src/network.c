@@ -68,6 +68,7 @@
 #include "gconfig.h"
 
 #include "main.h"
+#include "program.h"
 #include "network.h"
 #include "parser.h"
 #include "cache.h"
@@ -98,23 +99,26 @@ typedef struct {
 } NetworkTweetListImageDL;
 
 gboolean getting_followers=FALSE;
+
 static gchar *current_timeline=NULL;
+
 static gboolean processing=FALSE;
 static gboolean fetching_users=FALSE;
+
 static guint which_pass=0;
-static guint timeout_id=0;
+static guint timeout_id_timelines=0, timeout_id_replies=0, timeout_id_dms=0;
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+static gboolean network_timeout(gpointer user_data);
+
 static NetworkTweetListImageDL *network_tweet_list_image_dl_new(gchar *filename, GtkTreeIter *iter);
 static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image);
 
-static gboolean network_timeout(gpointer user_data);
-static void network_timeout_new(void);
-
 static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
+static void network_update_timeline(OnlineService *service, gboolean timeline_parsed, const gchar *new_timeline);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
@@ -165,16 +169,61 @@ gboolean network_check_http(OnlineService *service, SoupMessage *msg){
 	return FALSE;
 }
 
-/* Logout current user */
-void network_logout(void){
-	if(current_timeline){
-		g_free(current_timeline);
-		current_timeline=NULL;
-	}
+void network_init(void){
+	gint minutes;
 	
-	debug("Logout");
-}/*network_logout();*/
+	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
+	
+	/* The timeline reload interval shouldn't be less than 3 minutes */
+	if(minutes < 3) minutes=3;
+	
+	/* This should be the number of milliseconds */
+	guint reload_dms=(minutes+2)*60*1000;
+	guint reload_replies=(minutes-1)*60*1000;
+	guint reload_timelines=minutes*60*1000;
+	
+	network_deinit(FALSE);
+	
+	if(gconfig_if_bool(PREFS_UI_DM_NOTIFY, TRUE))
+		timeout_id_dms=g_timeout_add_full(DMs, reload_dms, network_timeout, (gpointer)DMs, NULL);
+	
+	if(gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE))
+		timeout_id_replies=g_timeout_add_full(Replies, reload_replies, network_timeout, (gpointer)Replies, NULL);
+	
+	timeout_id_timelines=g_timeout_add_full(Tweets, reload_timelines, network_timeout, (gpointer)Tweets, NULL);
+}/*network_init();*/
 
+static gboolean network_timeout(gpointer user_data){
+	NetworkMonitors refresh_which=(NetworkMonitors)user_data;
+	
+	switch(refresh_which){
+		case DMs:
+			online_services_request( online_services, QUEUE, API_DIRECT_MESSAGES, network_display_timeline, current_timeline, (gpointer)DMs );
+			timeout_id_dms=0;
+			break;
+		case Replies:
+			online_services_request( online_services, QUEUE, API_REPLIES, network_display_timeline, current_timeline, (gpointer)Replies );
+			timeout_id_replies=0;
+			break;
+		case Tweets:
+			if(!current_timeline || processing)
+				return FALSE;
+			network_set_state_loading_timeline(current_timeline, Reload);
+			online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, (gpointer)Tweets );
+			timeout_id_timelines=0;
+			break;
+	}
+	return FALSE;
+}/*network_timeout(gpointer user_data);*/
+
+/* Logout current user */
+void network_deinit(gboolean free_timeline){
+	if(current_timeline && free_timeline) uber_free(current_timeline);
+	
+	program_timeout_remove(&timeout_id_dms, _("DM"));
+	program_timeout_remove(&timeout_id_replies, _("reply"));
+	program_timeout_remove(&timeout_id_timelines, _("timeline"));
+}/*network_deinit();*/
 
 /* Post a new tweet - text must be Url encoded */
 void network_post_status(const gchar *update){
@@ -184,10 +233,9 @@ void network_post_status(const gchar *update){
 		online_service_request(in_reply_to_service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)update);
 }/*network_post_status(tweet);*/
 
-
 /* Send a direct message to a follower - text must be Url encoded  */
 void network_send_message(OnlineService *service, const gchar *friend, const gchar *dm){
-	gchar *formdata=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?API_CLIENT_AUTH :OPEN_CLIENT ), friend, dm);
+	gchar *formdata=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?SOURCE_TWITTER :SOURCE_LACONICA ), friend, dm);
 	online_service_request(service, POST, API_SEND_MESSAGE, network_tweet_cb, "DM", formdata);
 	g_free(formdata);
 }/*network_send_message(service, friend, dm);*/
@@ -195,10 +243,7 @@ void network_send_message(OnlineService *service, const gchar *friend, const gch
 void network_set_state_loading_timeline(const gchar *timeline, ReloadState state){
 	const gchar *notice_prefix=NULL;
 	switch(state){
-		case Timeout:
-			notice_prefix=_("Auto-Reloading");
-			break;
-		
+		case Retry:
 		case Reload:
 			notice_prefix=_("Reloading");
 			break;
@@ -209,51 +254,18 @@ void network_set_state_loading_timeline(const gchar *timeline, ReloadState state
 			break;
 	}
 	debug("%s current timeline: %s", notice_prefix, timeline);
-	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, FALSE) ) ?"" :_("  This may take several moments.") ));
+	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
 	
-	processing=TRUE;
+	if(state!=Retry) processing=TRUE;
 }/*network_timeline_loading_notification*/
 
-
-static void network_timeout_new(void){
-	gint minutes;
-	guint reload_time;
-	
-	if(timeout_id) {
-		debug("Stopping timeout id: %i", timeout_id);
-		g_source_remove(timeout_id);
-	}
-	
-	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
-	
-	/* The timeline reload interval shouldn't be less than 3 minutes */
-	if(minutes < 3)
-		minutes=3;
-	
-	/* This should be the number of milliseconds */
-	reload_time=minutes*60*1000;
-	
-	timeout_id=g_timeout_add(reload_time, network_timeout, NULL);
-	
-	debug("Starting timeout id: %i", timeout_id);
-}
-
-static gboolean network_timeout(gpointer user_data){
-	if(!current_timeline || processing)
-		return FALSE;
-	
-	network_set_state_loading_timeline(current_timeline, Timeout);
-	online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, NULL );
-	timeout_id=0;
-	return FALSE;
-}
 
 void network_refresh(void){
 	if(!current_timeline || processing)
 		return;
 	
 	network_set_state_loading_timeline(current_timeline, Reload);
-	online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, NULL );
+	online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, (gpointer)Tweets );
 }
 
 /* Get and parse a timeline */
@@ -261,12 +273,10 @@ void network_get_timeline(const gchar *uri_timeline){
 	if(processing)
 		return;
 		
-	parser_reset_lastid();
-	
 	/* UI */
 	network_set_state_loading_timeline(uri_timeline, Load);
 	
-	online_services_request( online_services, QUEUE, uri_timeline, network_display_timeline, (gchar *)uri_timeline, NULL );
+	online_services_request( online_services, QUEUE, uri_timeline, network_display_timeline, (gchar *)uri_timeline, (gpointer)Tweets );
 	/* network_queue's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
 }/*network_get_timeline*/
 
@@ -294,13 +304,13 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 	
 	network_set_state_loading_timeline(user_timeline, Load);
 
-	online_service_request(service, QUEUE, user_timeline, network_display_timeline, user_timeline, NULL);
+	online_service_request(service, QUEUE, user_timeline, network_display_timeline, user_timeline, (gpointer)Tweets);
 	g_free(user_timeline);
 	g_free(user_id);
 }/*network_get_user_timeline*/
 
 
-GList *network_users_glist_get(UsersGListGetWhich get_which_list, gboolean refresh, UsersGListLoadFunc func){
+GList *network_users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListLoadFunc func){
 	static OnlineService *service=NULL;
 	static guint page=0;
 	static UsersGListLoadFunc on_load_func=NULL;
@@ -312,63 +322,68 @@ GList *network_users_glist_get(UsersGListGetWhich get_which_list, gboolean refre
 		page=0;
 		if(!which_pass){
 			on_load_func=func;
+			if(refresh && service && service==selected_service)
+				user_free_lists(service);
 			service=selected_service;
 		}
 		
 		if( !refresh && service && service==selected_service ){
-			switch(get_which_list){
+			GList *users=NULL;
+			switch(users_glist_get_which){
 				case GetFriends:
 					if(!service->friends) break;
 					debug("Displaying & loading, %d pages, friends list for: [%s].", page, service->decoded_key);
-					which_pass=0;
-					if(on_load_func!=NULL)
-						on_load_func(service->friends);
-					return service->friends;
+					service->friends=g_list_sort(service->friends, (GCompareFunc)usrcasecmp);
+					users=service->friends;
+					break;
 				case GetFollowers:
 					if(!service->followers) break;
 					debug("Displaying & loading, %d pages, followers list for: [%s].", page, service->decoded_key);
-					which_pass=0;
-					if(on_load_func!=NULL)
-						on_load_func(service->followers);
-					return service->followers;
+					service->followers=g_list_sort(service->followers, (GCompareFunc)usrcasecmp);
+					users=service->followers;
+					break;
 				case GetBoth:
 					if(!(service->friends && service->followers)) break;
 					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, service->decoded_key);
 					if(which_pass<2) break;
-					which_pass=0;
-				
 					selected_service->friends_and_followers=g_list_alloc();
 					selected_service->friends_and_followers=g_list_concat(selected_service->followers, selected_service->friends);
 					selected_service->friends_and_followers=g_list_sort(selected_service->friends_and_followers, (GCompareFunc)usrcasecmp);
-					if(on_load_func!=NULL)
-						on_load_func(service->friends_and_followers);
-					return service->friends_and_followers;
+					users=selected_service->friends_and_followers;
+					break;
 			}
+			if(users){
+				which_pass=0;
+				if(on_load_func!=NULL)
+					on_load_func(users);
+				return users;
+			}
+
 		}
 	}
 	
 	fetching_users=TRUE;
 	page++;
-	debug("Please wait while %s downloads %s page #%d.", GETTEXT_PACKAGE, ( (get_which_list==GetFollowers||which_pass) ?"followers" :"friends"), page );
-	app_statusbar_printf("Please wait while %s downloads page #%d of users %s.", GETTEXT_PACKAGE, page, ( (get_which_list==GetFollowers||which_pass) ?"who're following you" :"you're following") );
+	debug("Please wait while %s downloads %s page #%d.", GETTEXT_PACKAGE, ( (users_glist_get_which==GetFollowers||which_pass) ?"followers" :"friends"), page );
+	app_statusbar_printf("Please wait while %s downloads page #%d of users %s.", GETTEXT_PACKAGE, page, ( (users_glist_get_which==GetFollowers||which_pass) ?"who're following you" :"you're following") );
 	
 	gchar *uri=NULL;
-	if( (get_which_list==GetFriends || (get_which_list==GetBoth && !which_pass && !service->friends) ) ){
+	if( (users_glist_get_which==GetFriends || (users_glist_get_which==GetBoth && !which_pass && !service->friends) ) ){
 		getting_followers=FALSE;
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
 	}else{
 		which_pass=1;
-		if(get_which_list==GetBoth && service->friends && service->followers){
+		if(users_glist_get_which==GetBoth && service->friends && service->followers){
 			which_pass=2;
 			fetching_users=FALSE;
-			return network_users_glist_get(get_which_list, FALSE, NULL);
+			return network_users_glist_get(users_glist_get_which, FALSE, NULL);
 		}
 		getting_followers=TRUE;
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
 	}
 	
 	debug("Getting users page, uri:  %s.", uri );
-	online_service_request(service, QUEUE, uri, network_users_glist_save, (gpointer)get_which_list, NULL );
+	online_service_request(service, QUEUE, uri, network_users_glist_save, (gpointer)users_glist_get_which, NULL );
 	g_free(uri);
 	return NULL;
 }/*network_users_glist_get*/
@@ -376,7 +391,7 @@ GList *network_users_glist_get(UsersGListGetWhich get_which_list, gboolean refre
 void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
 	
-	UsersGListGetWhich get_which_list=(UsersGListGetWhich)service_wrapper->user_data;
+	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)service_wrapper->user_data;
 	OnlineService *service=service_wrapper->service;
 	g_free(service_wrapper->requested_uri);
 	g_free(service_wrapper);
@@ -387,20 +402,20 @@ void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer u
 	
 	/* Check response */
 	if(!network_check_http(service, msg)){
-		debug("Now more %s where downloaded so we're assuming we're finished.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
+		debug("No more %s where downloaded so we're assuming we're finished.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
 		fetching_users=FALSE;
 		which_pass++;
-		network_users_glist_get(get_which_list, FALSE, NULL);
+		network_users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
 	}
 	
 	/* parse user list */
 	debug("Parsing user list");
 	if(!(new_users=users_new(service, msg)) ){
-		debug("Now more %s where found, yippies we've got'em all.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
+		debug("No more %s where found, yippies we've got'em all.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
 		fetching_users=FALSE;
 		which_pass++;
-		network_users_glist_get(get_which_list, FALSE, NULL);
+		network_users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
 	}
 	
@@ -410,19 +425,17 @@ void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer u
 			service->friends=new_users;
 		else
 			service->friends=g_list_concat(service->friends, new_users);
-		service->friends=g_list_sort(service->friends, (GCompareFunc)usrcasecmp);
 	}else{
 		debug("Addending users to followers list.");
 		if(!service->followers)
 			service->followers=new_users;
 		else
 			service->followers=g_list_concat(service->followers, new_users);
-		service->followers=g_list_sort(service->followers, (GCompareFunc)usrcasecmp);
 	}
 	/*now we get the next page - or send the results where they belong.*/
 	service=NULL;
 	debug("Retrieving the next list of friends.");
-	network_users_glist_get(get_which_list, FALSE, NULL);
+	network_users_glist_get(users_glist_get_which, FALSE, NULL);
 }/*network_users_glist_save*/
 
 
@@ -491,44 +504,53 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 	online_service_wrapper_free(service_wrapper);
 }/*network_tweet_cb*/
 
-
 /* On get a timeline */
 void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	static gboolean retrying=FALSE;
 	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
-	gchar        *new_timeline=NULL;
+	gchar        *new_timeline=(gchar *)service_wrapper->user_data;
+	NetworkMonitors timeline=(NetworkMonitors)service_wrapper->formdata;
 	
-	new_timeline=(gchar *)service_wrapper->user_data;
+	debug("Timeline response: %i", msg->status_code);
 	
-	debug("Timeline response: %i",msg->status_code);
+	if(processing) tweet_list_clear();
 	
-	if(processing)
-		tweet_list_clear();
+	online_service_load_tweet_ids(service_wrapper->service, new_timeline);
 	
 	processing=FALSE;
 	
-	network_timeout_new();
+	network_init();
 	
 	if(!network_check_http(service_wrapper->service, msg)) {
 		if(!retrying && (msg->status_code==100||msg->status_code==404)){
 			retrying=TRUE;
-			online_service_request(service_wrapper->service, QUEUE, new_timeline, network_display_timeline, new_timeline, NULL);
+			network_set_state_loading_timeline(current_timeline, Retry);
+			online_service_request(service_wrapper->service, QUEUE, new_timeline, network_display_timeline, new_timeline, (gpointer)timeline);
 		}
 		online_service_wrapper_free(service_wrapper);
 		return;
 	}
-	if(retrying)
-		retrying=FALSE;
+	if(retrying) retrying=FALSE;
 	
 	debug("Parsing timeline");
-	if(!(parser_timeline(service_wrapper->service, msg)))
-		app_statusbar_printf("Error Parsing %s's Timeline Parser.", service_wrapper->service->decoded_key);
+	gboolean timeline_parsed=parser_timeline(service_wrapper->service, msg, timeline);
+	online_service_save_tweet_ids(service_wrapper->service, new_timeline);
+	if(timeline==Tweets) network_update_timeline(service_wrapper->service, timeline_parsed, new_timeline);
+	
+	uber_free(service_wrapper->user_data);
+	uber_free(service_wrapper->requested_uri);
+	uber_free(service_wrapper);
+}
+
+static void network_update_timeline(OnlineService *service, gboolean timeline_parsed, const gchar *new_timeline){
+	if(!(timeline_parsed))
+		app_statusbar_printf("Error Parsing %s's Timeline Parser.", service->decoded_key);
 	else {
-		app_statusbar_printf("Timeline Loaded for: %s", service_wrapper->service->decoded_key);
+		app_statusbar_printf("Timeline Loaded for: %s", service->decoded_key);
 		
 		if(new_timeline){
 			if(!( current_timeline && g_str_equal(new_timeline, current_timeline) )){
-				if(current_timeline) g_free(current_timeline);
+				if(current_timeline) uber_free(current_timeline);
 				current_timeline=g_strdup(new_timeline);
 			}
 		}
@@ -536,9 +558,7 @@ void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer u
 	
 	/* move the pseudo focus of the tweet list to the start of the list */
 	tweet_list_goto_top();
-	
-	online_service_wrapper_free(service_wrapper);
-}
+}/*network_update_timeline(timeline_parsed, new_timeline);*/
 
 /* On get a image */
 void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_data){
@@ -571,15 +591,15 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 	}
 	
 	/* Set image from file here(image_file) */
+	app_statusbar_printf("New avatar added to TweetList.");
 	tweet_list_set_image(image_filename, image->iter);
 	
 	g_free(image_filename);
 	
 	network_tweet_list_image_dl_free(image);
 	
-	g_free(service_wrapper->requested_uri);
-	g_free(service_wrapper);
-	service_wrapper=NULL;
+	uber_free(service_wrapper->requested_uri);
+	uber_free(service_wrapper);
 }
 
 

@@ -13,7 +13,7 @@ gtkbuilder_DATA = 			\
 	services-dialog.ui		\
 	following-viewer.ui		\
 	friends-manager.ui		\
-	main-window.ui			\
+	app.ui				\
 	tweet-view.ui			\
 	popup-dialog.ui			\
 	preferences.ui			\

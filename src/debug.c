@@ -107,55 +107,54 @@ void debug_init (void){
 }
 
 void debug_impl(const gchar *domain, const gchar *msg, ...){
-	static gboolean output_started=FALSE;
-	gint i=0, x=0;
-	
 	g_return_if_fail (domain != NULL);
 	g_return_if_fail (msg != NULL);
 	
+	static gboolean output_started=FALSE;
+	
 	gchar **domains=g_strsplit(domain, ":", -1);
-	for(i=0, x=0; (debug_strv && debug_strv[i]) && (domains && domains[x]); i++, x++) {
-		if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
-			continue;
-		
-		if(!output_started){
-			output_started=TRUE;
-			g_printf("\n");
+	for(gint i=0; debug_strv && debug_strv[i]; i++) {
+		for(gint x=0; domains[x]; x++){
+			if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
+				continue;
+			
+			if(!output_started){
+				output_started=TRUE;
+				g_printf("\n");
+			}
+			
+			if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
+				if(debug_last_domain) g_free(debug_last_domain);
+				debug_last_domain=g_strdup(domains[x]);
+				g_printf("\n%s: ", domains[x]);
+			}else
+				g_printf("\n\t\t\t");
+			
+			va_list args;
+			va_start(args, msg);
+			g_vprintf(msg, args);
+			va_end(args);
+			
+			g_strfreev(domains);
+			return;
 		}
-		
-		if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
-			if(debug_last_domain) g_free(debug_last_domain);
-			debug_last_domain=g_strdup(domains[x]);
-			g_printf("\n%s: ", domains[x]);
-		}else
-			g_printf("\n\t\t\t");
-		
-		va_list args;
-		va_start(args, msg);
-		g_vprintf(msg, args);
-		va_end(args);
-		
-		g_strfreev(domains);
-		return;
 	}
 	g_strfreev(domains);
 }
 
 gboolean debug_if_domain(const gchar *domain){
-	gint i=0, x=0;
-	
 	if(G_STR_EMPTY(domain))
 		return FALSE;
 	
-	debug_init();
-	
 	gchar **domains=g_strsplit(domain, ":", -1);
-	for(i=0, x=0; (debug_strv && debug_strv[i]) && (domains && domains[x]); i++, x++) {
-		if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
-			continue;
-		
-		g_strfreev(domains);
-		return TRUE;
+	for(gint i=0; debug_strv && debug_strv[i]; i++) {
+		for(gint x=0; domains[x]; x++){
+			if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
+				continue;
+			
+			g_strfreev(domains);
+			return TRUE;
+		}
 	}
 	g_strfreev(domains);
 	return FALSE;

@@ -14,6 +14,18 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/get2gnow/auth/dont_confirm_delete</key>
+			<applyto>/apps/get2gnow/auth/dont_confirm_delete</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Disable prompting before deleting accounts</short>
+				<long>Disable prompting before deleting accounts.</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/get2gnow/auth/me@identi.ca/enabled</key>
 			<applyto>/apps/get2gnow/auth/me@identi.ca/enabled</applyto>
 			<owner>get2gnow</owner>
@@ -38,14 +50,26 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@identi.ca/https</key>
+			<applyto>/apps/get2gnow/auth/me@identi.ca/https</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whether to use https or not when connecting to me@identi.ca.</short>
+				<long>Whether to use https or not when connecting to me@identi.ca.</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/get2gnow/auth/me@identi.ca/auto_connect</key>
 			<applyto>/apps/get2gnow/auth/me@identi.ca/auto_connect</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Log on to me@identi.ca automatically.</short>
-				<long>Log on to me@identi.ca automatically.</long>
+				<short>Log in to me@identi.ca on start-up.</short>
+				<long>Log in to me@identi.ca start-up.</long>
 			</locale>
 		</schema>
 		
@@ -74,14 +98,26 @@
 		</schema>
 		
 		<schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@twitter.com/https</key>
+			<applyto>/apps/get2gnow/auth/me@twitter.com/https</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whether to use https or not when connecting to me@identi.ca.</short>
+				<long>Whether to use https or not when connecting to me@identi.ca.</long>
+			</locale>
+		</schema>
 			<key>/schemas/apps/get2gnow/auth/me@twitter.com/auto_connect</key>
 			<applyto>/apps/get2gnow/auth/me@twitter.com/auto_connect</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Log on to me@twitter.com automatically.</short>
-				<long>Log on to me@twitter.com automatically.</long>
+				<short>Log in to me@twitter.com start-up.</short>
+				<long>Log in to me@twitter.com start-up.</long>
 			</locale>
 		</schema>
 		
@@ -164,18 +200,6 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/notify</key>
-			<applyto>/apps/get2gnow/ui/notify</applyto>
-			<owner>get2gnow</owner>
-			<type>bool</type>
-			<default>true</default>
-			<locale name="C">
-				<short>Show notification of new Twitter messages</short>
-				<long>Show notification of new Twitter messages.</long>
-			</locale>
-		</schema>
-		
-		<schema>
 			<key>/schemas/apps/get2gnow/ui/expand/disabled</key>
 			<applyto>/apps/get2gnow/ui/expand/disabled</applyto>
 			<owner>get2gnow</owner>
@@ -227,6 +251,30 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/get2gnow/ui/notify</key>
+			<applyto>/apps/get2gnow/ui/notify</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification of new Twitter messages</short>
+				<long>Show notification of new Twitter messages.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/notify_at_mentions</key>
+			<applyto>/apps/get2gnow/ui/notify_at_mentions</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification of messages containing @username</short>
+				<long>Show notification of new messages where the user is @ replied to mention.</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/get2gnow/ui/sound</key>
 			<applyto>/apps/get2gnow/ui/sound</applyto>
 			<owner>get2gnow</owner>
@@ -239,8 +287,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/no_alert</key>
-			<applyto>/apps/get2gnow/ui/no_alert</applyto>
+			<key>/schemas/apps/get2gnow/ui/no_length_alert</key>
+			<applyto>/apps/get2gnow/ui/no_length_alert</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>

@@ -16,8 +16,8 @@
           <object class="GtkTable" id="account_table">
             <property name="visible">True</property>
             <property name="border_width">6</property>
-            <property name="n_rows">7</property>
-            <property name="n_columns">3</property>
+            <property name="n_rows">8</property>
+            <property name="n_columns">4</property>
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
             <child>
@@ -29,9 +29,9 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">3</property>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
                 <property name="y_options"></property>
               </packing>
             </child>
@@ -43,9 +43,9 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">3</property>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
                 <property name="y_options"></property>
               </packing>
             </child>
@@ -57,8 +57,8 @@
                 <property name="mnemonic_widget">password_entry</property>
               </object>
               <packing>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
                 <property name="x_options"></property>
                 <property name="y_options"></property>
               </packing>
@@ -71,8 +71,8 @@
                 <property name="mnemonic_widget">username_entry</property>
               </object>
               <packing>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
                 <property name="x_options"></property>
                 <property name="y_options"></property>
               </packing>
@@ -87,9 +87,9 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="right_attach">3</property>
-                <property name="top_attach">5</property>
-                <property name="bottom_attach">6</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">6</property>
+                <property name="bottom_attach">7</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options"></property>
               </packing>
@@ -97,7 +97,9 @@
             <child>
               <object class="GtkLabel" id="services_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Service:	</property>
+                <property name="label" translatable="yes">Server _Address:
+&lt;i&gt;(e.g. identi.ca)&lt;/i&gt;</property>
+                <property name="use_markup">True</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">urls</property>
               </object>
@@ -123,7 +125,7 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="autoconnect_checkbutton">
-                <property name="label" translatable="yes">Connect automatically on _start-up.</property>
+                <property name="label" translatable="yes">Automatically _log-in.</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -131,9 +133,9 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="right_attach">3</property>
-                <property name="top_attach">6</property>
-                <property name="bottom_attach">7</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">7</property>
+                <property name="bottom_attach">8</property>
               </packing>
             </child>
             <child>
@@ -146,7 +148,7 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="right_attach">3</property>
+                <property name="right_attach">4</property>
               </packing>
             </child>
             <child>
@@ -176,27 +178,69 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">3</property>
+                <property name="right_attach">4</property>
                 <property name="top_attach">2</property>
                 <property name="bottom_attach">3</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="delete_service_button">
+              <object class="GtkButton" id="service_delete_button">
+                <property name="label" translatable="yes">gtk-delete</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-		<property name="receives_default">True</property>
-		<property name="tooltip_text" translatable="yes">Delete this account.</property>
-		<child>
-			<object class="GtkImage" id="delete_service_image">
-				<property name="visible">True</property>
-				<property name="stock">gnome-stock-trash</property>
-			</object>
-		</child>
-	      </object>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Delete this account.</property>
+                <property name="use_stock">True</property>
+              </object>
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">3</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="secure_service_toggle_button">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Sucurely connect to this account. The server must support HTTPS.</property>
+                <property name="image">secure_service_image</property>
+                <property name="xalign">1</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
+                <property name="x_options"></property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="secure_service_label">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Connect Securely (i.e. use _HTTPS):</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">secure_service_toggle_button</property>
+              </object>
+              <packing>
+                <property name="right_attach">2</property>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="service_new_button">
+                <property name="label" translatable="yes">gtk-new</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="right_attach">4</property>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
               </packing>
@@ -212,7 +256,7 @@
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="cancel_button">
-                <property name="label">gtk-cancel</property>
+                <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
@@ -220,13 +264,11 @@
                 <property name="use_stock">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="okay_button">
+              <object class="GtkButton" id="services_okay_button">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -241,7 +283,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="save_button">
+              <object class="GtkButton" id="services_save_button">
                 <property name="label" translatable="yes">gtk-save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -265,8 +307,8 @@
     </child>
     <action-widgets>
       <action-widget response="-6">cancel_button</action-widget>
-      <action-widget response="-5">okay_button</action-widget>
-      <action-widget response="0">save_button</action-widget>
+      <action-widget response="-5">services_okay_button</action-widget>
+      <action-widget response="0">services_save_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="urls_liststore">
@@ -290,5 +332,15 @@
         <col id="0" translatable="yes">Laconica</col>
       </row>
     </data>
+  </object>
+  <object class="GtkImage" id="secure_service_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-dialog-authentication</property>
+  </object>
+  <object class="GtkActionGroup" id="services_actiongroup"/>
+  <object class="GtkAction" id="services_save_action">
+    <property name="label">_Save</property>
+    <property name="tooltip">Save changes to the selected service and/or save a new service</property>
+    <property name="stock_id">gtk-save</property>
   </object>
 </interface>

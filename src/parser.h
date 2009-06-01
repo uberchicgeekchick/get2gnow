@@ -30,19 +30,19 @@
 
 #include "online-services.h"
 #include "users.h"
+#include "network.h"
+
 
 gchar *parser_get_cache_file_from_uri(const gchar *uri);
 
 xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element);
 
-void parser_format_tweet(OnlineService *service, User *user, UserStatus *status);
+void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, guint *my_diff);
 
-gboolean parser_timeline(OnlineService *service, SoupMessage *xml);
+gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonitors timeline);
 gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
-/* Restet the ID of the last tweet showed */
-void parser_reset_lastid( void );
-
 #endif /*  __PARSER_H__ */
+

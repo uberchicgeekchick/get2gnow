@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-gboolean hint_dialog_show(const gchar *conf_path, const gchar *message1, const gchar *message2, GtkWindow *parent, GFunc func, gpointer user_data);
+gboolean confirm_dialog_show(const gchar *conf_path, const gchar *message1, const gchar *message2, GtkWindow *parent, gboolean return_if_hidden, GFunc func, gpointer user_data);
 
 G_END_DECLS
 

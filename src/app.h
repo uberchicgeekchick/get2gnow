@@ -87,25 +87,18 @@ GType app_get_type(void) G_GNUC_CONST;
 void app_create(void);
 App *app_get(void);
 
-void app_tweet_view_set_embed(GtkCheckButton *check_button, gpointer user_data);
+void app_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *app_get_window(void);
-TweetList *app_get_tweet_list(void);
-GtkMenuBar *app_get_main_menu(void);
+GtkPaned *app_get_tweet_paned(void);
 GtkMenuItem *app_get_menu(const gchar *menu);
 
-void app_refresh_timeline(GtkWidget *window, App *app); 
-
-gboolean app_has_status_icon(void);
-void app_set_visibility(gboolean visible);
-
-void app_statusbar_printf(const gchar *msg, ...);
+void app_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
 void app_set_statusbar_msg(gchar *msg);
 
-
-gboolean app_notify_on_timeout(gpointer tweet);
-void app_notify_sound(gboolean force);
-void app_notify(gchar *msg);
+gboolean app_notify_on_timeout(gpointer data);
+const gchar *app_tabs_to_right_align(void);
+void app_notify_sound(void);
 
 void app_state_on_connection(gboolean connected);
 

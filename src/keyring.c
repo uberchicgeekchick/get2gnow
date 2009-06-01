@@ -28,7 +28,7 @@
 #include "keyring.h"
 #include "online-services.h"
 
-#define DEBUG_DOMAINS   "Keyring:OnlineServices:Authentication:Settings:Setup"
+#define DEBUG_DOMAINS   "OnlineServices:Authentication:Settings:Setup:Keyring"
 #include "debug.h"
 
 static const gchar *account_gnome_keyring_result_to_string (GnomeKeyringResult result){
@@ -88,9 +88,10 @@ gboolean keyring_get_password(OnlineService **service){
 	GList *p=NULL;
 	(*service)->password=g_strdup(data->password);
 	if(IF_DEBUG){
-		debug("Password(s) found for OnlineService: '%s'.\n\t\tUsername: '%s'; Server: %s (=", (*service)->decoded_key, (*service)->username, (*service)->uri);
+		debug("Password(s) found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", (*service)->decoded_key, (*service)->uri, (*service)->username, (*service)->password );
+		debug("Passwords found: (=");
 		for(p=passwords; p; p=p->next)
-			debug("\t\t'%s'", (gchar *)p->data);
+			debug("\t'%s'", (gchar *)p->data);
 		debug(")");
 	}
 	
@@ -118,10 +119,11 @@ gboolean keyring_set_password(OnlineService *service){
 	);
 
 	if (result != GNOME_KEYRING_RESULT_OK) {
-		debug("Could not set password to keyring, result:%d->'%s'", result, account_gnome_keyring_result_to_string(result));
+		debug("Could not set password to keyring, result: %d->'%s'", result, account_gnome_keyring_result_to_string(result));
 
 		return FALSE;
 	}
 
+	debug("Password found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", service->decoded_key, service->uri, service->username, service->password );
 	return TRUE;
 }

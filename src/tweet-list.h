@@ -93,6 +93,7 @@ typedef enum {
 	N_COLUMNS, /*Not a column but an incremented value to 'count' the total columns.*/
 } TweetListStoreColumns;
 
+extern guint tweet_list_notify_delay;
 
 GType		tweet_list_get_type(void) G_GNUC_CONST;
 TweetList	*tweet_list_new(void);
@@ -100,7 +101,7 @@ TweetList	*tweet_list_get(void);
 
 void tweet_list_clear(void);
 
-void tweet_list_store_append(OnlineService *service, UserStatus *status);
+void tweet_list_store_status(OnlineService *service, UserStatus *status);
 
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event);
 

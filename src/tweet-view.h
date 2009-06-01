@@ -69,7 +69,7 @@
  *********************************************************************/
 /* My, Kaity G. B., new uber tweet viewer. */
 typedef struct {
-	/* How long to wait before running the configure event, which saves the window(s) width, height, & position. */
+	/* Used to trigger resizing. */
 	guint			size_timeout_id;
 	
 	/* Tweet View Dialog & embeding Widgets */
@@ -103,7 +103,6 @@ typedef struct {
 	GtkButton		*new_tweet_button;
 	
 	/*The list & actual GtkWidgets for sending DMs.*/
-	GList			*dm_send_widgets;
 	GtkFrame		*dm_frame;
 	GtkLabel		*dm_frame_label;
 	GtkHBox			*dm_form_hbox;
@@ -137,7 +136,6 @@ typedef struct {
 	GtkButton		*retweet_button;
 	GtkButton		*make_fave_button;
 } TweetView;
-#define TWEETS_RETURN_MODIFIERS_STATUSBAR_MSG "HotKeys: press [Return] and '@' to reply, '>' to re-tweet, [Ctrl+N] to tweet, and/or [Ctrl+D] or <Shift>+[Return] to DM."
 
 extern unsigned long int in_reply_to_status_id;
 

@@ -54,7 +54,7 @@ get2gnow_SOURCES =					\
 	gtkbuilder.c		gtkbuilder.h		\
 	tree-view.c 		tree-view.h		\
 	$(keyring_sources)				\
-	program.c			program.h			\
+	program.c		program.h		\
 	main.c			main.h			\
 	about.c			about.h			\
 	services-dialog.c	services-dialog.h	\
@@ -63,7 +63,7 @@ get2gnow_SOURCES =					\
 	ipc.c			ipc.h			\
 	app.c			app.h			\
 	geometry.c		geometry.h		\
-	hint.c			hint.h			\
+	confirm.c		confirm.h		\
 	label.c			label.h			\
 	online-services.c	online-services.h	\
 	network.c		network.h		\
@@ -96,7 +96,7 @@ get2gnow_OBJECTS =				\
 	ipc.$(OBJEXT)				\
 	app.$(OBJEXT)				\
 	geometry.$(OBJEXT)			\
-	hint.$(OBJEXT)				\
+	confirm.$(OBJEXT)				\
 	label.$(OBJEXT)				\
 	timer.$(OBJEXT)				\
 	parser.$(OBJEXT)			\
@@ -400,7 +400,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hint.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/confirm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
