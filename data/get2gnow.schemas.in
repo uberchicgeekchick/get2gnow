@@ -98,8 +98,6 @@
 		</schema>
 		
 		<schema>
-		
-		<schema>
 			<key>/schemas/apps/get2gnow/auth/me@twitter.com/https</key>
 			<applyto>/apps/get2gnow/auth/me@twitter.com/https</applyto>
 			<owner>get2gnow</owner>
@@ -110,6 +108,8 @@
 				<long>Whether to use https or not when connecting to me@identi.ca.</long>
 			</locale>
 		</schema>
+		
+		<schema>
 			<key>/schemas/apps/get2gnow/auth/me@twitter.com/auto_connect</key>
 			<applyto>/apps/get2gnow/auth/me@twitter.com/auto_connect</applyto>
 			<owner>get2gnow</owner>
@@ -269,8 +269,20 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification of messages containing @username</short>
-				<long>Show notification of new messages where the user is @ replied to mention.</long>
+				<short>Show notification for new messages containing @username</short>
+				<long>Show notification of new messages where the user is @ replied or mentioned.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/notify_dms</key>
+			<applyto>/apps/get2gnow/ui/notify_at_dms</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification of direct messages</short>
+				<long>Show notification of new direct messages sent directly to you.</long>
 			</locale>
 		</schema>
 		
@@ -303,12 +315,30 @@
 			<applyto>/apps/get2gnow/hints/close_main_window</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
-			<default>true</default>
+			<default>false</default>
 			<locale name="C">
-				<short>Show hint about closing the main window</short>
+				<short>Confirm closing the main window</short>
 				<long>
 					Whether or not to show the message dialog about
 					closing the main window with the 'x' button in the
+					actually exiting, instead of 'hiding', it until
+					with the tray icon.  This prompt is shown when no
+					tray icon exist to use to restore the windows.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/hints/hide_main_window</key>
+			<applyto>/apps/get2gnow/hints/hide_main_window</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Confirm hiding the main window</short>
+				<long>
+					Whether or not to show the message dialog about
+					hiding the main window with the 'x' button in the
 					title bar not actually exiting, but instead 'hiding'
 					it until the tray icon is used to restore or quit the program.
 				</long>
@@ -360,6 +390,18 @@
 			<locale name="C">
 				<short>Embed view Y position</short>
 				<long>Embed view Y position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/vpaned_tweet_view</key>
+			<applyto>/apps/get2gnow/ui/positions/vpaned_tweet_view</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>25</default>
+			<locale name="C">
+				<short>Tweet View's vertical slider bar's position</short>
+				<long>Tweet View's vertical slider bar's position.</long>
 			</locale>
 		</schema>
 		

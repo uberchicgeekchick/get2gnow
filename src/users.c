@@ -61,7 +61,10 @@
 #include "main.h"
 #include "program.h"
 #include "app.h"
+
+#include "online-service.h"
 #include "online-services.h"
+#include "online-service-wrapper.h"
 #include "network.h"
 
 #include "users.h"
@@ -207,7 +210,7 @@ void user_request_main(OnlineService *service, UserAction action, GtkWindow *par
 }/*user_request_main*/
 
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
+	OnlineServiceWrapper *service_wrapper=(OnlineServiceWrapper *)user_data;
 	UserRequest *request=(UserRequest *)service_wrapper->user_data;
 	
 	if(!network_check_http(service_wrapper->service, msg)){
@@ -223,7 +226,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 	}
 	
 	User *user=NULL;
-	OnlineServiceCBWrapper *request_wrapper=NULL;
+	OnlineServiceWrapper *request_wrapper=NULL;
 	switch(request->action){
 		case ViewTweets:
 			request_wrapper=online_service_wrapper_new(service_wrapper->service, service_wrapper->requested_uri, network_display_timeline, request->uri, (gpointer)Tweets);
@@ -389,6 +392,7 @@ UserStatus *user_status_new(OnlineService *service, xmlNode *status_node){
 	
 	status->service=service;
 	status->user=NULL;
+	status->type=Tweets;
 	status->text=status->tweet=status->notification=status->sexy_tweet=NULL;
 	status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0;

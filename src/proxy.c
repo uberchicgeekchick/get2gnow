@@ -56,35 +56,33 @@
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
-#include <libnotify/notify.h>
-#include <gtk/gtk.h>
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
-
 #include "config.h"
 #include "main.h"
-
-#include "program.h"
-#include "ipc.h"
-#include "debug.h"
 #include "gconfig.h"
 
-#include "app.h"
-
 #include "online-services.h"
-#include "network.h"
+#include "online-service.h"
 #include "proxy.h"
-
-#include "tweet-list.h"
-#include "tweets.h"
-#include "images.h"
-#include "cache.h"
 
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-static gboolean notifing=FALSE;
+#define PROXY			"/system/http_proxy"
+#define PROXY_USE		PROXY "/use_http_proxy"
+#define PROXY_HOST		PROXY "/host"
+#define PROXY_PORT		PROXY "/port"
+#define PROXY_USE_AUTH		PROXY "/use_authentication"
+#define PROXY_USER		PROXY "/authentication_user"
+#define PROXY_PASS		PROXY "/authentication_password"
+
+static PROXY_STATUS proxy_status=PROXY_STATUS_UNKNOWN;
+static SoupURI *proxy_suri=NULL;
+static gchar *proxy_uri=NULL;
+
+#define	DEBUG_DOMAINS	"OnlineServices:Network:Requests:Authentication"
+#include "debug.h"
+
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -94,82 +92,91 @@ static gboolean notifing=FALSE;
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-void program_init(int argc, char **argv){
-	if( (ipc_init_check( argc-1, argv-1)) ){
-		g_fprintf(stdout, "%s is already running.  Be sure to check system try for %s's icon.\n", PACKAGE_TARNAME, PACKAGE_TARNAME );
-		ipc_deinit();
-		exit(0);
+/**
+ * Sets SoupUri *proxy_suri for use with a SoupConnection.
+ *
+ * @returns 1 if a proxy is used or -1 if not.
+ */
+gboolean proxy_init(void){
+	if(proxy_status)
+		switch(proxy_status){
+			case PROXY_STATUS_DISABLED: 
+				return FALSE;
+			case PROXY_STATUS_ENABLED:
+				return TRUE;
+			case PROXY_STATUS_UNKNOWN:
+			default: break;
+		}
+	
+	if(!gconfig_if_bool(PROXY_USE, FALSE)){
+		proxy_status=PROXY_STATUS_DISABLED;
+		debug("Connect to the tubes using a proxy\t\t[%s]", _("disable"));
+		return FALSE;
 	}
 	
-	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
+	if(proxy_suri||proxy_uri) proxy_deinit();
 	
-	g_set_application_name(GETTEXT_PACKAGE);
+	gchar *server=NULL;
+	gint port;
 	
-	if(!g_thread_supported()) g_thread_init(NULL);
+	/* Get proxy */
+	gconfig_get_string(PROXY_HOST, &server);
+	gconfig_get_int(PROXY_PORT, &port);
 	
-	gtk_init(&argc, &argv);
+	if(G_STR_EMPTY(server)){
+		debug("Connect to the tubes using a proxy\t\t[%s]", _("disable"));
+		debug("*NOTICE:* Proxy connection is enabled but no server is provided. Please check your puter's configuration.");
+		proxy_status=PROXY_STATUS_DISABLED;
+		return FALSE;
+	}
 	
-	gtk_window_set_default_icon_name(PACKAGE_TARNAME);
+	proxy_uri=NULL;
 	
-	debug_init();
+	if(!gconfig_if_bool(PROXY_USE_AUTH, FALSE))
+		proxy_uri=g_strdup_printf("http://%s:%d", server, port);
+	else {
+		gchar *user, *password;
+		gconfig_get_string(PROXY_USER, &user);
+		gconfig_get_string(PROXY_PASS, &password);
+		
+		proxy_uri=g_strdup_printf( "http://%s:%s@%s:%d", user, password, server, port);
+		
+		g_free(user);
+		g_free(password);
+	}
 	
-	cache_init();
+	debug("Connect to the tubes using a proxy\t\t[%s]", _("enable"));
+	debug("Proxy uri: <%s>.", proxy_uri );
 	
-	/* Connect to gconf */
-	gconfig_start();
+	proxy_suri=soup_uri_new(proxy_uri);
 	
-	/* Start libnotify */
-	notifing=notify_init(PACKAGE_TARNAME);
+	g_free(server);
 	
-	/*Starting networking start-up*/
-	proxy_init();
-	
-	/* Load's accounts & sets them in 'extern OnlineServices *online_services;'. */
-	online_services_init();
-	
-	/*Set background monitoring of Replies & DMs.*/
-	network_init();
-	/*Networking started & done*/
-	
-	/* On to the GUI. */
-	app_create();
-}/*program_init*/
+	proxy_status=PROXY_STATUS_ENABLED;
+	return TRUE;
+}/*proxy_init();*/
 
 
-void program_timeout_remove(guint *id, const gchar *usage){
-	if(!( (*id)>0 )) return;
+gboolean proxy_attach_online_service(OnlineService *service){
+	if(proxy_status==PROXY_STATUS_UNKNOWN) proxy_init();
 	
-	debug("Stopping %s monitoring.  Timeout id: %i.", ( G_STR_N_EMPTY(usage) ?usage :"[unknown pthread timer]" ), (*id) );
-	g_source_remove( (*id) );
-	*id=0;
-}/*program_timeout_remove(&id, _("message"));*/
+	if(proxy_status==PROXY_STATUS_DISABLED) return FALSE;
+	
+	debug("Piping OnlineService: <%s> to the tubes through this proxy: <%s>", service->decoded_key, proxy_uri);
+	g_object_set( G_OBJECT(service->session), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
+	return TRUE;
+}/*proxy_attach_online_service*/
 
-void program_deinit(void){
-	/* Close libnotify */
-	if(notifing) notify_uninit();
-	
-	/* Clean up the ui */
-	g_object_unref(tweet_list_get());
-	g_object_unref(app_get());
-	
-	gconfig_shutdown();
-	
-	cache_deinit();
-	
-	/* Close the network */
-	unset_selected_tweet();
-	network_deinit(TRUE, All);
-	online_services_deinit(online_services);
-	proxy_deinit();
-	
-	ipc_deinit();
-	
-	debug_deinit();
-}/*program_deinit();*/
+void proxy_deinit(void){
+	if(proxy_status==PROXY_STATUS_ENABLED){
+		debug("**SHUTDOWN:** disconnecting from proxy: <%s>", proxy_uri);
+		soup_uri_free(proxy_suri);
+		proxy_suri=NULL;
+		uber_free(proxy_uri);
+	}
+	proxy_status=PROXY_STATUS_UNKNOWN;
+}/*proxy_deinit();*/
 
 /********************************************************
  *                       eof                            *
  ********************************************************/
-

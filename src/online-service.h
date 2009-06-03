@@ -51,8 +51,8 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
-#ifndef __ONLINE_SERVICES_H__
-#define __ONLINE_SERVICES_H__
+#ifndef __ONLINE_SERVICE_H__
+#define __ONLINE_SERVICE_H__
 
 
 /**********************************************************************
@@ -64,53 +64,91 @@
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
-#include "online-service.h"
+#include "timer.h"
 
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-typedef struct _OnlineServices OnlineServices;
+typedef struct _OnlineService OnlineService;
 
 typedef enum{
-	UrlString,
-	OnlineServicePointer,
-} OnlineServicesListStoreColumns;
+	Laconica,
+	Twitter,
+} SupportedREST;
 
-/**
- *	@accounts contains an 'OnlineServics' object for each account that's available.
- */
-struct _OnlineServices{
-	guint		total;
-	guint		connected;
-	GSList		*keys;
-	GList		*accounts;
+typedef enum{
+	POST,
+	GET,
+	QUEUE,
+} RequestMethod;
+
+struct _OnlineService{
+	SoupSession	*session;
+	RateLimitTimer	*timer;
+	
+	gboolean	authenticated;
+	gboolean	connected;
+	guint		logins;
+	
+	guint		id_last_tweet;
+	guint		id_last_dm;
+	guint		id_last_reply;
+	
+	gboolean	enabled;
+	gboolean	auto_connect;
+	
+	gchar		*key;
+	gchar		*decoded_key;
+	SupportedREST	which_rest;
+	
+	gboolean	https;
+	gchar		*uri;
+	gchar		*server;
+	gchar		*path;
+	gchar		*username;
+	gchar		*password;
+	
+	GList		*friends;
+	GList		*followers;
+	GList		*friends_and_followers;
 };
 
-extern OnlineServices *online_services;
+/* Twitter*/
+#define SOURCE_TWITTER		"greettweetknow"
+
+/* Laconica*/
+/*#define	SOURCE_LACONICA		"<a href=\"http://uberchicgeekchick.com/?projects=" PACKAGE_TARNAME "\">" PACKAGE_TARNAME "</a>"*/
+#define		SOURCE_LACONICA		"get2gnow"
+
+extern OnlineService *selected_service;
+
+extern unsigned long int in_reply_to_status_id;
+extern OnlineService *in_reply_to_service;
 
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-OnlineServices *online_services_init(void);
+OnlineService *online_service_open(const gchar *account_key);
+OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
+gboolean online_service_save(OnlineService *service);
+gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf);
 
-gboolean online_services_login(OnlineServices *services);
-gboolean online_services_relogin(OnlineServices *services);
-void online_services_disconnect(OnlineServices *services);
+gboolean online_service_connect(OnlineService *service);
+gboolean online_service_login(OnlineService *service);
+gboolean online_service_reconnect(OnlineService *service);
+void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
-void online_services_delete_service(OnlineServices *services, OnlineService *service);
+void online_service_load_tweet_ids(OnlineService *service, const gchar *uri);
+void online_service_save_tweet_ids(OnlineService *service, const gchar *uri);
 
-OnlineService *online_services_connected_get_first(OnlineServices *services);
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 
-void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change);
+void online_service_free(OnlineService *service);
 
-gboolean online_services_combo_box_fill(OnlineServices *services, gboolean connected_only, GtkListStore *list_store, GtkComboBox *combo_box);
-
-void online_services_deinit(OnlineServices *services);
-
-#endif /* __ONLINE_SERVICES_H__ */
+#endif /* __ONLINE_SERVICE_H__ */
 

@@ -30,7 +30,7 @@
 #include <libsoup/soup.h>
 #include <libsexy/sexy.h>
 
-#include "online-services.h"
+#include "online-service.h"
 
 G_BEGIN_DECLS
 

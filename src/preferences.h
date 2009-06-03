@@ -62,11 +62,6 @@ G_BEGIN_DECLS
 #define	PREFS_TWEETS_DIRECT_REPLY_ONLY		PREFS_PATH "/tweets/direct_reply_only"
 
 
-/* UI & notification gconf values. */
-#define PREFS_UI_HIDDEN				PREFS_PATH "/ui/hidden"
-
-#define PREFS_HINTS_CLOSE_MAIN_WINDOW		PREFS_PATH "/hints/close_main_window"
-
 void preferences_dialog_show (GtkWindow *parent);
 
 G_END_DECLS

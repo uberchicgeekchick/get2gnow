@@ -69,85 +69,43 @@
 #include "config.h"
 #include "main.h"
 
+#include "online-services.h"
+#include "network.h"
+
 #include "tweets.h"
 #include "users.h"
 
-#include "online-services.h"
-#include "network.h"
 #include "parser.h"
-
-#ifdef HAVE_GNOME_KEYRING
-#include "keyring.h"
-#endif
 
 #include "app.h"
 #include "gconfig.h"
 #include "cache.h"
 #include "preferences.h"
+#include "services-dialog.h"
 
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static gboolean online_service_connect(OnlineService *service);
-static gboolean online_service_login(OnlineService *service);
-static gboolean online_service_reconnect(OnlineService *service);
-static void online_service_disconnect(OnlineService *service);
+#define	ONLINE_SERVICES_ACCOUNTS	PREFS_PATH "/auth/services"
 
-
-/* key is username@url */
-static OnlineService *online_service_open(const gchar *account_key);
-static OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
-static gboolean online_service_save(OnlineService *service);
-
-static void online_service_http_authenticate(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data);
-static void online_service_login_success(SoupSession *session, SoupMessage *msg, gpointer user_data);
-static void online_service_message_restarted(SoupMessage *msg, gpointer user_data);
-
-static void online_service_cookie_jar_hands_caught_in_the_cookie_jar(SoupCookieJar *cookie_jar, SoupCookie *old_cookie, SoupCookie *new_cookie, OnlineService *service);
-static void online_service_cookie_jar_open(OnlineService *service);
-static gchar *online_service_cookie_jar_find_filename(OnlineService *service);
-
-static void online_services_proxy_release(void);
-static int online_services_proxy_load(void);
-static gboolean online_service_proxy_init(OnlineService *service);
-
+static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store);
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define PROXY				"/system/http_proxy"
-#define PROXY_USE			PROXY "/use_http_proxy"
-#define PROXY_HOST			PROXY "/host"
-#define PROXY_PORT			PROXY "/port"
-#define PROXY_USE_AUTH			PROXY "/use_authentication"
-#define PROXY_USER			PROXY "/authentication_user"
-#define PROXY_PASS			PROXY "/authentication_password"
-
-static int proxy_init=0;
-static SoupURI *proxy_suri=NULL;
-
-
-#define	PREFS_AUTH_SERVICES		PREFS_PATH "/auth/services"
-#define PREFS_AUTH_PREFIX		PREFS_PATH "/auth/%s"
-#define	PREFS_AUTH_PASSWORD		PREFS_AUTH_PREFIX "/password"
-#define	PREFS_AUTH_AUTO_CONNECT		PREFS_AUTH_PREFIX "/auto_connect"
-#define	PREFS_AUTH_HTTPS		PREFS_AUTH_PREFIX "/https"
-#define	PREFS_AUTH_ENABLED		PREFS_AUTH_PREFIX "/enabled"
-#define PREFS_IDS_TWEETS		PREFS_AUTH_PREFIX "/tweet-ids%s/last_id"
-
 static OnlineServices *services=NULL;
 OnlineServices *online_services=NULL;
 
-OnlineService *selected_service=NULL;
+/*OnlineService *selected_service=NULL;
 OnlineService *in_reply_to_service=NULL;
 
-unsigned long int in_reply_to_status_id=0;
+unsigned long int in_reply_to_status_id=0;*/
 
 #define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication"
 #include "debug.h"
 
-#define MAX_LOGINS 20
+#define MAX_LOGINS 5
 
 
 /********************************************************
@@ -161,11 +119,11 @@ OnlineServices *online_services_init(void){
 	services=g_new0(OnlineServices,1);
 	services->total=0;
 	
-	gconfig_get_list_string(PREFS_AUTH_SERVICES, &services->keys);
+	gconfig_get_list_string(ONLINE_SERVICES_ACCOUNTS, &services->keys);
 	
 	for( k=services->keys; k; k=k->next ){
 		account_key=(gchar *)k->data;
-		debug("Loading  '%s' account.", account_key);
+		debug("Loading '%s' account.", account_key);
 		services->accounts=g_list_append(services->accounts, (online_service_open( (const gchar *)account_key )) );
 		services->accounts=g_list_last(services->accounts);
 		service=(OnlineService *)services->accounts->data;
@@ -190,10 +148,7 @@ OnlineServices *online_services_init(void){
 			continue;
 		}
 		
-		if(service->connected){
-			services->connected++;
-			online_service_login(service);
-		}
+		if(service->connected) services->connected++;
 	}
 	
 	services->accounts=g_list_first(services->accounts);
@@ -217,7 +172,7 @@ gboolean online_services_login(OnlineServices *services){
 	if(services->connected){
 		for(a=services->accounts; a; a=a->next){
 			service=(OnlineService *)a->data;
-			if(service->connected)
+			if(service->enabled && service->connected && service->auto_connect)
 				if(online_service_login(service))
 					if(!login_okay) login_okay=TRUE;
 		}
@@ -237,29 +192,13 @@ gboolean online_services_relogin(OnlineServices *services){
 		if(!service->connected && service->enabled && service->auto_connect)
 			online_service_reconnect(service);
 		
-		if(service->connected)
+		if(service->enabled && service->connected)
 			if(online_service_login(service))
 				if(!relogin_okay) relogin_okay=TRUE;
 	}
 	app_state_on_connection(relogin_okay);
 	return relogin_okay;
 }/*online_services_relogin*/
-
-/* Reconnect to services. */
-gboolean online_services_reconnect(OnlineServices *services){
-	GList		*a=NULL;
-	OnlineService	*service=NULL;
-	
-	gboolean	reconnect_success=FALSE;
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
-		if(service->enabled)
-			if(online_service_reconnect(service))
-				if(!reconnect_success) reconnect_success=TRUE;
-	}
-	app_state_on_connection(reconnect_success);
-	return reconnect_success;
-}/*online_services_reconnect*/
 
 void online_services_disconnect(OnlineServices *services){
 	GList		*a=NULL;
@@ -269,20 +208,20 @@ void online_services_disconnect(OnlineServices *services){
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
 		if(service->connected)
-			online_service_disconnect(service);
+			online_service_disconnect(service, TRUE);
 	}
 	app_state_on_connection(FALSE);
 }/*online_services_disconnect*/
 
 
-OnlineService *online_services_save(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
+OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
 	if( G_STR_EMPTY(url) || G_STR_EMPTY(username) )
 		return FALSE;
 	
 	if(service){
 		debug("Saving existing service: '%s'.", service->decoded_key);
 		if(!( g_str_equal(service->uri, url) && g_str_equal(service->username, username) ))
-			online_services_delete(services, service);
+			online_services_delete_service(services, service);
 		else{
 			service->enabled=enabled;
 			service->https=https;
@@ -303,14 +242,14 @@ OnlineService *online_services_save(OnlineServices *services, OnlineService *ser
 	services->total++;
 	debug("New service: '%s' created.  OnlineServices total: %d.", service->decoded_key, services->total);
 	
-	debug("Adding '%s' to OnlineServices keys.", service->decoded_key);
+	debug("Adding '%s' to OnlineServices' keys.", service->decoded_key);
 	if(!( (services->keys=g_slist_append(services->keys, service->key)) )){
 		debug("**ERROR**: Failed to append new service's key: '%s', to OnlineServices' keys.", service->decoded_key);
 		return NULL;
 	}
 	
-	debug("Saving accounts & services list: '%s'.", PREFS_AUTH_SERVICES);
-	if(!( (gconfig_set_list_string(PREFS_AUTH_SERVICES, services->keys)) )){
+	debug("Saving accounts & services list: '%s'.", ONLINE_SERVICES_ACCOUNTS);
+	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
 		debug("**ERROR**: Failed to save new service: '%s', couldn't save gconf's services list.", service->decoded_key);
 		return NULL;
 	}
@@ -344,61 +283,74 @@ OnlineService *online_services_save(OnlineServices *services, OnlineService *ser
 	return service;
 }/*online_services_save*/
 
-void online_services_delete(OnlineServices *services, OnlineService *service){
+void online_services_delete_service(OnlineServices *services, OnlineService *service){
 	debug("Removing old OnlineService: '%s'.", service->decoded_key);
+	service->enabled=FALSE;
 	if(service->connected){
-		online_service_disconnect(service);
-		service->connected=FALSE;
+		online_service_disconnect(service, TRUE);
 		if(services->connected)
-			services->connected--;
+			if(!(--services->connected))
+				app_state_on_connection(FALSE);
 	}
 	
-	gchar *prefs_auth_path=g_strdup_printf(PREFS_AUTH_PREFIX, service->key);
-	debug("Account's gconf path:\t\t [%s]", prefs_auth_path );
-	if(!(gconfig_rm_rf(prefs_auth_path))){
-		debug("Failed to delete '%s' gconf auth prefernces.  GConf key used: [%s].", service->decoded_key, prefs_auth_path);
-		g_free(prefs_auth_path);
-		return;
+	debug("Rebuilding OnlineServices' key while removing old key: %s.", service->key);
+	g_slist_free(services->keys);
+	services->keys=g_slist_alloc();
+	GList *accounts=NULL;
+	GSList *keys=NULL;
+	debug("Rebuilding OnlineServices' keys, removing: '%s'.", service->key);
+	OnlineService *key=NULL;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		key=(OnlineService *)accounts->data;
+		if(!g_str_equal(key->key, service->key))
+			keys=g_slist_append(keys, key->key);
 	}
-	g_free(prefs_auth_path);
+	services->keys=keys;
 	
-	services->keys=g_slist_remove(services->keys, service->decoded_key);
-	debug("Deleting account from services list: '%s'.", PREFS_AUTH_SERVICES);
-	if(!( (gconfig_set_list_string(PREFS_AUTH_SERVICES, services->keys)) )){
+	debug("Saving re-built OnlineServices' keys.");
+	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
 		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list.", service->decoded_key);
 		return;
 	}
 	
-	debug("Deleting cache directory for '%s'.", service->key);
-	gchar *cache_dir=NULL;
-	cache_dir=g_build_filename("services", service->uri, service->username, NULL);
-	cache_dir_clean_up(cache_dir, TRUE);
-	uber_free(cache_dir);
-	
 	debug("Updating OnlineServices' accounts.  Removing OnlineService: [%s].", service->key);
 	services->accounts=g_list_remove(services->accounts, service);
 	
-	online_service_free(service);
+	debug("Determining what level of the OnlineService's cache directory to delete.");
+	gboolean service_cache_rm_rf=TRUE;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		key=(OnlineService *)accounts->data;
+		if(g_str_equal(key->uri, service->uri)){
+			debug("OnlineService: [%s] share's avatars cache, only cookies will be deleted.", key->decoded_key);
+			service_cache_rm_rf=FALSE;
+		}
+	}
+	
+	online_service_delete(service, service_cache_rm_rf);
 	
 	if(services->total) services->total--;
 	debug("OnlineService deleted.  OnlineServices now has %d accounts.", services->total);
 }/*online_services_delete(services, service);*/
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	GList		*a=NULL;
-	OnlineService	*service=NULL;
-	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
-		if(service->enabled)
-			online_service_request(service, request, uri, callback, user_data, formdata);
-	}
-}/*online_services_request*/
+static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store){
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	gtk_list_store_append(list_store, iter);
+	gtk_list_store_set(
+			list_store, iter,
+				UrlString, "[new account]",
+				OnlineServicePointer, NULL,
+			-1
+	);
+	uber_free(iter);
+	gtk_combo_box_set_active(combo_box, 0);
+}/*online_services_combo_box_add_new(combo_box, list_store);*/
 
-gboolean online_services_fill_list_store(OnlineServices *services, GtkListStore *list_store, gboolean connected_only){
+gboolean online_services_combo_box_fill(OnlineServices *services, gboolean connected_only, GtkListStore *list_store, GtkComboBox *combo_box){
+	if(!list_store) return FALSE;
 	gtk_list_store_clear(list_store);
 	if(!online_services->total){
 		debug("No services found to load, new accounts need to be setup.");
+		if(!connected_only) online_services_combo_box_add_new(combo_box, list_store);
 		return FALSE;
 	}
 	
@@ -422,235 +374,15 @@ gboolean online_services_fill_list_store(OnlineServices *services, GtkListStore 
 		services_loaded++;
 		uber_free(iter);
 	}
-	if(!connected_only){
-		iter=g_new0(GtkTreeIter, 1);
-		gtk_list_store_append(list_store, iter);
-		gtk_list_store_set(
-					list_store, iter,
-						UrlString, "[new account]",
-						OnlineServicePointer, NULL,
-					-1
-		);
+	if(!connected_only)
+		online_services_combo_box_add_new(combo_box, list_store);
+	else if(services_loaded){
+		debug("Accounts & services loaded.  Selecting combo_box's default account.");
+		gtk_combo_box_set_active(combo_box, 0);
 	}
+	
 	return (services_loaded ?TRUE :FALSE );
-}/*online_services_fill_list_store*/
-
-
-/*
- * 	Methods for use with an OnlineService instance.
- */
-static OnlineService *online_service_open(const gchar *account_key){
-	debug("Loading OnlineService instance for: '%s' account.", account_key);
-	
-	OnlineService *service=g_new0(OnlineService, 1);
-	
-	gchar **account_data=g_strsplit(account_key, "@", 3);
-	
-	service->decoded_key=g_strdup(account_key);
-	service->uri=g_strdup(account_data[1]);
-	service->username=g_strdup(account_data[0]);
-	g_strfreev(account_data);
-	
-	service->friends=service->followers=service->friends_and_followers=NULL;
-	
-	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
-	service->server=g_strdup(parsed_uri[0]);
-	if(G_STR_EMPTY(parsed_uri[1]))
-		service->path=g_strdup("");
-	else
-		service->path=g_strdup(parsed_uri[1]);
-	g_strfreev(parsed_uri);
-
-	service->connected=FALSE;
-	service->session=NULL;
-	service->logins=0;
-	service->id_last_tweet=service->id_last_dm=service->id_last_reply=0;
-	
-	service->timer=timer_new();
-	
-	debug("Loading OnlineService settings for: '%s'" , service->decoded_key);
-	
-	gchar *encoded_username=g_uri_escape_string(service->username, NULL, TRUE);
-	gchar *encoded_url=g_uri_escape_string(service->uri, NULL, TRUE);
-	service->key=g_strdup_printf("%s@%s", encoded_username, encoded_url );
-	g_free(encoded_username);
-	g_free(encoded_url);
-	
-	if(g_str_equal(service->uri, "twitter.com"))
-		service->which_rest=Twitter;
-	else
-		service->which_rest=Laconica;
-	
-	gchar *prefs_auth_path=NULL;
-	
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_PREFIX, service->key);
-	debug("Account's gconf path:\t\t [%s]", prefs_auth_path );
-	g_free(prefs_auth_path);
-	
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_ENABLED, service->key);
-	service->enabled=gconfig_if_bool(prefs_auth_path, TRUE);
-	g_free(prefs_auth_path);
-	debug("%sabling [%s] OnlineService.", (service->enabled ?"En" :"Dis" ), service->decoded_key);
-	
-	service->password=NULL;
-	
-#ifdef HAVE_GNOME_KEYRING
-	if(!(keyring_get_password(&service)))
-		service->password=NULL;
-#else
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_PASSWORD, service->key);
-	gconfig_get_string(prefs_auth_path, &service->password);
-	g_free(prefs_auth_path);
-#endif
-	
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_HTTPS, service->key);
-	service->https=gconfig_if_bool(prefs_auth_path, TRUE);
-	g_free(prefs_auth_path);
-	
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_AUTO_CONNECT, service->key);
-	service->auto_connect=gconfig_if_bool(prefs_auth_path, TRUE);
-	g_free(prefs_auth_path);
-	
-	debug("OnlineService instance created.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tsecure connection: %s; service uri: %s; username: %s; password: %s; auto_connect: %s", service->decoded_key, service->key, (service->enabled?"en":"dis"), (service->https?"TRUE":"FALSE"), service->uri, service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
-	
-	return service;
-}/*online_service_open*/
-
-static OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
-	debug("Creating new OnlineService for '%s@%s'.", username, url);
-	OnlineService *service=g_new0(OnlineService, 1);
-	service->session=NULL;
-	
-	service->connected=FALSE;
-	service->enabled=enabled;
-	service->logins=0;
-	
-	service->id_last_tweet=service->id_last_dm=service->id_last_reply=0;
-	
-	service->timer=timer_new();
-	service->auto_connect=auto_connect;
-	
-	service->decoded_key=g_strdup_printf("%s@%s", username, url );
-	service->username=g_strdup(username);
-	service->password=g_strdup(password);
-	service->https=https;
-	
-	service->friends=service->followers=service->friends_and_followers=NULL;
-	
-	service->uri=g_strdup(url);
-	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
-	service->server=g_strdup(parsed_uri[0]);
-	if(G_STR_EMPTY(parsed_uri[1]))
-		service->path=g_strdup("");
-	else
-		service->path=g_strdup(parsed_uri[1]);
-	g_strfreev(parsed_uri);
-	
-	gchar *encoded_username=g_uri_escape_string(username, NULL, TRUE);
-	gchar *encoded_url=g_uri_escape_string(url, NULL, TRUE);
-	service->key=g_strdup_printf("%s@%s", encoded_username, encoded_url);
-	g_free(encoded_username);
-	g_free(encoded_url);
-	
-	if(!(strcasecmp(service->server, "twitter.com")))
-		service->which_rest=Twitter;
-	else
-		service->which_rest=Laconica;
-	
-	return service;
-}/*online_service_new*/
-
-static gboolean online_service_save(OnlineService *service){
-	debug("Preparing to save OnlineService for '%s'.", service->decoded_key);
-	
-	gchar *prefs_auth_path=NULL;
-	
-	debug("Saving '%s' 'enabled' status: %s.", service->decoded_key, (service->enabled ?"TRUE" :"FALSE" ) );
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_ENABLED, service->key);
-	gconfig_set_bool(prefs_auth_path, service->enabled);
-	g_free(prefs_auth_path);
-	
-	debug("Saving '%s' password: '%s'.", service->decoded_key, service->password );
-#ifdef HAVE_GNOME_KEYRING
-	keyring_set_password(service);
-#else
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_PASSWORD, service->key);
-	gconfig_set_string(prefs_auth_path, service->password);
-	g_free(prefs_auth_path);
-#endif
-	
-	debug("Saving whether to use https when connecting to '%s': %s.", service->decoded_key, (service->https ?"TRUE" :"FALSE" ) );
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_HTTPS, service->key);
-	gconfig_set_bool(prefs_auth_path, service->https);
-	g_free(prefs_auth_path);
-	
-	debug("Saving '%s' 'auto_connect' status: %s.", service->decoded_key, (service->auto_connect ?"TRUE" :"FALSE" ) );
-	prefs_auth_path=g_strdup_printf(PREFS_AUTH_AUTO_CONNECT, service->key);
-	gconfig_set_bool(prefs_auth_path, service->auto_connect);
-	g_free(prefs_auth_path);
-	
-	debug("OnlineService saved.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice url: %s; username: %s; password: %s; auto_connect: [%s]", service->decoded_key, service->key, (service->enabled?"en":"dis"), service->uri, service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
-
-	debug("Attempting to connect to OnlineService for: '%s'.", service->decoded_key);
-	online_service_reconnect(service);
-	
-	return TRUE;
-}/*online_service_save*/
-
-void online_service_load_tweet_ids(OnlineService *service, const gchar *uri){
-	gchar *timeline=g_strrstr(uri, "/");
-	
-	gchar *prefs_path_ids=NULL;
-	gint id_swap=0;
-	
-	prefs_path_ids=g_strdup_printf(PREFS_IDS_TWEETS, service->key, timeline);
-	gconfig_get_int(prefs_path_ids, &id_swap);
-	uber_free(prefs_path_ids);
-	if(id_swap>0) service->id_last_tweet=id_swap;
-	
-	if(service->id_last_dm==0){
-		id_swap=0;
-		prefs_path_ids=g_strdup_printf(PREFS_IDS_TWEETS, service->key, "/dm");
-		gconfig_get_int(prefs_path_ids, &id_swap);
-		uber_free(prefs_path_ids);
-		if(id_swap>0) service->id_last_dm=id_swap;
-	}
-	
-	if(service->id_last_reply==0){
-		id_swap=0;
-		prefs_path_ids=g_strdup_printf(PREFS_IDS_TWEETS, service->key, "/replies");
-		gconfig_get_int(prefs_path_ids, &id_swap);
-		uber_free(prefs_path_ids);
-		if(id_swap>0) service->id_last_reply=id_swap;
-	}
-	
-	debug("Loaded last tweet ids for '%s'.  Last DM ID: %u; Last Reply ID: %u; Timeline: %s; Last Tweet ID: %u.", service->decoded_key, service->id_last_dm, service->id_last_reply, timeline, service->id_last_tweet);
-}/*online_service_load_tweet_ids(service, uri);*/
-
-void online_service_save_tweet_ids(OnlineService *service, const gchar *uri){
-	gchar *timeline=g_strrstr(uri, "/");
-	debug("Saving last tweet ids for '%s'.  Last DM ID: %u; Last Reply ID: %u; Timeline: %s; Last Tweet ID: %u.", service->decoded_key, service->id_last_dm, service->id_last_reply, timeline, service->id_last_tweet);
-	
-	gchar *prefs_path_ids=NULL;
-	
-	if(service->id_last_tweet>0){
-		prefs_path_ids=g_strdup_printf(PREFS_IDS_TWEETS, service->key, timeline);
-		gconfig_set_int(prefs_path_ids, (gint)service->id_last_tweet);
-		uber_free(prefs_path_ids);
-	}
-	
-	if(service->id_last_dm>0){
-		prefs_path_ids=g_strdup_printf(PREFS_IDS_TWEETS, service->key, "/dm");
-		gconfig_set_int(prefs_path_ids, (gint)service->id_last_dm);
-		uber_free(prefs_path_ids);
-	}
-	
-	if(service->id_last_reply>0){
-		prefs_path_ids=g_strdup_printf(PREFS_IDS_TWEETS, service->key, "/replies");
-		gconfig_set_int(prefs_path_ids, (gint)service->id_last_reply);
-		uber_free(prefs_path_ids);
-	}
-}/*online_service_save_tweet_ids(service, uri);*/
+}/*online_services_combo_box_fill*/
 
 OnlineService *online_services_connected_get_first(OnlineServices *services){
 	GList		*a=NULL;
@@ -664,394 +396,32 @@ OnlineService *online_services_connected_get_first(OnlineServices *services){
 	return service;
 }/*online_services_connected_get_first*/
 
-static gboolean online_service_connect(OnlineService *service){
-	debug("Creating '%s' connection to '%s'", service->decoded_key, service->uri);
-	if(!( (service->session=soup_session_sync_new_with_options(SOUP_SESSION_MAX_CONNS_PER_HOST, 8, SOUP_SESSION_TIMEOUT, 20, SOUP_SESSION_IDLE_TIMEOUT, 20, NULL)) )){
-		debug("**ERROR:** Failed to creating a new soup session for '%s'.", service->decoded_key);
-		service->session=NULL;
-		return (service->connected=FALSE);
-	}
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
 	
-	/* HTTP Basic Authentication */
-	debug("Adding authenticating callback for: '%s'. username: %s, password: %s", service->decoded_key, service->username, service->password);
-	g_signal_connect(service->session, "authenticate", G_CALLBACK(online_service_http_authenticate), service);
-	
-#ifdef GNOME_ENABLE_DEBUG
-	
-	/*SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_MINIMAL, -1);*/
-	SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_HEADERS, -1);
-	soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(logger));
-	g_object_unref(logger);
-	
-#else
-	
-	if(IF_DEBUG){
-		SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_HEADERS, -1);
-		soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(logger));
-		g_object_unref(logger);
-	}
-	
-#endif
-	
-	online_service_proxy_init(service);
-	
-	online_service_cookie_jar_open(service);
-	
-	return (service->connected=TRUE);
-}/*online_service_connect*/
-
-static gchar *online_service_cookie_jar_find_filename(OnlineService *service){
-	gchar	*cookie_jar_dir=NULL;
-	gchar	*cookie_jar_directory=NULL;
-	
-	gchar	*cookie_jar_file=NULL;
-	gchar	*cookie_jar_filename=NULL;
-	
-	cookie_jar_dir=g_build_filename("services", service->uri, service->username, NULL);
-	
-	if(!( (cookie_jar_directory=cache_dir_test(cookie_jar_dir, TRUE)) )){
-			debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar's directory: [%s].", cookie_jar_directory);
-			g_free(cookie_jar_dir);
-			return NULL;
+	for(a=services->accounts; a; a=a->next){
+		service=(OnlineService *)a->data;
+		if(!(service->enabled && service->connected && service->authenticated)){
+			debug("Unable load: %s.  You're not connected to %s.", uri, service->key);
+			app_statusbar_printf("Unable load: %s.  You're not connected to: %s.", uri, service->key);
+			continue;
 		}
-	
-	cookie_jar_file=g_build_filename(cookie_jar_dir, "cookies.txt", NULL);
-	if(!( (cookie_jar_filename=cache_file_touch(cookie_jar_file)) )){
-		debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar: [%s].", cookie_jar_filename);
-		g_free(cookie_jar_dir);
-		g_free(cookie_jar_directory);
-		g_free(cookie_jar_filename);
-		return NULL;
+		online_service_request(service, request, uri, callback, user_data, formdata);
 	}
-				
-	debug("\t\tCreated cookie jar for [%s].\n\t\tDirectory: [%s]\n\t\tFilename: [%s].", service->key, cookie_jar_directory, cookie_jar_filename );
-	
-	g_free(cookie_jar_dir);
-	g_free(cookie_jar_directory);
-	return cookie_jar_filename;
-}/*online_service_cookie_jar_find_filename*/
+}/*online_services_request*/
 
-static void online_service_cookie_jar_open(OnlineService *service){
-	SoupCookieJar	*cookie_jar=NULL;
-	gchar		*cookie_jar_filename=NULL;
+void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change){
+	if(services->connected) services->connected--;
 	
-	debug("Connecting cookie jar to online service: [%s].", service->key);
-		
-	if(!( (cookie_jar_filename=online_service_cookie_jar_find_filename(service)) ))
-		return;
-
-	cookie_jar=soup_cookie_jar_text_new(cookie_jar_filename, FALSE);
-	
-	soup_session_add_feature_by_type(service->session, soup_cookie_jar_get_type());
-	soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(cookie_jar));
-	
-	g_free(cookie_jar_filename);
-	g_object_unref(cookie_jar);
-	return;
-	
-	g_signal_connect_after(cookie_jar, "changed", (GCallback)online_service_cookie_jar_hands_caught_in_the_cookie_jar, service);
-}/*online_servce_open_cookie_jar*/
-
-static void online_service_cookie_jar_hands_caught_in_the_cookie_jar(SoupCookieJar *cookie_jar, SoupCookie *old_cookie, SoupCookie *new_cookie, OnlineService *service){
-}/*online_service_hands_caught_in_the_cookie_jar*/
-
-static gboolean online_service_reconnect(OnlineService *service){
-	if(service->connected)
-		online_service_disconnect(service);
-	
-	return online_service_connect(service);
-}/*online_service_reconnect*/
-
-static void online_service_disconnect(OnlineService *service){
-	debug("Closing %s's connection to: %s", service->decoded_key, service->uri);
-	if(service->session){
-		if(SOUP_IS_SESSION(service->session))
-			soup_session_abort(service->session);
-		
-		g_object_unref(service->session);
-		service->session=NULL;
-	}
-	service->connected=FALSE;
-}/*online_service_disconnect*/
-
-/* Login to service. */
-gboolean online_service_login(OnlineService *service){
-	debug("Attempting to log in to %s...", service->decoded_key);
-	if(!service->enabled) return FALSE;
-	
-	if(!SOUP_IS_SESSION(service->session)){
-		debug("**ERROR**: Unable to authenticating OnlineService: %s. Invalide libsoup session.", (service->decoded_key ?service->decoded_key :"invalid service") );
-		return FALSE;
-	}
-	
-	app_statusbar_printf("Connecting to %s...", service->key);
-	
-	/* Verify cedentials */
-	debug("Logging into: '%s'. username: %s, password: %s.", service->decoded_key, service->username, service->password);
-	
-	online_service_request(service, QUEUE, API_LOGIN, online_service_login_success, (gpointer)"Login", NULL);
-	return TRUE;
-}/*online_service_login*/
-
-/* On verify credentials */
-static void online_service_login_success(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	OnlineServiceCBWrapper *service_wrapper=(OnlineServiceCBWrapper *)user_data;
-	debug("Login response: %i",msg->status_code);
-	
-	/* if the check succeeds then it start the request limit timer:
-	 * 	timer_main(service->timer, msg);
-	 */
-	if(!network_check_http(service_wrapper->service, msg)) {
-		debug("Login to '%s' failed.", service_wrapper->service->decoded_key);
-	}else{
-		debug("Login to '%s' succeeded.", service_wrapper->service->decoded_key);
-	}
-	online_service_wrapper_free(service_wrapper);
-}/*online_service_login_success*/
-
-/* HTTP Basic Authentication */
-static void online_service_http_authenticate(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data){
-	OnlineService *service=(OnlineService *)user_data;
-	debug("**Authenticating:** %s.", service->key );
-	if(!(service && service->key)){
-		debug("**FATAL-ERROR**: Unable to authenticating OnlineService: %s. Invalid online service.", service->decoded_key);
-		return;
-	}
-	
-	if(!service->enabled){
-		debug("\t\t**WARNING:** Skipping authentication for disabled OnlineService '%s'.", service->decoded_key);
-		return;
-	}
-	
-	SoupURI *suri=soup_message_get_uri(msg);
-	gchar *uri=soup_uri_to_string(suri, FALSE);
-	debug("\t\tSoupURI: Authenticating: %s", uri);
-	soup_uri_free(suri);
-	uber_free(uri);
-	
-	if(G_STR_EMPTY(service->username))
-		return debug("\t\t**WARNING:** Could not authenticate: %s, unknown username.", service->decoded_key);
-	
-	/* verify that the password has been set */
-	if(G_STR_EMPTY(service->password))
-		return debug("\t\t**WARNING:** Could not authenticate: %s, unknown password.", service->decoded_key);
-	
-	if(retrying)
-		service->logins++;
-	
-	if(service->logins < MAX_LOGINS ){
-		debug("Authenticating OnlineService: [%s]\n\t\t\tAttempt #%d of %d maximum allowed attempts.\n\t\t\tUsername: [%s]; Password: [%s]; Server: [%s].", service->key, service->logins, MAX_LOGINS, service->username, service->password, service->uri);
-		soup_auth_update(auth, msg, "WWW-Authenticate");
-		soup_auth_authenticate(auth, service->username, service->password);
-	}else{
-		debug("**ERROR**: Authentication attempts %d exceeded maximum attempts: %d.", service->logins, MAX_LOGINS);
-	}
-}/*online_service_http_authenticate*/
-
-
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	if(!(service->connected)) return NULL;
-	gchar *new_uri=g_strdup_printf("http%s://%s%s%s", (service->https ?"s" :"" ), service->uri, ( (service->which_rest==Twitter) ?"" :"/api" ), uri );
-	debug("Creating new service request for: '%s', requesting: %s.", service->decoded_key, new_uri);
-	SoupMessage *msg=online_service_request_uri(service, request, (const gchar *)new_uri, callback, user_data, formdata);
-	g_free(new_uri);
-	return msg;
-}/*online_service_request*/
-
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	if(!(service->enabled && service->connected)) return NULL;
-	
-	if(!SOUP_IS_SESSION(service->session)){
-		online_service_reconnect(service);
-		if(!SOUP_IS_SESSION(service->session))
-			return NULL;
-	}
-	
-	gchar *request_uri=NULL;
-	if(!( g_str_has_prefix(uri, "http") || g_str_has_prefix(uri, "ftp") ))
-		request_uri=g_strdup_printf("http://%s", uri);
-	else
-		request_uri=g_strdup(uri);
-	
-	SoupMessage *msg=NULL;
-	gchar *service_formdata=NULL;
-	gchar *request_string=NULL;
-	switch(request){
-		case GET:
-			request_string=g_strdup("GET");
-			break;
-		case QUEUE:
-			request_string=g_strdup("QUEUE");
-			break;
-		case POST:
-			request_string=g_strdup("POST");
-			break;
-	}
-	
-	debug("Creating libsoup request for service: '%s'.", service->decoded_key);
-	switch(request){
-		case GET:
-		case QUEUE:
-			debug("GET: %s", request_uri);
-			msg=soup_message_new("GET", request_uri);
-			break;
-		
-		case POST:
-			if((gchar *)formdata){
-				if((gchar *)user_data){
-					gchar *test_data=(gchar *)user_data;
-					if( g_str_equal(test_data, "Tweet") ){
-						gchar *form_data=(gchar *)formdata;
-						if(G_STR_EMPTY(form_data)){
-							g_free(request_string);
-							g_free(request_uri);
-							return NULL;
-						}
-						if( in_reply_to_status_id && in_reply_to_service==service ){
-							debug("Replying to Tweet/Status [#%lu] on: [%s].\n\t\tTweet: [%s].", in_reply_to_status_id, service->decoded_key, form_data);
-							service_formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", ((service->which_rest==Twitter) ?SOURCE_TWITTER :SOURCE_LACONICA ), in_reply_to_status_id, form_data);
-						}else{
-							debug("Submitting Tweet/Status update to: [%s].\n\t\tTweet: [%s].", service->decoded_key, form_data);
-							service_formdata=g_strdup_printf( "source=%s&status=%s", ((service->which_rest==Twitter) ?SOURCE_TWITTER :SOURCE_LACONICA ), form_data);
-						}
-					}
-				}
-			}
-			
-			debug("POST: %s\n\t\tformdata: [%s]", request_uri, (service_formdata ?service_formdata :(gchar *)formdata));
-			msg=soup_message_new("POST", request_uri);
-	
-			soup_message_headers_append(msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
-			soup_message_headers_append(msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
-			
-			if((gchar *)formdata)
-				soup_message_set_request(
-					msg,
-					"application/x-www-form-urlencoded",
-					SOUP_MEMORY_COPY,
-					(service_formdata ?service_formdata :(gchar *)formdata),
-					(strlen( ( service_formdata ?service_formdata :(gchar *)formdata ) ))
-				);
-			break;
-	}
-	
-	if(!( SOUP_IS_SESSION(service->session) && SOUP_IS_MESSAGE(msg) )){
-		debug("Unable to process libsoup request for service: '%s'.\n\t\tAttempting to %s: %s", service->decoded_key, request_string, request_uri);
-		if(service_formdata) g_free(service_formdata);
-		g_free(request_string);
-		g_free(request_uri);
-		return NULL;
-	}
-	
-	g_signal_connect(msg, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);
-	
-	debug("Processing libsoup request for service: '%s'.", service->decoded_key);
-	switch(request){
-		case QUEUE:
-		case POST:
-			debug("Adding libsoup request to service: '%s' libsoup's message queue.", service->decoded_key);
-			
-			OnlineServiceCBWrapper *service_wrapper=NULL;
-			if(callback!=NULL)
-				service_wrapper=online_service_wrapper_new(service, request_uri, callback, user_data, formdata);
-			
-			soup_session_queue_message(service->session, msg, callback, service_wrapper);
-			
-			break;
-			
-		case GET:
-			debug("Sending libsoup request to service: '%s' & returning libsoup's message.", service->decoded_key);
-			soup_session_send_message(service->session, msg);
-			break;
-	}
-	
-	if(service_formdata) g_free(service_formdata);
-	g_free(request_string);
-	g_free(request_uri);
-	return msg;
-}/*online_service_request_uri*/
-
-static void online_service_message_restarted(SoupMessage *msg, gpointer user_data){
-//	OnlineService *service=(OnlineService *)user_data;
-}/*online_service_message_restarted*/
-
-gchar *online_service_get_url_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg){
-	*msg=online_service_request_uri(service, GET, uri, NULL, NULL, NULL);
-	if(!network_check_http(service, *msg))
-		return g_strdup(uri);
-
-	debug("Getting content-type from uri: '%s'.", uri);
-	gchar *content_type=NULL;
-	if(!(content_type=(gchar *)soup_message_headers_get_content_type( (*msg)->response_headers, NULL))){
-		debug("Unable to determine the content type from uri: '%s'.", uri);
-		return NULL;
-	}
-	
-	return content_type;
-}/*online_service_get_url_content_type*/
-
-OnlineServiceCBWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	OnlineServiceCBWrapper *service_wrapper=g_new0(OnlineServiceCBWrapper, 1);
-	
-	service_wrapper->service=service;
-
-	service_wrapper->requested_uri=g_strdup(request_uri);
-	
-	if(callback==network_cb_on_image||callback==user_request_main_quit||callback==network_users_glist_save)
-		service_wrapper->user_data=user_data;
-	else if(user_data!=NULL)
-		service_wrapper->user_data=g_strdup(user_data);
-	else
-		service_wrapper->user_data=NULL;
-	
-	if(callback==network_display_timeline)
-		service_wrapper->formdata=formdata;
-	else if(formdata!=NULL)
-		service_wrapper->formdata=g_strdup(formdata);
-	else
-		service_wrapper->formdata=NULL;
-	
-	return service_wrapper;
-}
-
-void online_service_wrapper_free(OnlineServiceCBWrapper *service_wrapper){
-	if(!service_wrapper) return;
-	
-	uber_free(service_wrapper->requested_uri);
-	
-	if(service_wrapper->user_data!=NULL) uber_free(service_wrapper->user_data);
-	
-	if(service_wrapper->formdata!=NULL) uber_free(service_wrapper->formdata);
-	
-	service_wrapper->service=NULL;
-	
-	uber_free(service_wrapper);
-}/*online_service_free_wrapper*/
-
-void online_service_free(OnlineService *service){
-	if(!service) return;
-	
-	debug("Unloading instance of: %s service", service->decoded_key);
-	online_service_disconnect(service);
-	
-	debug("Closing %s account", service->decoded_key );
-	g_free(service->decoded_key);
-	g_free(service->key);
-	g_free(service->uri);
-	g_free(service->username);
-	g_free(service->password);
-	user_free_lists(service);
-	
-	timer_free(service->timer);
-	service->timer=NULL;
-	
-	g_free(service);
-	service=NULL;
-}/*online_service_free*/
+	debug("OnlineServices still connected: #%d.", services->connected);
+	if(services->connected || no_state_change ) return;
+	services_dialog_show(app_get_window());
+	app_disconnect();
+	app_state_on_connection(FALSE);
+}/*online_services_decrement_connected(online_services);*/
 
 void online_services_deinit(OnlineServices *services){
-	online_services_proxy_release();
-	
 	debug("**SHUTDOWN:** Closing & releasing %d accounts.", services->total);
 	g_list_foreach(services->accounts, (GFunc)online_service_free, NULL);
 
@@ -1067,81 +437,6 @@ void online_services_deinit(OnlineServices *services){
 	services=NULL;
 	online_services=NULL;
 }/*online_services_deinit*/
-
-static gboolean online_service_proxy_init(OnlineService *service){
-	if(!proxy_init)
-		proxy_init=online_services_proxy_load();
-	
-	if(proxy_init==-1)
-		return FALSE;
-	
-	g_object_set( G_OBJECT(service->session), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
-	return TRUE;
-}/*online_service_proxy_init*/
-
-/**
- *  * Sets SoupUri *proxy_suri for use with a SoupConnection.
- *   *
- *    * @returns 1 if a proxy is used or -1 if not.
- *     */
-static int online_services_proxy_load(void){
-	if(proxy_init) return proxy_init;
-	
-	/* Set the proxy, if configuration is set */
-	gboolean proxy_use=FALSE;
-	if(!( (gconfig_get_bool(PROXY_USE, &proxy_use)) && proxy_use ))
-		return -1;
-	
-	proxy_init=1;
-	if(proxy_suri)
-		online_services_proxy_release();
-	
-	gchar *server=NULL;
-	gint port;
-	
-	/* Get proxy */
-	gconfig_get_string(PROXY_HOST, &server);
-	gconfig_get_int(PROXY_PORT, &port);
-	
-	if(G_STR_EMPTY(server))
-		return -1;
-	
-	gchar *proxy_uri=NULL;
-	
-	/* Check proxy auth data */
-	gboolean proxy_auth=FALSE;
-	if(!( (gconfig_get_bool(PROXY_USE_AUTH, &proxy_auth)) && proxy_auth ))
-		proxy_uri=g_strdup_printf("http://%s:%d", server, port);
-	else {
-		char *user, *password;
-		gconfig_get_string(PROXY_USER, &user);
-		gconfig_get_string(PROXY_PASS, &password);
-		
-		proxy_uri=g_strdup_printf( "http://%s:%s@%s:%d", user, password, server, port);
-		
-		g_free(user);
-		g_free(password);
-	}
-	
-	debug("Proxy uri: %s", proxy_uri );
-	
-	/* Setup proxy info */
-	proxy_suri=soup_uri_new(proxy_uri);
-	
-	g_free(server);
-	g_free(proxy_uri);
-	
-	return 1;
-}/*online_services_proxy_load*/
-
-static void online_services_proxy_release(void){
-	if(proxy_init==1 && proxy_suri){
-		debug("**SHUTDOWN:** closing proxy connection");
-		soup_uri_free(proxy_suri);
-		proxy_suri=NULL;
-	}
-	proxy_init=0;
-}/*online_services_proxy_release*/
 
 /********************************************************
  *                       eof                            *

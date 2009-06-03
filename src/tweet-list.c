@@ -148,7 +148,7 @@ static void tweet_list_create_model(TweetList *list){
 							G_TYPE_ULONG,		/*ULONG_USER_ID: User's ID.*/
 							G_TYPE_POINTER		/*SERVICE_POINTER: Service pointer.*/
 	);
-
+	
 	/* save normal model */
 	model=GTK_TREE_MODEL(list_priv->store);
 	sort_model=gtk_tree_model_sort_new_with_model(model);

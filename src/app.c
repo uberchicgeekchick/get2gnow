@@ -144,6 +144,10 @@ struct _AppPriv {
 	guint			size_timeout_id;
 };
 
+/* UI & notification gconf values. */
+#define PREFS_UI_HIDDEN				PREFS_PATH "/ui/hidden"
+#define PREFS_HINTS_HIDE_MAIN_WINDOW		PREFS_PATH "/hints/hide_main_window"
+#define PREFS_HINTS_CLOSE_MAIN_WINDOW		PREFS_PATH "/hints/close_main_window"
 
 #define	DEBUG_DOMAINS	"App:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up"
 #include "debug.h"
@@ -154,7 +158,7 @@ struct _AppPriv {
 static void app_class_init(AppClass *klass);
 static void app_init(App *app);
 static void app_finalize(GObject *object);
-static void app_disconnect(void);
+
 static void app_setup(void);
 static void main_window_destroy_cb(GtkWidget *window, App *app); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app);
@@ -435,11 +439,10 @@ static void main_window_destroy_cb(GtkWidget *window, App *app){
 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app){
 	if(gtk_status_icon_is_embedded(app_priv->status_icon)) {
-		confirm_dialog_show(PREFS_HINTS_CLOSE_MAIN_WINDOW,
+		confirm_dialog_show(PREFS_HINTS_HIDE_MAIN_WINDOW,
 						_("get2gnow is still running, it is just hidden."),
 						_("Click on the notification area icon to show get2gnow."),
 						GTK_WINDOW(app_get_window()),
-						FALSE,
 						NULL, NULL
 		);
 		
@@ -455,7 +458,6 @@ static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, 
 					"found, this action would normally quit get2gnow."
 				),
 				app_priv->window,
-				FALSE,
 				NULL, NULL
 	))) return TRUE;
 	
@@ -729,9 +731,9 @@ static void app_reconnect(GtkMenuItem *item, App *app){
 	app_retrieve_default_timeline();
 }/*app_reconnect*/
 
-static void app_disconnect(void){
+void app_disconnect(void){
 	tweet_list_clear();
-	network_deinit(TRUE);
+	network_deinit(TRUE, All);
 	online_services_disconnect(online_services);
 }/*app_disconnect*/
 
@@ -813,6 +815,7 @@ static void app_connection_items_setup(GtkBuilder *ui){
 void app_state_on_connection(gboolean connected){
 	if(!( app_priv && app_priv->widgets_connected && app_priv->widgets_disconnected ))
 		return;
+	
 	GList         *l;
 	
 	for(l=app_priv->widgets_connected; l; l=l->next)

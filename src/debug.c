@@ -70,39 +70,43 @@ static gchar **debug_strv=NULL;
 static gboolean all_domains=FALSE;
 static gboolean devel=FALSE;
 static gchar *debug_last_domain=NULL;
+static gchar *debug_environmental_variable=NULL;
 
 gboolean debug_check_devel(void){
 #ifndef GNOME_ENABLE_DEBUG
-	if(!( (g_getenv("DEBUG")) && (g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) ))
+	if(!( (g_getenv(debug_environmental_variable)) && (g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_ENABLE_DEBUG" )) ))
 		return FALSE;
 	
 #define GNOME_ENABLE_DEBUG
 #else
-	if( (g_getenv("DEBUG")) && !(g_str_equal( (g_getenv("DEBUG")), "GNOME_ENABLE_DEBUG" )) )
+	if( (g_getenv(debug_environmental_variable)) && !(g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_ENABLE_DEBUG" )) )
 		return FALSE;
 	
 #endif
 	
 	devel=TRUE;
 	all_domains=TRUE;
-	debug_strv=g_strsplit("all", ":", 1);
+	debug_strv=g_strsplit("All", ":", 1);
 	
 	return TRUE;
 }//debug_check_devel
 
-void debug_init (void){
+void debug_init(void){
+	gchar *debug_package=g_utf8_strup(PACKAGE_TARNAME, -1);
+	debug_environmental_variable=g_strdup_printf("%s_DEBUG_DOMAINS", debug_package);
+	g_free(debug_package);
 	if(debug_check_devel()) return;
 	
 	const gchar *env;
 	gint         i;
 	
-	if(!(env=g_getenv("DEBUG")))
+	if(!(env=g_getenv(debug_environmental_variable)))
 		return;
 	
-	debug_strv=g_strsplit_set (env, ":, ", 0);
+	debug_strv=g_strsplit(env, ":", -1);
 	
 	for(i=0; debug_strv && debug_strv[i]; i++)
-		if (!(strcasecmp ("all", debug_strv[i])))
+		if (!(strcasecmp ("All", debug_strv[i])))
 			all_domains=TRUE;
 }
 
@@ -120,20 +124,22 @@ void debug_impl(const gchar *domain, const gchar *msg, ...){
 			
 			if(!output_started){
 				output_started=TRUE;
-				g_printf("\n");
+				g_fprintf(stdout, "\n");
 			}
 			
 			if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
 				if(debug_last_domain) g_free(debug_last_domain);
 				debug_last_domain=g_strdup(domains[x]);
-				g_printf("\n%s: ", domains[x]);
+				g_fprintf(stdout, "\n%s:\t", domains[x]);
 			}else
-				g_printf("\n\t\t\t");
+				g_fprintf(stdout, "\t\t\t");
 			
 			va_list args;
 			va_start(args, msg);
-			g_vprintf(msg, args);
+			g_vfprintf(stdout, msg, args);
 			va_end(args);
+			
+			g_fprintf(stdout, "\n");
 			
 			g_strfreev(domains);
 			return;
@@ -162,6 +168,7 @@ gboolean debug_if_domain(const gchar *domain){
 
 void debug_deinit(void){
 	if(debug_last_domain) g_free(debug_last_domain);
+	g_free(debug_environmental_variable);
 	g_strfreev(debug_strv);
 }/*debug_deinit*/
 

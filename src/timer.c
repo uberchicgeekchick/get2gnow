@@ -57,12 +57,22 @@
  *        Project headers.                              *
  ********************************************************/
 #include "config.h"
+#include "main.h"
+
 #include "timer.h"
 #include "app.h"
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
+struct _RateLimitTimer{
+	gboolean active;
+	GTimer *gtimer;
+	gdouble limit;
+	guint processing;
+	guint requests;
+};
+
 #define DEBUG_DOMAINS "OnlineServices:Networking:Requests:Setup:Start-Up:Timer"
 #include "debug.h"
 
@@ -149,8 +159,7 @@ void timer_free(RateLimitTimer *timer){
 	timer_main_quit(timer);
 	debug("Shutting down network timer.");
 	g_timer_destroy(timer->gtimer);
-	g_free(timer);
-	timer=NULL;
+	uber_free(timer);
 }//timer_deinit
 
 

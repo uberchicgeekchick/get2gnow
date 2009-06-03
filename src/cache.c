@@ -187,6 +187,38 @@ gchar *cache_filename_get_from_uri(const gchar *uri){
 	return cache_filename;
 }/*cache_file_from_uri*/
 
+
+gchar *cache_create_cookie_jar(OnlineService *service){
+	gchar	*cookie_jar_dir=NULL;
+	gchar	*cookie_jar_directory=NULL;
+	
+	gchar	*cookie_jar_file=NULL;
+	gchar	*cookie_jar_filename=NULL;
+	
+	cookie_jar_dir=g_build_filename("services", service->uri, service->username, NULL);
+	
+	if(!( (cookie_jar_directory=cache_dir_test(cookie_jar_dir, TRUE)) )){
+		debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar's directory: [%s].", cookie_jar_directory);
+		g_free(cookie_jar_dir);
+		return NULL;
+	}
+	
+	cookie_jar_file=g_build_filename(cookie_jar_dir, "cookies.txt", NULL);
+	if(!( (cookie_jar_filename=cache_file_touch(cookie_jar_file)) )){
+		debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar: [%s].", cookie_jar_filename);
+		g_free(cookie_jar_dir);
+		g_free(cookie_jar_directory);
+		g_free(cookie_jar_filename);
+		return NULL;
+	}
+	
+	debug("\t\tCreated cookie jar for [%s].\n\t\tDirectory: [%s]\n\t\tFilename: [%s].", service->key, cookie_jar_directory, cookie_jar_filename );
+	
+	g_free(cookie_jar_dir);
+	g_free(cookie_jar_directory);
+	return cookie_jar_filename;
+}/*cache_create_cookie_jar*/
+
 gchar *cache_images_get_unknown_image_filename(void){
 	if(unknown_image_filename){
 		debug("Using unkown image: %s.", unknown_image_filename);
@@ -253,7 +285,7 @@ gchar *cache_images_get_filename(User *user){
 		return cache_images_get_unknown_image_filename();
 	}
 	
-	gchar *avatar_dir=g_build_filename("services", user->service->uri, user->service->username, "avatars", user->user_name, NULL);
+	gchar *avatar_dir=g_build_filename("services", user->service->uri, "avatars", user->user_name, NULL);
 	gchar *image_filename=NULL;
 	gchar *avatar_path=NULL;
 	if(!( (avatar_path=cache_dir_test(avatar_dir, TRUE)) && (image_filename=g_build_filename(avatar_path, image_file, NULL)) ))

@@ -252,7 +252,7 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	
 	
 	app_statusbar_printf("Please wait while %s's title is found.", uri);
-	if(!(content_type=online_service_get_url_content_type(service, uri, &msg))){
+	if(!(content_type=online_service_get_uri_content_type(service, uri, &msg))){
 		debug("\t\tUnable to determine the content-type from uri: '%s'.", uri);
 		return temp;
 	}

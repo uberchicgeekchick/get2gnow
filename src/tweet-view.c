@@ -676,6 +676,8 @@ void tweet_view_dm_data_fill(GList *followers){
 	gchar		*null_friend=g_strdup("");
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 	
+	gchar *new_label=NULL;
+	
 	gtk_list_store_clear(tweet_view->followers_list_store);
 	
 	gtk_list_store_append(tweet_view->followers_list_store, iter);
@@ -689,7 +691,13 @@ void tweet_view_dm_data_fill(GList *followers){
 	
 	for(list=followers; list; list=list->next) {
 		user=(User *)list->data;
-		gchar *user_label=g_strdup_printf("%s <%s> from %s", user->user_name, user->nick_name, user->service->decoded_key);
+		if(!new_label){
+			new_label=g_markup_printf_escaped("<b>_DM one of your, &lt;%s&gt;, followers:</b>", user->service->decoded_key);
+			gtk_label_set_markup(tweet_view->dm_frame_label, new_label);
+			gtk_label_set_use_underline(tweet_view->dm_frame_label, TRUE);
+			gtk_label_set_single_line_mode(tweet_view->dm_frame_label, TRUE);
+		}
+		gchar *user_label=g_strdup_printf("%s <%s>", user->user_name, user->nick_name);
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(tweet_view->followers_list_store, iter);
 		gtk_list_store_set(
@@ -703,6 +711,7 @@ void tweet_view_dm_data_fill(GList *followers){
 		g_free(iter);
 		iter=NULL;
 	}
+	if(new_label) uber_free(new_label);
 }/*tweet_view_dm_data_fill*/
 
 /********************************************************

@@ -93,8 +93,6 @@ enum {
 #define PREFS_UI_HEIGHT				PREFS_PATH "/ui/heights/%s"
 #define PREFS_UI_POSITIONS			PREFS_PATH "/ui/positions/%s_%s"
 
-static gboolean vpaned_set=FALSE;
-
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
@@ -114,7 +112,7 @@ void geometry_load(void){
 	
 	geometry_load_for_window(MainWindow);
 	geometry_load_for_window(FloatingTweetView);
-}//geometry_load
+}/*geometry_load*/
 
 void geometry_save(void){
 	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
@@ -154,21 +152,23 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
-	gint v=0;
+	GtkPaned *tweet_vpaned=app_get_tweet_paned();
+	gint v=0, min_v=0, max_v=0, padding=h/3.5;
+	
+	g_object_get(G_OBJECT(tweet_vpaned), "max-position", &max_v, "min-position", &min_v, NULL);
+	min_v+=padding;
+	if(v>max_v || v<min_v) v=padding;
+	
 	gchar *vpaned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, "vpanded", "tweet_view");
-	debug("Moving TweetView's vpaned position to: %d.", v);
 	gconfig_get_int(vpaned_position_prefs_path, &v);
-	if(v>0){
-		if(!(vpaned_set)){
-			v-=47;
-			vpaned_set=TRUE;
-		}
-		gtk_paned_set_position(app_get_tweet_paned(), v);
-	}
+	
+	debug("Moving TweetView's vpaned position to: %d; Maximum position: %d: Minimum position: %d vpaned position.", v, max_v, min_v);
+	gtk_paned_set_position(tweet_vpaned, v);
 	uber_free(vpaned_position_prefs_path);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
+	static guint	calls=0;
 	gint		x=0, y=0, w=0, h=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
@@ -194,15 +194,30 @@ static void geometry_save_for_window(ViewType view){
 	}
 	prefs_path_free(prefs_path);
 	
-	if(view!=Embed) return;
-	
-	gint v=gtk_paned_get_position(app_get_tweet_paned());
-	if(v>0){
-		gchar *vpaned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, "vpanded", "tweet_view");
-		debug("Saving TweetView's vpaned position of: %d.", v);
-		gconfig_set_int(vpaned_position_prefs_path, v);
-		uber_free(vpaned_position_prefs_path);
+	if(view!=Embed){
+		if(calls) calls=0;
+		return;
 	}
+	if(calls<8) calls++;
+	
+	GtkPaned *tweet_vpaned=app_get_tweet_paned();
+	gint v=gtk_paned_get_position(tweet_vpaned), min_v=0, max_v=0, padding=h/3.5;
+	
+	gchar *vpaned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, "vpanded", "tweet_view");
+	if(calls<8){
+		gconfig_get_int(vpaned_position_prefs_path, &v);
+	}
+	g_object_get(G_OBJECT(tweet_vpaned), "max-position", &max_v, "min-position", &min_v, NULL);
+	min_v+=padding;
+	if(v>max_v || v<min_v) v=padding;
+	
+	debug("%s TweetView's vpaned position of: %d; Maximum position: %d: Minimum position: %d vpaned position.", (calls<8 ?_("Moving") :_("Saving") ), v, max_v, min_v);
+	
+	if(calls==8){
+		gconfig_set_int(vpaned_position_prefs_path, v);
+	}
+	gtk_paned_set_position(tweet_vpaned, v);
+	uber_free(vpaned_position_prefs_path);
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){

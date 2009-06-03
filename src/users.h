@@ -73,6 +73,7 @@ typedef struct _User User;
 typedef struct _UserStatus UserStatus;
 typedef struct _UserRequest UserRequest;
 
+typedef enum _StatusMonitor StatusMonitor;
 typedef enum _UsersGListGetWhich UsersGListGetWhich;
 typedef enum _UserAction UserAction;
 
@@ -99,10 +100,20 @@ enum _UsersGListGetWhich{
 };
 
 
+enum _StatusMonitor{
+	All	=	G_PRIORITY_LOW,
+	DMs	=	G_PRIORITY_HIGH,
+	Replies	=	G_PRIORITY_DEFAULT,
+	Tweets	=	G_PRIORITY_HIGH_IDLE,
+};
+
+
 struct _UserStatus {
 	OnlineService	*service;
 	
 	User		*user;
+	
+	StatusMonitor	type;
 	guint		id;
 	guint		in_reply_to_status_id;
 	

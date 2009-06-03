@@ -47,44 +47,80 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
-#ifndef __TIMER_H__
-#define __TIMER_H__
+
 
 /********************************************************
- *        System & library headers.                     *
+ *        Project headers, eg #include "config.h"       *
  ********************************************************/
-#include <glib.h>
-#include <glib/gi18n.h>
-#include <libsoup/soup.h>
+#include "config.h"
+#include "main.h"
 
-#ifndef soup_message_headers_get_one
-#define soup_message_headers_get_one soup_message_headers_get
-#endif
+#include "online-services.h"
+#include "online-service.h"
+#include "online-service-wrapper.h"
+
+#include "network.h"
+#include "users.h"
+
 
 /********************************************************
- *        Objects, structures, and etc typedefs         *
+ *          Variable definitions.                       *
  ********************************************************/
-typedef struct _RateLimitTimer RateLimitTimer;
-/*
-struct _RateLimitTimer{
-	gboolean active;
-	GTimer *gtimer;
-	gdouble limit;
-	guint processing;
-	guint requests;
-};
-*/
+#define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication"
+#include "debug.h"
+
 
 /********************************************************
- *          Global method  & function prototypes        *
+ *          Static method & function prototypes         *
  ********************************************************/
-RateLimitTimer *timer_new(void);
-void timer_main(RateLimitTimer *timer, SoupMessage *msg);
 
-void timer_free(RateLimitTimer *timer);
 
-#endif /* __TIMER_H__  */
+/********************************************************
+ *   'Here be Dragons'...art, beauty, fun, & magic.     *
+ ********************************************************/
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+	OnlineServiceWrapper *service_wrapper=g_new0(OnlineServiceWrapper, 1);
+	
+	service_wrapper->service=service;
+	
+	service_wrapper->requested_uri=g_strdup(request_uri);
+	
+	if(callback==network_cb_on_image||callback==user_request_main_quit||callback==network_users_glist_save)
+		service_wrapper->user_data=user_data;
+	else if(user_data!=NULL)
+		service_wrapper->user_data=g_strdup(user_data);
+	else
+		service_wrapper->user_data=NULL;
+	
+	if(callback==network_display_timeline)
+		service_wrapper->formdata=formdata;
+	else if(formdata!=NULL)
+		service_wrapper->formdata=g_strdup(formdata);
+	else
+		service_wrapper->formdata=NULL;
+	
+	return service_wrapper;
+}
 
+void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper){
+		if(!service_wrapper) return;
+			
+			uber_free(service_wrapper->requested_uri);
+				
+				if(service_wrapper->user_data!=NULL) uber_free(service_wrapper->user_data);
+					
+					if(service_wrapper->formdata!=NULL) uber_free(service_wrapper->formdata);
+						
+						service_wrapper->service=NULL;
+							
+							uber_free(service_wrapper);
+}/*online_service_free_wrapper*/
+
+
+/********************************************************
+ *                       eof                            *
+ ********************************************************/

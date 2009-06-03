@@ -1,7 +1,7 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
@@ -18,7 +18,7 @@
  *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -30,17 +30,17 @@
  * language governing rights and limitations under the RPL.
  *
  * The User-Visible Attribution Notice below, when provided, must appear in each
- * user-visible display as defined in Section 6.4(d):
+ * user-visible display as defined in Section 6.4 (d):
  * 
  * Initial art work including: design, logic, programming, and graphics are
- * Copyright(C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
  * All materials not covered under the terms of the RPL are all still
- * Copyright(C) 2009 Kaity G. B. and released under the terms of the
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
  * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
  * 
  * Any & all data stored by this Software created, generated and/or uploaded by any User
  * and any data gathered by the Software that connects back to the User.  All data stored
- * by this Software is Copyright(C) of the User the data is connected to.
+ * by this Software is Copyright (C) of the User the data is connected to.
  * Users may lisences their data under the terms of an OSI approved or Creative Commons
  * license.  Users must be allowed to select their choice of license for each piece of data
  * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
@@ -48,69 +48,43 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/********************************************************
- *          My art, code, & programming.                *
- ********************************************************/
-#ifndef __ONLINE_SERVICES_H__
-#define __ONLINE_SERVICES_H__
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
+#ifndef __ONLINE_SERVICE_WRAPPER_H__
+#define __ONLINE_SERVICE_WRAPPER_H__
 
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-#include <fcntl.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
-#include "online-service.h"
 
+/**********************************************************************
+ *  Macros, constants, objects, structures, and enum typedefs         *
+ **********************************************************************/
+typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
 
-/*********************************************************************
- *        Objects, structures, and etc typedefs                      *
- *********************************************************************/
-typedef struct _OnlineServices OnlineServices;
-
-typedef enum{
-	UrlString,
-	OnlineServicePointer,
-} OnlineServicesListStoreColumns;
-
-/**
- *	@accounts contains an 'OnlineServics' object for each account that's available.
- */
-struct _OnlineServices{
-	guint		total;
-	guint		connected;
-	GSList		*keys;
-	GList		*accounts;
+struct _OnlineServiceWrapper {
+	OnlineService	*service;
+	gchar		*requested_uri;
+	gpointer	user_data;
+	gpointer	formdata;
 };
 
-extern OnlineServices *online_services;
+
+/**********************************************************************
+ *          Global method & function prototypes                       *
+ **********************************************************************/
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper);
 
 
-/********************************************************
- *          Global method  & function prototypes        *
- ********************************************************/
-OnlineServices *online_services_init(void);
-
-gboolean online_services_login(OnlineServices *services);
-gboolean online_services_relogin(OnlineServices *services);
-void online_services_disconnect(OnlineServices *services);
-
-OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
-void online_services_delete_service(OnlineServices *services, OnlineService *service);
-
-OnlineService *online_services_connected_get_first(OnlineServices *services);
-
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
-
-void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change);
-
-gboolean online_services_combo_box_fill(OnlineServices *services, gboolean connected_only, GtkListStore *list_store, GtkComboBox *combo_box);
-
-void online_services_deinit(OnlineServices *services);
-
-#endif /* __ONLINE_SERVICES_H__ */
-
+#endif /* __ONLINE_SERVICE_WRAPPER_H__ */
+/**********************************************************************
+ *                               eof                                  *
+ **********************************************************************/

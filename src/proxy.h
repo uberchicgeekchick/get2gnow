@@ -1,7 +1,7 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
@@ -18,7 +18,7 @@
  *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -30,17 +30,17 @@
  * language governing rights and limitations under the RPL.
  *
  * The User-Visible Attribution Notice below, when provided, must appear in each
- * user-visible display as defined in Section 6.4(d):
+ * user-visible display as defined in Section 6.4 (d):
  * 
  * Initial art work including: design, logic, programming, and graphics are
- * Copyright(C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
  * All materials not covered under the terms of the RPL are all still
- * Copyright(C) 2009 Kaity G. B. and released under the terms of the
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
  * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
  * 
  * Any & all data stored by this Software created, generated and/or uploaded by any User
  * and any data gathered by the Software that connects back to the User.  All data stored
- * by this Software is Copyright(C) of the User the data is connected to.
+ * by this Software is Copyright (C) of the User the data is connected to.
  * Users may lisences their data under the terms of an OSI approved or Creative Commons
  * license.  Users must be allowed to select their choice of license for each piece of data
  * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
@@ -48,61 +48,37 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __APP_H__
-#define __APP_H__
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
+#ifndef __PROXY_H__
+#define __PROXY_H__
 
-#include <glib-object.h>
+
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
 #include <glib.h>
-#include <libsexy/sexy.h>
+#include "online-services.h"
+#include "online-service.h"
 
-#include <gtk/gtk.h>
-#include "parser.h"
-#include "images.h"
+/**********************************************************************
+ *  Macros, constants, objects, structures, and enum typedefs         *
+ **********************************************************************/
+typedef enum{
+	PROXY_STATUS_DISABLED	=	-1,
+	PROXY_STATUS_UNKNOWN	=	0,
+	PROXY_STATUS_ENABLED	=	1,
+} PROXY_STATUS;
 
-#include "tweet-list.h"
+/**********************************************************************
+ *          Global method & function prototypes                       *
+ **********************************************************************/
+gboolean proxy_init(void);
+gboolean proxy_attach_online_service(OnlineService *service);
+void proxy_deinit(void);
 
-
-G_BEGIN_DECLS
-
-#define TYPE_APP		(app_get_type())
-#define APP(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_APP, App))
-#define APP_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), TYPE_APP, AppClass))
-#define IS_APP(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_APP))
-#define IS_APP_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_APP))
-#define IS_APP_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_APP, AppClass))
-
-typedef struct _App      	App;
-typedef struct _AppClass 	AppClass;
-typedef struct _AppPriv  	AppPriv;
-
-struct _App {
-        GObject        parent;
-};
-
-struct _AppClass {
-        GObjectClass parent_class;
-};
-
-GType app_get_type(void) G_GNUC_CONST;
-void app_disconnect(void);
-void app_create(void);
-App *app_get(void);
-
-void app_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
-
-GtkWindow *app_get_window(void);
-GtkPaned *app_get_tweet_paned(void);
-GtkMenuItem *app_get_menu(const gchar *menu);
-
-void app_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
-void app_set_statusbar_msg(gchar *msg);
-
-gboolean app_notify_on_timeout(gpointer data);
-const gchar *app_tabs_to_right_align(void);
-void app_notify_sound(void);
-
-void app_state_on_connection(gboolean connected);
-
-G_END_DECLS
-
-#endif /*_APP_H_*/
+#endif /* __PROXY_H__ */
+/**********************************************************************
+ *                               eof                                  *
+ **********************************************************************/

@@ -290,12 +290,10 @@ static void popup_dialog_show(GtkWindow *parent, UserAction action ){
 	g_object_unref(ui);
 	
 	debug("Signal handlers set... loading accounts.");
-	if(!( online_services_fill_list_store(online_services, popup->online_services_list_store, TRUE) ))
+	if(!( online_services_combo_box_fill(online_services, TRUE, popup->online_services_list_store, popup->online_services_combo_box) ))
 		debug("No services found to load, new accounts need to be setup.");
-	else{
+	else
 		debug("OnlineServices found & loaded.  Selecting active service.");
-		gtk_combo_box_set_active(popup->online_services_combo_box, 0);
-	}
 	
 	if(online_services->connected==1){
 		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");

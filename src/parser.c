@@ -40,6 +40,7 @@
 
 #include "main.h"
 #include "online-services.h"
+#include "network.h"
 #include "users.h"
 
 #include "app.h"
@@ -265,7 +266,7 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonitors timeline){
+gboolean parser_timeline(OnlineService *service, const gchar *timeline, SoupMessage *xml, StatusMonitor monitor){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 		
@@ -277,29 +278,28 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonito
 	xmlNode		*current_node=NULL;
 	UserStatus 	*status=NULL;
 	
-	gint minutes=0;
-	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
-	if(minutes < 3) minutes=3;
-	
 	/* Count new tweets */
 	gboolean	notify;
-	gboolean	display=FALSE;
+	gboolean	display=FALSE, display_this_update=FALSE;
 	guint		last_tweet_id=0, tweet_id=0;
-	switch(timeline){
+	switch(monitor){
 		case DMs:
 			notify=gconfig_if_bool(PREFS_UI_DM_NOTIFY, TRUE);
 			tweet_id=service->id_last_dm;
 			break;
+		
 		case Replies:
 			notify=gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE);
 			tweet_id=service->id_last_reply;
 			break;
+		
 		case Tweets:
-		default:
 			display=TRUE;
 			notify=gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE);
 			tweet_id=service->id_last_tweet;
 			break;
+		
+		case All: default: return FALSE;
 	}
 	const int	tweet_display_interval=10;
 	
@@ -330,28 +330,32 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonito
 		debug("Creating tweet's Status *.");
 		gboolean free_status=TRUE;
 		status=user_status_new(service, current_node->children);
+		status->type=monitor;
 		parser_format_user_status(service, status->user, status);
 		
 		/* the first tweet parsed is the 'newest' */
 		if(!last_tweet_id) last_tweet_id=status->id;
 		
 		if( (notify) && (status->id > tweet_id) && (strcasecmp(status->user->user_name, service->username)) ){
+			if( (monitor==DMs) || (monitor==Tweets && g_strcmp0(API_REPLIES, timeline) && g_strcmp0(API_TIMELINE_FRIENDS, timeline)) )
+				display_this_update=TRUE;
 			free_status=FALSE;
 			app_notify_sound();
-			g_timeout_add_seconds_full(timeline, tweet_list_notify_delay, app_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			g_timeout_add_seconds_full(monitor, tweet_list_notify_delay, app_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
 		/* Append to ListStore */
-		if(display)
+		if(display || display_this_update)
 			tweet_list_store_status(service, status);
 		
 		if(free_status) user_status_free(status);
+		if(display_this_update) display_this_update=FALSE;
 	} /*end of loop*/
 	
 	/* Remember last id showed */
 	if(last_tweet_id) {
-		switch(timeline){
+		switch(monitor){
 			case DMs:
 				service->id_last_dm=last_tweet_id;
 				break;
@@ -360,6 +364,9 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonito
 				break;
 			case Tweets:
 				service->id_last_tweet=last_tweet_id;
+				break;
+			case All: default:
+				/*We never get here, see above, but these cases are here to make gcc happy.*/
 				break;
 		}
 	}
@@ -399,20 +406,22 @@ void parser_format_user_status(OnlineService *service, User *user, UserStatus *s
 	sexy_status_swap=NULL;
 	
 	status->tweet=g_strdup_printf(
-			"<small><u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s<i>[%s]</i>\n%s",
+			"%s<small><u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s<i>[%s]</i>\n%s%s%s",
+			((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</u></b>" :""),
 			user->nick_name, user->user_name, service->uri,
 			status->service->decoded_key,
 			app_tabs_to_right_align(),
 			status->created_how_long_ago,
-			sexy_status_text
+			((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
 	);
 	
 	status->notification=g_strdup_printf(
-			"<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n\t<i><u>To:</u></i> <i>&lt;%s&gt;</i>\n<b>%s</b>",
+			"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n\t<i><u>To:</u></i> <i>&lt;%s&gt;</i>\n<b>%s%s%s</b>",
+			((status->type==DMs) ?"<b><u>[Direct Message]</u></b>" :""),
 			status->created_how_long_ago,
 			user->nick_name, user->user_name, service->uri,
 			status->service->decoded_key,
-			sexy_status_text
+			((status->type==DMs) ?"<i>[" :""), sexy_status_text, ((status->type==DMs) ?"]</i>" :"")
 	);
 	
 	g_free(sexy_status_text);

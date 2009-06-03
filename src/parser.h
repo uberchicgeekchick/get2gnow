@@ -30,7 +30,6 @@
 
 #include "online-services.h"
 #include "users.h"
-#include "network.h"
 
 
 gchar *parser_get_cache_file_from_uri(const gchar *uri);
@@ -41,7 +40,7 @@ void parser_format_user_status(OnlineService *service, User *user, UserStatus *s
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, guint *my_diff);
 
-gboolean parser_timeline(OnlineService *service, SoupMessage *xml, NetworkMonitors timeline);
+gboolean parser_timeline(OnlineService *service, const gchar *timeline, SoupMessage *xml, StatusMonitor monitor);
 gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 #endif /*  __PARSER_H__ */

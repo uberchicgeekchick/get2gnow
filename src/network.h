@@ -102,12 +102,6 @@ typedef enum {
 	Retry,
 } ReloadState;
 
-typedef enum{
-	DMs	=	G_PRIORITY_HIGH,
-	Replies	=	G_PRIORITY_DEFAULT,
-	Tweets	=	G_PRIORITY_HIGH_IDLE,
-} NetworkMonitors;
-
 extern gboolean getting_followers;
 
 
@@ -118,12 +112,12 @@ gboolean network_check_http(OnlineService *service, SoupMessage *msg);
 void network_set_state_loading_timeline(const gchar *timeline, ReloadState state);
 
 void network_init(void);
-void network_deinit(gboolean free_timeline);
+void network_deinit(gboolean free_timeline, StatusMonitor monitor);
 
 void network_post_status(const gchar *text);
 void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
 
-void network_get_timeline(const gchar *uri_timeline);
+void network_get_timeline(gchar *uri_timeline);
 void network_get_user_timeline(OnlineService *service, const gchar *username);
 void network_refresh(void);
 

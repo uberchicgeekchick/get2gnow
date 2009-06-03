@@ -63,6 +63,7 @@
 #include <gio/gio.h>
 #include <glib/gstdio.h>
 
+#include "online-service.h"
 #include "users.h"
 #include "images.h"
 
@@ -82,6 +83,8 @@ void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent);
 
 gchar *cache_filename_get_from_uri(const gchar *uri);
 gchar *cache_file_touch(const gchar *cache_file);
+
+gchar *cache_create_cookie_jar(OnlineService *service);
 
 gchar *cache_images_get_unknown_image_filename(void);
 gchar *cache_images_get_filename(User *user);

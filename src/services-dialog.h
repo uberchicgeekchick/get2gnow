@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __ACCOUNT_DIALOG_H__
-#define __ACCOUNT_DIALOG_H__
+#ifndef __SERVICES_DIALOG_H__
+#define __SERVICES_DIALOG_H__
 
 #include <gtk/gtk.h>
 
 void services_dialog_show (GtkWindow *parent);
 
-#endif /* __ACCOUNT_DIALOG_H__ */
+#endif /* __SERVICES_DIALOG_H__ */

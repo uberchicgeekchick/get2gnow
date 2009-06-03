@@ -61,7 +61,10 @@
 #include "config.h"
 #include "app.h"
 #include "tweets.h"
+
+#include "online-service.h"
 #include "network.h"
+
 #include "gconfig.h"
 #include "preferences.h"
 #include "tweet-list.h"
@@ -71,13 +74,13 @@
 #include "users.h"
 
 
-typedef struct SelectedTweet {
+typedef struct{
 	OnlineService *service;
 	unsigned long int id;
 	unsigned long int user_id;
 	gchar *user_name;
 	gchar *tweet;
-} SelectedTweet;//SelectedTweet
+} SelectedTweet;
 static SelectedTweet *selected_tweet=NULL;
 
 #define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users"

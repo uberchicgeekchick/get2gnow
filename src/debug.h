@@ -30,7 +30,7 @@ G_BEGIN_DECLS
 
 #ifndef DEBUG_DOMAINS
 #	if defined GNOME_ENABLE_DEBUG
-#		define DEBUG_DOMAINS "all"
+#		define DEBUG_DOMAINS "All"
 #	else
 #		define DEBUG_DOMAINS ""
 #	endif

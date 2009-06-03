@@ -91,6 +91,12 @@ static GConfigPriv *gconfig_priv=NULL;
 static gchar *cached_bool_key=NULL;
 static gboolean cached_bool_value=FALSE;
 
+static gchar *cached_int_key=NULL;
+static int cached_int_value=0;
+
+static gchar *cached_string_key=NULL;
+static gchar *cached_string_value=NULL;
+
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -119,28 +125,42 @@ static void gconfig_init(GConfig *gconfig){
 }
 
 static void gconfig_finalize(GObject *object){
-	gconf_client_remove_dir(gconfig_priv->gconf_client, PREFS_PATH, NULL);
-	gconf_client_remove_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, NULL);
-	g_object_unref(gconfig_priv->gconf_client);
+	if(gconfig && gconfig_priv && gconfig_priv->gconf_client){
+		gconf_client_remove_dir(gconfig_priv->gconf_client, PREFS_PATH, NULL);
+		gconf_client_remove_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, NULL);
+		g_object_unref(gconfig_priv->gconf_client);
+	}
 	G_OBJECT_CLASS(gconfig_parent_class)->finalize(object);
-}
+}/*gconfig_finalize*/
 
 void gconfig_start(void){
 	if(!gconfig) gconfig=g_object_new(TYPE_GCONFIG, NULL);
 	if(!cached_bool_key) cached_bool_key=g_strdup("");
+	if(!cached_int_key) cached_int_key=g_strdup("");
+	if(!cached_string_key) cached_string_key=g_strdup("");
+	if(!cached_string_value) cached_string_value=g_strdup("");
 }
 
 void gconfig_shutdown(void){
 	if(cached_bool_key) uber_free(cached_bool_key);
+	if(cached_int_key) uber_free(cached_int_key);
+	if(cached_string_key) uber_free(cached_string_key);
+	if(cached_string_value) uber_free(cached_string_value);
 	if(gconfig) uber_unref(gconfig);
 }
 
 gboolean gconfig_set_int(const gchar *key, gint value){
+	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
+		cached_int_value=value;
 	debug("Setting int:'%s' to %d", key, value);
 	return gconf_client_set_int(gconfig_priv->gconf_client, key, value, NULL);
 }
 
 gboolean gconfig_get_int(const gchar *key, gint *value){
+	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) ){
+		*value=cached_int_value;
+		return TRUE;
+	}
 	GError         *error=NULL;
 	
 	*value=0;
@@ -157,6 +177,9 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 		return FALSE;
 	}
 	
+	uber_free(cached_int_key);
+	cached_int_key=g_strdup(key);
+	cached_int_value=(*value);
 	return TRUE;
 }
 
@@ -210,12 +233,22 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 }
 
 gboolean gconfig_set_string(const gchar *key, const gchar *value){
+	if( G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
+		uber_free(cached_string_value);
+		cached_string_value=g_strdup(value);
+	}
+	
 	debug("Setting string:'%s' to '%s'", key, value);
 	
 	return gconf_client_set_string(gconfig_priv->gconf_client, key, value, NULL);
 }
 
 gboolean gconfig_get_string(const gchar *key, gchar **value){
+	if( G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
+		*value=g_strdup(cached_string_value);
+		return TRUE;
+	}
+	
 	GError         *error=NULL;
 
 	*value=NULL;
@@ -229,7 +262,12 @@ gboolean gconfig_get_string(const gchar *key, gchar **value){
 		g_error_free(error);
 		return FALSE;
 	}
-
+	
+	uber_free(cached_string_key);
+	cached_string_key=g_strdup(key);
+	uber_free(cached_string_value);
+	cached_string_value=g_strdup(*value);
+	
 	return TRUE;
 }
 
@@ -247,7 +285,7 @@ gboolean gconfig_get_list_string(const gchar *key, GSList **value){
 static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
 	GSList *l=NULL;
 	if( list_type==GCONF_VALUE_INVALID || list_type==GCONF_VALUE_SCHEMA || list_type==GCONF_VALUE_LIST || list_type==GCONF_VALUE_PAIR ){
-		debug("\t\t[undisplayable/mixed values]");
+		debug("[undisplayable/mixed values]");
 		return;
 	}
 	
@@ -275,7 +313,7 @@ gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_t
 	if(IF_DEBUG){
 		debug("Saving list: '%s', values:(=", key);
 		gconfig_print_list_values(value, list_type);
-		debug("\t\t)" );
+		debug(")" );
 	}
 	return gconf_client_set_list(gconfig_priv->gconf_client, key, list_type, value, NULL );
 }
@@ -302,11 +340,26 @@ gboolean gconfig_rm_rf(const gchar *key){
 	debug("Removing %s and all keys below it.", key);
 	gboolean success=gconf_client_recursive_unset(gconfig_priv->gconf_client, key, GCONF_UNSET_INCLUDING_SCHEMA_NAMES, &error);
 	if(error){
-		debug("\t\t**ERROR**: %s", error->message);
+		debug("**ERROR**: Failed to recursively unset: %s; gconf encountered an error: %s", key, error->message);
 		g_error_free(error);
+		return FALSE;
 	}
-	return success;
-}//gconfig_rm_rf
+	
+	if(!success){
+		debug("**ERROR**: Failed to recursively unset: %s; an unknow error occured.", key);
+		return FALSE;
+	}
+	
+	error=NULL;
+	gconf_client_suggest_sync(gconfig_priv->gconf_client, &error);
+	if(error){
+		debug("**ERROR:** Failed to suggest gconf client syncing w/gconf deamon. GConf deamon return: %s", error->message);
+		g_error_free(error);
+		return FALSE;
+	}
+	
+	return TRUE;
+}/*gconfig_rm_rf*/
 
 static void gconfig_notify_data_free(GConfigNotifyData *data){
 	g_slice_free(GConfigNotifyData, data);

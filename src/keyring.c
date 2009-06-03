@@ -31,6 +31,12 @@
 #define DEBUG_DOMAINS   "OnlineServices:Authentication:Settings:Setup:Keyring"
 #include "debug.h"
 
+#ifndef GNOME_ENABLE_DEBUG
+#define	DOMAIN	NULL
+#else
+#define	DOMAIN "debug"
+#endif
+
 static const gchar *account_gnome_keyring_result_to_string (GnomeKeyringResult result){
 	switch (result) {
 	case GNOME_KEYRING_RESULT_OK:
@@ -65,7 +71,7 @@ gboolean keyring_get_password(OnlineService **service){
 	
 	result=gnome_keyring_find_network_password_sync(
 							(*service)->username,       /* User */
-								NULL,           /* Domain */
+								DOMAIN,           /* Domain */
 								(*service)->uri, /* Server */
 								NULL,           /* Object */
 								NULL,           /* Protocol */
@@ -108,7 +114,7 @@ gboolean keyring_set_password(OnlineService *service){
 	result = gnome_keyring_set_network_password_sync(
 								NULL,            /* Keyring */
 								service->username,        /* User */
-								NULL,            /* Domain */
+								DOMAIN,            /* Domain */
 								service->uri,  /* Server */
 								NULL,            /* Object */
 								NULL,            /* Protocol */

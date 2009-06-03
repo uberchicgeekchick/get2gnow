@@ -44,7 +44,7 @@ static void confirm_dialog_response(GtkWidget *widget, gint response, GtkWidget 
 		func( (gpointer)gconfig_path, user_data);
 }
 
-gboolean confirm_dialog_show(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GtkWindow *parent, gboolean return_if_hidden, GFunc func, gpointer user_data){
+gboolean confirm_dialog_show(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GtkWindow *parent, GFunc func, gpointer user_data){
 	GtkMessageDialog	*message_dialog;
 	GtkCheckButton		*check_button;
 	GtkVBox			*vbox;
@@ -53,7 +53,7 @@ gboolean confirm_dialog_show(const gchar *gconfig_path, const gchar *message1, c
 	g_return_val_if_fail(message1 != NULL, FALSE);
 	
 	if(gconfig_if_bool(gconfig_path, FALSE))
-		return return_if_hidden;
+		return TRUE;
 	
 	message_dialog=(GtkMessageDialog *)gtk_message_dialog_new_with_markup(
 								parent,

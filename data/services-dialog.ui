@@ -264,6 +264,8 @@
                 <property name="use_stock">True</property>
               </object>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -283,7 +285,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="services_save_button">
+              <object class="GtkButton" id="service_save_button">
                 <property name="label" translatable="yes">gtk-save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -308,7 +310,7 @@
     <action-widgets>
       <action-widget response="-6">cancel_button</action-widget>
       <action-widget response="-5">services_okay_button</action-widget>
-      <action-widget response="0">services_save_button</action-widget>
+      <action-widget response="0">service_save_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="urls_liststore">
