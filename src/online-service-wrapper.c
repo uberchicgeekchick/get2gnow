@@ -65,6 +65,7 @@
 
 #include "network.h"
 #include "users.h"
+#include "users-glists.h"
 
 
 /********************************************************
@@ -88,36 +89,60 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *
 	service_wrapper->service=service;
 	
 	service_wrapper->requested_uri=g_strdup(request_uri);
+	service_wrapper->callback=callback;
 	
-	if(callback==network_cb_on_image||callback==user_request_main_quit||callback==network_users_glist_save)
-		service_wrapper->user_data=user_data;
-	else if(user_data!=NULL)
+	if(
+		user_data!=NULL
+		&&
+		callback!=network_cb_on_image
+		&&
+		callback!=user_request_main_quit
+		&&
+		callback!=users_glist_save
+	)
 		service_wrapper->user_data=g_strdup(user_data);
 	else
-		service_wrapper->user_data=NULL;
+		service_wrapper->user_data=user_data;
 	
-	if(callback==network_display_timeline)
-		service_wrapper->formdata=formdata;
-	else if(formdata!=NULL)
+	if(
+		formdata!=NULL
+		&&
+		callback!=network_display_timeline
+	)
 		service_wrapper->formdata=g_strdup(formdata);
 	else
-		service_wrapper->formdata=NULL;
+		service_wrapper->formdata=formdata;
 	
 	return service_wrapper;
 }
 
 void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper){
-		if(!service_wrapper) return;
-			
-			uber_free(service_wrapper->requested_uri);
-				
-				if(service_wrapper->user_data!=NULL) uber_free(service_wrapper->user_data);
-					
-					if(service_wrapper->formdata!=NULL) uber_free(service_wrapper->formdata);
-						
-						service_wrapper->service=NULL;
-							
-							uber_free(service_wrapper);
+	if(!service_wrapper) return;
+	
+	uber_free(service_wrapper->requested_uri);
+	
+	if(
+		service_wrapper->user_data!=NULL
+		&&
+		service_wrapper->callback!=network_cb_on_image
+		&&
+		service_wrapper->callback!=user_request_main_quit
+		&&
+		service_wrapper->callback!=users_glist_save
+	)
+		uber_free(service_wrapper->user_data);
+	
+	if(
+		service_wrapper->formdata!=NULL
+		&&
+		service_wrapper->callback!=network_display_timeline
+	)
+		uber_free(service_wrapper->formdata);
+	
+	service_wrapper->callback=NULL;
+	service_wrapper->service=NULL;
+	
+	uber_free(service_wrapper);
 }/*online_service_free_wrapper*/
 
 

@@ -31,4 +31,6 @@ void popup_friend_unfollow(GtkWindow *parent);
 void popup_friend_block(GtkWindow *parent);
 void popup_friend_unblock(GtkWindow *parent);
 
+gboolean popup_confirmation_dialog(GtkWindow *parent, const gchar *message1, const gchar *message2, const gchar *conf_path, GFunc func, gpointer user_data);
+
 #endif /* __POPUP_DIALOG_H__ */

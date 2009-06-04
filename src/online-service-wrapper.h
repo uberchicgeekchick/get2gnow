@@ -70,10 +70,11 @@
 typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
 
 struct _OnlineServiceWrapper {
-	OnlineService	*service;
-	gchar		*requested_uri;
-	gpointer	user_data;
-	gpointer	formdata;
+	OnlineService		*service;
+	gchar			*requested_uri;
+	SoupSessionCallback	callback;
+	gpointer		user_data;
+	gpointer		formdata;
 };
 
 

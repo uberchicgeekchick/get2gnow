@@ -131,12 +131,12 @@ extern OnlineService *in_reply_to_service;
  *          Global method  & function prototypes        *
  ********************************************************/
 OnlineService *online_service_open(const gchar *account_key);
-OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
+OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
 gboolean online_service_save(OnlineService *service);
 gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf);
 
 gboolean online_service_connect(OnlineService *service);
-gboolean online_service_login(OnlineService *service);
+gboolean online_service_login(OnlineService *service, gboolean temporary_connection);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 

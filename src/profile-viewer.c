@@ -56,6 +56,9 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include "config.h"
+#include "main.h"
+
 #include "friends-manager.h"
 #include "users.h"
 #include "gtkbuilder.h"
@@ -73,13 +76,23 @@
 typedef struct {
 	User			*user;
 	GtkMessageDialog	*dialog;
-	GtkImage		*image;
+	
 	GtkLabel		*loading_label;
+	
+	GtkImage		*image;
+	
 	GtkVBox			*title_vbox;
 	Label			*user_label;
+	
 	GtkVBox			*profile_vbox;
 	Label			*url_hyperlink;
 	Label			*bio_html;
+	
+	GtkHBox			*latest_update_hbox;
+	GtkLabel		*updated_when_label;
+	
+	GtkVBox			*latest_update_vbox;
+	Label			*latest_tweet;
 } ProfileViewer;
 
 
@@ -91,17 +104,26 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 	
 	GtkBuilder *ui=gtkbuilder_get_file(
 					GtkBuilderUI,
-					"profile_dialog", &profile_viewer->dialog,
-					"loading_label", &profile_viewer->loading_label,
-					"title_vbox", &profile_viewer->title_vbox,
-					"profile_vbox", &profile_viewer->profile_vbox,
+						"profile_dialog", &profile_viewer->dialog,
+						
+						"loading_label", &profile_viewer->loading_label,
+						
+						"title_vbox", &profile_viewer->title_vbox,
+						
+						"profile_vbox", &profile_viewer->profile_vbox,
+						
+						"latest_update_hbox", &profile_viewer->latest_update_hbox,
+						"updated_when_label", &profile_viewer->updated_when_label,
+						
+						"latest_update_vbox", &profile_viewer->latest_update_vbox,
 					NULL
 	);
 	
-	gtkbuilder_connect(ui, profile_viewer,
+	gtkbuilder_connect(
+				ui, profile_viewer,
 					"profile_dialog", "destroy", gtk_widget_destroy,
 					"profile_dialog", "response", gtk_widget_destroy,
-					NULL
+				NULL
 	);
 	
 	gtk_window_set_transient_for(GTK_WINDOW(profile_viewer->dialog), parent);
@@ -149,7 +171,7 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 				GTK_WIDGET(profile_viewer->url_hyperlink),
 				TRUE, TRUE, 0
 	);
-	label_set_text(service, LABEL(profile_viewer->url_hyperlink), profile_details, TRUE, TRUE);
+	label_set_text(service, profile_viewer->url_hyperlink, profile_details, TRUE, TRUE);
 	g_free( profile_details );
 	
 	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", profile_viewer->user->bio );
@@ -160,10 +182,25 @@ void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWind
 				GTK_WIDGET(profile_viewer->bio_html),
 				TRUE, TRUE, 0
 	);
-	label_set_text(service, LABEL(profile_viewer->bio_html), profile_details, TRUE, TRUE);
+	label_set_text(service, profile_viewer->bio_html, profile_details, TRUE, TRUE);
 	g_free( profile_details );
 	
+	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", profile_viewer->user->status->created_how_long_ago);
+	gtk_label_set_markup(profile_viewer->updated_when_label, profile_details);
+	uber_free(profile_details);
+	
+	profile_viewer->latest_tweet=label_new();
+	gtk_widget_show(GTK_WIDGET(profile_viewer->latest_tweet));
+	gtk_box_pack_end(
+			GTK_BOX(profile_viewer->latest_update_vbox),
+			GTK_WIDGET(profile_viewer->latest_tweet),
+			TRUE, TRUE, 0
+	);
+	label_set_text(service, profile_viewer->latest_tweet, profile_viewer->user->status->sexy_tweet, TRUE, TRUE);
+	
+	
 	gtk_widget_show_all( GTK_WIDGET( profile_viewer->dialog ) );
+	
 	gtk_widget_hide( GTK_WIDGET( profile_viewer->loading_label ) );
 	
 	user_free( profile_viewer->user );

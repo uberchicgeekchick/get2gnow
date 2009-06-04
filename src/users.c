@@ -67,6 +67,7 @@
 #include "online-service-wrapper.h"
 #include "network.h"
 
+#include "users-glists.h"
 #include "users.h"
 
 #include "gconfig.h"
@@ -87,10 +88,8 @@ static void user_request_free(UserRequest *request);
 
 static User *user_constructor(OnlineService *service, gboolean a_follower);
 static User *user_parse_new(OnlineService *service, SoupMessage *xml);
-static User *user_parse_profile(OnlineService *service, xmlNode *a_node);
 
 static void user_status_format_dates(UserStatus *status);
-static void users_free(UsersGListGetWhich users_glist_get_which, OnlineService *service);
 
 static void user_append_friend(User *user);
 static void user_remove_friend(User *user);
@@ -105,6 +104,7 @@ static void user_remove_follower(User *user);
 
 gchar *user_action_to_string(UserAction action){
 	switch(action){
+		case Confirmation: _("confirming action");
 		case ViewTweets:
 			return _("displaying tweets");
 		case Follow:
@@ -130,7 +130,7 @@ gchar *user_action_to_string(UserAction action){
 }/*user_action_to_string*/
 
 static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const gchar *user_data){
-	if(action==SelectService || action==ViewProfile || G_STR_EMPTY(user_data)) return NULL;
+	if(action==SelectService || action==ViewProfile || action == Confirmation || G_STR_EMPTY(user_data)) return NULL;
 	
 	UserRequest *request=g_new(UserRequest, 1);
 	
@@ -172,6 +172,7 @@ static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const
 			break;
 		case ViewProfile:
 		case SelectService:
+		case Confirmation:
 		default:
 			/*We never get here, but it makes gcc happy.*/
 			g_free(request);
@@ -181,7 +182,7 @@ static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const
 }/*user_request_new*/
 
 void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data){
-	if(action==SelectService || G_STR_EMPTY(user_data)) return;
+	if(action==SelectService || action==Confirmation || G_STR_EMPTY(user_data)) return;
 
 	if(action==ViewProfile){
 		view_profile(service, user_data, parent);
@@ -217,11 +218,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 		debug("**ERORR:** UserRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_data, service_wrapper->service->decoded_key, msg->status_code);
 		
 		user_request_free(request);
-		service_wrapper->service=NULL;
-		g_free(service_wrapper->requested_uri);
-		g_free(service_wrapper);
-		service_wrapper=NULL;
-		
+		online_service_wrapper_free(service_wrapper);
 		return;
 	}
 	
@@ -263,15 +260,14 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 			break;
 		case SelectService:
 		case ViewProfile:
+		case Confirmation:
 		default:
+			/*more cases of to make gcc happy.*/
 			break;
 	}//switch
 	
 	user_request_free(request);
-	service_wrapper->service=NULL;
-	g_free(service_wrapper->requested_uri);
-	g_free(service_wrapper);
-	service_wrapper=NULL;
+	online_service_wrapper_free(service_wrapper);
 }/*user_request_main_quit*/
 
 static void user_request_free(UserRequest *request){
@@ -287,13 +283,9 @@ static void user_request_free(UserRequest *request){
 
 static User *user_constructor(OnlineService *service, gboolean a_follower){
 	User *user=g_new(User, 1);
-	
 	user->follower=a_follower;
-	
 	user->service=service;
-	
 	user->status=NULL;
-	
 	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
 	
 	return user;
@@ -320,10 +312,10 @@ static User *user_parse_new(OnlineService *service, SoupMessage *xml){
 	xmlCleanupParser();
 	
 	return user;
-}
+}/*user_parse_new(service, xml);*/
 
 
-static User *user_parse_profile(OnlineService *service, xmlNode *a_node){
+User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	
@@ -372,7 +364,7 @@ static User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 			user->image_url=g_strdup(content);
 		
 		else if(g_str_equal(current_node->name, "status") && current_node->children)
-			user->status=user_status_new(service, current_node->children);
+			user->status=user_status_new(service, current_node->children, Tweets);
 		
 		xmlFree(content);
 		
@@ -383,16 +375,16 @@ static User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 	user->image_filename=cache_images_get_filename(user);
 	
 	return user;
-}
+}/*user_parse_new(service, root_node); || user_parse_new(service, current_node->children);*/
 
-UserStatus *user_status_new(OnlineService *service, xmlNode *status_node){
+UserStatus *user_status_new(OnlineService *service, xmlNode *status_node, StatusMonitor type){
 	xmlNode		*current_node = NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=g_new0(UserStatus, 1);
 	
 	status->service=service;
 	status->user=NULL;
-	status->type=Tweets;
+	status->type=type;
 	status->text=status->tweet=status->notification=status->sexy_tweet=NULL;
 	status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0;
@@ -408,35 +400,34 @@ UserStatus *user_status_new(OnlineService *service, xmlNode *status_node){
 			continue;
 		}
 		
-		if(g_str_equal(current_node->name, "created_at")){
+		if(g_str_equal(current_node->name, "id"))
+			status->id=strtoul(content, NULL, 10);
+		
+		else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
+			status->in_reply_to_status_id=strtoul(content, NULL, 10);
+		
+		else if(g_str_equal(current_node->name, "source"))
+			status->source=g_strdup(content);
+		
+		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")) && current_node->children)
+			status->user=user_parse_profile(service, current_node->children);
+		
+		else if(g_str_equal(current_node->name, "text"))
+			status->text=g_strdup(content);
+		
+		else if(g_str_equal(current_node->name, "created_at")){
 			status->created_at_str=g_strdup(content);
 			user_status_format_dates(status);
-		}else if(g_str_equal(current_node->name, "id")){
-			debug("Parsing tweet's 'id': %s", content);
-			status->id=strtoul(content, NULL, 10);
-		}else if(g_str_equal(current_node->name, "in_reply_to_status_id")){
-			debug("Parsing tweet's 'id': %s", content);
-			status->in_reply_to_status_id=strtoul(content, NULL, 10);
-		}else if(g_str_equal(current_node->name, "source")){
-			debug("Adding tweet's source: %s", current_node->name);
-			status->source=g_strdup(content);
-		}else if(g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")){
-			if(!current_node->children){
-				debug("*WARNING:* Cannot parse user profile %s does not have any child nodes.", current_node->name);
-				continue;
-			}
-			debug("Parsing user node: %s.", current_node->name);
-			status->user=user_parse_profile(service, current_node->children);
-			debug("User parsed and created for user: %s.", status->user->user_name);
-		}else if(g_str_equal(current_node->name, "text")) {
-			debug("Parsing tweet.");
-			status->text=g_strdup(content);
 		}
+		
 		xmlFree(content);
 		
 	}
+	
+	if(status->user) parser_format_user_status(service, status->user, status);
+	
 	return status;
-}/*user_status_new(service, status_node);*/
+}/*user_status_new(service, current_node->children);*/
 
 static void user_status_format_dates(UserStatus *status){
 	struct tm	post;
@@ -472,53 +463,6 @@ void user_status_free(UserStatus *status){
 	status=NULL;
 }/*user_status_free*/
 
-
-/**
- *returns: 1 if a is different from b, -1 if b is different from a, 0 if they're the same
- */
-int user_sort_by_user_name(User *a, User *b){
-	return strcasecmp( (const char *)a->user_name, (const char *)b->user_name );
-}/*user_sort_by_user_name(l1->data, l2->data);*/
-
-
-/* Parse a user-list XML( friends, followers,... ) */
-GList *users_new(OnlineService *service, SoupMessage *xml){
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
-	xmlNode		*current_node=NULL;
-	
-	GList		*list=NULL;
-	User		*user=NULL;
-	
-	/* parse the xml */
-	debug("Parsing users xml.");
-	if(!( (doc=parser_parse(xml, &root_element)) && root_element )){
-		xmlCleanupParser();
-		return NULL;
-	}
-	
-	debug("\t\t\tParsing new users. Starting with: '%s' node.", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE)
-			continue;
-		
-		if(g_str_equal(current_node->name, "user")){
-			debug("\t\t\tCreating User * from current node.");
-			user=user_parse_profile(service, current_node->children);
-			debug("\t\t\tAdding user: [%s] to user list.", user->user_name);
-			list=g_list_append(list, user);
-		}else if(g_str_equal(current_node->name, "users") && current_node->children){
-			current_node=current_node->children;
-		}
-	} /* End of loop */
-	
-	/* Free memory */
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	
-	return list;
-}
-
 /* Get a user timeline */
 User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	if( !user_name || G_STR_EMPTY(user_name))
@@ -527,7 +471,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	User *user=NULL;
 	
 	gchar *user_profile_uri=g_strdup_printf(API_ABOUT_USER, user_name);
-	SoupMessage *msg=online_service_request(service, QUEUE, user_profile_uri, NULL, NULL, NULL);
+	SoupMessage *msg=online_service_request(service, GET, user_profile_uri, NULL, NULL, NULL);
 	g_free( user_profile_uri );
 	
 	if(!(user=user_parse_new(service, msg)))
@@ -536,62 +480,6 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	return user;
 }/*user_fetch_profile*/
 
-/* Free a list of Users */
-void user_free_lists(OnlineService *service){
-	if(service->friends_and_followers){
-		users_free(GetBoth, service);
-		return;
-	}
-	
-	users_free(GetFriends, service);
-	users_free(GetFollowers, service);
-}/*user_free_lists*/
-
-static void users_free(UsersGListGetWhich users_glist_get_which, OnlineService *service){
-	GList *glist_free=NULL;
-	switch(users_glist_get_which){
-		case GetBoth:
-			if(!service->friends_and_followers) return;
-			glist_free=service->friends_and_followers;
-			break;
-		case GetFriends:
-			if(!service->friends) return;
-			glist_free=service->friends;
-			break;
-		case GetFollowers:
-			if(!service->followers) return;
-			glist_free=service->followers;
-			break;
-	}
-	if(!glist_free) return;
-	
-	if(IF_DEBUG){
-		gchar *type=NULL;
-		switch(users_glist_get_which){
-			case GetBoth:
-				type=g_strdup_printf("%s, %s %s", _("friends, ie you're following"), _("and"), _("who's following you"));
-				break;
-			
-			case GetFriends:
-				type=g_strdup(_("friends, ie you're following"));
-				break;
-			
-			case GetFollowers:
-				type=g_strdup(_("who's following you"));
-				break;
-		}
-		debug("Freeing the authenticated user's %s.", type );
-		uber_free(type);
-	}
-	
-	g_list_foreach(glist_free, (GFunc)user_free, NULL);
-	
-	uber_list_free(glist_free);
-	if(users_glist_get_which!=GetBoth) return;
-	
-	uber_list_free(service->friends);
-	uber_list_free(service->followers);
-}/*users_free*/
 
 /* Free a user struct */
 void user_free(User *user){

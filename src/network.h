@@ -87,9 +87,6 @@
 #define API_FAVE		"/favorites/create/%s.xml"
 #define API_UNFAVE		"/favorites/destroy/%s.xml"
 
-#define API_FOLLOWING		"/statuses/friends.xml"
-#define API_FOLLOWERS		"/statuses/followers.xml"
-
 #define API_USER_FOLLOW		"/friendships/create/%s.xml"
 #define API_USER_UNFOLLOW	"/friendships/destroy/%s.xml"
 #define API_USER_BLOCK		"/blocks/create/%s.xml"
@@ -101,8 +98,6 @@ typedef enum {
 	Reload,
 	Retry,
 } ReloadState;
-
-extern gboolean getting_followers;
 
 
 /**********************************************************************
@@ -120,9 +115,6 @@ void network_send_message(OnlineService *service, const gchar *friend, const gch
 void network_get_timeline(gchar *uri_timeline);
 void network_get_user_timeline(OnlineService *service, const gchar *username);
 void network_refresh(void);
-
-GList *network_users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListLoadFunc func);
-void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
 gboolean network_download_avatar(User *user);
 void network_get_image(User *user, GtkTreeIter *iter);

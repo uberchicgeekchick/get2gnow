@@ -96,8 +96,10 @@ gboolean keyring_get_password(OnlineService **service){
 	if(IF_DEBUG){
 		debug("Password(s) found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", (*service)->decoded_key, (*service)->uri, (*service)->username, (*service)->password );
 		debug("Passwords found: (=");
-		for(p=passwords; p; p=p->next)
-			debug("\t'%s'", (gchar *)p->data);
+		for(p=passwords; p; p=p->next){
+			data=(GnomeKeyringNetworkPasswordData *)p->data;
+			debug("\t'%s'", (gchar *)data->password);
+		}
 		debug(")");
 	}
 	

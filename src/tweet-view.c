@@ -65,6 +65,7 @@
 #include "program.h"
 
 #include "network.h"
+#include "users-glists.h"
 #include "gtkbuilder.h"
 #include "tweets.h"
 #include "app.h"
@@ -660,12 +661,12 @@ static void tweet_view_dm_show(GtkToggleButton *toggle_button){
 	
 	debug("Enabling TweetView's dm form.");
 	tweet_view_dm_form_activate(TRUE);
-	network_users_glist_get(GetFollowers, FALSE, tweet_view_dm_data_fill);
+	users_glist_get(GetFollowers, FALSE, tweet_view_dm_data_fill);
 }/*tweet_view_dm_show*/
 
 static void tweet_view_dm_refresh(void){
 	popup_select_service( (gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view->tweet_view :app_get_window()) );
-	network_users_glist_get(GetFollowers, TRUE, tweet_view_dm_data_fill);
+	users_glist_get(GetFollowers, TRUE, tweet_view_dm_data_fill);
 }/*tweet_view_dm_refresh*/
 
 void tweet_view_dm_data_fill(GList *followers){

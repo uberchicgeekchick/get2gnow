@@ -266,7 +266,7 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-gboolean parser_timeline(OnlineService *service, const gchar *timeline, SoupMessage *xml, StatusMonitor monitor){
+gboolean parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 		
@@ -282,7 +282,7 @@ gboolean parser_timeline(OnlineService *service, const gchar *timeline, SoupMess
 	gboolean	notify;
 	gboolean	display=FALSE, display_this_update=FALSE;
 	guint		last_tweet_id=0, tweet_id=0;
-	switch(monitor){
+	switch(monitoring){
 		case DMs:
 			notify=gconfig_if_bool(PREFS_UI_DM_NOTIFY, TRUE);
 			tweet_id=service->id_last_dm;
@@ -329,19 +329,17 @@ gboolean parser_timeline(OnlineService *service, const gchar *timeline, SoupMess
 		/* Parse node */
 		debug("Creating tweet's Status *.");
 		gboolean free_status=TRUE;
-		status=user_status_new(service, current_node->children);
-		status->type=monitor;
-		parser_format_user_status(service, status->user, status);
+		status=user_status_new(service, current_node->children, monitoring);
 		
 		/* the first tweet parsed is the 'newest' */
 		if(!last_tweet_id) last_tweet_id=status->id;
 		
 		if( (notify) && (status->id > tweet_id) && (strcasecmp(status->user->user_name, service->username)) ){
-			if( (monitor==DMs) || (monitor==Tweets && g_strcmp0(API_REPLIES, timeline) && g_strcmp0(API_TIMELINE_FRIENDS, timeline)) )
+			if( (monitoring==DMs) || (monitoring==Replies) )
 				display_this_update=TRUE;
 			free_status=FALSE;
 			app_notify_sound();
-			g_timeout_add_seconds_full(monitor, tweet_list_notify_delay, app_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			g_timeout_add_seconds_full(monitoring, tweet_list_notify_delay, app_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
@@ -355,7 +353,7 @@ gboolean parser_timeline(OnlineService *service, const gchar *timeline, SoupMess
 	
 	/* Remember last id showed */
 	if(last_tweet_id) {
-		switch(monitor){
+		switch(monitoring){
 			case DMs:
 				service->id_last_dm=last_tweet_id;
 				break;

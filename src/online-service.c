@@ -71,6 +71,7 @@
 
 #include "online-services.h"
 #include "online-service-wrapper.h"
+#include "users-glists.h"
 
 #include "tweets.h"
 #include "users.h"
@@ -147,7 +148,8 @@ OnlineService *online_service_open(const gchar *account_key){
 		service->path=g_strdup(parsed_uri[1]);
 	g_strfreev(parsed_uri);
 
-	service->connected=service->authenticated=FALSE;
+	service->connected=FALSE;
+	service->authenticated=TRUE;
 	service->session=NULL;
 	service->logins=0;
 	service->id_last_tweet=service->id_last_dm=service->id_last_reply=0;
@@ -157,10 +159,10 @@ OnlineService *online_service_open(const gchar *account_key){
 	debug("Loading OnlineService settings for: '%s'" , service->decoded_key);
 	
 	gchar *encoded_username=g_uri_escape_string(service->username, NULL, TRUE);
-	gchar *encoded_url=g_uri_escape_string(service->uri, NULL, TRUE);
-	service->key=g_strdup_printf("%s@%s", encoded_username, encoded_url );
+	gchar *encoded_uri=g_uri_escape_string(service->uri, NULL, TRUE);
+	service->key=g_strdup_printf("%s@%s", encoded_username, encoded_uri );
 	g_free(encoded_username);
-	g_free(encoded_url);
+	g_free(encoded_uri);
 	
 	if(g_str_equal(service->uri, "twitter.com"))
 		service->which_rest=Twitter;
@@ -197,17 +199,18 @@ OnlineService *online_service_open(const gchar *account_key){
 	service->auto_connect=gconfig_if_bool(prefs_auth_path, TRUE);
 	g_free(prefs_auth_path);
 	
-	debug("OnlineService instance created.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tsecure connection: %s; service uri: %s; username: %s; password: %s; auto_connect: %s", service->decoded_key, service->key, (service->enabled?"en":"dis"), (service->https?"TRUE":"FALSE"), service->uri, service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
+	debug("OnlineService created.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice uri: %s over https: [%s]; username: %s; password: %s; auto_connect: [%s]", service->decoded_key, service->key, (service->enabled?"en":"dis"), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
 	
 	return service;
 }/*online_service_open*/
 
-OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
-	debug("Creating new OnlineService for '%s@%s'.", username, url);
+OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
+	debug("Creating new OnlineService for '%s@%s'.", username, uri);
 	OnlineService *service=g_new0(OnlineService, 1);
 	service->session=NULL;
 	
-	service->connected=service->authenticated=FALSE;
+	service->connected=FALSE;
+	service->authenticated=TRUE;
 	service->enabled=enabled;
 	service->logins=0;
 	
@@ -216,14 +219,14 @@ OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean h
 	service->timer=timer_new();
 	service->auto_connect=auto_connect;
 	
-	service->decoded_key=g_strdup_printf("%s@%s", username, url );
+	service->decoded_key=g_strdup_printf("%s@%s", username, uri );
 	service->username=g_strdup(username);
 	service->password=g_strdup(password);
 	service->https=https;
 	
 	service->friends=service->followers=service->friends_and_followers=NULL;
 	
-	service->uri=g_strdup(url);
+	service->uri=g_strdup(uri);
 	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
 	service->server=g_strdup(parsed_uri[0]);
 	if(G_STR_EMPTY(parsed_uri[1]))
@@ -233,10 +236,10 @@ OnlineService *online_service_new(gboolean enabled, const gchar *url, gboolean h
 	g_strfreev(parsed_uri);
 	
 	gchar *encoded_username=g_uri_escape_string(username, NULL, TRUE);
-	gchar *encoded_url=g_uri_escape_string(url, NULL, TRUE);
-	service->key=g_strdup_printf("%s@%s", encoded_username, encoded_url);
+	gchar *encoded_uri=g_uri_escape_string(uri, NULL, TRUE);
+	service->key=g_strdup_printf("%s@%s", encoded_username, encoded_uri);
 	g_free(encoded_username);
-	g_free(encoded_url);
+	g_free(encoded_uri);
 	
 	if(!(strcasecmp(service->server, "twitter.com")))
 		service->which_rest=Twitter;
@@ -275,7 +278,7 @@ gboolean online_service_save(OnlineService *service){
 	gconfig_set_bool(prefs_auth_path, service->auto_connect);
 	g_free(prefs_auth_path);
 	
-	debug("OnlineService saved.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice url: %s; username: %s; password: %s; auto_connect: [%s]", service->decoded_key, service->key, (service->enabled?"en":"dis"), service->uri, service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
+	debug("OnlineService saved.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice uri: %s over https: [%s]; username: %s; password: %s; auto_connect: [%s]", service->decoded_key, service->key, (service->enabled?"en":"dis"), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->username, service->password, (service->auto_connect?"TRUE":"FALSE"));
 
 	debug("Attempting to connect to OnlineService for: '%s'.", service->decoded_key);
 	online_service_reconnect(service);
@@ -370,7 +373,7 @@ gboolean online_service_connect(OnlineService *service){
 	if(!( (service->session=soup_session_sync_new_with_options(SOUP_SESSION_MAX_CONNS_PER_HOST, 8, SOUP_SESSION_TIMEOUT, 20, SOUP_SESSION_IDLE_TIMEOUT, 20, NULL)) )){
 		debug("**ERROR:** Failed to creating a new soup session for '%s'.", service->decoded_key);
 		service->session=NULL;
-		return (service->connected=FALSE);
+		return (service->connected=service->authenticated=FALSE);
 	}
 	
 	/* HTTP Basic Authentication */
@@ -398,7 +401,7 @@ gboolean online_service_connect(OnlineService *service){
 	
 	online_service_cookie_jar_open(service);
 	
-	return (service->connected=TRUE);
+	return (service->connected=service->authenticated=TRUE);
 }/*online_service_connect*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
@@ -447,9 +450,11 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 }/*online_service_disconnect*/
 
 /* Login to service. */
-gboolean online_service_login(OnlineService *service){
+gboolean online_service_login(OnlineService *service, gboolean temporary_connection){
 	debug("Attempting to log in to %s...", service->decoded_key);
-	if(!(service->enabled && service->connected )) return FALSE;
+	if(!(service->enabled && service->connected)) return FALSE;
+	
+	if(!(service->auto_connect || temporary_connection)) return FALSE;
 	
 	if(!SOUP_IS_SESSION(service->session)){
 		debug("**ERROR**: Unable to authenticating OnlineService: %s. Invalide libsoup session.", (service->decoded_key ?service->decoded_key :"invalid service") );
@@ -461,9 +466,10 @@ gboolean online_service_login(OnlineService *service){
 	/* Verify cedentials */
 	debug("Logging into: '%s'. username: %s, password: %s.", service->decoded_key, service->username, service->password);
 	
-	/*service->connected=*/service->authenticated=TRUE;
 	online_service_request(service, QUEUE, API_LOGIN, online_service_login_check, API_LOGIN, NULL);
 	debug("OnlineService: %s.  Status: authenticated: [%s].", service->decoded_key, (service->authenticated ?"TRUE" :"FALSE" ) );
+	if(!temporary_connection) online_services_increment_connected(online_services);
+	
 	return TRUE;
 }/*online_service_login*/
 
@@ -478,9 +484,9 @@ static void online_service_login_check(SoupSession *session, SoupMessage *msg, g
 	 * 	timer_main(service->timer, msg);
 	 */
 	if(!network_check_http(service, msg)) {
-		debug("Login to '%s' failed.  Authentication triggerred.", service->decoded_key);
+		debug("Logging into '%s'.", service->decoded_key);
 	}else{
-		debug("Login to '%s' succeeded.", service->decoded_key);
+		debug("Logged into '%s'.", service->decoded_key);
 	}
 	online_service_wrapper_free(service_wrapper);
 }/*online_service_login_check*/
@@ -519,7 +525,6 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 		debug("Authenticating OnlineService: [%s]\n\t\t\tAttempt #%d of %d maximum allowed attempts.\n\t\t\tUsername: [%s]; Password: [%s]; Server: [%s].", service->key, service->logins, MAX_LOGINS, service->username, service->password, service->uri);
 		soup_auth_update(auth, msg, "WWW-Authenticate");
 		soup_auth_authenticate(auth, service->username, service->password);
-		service->authenticated=TRUE;
 	}else{
 		debug("**ERROR**: Authentication attempts %d exceeded maximum attempts: %d.", service->logins, MAX_LOGINS);
 		service->authenticated=FALSE;
@@ -527,9 +532,9 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 }/*online_service_http_authenticate*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	if(!(service->enabled && service->connected)){
-		debug("Unable load: %s.  You're not connected to %s.", uri, service->key);
-		app_statusbar_printf("Unable load: %s.  You're not connected to: %s.", uri, service->key);
+	if(!(service->enabled && service->connected && service->authenticated)){
+		debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
+		app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 		return NULL;
 	}
 	
@@ -542,8 +547,8 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
 	if(!(service->enabled && service->connected && service->authenticated)){
-		debug("Unable load: %s.  You're not connected to %s.", uri, service->key);
-		app_statusbar_printf("Unable load: %s.  You're not connected to: %s.", uri, service->key);
+		debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
+		app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 		return NULL;
 	}
 	
@@ -700,7 +705,7 @@ void online_service_free(OnlineService *service){
 	uber_free(service->uri);
 	uber_free(service->username);
 	uber_free(service->password);
-	user_free_lists(service);
+	users_glists_free_lists(service);
 	
 	debug("Releasing OnlineService\t[%s].", service->decoded_key );
 	uber_free(service->decoded_key);

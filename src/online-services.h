@@ -106,9 +106,10 @@ OnlineService *online_services_connected_get_first(OnlineServices *services);
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
 
+void online_services_increment_connected(OnlineServices *services);
 void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change);
 
-gboolean online_services_combo_box_fill(OnlineServices *services, gboolean connected_only, GtkListStore *list_store, GtkComboBox *combo_box);
+gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only);
 
 void online_services_deinit(OnlineServices *services);
 

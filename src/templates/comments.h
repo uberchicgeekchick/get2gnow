@@ -61,7 +61,7 @@
 
 
 /**********************************************************************
- *  Macros, constants, objects, structures, and enum typedefs         *
+ *  Methods, macros, constants, objects, structs, and enum typedefs   *
  **********************************************************************/
 
 

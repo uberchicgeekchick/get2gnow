@@ -72,6 +72,7 @@
 #include "online-services.h"
 #include "network.h"
 
+#include "tweet-list.h"
 #include "tweets.h"
 #include "users.h"
 
@@ -116,8 +117,8 @@ OnlineServices *online_services_init(void){
 	OnlineService	*service=NULL;
 	gchar	*account_key=NULL;
 	
-	services=g_new0(OnlineServices,1);
-	services->total=0;
+	services=g_new0(OnlineServices, 1);
+	services->total=services->connected=0;
 	
 	gconfig_get_list_string(ONLINE_SERVICES_ACCOUNTS, &services->keys);
 	
@@ -127,10 +128,6 @@ OnlineServices *online_services_init(void){
 		services->accounts=g_list_append(services->accounts, (online_service_open( (const gchar *)account_key )) );
 		services->accounts=g_list_last(services->accounts);
 		service=(OnlineService *)services->accounts->data;
-		
-		services->total++;
-		
-		online_service_connect(service);
 		
 		debug("Loaded account: '%s'.  Validating & connecting.", service->decoded_key);
 		if(!service->enabled){
@@ -148,14 +145,14 @@ OnlineServices *online_services_init(void){
 			continue;
 		}
 		
-		if(service->connected) services->connected++;
+		if(online_service_connect(service)) services->total++;
 	}
 	
 	services->accounts=g_list_first(services->accounts);
 	
 	online_services=services;
 	
-	if(!services->connected)
+	if(!services->total)
 		debug("No accounts are enabled or setup.  New accounts will be need to be setup." );
 	else
 		debug("%d services found and loaded.", services->total);
@@ -169,14 +166,17 @@ gboolean online_services_login(OnlineServices *services){
 	OnlineService	*service=NULL;
 	gboolean	login_okay=FALSE;
 	
-	if(services->connected){
-		for(a=services->accounts; a; a=a->next){
-			service=(OnlineService *)a->data;
-			if(service->enabled && service->connected && service->auto_connect)
-				if(online_service_login(service))
-					if(!login_okay) login_okay=TRUE;
-		}
+	for(a=services->accounts; a; a=a->next){
+		service=(OnlineService *)a->data;
+		if(service->enabled && service->connected && service->auto_connect)
+			if(online_service_login(service, FALSE))
+				if(!login_okay) login_okay=TRUE;
 	}
+	if(!services->connected)
+		debug("No accounts are enabled or setup.  New accounts will be need to be setup." );
+	else
+		debug("Connected to %d OnlineServices.", services->connected);
+	
 	app_state_on_connection(login_okay);
 	return login_okay;
 }/*online_services_login*/
@@ -193,7 +193,7 @@ gboolean online_services_relogin(OnlineServices *services){
 			online_service_reconnect(service);
 		
 		if(service->enabled && service->connected)
-			if(online_service_login(service))
+			if(online_service_login(service, FALSE))
 				if(!relogin_okay) relogin_okay=TRUE;
 	}
 	app_state_on_connection(relogin_okay);
@@ -270,11 +270,15 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 		debug("**ERROR**: Failed saving new service: '%s@%s'.", username, url);
 		return NULL;
 	}
+
+	online_service_connect(service);
 	
 	debug("Saving accounts & services successful.");
 	if(service->connected){
 		services->connected++;
 		debug("\t\tConnecting to: '%s'\t[succeeded]", service->decoded_key);
+
+		online_service_login(service, FALSE);
 	}else
 		debug("\t\tConnecting to: '%s'\t[failed]", service->decoded_key);
 	
@@ -345,7 +349,7 @@ static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListSto
 	gtk_combo_box_set_active(combo_box, 0);
 }/*online_services_combo_box_add_new(combo_box, list_store);*/
 
-gboolean online_services_combo_box_fill(OnlineServices *services, gboolean connected_only, GtkListStore *list_store, GtkComboBox *combo_box){
+gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only){
 	if(!list_store) return FALSE;
 	gtk_list_store_clear(list_store);
 	if(!online_services->total){
@@ -403,22 +407,28 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
 		if(!(service->enabled && service->connected && service->authenticated)){
-			debug("Unable load: %s.  You're not connected to %s.", uri, service->key);
-			app_statusbar_printf("Unable load: %s.  You're not connected to: %s.", uri, service->key);
+			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
+			app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 			continue;
 		}
 		online_service_request(service, request, uri, callback, user_data, formdata);
 	}
 }/*online_services_request*/
 
+void online_services_increment_connected(OnlineServices *services){
+	services->connected++;
+	debug("OnlineServices has a new connections.  Total connected: #%d.", services->connected);
+}/*online_services_increment_connected(online_services);*/
+
 void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change){
 	if(services->connected) services->connected--;
 	
 	debug("OnlineServices still connected: #%d.", services->connected);
 	if(services->connected || no_state_change ) return;
-	services_dialog_show(app_get_window());
-	app_disconnect();
+	tweet_list_clear();
+	network_deinit(TRUE, All);
 	app_state_on_connection(FALSE);
+	services_dialog_show(app_get_window());
 }/*online_services_decrement_connected(online_services);*/
 
 void online_services_deinit(OnlineServices *services){

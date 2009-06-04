@@ -102,14 +102,11 @@ typedef struct {
 	GtkTreeIter	*iter;
 } NetworkTweetListImageDL;
 
-gboolean getting_followers=FALSE;
-
 static gchar *current_timeline=NULL;
 
 static gboolean processing=FALSE;
-static gboolean fetching_users=FALSE;
+static gboolean retrying=FALSE;
 
-static guint which_pass=0;
 static guint timeout_id_timelines=0, timeout_id_replies=0, timeout_id_dms=0;
 
 /********************************************************
@@ -121,6 +118,8 @@ static NetworkTweetListImageDL *network_tweet_list_image_dl_new(gchar *filename,
 static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image);
 
 static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
+
+static void network_timeline_retry(gchar *timeline, OnlineServiceWrapper *service_wrapper, StatusMonitor monitoring);
 
 static void network_update_timeline(OnlineService *service, gboolean timeline_parsed, const gchar *new_timeline);
 
@@ -206,9 +205,9 @@ void network_init(void){
 }/*network_init();*/
 
 static gboolean network_timeout(gpointer user_data){
-	StatusMonitor refresh_which=(StatusMonitor)user_data;
+	StatusMonitor monitoring=(StatusMonitor)user_data;
 	
-	switch(refresh_which){
+	switch(monitoring){
 		case DMs:
 			online_services_request( online_services, QUEUE, API_DIRECT_MESSAGES, network_display_timeline, current_timeline, (gpointer)DMs );
 			timeout_id_dms=0;
@@ -267,6 +266,7 @@ void network_set_state_loading_timeline(const gchar *timeline, ReloadState state
 	const gchar *notice_prefix=NULL;
 	switch(state){
 		case Retry:
+			retrying=TRUE;
 		case Reload:
 			notice_prefix=_("Reloading");
 			break;
@@ -331,135 +331,6 @@ void network_get_user_timeline(OnlineService *service, const gchar *username){
 	g_free(user_timeline);
 	g_free(user_id);
 }/*network_get_user_timeline*/
-
-
-GList *network_users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListLoadFunc func){
-	static OnlineService *service=NULL;
-	static guint page=0;
-	static UsersGListLoadFunc on_load_func=NULL;
-	
-	if(!selected_service)
-		return NULL;
-	
-	if(!fetching_users){
-		page=0;
-		if(!which_pass){
-			on_load_func=func;
-			if(refresh && service && service==selected_service)
-				user_free_lists(service);
-			service=selected_service;
-		}
-		
-		if( !refresh && service && service==selected_service ){
-			GList *users=NULL;
-			switch(users_glist_get_which){
-				case GetFriends:
-					if(!service->friends) break;
-					debug("Displaying & loading, %d pages, friends list for: [%s].", page, service->decoded_key);
-					service->friends=g_list_sort(service->friends, (GCompareFunc)usrcasecmp);
-					users=service->friends;
-					break;
-				case GetFollowers:
-					if(!service->followers) break;
-					debug("Displaying & loading, %d pages, followers list for: [%s].", page, service->decoded_key);
-					service->followers=g_list_sort(service->followers, (GCompareFunc)usrcasecmp);
-					users=service->followers;
-					break;
-				case GetBoth:
-					if(!(service->friends && service->followers)) break;
-					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, service->decoded_key);
-					if(which_pass<2) break;
-					selected_service->friends_and_followers=g_list_alloc();
-					selected_service->friends_and_followers=g_list_concat(selected_service->followers, selected_service->friends);
-					selected_service->friends_and_followers=g_list_sort(selected_service->friends_and_followers, (GCompareFunc)usrcasecmp);
-					users=selected_service->friends_and_followers;
-					break;
-			}
-			if(users){
-				which_pass=0;
-				if(on_load_func!=NULL)
-					on_load_func(users);
-				return users;
-			}
-
-		}
-	}
-	
-	fetching_users=TRUE;
-	page++;
-	debug("Please wait while %s downloads %s page #%d.", GETTEXT_PACKAGE, ( (users_glist_get_which==GetFollowers||which_pass) ?"followers" :"friends"), page );
-	app_statusbar_printf("Please wait while %s downloads page #%d of users %s.", GETTEXT_PACKAGE, page, ( (users_glist_get_which==GetFollowers||which_pass) ?"who're following you" :"you're following") );
-	
-	gchar *uri=NULL;
-	if( (users_glist_get_which==GetFriends || (users_glist_get_which==GetBoth && !which_pass && !service->friends) ) ){
-		getting_followers=FALSE;
-		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
-	}else{
-		which_pass=1;
-		if(users_glist_get_which==GetBoth && service->friends && service->followers){
-			which_pass=2;
-			fetching_users=FALSE;
-			return network_users_glist_get(users_glist_get_which, FALSE, NULL);
-		}
-		getting_followers=TRUE;
-		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
-	}
-	
-	debug("Getting users page, uri:  %s.", uri );
-	online_service_request(service, QUEUE, uri, network_users_glist_save, (gpointer)users_glist_get_which, NULL );
-	g_free(uri);
-	return NULL;
-}/*network_users_glist_get*/
-
-void network_users_glist_save(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	OnlineServiceWrapper *service_wrapper=(OnlineServiceWrapper *)user_data;
-	
-	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)service_wrapper->user_data;
-	OnlineService *service=service_wrapper->service;
-	uber_free(service_wrapper->requested_uri);
-	uber_free(service_wrapper);
-	
-	GList *new_users;
-	debug("Users response: %i", msg->status_code);
-	
-	/* Check response */
-	if(!network_check_http(service, msg)){
-		debug("No more %s where downloaded so we're assuming we're finished.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
-		fetching_users=FALSE;
-		which_pass++;
-		network_users_glist_get(users_glist_get_which, FALSE, NULL);
-		return;
-	}
-	
-	/* parse user list */
-	debug("Parsing user list");
-	if(!(new_users=users_new(service, msg)) ){
-		debug("No more %s where found, yippies we've got'em all.\n\t\t\tOnlineService: [%s] recieved %i from its server: [%s].", (which_pass ?"followers" :"friends"), service->decoded_key, msg->status_code, service->server);
-		fetching_users=FALSE;
-		which_pass++;
-		network_users_glist_get(users_glist_get_which, FALSE, NULL);
-		return;
-	}
-	
-	if(!which_pass){
-		debug("Appending users to friends list.");
-		if(!service->friends)
-			service->friends=new_users;
-		else
-			service->friends=g_list_concat(service->friends, new_users);
-	}else{
-		debug("Addending users to followers list.");
-		if(!service->followers)
-			service->followers=new_users;
-		else
-			service->followers=g_list_concat(service->followers, new_users);
-	}
-	/*now we get the next page - or send the results where they belong.*/
-	service=NULL;
-	debug("Retrieving the next list of friends.");
-	network_users_glist_get(users_glist_get_which, FALSE, NULL);
-}/*network_users_glist_save*/
-
 
 /* Get an image from servers */
 gboolean network_download_avatar(User *user){
@@ -529,49 +400,49 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 
 /* On get a timeline */
 void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data){
-	static gboolean retrying=FALSE;
 	OnlineServiceWrapper *service_wrapper=(OnlineServiceWrapper *)user_data;
 	gchar        *new_timeline=(gchar *)service_wrapper->user_data;
-	StatusMonitor timeline=(StatusMonitor)service_wrapper->formdata;
+	StatusMonitor monitoring=(StatusMonitor)service_wrapper->formdata;
 	
 	debug("Timeline response: %i", msg->status_code);
 	
-	if(processing) tweet_list_clear();
+	if(processing){
+		tweet_list_clear();
+		processing=FALSE;
+	}
 	
 	online_service_load_tweet_ids(service_wrapper->service, new_timeline);
-	
-	processing=FALSE;
 	
 	if(!network_check_http(service_wrapper->service, msg)) {
 		if(msg->status_code==401){
 			debug("*WARNING:* Authentication failed for online service: %s.", service_wrapper->service->decoded_key);
+			online_service_wrapper_free(service_wrapper);
 			return;
 		}
 		
-		if(!retrying && (msg->status_code==100||msg->status_code==404)){
-			retrying=TRUE;
-			network_set_state_loading_timeline(current_timeline, Retry);
-			online_service_request(service_wrapper->service, QUEUE, new_timeline, network_display_timeline, new_timeline, (gpointer)timeline);
-		}
-		uber_free(service_wrapper->user_data);
-		uber_free(service_wrapper->requested_uri);
-		uber_free(service_wrapper);
-		return;
-	}
+		if(!retrying && (msg->status_code==100||msg->status_code==404))
+			return network_timeline_retry(new_timeline, service_wrapper, monitoring);
+		
+	}else if(!retrying && msg->status_code==200)
+		return network_timeline_retry(new_timeline, service_wrapper, monitoring);
 	
 	network_init();
 	
 	if(retrying) retrying=FALSE;
 	
 	debug("Parsing timeline");
-	gboolean parsed_successfully=parser_timeline(service_wrapper->service, new_timeline, msg, timeline);
+	gboolean parsed_successfully=parser_timeline(service_wrapper->service, msg, monitoring);
 	online_service_save_tweet_ids(service_wrapper->service, new_timeline);
-	if(timeline==Tweets) network_update_timeline(service_wrapper->service, parsed_successfully, new_timeline);
+	if(monitoring==Tweets) network_update_timeline(service_wrapper->service, parsed_successfully, new_timeline);
 	
-	uber_free(service_wrapper->user_data);
-	uber_free(service_wrapper->requested_uri);
-	uber_free(service_wrapper);
+	online_service_wrapper_free(service_wrapper);
 }
+
+static void network_timeline_retry(gchar *timeline, OnlineServiceWrapper *service_wrapper, StatusMonitor monitoring){
+	network_set_state_loading_timeline(timeline, Retry);
+	online_service_request(service_wrapper->service, QUEUE, timeline, network_display_timeline, timeline, (gpointer)monitoring);
+	online_service_wrapper_free(service_wrapper);
+}/*network_timeline_retry(new_timeline, service_wrapper, monitoring);*/
 
 static void network_update_timeline(OnlineService *service, gboolean parsed_successfully, const gchar *new_timeline){
 	if(!(parsed_successfully)){
@@ -626,12 +497,11 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 	app_statusbar_printf("New avatar added to TweetList.");
 	tweet_list_set_image(image_filename, image->iter);
 	
-	g_free(image_filename);
+	uber_free(image_filename);
 	
 	network_tweet_list_image_dl_free(image);
 	
-	uber_free(service_wrapper->requested_uri);
-	uber_free(service_wrapper);
+	online_service_wrapper_free(service_wrapper);
 }
 
 

@@ -130,9 +130,9 @@ void debug_impl(const gchar *domain, const gchar *msg, ...){
 			if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
 				if(debug_last_domain) g_free(debug_last_domain);
 				debug_last_domain=g_strdup(domains[x]);
-				g_fprintf(stdout, "\n%s:\t", domains[x]);
-			}else
-				g_fprintf(stdout, "\t\t\t");
+				g_fprintf(stdout, "\n%s:\n", domains[x]);
+			}
+			g_fprintf(stdout, "\t\t");
 			
 			va_list args;
 			va_start(args, msg);

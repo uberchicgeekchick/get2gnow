@@ -49,7 +49,6 @@ gboolean confirm_dialog_show(const gchar *gconfig_path, const gchar *message1, c
 	GtkCheckButton		*check_button;
 	GtkVBox			*vbox;
 	
-	g_return_val_if_fail(gconfig_path != NULL, FALSE);
 	g_return_val_if_fail(message1 != NULL, FALSE);
 	
 	if(gconfig_if_bool(gconfig_path, FALSE))
@@ -66,19 +65,22 @@ gboolean confirm_dialog_show(const gchar *gconfig_path, const gchar *message1, c
 	
 	gtk_message_dialog_format_secondary_text(message_dialog, "%s", message2);
 	
-	check_button=(GtkCheckButton *)gtk_check_button_new_with_label(_("Do not show this again"));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), FALSE);
-	
-	vbox=(GtkVBox *)gtk_vbox_new(FALSE, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), 6);
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(check_button), FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(message_dialog)->vbox), GTK_WIDGET(vbox), FALSE, FALSE, 0);
-	
-	g_object_set_data_full(G_OBJECT(message_dialog), "gconfig_path", g_strdup(gconfig_path), g_free);
-	g_object_set_data(G_OBJECT(message_dialog), "user_data", user_data);
-	g_object_set_data(G_OBJECT(message_dialog), "func", func);
-	
-	g_signal_connect(message_dialog, "response", G_CALLBACK(confirm_dialog_response), check_button);
+	if(gconfig_path){
+		check_button=(GtkCheckButton *)gtk_check_button_new_with_label(_("Do not show this again"));
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), FALSE);
+		
+		vbox=(GtkVBox *)gtk_vbox_new(FALSE, 6);
+		gtk_container_set_border_width (GTK_CONTAINER (vbox), 6);
+		
+		gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(check_button), FALSE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(GTK_DIALOG(message_dialog)->vbox), GTK_WIDGET(vbox), FALSE, FALSE, 0);
+		
+		g_object_set_data_full(G_OBJECT(message_dialog), "gconfig_path", g_strdup(gconfig_path), g_free);
+		g_object_set_data(G_OBJECT(message_dialog), "user_data", user_data);
+		g_object_set_data(G_OBJECT(message_dialog), "func", func);
+		
+		g_signal_connect(message_dialog, "response", G_CALLBACK(confirm_dialog_response), check_button);
+	}
 	gtk_widget_show_all(GTK_WIDGET(message_dialog));
 	
 	switch(gtk_dialog_run(GTK_DIALOG(message_dialog))){

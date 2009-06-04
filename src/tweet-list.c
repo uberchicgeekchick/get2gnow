@@ -76,24 +76,43 @@ struct _TweetListPriv {
 	GtkCellRenderer		*text_renderer;
 };
 
+/* ListStore columns */
+typedef enum {
+		PIXBUF_AVATAR,		/*: Avatar pixbuf.*/
+		STRING_TEXT,		/*: Display string.*/
+		STRING_NICK,		/*: Author name string.*/
+		STRING_DATE,		/*: 'Posted ?(seconds|minutes|hours|day) ago.*/
+		STRING_TWEET,		/*: Tweet string.*/
+		STRING_USER,		/*: Username string.*/
+		SEXY_TWEET,		/*: libsexy formatted Tweet for SexyTreeView's tooltip.*/
+		CREATED_DATE,		/*: Date string.*/
+		SINCE_CREATED,		/*: Seconds since the post was posted.*/
+		CREATED_AT,		/*: unix timestamp of tweet's posted data time for sorting. */
+		ULONG_TWEET_ID,		/*: Tweet's ID.*/
+		ULONG_USER_ID,		/*: User's ID.*/
+		ONLINE_SERVICE,		/*: OnlineService pointer.*/
+	N_COLUMNS,		/*Not a column but an incremented value to 'count' the total columns.*/
+} TweetListStoreColumns;
+
+
 static void tweet_list_class_init(TweetListClass *klass);
 static void tweet_list_init(TweetList      *tweet);
 static void tweet_list_finalize(GObject              *obj);
 
-static void tweet_list_create_model(TweetList      *list);
-static void tweet_list_setup_view(TweetList      *list);
+static void tweet_list_create_model(TweetList      *tweet_list);
+static void tweet_list_setup_view(TweetList      *tweet_list);
 
-static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *list);
+static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *tweet_list);
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *tweet);
 
 static void tweet_list_move(GtkWidget *widget, GdkEventKey *event);
+static void tweet_list_goto_index(void);
 
+static TweetList *tweet_list=NULL;
+static TweetListPriv *tweet_list_priv=NULL;
 
-static TweetList *list=NULL;
-static TweetListPriv *list_priv=NULL;
-static gint tweet_list_index=0;
-static guint tweet_list_store_total=0;
 guint tweet_list_notify_delay=0;
+
 
 G_DEFINE_TYPE(TweetList, tweet_list, SEXY_TYPE_TREE_VIEW);
 
@@ -104,35 +123,36 @@ static void tweet_list_class_init( TweetListClass *klass ){
 }/* tweet_list_class_init */
 
 TweetList *tweet_list_get(void){
-	return list;
+	return tweet_list;
 }/*tweet_list_get*/
 
 static void tweet_list_init(TweetList *tweet){
-	list=tweet;
-	list_priv=GET_PRIV(list);
-	tweet_list_create_model(list);
-	tweet_list_setup_view(list);
-	g_signal_connect(list, "size_allocate", G_CALLBACK(tweet_list_size_cb), list);
-	g_signal_connect(list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), list);
-	g_signal_connect(list, "row-activated", G_CALLBACK(tweets_reply), list);
-	g_signal_connect(list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), NULL);
+	tweet_list=tweet;
+	tweet_list_priv=GET_PRIV(tweet_list);
+	tweet_list_create_model(tweet_list);
+	tweet_list_setup_view(tweet_list);
+	tweet_list->index=tweet_list->total=0;
+	g_signal_connect(tweet_list, "size_allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
+	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
+	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(tweets_reply), tweet_list);
+	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), NULL);
 }/* tweet_list_init */
 
 static void tweet_list_finalize( GObject *object ){
-	if(list_priv->store)
-		g_object_unref(list_priv->store);
+	if(tweet_list_priv->store)
+		g_object_unref(tweet_list_priv->store);
 	G_OBJECT_CLASS(tweet_list_parent_class)->finalize(object);
 }/* tweet_list_finalizd */
 
-static void tweet_list_create_model(TweetList *list){
+static void tweet_list_create_model(TweetList *tweet_list){
 	GtkTreeModel *model;
 	GtkTreeModel *sort_model;
 	
 	
-	if(list_priv->store)
-		g_object_unref(list_priv->store);
+	if(tweet_list_priv->store)
+		g_object_unref(tweet_list_priv->store);
 
-	list_priv->store=gtk_list_store_new(
+	tweet_list_priv->store=gtk_list_store_new(
 						N_COLUMNS,
 							GDK_TYPE_PIXBUF,	/*PIXBUF_AVATAR: Avatar pixbuf.*/
 							G_TYPE_STRING,		/*STRING_TEXT: Display string.*/
@@ -146,78 +166,78 @@ static void tweet_list_create_model(TweetList *list){
 							G_TYPE_ULONG,		/*CREATED_AT: unix timestamp of tweet's posted data time for sorting. */
 							G_TYPE_ULONG,		/*ULONG_TWEET_ID: Tweet's ID.*/
 							G_TYPE_ULONG,		/*ULONG_USER_ID: User's ID.*/
-							G_TYPE_POINTER		/*SERVICE_POINTER: Service pointer.*/
+							G_TYPE_POINTER		/*ONLINE_SERVICE: OnlineService pointer.*/
 	);
 	
 	/* save normal model */
-	model=GTK_TREE_MODEL(list_priv->store);
+	model=GTK_TREE_MODEL(tweet_list_priv->store);
 	sort_model=gtk_tree_model_sort_new_with_model(model);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sort_model), SINCE_CREATED, GTK_SORT_ASCENDING);
 	
-	gtk_tree_view_set_model(GTK_TREE_VIEW(list), sort_model);
-	list_priv->model=model;
-	list_priv->sort_model=sort_model;
+	gtk_tree_view_set_model(GTK_TREE_VIEW(tweet_list), sort_model);
+	tweet_list_priv->model=model;
+	tweet_list_priv->sort_model=sort_model;
 	
-	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(list), STRING_TEXT);
-}/*tweet_list_create_model(list);*/
+	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(tweet_list), STRING_TEXT);
+}/*tweet_list_create_model(tweet_list);*/
 
 void tweet_list_store_status(OnlineService *service, UserStatus *status){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		
 		debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %d; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", service->decoded_key, status->user->user_name, service->server, status->id, status->created_at_str, status->text, status->sexy_tweet);
 		
-		/*gtk_list_store_insert(list_priv->store, iter, tweet_list_store_total);*/
-		gtk_list_store_append(list_priv->store, iter);
+		/*gtk_list_store_insert(tweet_list_priv->store, iter, tweet_list_store_total);*/
+		gtk_list_store_append(tweet_list_priv->store, iter);
 		gtk_list_store_set(
-				list_priv->store, iter,
-					STRING_TEXT, status->tweet,
-					STRING_NICK, status->user->nick_name,
-					STRING_DATE, status->created_how_long_ago,
-					STRING_TWEET, status->text,
-					STRING_USER, status->user->user_name,
-					SEXY_TWEET, status->sexy_tweet,
-					CREATED_DATE, status->created_at_str,
-					CREATED_AT, status->created_at,
-					SINCE_CREATED, status->created_seconds_ago,
-					ULONG_TWEET_ID, status->id,
-					ULONG_USER_ID, status->user->id,
-					SERVICE_POINTER, service,
+				tweet_list_priv->store, iter,
+					STRING_TEXT, status->tweet,			/*Display string.*/
+					STRING_NICK, status->user->nick_name,		/*Author name string.*/
+					STRING_DATE, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
+					STRING_TWEET, status->text,			/*Tweet string.*/
+					STRING_USER, status->user->user_name,		/*Username string.*/
+					SEXY_TWEET, status->sexy_tweet,			/*SexyTreeView's tooltip.*/
+					CREATED_DATE, status->created_at_str,		/*Date string.*/
+					CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
+					SINCE_CREATED, status->created_seconds_ago,	/*How old the post is, in seconds, for sorting.*/
+					ULONG_TWEET_ID, status->id,			/*Tweet's ID.*/
+					ULONG_USER_ID, status->user->id,		/*User's ID.*/
+					ONLINE_SERVICE, service,			/*OnlineService pointer.*/
 				-1
 		);
-		tweet_list_store_total++;
+		tweet_list->total++;
 		
 		/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 		network_get_image(status->user, iter);
 }/*void tweet_list_store_append(service, status);*/
 
-static void tweet_list_setup_view(TweetList *list){
+static void tweet_list_setup_view(TweetList *tweet_list){
 	GtkCellRenderer		*renderer;
 	GtkTreeViewColumn	*avatar_column;
 	GtkTreeViewColumn	*tweet_column;
 	
-	g_object_set(list, "rules-hint", TRUE, "reorderable", TRUE, "headers-visible", FALSE, NULL);
+	g_object_set(tweet_list, "rules-hint", TRUE, "reorderable", TRUE, "headers-visible", FALSE, NULL);
 
 	renderer=gtk_cell_renderer_pixbuf_new();
 	/*'fixed size' along with x & y padding actually fix the image at 48x48.*/
 	gtk_cell_renderer_set_fixed_size( renderer, 58, 55 );
 	avatar_column=gtk_tree_view_column_new_with_attributes( NULL, renderer, "pixbuf", PIXBUF_AVATAR, NULL);
-	g_signal_connect(avatar_column, "clicked", G_CALLBACK(tweet_list_changed_cb), list);
+	g_signal_connect(avatar_column, "clicked", G_CALLBACK(tweet_list_changed_cb), tweet_list);
 	g_object_set( renderer, "ypad", 5, "xpad", 5, "yalign", 0.0, NULL );
 	gtk_tree_view_column_set_sizing( avatar_column, GTK_TREE_VIEW_COLUMN_FIXED );
 	gtk_tree_view_column_set_min_width( avatar_column, 58 );
 	gtk_tree_view_column_set_fixed_width( avatar_column, 58 );
-	gtk_tree_view_append_column( GTK_TREE_VIEW( list ), avatar_column );
-	
+	gtk_tree_view_append_column( GTK_TREE_VIEW( tweet_list ), avatar_column );
+
 	renderer=gtk_cell_renderer_text_new();
 	tweet_column=gtk_tree_view_column_new_with_attributes( NULL, renderer, "markup", STRING_TEXT, NULL );
 	gtk_tree_view_column_set_sizing( tweet_column, GTK_TREE_VIEW_COLUMN_FIXED );
 	g_object_set( renderer, "ypad", 0, "xpad", 5, "yalign", 0.0, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
-	gtk_tree_view_append_column( GTK_TREE_VIEW( list ), tweet_column );
+	gtk_tree_view_append_column( GTK_TREE_VIEW( tweet_list ), tweet_column );
 	
-	list_priv->text_column=tweet_column;
-	g_signal_connect(list_priv->text_column, "clicked", G_CALLBACK(tweet_list_changed_cb), list);
+	tweet_list_priv->text_column=tweet_column;
+	g_signal_connect(tweet_list_priv->text_column, "clicked", G_CALLBACK(tweet_list_changed_cb), tweet_list);
 	
-	list_priv->text_renderer=renderer;
+	tweet_list_priv->text_renderer=renderer;
 }/*tweet_list_setup_view(list);*/
 
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event){
@@ -244,65 +264,65 @@ static void tweet_list_move(GtkWidget *widget, GdkEventKey *event){
 		case GDK_Tab: case GDK_KP_Tab:
 		case GDK_Home: case GDK_KP_Home:
 		case GDK_Begin: case GDK_Escape:
-			tweet_list_index=0;
+			tweet_list->index=0;
 			break;
 		case GDK_Up: case GDK_KP_Up: case GDK_KP_Prior:
-			tweet_list_index--;
+			tweet_list->index--;
 			break;
 		case GDK_Down: case GDK_KP_Down: case GDK_KP_Next:
-			tweet_list_index++;
+			tweet_list->index++;
 			break;
 		case GDK_End: case GDK_KP_End:
-			tweet_list_index=tweet_list_store_total;
+			tweet_list->index=tweet_list->total-1;
 			break;
 		case GDK_Page_Up:
-			tweet_list_index-=10; break;
+			tweet_list->index-=9; break;
 		case GDK_Page_Down:
-			tweet_list_index+=10; break;
+			tweet_list->index+=9; break;
 		default:
 			return;
 	}//switch
 	
-	tweet_list_move_to(tweet_list_index);
+	tweet_list_goto_index();
 }/* tweet_list_move */
 
-void tweet_list_goto_top(void){
-	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
-	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(list)))
-		gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(list), path, NULL, FALSE, 0.0, 0.0);
-	gtk_tree_path_free(path);
-	tweet_list_index=0;
-}/* tweet_list_goto_top */
-
-void tweet_list_move_to(gint row_index){
-	if(row_index<0) {
+static void tweet_list_goto_index(void){
+	if(tweet_list->index<0) {
 		tweets_beep();
-		row_index=0;
-	}else if(row_index>tweet_list_store_total){
+		tweet_list->index=0;
+	}else if(tweet_list->index>=tweet_list->total){
 		tweets_beep();
-		row_index=tweet_list_store_total;
+		tweet_list->index=tweet_list->total-1;
 	}
 	
-	debug("Selecting tweet %d, maximum tweets are: %d.", row_index, tweet_list_store_total);
-	GtkTreePath *path=gtk_tree_path_new_from_indices(row_index, -1);
-	gtk_tree_view_set_cursor( GTK_TREE_VIEW(list), path, NULL, FALSE );
+	debug("Selecting tweet %d, maximum tweets are: %d.", tweet_list->index, tweet_list->total);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list->index, -1);
+	gtk_tree_view_set_cursor( GTK_TREE_VIEW(tweet_list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
 	
 	tweet_view_sexy_select();
-}/*tweet_list_move_to(20);*/
+}/*tweet_list_goto_index();*/
+
+void tweet_list_goto_top(void){
+	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
+	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(tweet_list)))
+		gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(tweet_list), path, NULL, FALSE, 0.0, 0.0);
+	gtk_tree_path_free(path);
+	tweet_list->index=0;
+}/* tweet_list_goto_top */
 
 void tweet_list_clear(void){
 	debug("Re-setting tweet_list_index.");
-	gtk_list_store_clear(list_priv->store);
-	tweet_list_index=0;
-	tweet_list_store_total=0;
+	gtk_list_store_clear(tweet_list_priv->store);
+	tweet_list->index=0;
+	tweet_list->total=0;
 	tweet_list_notify_delay=0;
 }/* tweet_list_refreshed */
 
 static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	GtkTreeSelection	*sel;
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
-	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(list))) && gtk_tree_selection_get_selected(sel, &list_priv->sort_model, iter) )){
+	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(tweet_list))) && gtk_tree_selection_get_selected(sel, &tweet_list_priv->sort_model, iter) )){
 		g_free(iter);
 		tweet_view_sexy_select();
 		return;
@@ -316,7 +336,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	gchar		*user_name, *user_nick, *date, *sexy_tweet, *text_tweet;
 
 	gtk_tree_model_get(
-				GTK_TREE_MODEL(list_priv->sort_model), iter,
+				GTK_TREE_MODEL(tweet_list_priv->sort_model), iter,
 					STRING_NICK, &user_nick,
 					STRING_TWEET, &text_tweet,
 					SEXY_TWEET, &sexy_tweet,
@@ -325,7 +345,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 					PIXBUF_AVATAR, &pixbuf,
 					ULONG_TWEET_ID, &tweet_id,
 					ULONG_USER_ID, &user_id,
-					SERVICE_POINTER, &service,
+					ONLINE_SERVICE, &service,
 				-1
 	);
 	
@@ -358,7 +378,7 @@ void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter){
 		return;
 	
 	debug("Adding image: '%s' to tweet_view.", image_filename);
-	gtk_list_store_set(list_priv->store , iter, PIXBUF_AVATAR, pixbuf, -1);
+	gtk_list_store_set(tweet_list_priv->store , iter, PIXBUF_AVATAR, pixbuf, -1);
 	g_object_unref(pixbuf);
 }/* tweet_list_set_image */
 

@@ -377,15 +377,15 @@ static void app_setup(void){
 }/*app_setup*/
 
 void app_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
-	gboolean embed=gtk_toggle_button_get_active(toggle_button);
-	if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)==embed)
+	gboolean use_tweet_view_dialog=gtk_toggle_button_get_active(toggle_button);
+	if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)==use_tweet_view_dialog)
 		return;
 	
-	debug("Embed TweetView changed:\t[%s].", (embed ?"embed" :"floating" ) );
+	debug("TweetView changed:\t[%s].", (use_tweet_view_dialog?_("floating"):_("embed")) );
 	geometry_save();
-	gconfig_set_bool(PREFS_TWEET_VIEW_DIALOG, embed);
+	gconfig_set_bool(PREFS_TWEET_VIEW_DIALOG, use_tweet_view_dialog);
 	
-	if(embed){
+	if(use_tweet_view_dialog){
 		if(gtk_widget_get_parent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed))==GTK_WIDGET(app_priv->tweet_view->tweet_view))
 			return;
 		

@@ -25,6 +25,7 @@ get2gnow_SOURCES = 							\
 	online-services.c		online-services.h		\
 	online-service.c		online-service.h		\
 	online-service-wrapper.c	online-service-wrapper.h	\
+	users-glists.c			users-glists.h			\
 	network.c			network.h			\
 	timer.c				timer.h				\
 	proxy.c				proxy.h				\

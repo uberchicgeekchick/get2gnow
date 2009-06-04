@@ -40,14 +40,11 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">following_list_store</property>
-                        <property name="reorderable">True</property>
                         <property name="search_column">1</property>
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                            <property name="resizable">True</property>
                             <property name="title">User</property>
-                            <property name="clickable">True</property>
-                            <property name="reorderable">True</property>
-                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn1-renderer1"/>
                               <attributes>
@@ -58,10 +55,8 @@
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                            <property name="resizable">True</property>
                             <property name="title">Name</property>
-                            <property name="clickable">True</property>
-                            <property name="reorderable">True</property>
-                            <property name="sort_indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="treeviewcolumn2-renderer1"/>
                               <attributes>

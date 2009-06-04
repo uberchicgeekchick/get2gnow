@@ -53,6 +53,7 @@ get2gnow_SOURCES =							\
 	online-services.c		online-services.h		\
 	online-service.c		online-service.h		\
 	online-service-wrapper.c	online-service-wrapper.h	\
+	users-glists.c			users-glists.h			\
 	network.c			network.h			\
 	timer.c				timer.h				\
 	proxy.c				proxy.h				\
@@ -86,6 +87,7 @@ get2gnow_OBJECTS =					\
 	online-services.$(OBJEXT)			\
 	online-service.$(OBJEXT)			\
 	online-service-wrapper.$(OBJEXT)		\
+	users-glists.$(OBJEXT)				\
 	network.$(OBJEXT)				\
 	gconfig.$(OBJEXT)				\
 	timer.$(OBJEXT)					\
@@ -398,6 +400,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-wrapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@

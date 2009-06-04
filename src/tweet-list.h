@@ -69,29 +69,14 @@ typedef struct _TweetListPriv  TweetListPriv;
 
 struct _TweetList {
 	SexyTreeView            parent;
+	
+	gint			index;
+	guint			total;
 };
 
 struct _TweetListClass {
 	SexyTreeViewClass       parent_class;
 };
-
-/* ListStore columns */
-typedef enum {
-	PIXBUF_AVATAR,
-	STRING_TEXT,
-	STRING_NICK,
-	STRING_DATE,
-	STRING_TWEET,
-	STRING_USER,
-	SEXY_TWEET,
-	CREATED_DATE,
-	CREATED_AT,
-	SINCE_CREATED,
-	ULONG_TWEET_ID,
-	ULONG_USER_ID,
-	SERVICE_POINTER,
-	N_COLUMNS, /*Not a column but an incremented value to 'count' the total columns.*/
-} TweetListStoreColumns;
 
 extern guint tweet_list_notify_delay;
 
@@ -106,7 +91,6 @@ void tweet_list_store_status(OnlineService *service, UserStatus *status);
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event);
 
 void tweet_list_goto_top(void);
-void tweet_list_move_to(gint row_index);
 
 void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter);
 
