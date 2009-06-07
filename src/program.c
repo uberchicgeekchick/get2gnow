@@ -150,10 +150,6 @@ void program_deinit(void){
 	/* Close libnotify */
 	if(notifing) notify_uninit();
 	
-	/* Clean up the ui */
-	g_object_unref(tweet_list_get());
-	g_object_unref(app_get());
-	
 	gconfig_shutdown();
 	
 	cache_deinit();

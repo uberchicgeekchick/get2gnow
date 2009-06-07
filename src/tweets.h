@@ -34,10 +34,10 @@
 
 G_BEGIN_DECLS
 
-void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *tweet);
+void set_selected_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *tweet);
 OnlineService *selected_tweet_get_service(void);
 gchar *selected_tweet_get_user_name(void);
-unsigned long int selected_tweet_get_user_id(void);
+gulong selected_tweet_get_user_id(void);
 gchar *selected_tweet_reply_to_strdup(void);
 void unset_selected_tweet(void);
 

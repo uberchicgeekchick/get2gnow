@@ -63,12 +63,14 @@ static void popup_set_title_and_label(UserAction action, Popup *popup);
 static void popup_dialog_show(GtkWindow *parent, UserAction action);
 
 static void popup_response_cb(GtkWidget *widget, gint response, Popup *popup);
+
 static void popup_dialog_process_confirmation(GtkWidget *widget, gint response, Popup *popup);
+static void popup_set_selected_service(GtkWidget *widget, gint response, Popup *popup);
+static gboolean popup_dialog_process_user_request(GtkWidget *widget, gint response, Popup *popup);
+
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup);
 
 static gboolean popup_validate_usage(UserAction action);
-
-static void popup_set_selected_service(GtkComboBox *combo_box, Popup *popup);
 
 static void popup_destroy_and_free(void);
 
@@ -152,36 +154,16 @@ static void popup_response_cb(GtkWidget *widget, gint response, Popup *popup){
 	}
 	
 	if(popup->action==SelectService){
-		popup_set_selected_service(popup->online_services_combo_box, popup);
+		popup_set_selected_service(widget, response, popup);
 		gtk_widget_destroy(widget);
 		return;
 	}
 	
 	if(popup->action==Confirmation){
 		popup_dialog_process_confirmation(widget, response, popup);
+		gtk_widget_destroy(widget);
 		return;
 	}
-	
-	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
-	OnlineService		*service=NULL;
-	const gchar		*username=gtk_entry_get_text(popup->entry);
-	
-	if(G_STR_EMPTY(username)){
-		gtk_widget_error_bell(GTK_WIDGET(popup->entry));
-		return;
-	}
-	
-	if(!(gtk_combo_box_get_active_iter(popup->online_services_combo_box, iter))) {
-		if(iter) g_free(iter);
-		return;
-	}
-	
-	gtk_tree_model_get(
-				popup->online_service_model,
-				iter,
-				OnlineServicePointer, &service,
-				-1
-	);
 	
 	switch( popup->action ){
 		case ViewProfile:
@@ -190,7 +172,8 @@ static void popup_response_cb(GtkWidget *widget, gint response, Popup *popup){
 		case Block:
 		case UnBlock:
 		case ViewTweets:
-			user_request_main(service, popup->action, GTK_WINDOW(popup->dialog), username);
+			if(popup_dialog_process_user_request(widget, response, popup))
+				gtk_widget_destroy(widget);
 			break;
 		case SelectService:
 		case Fave:
@@ -198,11 +181,36 @@ static void popup_response_cb(GtkWidget *widget, gint response, Popup *popup){
 		case Confirmation:
 		default:
 			/*All to make gcc nice & happy.*/
+			gtk_widget_destroy(widget);
 			break;
 	}//switch
-	gtk_entry_set_text(GTK_ENTRY(popup->entry), "");
-	g_free(iter);
 }/*popup_response_cb*/
+
+static gboolean popup_dialog_process_user_request(GtkWidget *widget, gint response, Popup *popup){
+	OnlineService		*service=NULL;
+	const gchar		*username=gtk_entry_get_text(popup->entry);
+	
+	if(G_STR_EMPTY(username)){
+		gtk_widget_error_bell(GTK_WIDGET(popup->entry));
+		return FALSE;
+	}
+	
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	if(!(gtk_combo_box_get_active_iter(popup->online_services_combo_box, iter))) {
+		if(iter) g_free(iter);
+		return FALSE;
+	}
+	
+	gtk_tree_model_get(
+			popup->online_service_model,
+			iter,
+			OnlineServicePointer, &service,
+			-1
+	);
+	
+	user_request_main(service, popup->action, GTK_WINDOW(popup->dialog), username);
+	return TRUE;
+}/*popup_dialog_process_user_request(widget, response, popup);*/
 
 static void popup_dialog_process_confirmation(GtkWidget *widget, gint response, Popup *popup){
 	GFunc        func;
@@ -215,14 +223,12 @@ static void popup_dialog_process_confirmation(GtkWidget *widget, gint response, 
 	
 	gconfig_set_bool(gconfig_path, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(popup->check_button)));
 	
-	gtk_widget_destroy(widget);
-	
 	if(func)
 		func( (gpointer)gconfig_path, user_data);
 }/*popup_dialog_process_confirmation(widget, response, popup);*/
 
 
-static void popup_set_selected_service(GtkComboBox *combo_box, Popup *popup){
+static void popup_set_selected_service(GtkWidget *widget, gint response, Popup *popup){
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	
 	if(gtk_combo_box_get_active_iter(popup->online_services_combo_box, iter)){
@@ -233,7 +239,7 @@ static void popup_set_selected_service(GtkComboBox *combo_box, Popup *popup){
 				-1
 		);
 	}
-	g_free(iter);
+	uber_free(iter);
 }/*popup_set_selected_service*/
 
 static void popup_destroy_cb(GtkWidget *widget, Popup *popup){

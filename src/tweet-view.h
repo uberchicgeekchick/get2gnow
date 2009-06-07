@@ -137,9 +137,6 @@ typedef struct {
 	GtkButton		*make_fave_button;
 } TweetView;
 
-extern unsigned long int in_reply_to_status_id;
-
-
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
@@ -148,7 +145,7 @@ GtkWindow *tweet_view_get_window(void);
 
 void tweet_view_beep(void);
 
-void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+void tweet_view_show_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
 
 void tweet_view_dm_data_fill(GList *followers);
 
@@ -168,6 +165,7 @@ gint tweet_view_sexy_puts(const gchar *str, gint position);
 void tweet_view_new_dm(void);
 void tweet_view_reply(void);
 void tweet_view_send(GtkWidget *activated_widget);
+void tweet_view_sexy_send(gpointer service, gpointer user_data);
 
 #endif /* __TWEET_VIEW_H__ */
 

@@ -76,22 +76,22 @@
 
 typedef struct{
 	OnlineService *service;
-	unsigned long int id;
-	unsigned long int user_id;
+	gulong id;
+	gulong user_id;
 	gchar *user_name;
 	gchar *tweet;
 } SelectedTweet;
 static SelectedTweet *selected_tweet=NULL;
 
-#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users"
+#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Tweets.c"
 #include "debug.h"
 
 
 static void tweets_include_and_begin_to_send(gchar *tweet, gboolean a_response, gboolean release);
 
 
-void set_selected_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *tweet){
-	/*	id=strtoul( char id, NULL, 10 );	*/
+void set_selected_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *tweet){
+	/*	gulong id=strtoul(string, NULL, 10);	*/
 	if(selected_tweet)
 		unset_selected_tweet();
 	
@@ -139,6 +139,7 @@ void unset_selected_tweet(void){
 }/*unset_selected_tweet*/
 
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
+	gchar *username=NULL;
 	switch(event->state){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
@@ -163,11 +164,21 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_H: case GDK_h:
 					g_signal_emit_by_name(app_get_menu("help"), "activate");
 					return;
+				default: break;
 			}
 			break;
 		case GDK_SHIFT_MASK:
-			if(event->keyval==GDK_Return)
-				return tweets_new_dm();
+			switch(event->keyval){
+				case GDK_Return:
+					tweets_new_dm();
+					return;
+				case GDK_S: case GDK_s:
+					if(!( (username=selected_tweet_get_user_name()) && G_STR_N_EMPTY(username) ))
+						return tweets_beep();
+					tweet_view_sexy_send(selected_tweet_get_service(), username);
+					return;
+				default: break;
+			}
 			break;
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
@@ -201,6 +212,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_H: case GDK_h:
 					tweets_user_view_tweets();
 					return;
+				default: break;
 			}
 			break;
 		default:
@@ -220,6 +232,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_asciitilde:
 					tweets_new_dm();
 					return;
+				default: break;
 			}
 			break;
 	}
@@ -275,8 +288,7 @@ void tweets_new_dm(void){
 }/*tweets_new_dm*/
 
 void tweets_save_fave(void){
-	if(!selected_tweet)
-		return;
+	if(!selected_tweet) return;
 	gchar *fave_tweet_id=g_strdup_printf( "%lu", selected_tweet->id );
 	user_request_main(selected_tweet->service, Fave, app_get_window(), fave_tweet_id);
 	g_free(fave_tweet_id);

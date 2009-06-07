@@ -169,7 +169,8 @@ gboolean network_check_http(OnlineService *service, SoupMessage *msg){
 	}
 	
 	debug("Loading failed.  Service '%s' responsed: %s: %s (%d).", service->decoded_key, error, msg->reason_phrase, msg->status_code);
-	
+	app_statusbar_printf("Loading failed.  Service '%s' responsed: %s: %s (%d).", service->decoded_key, error, msg->reason_phrase, msg->status_code);
+
 	return FALSE;
 }
 
@@ -179,17 +180,17 @@ void network_init(void){
 	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
 	
 	/* The timeline reload interval shouldn't be less than 3 minutes */
-	if(minutes < 3) minutes=3;
+	if(minutes < 5) minutes=5;
 	
 	if( (!timeout_id_dms && gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE)) && (current_timeline && !g_str_equal(API_DIRECT_MESSAGES, current_timeline)) ){
 		debug("Creating timeout to monitor for new Direct Messages.");
-		guint reload_dms=(minutes+2)*60*1000;
+		guint reload_dms=(minutes+1)*60*1000;
 		timeout_id_dms=g_timeout_add(reload_dms, network_timeout, (gpointer)DMs);
 	}
 	
 	if( (!timeout_id_replies && gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE)) && (current_timeline && !g_str_equal(API_REPLIES, current_timeline)) ){
 		debug("Creating timeout to monitor for new Replies.");
-		guint reload_replies=(minutes+1)*60*1000;
+		guint reload_replies=(minutes-1)*60*1000;
 		timeout_id_replies=g_timeout_add(reload_replies, network_timeout, (gpointer)Replies);
 	}
 	

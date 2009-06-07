@@ -110,7 +110,6 @@ static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui);
 static void tweet_view_selected_tweet_buttons_show(gboolean show);
 
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
-static void tweet_view_sexy_send(gpointer service, gpointer user_data);
 
 
 /********************************************************
@@ -451,7 +450,7 @@ static void tweet_view_reorder(void){
 }/*tweet_view_reorder*/
 
 
-void tweet_view_show_tweet(OnlineService *service, unsigned long int id, unsigned long int user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
+void tweet_view_show_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if(!id)
 		unset_selected_tweet();
 	else
@@ -625,7 +624,7 @@ void tweet_view_send(GtkWidget *activated_widget){
 		tweet_view_sexy_send(NULL, NULL);
 }/*tweet_view_send*/
 	
-static void tweet_view_sexy_send(gpointer service, gpointer user_data){
+void tweet_view_sexy_send(gpointer service, gpointer user_data){
 	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) <= TWEET_MAX_CHARS) )){
 		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
 			gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
@@ -641,7 +640,7 @@ static void tweet_view_sexy_send(gpointer service, gpointer user_data){
 	
 	g_free(tweet);
 	tweet_view_sexy_set((gchar *)"");
-}/*tweet_view_sexy_send*/
+}/*tweet_view_sexy_send(selected_tweet_get_service(), selected_tweet_get_user_name() );*/
 
 void tweet_view_new_dm(void){
 	gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, !gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton));

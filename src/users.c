@@ -90,7 +90,7 @@
 
 #define API_USER_PROFILE	"/users/show/%s.xml"
 
-#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
+#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings:Users.c"
 #include "debug.h"
 
 #define GtkBuilderUI "user-profile.ui"
@@ -191,7 +191,13 @@ static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const
 }/*user_request_new*/
 
 void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data){
-	if(action==SelectService || action==Confirmation || G_STR_EMPTY(user_data)) return;
+	if(action==SelectService || action==Confirmation) return;
+
+	if(G_STR_EMPTY(user_data)){
+		debug("Cannot %s required information is missing.", user_action_to_string(action));
+		app_statusbar_printf("Cannot %s required information is missing.", user_action_to_string(action));
+		return;
+	}
 
 	if(action==ViewProfile){
 		view_profile(service, user_data, parent);
@@ -226,6 +232,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 	if(!network_check_http(service_wrapper->service, msg)){
 		debug("**ERORR:** UserRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_data, service_wrapper->service->decoded_key, msg->status_code);
 		
+		app_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_wrapper->service->decoded_key, msg->reason_phrase, msg->status_code);
 		user_request_free(request);
 		online_service_wrapper_free(service_wrapper);
 		return;
@@ -337,10 +344,11 @@ User *user_parse_node(OnlineService *service, xmlNode *a_node){
 		
 		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ) continue;
 		
-		if(g_str_equal(current_node->name, "id" ))
+		if(g_str_equal(current_node->name, "id" )){
 			user->id=strtoul( content, NULL, 10 );
-		
-		else if(g_str_equal(current_node->name, "name" ))
+			debug("User ID: %s(=%lu).", content, user->id);
+			
+		}else if(g_str_equal(current_node->name, "name" ))
 			user->nick_name=g_strdup(content);
 		
 		else if(g_str_equal(current_node->name, "screen_name" ))
@@ -410,10 +418,11 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *status_node, Stat
 			continue;
 		}
 		
-		if(g_str_equal(current_node->name, "id"))
+		if(g_str_equal(current_node->name, "id")){
 			status->id=strtoul(content, NULL, 10);
-		
-		else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
+			debug("Status ID: %s(=%lu).", content, status->id);
+			
+		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
 			status->in_reply_to_status_id=strtoul(content, NULL, 10);
 		
 		else if(g_str_equal(current_node->name, "source"))
@@ -449,9 +458,9 @@ static void user_status_format_dates(UserStatus *status){
 	post.tm_isdst=-1;
 	status->created_at=mktime(&post);									
 	
-	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %u", status->created_at_str, status->created_at);
+	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
-	debug("Display time set to: %s, %u.", status->created_how_long_ago, status->created_seconds_ago);
+	debug("Display time set to: %s, %lu.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
 
 void user_status_free(UserStatus *status){

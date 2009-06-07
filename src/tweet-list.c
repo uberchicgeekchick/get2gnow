@@ -165,7 +165,7 @@ static void tweet_list_create_model(TweetList *tweet_list){
 							G_TYPE_STRING,		/*STRING_USER: Username string.*/
 							G_TYPE_STRING,		/*SEXY_TWEET: libsexy formatted Tweet for SexyTreeView's tooltip.*/
 							G_TYPE_STRING,		/*CREATED_DATE: Date string.*/
-							G_TYPE_UINT,		/*SINCE_CREATED: Seconds since the post was posted.*/
+							G_TYPE_ULONG,		/*SINCE_CREATED: Seconds since the post was posted.*/
 							G_TYPE_ULONG,		/*CREATED_AT: unix timestamp of tweet's posted data time for sorting. */
 							G_TYPE_ULONG,		/*ULONG_TWEET_ID: Tweet's ID.*/
 							G_TYPE_ULONG,		/*ULONG_USER_ID: User's ID.*/
@@ -187,7 +187,7 @@ static void tweet_list_create_model(TweetList *tweet_list){
 void tweet_list_store_status(OnlineService *service, UserStatus *status){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		
-		debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %d; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", service->decoded_key, status->user->user_name, service->server, status->id, status->created_at_str, status->text, status->sexy_tweet);
+		debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %lu; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", service->decoded_key, status->user->user_name, service->server, status->id, status->created_at_str, status->text, status->sexy_tweet);
 		
 		/*gtk_list_store_insert(tweet_list_priv->store, iter, tweet_list_store_total);*/
 		gtk_list_store_append(tweet_list_priv->store, iter);
@@ -248,7 +248,6 @@ void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event){
 	
 	switch(event->state){
 		case GDK_CONTROL_MASK:
-			tweets_new_tweet();
 			tweet_view_sexy_insert_char('\n');
 			return;
 		case GDK_MOD1_MASK:
@@ -358,7 +357,7 @@ static void tweet_list_changed_cb(GtkWidget *widget, TweetList *friends_tweet){
 	);
 	
 	debug("Displaying tweet: #%lu from '%s'.", tweet_id, service->decoded_key);
-	tweet_view_show_tweet(service, (unsigned long int)tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
+	tweet_view_show_tweet(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	
 	g_free(user_name);
 	g_free(sexy_tweet);

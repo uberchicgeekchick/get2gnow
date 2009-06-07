@@ -130,7 +130,7 @@ struct _OnlineService{
 
 extern OnlineService *selected_service;
 
-extern unsigned long int in_reply_to_status_id;
+extern gulong in_reply_to_status_id;
 extern OnlineService *in_reply_to_service;
 
 

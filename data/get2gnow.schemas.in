@@ -138,7 +138,7 @@
 			<applyto>/apps/get2gnow/tweets/reload_timeline</applyto>
 			<owner>get2gnow</owner>
 			<type>int</type>
-			<default>3</default>
+			<default>5</default>
 			<locale name="C">
 				<short>Minutes between timeline retrievals</short>
 				<long>Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and 60</long>

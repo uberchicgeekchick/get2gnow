@@ -92,8 +92,8 @@ struct _UserStatus {
 	User		*user;
 	
 	StatusMonitor	type;
-	guint		id;
-	guint		in_reply_to_status_id;
+	gulong		id;
+	gulong		in_reply_to_status_id;
 	
 	guint		notification_timeout_id;
 	
@@ -107,14 +107,14 @@ struct _UserStatus {
 	gchar		*created_at_str;
 	gchar		*created_how_long_ago;
 	
-	guint		created_at;
-	guint		created_seconds_ago;
+	gulong		created_at;
+	gulong		created_seconds_ago;
 };
 
 struct _User {
 	OnlineService		*service;
 	
-	unsigned long int	id;
+	gulong			id;
 	gchar			*user_name;
 	gchar			*nick_name;
 	
@@ -127,9 +127,9 @@ struct _User {
 	gchar			*image_url;
 	gchar			*image_filename;
 	
-	unsigned long int	tweets;
-	unsigned long int	following;
-	unsigned long int	followers;
+	gulong			tweets;
+	gulong			following;
+	gulong			followers;
 	
 	gboolean		follower;
 };

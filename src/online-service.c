@@ -114,7 +114,7 @@ static void online_service_cookie_jar_open(OnlineService *service);
 
 OnlineService *selected_service=NULL;
 
-unsigned long int in_reply_to_status_id=0;
+gulong in_reply_to_status_id=0;
 OnlineService *in_reply_to_service=NULL;
 
 #define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication:OnlineService.c"

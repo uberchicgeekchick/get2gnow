@@ -430,7 +430,7 @@ void parser_format_user_status(OnlineService *service, User *user, UserStatus *s
 	g_free(sexy_status_text);
 }/*parser_format_user_status(status, user);*/
 
-gchar *parser_convert_time(const gchar *datetime, guint *my_diff){
+gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
 	struct tm	*ta;
 	struct tm	post;
 	int			 seconds_local;
