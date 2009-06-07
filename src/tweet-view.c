@@ -129,8 +129,10 @@ static gboolean tweet_view_delete_event_cb(GtkWidget *window, GdkEvent *event, T
 }/*tweet_view_delete_event_cb*/
 
 static gboolean tweet_view_configure_event_timeout_cb(GtkWidget *widget){
-	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
+	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)){
+		tweet_view->size_timeout_id=0;
 		return FALSE;
+	}
 	
 	geometry_save();
 	

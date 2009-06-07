@@ -19,9 +19,9 @@ pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
-install_sh_DATA = $(install_sh) -c -m 644
-install_sh_PROGRAM = $(install_sh) -c
-install_sh_SCRIPT = $(install_sh) -c
+install_sh_DATA = $(install_sh) -m 644
+install_sh_PROGRAM = $(install_sh)
+install_sh_SCRIPT = $(install_sh)
 INSTALL_HEADER = $(INSTALL_DATA)
 transform = $(program_transform_name)
 NORMAL_INSTALL = :
@@ -69,7 +69,6 @@ get2gnow_SOURCES =							\
 	ipc.c				ipc.h				\
 	app.c				app.h				\
 	geometry.c			geometry.h			\
-	confirm.c			confirm.h			\
 	label.c				label.h				\
 	parser.c			parser.h			\
 	preferences.c			preferences.h			\
@@ -106,7 +105,6 @@ get2gnow_OBJECTS =					\
 	ipc.$(OBJEXT)					\
 	app.$(OBJEXT)					\
 	geometry.$(OBJEXT)				\
-	confirm.$(OBJEXT)				\
 	label.$(OBJEXT)					\
 	parser.$(OBJEXT)				\
 	preferences.$(OBJEXT)				\
@@ -414,7 +412,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/confirm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@

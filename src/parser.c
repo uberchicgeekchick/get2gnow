@@ -52,7 +52,7 @@
 
 #include "parser.h"
 
-#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI"
+#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Parser.c"
 #include "debug.h"
 
 
@@ -266,42 +266,46 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-gboolean parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring){
+guint parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-		
-	if(!(doc=parser_parse(xml, &root_element))){
-		xmlCleanupParser();
-		return FALSE;
-	}
-	
 	xmlNode		*current_node=NULL;
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
 	gboolean	notify;
 	gboolean	display=FALSE, display_this_update=FALSE;
-	guint		last_tweet_id=0, tweet_id=0;
+	guint		last_tweet_id=0, tweet_id=0, tweets_parsed=0;
 	switch(monitoring){
 		case DMs:
-			notify=gconfig_if_bool(PREFS_UI_DM_NOTIFY, TRUE);
+			debug("Parsing DMs...");
+			notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
 			tweet_id=service->id_last_dm;
 			break;
 		
 		case Replies:
-			notify=gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE);
+			debug("Parsing Replies...");
+			notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
 			tweet_id=service->id_last_reply;
 			break;
 		
 		case Tweets:
 			display=TRUE;
-			notify=gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE);
+			debug("Parsing current Tweets timeline...");
+			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 			tweet_id=service->id_last_tweet;
 			break;
 		
 		case All: default: return FALSE;
 	}
+	
 	const int	tweet_display_interval=10;
+	
+	if(!(doc=parser_parse(xml, &root_element))){
+		debug("**ERROR:** Failed to parse xml document.");
+		xmlCleanupParser();
+		return tweets_parsed;
+	}
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
@@ -329,7 +333,8 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor
 		/* Parse node */
 		debug("Creating tweet's Status *.");
 		gboolean free_status=TRUE;
-		status=user_status_new(service, current_node->children, monitoring);
+		if( (status=user_status_parse(service, current_node->children, monitoring)) && status->text )
+			tweets_parsed++;
 		
 		/* the first tweet parsed is the 'newest' */
 		if(!last_tweet_id) last_tweet_id=status->id;
@@ -373,7 +378,7 @@ gboolean parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
-	return TRUE;
+	return tweets_parsed;
 }
 
 gchar *parser_escape_text(gchar *status){
@@ -405,7 +410,7 @@ void parser_format_user_status(OnlineService *service, User *user, UserStatus *s
 	
 	status->tweet=g_strdup_printf(
 			"%s<small><u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s<i>[%s]</i>\n%s%s%s",
-			((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</u></b>" :""),
+			((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>" :""),
 			user->nick_name, user->user_name, service->uri,
 			status->service->decoded_key,
 			app_tabs_to_right_align(),

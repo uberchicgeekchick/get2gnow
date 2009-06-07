@@ -71,7 +71,6 @@
 #include "images.h"
 #include "preferences.h"
 #include "geometry.h"
-#include "confirm.h"
 #include "label.h"
 #include "network.h"
 #include "preferences.h"
@@ -85,6 +84,10 @@
 #define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_APP, AppPriv ))
 
 struct _AppPriv {
+	/* Misc */
+	guint			size_timeout_id;
+	guint			timeout_id_status_bar;
+	
 	/* Main widgets */
 	GtkWindow		*window;
 	
@@ -140,8 +143,7 @@ struct _AppPriv {
 	GtkWidget		*popup_menu;
 	GtkToggleAction		*popup_menu_show_app;
 	
-	/* Misc */
-	guint			size_timeout_id;
+	gchar			*tabs;
 };
 
 /* UI & notification gconf values. */
@@ -149,7 +151,7 @@ struct _AppPriv {
 #define PREFS_HINTS_HIDE_MAIN_WINDOW		PREFS_PATH "/hints/hide_main_window"
 #define PREFS_HINTS_CLOSE_MAIN_WINDOW		PREFS_PATH "/hints/close_main_window"
 
-#define	DEBUG_DOMAINS	"App:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up"
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:App.c"
 #include "debug.h"
 
 #define	GtkBuilderUI	"app.ui"
@@ -158,6 +160,8 @@ struct _AppPriv {
 static void app_class_init(AppClass *klass);
 static void app_init(App *app);
 static void app_finalize(GObject *object);
+
+static gboolean app_statusbar_reset(gpointer user_data);
 
 static void app_setup(void);
 static void main_window_destroy_cb(GtkWidget *window, App *app); 
@@ -199,7 +203,6 @@ static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigu
 
 static App  *app=NULL;
 static AppPriv *app_priv=NULL;
-static gchar *app_tabs=NULL;
 
 G_DEFINE_TYPE(App, app, G_TYPE_OBJECT);
 
@@ -219,7 +222,7 @@ static void app_init(App *singleton_app){
 	app_priv->widgets_disconnected=NULL;
 	app_priv->group=NULL;
 	unset_selected_tweet();
-	app_tabs=g_strdup("\t");
+	app_priv->tabs=g_strdup("\t");
 }
 
 static void app_finalize(GObject *object){
@@ -229,15 +232,22 @@ static void app_finalize(GObject *object){
 	app_priv=GET_PRIV(app);
 	
 	program_timeout_remove(&app_priv->size_timeout_id, _("main window configuration"));
+	program_timeout_remove(&app_priv->timeout_id_status_bar, _("status bar message"));
 	
 	g_list_free(app_priv->widgets_connected);
 	g_list_free(app_priv->widgets_disconnected);
 	g_slist_free(app_priv->group);
 	
-	if(app_tabs) uber_free(app_tabs);
+	if(app_priv->tabs) uber_free(app_priv->tabs);
 	
 	G_OBJECT_CLASS(app_parent_class)->finalize(object);
 }
+
+static gboolean app_statusbar_reset(gpointer user_data){
+	app_set_statusbar_msg(NULL);
+	program_timeout_remove(&app_priv->timeout_id_status_bar, _("status bar message"));
+	return FALSE;
+}/*app_statusbar_reset();*/
 
 static void app_setup(void){
 	GtkBuilder	*ui;
@@ -391,7 +401,7 @@ void app_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data
 		
 		debug("Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
 		gtk_widget_reparent(GTK_WIDGET(app_priv->tweet_view->tweet_view_embed), GTK_WIDGET(app_priv->tweet_view->tweet_view));
-		gtk_window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view));
+		window_present(GTK_WINDOW(app_priv->tweet_view->tweet_view), TRUE);
 		g_object_add_weak_pointer(G_OBJECT(app_priv->tweet_view->tweet_view), (gpointer)&app_priv->tweet_view->tweet_view);
 		gtk_window_set_transient_for(GTK_WINDOW(app_priv->tweet_view->tweet_view), app_priv->window);
 		gtk_widget_hide(GTK_WIDGET(app_priv->expand_box));
@@ -439,7 +449,7 @@ static void main_window_destroy_cb(GtkWidget *window, App *app){
 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, App *app){
 	if(gtk_status_icon_is_embedded(app_priv->status_icon)) {
-		confirm_dialog_show(PREFS_HINTS_HIDE_MAIN_WINDOW,
+		popup_confirmation_dialog(PREFS_HINTS_HIDE_MAIN_WINDOW,
 						_("get2gnow is still running, it is just hidden."),
 						_("Click on the notification area icon to show get2gnow."),
 						GTK_WINDOW(app_get_window()),
@@ -450,7 +460,7 @@ static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, 
 		return TRUE;
 	}
 	
-	if((confirm_dialog_show(
+	if((popup_confirmation_dialog(
 				PREFS_HINTS_CLOSE_MAIN_WINDOW,
 				_("You were about to quit!"),
 				_(
@@ -701,15 +711,9 @@ static gboolean configure_event_timeout_cb(GtkWidget *widget){
 }
 
 static gboolean app_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, App *app){
-	geometry_save();
-	
 	program_timeout_remove(&app_priv->size_timeout_id, _("main window configuration"));
 	
-	app_priv->size_timeout_id=g_timeout_add(
-						500,
-						(GSourceFunc) configure_event_timeout_cb,
-						widget
-	);
+	app_priv->size_timeout_id=g_timeout_add(500, (GSourceFunc)configure_event_timeout_cb, widget);
 	
 	return FALSE;
 }
@@ -732,8 +736,6 @@ static void app_reconnect(GtkMenuItem *item, App *app){
 }/*app_reconnect*/
 
 void app_disconnect(void){
-	tweet_list_clear();
-	network_deinit(TRUE, All);
 	online_services_disconnect(online_services);
 }/*app_disconnect*/
 
@@ -784,7 +786,7 @@ static void app_retrieve_default_timeline(void){
 	app_set_default_timeline(app, timeline);
 	debug("Retriving default timeline: %s", timeline);
 	network_get_timeline(timeline);
-	g_free(timeline);
+	uber_free(timeline);
 }
 
 static void app_connection_items_setup(GtkBuilder *ui){
@@ -817,6 +819,7 @@ void app_state_on_connection(gboolean connected){
 		return;
 	
 	GList         *l;
+	if(!connected) unset_selected_tweet();
 	
 	for(l=app_priv->widgets_connected; l; l=l->next)
 		gtk_widget_set_sensitive( GTK_WIDGET(l->data), connected );
@@ -849,13 +852,18 @@ void app_set_statusbar_msg(gchar *message){
 	if(!( app_priv && app_priv->statusbar && GTK_IS_STATUSBAR(app_priv->statusbar) ))
 		return;
 	
+	if(message){
+		program_timeout_remove(&app_priv->timeout_id_status_bar, _("status bar message"));
+		app_priv->timeout_id_status_bar=g_timeout_add(3000, (GSourceFunc)app_statusbar_reset, NULL);
+	}
+	
 	gtk_statusbar_pop(GTK_STATUSBAR(app_priv->statusbar), 1);
 	gtk_statusbar_push(GTK_STATUSBAR(app_priv->statusbar), 1, (G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
 }
 
 
 void app_notify_sound(void){
-	if(gconfig_if_bool(PREFS_UI_SOUND, TRUE))
+	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
 		tweets_beep();
 }/*app_notify_sound*/
 
@@ -865,13 +873,6 @@ gboolean app_notify_on_timeout(gpointer data){
 		return FALSE;
 	}
 	
-	gchar *needle_tweet_mentions=g_strdup_printf("@%s", status->service->username);
-	if(!( (gconfig_if_bool(PREFS_UI_NOTIFICATION, TRUE)) || (gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE) && g_strrstr(status->text, needle_tweet_mentions)) )){
-		uber_free(needle_tweet_mentions);
-		return FALSE;
-	}
-	
-	uber_free(needle_tweet_mentions);
 	NotifyNotification *notification;
 	GError             *error=NULL;
 	
@@ -880,7 +881,7 @@ gboolean app_notify_on_timeout(gpointer data){
 	else
 		notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, app_priv->status_icon);
 	
-	notify_notification_set_timeout(notification, 8 * 1000);
+	notify_notification_set_timeout(notification, 10000);
 	notify_notification_show(notification, &error);
 	
 	g_object_unref(G_OBJECT(notification));
@@ -896,12 +897,12 @@ const gchar *app_tabs_to_right_align(void){
 	static int tab_count=0;
 	gint w=0, h=0, test_tab_count=0;
 	gtk_window_get_size(app_priv->window, &w, &h);
-	if(!( (( w>0 && h>0 )) && ( (test_tab_count=w/100) >1) )) return app_tabs;
-	if(tab_count==test_tab_count && G_STR_N_EMPTY(app_tabs) ) return app_tabs;
+	if(!( (( w>0 && h>0 )) && ( (test_tab_count=w/100) >1) )) return app_priv->tabs;
+	if(tab_count==test_tab_count && G_STR_N_EMPTY(app_priv->tabs) ) return app_priv->tabs;
 	
 	tab_count=test_tab_count;
 	gchar *tabs=NULL, *tabs_swap=NULL;
-	if(app_tabs) uber_free(app_tabs);
+	if(app_priv->tabs) uber_free(app_priv->tabs);
 	
 	for(int i=0; i<=tab_count; i++){
 		if(tabs){
@@ -912,8 +913,8 @@ const gchar *app_tabs_to_right_align(void){
 	}
 	
 	if(tabs_swap) uber_free(tabs_swap);
-	app_tabs=tabs;
+	app_priv->tabs=tabs;
 	
-	return app_tabs;
+	return app_priv->tabs;
 }/*app_tabs_to_right_align();*/
 

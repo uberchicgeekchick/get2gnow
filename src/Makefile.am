@@ -41,7 +41,6 @@ get2gnow_SOURCES = 							\
 	ipc.c				ipc.h				\
 	app.c				app.h				\
 	geometry.c			geometry.h			\
-	confirm.c			confirm.h			\
 	label.c				label.h				\
 	parser.c			parser.h			\
 	preferences.c			preferences.h			\

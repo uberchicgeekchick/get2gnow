@@ -94,7 +94,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Setup:Start-Up"
+#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up"
 #include "debug.h"
 
 typedef struct {
@@ -119,9 +119,9 @@ static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image);
 
 static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
-static void network_timeline_retry(gchar *timeline, OnlineServiceWrapper *service_wrapper, StatusMonitor monitoring);
+static void network_retry(OnlineServiceWrapper *service_wrapper, StatusMonitor monitoring);
 
-static void network_update_timeline(OnlineService *service, gboolean timeline_parsed, const gchar *new_timeline);
+static void network_update_timeline_display(OnlineService *service, guint tweets_parsed, const gchar *new_timeline);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
@@ -142,7 +142,7 @@ static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image){
 /* Check HTTP response code */
 gboolean network_check_http(OnlineService *service, SoupMessage *msg){
 	if(!( SOUP_IS_MESSAGE(msg) )){
-		debug("**ERROR**: Attempting validate invalid SoupMessage.\n\t\tService '%s' responsed: %s (%d).", service->decoded_key, msg->reason_phrase, msg->status_code);
+		debug("**ERROR**: Attempting validate invalid SoupMessage.");
 		return FALSE;
 	}
 	
@@ -169,7 +169,6 @@ gboolean network_check_http(OnlineService *service, SoupMessage *msg){
 	}
 	
 	debug("Loading failed.  Service '%s' responsed: %s: %s (%d).", service->decoded_key, error, msg->reason_phrase, msg->status_code);
-	app_statusbar_printf("Loading failed.  Service '%s' responsed: %s: %s (%d).", service->decoded_key, error, msg->reason_phrase, msg->status_code);
 	
 	return FALSE;
 }
@@ -182,25 +181,27 @@ void network_init(void){
 	/* The timeline reload interval shouldn't be less than 3 minutes */
 	if(minutes < 3) minutes=3;
 	
-	network_deinit(FALSE, Tweets);
-	
-	if( (!timeout_id_dms && gconfig_if_bool(PREFS_UI_DM_NOTIFY, TRUE)) && (current_timeline && !g_str_equal(API_DIRECT_MESSAGES, current_timeline)) ){
+	if( (!timeout_id_dms && gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE)) && (current_timeline && !g_str_equal(API_DIRECT_MESSAGES, current_timeline)) ){
+		debug("Creating timeout to monitor for new Direct Messages.");
 		guint reload_dms=(minutes+1)*60*1000;
-		timeout_id_dms=g_timeout_add_full(DMs, reload_dms, network_timeout, (gpointer)DMs, NULL);
+		timeout_id_dms=g_timeout_add(reload_dms, network_timeout, (gpointer)DMs);
 	}
 	
-	if( (!timeout_id_replies && gconfig_if_bool(PREFS_UI_AT_NOTIFY, TRUE)) && (current_timeline && !g_str_equal(API_REPLIES, current_timeline)) ){
+	if( (!timeout_id_replies && gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE)) && (current_timeline && !g_str_equal(API_REPLIES, current_timeline)) ){
+		debug("Creating timeout to monitor for new Replies.");
 		guint reload_replies=(minutes-1)*60*1000;
-		timeout_id_replies=g_timeout_add_full(Replies, reload_replies, network_timeout, (gpointer)Replies, NULL);
+		timeout_id_replies=g_timeout_add(reload_replies, network_timeout, (gpointer)Replies);
 	}
 	
-	if(current_timeline){
+	if(current_timeline && !timeout_id_timelines){
 		if(g_str_equal(API_REPLIES, current_timeline))
 			network_deinit(FALSE, Replies);
 		else if(g_str_equal(API_DIRECT_MESSAGES, current_timeline))
 			network_deinit(FALSE, DMs);
+		
+		debug("Creating timeout to monitor current timeline: %s.", current_timeline);
 		guint reload_timelines=minutes*60*1000;
-		timeout_id_timelines=g_timeout_add_full(Tweets, reload_timelines, network_timeout, (gpointer)Tweets, NULL);
+		timeout_id_timelines=g_timeout_add(reload_timelines, network_timeout, (gpointer)Tweets);
 	}
 }/*network_init();*/
 
@@ -209,18 +210,19 @@ static gboolean network_timeout(gpointer user_data){
 	
 	switch(monitoring){
 		case DMs:
+			debug("Reloading DMs.");
 			online_services_request( online_services, QUEUE, API_DIRECT_MESSAGES, network_display_timeline, current_timeline, (gpointer)DMs );
 			timeout_id_dms=0;
 			break;
 		case Replies:
+			debug("Reloading Replies.");
 			online_services_request( online_services, QUEUE, API_REPLIES, network_display_timeline, current_timeline, (gpointer)Replies );
 			timeout_id_replies=0;
 			break;
 		case Tweets:
-			if(current_timeline && !processing){
-				network_set_state_loading_timeline(current_timeline, Reload);
-				online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, (gpointer)Tweets );
-			}
+			debug("Reloading Tweets.");
+			network_set_state_loading_timeline(current_timeline, Reload);
+			online_services_request( online_services, QUEUE, current_timeline, network_display_timeline, current_timeline, (gpointer)Tweets );
 			timeout_id_timelines=0;
 			break;
 		case All: break;
@@ -245,7 +247,7 @@ void network_deinit(gboolean free_timeline, StatusMonitor monitor){
 			program_timeout_remove(&timeout_id_timelines, _("timeline"));
 			break;
 	}
-}/*network_deinit(TRUE|FALSE, All|DMs|Replies|Tweets);*/
+}/*network_deinit(TRUE||FALSE, All||DMs||Replies||Tweets);*/
 
 /* Post a new tweet - text must be Url encoded */
 void network_post_status(const gchar *update){
@@ -273,13 +275,24 @@ void network_set_state_loading_timeline(const gchar *timeline, ReloadState state
 		
 		case Load:
 		default:
+			if(!( current_timeline && g_str_equal(timeline, current_timeline) )){
+				debug("Switching current timeline.  Previous timeline: %s; New timeline: %s.", (current_timeline ?current_timeline :"N/A"), timeline);
+				
+				network_deinit(FALSE, Tweets);
+				
+				if(current_timeline) uber_free(current_timeline);
+				current_timeline=g_strdup(timeline);
+			}
+			
 			notice_prefix=_("Loading");
 			break;
 	}
 	debug("%s current timeline: %s", notice_prefix, timeline);
 	app_statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
 	
-	if(state!=Retry) processing=TRUE;
+	if(state==Retry) return;
+	debug("Setting processing to true to trigger timeline refresh.");
+	processing=TRUE;
 }/*network_timeline_loading_notification*/
 
 
@@ -292,14 +305,14 @@ void network_refresh(void){
 }
 
 /* Get and parse a timeline */
-void network_get_timeline(gchar *uri_timeline){
+void network_get_timeline(const gchar *uri_timeline){
 	if(processing)
 		return;
 		
 	/* UI */
 	network_set_state_loading_timeline(uri_timeline, Load);
 	
-	online_services_request( online_services, QUEUE, uri_timeline, network_display_timeline, uri_timeline, (gpointer)Tweets );
+	online_services_request( online_services, QUEUE, uri_timeline, network_display_timeline, (gchar *)uri_timeline, (gpointer)Tweets );
 	/* network_queue's 3rd argument is used to trigger a new timeline & enables 'Refresh' */
 }/*network_get_timeline*/
 
@@ -338,7 +351,7 @@ gboolean network_download_avatar(User *user){
 	if(g_file_test(user->image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return TRUE;
 	
-	debug("Downloading Image: %s\n\t\tGET: %s", image_filename, user->image_url);
+	debug("Downloading Image: %s.  GET: %s", image_filename, user->image_url);
 	
 	SoupMessage *msg=online_service_request_uri(user->service, GET, user->image_url, NULL, NULL, NULL);
 	
@@ -360,7 +373,7 @@ void network_get_image(User *user, GtkTreeIter *iter){
 		return;
 	}
 	
-	debug("Downloading Image: %s\n\t\tGET: %s", user->image_filename, user->image_url);
+	debug("Downloading Image: %s.  GET: %s", user->image_filename, user->image_url);
 	NetworkTweetListImageDL *image=network_tweet_list_image_dl_new(user->image_filename, iter);
 	
 	online_service_request_uri(user->service, QUEUE, user->image_url, network_cb_on_image, image, NULL);
@@ -382,7 +395,7 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 		app_statusbar_printf("%s's %s sent successfully.", service_wrapper->service->decoded_key, status);
 	}
 	
-	debug("\t\tHTTP response: %s(#%i)", msg->reason_phrase, msg->status_code);
+	debug("HTTP response: %s(#%i)", msg->reason_phrase, msg->status_code);
 	
 	if(in_reply_to_service){
 		if(service_wrapper->service==in_reply_to_service){
@@ -404,15 +417,6 @@ void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer u
 	gchar        *new_timeline=(gchar *)service_wrapper->user_data;
 	StatusMonitor monitoring=(StatusMonitor)service_wrapper->formdata;
 	
-	debug("Timeline response: %i", msg->status_code);
-	
-	if(processing){
-		tweet_list_clear();
-		processing=FALSE;
-	}
-	
-	online_service_load_tweet_ids(service_wrapper->service, new_timeline);
-	
 	if(!network_check_http(service_wrapper->service, msg)) {
 		if(msg->status_code==401){
 			debug("*WARNING:* Authentication failed for online service: %s.", service_wrapper->service->decoded_key);
@@ -421,53 +425,59 @@ void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer u
 		}
 		
 		if(!retrying && (msg->status_code==100||msg->status_code==404))
-			return network_timeline_retry(new_timeline, service_wrapper, monitoring);
+			return network_retry(service_wrapper, monitoring);
 		
-	}else if(!retrying && msg->status_code==200)
-		return network_timeline_retry(new_timeline, service_wrapper, monitoring);
+	}
 	
-	network_init();
+	const gchar *this_timeline=g_strrstr(service_wrapper->requested_uri, service_wrapper->service->uri);
+	
+	debug("Started processing timeline: %s.", this_timeline);
+	if(processing){
+		tweet_list_clear();
+		processing=FALSE;
+	}
+	
+	online_service_load_tweet_ids(service_wrapper->service, new_timeline);
+	
+	guint tweets_parsed=parser_timeline(service_wrapper->service, msg, monitoring);
+		
+	if(monitoring==Tweets){
+		debug("Total tweets in this timeline: %d.", tweets_parsed);
+		if(!tweets_parsed && msg->status_code==200)
+			return network_retry(service_wrapper, monitoring);
+		network_update_timeline_display(service_wrapper->service, tweets_parsed, new_timeline);
+	}
 	
 	if(retrying) retrying=FALSE;
 	
-	debug("Parsing timeline");
-	gboolean parsed_successfully=parser_timeline(service_wrapper->service, msg, monitoring);
 	online_service_save_tweet_ids(service_wrapper->service, new_timeline);
-	if(monitoring==Tweets) network_update_timeline(service_wrapper->service, parsed_successfully, new_timeline);
+	
+	network_init();
 	
 	online_service_wrapper_free(service_wrapper);
 }
 
-static void network_timeline_retry(gchar *timeline, OnlineServiceWrapper *service_wrapper, StatusMonitor monitoring){
-	network_set_state_loading_timeline(timeline, Retry);
-	online_service_request(service_wrapper->service, QUEUE, timeline, network_display_timeline, timeline, (gpointer)monitoring);
+static void network_retry(OnlineServiceWrapper *service_wrapper, StatusMonitor monitoring){
+	debug("Attempting to reload: %s.", service_wrapper->requested_uri);
+	network_set_state_loading_timeline(service_wrapper->requested_uri, Retry);
+	online_service_request_uri(service_wrapper->service, QUEUE, service_wrapper->requested_uri, network_display_timeline, service_wrapper->requested_uri, (gpointer)monitoring);
 	online_service_wrapper_free(service_wrapper);
-}/*network_timeline_retry(new_timeline, service_wrapper, monitoring);*/
+}/*network_retry(new_timeline, service_wrapper, monitoring);*/
 
-static void network_update_timeline(OnlineService *service, gboolean parsed_successfully, const gchar *new_timeline){
-	if(!(parsed_successfully)){
+static void network_update_timeline_display(OnlineService *service, guint tweets_parsed, const gchar *new_timeline){
+	if(!tweets_parsed){
 		app_statusbar_printf("Error Parsing %s's Timeline Parser.", service->decoded_key);
 		return;
 	}
 	app_statusbar_printf("Timeline Loaded for: %s", service->decoded_key);
 	
-	if(new_timeline){
-		if(!( current_timeline && g_str_equal(new_timeline, current_timeline) )){
-			debug("Switching current timeline.  Previous timeline: %s; New timeline: %s.", (current_timeline ?current_timeline :"N/A"), new_timeline);
-			if(current_timeline) uber_free(current_timeline);
-			current_timeline=g_strdup(new_timeline);
-		}
-	}
-	
 	/* move the pseudo focus of the tweet list to the start of the list */
 	tweet_list_goto_top();
-}/*network_update_timeline(timeline_parsed, new_timeline);*/
+}/*network_update_timeline_display(timeline_parsed, new_timeline);*/
 
 /* On get a image */
 void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceWrapper *service_wrapper=(OnlineServiceWrapper *)user_data;
-	
-	debug("Image response: %i", msg->status_code);
 	
 	NetworkTweetListImageDL *image=(NetworkTweetListImageDL *)service_wrapper->user_data;
 	if(!( image && image->filename && image->iter )){
@@ -475,12 +485,10 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 		return;
 	}
 	
-	/* check response */
 	gchar *image_filename=NULL;
 	if(!(network_check_http(service_wrapper->service, msg)))
 		image_filename=cache_images_get_unknown_image_filename();
 	else{
-		/* Save image data */
 		debug("Saving avatar to file: %s", image->filename);
 		if(!(g_file_set_contents(
 					image->filename,
@@ -493,7 +501,6 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 			image_filename=g_strdup(image->filename);
 	}
 	
-	/* Set image from file here(image_file) */
 	app_statusbar_printf("New avatar added to TweetList.");
 	tweet_list_set_image(image_filename, image->iter);
 	
@@ -502,7 +509,7 @@ void network_cb_on_image(SoupSession *session, SoupMessage *msg, gpointer user_d
 	network_tweet_list_image_dl_free(image);
 	
 	online_service_wrapper_free(service_wrapper);
-}
+}/*network_cb_on_image(session, msg, user_data);*/
 
 
 /********************************************************

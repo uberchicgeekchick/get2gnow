@@ -83,12 +83,26 @@
 #include "profile-viewer.h"
 
 
+#define API_USER_FOLLOW		"/friendships/create/%s.xml"
+#define API_USER_UNFOLLOW	"/friendships/destroy/%s.xml"
+#define API_USER_BLOCK		"/blocks/create/%s.xml"
+#define API_USER_UNBLOCK	"/blocks/destroy/%s.xml"
+
+#define API_USER_PROFILE	"/users/show/%s.xml"
+
+#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
+#include "debug.h"
+
+#define GtkBuilderUI "user-profile.ui"
+
+
 static UserRequest *user_request_new(UserAction action, GtkWindow *parent, const gchar *user_data);
 static void user_request_free(UserRequest *request);
 
-static User *user_constructor(OnlineService *service, gboolean a_follower);
-static User *user_parse_new(OnlineService *service, SoupMessage *xml);
+static User *user_new(OnlineService *service, gboolean a_follower);
+static User *user_parse_profile(OnlineService *service, SoupMessage *xml);
 
+static UserStatus *user_status_new(OnlineService *service, StatusMonitor status_type);
 static void user_status_format_dates(UserStatus *status);
 
 static void user_append_friend(User *user);
@@ -96,11 +110,6 @@ static void user_remove_friend(User *user);
 
 static void user_remove_follower(User *user);
 
-
-#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings"
-#include "debug.h"
-
-#define GtkBuilderUI "user-profile.ui"
 
 gchar *user_action_to_string(UserAction action){
 	switch(action){
@@ -234,7 +243,7 @@ void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer use
 		case Follow:
 			/* parse new user */
 			debug("UserRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_wrapper->service->decoded_key);
-			if(!(user=user_parse_new(service_wrapper->service, msg))){
+			if(!(user=user_parse_profile(service_wrapper->service, msg))){
 				debug("\t\t[failed]");
 				app_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_data, service_wrapper->service->decoded_key);
 			}else{
@@ -281,47 +290,44 @@ static void user_request_free(UserRequest *request){
 }/*user_request_free*/
 
 
-static User *user_constructor(OnlineService *service, gboolean a_follower){
+static User *user_new(OnlineService *service, gboolean a_follower){
 	User *user=g_new(User, 1);
+	
 	user->follower=a_follower;
 	user->service=service;
 	user->status=NULL;
 	user->user_name=user->nick_name=user->location=user->bio=user->url=user->image_url=user->image_filename=NULL;
 	
 	return user;
-}/*user_constructor*/
+}/*user_new*/
 
 
 /* Parse a xml user node. Ex: user's profile & add/del/block users responses */
-static User *user_parse_new(OnlineService *service, SoupMessage *xml){
+static User *user_parse_profile(OnlineService *service, SoupMessage *xml){
 	xmlDoc *doc=NULL;
 	xmlNode *root_element=NULL;
 	User *user=NULL;
 	
-	/* parse the xml */
 	if(!( (doc=parser_parse(xml, &root_element )) )){
 		xmlCleanupParser();
 		return NULL;
 	}
 	
 	if(g_str_equal(root_element->name, "user"))
-		user=user_parse_profile(service, root_element->children);
+		user=user_parse_node(service, root_element->children);
 	
-	/* Free memory */
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
 	return user;
-}/*user_parse_new(service, xml);*/
+}/*user_parse_profile(service, xml);*/
 
 
-User *user_parse_profile(OnlineService *service, xmlNode *a_node){
+User *user_parse_node(OnlineService *service, xmlNode *a_node){
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	
-	User		*user;
-	
-	user=user_constructor(service, getting_followers);
+	User		*user=user_new(service, getting_followers);
 	
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
@@ -330,8 +336,6 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 			continue;
 		
 		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ) continue;
-		
-		debug("name: %s; content: %s.", current_node->name, content);
 		
 		if(g_str_equal(current_node->name, "id" ))
 			user->id=strtoul( content, NULL, 10 );
@@ -364,31 +368,37 @@ User *user_parse_profile(OnlineService *service, xmlNode *a_node){
 			user->image_url=g_strdup(content);
 		
 		else if(g_str_equal(current_node->name, "status") && current_node->children)
-			user->status=user_status_new(service, current_node->children, Tweets);
+			user->status=user_status_parse(service, current_node->children, Tweets);
 		
 		xmlFree(content);
 		
-	} /* End of loop */
-	if(user->status)
-		parser_format_user_status(service, user, user->status);
+	}
+	
+	if(user->status) parser_format_user_status(service, user, user->status);
 	
 	user->image_filename=cache_images_get_filename(user);
 	
 	return user;
-}/*user_parse_new(service, root_node); || user_parse_new(service, current_node->children);*/
+}/*user_parse_node(service, root_node); || user_parse_node(service, current_node->children);*/
 
-UserStatus *user_status_new(OnlineService *service, xmlNode *status_node, StatusMonitor type){
-	xmlNode		*current_node = NULL;
-	gchar		*content=NULL;
+static UserStatus *user_status_new(OnlineService *service, StatusMonitor status_type){
 	UserStatus	*status=g_new0(UserStatus, 1);
 	
 	status->service=service;
 	status->user=NULL;
-	status->type=type;
+	status->type=status_type;
 	status->text=status->tweet=status->notification=status->sexy_tweet=NULL;
 	status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0;
 	status->created_at=status->created_seconds_ago=0;
+	
+	return status;
+}/**/
+
+UserStatus *user_status_parse(OnlineService *service, xmlNode *status_node, StatusMonitor status_type){
+	xmlNode		*current_node = NULL;
+	gchar		*content=NULL;
+	UserStatus	*status=user_status_new(service, status_type);
 	
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing status & tweet at node: %s", status_node->name);
@@ -410,7 +420,7 @@ UserStatus *user_status_new(OnlineService *service, xmlNode *status_node, Status
 			status->source=g_strdup(content);
 		
 		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")) && current_node->children)
-			status->user=user_parse_profile(service, current_node->children);
+			status->user=user_parse_node(service, current_node->children);
 		
 		else if(g_str_equal(current_node->name, "text"))
 			status->text=g_strdup(content);
@@ -427,7 +437,7 @@ UserStatus *user_status_new(OnlineService *service, xmlNode *status_node, Status
 	if(status->user) parser_format_user_status(service, status->user, status);
 	
 	return status;
-}/*user_status_new(service, current_node->children);*/
+}/*user_status_parse(service, current_node->children);*/
 
 static void user_status_format_dates(UserStatus *status){
 	struct tm	post;
@@ -470,11 +480,11 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 			
 	User *user=NULL;
 	
-	gchar *user_profile_uri=g_strdup_printf(API_ABOUT_USER, user_name);
+	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, user_name);
 	SoupMessage *msg=online_service_request(service, GET, user_profile_uri, NULL, NULL, NULL);
 	g_free( user_profile_uri );
 	
-	if(!(user=user_parse_new(service, msg)))
+	if(!(user=user_parse_profile(service, msg)))
 		return NULL;
 	
 	return user;

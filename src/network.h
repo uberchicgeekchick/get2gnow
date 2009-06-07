@@ -71,6 +71,12 @@
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
+typedef enum {
+	Load,
+	Reload,
+	Retry,
+} ReloadState;
+
 #define API_LOGIN		"/account/verify_credentials.xml"
 
 #define API_TIMELINE_PUBLIC	"/statuses/public_timeline.xml"
@@ -87,18 +93,6 @@
 #define API_FAVE		"/favorites/create/%s.xml"
 #define API_UNFAVE		"/favorites/destroy/%s.xml"
 
-#define API_USER_FOLLOW		"/friendships/create/%s.xml"
-#define API_USER_UNFOLLOW	"/friendships/destroy/%s.xml"
-#define API_USER_BLOCK		"/blocks/create/%s.xml"
-#define API_USER_UNBLOCK	"/blocks/destroy/%s.xml"
-
-#define API_ABOUT_USER		"/users/show/%s.xml"
-typedef enum {
-	Load,
-	Reload,
-	Retry,
-} ReloadState;
-
 
 /**********************************************************************
  *          Global method  & function prototypes                      *
@@ -112,7 +106,7 @@ void network_deinit(gboolean free_timeline, StatusMonitor monitor);
 void network_post_status(const gchar *text);
 void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
 
-void network_get_timeline(gchar *uri_timeline);
+void network_get_timeline(const gchar *uri_timeline);
 void network_get_user_timeline(OnlineService *service, const gchar *username);
 void network_refresh(void);
 

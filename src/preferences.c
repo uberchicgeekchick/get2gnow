@@ -41,7 +41,7 @@
 
 #define GtkBuilderUI "preferences.ui"
 
-#define DEBUG_DOMAINS "Preferences:UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Preferences:Setup"
+#define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Settings:Setup:Start-Up:Preferences.c"
 #include "debug.h"
 
 typedef struct {
@@ -123,11 +123,10 @@ static void preferences_destroy_cb(GtkDialog *dialog, Prefs *prefs);
 
 static void preferences_setup_widgets(Prefs *prefs){
 	debug("Binding widgets to preferences.");
-	preferences_hookup_toggle_button(prefs, PREFS_UI_NOTIFICATION, TRUE, prefs->notify);
-	preferences_hookup_toggle_button(prefs, PREFS_UI_SOUND, TRUE, prefs->sound);
-	
-	preferences_hookup_toggle_button(prefs, PREFS_UI_AT_NOTIFY, TRUE, prefs->notify_at_mentions_check_button);
-	preferences_hookup_toggle_button(prefs, PREFS_UI_DM_NOTIFY, TRUE, prefs->notify_dms_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_ALL, TRUE, prefs->notify);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEEP, TRUE, prefs->sound);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEET_LENGTH_ALERT, FALSE, prefs->no_length_alert);
 	
@@ -173,7 +172,6 @@ static void preferences_direct_reply_toggled(GtkToggleButton *check_button, Pref
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), TRUE);
 	else if(i_changed_no_profile)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), FALSE);
-	
 }/*preferences_direct_reply_toggled*/
 
 static void preferences_timeline_setup (Prefs *prefs){
@@ -219,42 +217,37 @@ static void preferences_timeline_setup (Prefs *prefs){
 
 static void preferences_reload_setup(Prefs *prefs){
 	debug("Setting-up timeline refresh preference.");
-	GtkListStore    *model;
-	GtkTreeIter      iter;
-	GtkCellRenderer *renderer;
-	reload_time     *options;
-
-	options = reload_list;
-
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (prefs->combo_reload),
-								renderer, TRUE);
-	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (prefs->combo_reload),
-									renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
-
-	model = gtk_list_store_new (COL_COMBO_COUNT,
-								G_TYPE_STRING,
-								G_TYPE_INT);
-
-	gtk_combo_box_set_model (GTK_COMBO_BOX (prefs->combo_reload),
-							 GTK_TREE_MODEL (model));
-
+	GtkTreeIter      *iter=NULL;
+	reload_time	*options=reload_list;
+	
+	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	
+	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
+	
+	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_reload), GTK_TREE_MODEL(list_store));
+	
 	while (options->display_text != NULL) {
-		gtk_list_store_append (model, &iter);
-		gtk_list_store_set (model, &iter,
-							COL_COMBO_VISIBLE_NAME, _(options->display_text),
-							COL_COMBO_NAME, options->minutes,
-							-1);
+		iter=g_new0(GtkTreeIter, 1);
+		gtk_list_store_append(list_store, iter);
+		gtk_list_store_set(
+					list_store, iter,
+						COL_COMBO_VISIBLE_NAME, _(options->display_text),
+						COL_COMBO_NAME, options->minutes,
+					-1
+		);
 		options++;
+		uber_free(iter);
 	}
-
-	g_object_unref (model);
+	
+	g_object_unref(list_store);
 }
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button){
 	gchar *pref_bool_default=(gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default");
-	gboolean bool_default=g_str_equal( pref_bool_default, "TRUE" );
-	debug("Binding CheckButton: %s to preference: %s; default value: %s(=%s).", gtk_button_get_label(GTK_BUTTON(check_button)), key, (bool_default?"TRUE":"FALSE"), pref_bool_default );
+	gboolean bool_default=g_str_equal(pref_bool_default, "TRUE");
+	debug("Binding CheckButton: %s to preference: %s; default value: %s.", gtk_button_get_label(GTK_BUTTON(check_button)), key, (bool_default?"TRUE":"FALSE"));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key, bool_default));
 }
 

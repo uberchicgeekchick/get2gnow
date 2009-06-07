@@ -32,7 +32,7 @@
 #include "network.h"
 #include "online-services.h"
 #include "preferences.h"
-#include "confirm.h"
+#include "popup-dialog.h"
 
 
 #define GtkBuilderUI "services-dialog.ui"
@@ -112,15 +112,17 @@ static void services_dialog_response_cb(GtkDialog *dialog, gint response, Servic
 }/*services_dialog_response_cb*/
 
 static void services_dialog_new_service(GtkButton *new_button, ServicesDialog *services_dialog){
-	if(!(services_dialog_get_active_service(services_dialog))) return;
-	
 	debug("Preparing ServicesDialog for a new account setup.");
-	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( services_dialog->urls)->child), "");
+	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(services_dialog->enabled), TRUE);
 	gtk_toggle_button_set_active(services_dialog->secure_service_toggle_button, TRUE);
 	gtk_entry_set_text(GTK_ENTRY(services_dialog->username), "");
 	gtk_entry_set_text(GTK_ENTRY(services_dialog->password), "");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(services_dialog->auto_connect), TRUE);
+	
+	if(!(services_dialog_get_active_service(services_dialog))) return;
+	
+	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( services_dialog->urls)->child), "");
 }/*services_dialog_new_service(services_dialog->service_new_button, services_dialog);*/
 
 static void services_dialog_save_service(GtkButton *save_button, ServicesDialog *services_dialog){
@@ -229,7 +231,7 @@ static void services_dialog_delete_service(GtkButton *delete_button, ServicesDia
 	}
 	
 	gchar *confirm_message=g_strdup_printf("%s: %s?", _("Are you sure you want to delete"), service->decoded_key);
-	if(!(confirm_dialog_show(
+	if(!(popup_confirmation_dialog(
 					PREFS_ACCOUNT_DELETE,
 					confirm_message,
 					_("You will no longer be able to send or recieve messages using this account.\n\nIf you want to use this service again you will have to set it up again."),
@@ -294,15 +296,19 @@ static void services_dialog_check_service(ServicesDialog *services_dialog){
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(services_dialog->password));
 	
 	if(service){
+		debug("Service dialog is editing an existing service: <%s>.", service->uri);
 		service_exists=TRUE;
 	}
 	
 	if( service && G_STR_N_EMPTY(uri) && g_str_equal(service->uri, uri) && G_STR_N_EMPTY(username) && g_str_equal(service->username, username) && G_STR_N_EMPTY(password) && g_str_equal(service->password, password) ){
+		debug("Services is up to date, no changes need saved.");
 		service_is_saved=TRUE;
 		service_okay_to_save=FALSE;
 	}else if( service && G_STR_N_EMPTY(uri) && !g_str_equal(service->uri, uri) && G_STR_N_EMPTY(username) && !g_str_equal(service->username, username) && !G_STR_N_EMPTY(password) && !g_str_equal(service->password, password) ){
+		debug("Existing service has changes that need to be saved.");
 		service_okay_to_save=TRUE;
-	}else if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(username) && G_STR_N_EMPTY(password) )){
+	}else if(!service && (G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(username) && G_STR_N_EMPTY(password)) ){
+		debug("Service Dialog is creating a OnlineService & all needed fields have data so the service may be saved.");
 		service_okay_to_save=TRUE;
 	}
 	

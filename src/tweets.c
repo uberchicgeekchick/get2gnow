@@ -144,82 +144,82 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 			switch(event->keyval){
 				case GDK_Return:
 					tweets_retweet();
-					break;
+					return;
 				case GDK_S: case GDK_s:
 					tweet_view_send(NULL);
-					break;
+					return;
 				case GDK_A: case GDK_a:
 					g_signal_emit_by_name(app_get_menu("accounts"), "activate");
-					break;
+					return;
 				case GDK_T: case GDK_t:
 					g_signal_emit_by_name(app_get_menu("tweets"), "activate");
-					break;
+					return;
 				case GDK_F: case GDK_f:
 					g_signal_emit_by_name(app_get_menu("friends"), "activate");
-					break;
+					return;
 				case GDK_V: case GDK_v:
 					g_signal_emit_by_name(app_get_menu("timelines"), "activate");
-					break;
+					return;
 				case GDK_H: case GDK_h:
 					g_signal_emit_by_name(app_get_menu("help"), "activate");
-					break;
+					return;
 			}
 			break;
 		case GDK_SHIFT_MASK:
 			if(event->keyval==GDK_Return)
-				tweets_new_dm();
+				return tweets_new_dm();
 			break;
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
 				case GDK_Return:
 					tweet_view_sexy_insert_char('\n');
-					break;
+					return;
 				case GDK_Tab:
 					tweet_view_sexy_insert_char('\t');
-					break;
+					return;
 				case GDK_N: case GDK_n:
 					tweets_new_tweet();
-					break;
+					return;
 				case GDK_Q: case GDK_q:
 					gtk_main_quit();
-					break;
+					return;
 				case GDK_R: case GDK_r:
 					tweets_reply();
-					break;
+					return;
 				case GDK_F: case GDK_f:
 					tweets_retweet();
-					break;
+					return;
 				case GDK_D: case GDK_d:
 					tweets_new_dm();
-					break;
+					return;
 				case GDK_S: case GDK_s:
 					tweets_save_fave();
-					break;
+					return;
 				case GDK_I: case GDK_i:
 					tweets_user_view_profile();
-					break;
+					return;
 				case GDK_H: case GDK_h:
 					tweets_user_view_tweets();
-					break;
+					return;
 			}
 			break;
 		default:
 			switch( event->keyval ){
 				case GDK_F1:
 					help_show(app_get_window());
-					break;
+					return;
 				case GDK_F5:
 					network_refresh(); 
-					break;
+					return;
 				case GDK_greater:
 					tweets_retweet();
-					break;
+					return;
 				case GDK_at:
 					tweets_reply();
-					break;
+					return;
 				case GDK_asciitilde:
 					tweets_new_dm();
-					break;
+					return;
 			}
 			break;
 	}

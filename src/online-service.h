@@ -83,6 +83,13 @@ typedef enum{
 	QUEUE,
 } RequestMethod;
 
+typedef enum{
+	All,
+	DMs,
+	Replies,
+	Tweets,
+} StatusMonitor;
+
 struct _OnlineService{
 	SoupSession	*session;
 	RateLimitTimer	*timer;

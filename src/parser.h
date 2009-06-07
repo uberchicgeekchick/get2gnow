@@ -28,7 +28,7 @@
 
 #include <libsoup/soup-message.h>
 
-#include "online-services.h"
+#include "online-service.h"
 #include "users.h"
 
 
@@ -40,7 +40,7 @@ void parser_format_user_status(OnlineService *service, User *user, UserStatus *s
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, guint *my_diff);
 
-gboolean parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring);
+guint parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring);
 gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 #endif /*  __PARSER_H__ */

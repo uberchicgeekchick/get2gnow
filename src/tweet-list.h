@@ -69,9 +69,6 @@ typedef struct _TweetListPriv  TweetListPriv;
 
 struct _TweetList {
 	SexyTreeView            parent;
-	
-	gint			index;
-	guint			total;
 };
 
 struct _TweetListClass {

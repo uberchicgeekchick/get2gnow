@@ -85,13 +85,15 @@ enum {
 	PreferencePositionY,
 	PreferenceTotal,
 };
-#define DEBUG_DOMAINS "Geometry:TweetView:App:MainWindow:UI:GtkBuilder:GtkBuildable:Setup:Start-Up"
+#define DEBUG_DOMAINS "TweetView:App:MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:Geometry.c"
 #include "debug.h"
 
 /* Window height, width, & position gconf values. */
 #define PREFS_UI_WIDTH				PREFS_PATH "/ui/widths/%s"
 #define PREFS_UI_HEIGHT				PREFS_PATH "/ui/heights/%s"
 #define PREFS_UI_POSITIONS			PREFS_PATH "/ui/positions/%s_%s"
+
+#define	MIN_VPANED_CALLS			7
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -198,13 +200,13 @@ static void geometry_save_for_window(ViewType view){
 		if(calls) calls=0;
 		return;
 	}
-	if(calls<8) calls++;
+	if(calls<MIN_VPANED_CALLS) calls++;
 	
 	GtkPaned *tweet_vpaned=app_get_tweet_paned();
 	gint v=gtk_paned_get_position(tweet_vpaned), min_v=0, max_v=0, padding=h/3.5;
 	
 	gchar *vpaned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, "vpanded", "tweet_view");
-	if(calls<8){
+	if(calls<MIN_VPANED_CALLS){
 		gconfig_get_int(vpaned_position_prefs_path, &v);
 	}
 	g_object_get(G_OBJECT(tweet_vpaned), "max-position", &max_v, "min-position", &min_v, NULL);
@@ -213,7 +215,7 @@ static void geometry_save_for_window(ViewType view){
 	
 	debug("%s TweetView's vpaned position of: %d; Maximum position: %d: Minimum position: %d vpaned position.", (calls<8 ?_("Moving") :_("Saving") ), v, max_v, min_v);
 	
-	if(calls==8){
+	if(calls==MIN_VPANED_CALLS){
 		gconfig_set_int(vpaned_position_prefs_path, v);
 	}
 	gtk_paned_set_position(tweet_vpaned, v);

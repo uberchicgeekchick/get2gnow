@@ -77,7 +77,7 @@ typedef struct {
 	gpointer		user_data;
 } GConfigNotifyData;
 
-#define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:GConfig"
+#define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:GConfig.c"
 #include "debug.h"
 
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"
@@ -187,34 +187,60 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
 		return cached_bool_value;
 	
+	GConfValue *gconf_value=NULL;
 	GError *error=NULL;
-	gboolean value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
-	uber_free(cached_bool_key);
-	cached_bool_key=g_strdup(key);
-	
-	debug("Getting boolean: '%s':\n\t\tRetrieved: [%s]\t\tDefault: [%s].", key, (value?"TRUE":"FALSE"), (bool_default?"TRUE":"FALSE"));
-	
-	if(error) {
-		debug("**ERROR:** %s. Setting default value.", error->message);
-		if(!(gconfig_set_bool(key, bool_default)))
-			debug("**ERROR:** failed to set '%s' to default value: '%s'.", error->message, (bool_default ?"TRUE" :"FALSE"));
+	if( (!(gconf_value=gconf_client_get(gconfig_priv->gconf_client, key, &error))) || error){
+		if(error){
+			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s.", key, error->message);
+			g_error_free(error);
+			return bool_default;
+		}
 		
-		g_error_free(error);
-		value=bool_default;
+		debug("*NOTICE:* Setting default value for: %s to [%s].", key, (bool_default ?"TRUE" :"FALSE") );
+		if(!(gconfig_set_bool(key, bool_default))){
+			debug("**ERROR:** failed to set '%s' to default value: '%s'.", key, (bool_default ?"TRUE" :"FALSE"));
+			return bool_default;
+		}
+		
+		gconf_client_suggest_sync(gconfig_priv->gconf_client, &error);
+		uber_free(cached_bool_key);
+		cached_bool_key=g_strdup(key);
+		cached_bool_value=bool_default;
+		
+		return bool_default;
 	}
 	
-	return (cached_bool_value=value);
-}
+	gboolean value;
+	if(gconf_value->type!=GCONF_VALUE_BOOL){
+		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value.", key);
+		value=bool_default;
+	}else{
+		value=gconf_value_get_bool(gconf_value);
+		debug("Retrieved boolean value for %s [%s].", key, (value ?"TRUE" :"FALSE") );
+	}
+	gconf_value_free(gconf_value);
+	
+	uber_free(cached_bool_key);
+	cached_bool_key=g_strdup(key);
+	cached_bool_value=value;
+	
+	return value;
+}/*gconfig_if_bool(prefs, path);*/
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
 	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
 		cached_bool_value=value;
 	
-	debug("Setting bool:'%s' to %s(=%d).", key, (value ? "TRUE" : "FALSE"), value);
+	debug("Setting bool:'%s' to %s.", key, (value ? "TRUE" : "FALSE"));
 	return gconf_client_set_bool(gconfig_priv->gconf_client, key, value,NULL);
 }
 
 gboolean gconfig_get_bool(const gchar *key, gboolean *value){
+	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) ){
+		(*value)=cached_bool_value;
+		return TRUE;
+	}
+	
 	GError *error=NULL;
 	*value=FALSE;
 

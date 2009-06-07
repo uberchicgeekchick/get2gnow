@@ -275,10 +275,10 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 	
 	debug("Saving accounts & services successful.");
 	if(service->connected){
-		services->connected++;
 		debug("\t\tConnecting to: '%s'\t[succeeded]", service->decoded_key);
 
 		online_service_login(service, FALSE);
+		network_refresh();
 	}else
 		debug("\t\tConnecting to: '%s'\t[failed]", service->decoded_key);
 	
@@ -292,9 +292,8 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 	service->enabled=FALSE;
 	if(service->connected){
 		online_service_disconnect(service, TRUE);
-		if(services->connected)
-			if(!(--services->connected))
-				app_state_on_connection(FALSE);
+		if(!services->connected)
+			app_state_on_connection(FALSE);
 	}
 	
 	debug("Rebuilding OnlineServices' key while removing old key: %s.", service->key);
@@ -334,6 +333,12 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 	
 	if(services->total) services->total--;
 	debug("OnlineService deleted.  OnlineServices now has %d accounts.", services->total);
+	if(!services->total){
+		tweet_list_clear();
+		network_deinit(TRUE, All);
+		app_state_on_connection(FALSE);
+		services_dialog_show(app_get_window());
+	}
 }/*online_services_delete(services, service);*/
 
 static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store){
@@ -406,7 +411,7 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(!(service->enabled && service->connected && service->authenticated)){
+		if(!(service->enabled && service->connected)){
 			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
 			app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 			continue;
@@ -424,10 +429,13 @@ void online_services_decrement_connected(OnlineServices *services, gboolean no_s
 	if(services->connected) services->connected--;
 	
 	debug("OnlineServices still connected: #%d.", services->connected);
-	if(services->connected || no_state_change ) return;
+	if(services->connected) return;
+	
 	tweet_list_clear();
 	network_deinit(TRUE, All);
 	app_state_on_connection(FALSE);
+	
+	if(no_state_change) return;
 	services_dialog_show(app_get_window());
 }/*online_services_decrement_connected(online_services);*/
 

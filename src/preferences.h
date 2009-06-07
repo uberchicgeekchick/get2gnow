@@ -42,19 +42,18 @@ G_BEGIN_DECLS
 #endif
 
 /* Values used & setup by the prefernces window. */
-#define	PREFS_UI_NOTIFICATION			PREFS_PATH "/ui/notify"
-#define	PREFS_UI_SOUND				PREFS_PATH "/ui/sound"
-
-#define	PREFS_UI_AT_NOTIFY			PREFS_PATH "/ui/notify_at_mentions"
-#define	PREFS_UI_DM_NOTIFY			PREFS_PATH "/ui/notify_dm"
+#define	PREFS_NOTIFY_ALL			PREFS_PATH "/notifications/all"
+#define	PREFS_NOTIFY_REPLIES			PREFS_PATH "/notifications/replies"
+#define	PREFS_NOTIFY_DMS			PREFS_PATH "/notifications/dms"
+#define	PREFS_NOTIFY_BEEP			PREFS_PATH "/notifications/sound"
 
 #define	PREFS_URLS_EXPAND_SELECTED_ONLY		PREFS_PATH "/ui/urls/expand/selected_only"
 #define PREFS_URLS_EXPAND_REPLACE_WITH_TITLES	PREFS_PATH "/ui/urls/expand/replace_with_titles"
 #define	PREFS_URLS_EXPAND_USER_PROFILES		PREFS_PATH "/ui/urls/expand/user_profiles"
 #define	PREFS_URLS_EXPAND_DISABLED		PREFS_PATH "/ui/urls/expand/disabled"
 
-#define PREFS_TWEET_VIEW_DIALOG			PREFS_PATH "/tweets/use_dialog"
-#define	PREFS_TWEET_LENGTH_ALERT		PREFS_PATH "/tweets/no_length_alert"
+#define PREFS_TWEET_VIEW_DIALOG			PREFS_PATH "/ui/tweet_view/use_dialog"
+#define	PREFS_TWEET_LENGTH_ALERT		PREFS_PATH "/tbeepweets/no_length_alert"
 
 #define	PREFS_TWEETS_HOME_TIMELINE		PREFS_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES		PREFS_PATH "/tweets/reload_timeline"

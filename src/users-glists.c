@@ -256,7 +256,7 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 		
 		if(g_str_equal(current_node->name, "user")){
 			debug("\t\t\tCreating User * from current node.");
-			user=user_parse_profile(service, current_node->children);
+			user=user_parse_node(service, current_node->children);
 			debug("\t\t\tAdding user: [%s] to user list.", user->user_name);
 			list=g_list_append(list, user);
 		}else if(g_str_equal(current_node->name, "users") && current_node->children){

@@ -71,7 +71,6 @@ typedef struct _User User;
 typedef struct _UserStatus UserStatus;
 typedef struct _UserRequest UserRequest;
 
-typedef enum _StatusMonitor StatusMonitor;
 typedef enum _UserAction UserAction;
 
 enum _UserAction{
@@ -86,14 +85,6 @@ enum _UserAction{
 	UnFave,
 	Confirmation,
 };
-
-enum _StatusMonitor{
-	All	=	G_PRIORITY_LOW,
-	DMs	=	G_PRIORITY_HIGH,
-	Replies	=	G_PRIORITY_DEFAULT,
-	Tweets	=	G_PRIORITY_HIGH_IDLE,
-};
-
 
 struct _UserStatus {
 	OnlineService	*service;
@@ -160,9 +151,9 @@ gchar *user_action_to_string(UserAction action);
 void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data);
 void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
 
-User *user_parse_profile(OnlineService *service, xmlNode *a_node);
+User *user_parse_node(OnlineService *service, xmlNode *a_node);
 
-UserStatus *user_status_new(OnlineService *service, xmlNode *a_node, StatusMonitor type);
+UserStatus *user_status_parse(OnlineService *service, xmlNode *a_node, StatusMonitor status_type);
 void user_status_free(UserStatus *status);
 
 /* Parse a xml user node. Ex: add/del users responses */

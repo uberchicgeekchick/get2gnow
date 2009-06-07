@@ -461,6 +461,8 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 		return FALSE;
 	}
 	
+	if(!service->authenticated) return FALSE;
+	
 	app_statusbar_printf("Connecting to %s...", service->key);
 	
 	/* Verify cedentials */
@@ -532,7 +534,7 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 }/*online_service_http_authenticate*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	if(!(service->enabled && service->connected && service->authenticated)){
+	if(!(service->enabled && service->connected)){
 		debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
 		app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 		return NULL;
@@ -546,7 +548,7 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 }/*online_service_request*/
 
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
-	if(!(service->enabled && service->connected && service->authenticated)){
+	if(!(service->enabled && service->connected)){
 		debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
 		app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 		return NULL;
@@ -663,6 +665,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 }/*online_service_request_uri*/
 
 static void online_service_message_restarted(SoupMessage *msg, gpointer user_data){
+	if(msg->status_code!=401) return;
 	OnlineService *service=(OnlineService *)user_data;
 	if(!service->authenticated) return;
 	
@@ -678,7 +681,7 @@ static void online_service_message_restarted(SoupMessage *msg, gpointer user_dat
 gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg){
 	*msg=online_service_request_uri(service, GET, uri, NULL, NULL, NULL);
 	if(!network_check_http(service, *msg))
-		return g_strdup(uri);
+		return NULL;
 
 	debug("Getting content-type from uri: '%s'.", uri);
 	gchar *content_type=NULL;

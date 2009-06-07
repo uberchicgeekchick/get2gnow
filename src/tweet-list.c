@@ -74,6 +74,9 @@ struct _TweetListPriv {
 	GtkTreeModel		*sort_model;
 	GtkTreeViewColumn	*text_column;
 	GtkCellRenderer		*text_renderer;
+	
+	gint			index;
+	guint			total;
 };
 
 /* ListStore columns */
@@ -131,11 +134,11 @@ static void tweet_list_init(TweetList *tweet){
 	tweet_list_priv=GET_PRIV(tweet_list);
 	tweet_list_create_model(tweet_list);
 	tweet_list_setup_view(tweet_list);
-	tweet_list->index=tweet_list->total=0;
+	tweet_list_priv->index=tweet_list_priv->total=0;
 	g_signal_connect(tweet_list, "size_allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
 	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(tweets_reply), tweet_list);
-	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweet_list_key_pressed), NULL);
+	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 }/* tweet_list_init */
 
 static void tweet_list_finalize( GObject *object ){
@@ -204,7 +207,7 @@ void tweet_list_store_status(OnlineService *service, UserStatus *status){
 					ONLINE_SERVICE, service,			/*OnlineService pointer.*/
 				-1
 		);
-		tweet_list->total++;
+		tweet_list_priv->total++;
 		
 		/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 		network_get_image(status->user, iter);
@@ -246,16 +249,17 @@ void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event){
 	switch(event->state){
 		case GDK_CONTROL_MASK:
 			tweets_new_tweet();
-			break;
+			tweet_view_sexy_insert_char('\n');
+			return;
 		case GDK_MOD1_MASK:
 			tweets_retweet();
-			break;
+			return;
 		case GDK_SHIFT_MASK:
 			tweet_view_new_dm();
-			break;
+			return;
 		default:
 			tweets_reply();
-			break;
+			return;
 	}//switch
 }/*tweet_list_key_pressed(widget, event);*/
 
@@ -264,21 +268,21 @@ static void tweet_list_move(GtkWidget *widget, GdkEventKey *event){
 		case GDK_Tab: case GDK_KP_Tab:
 		case GDK_Home: case GDK_KP_Home:
 		case GDK_Begin: case GDK_Escape:
-			tweet_list->index=0;
+			tweet_list_priv->index=0;
 			break;
 		case GDK_Up: case GDK_KP_Up: case GDK_KP_Prior:
-			tweet_list->index--;
+			tweet_list_priv->index--;
 			break;
 		case GDK_Down: case GDK_KP_Down: case GDK_KP_Next:
-			tweet_list->index++;
+			tweet_list_priv->index++;
 			break;
 		case GDK_End: case GDK_KP_End:
-			tweet_list->index=tweet_list->total-1;
+			tweet_list_priv->index=tweet_list_priv->total-1;
 			break;
 		case GDK_Page_Up:
-			tweet_list->index-=9; break;
+			tweet_list_priv->index-=9; break;
 		case GDK_Page_Down:
-			tweet_list->index+=9; break;
+			tweet_list_priv->index+=9; break;
 		default:
 			return;
 	}//switch
@@ -287,16 +291,16 @@ static void tweet_list_move(GtkWidget *widget, GdkEventKey *event){
 }/* tweet_list_move */
 
 static void tweet_list_goto_index(void){
-	if(tweet_list->index<0) {
+	if(tweet_list_priv->index<0) {
 		tweets_beep();
-		tweet_list->index=0;
-	}else if(tweet_list->index>=tweet_list->total){
+		tweet_list_priv->index=0;
+	}else if(tweet_list_priv->index>=tweet_list_priv->total){
 		tweets_beep();
-		tweet_list->index=tweet_list->total-1;
+		tweet_list_priv->index=tweet_list_priv->total-1;
 	}
 	
-	debug("Selecting tweet %d, maximum tweets are: %d.", tweet_list->index, tweet_list->total);
-	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list->index, -1);
+	debug("Selecting tweet %d, maximum tweets are: %d.", tweet_list_priv->index, tweet_list_priv->total);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_priv->index, -1);
 	gtk_tree_view_set_cursor( GTK_TREE_VIEW(tweet_list), path, NULL, FALSE );
 	gtk_tree_path_free(path);
 	
@@ -304,18 +308,22 @@ static void tweet_list_goto_index(void){
 }/*tweet_list_goto_index();*/
 
 void tweet_list_goto_top(void){
-	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
+	tweet_list_priv->index=0;
+	if(!(GTK_TREE_VIEW(tweet_list))){
+		debug("**ERROR:** TweetList is NULL unable to move to top.");
+		return;
+	}
+	GtkTreePath *path=gtk_tree_path_new_from_indices(tweet_list_priv->index, -1);
 	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(tweet_list)))
 		gtk_tree_view_scroll_to_cell( GTK_TREE_VIEW(tweet_list), path, NULL, FALSE, 0.0, 0.0);
 	gtk_tree_path_free(path);
-	tweet_list->index=0;
 }/* tweet_list_goto_top */
 
 void tweet_list_clear(void){
 	debug("Re-setting tweet_list_index.");
 	gtk_list_store_clear(tweet_list_priv->store);
-	tweet_list->index=0;
-	tweet_list->total=0;
+	tweet_list_priv->index=0;
+	tweet_list_priv->total=0;
 	tweet_list_notify_delay=0;
 }/* tweet_list_refreshed */
 
