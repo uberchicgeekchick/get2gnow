@@ -77,10 +77,11 @@ typedef struct _reload_time {
 } reload_time;
 
 reload_time reload_list[] = {
+	{3, N_("3 minutes")},
 	{5, N_("5 minutes")},
 	{15, N_("15 minutes")},
 	{30, N_("30 minutes")},
-	{60, N_("hour")},
+	{60, N_("1 hour")},
 	{0, NULL}
 };
 
