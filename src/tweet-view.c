@@ -99,10 +99,6 @@ static gboolean tweet_view_delete_event_cb(GtkWidget *window, GdkEvent *event, T
 static gboolean tweet_view_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, TweetView *tweet_view);
 static gboolean tweet_view_configure_event_timeout_cb(GtkWidget *widget);
 
-static void tweet_view_dm_show(GtkToggleButton *toggle_button);
-static void tweet_view_dm_form_activate(gboolean dm_activate);
-static void tweet_view_dm_refresh(void);
-
 static void tweet_view_sexy_init(void);
 static void tweet_view_reorder(void);
 
@@ -110,6 +106,12 @@ static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui);
 static void tweet_view_selected_tweet_buttons_show(gboolean show);
 
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
+
+static void tweet_view_sexy_send(gpointer service, gpointer user_data);
+
+static void tweet_view_dm_show(GtkToggleButton *toggle_button);
+static void tweet_view_dm_form_activate(gboolean dm_activate);
+static void tweet_view_dm_refresh(void);
 
 
 /********************************************************
@@ -624,7 +626,7 @@ void tweet_view_send(GtkWidget *activated_widget){
 		tweet_view_sexy_send(NULL, NULL);
 }/*tweet_view_send*/
 	
-void tweet_view_sexy_send(gpointer service, gpointer user_data){
+static void tweet_view_sexy_send(gpointer service, gpointer user_data){
 	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) <= TWEET_MAX_CHARS) )){
 		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
 			gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
@@ -641,6 +643,12 @@ void tweet_view_sexy_send(gpointer service, gpointer user_data){
 	g_free(tweet);
 	tweet_view_sexy_set((gchar *)"");
 }/*tweet_view_sexy_send(selected_tweet_get_service(), selected_tweet_get_user_name() );*/
+
+void tweet_view_sexy_send_dm(void){
+	gchar *user_name;
+	if(!( (user_name=selected_tweet_get_user_name()) && G_STR_N_EMPTY(user_name) )) return tweets_beep();
+	tweet_view_sexy_send(selected_tweet_get_service(), user_name);
+}/*tweet_view_sexy_send_dm();*/
 
 void tweet_view_new_dm(void){
 	gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, !gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton));

@@ -165,7 +165,7 @@ gint tweet_view_sexy_puts(const gchar *str, gint position);
 void tweet_view_new_dm(void);
 void tweet_view_reply(void);
 void tweet_view_send(GtkWidget *activated_widget);
-void tweet_view_sexy_send(gpointer service, gpointer user_data);
+void tweet_view_sexy_send_dm(void);
 
 #endif /* __TWEET_VIEW_H__ */
 

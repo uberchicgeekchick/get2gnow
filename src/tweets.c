@@ -139,14 +139,12 @@ void unset_selected_tweet(void){
 }/*unset_selected_tweet*/
 
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
-	gchar *username=NULL;
 	switch(event->state){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
 				case GDK_Return: case GDK_KP_Enter:
-					if(!( (username=selected_tweet_get_user_name()) && G_STR_N_EMPTY(username) ))
-						return tweets_beep();
-					tweet_view_sexy_send(selected_tweet_get_service(), username);
+				case GDK_D: case GDK_d:
+					tweet_view_sexy_send_dm();
 					return;
 				case GDK_S: case GDK_s:
 					tweet_view_send(NULL);
