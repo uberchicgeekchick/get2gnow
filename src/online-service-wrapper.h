@@ -74,14 +74,14 @@ struct _OnlineServiceWrapper {
 	gchar			*requested_uri;
 	SoupSessionCallback	callback;
 	gpointer		user_data;
-	gpointer		formdata;
+	gpointer		form_data;
 };
 
 
 /**********************************************************************
  *          Global method & function prototypes                       *
  **********************************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
 void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper);
 
 

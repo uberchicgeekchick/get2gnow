@@ -184,7 +184,7 @@ void network_init(void){
 	
 	if( (!timeout_id_dms && gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE)) && (current_timeline && !g_str_equal(API_DIRECT_MESSAGES, current_timeline)) ){
 		debug("Creating timeout to monitor for new Direct Messages.");
-		guint reload_dms=minutes*80*1000;
+		guint reload_dms=minutes*75*1000;
 		timeout_id_dms=g_timeout_add(reload_dms, network_timeout, (gpointer)DMs);
 	}
 	
@@ -252,6 +252,8 @@ void network_deinit(gboolean free_timeline, StatusMonitor monitor){
 
 /* Post a new tweet - text must be Url encoded */
 void network_post_status(const gchar *update){
+	if(G_STR_EMPTY(update)) return;
+	
 	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE)))
 		online_services_request(online_services, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)update);
 	else
@@ -260,9 +262,9 @@ void network_post_status(const gchar *update){
 
 /* Send a direct message to a follower - text must be Url encoded  */
 void network_send_message(OnlineService *service, const gchar *friend, const gchar *dm){
-	gchar *formdata=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?SOURCE_TWITTER :SOURCE_LACONICA ), friend, dm);
-	online_service_request(service, POST, API_SEND_MESSAGE, network_tweet_cb, "DM", formdata);
-	g_free(formdata);
+	gchar *form_data=g_strdup_printf("source=%s&user=%s&text=%s", (g_str_equal("twitter.com", service->uri) ?SOURCE_TWITTER :SOURCE_LACONICA ), friend, dm);
+	online_service_request(service, POST, API_SEND_MESSAGE, network_tweet_cb, "DM", form_data);
+	g_free(form_data);
 }/*network_send_message(service, friend, dm);*/
 
 void network_set_state_loading_timeline(const gchar *timeline, ReloadState state){
@@ -404,7 +406,7 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 			in_reply_to_status_id=0;
 			if(msg->status_code==404){
 				debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", service_wrapper->service->decoded_key);
-				online_service_request(service_wrapper->service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)service_wrapper->formdata);
+				online_service_request(service_wrapper->service, POST, API_POST_STATUS, network_tweet_cb, "Tweet", (gchar *)service_wrapper->form_data);
 			}
 		}
 	}
@@ -416,7 +418,7 @@ static void network_tweet_cb(SoupSession *session, SoupMessage *msg, gpointer us
 void network_display_timeline(SoupSession *session, SoupMessage *msg, gpointer user_data){
 	OnlineServiceWrapper *service_wrapper=(OnlineServiceWrapper *)user_data;
 	gchar        *new_timeline=(gchar *)service_wrapper->user_data;
-	StatusMonitor monitoring=(StatusMonitor)service_wrapper->formdata;
+	StatusMonitor monitoring=(StatusMonitor)service_wrapper->form_data;
 	
 	if(!network_check_http(service_wrapper->service, msg)) {
 		if(msg->status_code==401){

@@ -533,7 +533,7 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 	}
 }/*online_service_http_authenticate*/
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data){
 	if(!(service->enabled && service->connected)){
 		debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
 		app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
@@ -542,12 +542,12 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 	
 	gchar *new_uri=g_strdup_printf("http%s://%s%s%s", (service->https ?"s" :"" ), service->uri, ( (service->which_rest==Twitter) ?"" :"/api" ), uri );
 	debug("Creating new service request for: '%s', requesting: %s.", service->decoded_key, new_uri);
-	SoupMessage *msg=online_service_request_uri(service, request, (const gchar *)new_uri, callback, user_data, formdata);
+	SoupMessage *msg=online_service_request_uri(service, request, (const gchar *)new_uri, callback, user_data, form_data);
 	g_free(new_uri);
 	return msg;
 }/*online_service_request*/
 
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data){
 	if(!(service->enabled && service->connected)){
 		debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
 		app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
@@ -567,17 +567,17 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 		request_uri=g_strdup(uri);
 	
 	SoupMessage *msg=NULL;
-	gchar *service_formdata=NULL;
+	gchar *service_form_data=NULL;
 	gchar *request_string=NULL;
 	switch(request){
 		case GET:
-			request_string=g_strdup("GET");
+			request_string=_("GET");
 			break;
 		case QUEUE:
-			request_string=g_strdup("QUEUE");
+			request_string=_("QUEUE");
 			break;
 		case POST:
-			request_string=g_strdup("POST");
+			request_string=_("POST");
 			break;
 	}
 	
@@ -585,53 +585,43 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	switch(request){
 		case GET:
 		case QUEUE:
-			debug("GET: %s", request_uri);
+			debug("%s: %s", request_string, request_uri);
 			msg=soup_message_new("GET", request_uri);
 			break;
 		
 		case POST:
-			if((gchar *)formdata){
-				if((gchar *)user_data){
-					gchar *test_data=(gchar *)user_data;
-					if( g_str_equal(test_data, "Tweet") ){
-						gchar *form_data=(gchar *)formdata;
-						if(G_STR_EMPTY(form_data)){
-							g_free(request_string);
-							g_free(request_uri);
-							return NULL;
-						}
-						if( in_reply_to_status_id && in_reply_to_service==service ){
-							debug("Replying to Tweet/Status [#%lu] on: [%s].\n\t\tTweet: [%s].", in_reply_to_status_id, service->decoded_key, form_data);
-							service_formdata=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", ((service->which_rest==Twitter) ?SOURCE_TWITTER :SOURCE_LACONICA ), in_reply_to_status_id, form_data);
-						}else{
-							debug("Submitting Tweet/Status update to: [%s].\n\t\tTweet: [%s].", service->decoded_key, form_data);
-							service_formdata=g_strdup_printf( "source=%s&status=%s", ((service->which_rest==Twitter) ?SOURCE_TWITTER :SOURCE_LACONICA ), form_data);
-						}
+			if( ((gchar *)form_data) && ((gchar *)user_data) ){
+				if( g_str_equal((gchar *)user_data, "Tweet") ){
+					if( in_reply_to_status_id && in_reply_to_service==service ){
+						debug("Replying to Tweet/Status [#%lu] on: [%s].\n\t\tTweet: [%s].", in_reply_to_status_id, service->decoded_key, (gchar *)form_data);
+						service_form_data=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", ((service->which_rest==Twitter) ?SOURCE_TWITTER :SOURCE_LACONICA ), in_reply_to_status_id, (gchar *)form_data);
+					}else{
+						debug("Submitting Tweet/Status update to: [%s].\n\t\tTweet: [%s].", service->decoded_key, (gchar *)form_data);
+						service_form_data=g_strdup_printf( "source=%s&status=%s", ((service->which_rest==Twitter) ?SOURCE_TWITTER :SOURCE_LACONICA ), (gchar *)form_data);
 					}
 				}
 			}
 			
-			debug("POST: %s\n\t\tformdata: [%s]", request_uri, (service_formdata ?service_formdata :(gchar *)formdata));
-			msg=soup_message_new("POST", request_uri);
-	
+			debug("form_data: [%s]", (service_form_data ?service_form_data :(gchar *)form_data));
+			msg=soup_message_new(request_string, request_uri);
+			
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 			soup_message_headers_append(msg->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
 			
-			if((gchar *)formdata)
+			if((gchar *)form_data)
 				soup_message_set_request(
 					msg,
 					"application/x-www-form-urlencoded",
 					SOUP_MEMORY_COPY,
-					(service_formdata ?service_formdata :(gchar *)formdata),
-					(strlen( ( service_formdata ?service_formdata :(gchar *)formdata ) ))
+					(service_form_data ?service_form_data :(gchar *)form_data),
+					(strlen( ( service_form_data ?service_form_data :(gchar *)form_data ) ))
 				);
 			break;
 	}
 	
 	if(!( SOUP_IS_SESSION(service->session) && SOUP_IS_MESSAGE(msg) )){
 		debug("Unable to process libsoup request for service: '%s'.\n\t\tAttempting to %s: %s", service->decoded_key, request_string, request_uri);
-		if(service_formdata) g_free(service_formdata);
-		g_free(request_string);
+		if(service_form_data) g_free(service_form_data);
 		g_free(request_uri);
 		return NULL;
 	}
@@ -646,7 +636,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			debug("Adding libsoup request to service: '%s' libsoup's message queue.", service->decoded_key);
 			
 			if(callback!=NULL)
-				service_wrapper=online_service_wrapper_new(service, request_uri, callback, user_data, formdata);
+				service_wrapper=online_service_wrapper_new(service, request_uri, callback, user_data, form_data);
 			
 			soup_session_queue_message(service->session, msg, callback, service_wrapper);
 			
@@ -658,8 +648,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			break;
 	}
 	
-	if(service_formdata) g_free(service_formdata);
-	g_free(request_string);
+	if(service_form_data) g_free(service_form_data);
 	g_free(request_uri);
 	return msg;
 }/*online_service_request_uri*/

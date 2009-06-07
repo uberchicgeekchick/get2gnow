@@ -83,7 +83,7 @@
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata){
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data){
 	OnlineServiceWrapper *service_wrapper=g_new0(OnlineServiceWrapper, 1);
 	
 	service_wrapper->service=service;
@@ -105,13 +105,13 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *
 		service_wrapper->user_data=user_data;
 	
 	if(
-		formdata!=NULL
+		form_data!=NULL
 		&&
 		callback!=network_display_timeline
 	)
-		service_wrapper->formdata=g_strdup(formdata);
+		service_wrapper->form_data=g_strdup(form_data);
 	else
-		service_wrapper->formdata=formdata;
+		service_wrapper->form_data=form_data;
 	
 	return service_wrapper;
 }
@@ -133,11 +133,11 @@ void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper){
 		uber_free(service_wrapper->user_data);
 	
 	if(
-		service_wrapper->formdata!=NULL
+		service_wrapper->form_data!=NULL
 		&&
 		service_wrapper->callback!=network_display_timeline
 	)
-		uber_free(service_wrapper->formdata);
+		uber_free(service_wrapper->form_data);
 	
 	service_wrapper->callback=NULL;
 	service_wrapper->service=NULL;

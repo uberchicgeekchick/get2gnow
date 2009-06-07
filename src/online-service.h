@@ -150,8 +150,8 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 void online_service_load_tweet_ids(OnlineService *service, const gchar *uri);
 void online_service_save_tweet_ids(OnlineService *service, const gchar *uri);
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
 
 gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 

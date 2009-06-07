@@ -104,7 +104,7 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer formdata);
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
 
 void online_services_increment_connected(OnlineServices *services);
 void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change);
