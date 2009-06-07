@@ -244,7 +244,7 @@ static void tweet_list_setup_view(TweetList *tweet_list){
 }/*tweet_list_setup_view(list);*/
 
 void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event){
-	if(event->keyval!=GDK_Return) return tweet_list_move(widget, event);
+	if(event->keyval!=GDK_Return && event->keyval!=GDK_KP_Enter) return tweet_list_move(widget, event);
 	
 	switch(event->state){
 		case GDK_CONTROL_MASK:

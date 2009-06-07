@@ -143,8 +143,10 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 	switch(event->state){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
-				case GDK_Return:
-					tweets_retweet();
+				case GDK_Return: case GDK_KP_Enter:
+					if(!( (username=selected_tweet_get_user_name()) && G_STR_N_EMPTY(username) ))
+						return tweets_beep();
+					tweet_view_sexy_send(selected_tweet_get_service(), username);
 					return;
 				case GDK_S: case GDK_s:
 					tweet_view_send(NULL);
@@ -169,20 +171,15 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 			break;
 		case GDK_SHIFT_MASK:
 			switch(event->keyval){
-				case GDK_Return:
+				case GDK_Return: case GDK_KP_Enter:
 					tweets_new_dm();
-					return;
-				case GDK_S: case GDK_s:
-					if(!( (username=selected_tweet_get_user_name()) && G_STR_N_EMPTY(username) ))
-						return tweets_beep();
-					tweet_view_sexy_send(selected_tweet_get_service(), username);
 					return;
 				default: break;
 			}
 			break;
 		case GDK_CONTROL_MASK:
 			switch( event->keyval ){
-				case GDK_Return:
+				case GDK_Return: case GDK_KP_Enter:
 					tweet_view_sexy_insert_char('\n');
 					return;
 				case GDK_Tab:
@@ -209,7 +206,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_I: case GDK_i:
 					tweets_user_view_profile();
 					return;
-				case GDK_H: case GDK_h:
+				case GDK_T: case GDK_t:
 					tweets_user_view_tweets();
 					return;
 				default: break;
