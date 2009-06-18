@@ -250,7 +250,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 	guint tweets_parsed=parse_timeline(service, msg, timeline, tweet_list, monitoring);
 		
 	debug("Total tweets in this timeline: %d.", tweets_parsed);
-	if(!tweets_parsed && msg->status_code==200){
+	if(!retrying && !tweets_parsed && !g_strrstr(request_uri, "?since_id=") && msg->status_code==200){
 		uber_free(request_uri);
 		network_retry(service_wrapper);
 		return NULL;

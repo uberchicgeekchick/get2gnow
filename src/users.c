@@ -353,7 +353,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 
 void user_free(User *user){
 	if(!user) return;
-	debug("Destroying user objece for %s on <%s>.", user->user_name, online_service_get_key(user->service));
+	debug("Destroying user object for %s on <%s>.", user->user_name, online_service_get_key(user->service));
 	if(user->status) user_status_free(user->status);
 	
 	user->service=NULL;
@@ -484,7 +484,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	}
 	uber_free(sexy_status_swap);
 
-	status->from=g_strdup_printf("<small><b>%s\n&lt;%s@%s&gt;</b></small>", user->nick_name, online_service_get_uri(service), user->user_name);
+	status->from=g_strdup_printf("<small><b>%s\n&lt;%s@%s&gt;</b></small>", user->nick_name, user->user_name, online_service_get_uri(service));
 	
 	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">&lt;%s&gt;</span>", online_service_get_key(service));
 	
