@@ -1,8 +1,7 @@
-
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
@@ -49,16 +48,11 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+#ifndef __ONLINE_SERVICES_DIALOG_H__
+#define __ONLINE_SERVICES_DIALOG_H__
 
-#ifndef __PROFILE_VIEWER_H__
-#define __PROFILE_VIEWER_H__
+#include <gtk/gtk.h>
 
-#include <glib.h>
+void online_services_dialog_show(GtkWindow *parent);
 
-#ifndef view_profile
-#define view_profile(service, user_name, parent)	profile_viewer_show(service, user_name, parent);
-#endif
-
-void profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
-
-#endif //__PROFILE_VIEWER_H__
+#endif /* __ONLINE_SERVICES_DIALOG_H__ */

@@ -2,7 +2,7 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkDialog" id="services_dialog">
+  <object class="GtkDialog" id="online_services_dialog">
     <property name="visible">True</property>
     <property name="border_width">6</property>
     <property name="title" translatable="yes">Accounts Setup</property>
@@ -139,7 +139,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="service_enabled">
+              <object class="GtkCheckButton" id="online_service_enabled">
                 <property name="label" translatable="yes">_Enable this account</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -184,7 +184,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="service_delete_button">
+              <object class="GtkButton" id="online_service_delete_button">
                 <property name="label" translatable="yes">gtk-delete</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -200,7 +200,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToggleButton" id="secure_service_toggle_button">
+              <object class="GtkToggleButton" id="https_toggle_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -217,12 +217,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="secure_service_label">
+              <object class="GtkLabel" id="https_label">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="label" translatable="yes">Connect Securely (i.e. use _HTTPS):</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">secure_service_toggle_button</property>
+                <property name="mnemonic_widget">https_toggle_button</property>
               </object>
               <packing>
                 <property name="right_attach">2</property>
@@ -231,7 +231,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="service_new_button">
+              <object class="GtkButton" id="online_service_new_button">
                 <property name="label" translatable="yes">gtk-new</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -273,7 +273,7 @@
           </packing>
         </child>
         <child internal-child="action_area">
-          <object class="GtkHButtonBox" id="dialog-action_area1">
+          <object class="GtkHButtonBox" id="accounts_dialog_action_area">
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
@@ -292,7 +292,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="services_okay_button">
+              <object class="GtkButton" id="online_services_okay_button">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -307,7 +307,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="service_save_button">
+              <object class="GtkButton" id="online_service_save_button">
                 <property name="label" translatable="yes">gtk-save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -331,8 +331,8 @@
     </child>
     <action-widgets>
       <action-widget response="-6">cancel_button</action-widget>
-      <action-widget response="-5">services_okay_button</action-widget>
-      <action-widget response="0">service_save_button</action-widget>
+      <action-widget response="-5">online_services_okay_button</action-widget>
+      <action-widget response="0">online_service_save_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="urls_liststore">

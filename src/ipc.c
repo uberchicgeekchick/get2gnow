@@ -71,7 +71,7 @@
  * Its used by 'gtk_window_present' on line:175.
  * There are more notes there.
  */
-#include "app.h"
+#include "main-window.h"
 
 #ifndef GNOME_ENABLE_DEBUG
 #define PIPE_PREFIX         "%s-%s-"
@@ -118,7 +118,7 @@ gboolean ipc_init_check( int argc, char **argv ){
 	g_return_val_if_fail(dir != NULL, FALSE);
 	
 	username = g_get_user_name();
-	prefix=g_strdup_printf(PIPE_PREFIX, username, PACKAGE_TARNAME);
+	prefix=g_strdup_printf(PIPE_PREFIX, username, GETTEXT_PACKAGE);
 	prefix_len = strlen(prefix);
 
 	cur_dir_tmp = g_get_current_dir();
@@ -183,7 +183,7 @@ gboolean ipc_init_check( int argc, char **argv ){
 static void ipc_commit(Input *input){
 	g_assert(input->buffer->len > 0 && input->buffer->data[input->buffer->len-1] == 0);
 	
-	gtk_window_present(GTK_WINDOW( (app_get_window()) ));
+	gtk_window_present(GTK_WINDOW( (main_window_get_window()) ));
 	
 	if(input->buffer->len > MAX_BUFFER_SIZE){
 		g_byte_array_free(input->buffer, TRUE);

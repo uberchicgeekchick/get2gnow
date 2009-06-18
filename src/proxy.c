@@ -162,8 +162,8 @@ gboolean proxy_attach_online_service(OnlineService *service){
 	
 	if(proxy_status==PROXY_STATUS_DISABLED) return FALSE;
 	
-	debug("Piping OnlineService: <%s> to the tubes through this proxy: <%s>", service->decoded_key, proxy_uri);
-	g_object_set( G_OBJECT(service->session), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
+	debug("Piping OnlineService: <%s> to the tubes through this proxy: <%s>", online_service_get_key(service), proxy_uri);
+	g_object_set( G_OBJECT(online_service_get_session(service)), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
 	return TRUE;
 }/*proxy_attach_online_service*/
 

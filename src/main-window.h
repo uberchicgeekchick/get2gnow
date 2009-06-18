@@ -48,61 +48,72 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __APP_H__
-#define __APP_H__
+#ifndef __MAIN_WINDOW_H__
+#define __MAIN_WINDOW_H__
 
 #include <glib-object.h>
 #include <glib.h>
 #include <libsexy/sexy.h>
 
 #include <gtk/gtk.h>
-#include "parser.h"
-#include "images.h"
 
+#include "online-services-typedefs.h"
 #include "tweet-list.h"
-
 
 G_BEGIN_DECLS
 
-#define TYPE_APP		(app_get_type())
-#define APP(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_APP, App))
-#define APP_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), TYPE_APP, AppClass))
-#define IS_APP(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_APP))
-#define IS_APP_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_APP))
-#define IS_APP_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_APP, AppClass))
+#ifndef statusbar_printf
+#define	statusbar_printf		main_window_statusbar_printf
+#endif
 
-typedef struct _App      	App;
-typedef struct _AppClass 	AppClass;
-typedef struct _AppPriv  	AppPriv;
+#define TYPE_MAIN_WINDOW		(main_window_get_type())
+#define MAIN_WINDOW(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_MAIN_WINDOW, MainWindow))
+#define MAIN_WINDOW_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), TYPE_MAIN_WINDOW, MainWindowClass))
+#define IS_MAIN_WINDOW(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_MAIN_WINDOW))
+#define IS_MAIN_WINDOW_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_MAIN_WINDOW))
+#define IS_MAIN_WINDOW_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_MAIN_WINDOW, MainWindowClass))
 
-struct _App {
+typedef struct _MainWindow      	MainWindow;
+typedef struct _MainWindowClass 	MainWindowClass;
+typedef struct _MainWindowPriv  	MainWindowPriv;
+
+struct _MainWindow {
         GObject        parent;
 };
 
-struct _AppClass {
+struct _MainWindowClass {
         GObjectClass parent_class;
 };
 
-GType app_get_type(void) G_GNUC_CONST;
-void app_disconnect(void);
-void app_create(void);
-App *app_get(void);
+GType main_window_get_type(void) G_GNUC_CONST;
+void main_window_disconnect(void);
+void main_window_create(void);
+MainWindow *main_window_get(void);
 
-void app_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
+TweetList *main_window_tweet_lists_get_current(void);
+TweetList *main_window_tweet_lists_get_timeline(const gchar *timeline);
+TweetList *main_window_tweet_lists_get_page(gint page, gboolean close);
+void main_window_tweet_lists_start(void);
+void main_window_tweet_lists_refresh(void);
+void main_window_tweet_lists_stop(void);
+void main_window_tweet_lists_close(void);
+void main_window_tweet_lists_close_page(gint page);
 
-GtkWindow *app_get_window(void);
-GtkPaned *app_get_tweet_paned(void);
-GtkMenuItem *app_get_menu(const gchar *menu);
+void main_window_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
-void app_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
-void app_set_statusbar_msg(gchar *msg);
+GtkWindow *main_window_get_window(void);
+GtkPaned *main_window_get_tweet_paned(void);
+GtkMenuItem *main_window_get_menu(const gchar *menu);
 
-gboolean app_notify_on_timeout(gpointer data);
-const gchar *app_tabs_to_right_align(void);
-void app_notify_sound(void);
+void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
+void main_window_set_statusbar_msg(gchar *msg);
 
-void app_state_on_connection(gboolean connected);
+gboolean main_window_notify_on_timeout(gpointer data);
+const gchar *main_window_tabs_to_right_align(void);
+
+void main_window_state_on_connection(gboolean connected);
+void main_window_selected_tweet_image_menu_items_show(gboolean selected_tweet);
 
 G_END_DECLS
 
-#endif /*_APP_H_*/
+#endif /*__MAIN_WINDOW_H__*/

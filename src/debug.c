@@ -52,12 +52,14 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <stdarg.h>
 #include <string.h>
 
 #include <glib.h>
 #include <glib/gprintf.h>
 #include "main.h"
+#include "cache.h"
 
 /*
  * Set DEBUG to a colon/comma/space separated list of domains, or "all"
@@ -71,6 +73,10 @@ static gboolean all_domains=FALSE;
 static gboolean devel=FALSE;
 static gchar *debug_last_domain=NULL;
 static gchar *debug_environmental_variable=NULL;
+
+static FILE *debug_log_fp=NULL;
+static const gchar *debug_log_filename=NULL;
+static const gchar *debug_log_filename_swp=NULL;
 
 gboolean debug_check_devel(void){
 #ifndef GNOME_ENABLE_DEBUG
@@ -93,53 +99,101 @@ gboolean debug_check_devel(void){
 
 void debug_init(void){
 	gchar *debug_package=g_utf8_strup(PACKAGE_TARNAME, -1);
-	debug_environmental_variable=g_strdup_printf("%s_DEBUG_DOMAINS", debug_package);
+	debug_environmental_variable=g_strdup_printf("%s_DEBUG", debug_package);
 	g_free(debug_package);
+	debug_log_filename=cache_file_touch("debug.log");
+	debug_log_filename_swp=g_strdup_printf("%s.swp", debug_log_filename);
+	debug_log_fp=fopen(debug_log_filename, "w");
 	if(debug_check_devel()) return;
 	
 	const gchar *env;
 	gint         i;
 	
-	if(!(env=g_getenv(debug_environmental_variable)))
+	if(!(env=g_getenv(debug_environmental_variable))){
+		debug_strv=g_strsplit("-", ":", -1);
 		return;
+	}
 	
 	debug_strv=g_strsplit(env, ":", -1);
 	
 	for(i=0; debug_strv && debug_strv[i]; i++)
-		if (!(strcasecmp ("All", debug_strv[i])))
+		if(!(strcasecmp ("All", debug_strv[i])))
 			all_domains=TRUE;
-}
+}/*debug_init();*/
+
+static void debug_log_rotate(void){
+	struct stat debug_log_stat;
+	
+	if(stat(debug_log_filename, &debug_log_stat)){
+		g_error("Failed to stat log file: %s.", debug_log_filename);
+		return;
+	}
+	
+	/*Not a mega-byte but close.. cause get2gnow has a shite load of debugging output.*/
+	if(debug_log_stat.st_size <= 1000000)
+		return;
+	
+	fclose(debug_log_fp);
+	debug_log_fp=fopen(debug_log_filename, "r");
+	FILE *debug_log_fp_swap=fopen(debug_log_filename_swp, "w");
+	
+	/*Save 1/10 of the log so far.*/
+	gchar *debug_log_swap_contents=NULL;
+	fread(debug_log_swap_contents, sizeof(gchar), 25000, debug_log_fp);
+	fwrite(debug_log_swap_contents, sizeof(gchar), 25000, debug_log_fp_swap);
+	fclose(debug_log_fp_swap);
+	fclose(debug_log_fp);
+	g_remove(debug_log_filename);
+	g_rename(debug_log_filename_swp, debug_log_filename);
+	debug_log_fp=fopen(debug_log_filename, "a");
+}/*debug_log_rotate();*/
 
 void debug_impl(const gchar *domain, const gchar *msg, ...){
 	g_return_if_fail (domain != NULL);
 	g_return_if_fail (msg != NULL);
 	
 	static gboolean output_started=FALSE;
+	FILE *debug_output_fp=NULL;
+	
+	debug_log_rotate();
 	
 	gchar **domains=g_strsplit(domain, ":", -1);
-	for(gint i=0; debug_strv && debug_strv[i]; i++) {
-		for(gint x=0; domains[x]; x++){
-			if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
+	for(gint x=0; domains[x]; x++){
+		for(gint i=0; debug_strv && debug_strv[i]; i++) {
+			if(!domains[x+1])
+				debug_output_fp=debug_log_fp;
+			else if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
 				continue;
+			else{
+				debug_output_fp=stdout;
+				
+				if(!output_started){
+					output_started=TRUE;
+					g_fprintf(debug_output_fp, "\n");
+				}
+			}
 			
-			if(!output_started){
-				output_started=TRUE;
-				g_fprintf(stdout, "\n");
+			if(g_str_has_prefix(msg, "**ERROR:**")){
+				va_list args;
+				va_start(args, msg);
+				g_fprintf(stderr, "\n**%s %s %s**:\n\t", GETTEXT_PACKAGE, domains[x], _("error"));
+				g_vfprintf(stderr, msg, args);
+				va_end(args);
 			}
 			
 			if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
 				if(debug_last_domain) g_free(debug_last_domain);
 				debug_last_domain=g_strdup(domains[x]);
-				g_fprintf(stdout, "\n%s:\n", domains[x]);
+				g_fprintf(debug_output_fp, "\n%s:\n", domains[x]);
 			}
-			g_fprintf(stdout, "\t\t");
 			
 			va_list args;
 			va_start(args, msg);
-			g_vfprintf(stdout, msg, args);
+			g_fprintf(debug_output_fp, "\t\t");
+			g_vfprintf(debug_output_fp, msg, args);
 			va_end(args);
 			
-			g_fprintf(stdout, "\n");
+			g_fprintf(debug_output_fp, "\n");
 			
 			g_strfreev(domains);
 			return;
@@ -168,6 +222,9 @@ gboolean debug_if_domain(const gchar *domain){
 
 void debug_deinit(void){
 	if(debug_last_domain) g_free(debug_last_domain);
+	fclose(debug_log_fp);
+	g_free((gchar *)debug_log_filename);
+	g_free((gchar *)debug_log_filename_swp);
 	g_free(debug_environmental_variable);
 	g_strfreev(debug_strv);
 }/*debug_deinit*/

@@ -31,7 +31,7 @@
 #include <libsexy/sexy.h>
 
 #include "main.h"
-#include "app.h"
+#include "main-window.h"
 #include "label.h"
 #include "tweets.h"
 #include "network.h"
@@ -63,10 +63,12 @@ static void label_class_init(LabelClass *klass){
 
 static void label_init(Label *label){
 	gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-	
 	g_object_set(label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, NULL);
-	
 	g_signal_connect(label, "url-activated", G_CALLBACK(label_url_activated_cb), NULL);
+}
+
+Label *label_new(void){
+	return g_object_new(TYPE_LABEL, NULL);
 }
 
 static void label_finalize(GObject *object){
@@ -76,10 +78,6 @@ static void label_finalize(GObject *object){
 static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data){
 	if(!g_app_info_launch_default_for_uri(url, NULL, NULL))
 		g_warning("Couldn't show URL: '%s'", url);
-}
-
-Label *label_new (void){
-	return g_object_new(TYPE_LABEL, NULL);
 }
 
 void label_set_text(OnlineService *service, Label *my_sexy_label, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
@@ -148,20 +146,20 @@ static gssize find_first_non_username(const gchar *str){
 gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(G_STR_EMPTY(message)) return g_strdup("");
 	
-	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http://%s", ( (service && service->uri) ?service->uri :"twitter.com" ));
+	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http://%s", online_service_get_uri(service) );
 	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPAND_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPAND_USER_PROFILES, TRUE);
 	
 	tokens=g_strsplit_set(message, " \t\n", 0);
 	for(gint i=0; tokens[i]; i++) {
 		if(url_check_word(tokens[i], strlen(tokens[i]))) {
 			if(tokens[i][0]=='@') {
-				debug("Formatting display title for user: '%s' on '%s'", tokens[i], service->server);
+				debug("Formatting display title for user: '%s' on '%s'", tokens[i], online_service_get_uri(service) );
 				temp=label_format_user_at_link(service, at_url_prefix, tokens[i], expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris );
 			} else {
 				debug("Formatting display title for uri: '%s'.", tokens[i]);
 				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks, !titles_strip_uris );
 			}
-			app_set_statusbar_msg(NULL);
+			main_window_set_statusbar_msg(NULL);
 			g_free(tokens[i]);
 			tokens[i]=temp;
 		}
@@ -251,7 +249,7 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	gchar *content_type=NULL;
 	
 	
-	app_statusbar_printf("Please wait while %s's title is found.", uri);
+	main_window_statusbar_printf("Please wait while %s's title is found.", uri);
 	if(!(content_type=online_service_get_uri_content_type(service, uri, &msg))){
 		debug("\t\tUnable to determine the content-type from uri: '%s'.", uri);
 		return temp;
@@ -268,7 +266,7 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	
 	gchar *uri_title=NULL;
 	debug("Retriving title for uri: '%s'.", uri);
-	if(!(uri_title=parser_parse_xpath_content(msg, "html->head->title")))
+	if(!(uri_title=parse_xpath_content(msg, "html->head->title")))
 		return temp;
 	
 	g_free(temp);

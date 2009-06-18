@@ -9,15 +9,16 @@ schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 @INTLTOOL_SCHEMAS_RULE@
 
 gtkbuilderdir = $(datadir)/get2gnow
-gtkbuilder_DATA = 			\
-	services-dialog.ui		\
-	following-viewer.ui		\
-	friends-manager.ui		\
-	app.ui				\
-	tweet-view.ui			\
-	popup-dialog.ui			\
-	preferences.ui			\
-	profile-viewer.ui
+gtkbuilder_DATA = 				\
+	online-services-dialog.ui		\
+	following-viewer.ui			\
+	friends-manager.ui			\
+	main-window.ui				\
+	tweet-list.ui				\
+	tweet-view.ui				\
+	online-services-request-popup.ui	\
+	preferences.ui				\
+	user-profile-viewer.ui
 
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = get2gnow.svg

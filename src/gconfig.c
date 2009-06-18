@@ -94,6 +94,9 @@ static gboolean cached_bool_value=FALSE;
 static gchar *cached_int_key=NULL;
 static int cached_int_value=0;
 
+static gchar *cached_float_key=NULL;
+static float cached_float_value=0.0;
+
 static gchar *cached_string_key=NULL;
 static gchar *cached_string_value=NULL;
 
@@ -120,13 +123,13 @@ static void gconfig_init(GConfig *gconfig){
 	gconfig_priv=GET_PRIV(gconfig);
 	gconfig_priv->gconf_client=gconf_client_get_default();
 
-	gconf_client_add_dir(gconfig_priv->gconf_client, PREFS_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
+	gconf_client_add_dir(gconfig_priv->gconf_client, GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
 	gconf_client_add_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, GCONF_CLIENT_PRELOAD_NONE, NULL);
 }
 
 static void gconfig_finalize(GObject *object){
 	if(gconfig && gconfig_priv && gconfig_priv->gconf_client){
-		gconf_client_remove_dir(gconfig_priv->gconf_client, PREFS_PATH, NULL);
+		gconf_client_remove_dir(gconfig_priv->gconf_client, GCONF_PATH, NULL);
 		gconf_client_remove_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, NULL);
 		g_object_unref(gconfig_priv->gconf_client);
 	}
@@ -135,26 +138,28 @@ static void gconfig_finalize(GObject *object){
 
 void gconfig_start(void){
 	if(!gconfig) gconfig=g_object_new(TYPE_GCONFIG, NULL);
-	if(!cached_bool_key) cached_bool_key=g_strdup("");
-	if(!cached_int_key) cached_int_key=g_strdup("");
-	if(!cached_string_key) cached_string_key=g_strdup("");
-	if(!cached_string_value) cached_string_value=g_strdup("");
-}
+	cached_bool_key=g_strdup("");
+	cached_int_key=g_strdup("");
+	cached_float_key=g_strdup("");
+	cached_string_key=g_strdup("");
+	cached_string_value=g_strdup("");
+}/*gconfig_start();*/
 
 void gconfig_shutdown(void){
-	if(cached_bool_key) uber_free(cached_bool_key);
-	if(cached_int_key) uber_free(cached_int_key);
-	if(cached_string_key) uber_free(cached_string_key);
-	if(cached_string_value) uber_free(cached_string_value);
+	uber_free(cached_bool_key);
+	uber_free(cached_int_key);
+	uber_free(cached_float_key);
+	uber_free(cached_string_key);
+	uber_free(cached_string_value);
 	if(gconfig) uber_unref(gconfig);
-}
+}/*gconfig_shutdown();*/
 
 gboolean gconfig_set_int(const gchar *key, gint value){
 	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
 		cached_int_value=value;
 	debug("Setting int:'%s' to %d", key, value);
 	return gconf_client_set_int(gconfig_priv->gconf_client, key, value, NULL);
-}
+}/*gconfig_get_int(key, int);*/
 
 gboolean gconfig_get_int(const gchar *key, gint *value){
 	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) ){
@@ -181,7 +186,41 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 	cached_int_key=g_strdup(key);
 	cached_int_value=(*value);
 	return TRUE;
-}
+}/*gconfig_get_int(key, &int);*/
+
+gboolean gconfig_set_float(const gchar *key, gfloat value){
+	if( G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) )
+		cached_float_value=value;
+	debug("Setting float:'%s' to %f", key, value);
+	return gconf_client_set_float(gconfig_priv->gconf_client, key, value, NULL);
+}/*gconfig_get_float(key, float);*/
+
+gboolean gconfig_get_float(const gchar *key, gfloat *value){
+	if( G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) ){
+		*value=cached_float_value;
+		return TRUE;
+	}
+	GError         *error=NULL;
+	
+	*value=0.0;
+	
+	g_return_val_if_fail(value != NULL, FALSE);
+	
+	*value=gconf_client_get_float(gconfig_priv->gconf_client, key, &error);
+	
+	debug("Getting float:'%s'(=%f)", key, *value);
+	
+	if(error){
+		debug("\t\t**ERROR:** %s", error->message);
+		g_error_free(error);
+		return FALSE;
+	}
+	
+	uber_free(cached_float_key);
+	cached_float_key=g_strdup(key);
+	cached_float_value=(*value);
+	return TRUE;
+}/*gconfig_get_float(key, &float);*/
 
 gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
@@ -225,7 +264,7 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 	cached_bool_value=value;
 	
 	return value;
-}/*gconfig_if_bool(prefs, path);*/
+}/*gconfig_if_bool(key, default_boolean);*/
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
 	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
@@ -233,7 +272,7 @@ gboolean gconfig_set_bool(const gchar *key, gboolean value){
 	
 	debug("Setting bool:'%s' to %s.", key, (value ? "TRUE" : "FALSE"));
 	return gconf_client_set_bool(gconfig_priv->gconf_client, key, value,NULL);
-}
+}/*gconfig_set_bool(key, boolean);*/
 
 gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) ){
@@ -256,7 +295,7 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	}
 
 	return TRUE;
-}
+}/*gconfig_get_bool(key, &boolean);*/
 
 gboolean gconfig_set_string(const gchar *key, const gchar *value){
 	if( G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
@@ -267,7 +306,7 @@ gboolean gconfig_set_string(const gchar *key, const gchar *value){
 	debug("Setting string:'%s' to '%s'", key, value);
 	
 	return gconf_client_set_string(gconfig_priv->gconf_client, key, value, NULL);
-}
+}/*gconfig_set_string(key, string);*/
 
 gboolean gconfig_get_string(const gchar *key, gchar **value){
 	if( G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
@@ -295,7 +334,7 @@ gboolean gconfig_get_string(const gchar *key, gchar **value){
 	cached_string_value=g_strdup(*value);
 	
 	return TRUE;
-}
+}/*gconfig_get_string(key, &string);*/
 
 gboolean gconfig_set_list_string(const gchar *key, GSList *value){
 	return gconfig_set_list(key, value, GCONF_VALUE_STRING);
@@ -333,7 +372,7 @@ static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
 				/* yes we know this is never executed, it catches gcc errors & warning. */
 				break;
 		}
-}//gconfig_print_list
+}/*gconfig_print_list(list, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_type){
 	if(IF_DEBUG){
@@ -342,7 +381,7 @@ gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_t
 		debug(")" );
 	}
 	return gconf_client_set_list(gconfig_priv->gconf_client, key, list_type, value, NULL );
-}
+}/*gconfig_set_bool(key, value, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list_type){
 	GError *error=NULL;
@@ -359,7 +398,7 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 		debug("\t)" );
 	}
 	return TRUE;
-}
+}/*gconfig_get_list(key, &list, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_rm_rf(const gchar *key){
 	GError *error=NULL;
@@ -389,13 +428,13 @@ gboolean gconfig_rm_rf(const gchar *key){
 
 static void gconfig_notify_data_free(GConfigNotifyData *data){
 	g_slice_free(GConfigNotifyData, data);
-}
+}/*gconfig_notify_data_free(key, value);*/
 
 static void gconfig_notify_func(GConfClient *client, guint id, GConfEntry  *entry, gpointer user_data){
 	GConfigNotifyData *data;
 	data=user_data;
 	data->func(gconf_entry_get_key(entry), data->user_data);
-}
+}/*gconfig_notify_func(key, value);*/
 
 guint gconfig_notify_add(const gchar *key, GConfigNotifyFunc func, gpointer user_data){
 	GConfigNotifyData *data;
@@ -405,12 +444,12 @@ guint gconfig_notify_add(const gchar *key, GConfigNotifyFunc func, gpointer user
 	data->user_data=user_data;
 
 	return gconf_client_notify_add(gconfig_priv->gconf_client, key, gconfig_notify_func, data, (GFreeFunc)gconfig_notify_data_free, NULL);
-}
+}/*gconfig_notify_add(key, (*GconfigNotifyFunc), user_data);*/
 
 gboolean gconfig_notify_remove(guint id){
 	gconf_client_notify_remove(gconfig_priv->gconf_client, id);
 	return TRUE;
-}
+}/*gconfig_notify_remove(id);*/
 
 
 /********************************************************

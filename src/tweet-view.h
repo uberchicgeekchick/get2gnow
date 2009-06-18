@@ -68,80 +68,14 @@
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
 /* My, Kaity G. B., new uber tweet viewer. */
-typedef struct {
-	/* Used to trigger resizing. */
-	guint			size_timeout_id;
-	
-	/* Tweet View Dialog & embeding Widgets */
-	GtkWindow		*tweet_view;
-	GtkHBox			*tweet_view_embed;
-	
-	/* Stuff for sending a dm to a selected user. */
-	GtkVBox			*user_vbox;
-	GtkImage		*user_image;
-	
-	/* View & Sending Tweets. */
-	GtkVBox			*status_vbox;
-	
-	/* Tweet View */
-	GtkVBox			*status_view_vbox;
-	Label			*sexy_to;
-	Label			*sexy_from;
-	GtkLabel		*tweet_datetime_label;
-	Label			*sexy_tweet;
-	
-	/* Tweet, status, & DM writing area & widgets. */
-	GtkVBox			*status_compose_vbox;
-	GtkHBox			*char_count_hbox;
-	GtkLabel		*char_count;
-	
-	GtkHBox			*tweet_hbox;
-	SexySpellEntry		*sexy_entry;
-	GtkButton		*sexy_send;
-	GtkButton		*sexy_dm;
-	GtkVSeparator		*sexy_vseparator;
-	GtkButton		*new_tweet_button;
-	
-	/*The list & actual GtkWidgets for sending DMs.*/
-	GtkFrame		*dm_frame;
-	GtkLabel		*dm_frame_label;
-	GtkHBox			*dm_form_hbox;
-	GtkButton		*dm_refresh;
-	GtkComboBox		*followers_combo_box;
-	GtkListStore		*followers_list_store;
-	GtkTreeModel		*followers_model;
-	GtkButton		*followers_send_dm;
-	
-	GtkToggleButton		*dm_form_active_togglebutton;
-	GtkImage		*dm_form_active_image;
-	
-	/* Widgets that are enabled when we a tweet is selected */
-	GList			*selected_tweet_buttons;
-			
-	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
-	GtkButton		*view_user_profile_button;
-	GtkButton		*view_user_tweets_button;
-	
-	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
-	GtkButton		*user_follow_button;
-	GtkButton		*user_unfollow_button;
-	GtkButton		*user_block_button;
-	
-	/* Togglebutton & image used to indicate & switch between embed tweet-view & floating. */
-	GtkToggleButton		*embed_togglebutton;
-	GtkImage		*embed_image;
-	
-	/* Buttons for stuff to do with the current selected & extended tweet. */
-	GtkButton		*reply_button;
-	GtkButton		*retweet_button;
-	GtkButton		*make_fave_button;
-} TweetView;
+typedef struct _TweetView TweetView;
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
 TweetView *tweet_view_new(GtkWindow *parent);
 GtkWindow *tweet_view_get_window(void);
+GtkHBox *tweet_view_get_embed(void);
 
 void tweet_view_beep(void);
 

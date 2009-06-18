@@ -47,11 +47,22 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
 
+
+/********************************************************************************
+ * project, objece, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ ********************************************************************************/
 #include "config.h"
 #include "this.h"
 
 
+
+/********************************************************************************
+ *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ ********************************************************************************/
 typedef struct {
 	GtkWindow	*window;
 } ThisPrivate;
@@ -61,27 +72,36 @@ typedef struct {
 #define DEBUG_DOMAINS "This:UI:GtkBuilder:GtkBuildable:Objects:Networking:Requests:Authentication:Setup:Start-Up"
 #define GtkBuilderUI "this.ui"
 
-/* GObject methods */
-static void this_class_init(ThisClass *klass);
-static GObject *this_constructor(GType type, guint n_construct_params, GObjectConstructParam *construct_params){
-static void this_init(This *singleton_this);
-static void this_constructed(GOject *object);
-static void this_finalize(GObject *object);
-
 static This *this=NULL;
 
 G_DEFINE_TYPE(This, this, G_TYPE_OBJECT);
 /* G_DEFINE_TYPE's third agument needs to be 'This' parent's type as defined in "this.h". */
 /* Commonly Used:
  *	G_TYPE_OBJECT
- *	GTK_TYPE_OBJECT
- *	GTK_TYPE_WIDGET
+ *		GTK_TYPE_OBJECT
+ *			GTK_TYPE_WIDGET
  *	GTK_TYPE_CONTAINER
  *	GTK_TYPE_BIN
  *	GTK_TYPE_WINDOW
  *	GTK_TYPE_ITEM
  *	SEXY_TYPE_URL_LABEL
-*/
+ */
+
+
+
+/********************************************************************************
+ *                    prototypes for private method & function                  *
+ ********************************************************************************/
+static void this_class_init(ThisClass *klass);
+static GObject *this_constructor(GType type, guint n_construct_params, GObjectConstructParam *construct_params){
+static void this_init(This *singleton_this);
+static void this_constructed(GOject *object);
+static void this_finalize(GObject *object);
+
+
+/********************************************************************************
+ *                  'Here be Dragons'...art, beauty, fun, & magic.              *
+ ********************************************************************************/
 
 
 static void this_class_init(ThisClass *klass){

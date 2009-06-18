@@ -64,7 +64,7 @@
 #include "preferences.h"
 #include "geometry.h"
 
-#include "app.h"
+#include "main-window.h"
 #include "tweet-view.h"
 
 
@@ -73,7 +73,7 @@
  ********************************************************/
 typedef enum{
 	Embed,
-	MainWindow,
+	MainTweetList,
 	FloatingTweetView,
 } ViewType;
 
@@ -85,13 +85,13 @@ enum {
 	PreferencePositionY,
 	PreferenceTotal,
 };
-#define DEBUG_DOMAINS "TweetView:App:MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:Geometry.c"
-#include "debug.h"
+#define DEBUG_DOMAINS "FloatingTweetView:MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainTweetList:Geometry.c"
+#include"debug.h"
 
 /* Window height, width, & position gconf values. */
-#define PREFS_UI_WIDTH				PREFS_PATH "/ui/widths/%s"
-#define PREFS_UI_HEIGHT				PREFS_PATH "/ui/heights/%s"
-#define PREFS_UI_POSITIONS			PREFS_PATH "/ui/positions/%s_%s"
+#define PREFS_UI_WIDTH				GCONF_PATH "/ui/widths/%s"
+#define PREFS_UI_HEIGHT				GCONF_PATH "/ui/heights/%s"
+#define PREFS_UI_POSITIONS			GCONF_PATH "/ui/positions/%s_%s"
 
 #define	LOAD_COUNT				2
 
@@ -112,7 +112,7 @@ void geometry_load(void){
 	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
 		return geometry_load_for_window(Embed);
 	
-	geometry_load_for_window(MainWindow);
+	geometry_load_for_window(MainTweetList);
 	geometry_load_for_window(FloatingTweetView);
 }/*geometry_load*/
 
@@ -120,7 +120,7 @@ void geometry_save(void){
 	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
 		return geometry_save_for_window(Embed);
 	
-	geometry_save_for_window(MainWindow);
+	geometry_save_for_window(MainTweetList);
 	geometry_save_for_window(FloatingTweetView);
 }/*geometry_save();*/
 
@@ -154,7 +154,7 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
-	geometry_set_paned(app_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);
+	geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
@@ -191,23 +191,23 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) {
 		calls++;
-		geometry_set_paned(app_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);
-	}else if(calls==LOAD_COUNT) geometry_set_paned(app_get_tweet_paned(), "tweet_view", view, TRUE, TRUE);
+		geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);
+	}else if(calls==LOAD_COUNT) geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, TRUE);
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
 	debug("Getting window to set geometry for.");
 	switch(view){
 		case Embed:
-		case MainWindow:
-			return app_get_window();
+		case MainTweetList:
+			return main_window_get_window();
 		break;
 		
 		case FloatingTweetView:
 			return tweet_view_get_window();
 		break;
 	}
-	return app_get_window();
+	return main_window_get_window();
 }//geometry_get_window
 
 static gchar **geometry_get_prefs_path(ViewType view){
@@ -223,7 +223,7 @@ static gchar **geometry_get_prefs_path(ViewType view){
 			prefs_path[PrefernceWindow]=g_strdup("embed");
 		break;
 		
-		case MainWindow:
+		case MainTweetList:
 			prefs_path[PrefernceWindow]=g_strdup("main_window");
 		break;
 		
@@ -297,7 +297,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
-}/*geometry_set_paned(app_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);*/
+}/*geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);*/
 
 /********************************************************
  *                       eof                            *

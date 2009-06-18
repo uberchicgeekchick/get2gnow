@@ -30,35 +30,29 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "main.h"
+
 G_BEGIN_DECLS
 
-/* GConf Keys */
-#ifndef PREFS_PATH
-#	if defined GNOME_ENABLE_DEBUG
-#		define PREFS_PATH		"/apps/" PACKAGE_TARNAME "/debug"
-#	else
-#		define	PREFS_PATH		"/apps/" PACKAGE_TARNAME
-#	endif
-#endif
-
 /* Values used & setup by the prefernces window. */
-#define	PREFS_NOTIFY_ALL			PREFS_PATH "/notifications/all"
-#define	PREFS_NOTIFY_REPLIES			PREFS_PATH "/notifications/replies"
-#define	PREFS_NOTIFY_DMS			PREFS_PATH "/notifications/dms"
-#define	PREFS_NOTIFY_BEEP			PREFS_PATH "/notifications/sound"
+#define	PREFS_NOTIFY_ALL			GCONF_PATH "/notifications/all"
+#define PREFS_NOTIFY_MY_FRIENDS_TWEETS		GCONF_PATH "/notifications/my_friends_tweets"
+#define	PREFS_NOTIFY_REPLIES			GCONF_PATH "/notifications/replies"
+#define	PREFS_NOTIFY_DMS			GCONF_PATH "/notifications/dms"
+#define	PREFS_NOTIFY_BEEP			GCONF_PATH "/notifications/beep"
 
-#define	PREFS_URLS_EXPAND_SELECTED_ONLY		PREFS_PATH "/ui/urls/expand/selected_only"
-#define PREFS_URLS_EXPAND_REPLACE_WITH_TITLES	PREFS_PATH "/ui/urls/expand/replace_with_titles"
-#define	PREFS_URLS_EXPAND_USER_PROFILES		PREFS_PATH "/ui/urls/expand/user_profiles"
-#define	PREFS_URLS_EXPAND_DISABLED		PREFS_PATH "/ui/urls/expand/disabled"
+#define	PREFS_URLS_EXPAND_SELECTED_ONLY		GCONF_PATH "/ui/urls/expand/selected_only"
+#define PREFS_URLS_EXPAND_REPLACE_WITH_TITLES	GCONF_PATH "/ui/urls/expand/replace_with_titles"
+#define	PREFS_URLS_EXPAND_USER_PROFILES		GCONF_PATH "/ui/urls/expand/user_profiles"
+#define	PREFS_URLS_EXPAND_DISABLED		GCONF_PATH "/ui/urls/expand/disabled"
 
-#define PREFS_TWEET_VIEW_DIALOG			PREFS_PATH "/ui/tweet_view/use_dialog"
-#define	PREFS_TWEET_LENGTH_ALERT		PREFS_PATH "/tbeepweets/no_length_alert"
+#define PREFS_TWEET_VIEW_DIALOG			GCONF_PATH "/ui/tweet_view/use_dialog"
+#define	PREFS_TWEET_LENGTH_ALERT		GCONF_PATH "/tweets/beep/no_length_alert"
 
-#define	PREFS_TWEETS_HOME_TIMELINE		PREFS_PATH "/tweets/home_timeline"
-#define	PREFS_TWEETS_RELOAD_TIMELINES		PREFS_PATH "/tweets/reload_timeline"
-#define PREFS_TWEETS_NO_PROFILE_LINK		PREFS_PATH "/tweets/no_link_in_replies"
-#define	PREFS_TWEETS_DIRECT_REPLY_ONLY		PREFS_PATH "/tweets/direct_reply_only"
+#define	PREFS_TWEETS_HOME_TIMELINE		GCONF_PATH "/tweets/home_timeline"
+#define	PREFS_TWEETS_RELOAD_TIMELINES		GCONF_PATH "/tweets/reload_timeline"
+#define PREFS_TWEETS_NO_PROFILE_LINK		GCONF_PATH "/tweets/no_link_in_replies"
+#define	PREFS_TWEETS_DIRECT_REPLY_ONLY		GCONF_PATH "/tweets/direct_reply_only"
 
 
 void preferences_dialog_show (GtkWindow *parent);

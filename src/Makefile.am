@@ -18,13 +18,15 @@ if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 
-get2gnow_SOURCES = 							\
+get2gnow_SOURCES = 			online-services-typedefs.h	\
 	$(keyring_sources)						\
-	program.			program.h			\
+	program.c			program.h			\
 	main.c				main.h				\
 	online-services.c		online-services.h		\
 	online-service.c		online-service.h		\
 	online-service-wrapper.c	online-service-wrapper.h	\
+	online-service-request.c	online-service-request.h	\
+	online-services-dialog.c	online-services-dialog.h	\
 	users-glists.c			users-glists.h			\
 	network.c			network.h			\
 	timer.c				timer.h				\
@@ -33,13 +35,9 @@ get2gnow_SOURCES = 							\
 	debug.c				debug.h				\
 	cache.c				cache.h				\
 	gtkbuilder.c			gtkbuilder.h			\
-	tree-view.c 			tree-view.h			\
 	about.c				about.h				\
-	services-dialog.c		services-dialog.h		\
-	profile-viewer.c		profile-viewer.h		\
-	popup-dialog.c 			popup-dialog.h			\
 	ipc.c				ipc.h				\
-	app.c				app.h				\
+	main-window.c			main-window.h			\
 	geometry.c			geometry.h			\
 	label.c				label.h				\
 	parser.c			parser.h			\

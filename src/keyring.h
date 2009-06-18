@@ -30,8 +30,8 @@
 
 G_BEGIN_DECLS
 
-gboolean keyring_get_password(OnlineService **service);
-gboolean keyring_set_password(OnlineService *service);
+gboolean keyring_get_password(OnlineService *service, gchar **password);
+gboolean keyring_set_password(OnlineService *service, gchar *password);
 
 G_END_DECLS
 

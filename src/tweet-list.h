@@ -48,14 +48,10 @@
 
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
-#include "online-services.h"
-#include "users.h"
+
 
 G_BEGIN_DECLS
 
-/*
- * TweetList 
- */ 
 #define TYPE_TWEET_LIST			(tweet_list_get_type())
 #define TWEET_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_TWEET_LIST, TweetList))
 #define TWEET_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), TYPE_TWEET_LIST, TweetListClass))
@@ -75,21 +71,53 @@ struct _TweetListClass {
 	SexyTreeViewClass       parent_class;
 };
 
-extern guint tweet_list_notify_delay;
 
-GType		tweet_list_get_type(void) G_GNUC_CONST;
-TweetList	*tweet_list_new(void);
-TweetList	*tweet_list_get(void);
+enum TweetListStoreColumns{	/********************************************************************************/
+	ULONG_TWEET_ID,		/*	Tweet's ID.								*/
+	ULONG_USER_ID,		/*	User's ID.								*/
+	STRING_USER,		/*	Username string.							*/
+	STRING_NICK,		/*	Author name string.							*/
+	STRING_TEXT,		/*	Unformated Tweet string.						*/
+	STRING_TWEET,		/*	Tweet for display string in the TweetList, SexyTreeView, GtkTreeView.	*/
+	STRING_SEXY_TWEET,	/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
+	STRING_CREATED_AGO,	/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
+	STRING_CREATED_AT,	/*	Date string.								*/
+	ULONG_CREATED_AGO,	/*	How old the post is, in seconds, for sorting.				*/
+	ULONG_CREATED_AT,	/*	Unix seconds since epoc of how old the tweet's is.			*/
+	PIXBUF_AVATAR,		/*	Avatar pixbuf.								*/
+	ONLINE_SERVICE,		/*	OnlineService pointer.							*/
+	STRING_FROM,		/*	<status's auther @ OnlineService URI>					*/
+	STRING_RCPT,		/* 	OnlineService key To: <user@service>					*/
+				/********************************************************************************/
+};
 
-void tweet_list_clear(void);
 
-void tweet_list_store_status(OnlineService *service, UserStatus *status);
+GType tweet_list_get_type(void) G_GNUC_CONST;
+TweetList *tweet_list_new(const gchar *timeline);
+const gchar *tweet_list_get_timeline(TweetList *tweet_list);
 
-void tweet_list_key_pressed(GtkWidget *widget, GdkEventKey *event);
+gint tweet_list_get_page(TweetList *tweet_list);
+gint tweet_list_get_total(TweetList *tweet_list);
+void tweet_list_set_page(TweetList *tweet_list, gint page);
 
-void tweet_list_goto_top(void);
+GtkVBox *tweet_list_get_child(TweetList *tweet_list);
+GtkLabel *tweet_list_get_tab(TweetList *tweet_list);
+GtkLabel *tweet_list_get_menu(TweetList *tweet_list);
 
-void tweet_list_set_image(const gchar *image_filename, GtkTreeIter *iter);
+GtkListStore *tweet_list_get_list_store(TweetList *tweet_list);
+GtkTreeModel *tweet_list_get_tree_model(TweetList *tweet_list);
+void tweet_list_increment(TweetList *tweet_list);
+
+void tweet_list_start(TweetList *tweet_list);
+gboolean tweet_list_refresh(TweetList *tweet_list);
+void tweet_list_stop(TweetList *tweet_list);
+void tweet_list_complete(TweetList *tweet_list);
+
+void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
+
+void tweet_list_goto_top(TweetList *tweet_list);
+
+void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter);
 
 G_END_DECLS
 

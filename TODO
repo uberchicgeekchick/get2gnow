@@ -1,9 +1,10 @@
 * TODO
+- *FINISH* implementing support for my timeline tabs pogressbar.
+- 'FINISH' cache_save_xml so it limits the users/statuses that are saved or it'll bloat the hard drive.
+- Add loading & parsing of cached user's friends & followers from cache.
+*w00t!* Caching is finally implemented.
 
-- Implement 'caching' of xml for friends, followers, & timelines.
-	update them only when there's something new or changed.
-	
-- Add 'more' & button for older tweets in timelines.
+- Add support for a 'previous tweets' combo box entry to tweet-view.
 
-- Add support for Twitter's search API.
+- *FINISH* support for Twitter's search.
 

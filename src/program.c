@@ -69,8 +69,9 @@
 #include "debug.h"
 #include "gconfig.h"
 
-#include "app.h"
+#include "main-window.h"
 
+#include "online-service-request.h"
 #include "online-services.h"
 #include "network.h"
 #include "proxy.h"
@@ -96,7 +97,7 @@ static gboolean notifing=FALSE;
  ********************************************************/
 void program_init(int argc, char **argv){
 	if( (ipc_init_check( argc-1, argv-1)) ){
-		g_fprintf(stdout, "%s is already running.  Be sure to check system try for %s's icon.\n", PACKAGE_TARNAME, PACKAGE_TARNAME );
+		g_fprintf(stdout, "%s is already running.  Be sure to check system try for %s's icon.\n", GETTEXT_PACKAGE, GETTEXT_PACKAGE);
 		ipc_deinit();
 		exit(0);
 	}
@@ -111,17 +112,18 @@ void program_init(int argc, char **argv){
 	
 	gtk_init(&argc, &argv);
 	
-	gtk_window_set_default_icon_name(PACKAGE_TARNAME);
-	
-	debug_init();
+	gtk_window_set_default_icon_name(GETTEXT_PACKAGE);
 	
 	cache_init();
+	
+	/* debugging: output & logging */
+	debug_init();
 	
 	/* Connect to gconf */
 	gconfig_start();
 	
 	/* Start libnotify */
-	notifing=notify_init(PACKAGE_TARNAME);
+	notifing=notify_init(GETTEXT_PACKAGE);
 	
 	/*Starting networking start-up*/
 	proxy_init();
@@ -129,14 +131,37 @@ void program_init(int argc, char **argv){
 	/* Load's accounts & sets them in 'extern OnlineServices *online_services;'. */
 	online_services_init();
 	
-	/*Set background monitoring of Replies & DMs.*/
-	network_init();
-	/*Networking started & done*/
-	
 	/* On to the GUI. */
-	app_create();
+	main_window_create();
 }/*program_init*/
 
+const gchar *program_gtk_response_to_string(gint response){
+	switch(response){
+		case GTK_RESPONSE_NONE: return _("GTK_RESPONSE_NONE");
+		case GTK_RESPONSE_REJECT: return _("GTK_RESPONSE_REJECT");
+		case GTK_RESPONSE_ACCEPT: return _("GTK_RESPONSE_ACCEPT");
+		case GTK_RESPONSE_DELETE_EVENT: return _("GTK_RESPONSE_DELETE_EVENT");
+		case GTK_RESPONSE_OK: return _("GTK_RESPONSE_OK");
+		case GTK_RESPONSE_CANCEL: return _("GTK_RESPONSE_CANCEL");
+		case GTK_RESPONSE_CLOSE: return _("GTK_RESPONSE_CLOSE");
+		case GTK_RESPONSE_YES: return _("GTK_RESPONSE_YES");
+		case GTK_RESPONSE_NO: return _("GTK_RESPONSE_NO");
+		case GTK_RESPONSE_APPLY: return _("GTK_RESPONSE_APPLY");
+		case GTK_RESPONSE_HELP: return _("GTK_RESPONSE_HELP");
+		default: return _("UNKNOWN");
+	}
+}/*program_gtk_response_to_string(response);*/
+
+void program_uber_free(gpointer pointer1, ...){
+	gpointer *pointer;
+	va_list pointers;
+	va_start(pointers, pointer1);
+	for(pointer=pointer1; pointer; pointer=va_arg(pointers, gpointer)){
+		g_free(*pointer);
+		*pointer=NULL;
+	}
+	va_end(pointers);
+}/*void program_uber_free(pointer1, pointer2, NULL);*/
 
 void program_timeout_remove(guint *id, const gchar *usage){
 	if(!( (*id)>0 )) return;
@@ -156,7 +181,6 @@ void program_deinit(void){
 	
 	/* Close the network */
 	unset_selected_tweet();
-	network_deinit(TRUE, All);
 	online_services_deinit(online_services);
 	proxy_deinit();
 	

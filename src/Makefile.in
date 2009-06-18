@@ -47,12 +47,14 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-get2gnow_SOURCES =							\
-	program.			program.h			\
+get2gnow_SOURCES =			online-services-typedefs.h	\
+	program.c			program.h			\
 	main.c				main.h				\
 	online-services.c		online-services.h		\
 	online-service.c		online-service.h		\
 	online-service-wrapper.c	online-service-wrapper.h	\
+	online-service-request.c	online-service-request.h	\
+	online-services-dialog.c	online-services-dialog.h	\
 	users-glists.c			users-glists.h			\
 	network.c			network.h			\
 	timer.c				timer.h				\
@@ -61,13 +63,9 @@ get2gnow_SOURCES =							\
 	debug.c				debug.h				\
 	cache.c				cache.h				\
 	gtkbuilder.c			gtkbuilder.h			\
-	tree-view.c 			tree-view.h			\
 	about.c				about.h				\
-	services-dialog.c		services-dialog.h		\
-	profile-viewer.c		profile-viewer.h		\
-	popup-dialog.c 			popup-dialog.h			\
 	ipc.c				ipc.h				\
-	app.c				app.h				\
+	main-window.c			main-window.h			\
 	geometry.c			geometry.h			\
 	label.c				label.h				\
 	parser.c			parser.h			\
@@ -86,6 +84,8 @@ get2gnow_OBJECTS =					\
 	online-services.$(OBJEXT)			\
 	online-service.$(OBJEXT)			\
 	online-service-wrapper.$(OBJEXT)		\
+	online-service-request.$(OBJEXT)		\
+	online-services-dialog.$(OBJEXT)		\
 	users-glists.$(OBJEXT)				\
 	network.$(OBJEXT)				\
 	gconfig.$(OBJEXT)				\
@@ -94,16 +94,12 @@ get2gnow_OBJECTS =					\
 	debug.$(OBJEXT)					\
 	cache.$(OBJEXT)					\
 	gtkbuilder.$(OBJEXT)				\
-	tree-view.$(OBJEXT)				\
 	$(am__objects_1)				\
 	program.$(OBJEXT)				\
 	main.$(OBJEXT)					\
 	about.$(OBJEXT)					\
-	services-dialog.$(OBJEXT)			\
-	profile-viewer.$(OBJEXT)			\
-	popup-dialog.$(OBJEXT)				\
 	ipc.$(OBJEXT)					\
-	app.$(OBJEXT)					\
+	main-window.$(OBJEXT)				\
 	geometry.$(OBJEXT)				\
 	label.$(OBJEXT)					\
 	parser.$(OBJEXT)				\
@@ -398,6 +394,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-wrapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
@@ -407,9 +405,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/services-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/popup-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/app.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-window.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@

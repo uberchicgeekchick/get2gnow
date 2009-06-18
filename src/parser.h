@@ -28,20 +28,18 @@
 
 #include <libsoup/soup-message.h>
 
-#include "online-service.h"
+#include "online-services-typedefs.h"
+#include "tweet-list.h"
 #include "users.h"
 
+xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-gchar *parser_get_cache_file_from_uri(const gchar *uri);
-
-xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TweetList *tweet_list, TweetLists monitoring);
+gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, gulong *my_diff);
-
-guint parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring);
-gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 #endif /*  __PARSER_H__ */
 

@@ -24,32 +24,42 @@
 #define __MAIN_H__
 
 #include <glib.h>
+
 #include "config.h"
+#include "program.h"
 
 G_BEGIN_DECLS
 
+/* GConf Keys */
+#ifndef GCONF_PATH
+#	if defined GNOME_ENABLE_DEBUG
+#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME "/debug"
+#	else
+#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME
+#	endif
+#endif
+
 #define STATUSBAR_DEFAULT "HotKeys: [Ctrl+N] start a new tweet; [Ctrl+D] or [Shift+Return] to DM; [Ctrl+R], [Return], or '@' to reply, [Ctrl+F] or '>' to re-tweet."
 
-#ifndef G_STR_EMPTY
-#define G_STR_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
+#ifndef	G_STR_EMPTY
+#define		G_STR_EMPTY(string)			((string) == NULL || (string)[0] == '\0')
 #endif
 
 
-#ifndef G_STR_N_EMPTY
-#define G_STR_N_EMPTY(x) (!((x) == NULL || (x)[0] == '\0'))
+#ifndef	G_STR_N_EMPTY
+#define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
 #endif
 
-#ifndef uber_free
-#define uber_free(mem)	{ g_free(mem); mem=NULL; }
-#endif
 
 #ifndef uber_unref
-#define uber_unref(o)	{ g_object_unref(o); o=NULL; }
+#define		uber_unref(object)			{ g_object_unref(object); object=NULL; }
 #endif
 
+
 #ifndef	uber_list_free
-#define	uber_list_free(l)	{ g_list_free(l); l=NULL; }
+#define		uber_list_free(glist)			{ g_list_free(glist); glist=NULL; }
 #endif
+
 
 G_END_DECLS
 

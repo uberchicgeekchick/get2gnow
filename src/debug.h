@@ -36,6 +36,7 @@ G_BEGIN_DECLS
 #	endif
 #endif
 
+
 #ifdef DISABLE_DEBUG
 #	define debug
 #elif defined(G_HAVE_ISO_VARARGS)
@@ -45,7 +46,6 @@ G_BEGIN_DECLS
 #else
 #	define debug(x)		debug_impl(DEBUG_DOMAINS, x)
 #endif
-
 
 
 #ifdef DISABLE_DEBUG
@@ -58,7 +58,7 @@ G_BEGIN_DECLS
 
 void debug_init(void);
 gboolean debug_check_devel(void);
-void debug_impl (const gchar *domain, const gchar *msg, ...) G_GNUC_PRINTF(2, 3);
+void debug_impl(const gchar *domain, const gchar *msg, ...) G_GNUC_PRINTF(2, 3);
 gboolean debug_if_domain(const gchar *domain);
 void debug_deinit(void);
 

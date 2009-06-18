@@ -287,8 +287,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/sound</key>
-			<applyto>/apps/get2gnow/ui/sound</applyto>
+			<key>/schemas/apps/get2gnow/ui/beep</key>
+			<applyto>/apps/get2gnow/ui/beep</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>

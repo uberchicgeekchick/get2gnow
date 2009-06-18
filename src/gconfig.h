@@ -78,23 +78,33 @@ GType gconfig_get_type(void) G_GNUC_CONST;
 void gconfig_start(void);
 void gconfig_shutdown(void);
 guint gconfig_notify_add(const gchar *key, GConfigNotifyFunc func, gpointer user_data);
-gboolean gconfig_notify_remove(guint                  id);
-gboolean    gconfig_set_int(const gchar           *key,
-										 gint                   value);
-gboolean    gconfig_get_int(const gchar           *key,
-										 gint                  *value);
-gboolean    gconfig_if_bool(const gchar *key, gboolean default_bool);
-gboolean    gconfig_set_bool(const gchar           *key, gboolean               value);
-gboolean    gconfig_get_bool(const gchar           *key, gboolean              *value);
-gboolean    gconfig_set_string(const gchar           *key,
-										 const gchar           *value);
-gboolean    gconfig_get_string(const gchar           *key,
-										 gchar                **value);
+gboolean gconfig_notify_remove(guint id);
+
+
+gboolean gconfig_set_int(const gchar *key, gint value);
+gboolean gconfig_get_int(const gchar *key, gint *value);
+
+
+gboolean gconfig_set_float(const gchar *key, gfloat value);
+gboolean gconfig_get_float(const gchar *key, gfloat *value);
+
+
+gboolean gconfig_if_bool(const gchar *key, gboolean default_bool);
+gboolean gconfig_set_bool(const gchar *key, gboolean value);
+gboolean gconfig_get_bool(const gchar *key, gboolean *value);
+
+
+gboolean gconfig_set_string(const gchar *key, const gchar *value);
+gboolean gconfig_get_string(const gchar *key, gchar **value);
+
+
 gboolean gconfig_set_list_string(const gchar *key, GSList *value);
 gboolean gconfig_get_list_string(const gchar *key, GSList **value);
+
+
 /* Possible values for 'list_type' are one of the follwing:
- *  * 	GCONF_VALUE_STRING, GCONF_VALUE_INT, GCONF_VALUE_BOOL, or GCONF_VALUE_FLOAT
- *   */
+ * 	GCONF_VALUE_STRING, GCONF_VALUE_INT, GCONF_VALUE_BOOL, or GCONF_VALUE_FLOAT
+ */
 gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_type);
 gboolean gconfig_get_list(const gchar *key, GSList **value, GConfValueType list_type);
 

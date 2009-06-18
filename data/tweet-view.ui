@@ -45,8 +45,8 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">View this user's profile.</property>
-                    <accelerator key="i" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                    <property name="tooltip_text" translatable="yes">View this user's profile. (&lt;Alt&gt;+?)</property>
+                    <accelerator key="question" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                     <child>
                       <object class="GtkImage" id="view_user_profile_image">
                         <property name="visible">True</property>
@@ -65,7 +65,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">View this user's most recent Tweets/Updates.</property>
+                    <property name="tooltip_text" translatable="yes">View this user's most recent Tweets/Updates. (Alt+T)</property>
                     <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
                       <object class="GtkImage" id="view_user_tweets_image">
@@ -92,15 +92,15 @@
                 <property name="visible">True</property>
                 <property name="homogeneous">True</property>
                 <child>
-                  <object class="GtkButton" id="user_follow_button">
+                  <object class="GtkButton" id="user_unfollow_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Follow this user.</property>
+                    <property name="tooltip_text" translatable="yes">Stop following this user. (Alt+U)</property>
                     <child>
-                      <object class="GtkImage" id="user_follow_image">
+                      <object class="GtkImage" id="user_unfollow_image">
                         <property name="visible">True</property>
-                        <property name="stock">gtk-add</property>
+                        <property name="stock">gtk-remove</property>
                       </object>
                     </child>
                   </object>
@@ -111,15 +111,15 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="user_unfollow_button">
+                  <object class="GtkButton" id="user_follow_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Stop following this user.</property>
+                    <property name="tooltip_text" translatable="yes">Follow this user. (Alt+F)</property>
                     <child>
-                      <object class="GtkImage" id="user_unfollow_image">
+                      <object class="GtkImage" id="user_follow_image">
                         <property name="visible">True</property>
-                        <property name="stock">gtk-remove</property>
+                        <property name="stock">gtk-add</property>
                       </object>
                     </child>
                   </object>
@@ -134,7 +134,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Block this user.</property>
+                    <property name="tooltip_text" translatable="yes">Block this user. (Alt+B)</property>
                     <child>
                       <object class="GtkImage" id="user_block_image">
                         <property name="visible">True</property>
@@ -274,7 +274,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Tweet/Update your status.</property>
+                        <property name="tooltip_text" translatable="yes">Tweet/Update your status. (&lt;Alt&gt;+S)</property>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
@@ -293,7 +295,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Send your message as a direct message to this user.</property>
+                        <property name="tooltip_text" translatable="yes">Send your message as a direct message to this user (&lt;Alt&gt;+D).</property>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
@@ -323,7 +327,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Clear the selected tweet &amp; start over.</property>
+                        <property name="tooltip_text" translatable="yes">Clear the selected tweet &amp; start over (&lt;Ctrl&gt;+N).</property>
+                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="image1">
                             <property name="visible">True</property>
@@ -342,6 +348,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Sends a DM to any of your followers by selecting them from a list, i.e. combo box. (Ctrl+D)</property>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="dm_form_active_image">
                             <property name="visible">True</property>
@@ -419,7 +428,7 @@
                               <object class="GtkImage" id="dm_send_image">
                                 <property name="visible">True</property>
                                 <property name="tooltip_text" translatable="yes">Send this tweet as a DM, direct message, to the selected friend.</property>
-                                <property name="stock">gtk-goto-last</property>
+                                <property name="stock">gtk-leave-fullscreen</property>
                               </object>
                             </child>
                           </object>
@@ -636,4 +645,5 @@
     <property name="visible">True</property>
     <property name="stock">gtk-goto-top</property>
   </object>
+  <object class="GtkListStore" id="previous_tweets_list_store"/>
 </interface>

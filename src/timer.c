@@ -56,11 +56,12 @@
 /********************************************************
  *        Project headers.                              *
  ********************************************************/
+#include <stdlib.h>
 #include "config.h"
 #include "main.h"
 
 #include "timer.h"
-#include "app.h"
+#include "main-window.h"
 
 /********************************************************
  *          Variable definitions.                       *
@@ -86,8 +87,6 @@ static void timer_main_quit(RateLimitTimer *timer);
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-
-
 RateLimitTimer *timer_new(void){
 	debug("Initalizing network rate limit timer.");
 	if(!( g_thread_get_initialized() && g_thread_supported() )) g_thread_init(NULL);
@@ -123,7 +122,7 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	
 	timer->processing++;
 	while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->limit ){
-		app_statusbar_printf("One moment please... to keep %s from being locked out requests are limited.", PACKAGE_NAME);
+		main_window_statusbar_printf("One moment please... to keep %s from being locked out requests are limited.", PACKAGE_NAME);
 	}
 	g_timer_stop(timer->gtimer);
 	

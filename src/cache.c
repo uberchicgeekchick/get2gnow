@@ -57,6 +57,8 @@
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
 #include <errno.h>
+#include <libxml/parser.h>
+
 #include "config.h"
 #include "main.h"
 #include "cache.h"
@@ -74,6 +76,10 @@ static gchar *unknown_image_filename=NULL;
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *subdir, const gchar *filename);
+static gboolean cache_file_save_online_service_xml(OnlineService *service, const gchar *subdir, const gchar *filename, const gchar *xml, goffset length);
+static gchar *cache_path_create(const gchar *cache_file, ...);
+
 static void cache_dir_absolute_clean_up(const gchar *cache_dir, gboolean rm_parent);
 static void cache_file_clean_up(const gchar *cache_file);
 
@@ -88,6 +94,12 @@ void cache_init(void){
 	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "debug", NULL);
 #endif
 	
+	gchar *cache_path_test=NULL;
+	if(!(cache_path_test=cache_dir_test("services", TRUE) ))
+		g_error("Unable to access config directory: %s.", cache_prefix);
+	
+	uber_free(cache_path_test);
+	
 	cache_images_get_unknown_image_filename();
 }/*cache_init*/
 
@@ -100,10 +112,57 @@ void cache_deinit(void){
 	unknown_image_filename=NULL;
 }/*cache_deinit*/
 
+static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *subdir, const gchar *filename){
+	gchar *filename_xml=g_strdup_printf("%s.xml", filename);
+	gchar *cache_file_xml=cache_file_create_file_for_online_service(service, subdir, filename_xml, NULL);
+	uber_free(filename_xml);
+	return cache_file_xml;
+}/*cache_file_create_online_service_xml_file(service, subdir, filename);*/
+
+gboolean cache_save_xml(OnlineService *service, xmlNode *xml_node, const gchar *subdir, const gchar *filename){
+	gchar *xml=NULL;
+	if( G_STR_EMPTY( (xml=(gchar *)xmlNodeGetContent(xml_node)) ) ) return FALSE;
+	if(!( cache_file_save_online_service_xml(service, subdir, filename, xml, g_utf8_strlen(xml, -1)) )){
+		debug("**ERROR:** Unable to cache xmlNode's %s contents.  Attempting to cache page to file: %s; subdir: %s.", xml_node->name, filename, subdir);
+		return FALSE;
+	}
+	debug("Saved xmlNode's %s content.  Cached as %s in subdir: %s.", xml_node->name, filename, subdir);
+	return TRUE;
+}/*cache_xml_save(OnlineService *service, root_element, subdir, filename);*/
+
+gboolean cache_save_page(OnlineService *service, SoupMessageBody *xml, const gchar *subdir, const gchar *filename){
+	if(!xml->length) return FALSE;
+	if(!( cache_file_save_online_service_xml(service, subdir, filename, xml->data, xml->length) )){
+		debug("**ERROR:** Unable to cache page.  Attempting to cache page to file: %s; subdir: %s.", filename, subdir);
+		return FALSE;
+	}
+	debug("Saved page's content.  Cached as %s in subdir: %s.", filename, subdir);
+	return TRUE;
+}/*void cache_save_page(service, xml, subdir, filename);*/
+
+static gboolean cache_file_save_online_service_xml(OnlineService *service, const gchar *subdir, const gchar *filename, const gchar *xml, goffset length){
+	if(!length){
+		debug("Unable to save xml cache file: %s; subdir: %s.  Saving would result in an empty file.", filename, subdir);
+		return FALSE;
+	}
+	gchar *cache_file_xml=NULL;
+	if(!( cache_file_xml=cache_file_create_online_service_xml_file(service, subdir, filename) )){
+		debug("**ERROR:** Unable to create xml cache filename.");
+		return FALSE;
+	}
+	if(!(g_file_set_contents(cache_file_xml, xml, length, NULL))){
+		debug("**ERROR:** Unable to save xml contents to cache file: %s.", cache_file_xml);
+		uber_free(cache_file_xml);
+		return FALSE;
+	}
+	debug("Cache created: %s.", cache_file_xml);
+	uber_free(cache_file_xml);
+	return TRUE;
+}/*cache_file_save_online_service_xml(service, subdir, filename, xml, length)*/
+
 gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir){
-	gchar *cache_path=g_build_filename(cache_prefix, cache_dir, NULL);
+	gchar *cache_path=cache_path_create(cache_dir, NULL);
 	if(!g_file_test(cache_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)){
-		debug("\t\t*NOTICE:* Creating avatars directory: %s", cache_path);
 		if(!mkdir) return NULL;
 		
 		if(g_mkdir_with_parents(cache_path, S_IRUSR|S_IWUSR|S_IXUSR)){
@@ -141,30 +200,48 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm
 }/*cache_dir_absolute_clean_up*/
 
 void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent){
-	gchar *cache_dir_path=g_build_filename(cache_prefix, cache_subdir, NULL);
+	gchar *cache_dir_path=cache_path_create(cache_subdir, NULL);
 	cache_dir_absolute_clean_up(cache_dir_path, rm_parent);
 	g_free(cache_dir_path);
 	if(rm_parent)
 		cache_file_clean_up(cache_dir_path);
 }/*cache_dir_clean_up*/
 
-gchar *cache_file_touch(const gchar *cache_file){
-	gchar *cache_filename=NULL;
-	
-	if(!(g_str_has_prefix(cache_file, cache_prefix)))
-		cache_filename=g_build_filename(cache_prefix, cache_file, NULL);
+static gchar *cache_path_create(const gchar *cache_file, ...){
+	gchar *cache_path_full=NULL;
+	if(!g_str_has_prefix(cache_file, cache_prefix))
+		cache_path_full=g_build_filename(cache_prefix, NULL);
 	else
-		cache_filename=g_strdup(cache_file);
+		cache_path_full=g_strdup("");
+	
+	gchar *cache_path_swap=NULL;
+	gchar *cache_dir=NULL;
+	
+	va_list cache_dirs;
+	va_start(cache_dirs, cache_file);
+	for(cache_dir=(gchar *)cache_file; cache_dir; cache_dir=va_arg(cache_dirs, gchar *)){
+		cache_path_swap=g_build_filename(cache_path_full, cache_dir, NULL);
+		g_free(cache_path_full);
+		cache_path_full=cache_path_swap;
+		cache_path_swap=NULL;
+	}
+	va_end(cache_dirs);
+	
+	return cache_path_full;
+}/*cache_path_create("cache.xml");*/
+
+gchar *cache_file_touch(const gchar *cache_file){
+	gchar *cache_filename=cache_path_create(cache_file, NULL);
 	
 	if(!(g_file_test(cache_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)))
 		if(!(g_creat(cache_filename, S_IRUSR|S_IWUSR))){
-			debug("\t\t**ERROR:** Failed to create cache file.\n\t\t\tFilename: [%s].", cache_filename);
+			debug("**ERROR:** Failed to create cache file: [%s].", cache_filename);
 			g_free(cache_filename);
 			return NULL;
 		}
 	
 	return cache_filename;
-}/*cache_file_touch*/
+}/*cache_file_touch("cache.xml");*/
 
 static void cache_file_clean_up(const gchar *cache_file){
 	if(!(g_str_has_prefix(cache_file, cache_prefix)))
@@ -181,51 +258,67 @@ static void cache_file_clean_up(const gchar *cache_file){
 }/*cache_file_clean_up*/
 
 gchar *cache_filename_get_from_uri(const gchar *uri){
-	gchar *cache_file=g_strdelimit(g_strdup(uri), ":/&?", '_');
-	gchar *cache_filename=g_build_filename(cache_prefix, cache_file, NULL);
+	gchar *uri_dup=g_strdup(uri);
+	gchar *cache_file=g_strdelimit(uri_dup, ":/&?", '_');
+	gchar *cache_filename=cache_path_create(cache_file, NULL);
+	uber_free(uri_dup);
 	uber_free(cache_file);
 	return cache_filename;
 }/*cache_file_from_uri*/
 
 
-gchar *cache_create_cookie_jar(OnlineService *service){
-	gchar	*cookie_jar_dir=NULL;
-	gchar	*cookie_jar_directory=NULL;
+gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...){
+	gchar	*dir=NULL;
+	gchar	*directory=NULL;
+	gchar	*cache_subdir_or_file=NULL;
 	
-	gchar	*cookie_jar_file=NULL;
-	gchar	*cookie_jar_filename=NULL;
+	gchar	*file=NULL;
+	gchar	*filename=NULL;
 	
-	cookie_jar_dir=g_build_filename("services", service->uri, service->username, NULL);
+	dir=cache_path_create("services", online_service_get_uri(service), online_service_get_username(service), NULL);
 	
-	if(!( (cookie_jar_directory=cache_dir_test(cookie_jar_dir, TRUE)) )){
-		debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar's directory: [%s].", cookie_jar_directory);
-		g_free(cookie_jar_dir);
+	va_list cache_subdirs_and_file;
+	va_start(cache_subdirs_and_file, subdir1_or_file);
+	for(cache_subdir_or_file=(gchar *)subdir1_or_file; cache_subdir_or_file; cache_subdir_or_file=va_arg(cache_subdirs_and_file, gchar *)){
+		file=cache_path_create(dir, cache_subdir_or_file, NULL);
+		filename=cache_subdir_or_file;
+		
+		g_free(dir);
+		dir=file;
+		file=cache_path_create(dir, filename, NULL);
+	}
+	va_end(cache_subdirs_and_file);
+	
+	if(!( (directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(file)) )){
+		debug("**ERROR:** Unable to create cache file.");
+		debug("**ERROR:** Cache prefix: [%s].", cache_prefix);
+		
+		if(!directory)
+			debug("**ERROR:** Unable to create cache directory: [%s].", dir);
+		else{
+			uber_free(directory);
+			debug("**ERROR:** Unable to create cache file: [%s].", file);
+		}
+		
+		uber_free(dir);
+		uber_free(file);
 		return NULL;
 	}
 	
-	cookie_jar_file=g_build_filename(cookie_jar_dir, "cookies.txt", NULL);
-	if(!( (cookie_jar_filename=cache_file_touch(cookie_jar_file)) )){
-		debug("\t\t**ERROR:** Failed to open cookie jar.\n\t\tUnable to create cookie jar: [%s].", cookie_jar_filename);
-		g_free(cookie_jar_dir);
-		g_free(cookie_jar_directory);
-		g_free(cookie_jar_filename);
-		return NULL;
-	}
+	debug("Created <%s>'s cache file: %s.", online_service_get_key(service), file);
+	debug("\tDirectory: [%s].", directory);
+	debug("\tFilename: [%s].", filename);
 	
-	debug("\t\tCreated cookie jar for [%s].\n\t\tDirectory: [%s]\n\t\tFilename: [%s].", service->key, cookie_jar_directory, cookie_jar_filename );
-	
-	g_free(cookie_jar_dir);
-	g_free(cookie_jar_directory);
-	return cookie_jar_filename;
-}/*cache_create_cookie_jar*/
+	uber_free(dir);
+	uber_free(file);
+	uber_free(directory);
+	return filename;
+}/*cache_file_create_file_for_online_service(service, "users", "uberChick.xml", NULL);*/
 
 gchar *cache_images_get_unknown_image_filename(void){
 	if(unknown_image_filename){
-		debug("Using unkown image: %s.", unknown_image_filename);
 		return g_strdup(unknown_image_filename);
 	}
-	
-	debug("**NOTICE:** Setting inital unknown image.");
 	
 	gchar *home_unknown_image_filename=NULL;
 #ifndef GNOME_ENABLE_DEBUG
@@ -241,14 +334,12 @@ gchar *cache_images_get_unknown_image_filename(void){
 	
 	GtkImage *stock_unknown_image=NULL;
 	if(!( (stock_unknown_image=(GtkImage *)gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)) )){
-		debug("\t\t**WARNING:** Unable to load stock icon: GTK_STOCK_MISSING_IMAGE(%s).", GTK_STOCK_MISSING_IMAGE);
 		unknown_image_filename=g_strdup(home_unknown_image_filename);
 	}else{
 		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
 		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
 		g_object_unref(stock_unknown_image);
 		if(G_STR_EMPTY(unknown_image_filename)){
-			debug("\t\t**WARNING:** Unable to get 'file' from stock icon: GTK_STOCK_MISSING_IMAGE(%s).", GTK_STOCK_MISSING_IMAGE);
 			unknown_image_filename=g_strdup(home_unknown_image_filename);
 		}
 	}
@@ -258,13 +349,13 @@ gchar *cache_images_get_unknown_image_filename(void){
 	return cache_images_get_unknown_image_filename();
 }/*cache_images_get_unknown_image_filename*/
 
-gchar *cache_images_get_filename(User *user){
-	if(G_STR_EMPTY(user->user_name) || G_STR_EMPTY(user->image_url)){
+gchar *cache_images_get_user_filename(OnlineService *service, const gchar *user_name, const gchar *image_url){
+	if(G_STR_EMPTY(user_name) || G_STR_EMPTY(image_url)){
 		debug("**ERROR** Unable to parse an empty url into an image filename.");
 		return cache_images_get_unknown_image_filename();
 	}
 	
-	debug("Creating image file name for '%s@%s' from image url: %s.", user->user_name, user->service->server, user->image_url);
+	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, online_service_get_uri(service), image_url);
 	
 	/*
 	 * image_name_info[] index explanation:
@@ -274,27 +365,27 @@ gchar *cache_images_get_filename(User *user){
 	 *	n == the finale part of the url, i.e. the actual image's file name.
 	 */
 	gchar *image_file=NULL, **image_info=NULL;
-	image_info=g_strsplit(user->image_url, "/", -1);
+	image_info=g_strsplit(image_url, "/", -1);
 	guint n=g_strv_length(image_info)-1;
 	image_file=g_strdup(image_info[n]);
 	g_strfreev(image_info);
 	
 	if(G_STR_EMPTY(image_file)){
 		if(image_file) g_free(image_file);
-		debug("\t\t**WARNING:** Unable to parse url into a valid image filename.\n\t\tURL: [%s]", user->image_url);
+		debug("\t\t**WARNING:** Unable to parse url into a valid image filename.\n\t\tURL: [%s]", image_url);
 		return cache_images_get_unknown_image_filename();
 	}
 	
-	gchar *avatar_dir=g_build_filename("services", user->service->uri, "avatars", user->user_name, NULL);
+	gchar *avatar_dir=cache_path_create("services", online_service_get_uri(service), "avatars", user_name, NULL);
 	gchar *image_filename=NULL;
 	gchar *avatar_path=NULL;
-	if(!( (avatar_path=cache_dir_test(avatar_dir, TRUE)) && (image_filename=g_build_filename(avatar_path, image_file, NULL)) ))
+	if(!( (avatar_path=cache_dir_test(avatar_dir, TRUE)) && (image_filename=cache_path_create(avatar_path, image_file, NULL)) ))
 		return cache_images_get_unknown_image_filename();
 	else if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) ))
 		cache_dir_clean_up(avatar_dir, FALSE);
 	
 	
-	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", user->image_url, image_file, image_filename);
+	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
 	
 	g_free(avatar_path);
 	g_free(avatar_dir);

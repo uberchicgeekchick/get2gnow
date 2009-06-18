@@ -69,6 +69,8 @@
 #include "config.h"
 #include "main.h"
 
+#include "online-service-request.h"
+#include "online-service.h"
 #include "online-services.h"
 #include "network.h"
 
@@ -78,30 +80,38 @@
 
 #include "parser.h"
 
-#include "app.h"
+#include "main-window.h"
 #include "gconfig.h"
 #include "cache.h"
 #include "preferences.h"
-#include "services-dialog.h"
+#include "online-services-dialog.h"
 
 
-/********************************************************
- *          Static method & function prototypes         *
- ********************************************************/
-#define	ONLINE_SERVICES_ACCOUNTS	PREFS_PATH "/auth/services"
+/********************************************************************************
+ *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ ********************************************************************************/
+struct _OnlineServices{
+	guint		total;
+	guint		connected;
+	GSList		*keys;
+	GList		*accounts;
+};
 
+#define	ONLINE_SERVICES_ACCOUNTS	GCONF_PATH "/online-services/services"
+
+
+/********************************************************************************
+ *                    prototypes for private method & function                  *
+ ********************************************************************************/
 static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store);
+static gint online_services_cmp_count(guint compare, guint count);
+
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
 static OnlineServices *services=NULL;
 OnlineServices *online_services=NULL;
-
-/*OnlineService *selected_service=NULL;
-OnlineService *in_reply_to_service=NULL;
-
-unsigned long int in_reply_to_status_id=0;*/
 
 #define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication"
 #include "debug.h"
@@ -115,7 +125,7 @@ unsigned long int in_reply_to_status_id=0;*/
 OnlineServices *online_services_init(void){
 	GSList		*k=NULL;
 	OnlineService	*service=NULL;
-	gchar	*account_key=NULL;
+	gchar		*account_key=NULL;
 	
 	services=g_new0(OnlineServices, 1);
 	services->total=services->connected=0;
@@ -129,22 +139,6 @@ OnlineServices *online_services_init(void){
 		services->accounts=g_list_last(services->accounts);
 		service=(OnlineService *)services->accounts->data;
 		
-		debug("Loaded account: '%s'.  Validating & connecting.", service->decoded_key);
-		if(!service->enabled){
-			debug("%s account not enabled.", service->decoded_key);
-			continue;
-		}
-		
-		if(G_STR_EMPTY(service->username) || G_STR_EMPTY(service->password)){
-			debug("%s account is missing its username (=%s) and/or password (=%s).", service->decoded_key, service->username, service->password);
-			continue;
-		}
-		
-		if(!service->auto_connect){
-			debug("%s account in not set to auto-connect.", service->decoded_key);
-			continue;
-		}
-		
 		if(online_service_connect(service)) services->total++;
 	}
 	
@@ -153,7 +147,7 @@ OnlineServices *online_services_init(void){
 	online_services=services;
 	
 	if(!services->total)
-		debug("No accounts are enabled or setup.  New accounts will be need to be setup." );
+		debug("**ERROR:** No accounts are enabled or setup.  New accounts will be need to be setup.");
 	else
 		debug("%d services found and loaded.", services->total);
 	
@@ -168,16 +162,16 @@ gboolean online_services_login(OnlineServices *services){
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(service->enabled && service->connected && service->auto_connect)
-			if(online_service_login(service, FALSE))
-				if(!login_okay) login_okay=TRUE;
+		if(online_service_login(service, FALSE)){
+			if(!login_okay) login_okay=TRUE;
+		}
 	}
 	if(!services->connected)
-		debug("No accounts are enabled or setup.  New accounts will be need to be setup." );
+		debug("**ERROR:** Zero accounts are connected.  Network requests cannot be processed.");
 	else
 		debug("Connected to %d OnlineServices.", services->connected);
 	
-	app_state_on_connection(login_okay);
+	main_window_state_on_connection(login_okay);
 	return login_okay;
 }/*online_services_login*/
 
@@ -189,14 +183,12 @@ gboolean online_services_relogin(OnlineServices *services){
 	gboolean	relogin_okay=FALSE;
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(!service->connected && service->enabled && service->auto_connect)
-			online_service_reconnect(service);
+		online_service_reconnect(service);
 		
-		if(service->enabled && service->connected)
-			if(online_service_login(service, FALSE))
-				if(!relogin_okay) relogin_okay=TRUE;
+		if(online_service_login(service, FALSE))
+			if(!relogin_okay) relogin_okay=TRUE;
 	}
-	app_state_on_connection(relogin_okay);
+	main_window_state_on_connection(relogin_okay);
 	return relogin_okay;
 }/*online_services_relogin*/
 
@@ -207,124 +199,139 @@ void online_services_disconnect(OnlineServices *services){
 	selected_service=NULL;
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(service->connected)
-			online_service_disconnect(service, TRUE);
+		online_service_disconnect(service, TRUE);
 	}
-	app_state_on_connection(FALSE);
+	main_window_state_on_connection(FALSE);
 }/*online_services_disconnect*/
 
+gint online_services_has_total(OnlineServices *services, guint count){
+	return online_services_cmp_count(services->total, count);
+}/*online_services_has_total(services, >1);*/
 
-OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
-	if( G_STR_EMPTY(url) || G_STR_EMPTY(username) )
+gint online_services_has_connected(OnlineServices *services, guint count){
+	return online_services_cmp_count(services->connected, count);
+}/*online_services_has_connected(services, >1);*/
+
+static gint online_services_cmp_count(guint compare, guint count){
+	if(!compare) return -2;
+	if(!count) return compare;
+	if(compare > count ) return -1;
+	if(compare == count ) return 0;
+	return 1;
+}/*online_services_has_connected(services, >1);*/
+
+OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
+	if( G_STR_EMPTY(uri) || G_STR_EMPTY(username) )
 		return FALSE;
 	
+	gchar *decoded_key=g_strdup_printf("%s@%s", username, uri);
 	if(service){
-		debug("Saving existing service: '%s'.", service->decoded_key);
-		if(!( g_str_equal(service->uri, url) && g_str_equal(service->username, username) ))
+		if(!(online_service_validate_key(service, decoded_key)))
 			online_services_delete_service(services, service);
 		else{
-			service->enabled=enabled;
-			service->https=https;
-			service->password=g_strdup(password);
-			service->auto_connect=auto_connect;
-			if( (online_service_save(service)) )
+			debug("Saving existing service: '%s'.", decoded_key);
+			if( (online_service_save(service, enabled, https, password, auto_connect)) )
 				if(online_service_reconnect(service))
 					return service;
-			debug("Unable to save existing OnlineService for: [%s].", service->decoded_key);
+			debug("Unable to save existing OnlineService for: [%s].", decoded_key);
+			uber_free(decoded_key);
 			return NULL;
 		}
 	}
 	
-	debug("Creating & saving new service: '%s@%s'.", username, url);
-	service=online_service_new(enabled, url, https, username, password, auto_connect);
-	debug("New OnlineService '%s' created.  Saving OnlineServices", service->decoded_key);
+	debug("Creating & saving new service: '%s'.", decoded_key);
+	service=online_service_new(enabled, uri, https, username, password, auto_connect);
+	debug("New OnlineService '%s' created.  Saving OnlineServices", decoded_key);
 	
 	services->total++;
-	debug("New service: '%s' created.  OnlineServices total: %d.", service->decoded_key, services->total);
+	debug("New service: '%s' created.  OnlineServices total: %d.", decoded_key, services->total);
 	
-	debug("Adding '%s' to OnlineServices' keys.", service->decoded_key);
-	if(!( (services->keys=g_slist_append(services->keys, service->key)) )){
-		debug("**ERROR**: Failed to append new service's key: '%s', to OnlineServices' keys.", service->decoded_key);
+	debug("Adding '%s' to OnlineServices' keys.", decoded_key);
+	if(!( (services->keys=g_slist_append(services->keys, decoded_key)) )){
+		debug("**ERROR**: Failed to append new service's key: '%s', to OnlineServices' keys.", decoded_key);
+		uber_free(decoded_key);
 		return NULL;
 	}
 	
 	debug("Saving accounts & services list: '%s'.", ONLINE_SERVICES_ACCOUNTS);
 	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
-		debug("**ERROR**: Failed to save new service: '%s', couldn't save gconf's services list.", service->decoded_key);
+		debug("**ERROR**: Failed to save new service: '%s', couldn't save gconf's services list.", decoded_key);
+		uber_free(decoded_key);
 		return NULL;
 	}
 	
-	debug("Adding new service: '%s' to OnlineServices.", service->decoded_key);
+	debug("Adding new service: '%s' to OnlineServices.", decoded_key);
 	if(!( (services->accounts=g_list_append(services->accounts, service)) )){
-		debug("**ERROR**: Failed to add: '%s', to OnlineServices' accounts.", service->decoded_key);
+		debug("**ERROR**: Failed to add: '%s', to OnlineServices' accounts.", decoded_key);
+		uber_free(decoded_key);
 		return NULL;
 	}
 	
-	debug("Retrieving new service: '%s' from OnlineServices accounts.", service->decoded_key);
+	debug("Retrieving new service: '%s' from OnlineServices accounts.", decoded_key);
 	services->accounts=g_list_last(services->accounts);
 	service=(OnlineService *)services->accounts->data;
 	services->accounts=g_list_first(services->accounts);
 	
-	debug("Saving OnlineService: '%s' reloaded from OnlineServices accounts.", service->decoded_key);
-	if(!( online_service_save(service) )){
-		debug("**ERROR**: Failed saving new service: '%s@%s'.", username, url);
+	debug("Saving OnlineService: '%s' reloaded from OnlineServices accounts.", decoded_key);
+	if(!( online_service_save(service, enabled, https, password, auto_connect) )){
+		debug("**ERROR**: Failed saving new service: '%s'.", decoded_key);
+		uber_free(decoded_key);
 		return NULL;
 	}
 
-	online_service_connect(service);
-	
 	debug("Saving accounts & services successful.");
-	if(service->connected){
-		debug("\t\tConnecting to: '%s'\t[succeeded]", service->decoded_key);
+	if(online_service_connect(service)){
+		debug("\t\tConnecting to: '%s'\t[succeeded]", decoded_key);
 
 		online_service_login(service, FALSE);
-		network_refresh();
+		main_window_tweet_lists_refresh();
 	}else
-		debug("\t\tConnecting to: '%s'\t[failed]", service->decoded_key);
+		debug("\t\tConnecting to: '%s'\t[failed]", decoded_key);
 	
-	debug("Saving '%s' service complete.  Total services: %d; Total connected: %d", service->decoded_key, services->total, services->connected);
+	debug("Saving '%s' service complete.  Total services: %d; Total connected: %d", decoded_key, services->total, services->connected);
 	
+	uber_free(decoded_key);
 	return service;
 }/*online_services_save*/
 
 void online_services_delete_service(OnlineServices *services, OnlineService *service){
-	debug("Removing old OnlineService: '%s'.", service->decoded_key);
-	service->enabled=FALSE;
-	if(service->connected){
-		online_service_disconnect(service, TRUE);
-		if(!services->connected)
-			app_state_on_connection(FALSE);
-	}
+	const gchar *service_key=online_service_get_key(service);
+	debug("Removing old OnlineService: '%s'.", service_key);
+	online_service_disconnect(service, TRUE);
+	if(!services->connected)
+		main_window_state_on_connection(FALSE);
 	
-	debug("Rebuilding OnlineServices' key while removing old key: %s.", service->key);
+	debug("Rebuilding OnlineServices' key while removing old key: %s.", service_key);
 	g_slist_free(services->keys);
 	services->keys=g_slist_alloc();
 	GList *accounts=NULL;
 	GSList *keys=NULL;
-	debug("Rebuilding OnlineServices' keys, removing: '%s'.", service->key);
+	debug("Rebuilding OnlineServices' keys, removing: '%s'.", service_key);
 	OnlineService *key=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		key=(OnlineService *)accounts->data;
-		if(!g_str_equal(key->key, service->key))
-			keys=g_slist_append(keys, key->key);
+		const gchar *account_key=online_service_get_key(key);
+		if(!g_str_equal(account_key, service_key))
+			keys=g_slist_append(keys, (gchar *)account_key);
 	}
 	services->keys=keys;
 	
 	debug("Saving re-built OnlineServices' keys.");
 	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
-		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list.", service->decoded_key);
+		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list.", service_key);
 		return;
 	}
 	
-	debug("Updating OnlineServices' accounts.  Removing OnlineService: [%s].", service->key);
+	debug("Updating OnlineServices' accounts.  Removing OnlineService: [%s].", service_key);
 	services->accounts=g_list_remove(services->accounts, service);
 	
 	debug("Determining what level of the OnlineService's cache directory to delete.");
 	gboolean service_cache_rm_rf=TRUE;
+	const gchar *service_uri=online_service_get_uri(service);
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		key=(OnlineService *)accounts->data;
-		if(g_str_equal(key->uri, service->uri)){
-			debug("OnlineService: [%s] share's avatars cache, only cookies will be deleted.", key->decoded_key);
+		if(g_str_equal(online_service_get_uri(key), service_uri)){
+			debug("OnlineService: [%s] share's avatars cache, only cookies will be deleted.", service_key);
 			service_cache_rm_rf=FALSE;
 		}
 	}
@@ -334,10 +341,8 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 	if(services->total) services->total--;
 	debug("OnlineService deleted.  OnlineServices now has %d accounts.", services->total);
 	if(!services->total){
-		tweet_list_clear();
-		network_deinit(TRUE, All);
-		app_state_on_connection(FALSE);
-		services_dialog_show(app_get_window());
+		main_window_state_on_connection(FALSE);
+		online_services_dialog_show(main_window_get_window());
 	}
 }/*online_services_delete(services, service);*/
 
@@ -369,14 +374,15 @@ gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *c
 	debug("Loading services into tree view. total services: '%d'.", online_services->total);
 	for(a=services->accounts; a; a=a->next){
 		OnlineService *service=(OnlineService *)a->data;
-		if( connected_only && !service->connected ) continue;
+		if( connected_only && !online_service_is_connected(service) ) continue;
 		
-		debug("Appending account: '%s'; server: %s.", service->decoded_key, service->uri);
+		const gchar *service_uri=online_service_get_uri(service);
+		debug("Appending account: '%s'; server: %s.", online_service_get_key(service), service_uri);
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						UrlString, service->uri,
+						UrlString, service_uri,
 						OnlineServicePointer, service,
 					-1
 		);
@@ -399,24 +405,36 @@ OnlineService *online_services_connected_get_first(OnlineServices *services){
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(service->connected)
+		if(online_service_is_connected(service))
 			break;
 	}
 	return service;
 }/*online_services_connected_get_first*/
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data){
+void online_services_update_ids_reset(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
 	for(a=services->accounts; a; a=a->next){
 		service=(OnlineService *)a->data;
-		if(!(service->enabled && service->connected)){
-			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
-			app_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
+		online_service_update_ids_reset(service);
+	}
+}/*online_services_update_ids_reset(OnlineServices *services, const gchar *uri);*/
+
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
+	
+	for(a=services->accounts; a; a=a->next){
+		service=(OnlineService *)a->data;
+		const gchar *service_key=online_service_get_key(service);
+		if(!online_service_refresh(service, uri)){
+			debug("**ERROR:** Unable do load: %s refreshing: <%s> failed.", uri, service_key);
 			continue;
 		}
-		online_service_request(service, request, uri, callback, user_data, form_data);
+		
+		debug("Requesting: %s from <%s>.", uri, service_key);
+		online_service_request(service, request, uri, online_service_callback_after_soup, callback, user_data, form_data);
 	}
 }/*online_services_request*/
 
@@ -431,12 +449,10 @@ void online_services_decrement_connected(OnlineServices *services, gboolean no_s
 	debug("OnlineServices still connected: #%d.", services->connected);
 	if(services->connected) return;
 	
-	tweet_list_clear();
-	network_deinit(TRUE, All);
-	app_state_on_connection(FALSE);
+	main_window_state_on_connection(FALSE);
 	
 	if(no_state_change) return;
-	services_dialog_show(app_get_window());
+	online_services_dialog_show(main_window_get_window());
 }/*online_services_decrement_connected(online_services);*/
 
 void online_services_deinit(OnlineServices *services){

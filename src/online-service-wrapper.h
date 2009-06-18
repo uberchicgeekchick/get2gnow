@@ -63,25 +63,25 @@
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
+#include "online-services-typedefs.h"
 
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
-typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
-
-struct _OnlineServiceWrapper {
-	OnlineService		*service;
-	gchar			*requested_uri;
-	SoupSessionCallback	callback;
-	gpointer		user_data;
-	gpointer		form_data;
-};
 
 
 /**********************************************************************
  *          Global method & function prototypes                       *
  **********************************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, gchar *request_uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const gchar *request_uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
+
+void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml);
+
+const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper);
+OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *service_wrapper);
+gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *service_wrapper);
+gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *service_wrapper);
+
 void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper);
 
 

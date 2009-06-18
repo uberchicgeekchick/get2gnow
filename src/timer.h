@@ -68,15 +68,7 @@
  *        Objects, structures, and etc typedefs         *
  ********************************************************/
 typedef struct _RateLimitTimer RateLimitTimer;
-/*
-struct _RateLimitTimer{
-	gboolean active;
-	GTimer *gtimer;
-	gdouble limit;
-	guint processing;
-	guint requests;
-};
-*/
+
 
 /********************************************************
  *          Global method  & function prototypes        *

@@ -1,24 +1,49 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
-[type: gettext/glade]data/services-dialog.ui
 [type: gettext/glade]data/following-viewer.ui
 [type: gettext/glade]data/friends-manager.ui
-[type: gettext/glade]data/app.ui
-[type: gettext/glade]data/popup-dialog.ui
+[type: gettext/glade]data/main-window.ui
+[type: gettext/glade]data/online-services-dialog.ui
 [type: gettext/glade]data/preferences.ui
-[type: gettext/glade]data/profile-viewer.ui
+[type: gettext/glade]data/request-popup-dialog.ui
 [type: gettext/glade]data/tweet-view.ui
+[type: gettext/glade]data/tweet-view.ui
+[type: gettext/glade]data/user-profile-viewer.ui
+
+
 data/get2gnow.desktop.in
 data/get2gnow.schemas.in
 
+
 src/about.c
-src/app.c
-src/hint.c
-src/core.c
-src/tweet-view.c
+src/cache.c
+src/debug.c
+src/following-viewer.c
+src/friend-manager.c
+src/gconfig.c
+src/geometry.c
+src/gtkbuilder.c
+src/images.c
+src/ipc.c
+src/label.c
+src/main.c
+src/main-window.c
 src/network.c
+src/online-service.c
+src/online-service-request.c
+src/online-services.c
+src/online-services-dialog.c
+src/online-service-wrapper.c
 src/parser.c
 src/preferences.c
+src/program.c
+src/proxy.c
+src/timer.c
+src/tweet-list.c
+src/tweets.c
+src/tweet-view.c
 src/ui-utils.c
+src/users.c
+src/users-glists.c
 

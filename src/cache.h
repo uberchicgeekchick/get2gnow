@@ -63,6 +63,9 @@
 #include <gio/gio.h>
 #include <glib/gstdio.h>
 
+#include <libsoup/soup-message-body.h>
+#include <libxml/tree.h>
+
 #include "online-service.h"
 #include "users.h"
 #include "images.h"
@@ -84,10 +87,13 @@ void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent);
 gchar *cache_filename_get_from_uri(const gchar *uri);
 gchar *cache_file_touch(const gchar *cache_file);
 
-gchar *cache_create_cookie_jar(OnlineService *service);
+gboolean cache_save_xml(OnlineService *service, xmlNode *xml_node, const gchar *subdir, const gchar *filename);
+gboolean cache_save_page(OnlineService *service, SoupMessageBody *page, const gchar *subdir, const gchar *filename);
+
+gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...);
 
 gchar *cache_images_get_unknown_image_filename(void);
-gchar *cache_images_get_filename(User *user);
+gchar *cache_images_get_user_filename(OnlineService *service, const gchar *user_name, const gchar *image_url);
 
 #endif /* __CACHE_H__ */
 /**********************************************************************

@@ -65,28 +65,12 @@
 #include <libsoup/soup.h>
 
 #include "online-service.h"
+#include "online-services-typedefs.h"
 
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-typedef struct _OnlineServices OnlineServices;
-
-typedef enum{
-	UrlString,
-	OnlineServicePointer,
-} OnlineServicesListStoreColumns;
-
-/**
- *	@accounts contains an 'OnlineServics' object for each account that's available.
- */
-struct _OnlineServices{
-	guint		total;
-	guint		connected;
-	GSList		*keys;
-	GList		*accounts;
-};
-
 extern OnlineServices *online_services;
 
 
@@ -102,11 +86,30 @@ void online_services_disconnect(OnlineServices *services);
 OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
 void online_services_delete_service(OnlineServices *services, OnlineService *service);
 
+void online_services_update_ids_reset(OnlineServices *services);
+
+
+/**
+ * @returns:	-2 if services->total equals 0
+ *		services->total if count equals 0
+ * 		-1, 0, 1, if services->total is greater than, equal to, or less than count.
+ */
+gint online_services_has_total(OnlineServices *services, guint count);
+
+
+/**
+ * @returns:	-2 if services->connected equals 0
+ *		services->connected if count equals 0
+ * 		-1, 0, 1, if services->connected is greater than, equal to, or less than count.
+ */
+gint online_services_has_connected(OnlineServices *services, guint count);
+
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
 
 void online_services_increment_connected(OnlineServices *services);
+
 void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change);
 
 gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only);

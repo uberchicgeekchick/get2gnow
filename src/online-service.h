@@ -65,69 +65,12 @@
 #include <libsoup/soup.h>
 
 #include "timer.h"
+#include "online-services-typedefs.h"
 
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-typedef struct _OnlineService OnlineService;
-
-typedef enum{
-	Laconica,
-	Twitter,
-} SupportedREST;
-
-typedef enum{
-	POST,
-	GET,
-	QUEUE,
-} RequestMethod;
-
-typedef enum{
-	All,
-	DMs,
-	Replies,
-	Tweets,
-} StatusMonitor;
-
-struct _OnlineService{
-	SoupSession	*session;
-	RateLimitTimer	*timer;
-	
-	gboolean	authenticated;
-	gboolean	connected;
-	guint		logins;
-	
-	guint		id_last_tweet;
-	guint		id_last_dm;
-	guint		id_last_reply;
-	
-	gboolean	enabled;
-	gboolean	auto_connect;
-	
-	gchar		*key;
-	gchar		*decoded_key;
-	SupportedREST	which_rest;
-	
-	gboolean	https;
-	gchar		*uri;
-	gchar		*server;
-	gchar		*path;
-	gchar		*username;
-	gchar		*password;
-	
-	GList		*friends;
-	GList		*followers;
-	GList		*friends_and_followers;
-};
-
-/* Twitter*/
-#define SOURCE_TWITTER		"greettweetknow"
-
-/* Laconica*/
-/*#define	SOURCE_LACONICA		"<a href=\"http://uberchicgeekchick.com/?projects=" PACKAGE_TARNAME "\">" PACKAGE_TARNAME "</a>"*/
-#define		SOURCE_LACONICA		"get2gnow"
-
 extern OnlineService *selected_service;
 
 extern gulong in_reply_to_status_id;
@@ -137,21 +80,54 @@ extern OnlineService *in_reply_to_service;
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-OnlineService *online_service_open(const gchar *account_key);
+OnlineService *online_service_open(const gchar *guid);
 OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
-gboolean online_service_save(OnlineService *service);
+gboolean online_service_save(OnlineService *service, gboolean enabled, gboolean https, const gchar *password, gboolean auto_connect);
 gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf);
+
+gboolean online_service_validate_key(OnlineService *service, const gchar *guid);
+
+const gchar *online_service_get_guid(OnlineService *service);
+const gchar *online_service_get_key(OnlineService *service);
+const gchar *online_service_get_uri(OnlineService *service);
+const gchar *online_service_get_username(OnlineService *service);
+const gchar *online_service_get_password(OnlineService *service);
+
+gboolean online_service_is_enabled(OnlineService *service);
+gboolean online_service_is_secure(OnlineService *service);
+gboolean online_service_is_auto_connected(OnlineService *service);
+
+gboolean online_service_is_connected(OnlineService *service);
+
+SoupSession *online_service_get_session(OnlineService *service);
+
+const gchar *online_service_get_micro_blogging_client(OnlineService *service);
+gboolean online_service_uses_twitter(OnlineService *service);
+gboolean online_service_uses_laconica(OnlineService *service);
+
+GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich users_glist_get_which);
+void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich users_glist_get_which, GList *new_users);
 
 gboolean online_service_connect(OnlineService *service);
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection);
+gboolean online_service_refresh(OnlineService *service, const gchar *uri);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-void online_service_load_tweet_ids(OnlineService *service, const gchar *uri);
-void online_service_save_tweet_ids(OnlineService *service, const gchar *uri);
+void online_service_update_ids_reset(OnlineService *service);
+void online_service_update_ids_get(OnlineService *service, const gchar *uri, gulong *newest_id, gulong *oldest_id);
+void online_service_update_ids_set(OnlineService *service, const gchar *uri, gulong newest_id, gulong oldest_id);
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, SoupSessionCallback callback, gpointer user_data, gpointer form_data);
+gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
+
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
+
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
+
+
+void online_service_callback_after_soup_default(gpointer after_soup_callback_data);
+
+void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
 
 gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
 

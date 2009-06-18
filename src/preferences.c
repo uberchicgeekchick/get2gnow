@@ -1,34 +1,62 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright (C) 2003-2007 Imendio AB
- * Copyright (C) 2007-2008 Brian Pepple
+ * get2gnow is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
+ * For more information or to find the latest release, visit our
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ * Writen by an uberChick, other uberChicks please meet me & others @:
+ * 	http://uberChicks.Net/
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * I'm also disabled. I live with a progressive neuro-muscular disease.
+ * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
+ * 	http://Dystonia-DREAMS.Org/
  *
- * Authors: Mikael Hallendal <micke@imendio.com>
- *          Richard Hult <richard@imendio.com>
- *          Martyn Russell <martyn@imendio.com>
- *			Brian Pepple <bpepple@fedoraproject.org>
- *			Daniel Morales <daniminas@gmail.com>
+ *
+ *
+ * Unless explicitly acquired and licensed from Licensor under another
+ * license, the contents of this file are subject to the Reciprocal Public
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * and You may not copy or use this file in either source code or executable
+ * form, except in compliance with the terms and conditions of the RPL.
+ *
+ * All software distributed under the RPL is provided strictly on an "AS
+ * IS" basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND
+ * LICENSOR HEREBY DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT
+ * LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific
+ * language governing rights and limitations under the RPL.
+ *
+ * The User-Visible Attribution Notice below, when provided, must appear in each
+ * user-visible display as defined in Section 6.4 (d):
+ * 
+ * Initial art work including: design, logic, programming, and graphics are
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * All materials not covered under the terms of the RPL are all still
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
+ * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
+ * 
+ * Any & all data stored by this Software created, generated and/or uploaded by any User
+ * and any data gathered by the Software that connects back to the User.  All data stored
+ * by this Software is Copyright (C) of the User the data is connected to.
+ * Users may lisences their data under the terms of an OSI approved or Creative Commons
+ * license.  Users must be allowed to select their choice of license for each piece of data
+ * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
+ * select a default license for their data.  All of the Software's data pertaining to each
+ * User must be fully accessible, exportable, and deletable to that User.
  */
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
 
+
+/********************************************************************************
+ * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ ********************************************************************************/
 #include "config.h"
-
 #include <string.h>
-
 #include <glib/gi18n.h>
 
 #include "network.h"
@@ -36,27 +64,36 @@
 #include "gtkbuilder.h"
 
 #include "main.h"
-#include "app.h"
+#include "main-window.h"
 #include "preferences.h"
 
+
+
+/********************************************************************************
+ *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ ********************************************************************************/
 #define GtkBuilderUI "preferences.ui"
 
 #define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Settings:Setup:Start-Up:Preferences.c"
 #include "debug.h"
 
-typedef struct {
+typedef struct _PreferencesDialog PreferencesDialog;
+typedef struct _reload_time reload_time;
+
+struct _PreferencesDialog{
 	GtkDialog	*dialog;
 	GtkNotebook	*notebook;
 	GtkComboBox	*combo_default_timeline;
 	GtkComboBox	*combo_reload;
 	
 	/* Checkbuttons */
-	GtkCheckButton	*notify;
-	GtkCheckButton	*sound;
 	GtkCheckButton	*no_length_alert;
 	
-	GtkCheckButton	*notify_at_mentions_check_button;
 	GtkCheckButton	*notify_dms_check_button;
+	GtkCheckButton	*notify_at_mentions_check_button;
+	GtkCheckButton	*notify_my_friends_updates_check_button;
+	GtkCheckButton	*notify_all_new_updates;
+	GtkCheckButton	*notify_beep_updates_check_button;
 	
 	GtkCheckButton	*use_tweet_dialog;
 	
@@ -69,18 +106,19 @@ typedef struct {
 	GtkCheckButton	*post_reply_to_service_only_checkbutton;
 	
 	GList		*notify_ids;
-} Prefs;
+};
 
-typedef struct _reload_time {
+struct _reload_time{
 	gint   minutes;
 	gchar *display_text;
-} reload_time;
+};
 
 reload_time reload_list[] = {
-	{3, N_("3 minutes")},
 	{5, N_("5 minutes")},
+	{10, N_("10 minutes")},
 	{15, N_("15 minutes")},
 	{30, N_("30 minutes")},
+	{45, N_("45 minutes")},
 	{60, N_("1 hour")},
 	{0, NULL}
 };
@@ -98,9 +136,14 @@ enum {
 	COL_COMBO_COUNT
 };
 
-static void preferences_setup_widgets(Prefs *prefs);
-static void preferences_timeline_setup(Prefs *prefs);
-static void preferences_direct_reply_toggled(GtkToggleButton *check_button, Prefs *prefs);
+
+
+/********************************************************************************
+ *                    prototypes for private method & function                  *
+ ********************************************************************************/
+static void preferences_setup_widgets(PreferencesDialog *prefs);
+static void preferences_timeline_setup(PreferencesDialog *prefs);
+static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs);
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button);
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box);
@@ -110,23 +153,29 @@ static void preferences_notify_bool_cb(const gchar *key, gpointer user_data);
 static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data);
 static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data);
 
-static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button);
-static void preferences_hookup_string_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box);
-static void preferences_hookup_int_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box);
+static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button);
+static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box);
+static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box);
 
 static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button, gpointer user_data);
 static void preferences_string_combo_changed_cb(GtkComboBox *combo_box, gpointer user_data);
 static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, gpointer user_data);
 
-static void preferences_response_cb(GtkDialog *dialog, gint response, Prefs *prefs);
-static void preferences_destroy_cb(GtkDialog *dialog, Prefs *prefs);
+static void preferences_response_cb(GtkDialog *dialog, gint response, PreferencesDialog *prefs);
+static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
 
-static void preferences_setup_widgets(Prefs *prefs){
+
+
+/********************************************************************************
+ *                  'Here be Dragons'...art, beauty, fun, & magic.              *
+ ********************************************************************************/
+static void preferences_setup_widgets(PreferencesDialog *prefs){
 	debug("Binding widgets to preferences.");
-	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_ALL, TRUE, prefs->notify);
-	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
-	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEEP, TRUE, prefs->sound);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE, prefs->notify_my_friends_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_ALL, TRUE, prefs->notify_all_new_updates);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEEP, TRUE, prefs->notify_beep_updates_check_button);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEET_LENGTH_ALERT, FALSE, prefs->no_length_alert);
 	
@@ -160,7 +209,7 @@ static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data
 	preferences_widget_sync_int_combo (key, user_data);
 }
 
-static void preferences_direct_reply_toggled(GtkToggleButton *check_button, Prefs *prefs){
+static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs){
 	static gboolean change_checked=FALSE, i_changed_no_profile=FALSE;
 	
 	if(!(change_checked)){
@@ -174,14 +223,12 @@ static void preferences_direct_reply_toggled(GtkToggleButton *check_button, Pref
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), FALSE);
 }/*preferences_direct_reply_toggled*/
 
-static void preferences_timeline_setup (Prefs *prefs){
+static void preferences_timeline_setup (PreferencesDialog *prefs){
 	debug("Binding timelines to preference.");
 	static const gchar *timelines[] = {
-		API_TIMELINE_FRIENDS,	N_("My Friends' Tweets"),
 		API_MENTIONS,		N_("@ Mentions"),
-		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
 		API_FAVORITES,		N_("My Favorites"),
-		API_TIMELINE_MY,	N_("My Tweets"),
+		API_TIMELINE_MINE,	N_("My Tweets"),
 		API_TIMELINE_PUBLIC,	N_("All Public Tweets"),
 		NULL
 	};
@@ -215,9 +262,9 @@ static void preferences_timeline_setup (Prefs *prefs){
 	g_object_unref (model);
 }
 
-static void preferences_reload_setup(Prefs *prefs){
+static void preferences_reload_setup(PreferencesDialog *prefs){
 	debug("Setting-up timeline refresh preference.");
-	GtkTreeIter      *iter=NULL;
+	GtkTreeIter	*iter=NULL;
 	reload_time	*options=reload_list;
 	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
@@ -334,11 +381,11 @@ static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *co
 	}
 }
 
-static void preferences_add_id (Prefs *prefs, guint id){
+static void preferences_add_id (PreferencesDialog *prefs, guint id){
 	prefs->notify_ids = g_list_prepend (prefs->notify_ids, GUINT_TO_POINTER (id));
 }
 
-static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button){
+static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button){
 	guint id;
 	
 	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
@@ -351,7 +398,7 @@ static void preferences_hookup_toggle_button(Prefs *prefs, const gchar *key, gbo
 		preferences_add_id(prefs, id);
 }
 
-static void preferences_hookup_string_combo (Prefs *prefs, const gchar *key, GtkComboBox *combo_box){
+static void preferences_hookup_string_combo (PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box){
 	guint id;
 
 	preferences_widget_sync_string_combo (key, combo_box);
@@ -364,7 +411,7 @@ static void preferences_hookup_string_combo (Prefs *prefs, const gchar *key, Gtk
 		preferences_add_id(prefs, id);
 }
 
-static void preferences_hookup_int_combo(Prefs *prefs, const gchar *key, GtkComboBox *combo_box){
+static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box){
 	guint id;
 	
 	preferences_widget_sync_int_combo (key, combo_box);
@@ -415,28 +462,26 @@ static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, gpointer us
 	}
 }
 
-static void preferences_response_cb(GtkDialog *dialog, gint response, Prefs *prefs){
+static void preferences_response_cb(GtkDialog *dialog, gint response, PreferencesDialog *prefs){
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
-static void preferences_destroy_cb(GtkDialog *dialog, Prefs *prefs){
+static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs){
 	GList *l;
 
-	for (l = prefs->notify_ids; l; l = l->next) {
+	for(l=prefs->notify_ids; l; l = l->next) {
 		guint id;
 
 		id=GPOINTER_TO_UINT(l->data);
 		gconfig_notify_remove(id);
 	}
 	
-	g_list_free (prefs->notify_ids);
-	g_free (prefs);
+	g_list_free(prefs->notify_ids);
+	g_free(prefs);
 }
 
-void
-preferences_dialog_show (GtkWindow *parent)
-{
-	static Prefs *prefs;
+void preferences_dialog_show (GtkWindow *parent){
+	static PreferencesDialog *prefs;
 	GtkBuilder         *ui;
 
 	if (prefs) {
@@ -444,7 +489,7 @@ preferences_dialog_show (GtkWindow *parent)
 		return;
 	}
 
-	prefs=g_new0 (Prefs, 1);
+	prefs=g_new0 (PreferencesDialog, 1);
 
 	/* Get widgets */
 	ui=gtkbuilder_get_file(
@@ -457,11 +502,11 @@ preferences_dialog_show (GtkWindow *parent)
 					"combobox_timeline", &prefs->combo_default_timeline,
 					"combobox_reload", &prefs->combo_reload,
 					
-					"sound_checkbutton", &prefs->sound,
-					"notify_checkbutton", &prefs->notify,
-					
 					"notify_dms_check_button", &prefs->notify_dms_check_button,
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,
+					"notify_my_friends_updates_check_button", &prefs->notify_my_friends_updates_check_button,
+					"notify_all_new_updates_check_button", &prefs->notify_all_new_updates,
+					"notify_beep_tweets_check_button", &prefs->notify_beep_updates_check_button,
 					
 					"no_length_alert_checkbutton", &prefs->no_length_alert,
 					
@@ -480,7 +525,7 @@ preferences_dialog_show (GtkWindow *parent)
 				ui, prefs,
 					"preferences_dialog", "destroy", preferences_destroy_cb,
 					"preferences_dialog", "response", preferences_response_cb,
-					"use_tweet_dialog_checkbutton", "toggled", app_tweet_view_set_embed,
+					"use_tweet_dialog_checkbutton", "toggled", main_window_tweet_view_set_embed,
 					"post_reply_to_service_only_checkbutton", "toggled", preferences_direct_reply_toggled,
 				NULL
 	);
@@ -498,3 +543,9 @@ preferences_dialog_show (GtkWindow *parent)
 
 	gtk_widget_show (GTK_WIDGET(prefs->dialog));
 }
+
+
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+

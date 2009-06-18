@@ -51,41 +51,90 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __NETWORK_H__
-#define __NETWORK_H__
-
-#include <gtk/gtk.h>
-#include <glib.h>
-#include <libsoup/soup.h>
+#ifndef __ONLINE_SERVICE_TYPEDEFS_H__
+#define __ONLINE_SERVICE_TYPEDEFS_H__
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-#include "config.h"
-#include "users.h"
-#include "online-service.h"
-
-#include "online-services-typedefs.h"
+#include "timer.h"
 
 
 /**********************************************************************
- *          Global method  & function prototypes                      *
+ *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
-gboolean network_check_http(OnlineService *service, SoupMessage *xml);
-void network_set_state_loading_timeline(const gchar *uri, ReloadState state);
+#define API_LOGIN		"/account/verify_credentials.xml"
 
-void network_post_status(const gchar *text);
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
+#define API_DIRECT_MESSAGES	"/direct_messages.xml"
+#define API_REPLIES		"/statuses/replies.xml"
+#define API_MENTIONS		"/statuses/mentions.xml"
+#define API_TIMELINE_FRIENDS	"/statuses/friends_timeline.xml"
+#define API_FAVORITES		"/favorites.xml"
 
-void network_get_user_timeline(OnlineService *service, const gchar *username);
+#define API_TIMELINE_MINE	"/statuses/user_timeline.xml"
+#define API_TIMELINE_USER	"/statuses/user_timeline/%s.xml"
 
-void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
-void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+#define API_TIMELINE_PUBLIC	"/statuses/public_timeline.xml"
 
-void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+#define API_POST_STATUS		"/statuses/update.xml"
+#define API_SEND_MESSAGE	"/direct_messages/new.xml"
 
 
-#endif /*  __NETWORK_H__ */
+/**********************************************************************
+ *  Macros, constants, objects, structures, and enum typedefs         *
+ **********************************************************************/
+typedef struct _OnlineServices OnlineServices;
+typedef struct _OnlineService OnlineService;
+typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
+
+typedef enum _TweetLists TweetLists;
+
+typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
+
+typedef enum _ReloadState ReloadState;
+typedef enum _RequestMethod RequestMethod;
+typedef enum _UsersGListGetWhich UsersGListGetWhich;
+
+typedef void (*OnlineServiceCallbackAfterSoup) (gpointer after_soup_callback_data);
+typedef void* (*OnlineServiceSoupSessionCallback) (SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+typedef void (*UsersGListLoadFunc) (GList *users);
+
+
+enum _RequestMethod{
+	POST,
+	GET,
+	QUEUE,
+};
+
+enum _TweetLists{
+	Tweets,
+	Replies,
+	DMs,
+	Timelines,
+	Users,
+	Archive,
+	None,
+};
+
+enum _OnlineServicesListStoreColumns{
+	UrlString,
+	OnlineServicePointer,
+};
+
+enum _ReloadState{
+	Load,
+	Reload,
+	Retry,
+};
+
+enum _UsersGListGetWhich{
+	GetFriends,
+	GetFollowers,
+	GetBoth,
+};
+
+
+#endif /* __ONLINE_SERVICE_TYPEDEFS_H__ */
 /**********************************************************************
  *                               eof                                  *
  **********************************************************************/

@@ -51,8 +51,8 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __CORE_H__
-#define __CORE_H__
+#ifndef __PROGRAM_H__
+#define __PROGRAM_H__
 
 
 /**********************************************************************
@@ -63,16 +63,63 @@
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
+#ifndef uber_free
+#define	uber_free(mem)				{ g_free(mem); mem=NULL; }
+#endif
+
+
+#ifndef	uber_construct
+#define	uber_construct(type)			g_slice_alloc0(sizeof(type))
+#endif
+
+
+#ifndef	uber_deconstruct
+#define	uber_deconstruct(mem, type)		{ g_slice_free1(sizeof(type), mem); mem=NULL; }
+#endif
+
+
+#ifndef g_str_n_equal
+#define	g_str_n_equal(string1, string2)		(!g_str_equal(string1, string2))
+#endif
+
+
+#ifndef	uber_g_str_equal
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define uber_object_free(...)		program_uber_free(__VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define uber_object_free(fmt...)		program_uber_free(fmt)
+#	else
+#		define uber_object_free(x)		program_uber_free(x)
+#	endif
+#endif
+
+
+#ifndef	uber_g_str_equal
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define uber_g_str_equal(...)		program_uber_g_str_equal(__VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define uber_g_str_equal(fmt...)		program_uber_g_str_equal(fmt)
+#	else
+#		define uber_g_str_equal(x)		program_uber_g_str_equal(x)
+#	endif
+#endif
+
+#ifndef uber_g_str_n_equal
+#define		uber_g_str_n_equal		!uber_g_str_equal
+#endif
 
 
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
 void program_init(int argc, char **argv);
+const gchar *program_gtk_response_to_string(gint response);
+void program_uber_free(gpointer pointer1, ...);
+gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 void program_timeout_remove(guint *id, const gchar *usage);
 void program_deinit(void);
 
-#endif /* __CORE_H__ */
+#endif /* __PROGRAM_H__ */
 /**********************************************************************
  *                               eof                                  *
  **********************************************************************/

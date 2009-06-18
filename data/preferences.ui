@@ -24,6 +24,7 @@
                 <child>
                   <object class="GtkFrame" id="tweet_view_frame">
                     <property name="visible">True</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -72,6 +73,7 @@
                 <child>
                   <object class="GtkFrame" id="expand_urls_frame">
                     <property name="visible">True</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -172,11 +174,12 @@
             <child>
               <object class="GtkVBox" id="vbox1">
                 <property name="visible">True</property>
+                <property name="border_width">12</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkFrame" id="frame4">
                     <property name="visible">True</property>
-                    <property name="border_width">5</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -262,7 +265,7 @@
                 <child>
                   <object class="GtkFrame" id="frame1">
                     <property name="visible">True</property>
-                    <property name="border_width">5</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -275,8 +278,8 @@
                             <property name="border_width">5</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="notify_checkbutton">
-                                <property name="label" translatable="yes">_Notify me of all new messages.</property>
+                              <object class="GtkCheckButton" id="notify_beep_updates_check_button">
+                                <property name="label" translatable="yes">_Beep when notifying me.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -291,7 +294,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="notify_dms_check_button">
-                                <property name="label" translatable="yes">Notify me of new _Direct Messages (DMs)</property>
+                                <property name="label" translatable="yes">Notify me when I get new _Direct Messages (DMs)</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -304,7 +307,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="notify_at_mentions_check_button">
-                                <property name="label" translatable="yes">Notify me of new _replies.</property>
+                                <property name="label" translatable="yes">Notify me when I get new _@ replies.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -316,8 +319,20 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="sound_checkbutton">
-                                <property name="label" translatable="yes">_Beep when notifying me.</property>
+                              <object class="GtkCheckButton" id="notify_my_friends_updates_check_button">
+                                <property name="label" translatable="yes">Notify me when I get new updates from friends updates</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="notify_all_new_tweets_check_button">
+                                <property name="label" translatable="yes">_Notify me when I get any other new messages.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -327,7 +342,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">3</property>
+                                <property name="position">4</property>
                               </packing>
                             </child>
                           </object>
@@ -366,13 +381,13 @@
             <child>
               <object class="GtkVBox" id="vbox3">
                 <property name="visible">True</property>
-                <property name="border_width">5</property>
+                <property name="border_width">12</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">20</property>
                 <child>
                   <object class="GtkFrame" id="frame5">
                     <property name="visible">True</property>
-                    <property name="border_width">5</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
@@ -419,7 +434,7 @@
                 <child>
                   <object class="GtkFrame" id="replies_frame">
                     <property name="visible">True</property>
-                    <property name="border_width">5</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>

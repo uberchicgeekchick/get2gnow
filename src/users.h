@@ -51,8 +51,8 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __USER_H__
-#define __USER_H__
+#ifndef __USERS_H__
+#define __USERS_H__
 
 
 /**********************************************************************
@@ -61,107 +61,57 @@
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
-#include "online-service.h"
+#include "online-services-typedefs.h"
+#include "tweet-list.h"
 
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
+#ifndef view_profile
+#define view_profile(service, user_name, parent)	user_profile_viewer_show(service, user_name, parent);
+#endif
+
+
+#define API_USER_PROFILE	"/users/show/%s.xml"
+
+
 typedef struct _User User;
 typedef struct _UserStatus UserStatus;
-typedef struct _UserRequest UserRequest;
-
-typedef enum _UserAction UserAction;
-
-enum _UserAction{
-	SelectService,
-	ViewProfile,
-	ViewTweets,
-	Follow,
-	UnFollow,
-	Block,
-	UnBlock,
-	Fave,
-	UnFave,
-	Confirmation,
-};
-
-struct _UserStatus {
-	OnlineService	*service;
-	
-	User		*user;
-	
-	StatusMonitor	type;
-	gulong		id;
-	gulong		in_reply_to_status_id;
-	
-	guint		notification_timeout_id;
-	
-	gchar		*text;
-	gchar		*tweet;
-	gchar		*notification;
-	gchar		*sexy_tweet;
-	
-	gchar		*source;
-	
-	gchar		*created_at_str;
-	gchar		*created_how_long_ago;
-	
-	gulong		created_at;
-	gulong		created_seconds_ago;
-};
-
-struct _User {
-	OnlineService		*service;
-	
-	gulong			id;
-	gchar			*user_name;
-	gchar			*nick_name;
-	
-	UserStatus		*status;
-	
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	
-	gchar			*image_url;
-	gchar			*image_filename;
-	
-	gulong			tweets;
-	gulong			following;
-	gulong			followers;
-	
-	gboolean		follower;
-};
-
-struct _UserRequest{
-	UserAction action;
-	RequestMethod method;
-	GtkWindow *parent;
-	gchar *user_data;
-	gchar *message;
-	gchar *uri;
-};
-
 
 /**********************************************************************
  *          Global method & function prototypes                      *
  **********************************************************************/
-gchar *user_action_to_string(UserAction action);
-void user_request_main(OnlineService *service, UserAction action, GtkWindow *parent, const gchar *user_data);
-void user_request_main_quit(SoupSession *session, SoupMessage *msg, gpointer user_data);
+gulong user_get_id(User *user);
+const gchar *user_status_get_id_str(UserStatus *status);
+const gchar *user_get_user_name(User *user);
+const gchar *user_get_nick_name(User *user);
+OnlineService *user_get_online_service(User *user);
+gboolean user_is_follower(User *user);
 
-User *user_parse_node(OnlineService *service, xmlNode *a_node);
-
-UserStatus *user_status_parse(OnlineService *service, xmlNode *a_node, StatusMonitor status_type);
-void user_status_free(UserStatus *status);
-
-/* Parse a xml user node. Ex: add/del users responses */
 User *user_fetch_profile(OnlineService *service, const gchar *user_name);
+User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
+
+gboolean user_download_avatar(User *user);
+void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
+
+User *user_parse_node(OnlineService *service, xmlNode *root_element);
+
 void user_free(User *user);
 
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, TweetLists tweet_list);
+void user_status_store(UserStatus *status, TweetList *tweet_list);
 
-#endif /*__USER_H__*/
+gulong user_status_get_id(UserStatus *status);
+const gchar *user_status_get_id_str(UserStatus *status);
+const gchar *user_status_get_user_name(UserStatus *status);
+const gchar *user_status_get_notification(UserStatus *status);
+OnlineService *user_status_get_online_service(UserStatus *status);
+
+void user_status_free(UserStatus *status);
+
+
+#endif /*__USERS_H__*/
 /**********************************************************************
  *                               eof                                  *
  **********************************************************************/

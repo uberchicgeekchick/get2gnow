@@ -51,41 +51,80 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __NETWORK_H__
-#define __NETWORK_H__
+#ifndef __ONLINE_SERVICE_REQUEST_H__
+#define __ONLINE_SERVICE_REQUEST_H__
 
-#include <gtk/gtk.h>
-#include <glib.h>
-#include <libsoup/soup.h>
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-#include "config.h"
-#include "users.h"
-#include "online-service.h"
+#include <gtk/gtk.h>
+#include <libxml/parser.h>
+#include <libsoup/soup.h>
 
 #include "online-services-typedefs.h"
 
 
 /**********************************************************************
- *          Global method  & function prototypes                      *
+ *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
-gboolean network_check_http(OnlineService *service, SoupMessage *xml);
-void network_set_state_loading_timeline(const gchar *uri, ReloadState state);
-
-void network_post_status(const gchar *text);
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
-
-void network_get_user_timeline(OnlineService *service, const gchar *username);
-
-void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
-void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
-
-void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+typedef struct _OnlineServiceRequest OnlineServiceRequest;
+typedef enum _RequestAction RequestAction;
 
 
-#endif /*  __NETWORK_H__ */
+/**********************************************************************
+ *          Global method & function prototypes                      *
+ **********************************************************************/
+G_BEGIN_DECLS
+
+gchar *online_service_request_action_to_string(RequestAction action);
+
+void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_view_tweets(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_follow(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_unfollow(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_block(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_unblock(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_fave(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+void online_service_request_unfave(OnlineService *service, GtkWindow *parent, const gchar *user_data);
+
+void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+
+void online_service_request_selected_tweet_view_tweets(void);
+void online_service_request_selected_tweet_view_profile(void);
+
+void online_service_request_selected_tweet_follow(void);
+void online_service_request_selected_tweet_unfollow(void);
+void online_service_request_selected_tweet_block(void);
+void online_service_request_selected_tweet_unblock(void);
+
+void online_service_request_selected_tweet_save_fave(void);
+void online_service_request_selected_tweet_destroy_fave(void);
+
+void set_selected_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *tweet);
+OnlineService *selected_tweet_get_service(void);
+gulong selected_tweet_get_id(void);
+gchar *selected_tweet_get_user_name(void);
+gulong selected_tweet_get_user_id(void);
+gchar *selected_tweet_reply_to_strdup(gboolean retweet);
+void selected_tweet_reply(void);
+void selected_tweet_retweet(void);
+void unset_selected_tweet(void);
+
+void online_service_request_popup_select_service(void);
+void online_service_request_popup_friend_profile(void);
+void online_service_request_popup_friend_tweets(void);
+void online_service_request_popup_friend_follow(void);
+void online_service_request_popup_friend_unfollow(void);
+void online_service_request_popup_friend_block(void);
+void online_service_request_popup_friend_unblock(void);
+gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GFunc func, gpointer user_data);
+
+
+G_END_DECLS
+
+
+#endif /*__ONLINE_SERVICE_REQUEST_H__*/
 /**********************************************************************
  *                               eof                                  *
  **********************************************************************/

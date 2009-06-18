@@ -34,37 +34,12 @@
 
 G_BEGIN_DECLS
 
-void set_selected_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *tweet);
-OnlineService *selected_tweet_get_service(void);
-gchar *selected_tweet_get_user_name(void);
-gulong selected_tweet_get_user_id(void);
-gchar *selected_tweet_reply_to_strdup(void);
-void unset_selected_tweet(void);
-
-void tweets_selected_widgets_show(gboolean show);
 void tweets_hotkey(GtkWidget *widget, GdkEventKey *event);
 
 void tweets_beep(void);
 
-/* G_CALLBACK_FUNC for get2gnow's "Tweets" menu & the 'extended_tweet_?_button'.
- *	When handled by get2gnow's gtkbuilder.[ch]
- *	UI builder methods.
- */
 void tweets_new_tweet(void);
-void tweets_reply(void);
-void tweets_retweet(void);
 void tweets_new_dm(void);
-void tweets_save_fave(void);
-
-void tweets_user_follow(void);
-void tweets_user_unfollow(void);
-void tweets_user_block(void);
-void tweets_user_unblock(void);
-
-void tweets_user_view_tweets(void);
-void tweets_user_view_profile(void);
-
-void tweets_send(void);
 
 G_END_DECLS
 

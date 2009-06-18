@@ -43,7 +43,7 @@
 #include "network.h"
 #include "users.h"
 
-#include "app.h"
+#include "main-window.h"
 #include "tweet-list.h"
 #include "preferences.h"
 #include "images.h"
@@ -55,12 +55,14 @@
 #define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Parser.c"
 #include "debug.h"
 
+guint notify_delay=0;
+
 
 static gchar *parser_xml_node_type_to_string(xmlElementType type);
-static xmlDoc *parser_parse_dom_content(SoupMessage *xml);
+static xmlDoc *parse_dom_content(SoupMessage *xml);
 
 
-static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
+static xmlDoc *parse_dom_content(SoupMessage *xml){
 	xmlDoc *doc=NULL;
 	
 	SoupURI	*suri=NULL;
@@ -162,12 +164,12 @@ static xmlDoc *parser_parse_dom_content(SoupMessage *xml){
 	
 	debug("XML document parsed.  Returning xmlDoc.");
 	return doc;
-}/*parser_parse_dom_content*/
+}/*parse_dom_content*/
 
-xmlDoc *parser_parse(SoupMessage *xml, xmlNode **first_element){
+xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element){
 	xmlDoc *doc=NULL;
 	
-	if(!(doc=parser_parse_dom_content(xml))) {
+	if(!(doc=parse_dom_content(xml))) {
 		debug("failed to read xml data");
 		return NULL;
 	}
@@ -216,10 +218,10 @@ static gchar *parser_xml_node_type_to_string(xmlElementType type){
 	}
 }/*parser_xml_node_type_to_string(node->type);*/
 
-gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
+gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	if(!(doc=parser_parse(xml, &root_element))){
+	if(!(doc=parse_xml_doc(xml, &root_element))){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -266,7 +268,7 @@ gchar *parser_parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-guint parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor monitoring){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TweetList *tweet_list, TweetLists monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -274,41 +276,52 @@ guint parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor mo
 	
 	/* Count new tweets */
 	gboolean	notify;
-	gboolean	display=FALSE, display_this_update=FALSE;
-	guint		last_tweet_id=0, tweet_id=0, tweets_parsed=0;
+	guint		tweets_parsed=0;
+	gulong		status_id=0;
+	gulong		id_newest_update=0, id_oldest_update=0;
+	
+	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	switch(monitoring){
 		case DMs:
-			debug("Parsing DMs...");
+			debug("Parsing DMs.");
 			notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
-			tweet_id=service->id_last_dm;
 			break;
-		
+			
 		case Replies:
-			debug("Parsing Replies...");
+			debug("Parsing Replies.");
 			notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
-			tweet_id=service->id_last_reply;
 			break;
 		
 		case Tweets:
-			display=TRUE;
-			debug("Parsing current Tweets timeline...");
-			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
-			tweet_id=service->id_last_tweet;
+			debug("Parsing my friends' tweets");
+			notify=gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE);
 			break;
 		
-		case All: default: return FALSE;
+		case Timelines: case Users:
+			debug("Parsing timeline.");
+			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
+			break;
+			
+		case Archive:
+			debug("Parsing my own tweets or favorites.");
+			notify=FALSE;
+			break;
+		
+		case None: default: return 0;
 	}
 	
 	const int	tweet_display_interval=10;
 	
-	if(!(doc=parser_parse(xml, &root_element))){
-		debug("**ERROR:** Failed to parse xml document.");
+	if(!(doc=parse_xml_doc(xml, &root_element))){
+		debug("**ERROR:** Failed to parse xml document, timeline: %s.", timeline);
 		xmlCleanupParser();
 		return tweets_parsed;
 	}
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
+	const gchar *service_username=online_service_get_username(service);
+	gboolean free_status;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
@@ -328,107 +341,50 @@ guint parser_timeline(OnlineService *service, SoupMessage *xml, StatusMonitor mo
 		
 		debug("Parsing tweet.  Its a %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
 		
-		/* Timelines and direct messages */
-		
-		/* Parse node */
 		debug("Creating tweet's Status *.");
-		gboolean free_status=TRUE;
-		if( (status=user_status_parse(service, current_node->children, monitoring)) && status->text )
-			tweets_parsed++;
-		
-		/* the first tweet parsed is the 'newest' */
-		if(!last_tweet_id) last_tweet_id=status->id;
-		
-		if( (notify) && (status->id > tweet_id) && (strcasecmp(status->user->user_name, service->username)) ){
-			if( (monitoring==DMs) || (monitoring==Replies) )
-				display_this_update=TRUE;
-			free_status=FALSE;
-			app_notify_sound();
-			g_timeout_add_seconds_full(monitoring, tweet_list_notify_delay, app_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			tweet_list_notify_delay+=tweet_display_interval;
+		if(!( (( status=user_status_parse(service, current_node->children, monitoring ))) && (status_id=user_status_get_id(status)) )){
+			if(status) user_status_free(status);
+			continue;
 		}
 		
-		/* Append to ListStore */
-		if(display || display_this_update)
-			tweet_list_store_status(service, status);
+		tweets_parsed++;
+		free_status=TRUE;
+		/* id_oldest_tweet is only set when monitoring DMs or Replies */
+		debug("Adding UserStatus from: %s, ID: %lu, on <%s> to TweetList.", user_status_get_user_name(status), user_status_get_id(status), online_service_get_key(service));
+		user_status_store(status, tweet_list);
+		
+		if( id_oldest_update && (notify) && (status_id > id_oldest_update) && (strcasecmp(user_status_get_user_name(status), service_username)) ){
+			free_status=FALSE;
+			g_timeout_add_seconds_full(monitoring, notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			notify_delay+=tweet_display_interval;
+		}
+		
+		if(status_id > id_newest_update) id_newest_update=status_id;
+		id_oldest_update=status_id;
 		
 		if(free_status) user_status_free(status);
-		if(display_this_update) display_this_update=FALSE;
-	} /*end of loop*/
-	
-	/* Remember last id showed */
-	if(last_tweet_id) {
-		switch(monitoring){
-			case DMs:
-				service->id_last_dm=last_tweet_id;
-				break;
-			case Replies:
-				service->id_last_reply=last_tweet_id;
-				break;
-			case Tweets:
-				service->id_last_tweet=last_tweet_id;
-				break;
-			case All: default:
-				/*We never get here, see above, but these cases are here to make gcc happy.*/
-				break;
-		}
 	}
 	
-	/* Free memory */
+	if(id_newest_update)
+		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);
+	
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
 	return tweets_parsed;
 }
 
-gchar *parser_escape_text(gchar *status){
-	gchar *escaped_status=NULL;
-	gchar *cur=escaped_status=g_markup_escape_text(status, -1);
-	while((cur = strstr(cur, "&amp;"))) {
-		if(strncmp(cur + 5, "lt;", 3) == 0 || strncmp(cur + 5, "gt;", 3) == 0)
-			g_memmove(cur + 1, cur + 5, strlen(cur + 5) + 1);
+gchar *parser_escape_text(gchar *text){
+	gchar *escaped_text=NULL;
+	gchar *current_character=escaped_text=g_markup_escape_text(text, -1);
+	while((current_character=strstr(current_character, "&amp;"))) {
+		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
+			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
 		else
-			cur += 5;
+			current_character+=5;
 	}
-	return escaped_status;
-}/*parser_escape_tweet(status->text);*/
-
-void parser_format_user_status(OnlineService *service, User *user, UserStatus *status){
-	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
-	debug("Formating status text for display.");
-	
-	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
-	if(!gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)){
-		status->sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
-		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
-	}else{
-		status->sexy_tweet=g_strdup(sexy_status_swap);
-		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
-	}
-	g_free(sexy_status_swap);
-	sexy_status_swap=NULL;
-	
-	status->tweet=g_strdup_printf(
-			"%s<small><u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b></small> | <span size=\"small\" weight=\"light\" variant=\"smallcaps\"><u>To:</u> &lt;%s&gt;</span>\n%s<i>[%s]</i>\n%s%s%s",
-			((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>" :""),
-			user->nick_name, user->user_name, service->uri,
-			status->service->decoded_key,
-			app_tabs_to_right_align(),
-			status->created_how_long_ago,
-			((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
-	);
-	
-	status->notification=g_strdup_printf(
-			"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n\t<i><u>To:</u></i> <i>&lt;%s&gt;</i>\n<b>%s%s%s</b>",
-			((status->type==DMs) ?"<b><u>[Direct Message]</u></b>" :""),
-			status->created_how_long_ago,
-			user->nick_name, user->user_name, service->uri,
-			status->service->decoded_key,
-			((status->type==DMs) ?"<i>[" :""), sexy_status_text, ((status->type==DMs) ?"]</i>" :"")
-	);
-	
-	g_free(sexy_status_text);
-}/*parser_format_user_status(status, user);*/
+	return escaped_text;
+}/*parser_escape_text(text);*/
 
 gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
 	struct tm	*ta;
