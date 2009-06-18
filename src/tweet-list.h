@@ -115,8 +115,6 @@ void tweet_list_complete(TweetList *tweet_list);
 
 void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
 
-void tweet_list_goto_top(TweetList *tweet_list);
-
 void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter);
 
 G_END_DECLS

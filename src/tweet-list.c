@@ -203,6 +203,7 @@ static void tweet_list_clear(TweetList *tweet_list);
 
 static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event);
 static void tweet_list_goto_index(TweetList *tweet_list);
+static void tweet_list_scroll_to_top(TweetList *tweet_list);
 
 
 G_DEFINE_TYPE(TweetList, tweet_list, SEXY_TYPE_TREE_VIEW);
@@ -333,6 +334,7 @@ void tweet_list_start(TweetList *tweet_list){
 		guint reload=minutes*60*1000;
 		this->timeout_id=g_timeout_add(reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
+	if(this->total) tweet_list_scroll_to_top(tweet_list);
 	
 	gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
 	
@@ -616,20 +618,19 @@ static void tweet_list_goto_index(TweetList *tweet_list){
 	tweet_view_sexy_select();
 }/*tweet_list_goto_index();*/
 
-void tweet_list_goto_top(TweetList *tweet_list){
+static void tweet_list_scroll_to_top(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	if(!(GTK_TREE_VIEW(tweet_list))){
+	TweetListPriv *this=GET_PRIV(tweet_list);
+		
+	if(!(GTK_TREE_VIEW(this->timeline_tree_view))){
 		debug("**ERROR:** TweetList cannot be cast to GtkTreeView.  Unable to move to top.");
 		return;
 	}
-	TweetListPriv *this=GET_PRIV(tweet_list);
-	
-	this->index=0;
-	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
-	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(tweet_list)))
-		gtk_tree_view_scroll_to_cell( this->timeline_tree_view, path, NULL, FALSE, 0.0, 0.0);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
+	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->timeline_tree_view)))
+		gtk_tree_view_scroll_to_cell(this->timeline_tree_view, path, NULL, FALSE, 0.0, 0.0);
 	gtk_tree_path_free(path);
-}/* tweet_list_goto_top */
+}/* tweet_list_scroll_to_top */
 
 static void tweet_list_clear(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
