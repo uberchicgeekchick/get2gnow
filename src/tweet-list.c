@@ -537,15 +537,14 @@ static void tweet_list_setup(TweetList *tweet_list){
 								"tweet_list_string_tweet_tree_view_column", &this->string_tweet_tree_view_column,
 								"tweet_list_string_tweet_cell_renderer_text", &this->string_tweet_cell_renderer_text,
 								
-								"tweet_list_created_ago_str_tree_view_column", &this->created_ago_str_tree_view_column,
-								"tweet_list_created_ago_str_cell_renderer_text", &this->created_ago_str_cell_renderer_text,
-								
 								"tweet_list_string_from_tree_view_column", &this->string_from_tree_view_column,
 								"tweet_list_string_from_cell_renderer_text", &this->string_from_cell_renderer_text,
 								
 								"tweet_list_string_rcpt_tree_view_column", &this->string_rcpt_tree_view_column,
 								"tweet_list_string_rcpt_cell_renderer_text", &this->string_rcpt_cell_renderer_text,
 								
+								"tweet_list_created_ago_str_tree_view_column", &this->created_ago_str_tree_view_column,
+								"tweet_list_created_ago_str_cell_renderer_text", &this->created_ago_str_cell_renderer_text,
 							NULL
 	);
 	
@@ -739,7 +738,10 @@ static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, Twe
 	TweetListPriv *this=GET_PRIV(tweet_list);
 	
 	g_object_set(this->string_tweet_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(this->string_tweet_tree_view_column))-10), NULL);
-}
+	g_object_set(this->string_rcpt_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(this->string_rcpt_tree_view_column))-10), NULL);
+	g_object_set(this->string_from_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(this->string_from_tree_view_column))-10), NULL);
+	g_object_set(this->created_ago_str_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(this->created_ago_str_tree_view_column))-10), NULL);
+}/*tweet_list_size_cb(widget, allocation, tweet_list);*/
 
 void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
