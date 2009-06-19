@@ -118,11 +118,12 @@ void timer_main(RateLimitTimer *timer, SoupMessage *msg){
 	if(timer->requests==1)
 		return;
 	
+	main_window_statusbar_printf("Please wait %i seconds.  To keep you from being locked out %s requests are timed.", (gint)timer->limit, _(GETTEXT_PACKAGE));
 	while(timer->processing){}
 	
 	timer->processing++;
 	while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->limit ){
-		main_window_statusbar_printf("One moment please... to keep %s from being locked out requests are limited.", PACKAGE_NAME);
+		main_window_statusbar_printf("Please wait %i seconds.  To keep you from being locked out %s requests are timed.", (gint)timer->limit, _(GETTEXT_PACKAGE));
 	}
 	g_timer_stop(timer->gtimer);
 	
