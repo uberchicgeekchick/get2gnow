@@ -337,10 +337,8 @@ void tweet_list_start(TweetList *tweet_list){
 		guint reload=minutes*60*1000;
 		this->timeout_id=g_timeout_add(reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
-	if(this->total){
-		tweet_list_clean_up(tweet_list);
-		gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
-	}
+	if(this->total) tweet_list_clean_up(tweet_list);
+	
 	gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
 	online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->tweet_list);
 }/*tweet_list_start(TweetList *tweet_list);*/
@@ -417,6 +415,7 @@ void tweet_list_complete(TweetList *tweet_list){
 	TweetListPriv *this=GET_PRIV(tweet_list);
 	tweet_list_scroll_to_top(tweet_list);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
+	gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
 }/*tweet_list_complete(tweet_list);*/
 
 static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list){
