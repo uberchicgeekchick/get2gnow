@@ -181,8 +181,6 @@ struct _TweetListPriv {
 #define	MINIMUM_TWEETS	20.00
 #define	MAXIMUM_TWEETS	100.00
 
-guint tweet_list_notify_delay=0;
-
 
 /********************************************************************************
  *               object methods, handlers, callbacks, & etc.                    *
@@ -343,10 +341,15 @@ void tweet_list_start(TweetList *tweet_list){
 		tweet_list_clean_up(tweet_list);
 		gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
 	}
-	tweet_list_notify_delay=(this->tweet_list*this->page*10);
 	gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
 	online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->tweet_list);
 }/*tweet_list_start(TweetList *tweet_list);*/
+
+guint tweet_list_get_notify_delay(TweetList *tweet_list){
+	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return 10;
+	TweetListPriv *this=GET_PRIV(tweet_list);
+	return this->tweet_list*this->page*10;
+}/*tweet_list_get_notify_delay(tweet_list);*/
 
 static void tweet_list_clean_up(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;

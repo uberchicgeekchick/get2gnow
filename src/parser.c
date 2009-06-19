@@ -308,6 +308,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		case None: default: return 0;
 	}
 	
+	guint tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
 	const int	tweet_display_interval=10;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){

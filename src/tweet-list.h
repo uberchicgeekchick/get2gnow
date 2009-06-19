@@ -91,14 +91,13 @@ enum TweetListStoreColumns{	/***************************************************
 				/********************************************************************************/
 };
 
-extern guint tweet_list_notify_delay;
-
 GType tweet_list_get_type(void) G_GNUC_CONST;
 TweetList *tweet_list_new(const gchar *timeline);
 const gchar *tweet_list_get_timeline(TweetList *tweet_list);
 
 gint tweet_list_get_page(TweetList *tweet_list);
 gint tweet_list_get_total(TweetList *tweet_list);
+guint tweet_list_get_notify_delay(TweetList *tweet_list);
 void tweet_list_set_page(TweetList *tweet_list, gint page);
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list);
