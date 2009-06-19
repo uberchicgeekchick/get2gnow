@@ -55,8 +55,6 @@
 #define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Parser.c"
 #include "debug.h"
 
-guint notify_delay=0;
-
 
 static gchar *parser_xml_node_type_to_string(xmlElementType type);
 static xmlDoc *parse_dom_content(SoupMessage *xml);
@@ -355,8 +353,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		if( id_oldest_update && (notify) && (status_id > id_oldest_update) && (strcasecmp(user_status_get_user_name(status), service_username)) ){
 			free_status=FALSE;
-			g_timeout_add_seconds_full(monitoring, notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			notify_delay+=tweet_display_interval;
+			g_timeout_add_seconds_full(monitoring, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
 		if(status_id > id_newest_update) id_newest_update=status_id;

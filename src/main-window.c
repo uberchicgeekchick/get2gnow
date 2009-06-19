@@ -1079,6 +1079,7 @@ gboolean main_window_notify_on_timeout(gpointer data){
 	if(!( status && G_STR_N_EMPTY( (notification=user_status_get_notification(status)) ) )){
 		return FALSE;
 	}
+	if(G_STR_EMPTY(notification)) return FALSE;
 	
 	NotifyNotification *notify_notification;
 	GError             *error=NULL;

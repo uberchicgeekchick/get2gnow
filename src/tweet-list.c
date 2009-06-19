@@ -180,6 +180,8 @@ struct _TweetListPriv {
 #define	MINIMUM_TWEETS	20.00
 #define	MAXIMUM_TWEETS	100.00
 
+guint tweet_list_notify_delay=0;
+
 
 /********************************************************************************
  *               object methods, handlers, callbacks, & etc.                    *
@@ -335,9 +337,8 @@ void tweet_list_start(TweetList *tweet_list){
 		this->timeout_id=g_timeout_add(reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
 	if(this->total) tweet_list_scroll_to_top(tweet_list);
-	
+	tweet_list_notify_delay=(this->tweet_list*this->page*10);
 	gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
-	
 	online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->tweet_list);
 }/*tweet_list_start(TweetList *tweet_list);*/
 
