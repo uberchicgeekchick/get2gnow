@@ -2,6 +2,24 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkLabel" id="tweet_list_menu_label">
+    <property name="visible">True</property>
+    <property name="label" translatable="yes">tweet_list_menu_label</property>
+    <property name="use_markup">True</property>
+  </object>
+  <object class="GtkAdjustment" id="tweet_list_max_tweets_adjustment">
+    <property name="value">20</property>
+    <property name="lower">20</property>
+    <property name="upper">100</property>
+    <property name="step_increment">10</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkLabel" id="tweet_list_tab_label">
+    <property name="visible">True</property>
+    <property name="label" translatable="yes">tweet_list_tab_label</property>
+    <property name="use_markup">True</property>
+    <property name="use_underline">True</property>
+  </object>
   <object class="GtkListStore" id="tweet_list_list_store">
     <columns>
       <!-- column-name ULONG_TWEET_ID -->
@@ -35,24 +53,6 @@
       <!-- column-name STRING_RCPT -->
       <column type="gchararray"/>
     </columns>
-  </object>
-  <object class="GtkLabel" id="tweet_list_menu_label">
-    <property name="visible">True</property>
-    <property name="label" translatable="yes">tweet_list_menu_label</property>
-    <property name="use_markup">True</property>
-  </object>
-  <object class="GtkAdjustment" id="tweet_list_max_tweets_adjustment">
-    <property name="value">20</property>
-    <property name="lower">20</property>
-    <property name="upper">100</property>
-    <property name="step_increment">10</property>
-    <property name="page_increment">10</property>
-  </object>
-  <object class="GtkLabel" id="tweet_list_tab_label">
-    <property name="visible">True</property>
-    <property name="label" translatable="yes">tweet_list_tab_label</property>
-    <property name="use_markup">True</property>
-    <property name="use_underline">True</property>
   </object>
   <object class="GtkVBox" id="tweet_list_vbox">
     <property name="visible">True</property>

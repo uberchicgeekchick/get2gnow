@@ -180,7 +180,7 @@ struct _UserProfileViewer{
 
 #define API_USER_PROFILE	"/users/show/%s.xml"
 
-#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Users:Settings:UserProfileViewer:ViewProfile:Users.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Dates:Times:Users:Settings:UserProfileViewer:ViewProfile:Users.c"
 #include "debug.h"
 
 #define GtkBuilderUI "user-profile-viewer.ui"
@@ -455,14 +455,18 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Twe
 }/*user_status_parse(service, current_node->children, tweet_list);*/
 
 static void user_status_format_dates(UserStatus *status){
+	struct tm	*ta;
 	struct tm	post;
-	strptime(status->created_at_str, "%s", &post);
-	post.tm_isdst=-1;
-	status->created_at=mktime(&post);
+	time_t		t=time(NULL);
+	
+	tzset();
+	
+	ta=gmtime(&t);
+	ta->tm_isdst=-1;
 	
 	strptime(status->created_at_str, "%s", &post);
 	post.tm_isdst=-1;
-	status->created_at=mktime(&post);									
+	status->created_at=mktime(&post);
 	
 	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
@@ -532,8 +536,8 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 					ULONG_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
 					ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
 					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
-					STRING_FROM, status->from,
-					STRING_RCPT, status->rcpt,
+					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
+					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
 				-1
 	);
 	

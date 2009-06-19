@@ -52,7 +52,7 @@
 
 #include "parser.h"
 
-#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Parser.c"
+#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Dates:Times:Parser.c"
 #include "debug.h"
 
 
