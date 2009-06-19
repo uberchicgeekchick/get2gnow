@@ -90,7 +90,9 @@ void main_window_disconnect(void);
 void main_window_create(void);
 MainWindow *main_window_get(void);
 
+TweetList *main_window_tweet_lists_get_next(void);
 TweetList *main_window_tweet_lists_get_current(void);
+TweetList *main_window_tweet_lists_get_previous(void);
 TweetList *main_window_tweet_lists_get_timeline(const gchar *timeline);
 TweetList *main_window_tweet_lists_get_page(gint page, gboolean close);
 void main_window_tweet_lists_start(void);

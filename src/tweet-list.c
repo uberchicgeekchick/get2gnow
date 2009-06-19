@@ -534,7 +534,7 @@ static void tweet_list_setup(TweetList *tweet_list){
 	
 	this->tree_model=GTK_TREE_MODEL(this->list_store);
 	this->tree_model_sort=gtk_tree_model_sort_new_with_model(this->tree_model);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), ULONG_CREATED_AGO, GTK_SORT_ASCENDING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), ULONG_CREATED_AT, GTK_SORT_ASCENDING);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tweet_list), this->tree_model_sort);
 	gtk_tree_view_set_model(this->timeline_tree_view, this->tree_model_sort);

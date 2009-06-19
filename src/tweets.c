@@ -128,6 +128,12 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 				case GDK_colon:	case GDK_exclam:
 					online_service_request_selected_tweet_unblock();
 					return;
+				case GDK_Page_Up:
+					main_window_tweet_lists_get_previous();
+					return;
+				case GDK_Page_Down:
+					main_window_tweet_lists_get_next();
+					return;
 				default: break;
 			}
 			break;
@@ -167,6 +173,12 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 					return;
 				case GDK_D:	case GDK_d:
 					tweets_new_dm();
+					return;
+				case GDK_Page_Up:
+					main_window_tweet_lists_get_previous();
+					return;
+				case GDK_Page_Down:
+					main_window_tweet_lists_get_next();
 					return;
 				default: break;
 			}

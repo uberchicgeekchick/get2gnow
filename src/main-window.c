@@ -470,8 +470,18 @@ TweetList *main_window_tweet_lists_get_timeline(const gchar *timeline){
 	return main_window_tweet_lists_new(timeline);
 }/*main_window_tweets_list_get("/direct_messages.xml");*/
 
+TweetList *main_window_tweet_lists_get_next(void){
+	gtk_notebook_next_page(main_window_priv->tweet_list_notebook);
+	return main_window_tweet_lists_get_current();
+}/*main_window_tweet_lists_current()*/
+
 TweetList *main_window_tweet_lists_get_current(void){
 	return main_window_tweet_lists_get_page(gtk_notebook_get_current_page(main_window_priv->tweet_list_notebook), FALSE);
+}/*main_window_tweet_lists_current()*/
+
+TweetList *main_window_tweet_lists_get_previous(void){
+	gtk_notebook_prev_page(main_window_priv->tweet_list_notebook);
+	return main_window_tweet_lists_get_current();
 }/*main_window_tweet_lists_current()*/
 
 TweetList *main_window_tweet_lists_get_page(gint page, gboolean close){
