@@ -116,7 +116,8 @@
                         <child>
                           <object class="GtkAlignment" id="tweet_list_max_tweets_alignment">
                             <property name="visible">True</property>
-                            <property name="left_padding">12</property>
+                            <property name="xalign">1</property>
+                            <property name="xscale">0.25</property>
                             <child>
                               <object class="GtkSpinButton" id="tweet_list_max_tweets_spin_button">
                                 <property name="visible">True</property>
@@ -136,7 +137,7 @@
                         <child type="label">
                           <object class="GtkLabel" id="tweet_list_max_tweets_label">
                             <property name="visible">True</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Ma_x updates&lt;/b&gt;</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Ma_x updates:&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="use_underline">True</property>
                           </object>

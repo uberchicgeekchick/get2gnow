@@ -91,6 +91,7 @@ const gchar *online_service_get_guid(OnlineService *service);
 const gchar *online_service_get_key(OnlineService *service);
 const gchar *online_service_get_uri(OnlineService *service);
 const gchar *online_service_get_username(OnlineService *service);
+const gchar *online_service_get_nickname(OnlineService *service);
 const gchar *online_service_get_password(OnlineService *service);
 
 gboolean online_service_is_enabled(OnlineService *service);

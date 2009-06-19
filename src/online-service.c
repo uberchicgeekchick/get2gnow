@@ -142,6 +142,7 @@ struct _OnlineService{
 	gchar				*server;
 	gchar				*path;
 	gchar				*username;
+	gchar				*nickname;
 	gchar				*password;
 	
 	GList				*friends;
@@ -156,6 +157,9 @@ static void online_service_set_micro_blogging_service(OnlineService *service);
 
 static void online_service_http_authenticate(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data);
 static void *online_service_login_check(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+
+static void online_service_set_profile(User *user);
+
 static void online_service_message_restarted(SoupMessage *msg, gpointer user_data);
 
 static void online_service_cookie_jar_open(OnlineService *service);
@@ -219,6 +223,11 @@ const gchar *online_service_get_uri(OnlineService *service){
 const gchar *online_service_get_username(OnlineService *service){
 	if(!service) return NULL;
 	return service->username;
+}/*online_service_get_username(service);*/
+
+const gchar *online_service_get_nickname(OnlineService *service){
+	if(!service) return NULL;
+	return service->nickname;
 }/*online_service_get_username(service);*/
 
 const gchar *online_service_get_password(OnlineService *service){
@@ -348,6 +357,7 @@ OnlineService *online_service_open(const gchar *account_key){
 	service->guid=g_strdup(account_key);
 	service->uri=g_strdup(account_data[1]);
 	service->username=g_strdup(account_data[0]);
+	service->nickname=NULL;
 	g_strfreev(account_data);
 	
 	service->friends=service->followers=service->friends_and_followers=NULL;
@@ -426,6 +436,7 @@ OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean h
 	
 	service->guid=g_strdup_printf("%s@%s", username, uri );
 	service->username=g_strdup(username);
+	service->nickname=NULL;
 	service->password=g_strdup(password);
 	service->https=https;
 	
@@ -708,11 +719,18 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	/*Its a hack but it forces a log-in.*/
 	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, service->username);
-	online_service_request(service, QUEUE, user_profile_uri, (OnlineServiceCallbackAfterSoup)user_free, (OnlineServiceSoupSessionCallback)user_parse_profile, NULL, NULL);
+	online_service_request(service, QUEUE, user_profile_uri, (OnlineServiceCallbackAfterSoup)online_service_set_profile, (OnlineServiceSoupSessionCallback)user_parse_profile, NULL, NULL);
 	uber_free(user_profile_uri);
 	
 	return TRUE;
 }/*online_service_login*/
+
+static void online_service_set_profile(User *user){
+	OnlineService *service=user_get_online_service(user);
+	service->nickname=g_strdup(user_get_nick_name(user));
+	debug("Setting nickname for: %s to %s.", service->key, service->nickname);
+	user_free(user);
+}/*online_service_set_profile(user);*/
 
 static void *online_service_login_check(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
@@ -981,7 +999,7 @@ void online_service_callback_after_soup_default(gpointer after_soup_callback_dat
 	debug("\n\t\t\t\t\t\t|---------------------------------------------|\n"
 		"\t\t\t\t\t\t|     online service after soup callback      |\n"
 		"\t\t\t\t\t\t|_____________________________________________|"
-		);
+	);
 }/*online_service_callback_after_soup_default(after_soup_callback_data);*/
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
@@ -1044,7 +1062,7 @@ void online_service_free(OnlineService *service){
 	users_glists_free_lists(service);
 	
 	debug("Destroying OnlineService <%s> object.", service->guid );
-	uber_object_free(&service->key, &service->uri, &service->username, &service->password, &service->status, &service->guid, &service, NULL);
+	uber_object_free(&service->key, &service->uri, &service->username, &service->nickname, &service->password, &service->status, &service->guid, &service, NULL);
 }/*online_service_free*/
 
 /********************************************************

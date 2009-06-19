@@ -490,7 +490,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 
 	status->from=g_strdup_printf("<small><b>%s\n&lt;%s@%s&gt;</b></small>", user->nick_name, user->user_name, online_service_get_uri(service));
 	
-	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">&lt;%s&gt;</span>", online_service_get_key(service));
+	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", online_service_get_nickname(service), online_service_get_key(service));
 	
 	status->tweet=g_strdup_printf("%s%s%s%s",
 					( (status->type==DMs)
