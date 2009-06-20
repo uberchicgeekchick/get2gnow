@@ -238,6 +238,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	g_signal_connect(tweet_list, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(this->timeline_tree_view, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
+	g_signal_connect(tweet_list, "focus-in-event", G_CALLBACK(tweet_list_focus_in_event_cb), tweet_list);
 	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(selected_tweet_reply), tweet_list);
 	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), tweet_list);
 }/* tweet_list_init */
@@ -392,7 +393,8 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPriv *this=GET_PRIV(tweet_list);
 	
-	gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
+	//gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
+	gtk_tree_model_foreach(this->tree_model, (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
@@ -403,7 +405,8 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	
 	for(gint i=this->total; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		if( (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(this->tree_model_sort), iter, NULL, i)) ){
+		//if( (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(this->tree_model_sort), iter, NULL, i)) ){
+		if( (gtk_tree_model_iter_nth_child(this->tree_model, iter, NULL, i)) ){
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
 		}
@@ -458,7 +461,6 @@ void tweet_list_complete(TweetList *tweet_list){
 	
 	tweet_list_scroll_to_top(tweet_list);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
-	gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
 }/*tweet_list_complete(tweet_list);*/
 
 static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list){
@@ -603,6 +605,7 @@ static void tweet_list_setup(TweetList *tweet_list){
 								"tweet_list_scrolled_window", "focus-in-event", tweet_list_focus_in_event_cb,
 								"tweet_list_scrolled_window", "size-allocate", tweet_list_size_cb,
 								
+								"tweet_list_timeline_tree_view", "focus-in-event", tweet_list_focus_in_event_cb,
 								"tweet_list_timeline_tree_view", "cursor-changed", tweet_list_changed_cb,
 								"tweet_list_timeline_tree_view", "size-allocate", tweet_list_size_cb,
 								"tweet_list_timeline_tree_view", "row-activated", selected_tweet_reply,
