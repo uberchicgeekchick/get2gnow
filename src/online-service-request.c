@@ -95,7 +95,7 @@
 #define	DEBUG_DOMAINS	"OnlineServices:Requests:Settings:UI:GtkBuilder:GtkBuildable:Settings:Popup:OnlineServiceReoqest.c"
 #include "debug.h"
 
-#define GtkBuilderUI "online-service-request-popup.ui"
+#define GtkBuilderUI "online-services-request-popup.ui"
 
 
 #define API_USER_FOLLOW		"/friendships/create/%s.xml"

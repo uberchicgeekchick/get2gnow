@@ -710,26 +710,26 @@ static void main_window_timeline_cb(GtkRadioMenuItem *item, MainWindow *main_win
 }
 
 
-static void online_service_request_menu_process(GtkImageMenuItem *action, MainWindow *main_window){
-	if(action == main_window_priv->online_service_request_menu_friends_manager)
+static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
+	if(item == main_window_priv->online_service_request_menu_friends_manager)
 		return friends_manager_show(GTK_WINDOW(main_window_priv->window));
 	
-	if(action == main_window_priv->online_service_request_menu_timelines)
+	if(item == main_window_priv->online_service_request_menu_timelines)
 		return following_viewer_show(GTK_WINDOW(main_window_priv->window));
 	
-	if(action == main_window_priv->online_service_request_menu_follow)
+	if(item == main_window_priv->online_service_request_menu_follow)
 		return online_service_request_popup_friend_follow();
 	
-	if(action == main_window_priv->online_service_request_menu_unfollow)
+	if(item == main_window_priv->online_service_request_menu_unfollow)
 		return online_service_request_popup_friend_unfollow();
 	
-	if(action == main_window_priv->online_service_request_menu_block)
+	if(item == main_window_priv->online_service_request_menu_block)
 		return online_service_request_popup_friend_block();
 	
-	if(action == main_window_priv->online_service_request_menu_profile)
+	if(item == main_window_priv->online_service_request_menu_profile)
 		return online_service_request_popup_friend_profile();
 	
-	if(action == main_window_priv->online_service_request_menu_tweets)
+	if(item == main_window_priv->online_service_request_menu_tweets)
 		return online_service_request_popup_friend_tweets();
 }
 
