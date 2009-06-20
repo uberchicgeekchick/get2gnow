@@ -66,21 +66,25 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
+#define DEBUG_DOMAINS "Networking:RateLimitTimer:Requests:Setup:Start-Up:Threads:Headers:Timer.c"
+#include "debug.h"
+
 struct _RateLimitTimer{
-	gboolean active;
-	GTimer *gtimer;
-	gdouble limit;
-	guint processing;
-	guint requests;
+	gboolean	active;
+	GTimer		*gtimer;
+	guint		processing;
+	gint		requests_remaining;
+	gdouble		elapsed;
+	gdouble		pause;
 };
 
-#define DEBUG_DOMAINS "OnlineServices:Networking:Requests:Setup:Start-Up:Timer"
-#include "debug.h"
 
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+static gboolean timer_check(RateLimitTimer *timer, SoupMessage *msg);
+static void timer_process(RateLimitTimer *timer);
 static void timer_main_quit(RateLimitTimer *timer);
 
 
@@ -93,64 +97,77 @@ RateLimitTimer *timer_new(void){
 	
 	/* timer->gtimer is used to avoid Twitter's rate limit. */
 	RateLimitTimer *timer=g_new0(RateLimitTimer, 1);
-	timer->limit=10.0;
+	timer->elapsed=timer->pause=0.0;
 	timer->gtimer=g_timer_new();
 	timer->active=0;
 	timer->processing=FALSE;
-	timer->requests=0;
+	timer->requests_remaining=99;
 	g_timer_start(timer->gtimer);
 	return timer;
 }//timer_new
 
 void timer_main(RateLimitTimer *timer, SoupMessage *msg){
-	gulong request_microseconds=1;
-	const char *rate_limit=NULL;
-	int requests_remaining=99;
+	debug("Processing RateLimit.");
+	if(!timer_check(timer, msg)) return;
 	
-	if(!( (g_str_equal( "GET", msg->method)) && ((rate_limit=soup_message_headers_get_one( msg->response_headers, "X-RateLimit-Remaining" ))) &&(requests_remaining=atoi( rate_limit )) )){
-		debug("Skipping network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s (%d)", msg->method, rate_limit, requests_remaining );
-		return;
-	}
-	
-	debug("Running network timer.\n\t\tRequest method: %s\n\t\tX-RateLimit-Remaininng: %s\n\t\tRequests left before the API's RateLimit is reached: %d.", msg->method, rate_limit, requests_remaining );
-	
-	timer->requests++;
-	if(timer->requests==1)
-		return;
-	
-	main_window_statusbar_printf("Please wait %i seconds.  To keep you from being locked out %s requests are timed.", (gint)timer->limit, _(GETTEXT_PACKAGE));
 	while(timer->processing){}
 	
-	timer->processing++;
-	while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->limit ){
-		main_window_statusbar_printf("Please wait %i seconds.  To keep you from being locked out %s requests are timed.", (gint)timer->limit, _(GETTEXT_PACKAGE));
+	timer->pause=0.0;
+	
+	timer_process(timer);
+	
+	debug("RateLimitTimer:\t\t\t[done]");
+	g_timer_stop(timer->gtimer);
+	g_timer_start(timer->gtimer);
+}/*timer_main(timer);*/
+
+static gboolean timer_check(RateLimitTimer *timer, SoupMessage *msg){
+	if(!g_str_equal("GET", msg->method)){
+		debug("RateLimitTimer is skipped for POST requests.");
+		return FALSE;
 	}
-	g_timer_stop(timer->gtimer);
+	const char *rate_limit=NULL;
+	if(!( rate_limit=soup_message_headers_get_one(msg->response_headers, "X-RateLimit-Remaining") )){
+		debug("RateLimitTimer does not need to process this request.  X-RateLimit-Remaining header was not received.");
+		return FALSE;
+	}
+	timer->requests_remaining=atoi(rate_limit);
 	
+	debug("Running RateLimitTimer.");
+	debug("Details: X-RateLimit-Remaining: %s(=%d).", rate_limit, timer->requests_remaining);
+	
+	return TRUE;
+}/*timer_check(timer, msg);*/
+
+static void timer_process(RateLimitTimer *timer){
+	gulong request_microseconds=1;
+	
+	if( timer->requests_remaining < 11 ) timer->pause = 36.0;
+	else if( timer->requests_remaining < 21 ) timer->pause = 24.0;
+	else if( timer->requests_remaining < 41 ) timer->pause = 12.0;
+	else if( timer->requests_remaining < 61 ) timer->pause = 6.0;
+	else return;
+	
+	if( (timer->elapsed=g_timer_elapsed(timer->gtimer, &request_microseconds)) > timer->pause )
+		return;
+	
+	g_timer_stop(timer->gtimer);
 	g_timer_start(timer->gtimer);
 	
-	debug("Requests left before the API's RateLimit is reached: %d.", requests_remaining );
-	if( requests_remaining < 11 )
-		while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < 36.0 );
-	else if( requests_remaining < 21 )
-		while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < 24.0 );
-	else if( requests_remaining < 41 )
-		while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < 12.0 );
-	else if( requests_remaining < 61 )
-		while( (g_timer_elapsed(timer->gtimer, &request_microseconds)) < 6.0 );
+	timer->processing++;
 	
-	
-	g_timer_stop(timer->gtimer);
-	g_timer_start(timer->gtimer);
+	main_window_statusbar_printf("Please wait %i seconds, you have %d before being locked out so pauses %s requests.", (gint)timer->pause, timer->requests_remaining, _(GETTEXT_PACKAGE));
+	while( (timer->elapsed=g_timer_elapsed(timer->gtimer, &request_microseconds)) < timer->pause )
+		main_window_statusbar_printf("Please wait %i seconds, you have %d before being locked out so pauses %s requests.", (gint)timer->pause, timer->requests_remaining, _(GETTEXT_PACKAGE));
 	timer->processing--;
-}//timer_main
+}/*timer_process(timer);*/
 
 
 static void timer_main_quit(RateLimitTimer *timer){
 	debug("Stopping network timer.");
 	g_timer_stop(timer->gtimer);
 	timer->active=FALSE;
-}//timer_main_quit
+}//timer_main_qu1it
 
 
 

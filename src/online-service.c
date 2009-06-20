@@ -164,14 +164,8 @@ static void online_service_message_restarted(SoupMessage *msg, gpointer user_dat
 
 static void online_service_cookie_jar_open(OnlineService *service);
 
-static void online_service_update_ids_load(OnlineService *service, const gchar *uri);
-static void online_service_update_ids_gconfig_get(OnlineService *service, const gchar *timeline);
-
-static void online_service_update_ids_save(OnlineService *service, const gchar *uri);
-static void online_service_update_ids_gconfig_set(OnlineService *service, const gchar *timeline);
-
-static void online_service_request_validate_uri(OnlineService *service, gchar **request_uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer *user_data, gpointer *form_data);
-static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer *user_data, gpointer *form_data);
+static void online_service_request_validate_uri(OnlineService *service, gchar **request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
+static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
 
 /********************************************************
  *          Variable definitions.                       *
@@ -373,8 +367,6 @@ OnlineService *online_service_open(const gchar *account_key){
 	service->micro_blogging_service=Unknown;
 	online_service_set_micro_blogging_service(service);
 	
-	service->id_newest_update=service->id_oldest_update=0;
-	
 	service->timer=timer_new();
 	
 	debug("Loading OnlineService settings for: '%s'" , service->guid);
@@ -453,8 +445,6 @@ OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean h
 	
 	service->micro_blogging_service=Unknown;
 	online_service_set_micro_blogging_service(service);
-	
-	service->id_newest_update=service->id_oldest_update=0;
 	
 	gchar *encoded_username=g_uri_escape_string(username, NULL, TRUE);
 	gchar *encoded_uri=g_uri_escape_string(uri, NULL, TRUE);
@@ -536,74 +526,42 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	return TRUE;
 }/*online_service_delete*/
 
-void online_service_update_ids_get(OnlineService *service, const gchar *uri, gulong *newest_id, gulong *oldest_id){
+void online_service_update_ids_get(OnlineService *service, const gchar *uri, gulong *id_newest_update, gulong *id_oldest_update){
 	if(G_STR_EMPTY(uri)) return;
 	gchar **uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
-	online_service_update_ids_load(service, uri_split[0]);
-	g_strfreev(uri_split);
-
-	*oldest_id=service->id_oldest_update;
-	*newest_id=service->id_newest_update;
-}/*online_service_update_ids_get(service, "/direct_messages.xml", &oldest_id, &newest_id);*/
-
-static void online_service_update_ids_load(OnlineService *service, const gchar *uri){
-	if(G_STR_EMPTY(uri)) return;
+	const gchar *timeline=uri_split[0];
 	
-	debug("Loading update ids for '%s'.", service->key);
-	online_service_update_ids_gconfig_get(service, uri);
-}/*online_service_update_ids_load(service, uri);*/
-
-static void online_service_update_ids_gconfig_get(OnlineService *service, const gchar *timeline){
-	if(!( G_STR_N_EMPTY(timeline) && service->id_newest_update && service->id_oldest_update )) return;
-				
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_IDS_TWEETS:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
 	 * 				service->key			/timeline.xml	(newest|oldest)
 	 */
 	gchar *prefs_path=NULL;
-	gint swap_id;
-	
-	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "oldest");
-	swap_id=0;
-	gconfig_get_int(prefs_path, &swap_id);
-	if(swap_id>0) service->id_oldest_update=swap_id;
-	uber_free(prefs_path);
-	debug("Loaded %s's; Oldest Tweet ID: %lu.", timeline, service->id_oldest_update);
+	gfloat swap_id;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "newest");
 	swap_id=0;
-	gconfig_get_int(prefs_path, &swap_id);
-	if(swap_id>0) service->id_newest_update=swap_id;
+	gconfig_get_float(prefs_path, &swap_id);
+	if(swap_id>0) *id_newest_update=(gulong)swap_id;
 	uber_free(prefs_path);
-	debug("Loaded %s's; Newest Tweet ID: %lu.", timeline, service->id_newest_update);
-}/*online_service_update_ids_gconfig_get(service, "/friends.xml");*/
-
-void online_service_update_ids_reset(OnlineService *service){
-	service->id_newest_update=service->id_oldest_update=0;
-}/*online_service_update_ids_reset(service);*/
-
-void online_service_update_ids_set(OnlineService *service, const gchar *uri, gulong newest_id, gulong oldest_id){
-	if(G_STR_EMPTY(uri)) return;
+	debug("Loaded <%s>'s; newest [%s] ID:\t\t%lu.", service->uri, timeline, *id_newest_update);
 	
-	service->id_newest_update=newest_id;
-	service->id_oldest_update=oldest_id;
+	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "oldest");
+	swap_id=0;
+	gconfig_get_float(prefs_path, &swap_id);
+	if(swap_id>0) *id_oldest_update=(gulong)swap_id;
+	uber_free(prefs_path);
+	debug("Loaded <%s>'s; oldest [%s] ID:\t\t%lu.", service->uri, timeline, *id_oldest_update);
+	
+	g_strfreev(uri_split);
+}/*online_service_update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
+
+void online_service_update_ids_set(OnlineService *service, const gchar *uri, gulong id_newest_update, gulong id_oldest_update){
+	if(G_STR_EMPTY(uri)) return;
 	
 	gchar **uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
-	online_service_update_ids_save(service, uri_split[0]);
-	g_strfreev(uri_split);
-}/*online_service_update_ids_set(service, DMs|Replies|Tweets|Timelines, newest_id, oldest_id);*/
+	const gchar *timeline=uri_split[0];
 
-static void online_service_update_ids_save(OnlineService *service, const gchar *uri){
-	if(G_STR_EMPTY(uri)) return;
-	
-	debug("Saving update ids for '%s'.", service->key);
-	online_service_update_ids_gconfig_set(service, uri);
-}/*online_service_update_ids_save(service, uri);*/
-
-static void online_service_update_ids_gconfig_set(OnlineService *service, const gchar *timeline){
-	if(G_STR_EMPTY(timeline)) return;
-		
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_IDS_TWEETS:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
@@ -611,20 +569,18 @@ static void online_service_update_ids_gconfig_set(OnlineService *service, const 
 	 */
 	gchar *prefs_path=NULL;
 	
-	if(service->id_newest_update>0){
-		prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "newest");
-		gconfig_set_int(prefs_path, (gint)service->id_newest_update);
-		uber_free(prefs_path);
-		debug("Saved %s's; Newest Tweet ID: %lu.", timeline, service->id_newest_update);
-	}
+	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "newest");
+	gconfig_set_float(prefs_path, (gfloat)id_newest_update);
+	uber_free(prefs_path);
+	debug("Saved <%s>'s; newest [%s] ID:\t\t%lu.", service->uri, timeline, id_newest_update);
 	
-	if(service->id_oldest_update>0){
-		prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "oldest");
-		gconfig_set_int(prefs_path, (gint)service->id_oldest_update);
-		uber_free(prefs_path);
-		debug("Saved %s's; Oldest Tweet ID: %lu.", timeline, service->id_oldest_update);
-	}
-}/*online_service_update_ids_gconfig_set(service, "/direct_messages.xml");*/
+	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "oldest");
+	gconfig_set_float(prefs_path, (gfloat)id_oldest_update);
+	uber_free(prefs_path);
+	debug("Saved: <%s>'s; oldest [%s] ID:\t\t%lu.", service->uri, timeline, id_oldest_update);
+	
+	g_strfreev(uri_split);
+}/*online_service_update_ids_set(service, "/direct_messages.xml", id_newest_update, id_oldest_update);*/
 
 gboolean online_service_connect(OnlineService *service){
 	debug("Loaded account: '%s'.  Validating & connecting.", service->guid);
@@ -719,7 +675,7 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	/*Its a hack but it forces a log-in.*/
 	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, service->username);
-	online_service_request(service, QUEUE, user_profile_uri, (OnlineServiceCallbackAfterSoup)online_service_set_profile, (OnlineServiceSoupSessionCallback)user_parse_profile, NULL, NULL);
+	online_service_request(service, QUEUE, user_profile_uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL);
 	uber_free(user_profile_uri);
 	
 	return TRUE;
@@ -835,7 +791,7 @@ gchar *online_service_request_uri_create(OnlineService *service, const gchar *ur
 	return g_strdup_printf("http%s://%s%s%s", (service->https ?"s" :"" ), service->uri, ( (service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
 }/*online_service_request_uri_create(service, uri);*/
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data){
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(!(service->enabled && service->connected)){
 		if(!online_service_refresh(service, uri)){
 			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
@@ -846,12 +802,12 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 	
 	gchar *new_uri=online_service_request_uri_create(service, uri);
 	debug("Creating new service request for: '%s', requesting: %s.", service->guid, new_uri);
-	SoupMessage *msg=online_service_request_uri(service, request, (const gchar *)new_uri, online_service_callback_after_soup, callback, user_data, form_data);
+	SoupMessage *msg=online_service_request_uri(service, request, (const gchar *)new_uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	g_free(new_uri);
 	return msg;
 }/*online_service_request*/
 
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data){
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(!(service->enabled && service->connected)){
 		if(!online_service_refresh(service, uri)){
 			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
@@ -890,13 +846,13 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	switch(request){
 		case GET:
 		case QUEUE:
-			online_service_request_validate_uri(service, &request_uri, online_service_callback_after_soup, callback, &user_data, &form_data);
+			online_service_request_validate_uri(service, &request_uri, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 			debug("%s: %s", request_string, request_uri);
 			msg=soup_message_new("GET", request_uri);
 			break;
 		
 		case POST:
-			online_service_request_validate_form_data(service, &request_uri, online_service_callback_after_soup, callback, &user_data, &form_data);
+			online_service_request_validate_form_data(service, &request_uri, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 			debug("form_data: [%s]", (gchar *)form_data);
 			msg=soup_message_new(request_string, request_uri);
 			
@@ -927,7 +883,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	switch(request){
 		case QUEUE:
 		case POST:
-			online_service_wrapper=online_service_wrapper_new(service, request_uri, online_service_callback_after_soup, callback, user_data, form_data);
+			online_service_wrapper=online_service_wrapper_new(service, request_uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 			debug("Adding libsoup request to service: '%s' libsoup's message queue.", service->guid);
 			soup_session_queue_message(service->session, msg, (SoupSessionCallback)online_service_callback, online_service_wrapper);
 			break;
@@ -942,7 +898,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	return msg;
 }/*online_service_request_uri*/
 
-static void online_service_request_validate_uri(OnlineService *service, gchar **request_uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer *user_data, gpointer *form_data){
+static void online_service_request_validate_uri(OnlineService *service, gchar **request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
 	if(!(
 		callback!=NULL
 		&&
@@ -950,18 +906,21 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	))
 		return;
 	
-	if(!( service->id_newest_update && (*form_data) && (*user_data) )) return;
-	if(!( tweet_list_get_total( ((TweetList *)(*user_data) )) )) return;
+	if(!( (*form_data) && (*user_data) && tweet_list_get_total( ((TweetList *)(*user_data) )) )) return;
 	
 	if(g_strrstr(*request_uri, "?since_id=")) return;
 	
-	gchar *request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, service->id_newest_update);
+	gulong id_newest_update=0, id_oldest_update=0;
+	online_service_update_ids_get(service, *request_uri, &id_newest_update, &id_oldest_update);
+	if(!id_newest_update) return;
+	
+	gchar *request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_newest_update);
 	g_free(*request_uri);
 	*request_uri=request_uri_swap;
 	request_uri_swap=NULL;
 }/*online_service_request_validate_uri(service, &request_uri, callback, &user_data, &form_data);*/
 
-static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer *user_data, gpointer *form_data){
+static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
 	if(!( (*form_data) &&  (*user_data) )) return;
 	
 	if(!g_str_equal( ((gchar *)(*user_data)), "Tweet") ) return;
@@ -995,12 +954,12 @@ static void online_service_message_restarted(SoupMessage *msg, gpointer user_dat
 	online_service_disconnect(service, FALSE);
 }/*onlin_service_message_restarted*/
 
-void online_service_callback_after_soup_default(gpointer after_soup_callback_data){
-	debug("\n\t\t\t\t\t\t|---------------------------------------------|\n"
-		"\t\t\t\t\t\t|     online service after soup callback      |\n"
-		"\t\t\t\t\t\t|_____________________________________________|"
+void online_service_soup_session_callback_return_processor_func_default(gpointer soup_session_callback_return_gpointer){
+	debug("\n\t\t\t\t\t\t|-----------------------------------------------------------------------------|\n"
+		"\t\t\t\t\t\t|     online_service_soup_session_callback_return_processor_func_default      |\n"
+		"\t\t\t\t\t\t|_____________________________________________________________________________|"
 	);
-}/*online_service_callback_after_soup_default(after_soup_callback_data);*/
+}/*online_service_soup_session_callback_return_processor_func_default(soup_session_callback_return_gpointer);*/
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);

@@ -78,7 +78,7 @@ extern gboolean getting_followers;
  **********************************************************************/
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListLoadFunc func);
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-void users_glist_save(gpointer after_soup_callback_data);
+void users_glist_save(gpointer soup_session_callback_return_gpointer);
 
 int users_glists_sort_by_user_name(User *a, User *b);
 

@@ -48,6 +48,7 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
 get2gnow_SOURCES =			online-services-typedefs.h	\
+	$(keyring_sources)						\
 	program.c			program.h			\
 	main.c				main.h				\
 	online-services.c		online-services.h		\

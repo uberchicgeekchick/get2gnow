@@ -115,18 +115,17 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-void online_service_update_ids_reset(OnlineService *service);
 void online_service_update_ids_get(OnlineService *service, const gchar *uri, gulong *newest_id, gulong *oldest_id);
 void online_service_update_ids_set(OnlineService *service, const gchar *uri, gulong newest_id, gulong oldest_id);
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 
-SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
+SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 
-void online_service_callback_after_soup_default(gpointer after_soup_callback_data);
+void online_service_soup_session_callback_return_processor_func_default(gpointer soup_session_callback_return_gpointer);
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
 

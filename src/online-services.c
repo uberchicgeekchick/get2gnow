@@ -411,17 +411,7 @@ OnlineService *online_services_connected_get_first(OnlineServices *services){
 	return service;
 }/*online_services_connected_get_first*/
 
-void online_services_update_ids_reset(OnlineServices *services){
-	GList		*a=NULL;
-	OnlineService	*service=NULL;
-	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
-		online_service_update_ids_reset(service);
-	}
-}/*online_services_update_ids_reset(OnlineServices *services, const gchar *uri);*/
-
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data){
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
@@ -434,7 +424,7 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 		}
 		
 		debug("Requesting: %s from <%s>.", uri, service_key);
-		online_service_request(service, request, uri, online_service_callback_after_soup, callback, user_data, form_data);
+		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
 }/*online_services_request*/
 

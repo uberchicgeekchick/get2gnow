@@ -276,9 +276,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	gboolean	notify;
 	guint		tweets_parsed=0;
 	gulong		status_id=0;
-	gulong		id_newest_update=0, id_oldest_update=0;
+	gulong		id_newest_update=0, id_oldest_update=0, last_notified_update=0;
 	
-	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	switch(monitoring){
 		case DMs:
 			debug("Parsing DMs.");
@@ -307,6 +306,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		case None: default: return 0;
 	}
+	if(tweet_list_get_total(tweet_list))
+		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
+	last_notified_update=id_newest_update;
+	if(!id_oldest_update && notify) notify=FALSE;
 	
 	guint tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
 	const int	tweet_display_interval=10;
@@ -352,17 +355,17 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		debug("Adding UserStatus from: %s, ID: %lu, on <%s> to TweetList.", user_status_get_user_name(status), user_status_get_id(status), online_service_get_key(service));
 		user_status_store(status, tweet_list);
 		
-		if( id_oldest_update && (notify) && (status_id > id_oldest_update) && (strcasecmp(user_status_get_user_name(status), service_username)) ){
+		if( notify && status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_username) ){
 			free_status=FALSE;
-			g_timeout_add_seconds_full(monitoring, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			g_timeout_add_seconds_full(((monitoring+1)*100), tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
 		if(status_id > id_newest_update) id_newest_update=status_id;
-		id_oldest_update=status_id;
 		
 		if(free_status) user_status_free(status);
 	}
+	id_oldest_update=status_id;
 	
 	if(id_newest_update)
 		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);

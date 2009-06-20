@@ -84,12 +84,12 @@ typedef enum{
 } OnlineServiceWrapperDataHandler;
 
 struct _OnlineServiceWrapper {
-	OnlineService				*service;
-	gchar					*requested_uri;
-	OnlineServiceCallbackAfterSoup		online_service_callback_after_soup;
-	OnlineServiceSoupSessionCallback	callback;
-	gpointer				user_data;
-	gpointer				form_data;
+	OnlineService						*service;
+	gchar							*requested_uri;
+	OnlineServiceSoupSessionCallbackReturnProcessorFunc	online_service_soup_session_callback_return_processor_func;
+	OnlineServiceSoupSessionCallbackFunc			callback;
+	gpointer						user_data;
+	gpointer						form_data;
 };
 
 
@@ -102,17 +102,17 @@ static void online_service_wrapper_user_data_handler(OnlineServiceWrapper *servi
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const gchar *request_uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data){
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	OnlineServiceWrapper *service_wrapper=g_new0(OnlineServiceWrapper, 1);
 	
 	service_wrapper->service=service;
 	
 	service_wrapper->requested_uri=g_strdup(request_uri);
 	
-	if(online_service_callback_after_soup!=NULL)
-		service_wrapper->online_service_callback_after_soup=online_service_callback_after_soup;
+	if(online_service_soup_session_callback_return_processor_func!=NULL)
+		service_wrapper->online_service_soup_session_callback_return_processor_func=online_service_soup_session_callback_return_processor_func;
 	else
-		service_wrapper->online_service_callback_after_soup=online_service_callback_after_soup_default;
+		service_wrapper->online_service_soup_session_callback_return_processor_func=online_service_soup_session_callback_return_processor_func_default;
 	
 	service_wrapper->callback=callback;
 	
@@ -183,7 +183,7 @@ static void online_service_wrapper_data_handler(gpointer *data, OnlineServiceWra
 void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml){
 	if(service_wrapper->callback==NULL) return;
 	
-	service_wrapper->online_service_callback_after_soup( service_wrapper->callback(session, xml, service_wrapper) );
+	service_wrapper->online_service_soup_session_callback_return_processor_func( service_wrapper->callback(session, xml, service_wrapper) );
 }/*online_service_wrapper_run*/
 
 const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper){
@@ -213,7 +213,7 @@ void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper){
 	
 	online_service_wrapper_form_data_handler(service_wrapper, DataFree);
 	
-	service_wrapper->online_service_callback_after_soup=NULL;
+	service_wrapper->online_service_soup_session_callback_return_processor_func=NULL;
 	service_wrapper->callback=NULL;
 	service_wrapper->service=NULL;
 	

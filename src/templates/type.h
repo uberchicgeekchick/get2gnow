@@ -48,44 +48,32 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/**********************************************************************
- *          My art, code, & programming.                              *
- **********************************************************************/
-#ifndef __ONLINE_SERVICE_WRAPPER_H__
-#define __ONLINE_SERVICE_WRAPPER_H__
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__TYPE_?_H__
+#define	__TYPE_?_H__
+
+#define	_XOPEN_SOURCE
 
 
-/**********************************************************************
- *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
- **********************************************************************/
+/********************************************************************************
+ * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ ********************************************************************************/
 #include <glib.h>
-#include <glib/gstdio.h>
-#include <gtk/gtk.h>
-#include <libsoup/soup.h>
-
-#include "online-services-typedefs.h"
-
-/**********************************************************************
- *  Macros, constants, objects, structures, and enum typedefs         *
- **********************************************************************/
+#include <glib/gi18n.h>
 
 
-/**********************************************************************
- *          Global method & function prototypes                       *
- **********************************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
-
-void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml);
-
-const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper);
-OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *service_wrapper);
-gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *service_wrapper);
-gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *service_wrapper);
-
-void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper);
+/********************************************************************************
+ *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ ********************************************************************************/
+G_BEGIN_DECLS
 
 
-#endif /* __ONLINE_SERVICE_WRAPPER_H__ */
-/**********************************************************************
- *                               eof                                  *
- **********************************************************************/
+
+G_END_DECLS
+#endif /* __TYPE_?_H__*/
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+

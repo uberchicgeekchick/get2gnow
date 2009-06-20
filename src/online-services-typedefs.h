@@ -95,8 +95,8 @@ typedef enum _ReloadState ReloadState;
 typedef enum _RequestMethod RequestMethod;
 typedef enum _UsersGListGetWhich UsersGListGetWhich;
 
-typedef void (*OnlineServiceCallbackAfterSoup) (gpointer after_soup_callback_data);
-typedef void* (*OnlineServiceSoupSessionCallback) (SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (gpointer soup_session_callback_return_gpointer);
+typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 typedef void (*UsersGListLoadFunc) (GList *users);
 
 
@@ -107,13 +107,13 @@ enum _RequestMethod{
 };
 
 enum _TweetLists{
+	None,
 	Tweets,
 	Replies,
 	DMs,
 	Timelines,
 	Users,
 	Archive,
-	None,
 };
 
 enum _OnlineServicesListStoreColumns{

@@ -86,9 +86,6 @@ void online_services_disconnect(OnlineServices *services);
 OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
 void online_services_delete_service(OnlineServices *services, OnlineService *service);
 
-void online_services_update_ids_reset(OnlineServices *services);
-
-
 /**
  * @returns:	-2 if services->total equals 0
  *		services->total if count equals 0
@@ -106,7 +103,7 @@ gint online_services_has_connected(OnlineServices *services, guint count);
 
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceCallbackAfterSoup online_service_callback_after_soup, OnlineServiceSoupSessionCallback callback, gpointer user_data, gpointer form_data);
+void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 void online_services_increment_connected(OnlineServices *services);
 

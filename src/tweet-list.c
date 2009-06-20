@@ -89,7 +89,7 @@
 typedef struct _TimelineLabels TimelineLabels;
 
 struct _TimelineLabels{
-	TweetLists	tweet_list;
+	TweetLists	monitoring;
 	const gchar	*timeline;
 	const gchar	*timeline_tab_label;
 	const gchar	*timeline_menu_label;
@@ -111,7 +111,7 @@ struct _TweetListPriv {
 	guint			timeout_id;
 	gint			page;
 	
-	TweetLists		tweet_list;
+	TweetLists		monitoring;
 	gchar			*timeline;
 	gchar			*timeline_tab_label;
 	gchar			*timeline_menu_label;
@@ -319,7 +319,7 @@ void tweet_list_start(TweetList *tweet_list){
 	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
 	/* With multiple timeline support timeline reloading interval shouldn't be less than 5 minutes */
 	if(minutes < 5) minutes=5;
-	switch(this->tweet_list){
+	switch(this->monitoring){
 		case None:	default:
 			debug("unsupport tweet-list type");
 			return;
@@ -336,23 +336,32 @@ void tweet_list_start(TweetList *tweet_list){
 		case Tweets:
 			break;
 	}
+	guint seconds=0;
+	if(gtk_progress_bar_get_fraction(this->progress_bar)!=0.0){
+		seconds=minutes*60;
+		gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
+	}else{
+		minutes=0;
+		seconds=this->monitoring*5;
+		gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
+	}
 	
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button)){
 		debug("Creating timeout to reload %s.", this->timeline_menu_label);
-		guint reload=minutes*60*1000;
+		guint reload=seconds*1000;
 		this->timeout_id=g_timeout_add(reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
 	if(this->total) tweet_list_clean_up(tweet_list);
 	
 	tweet_list_set_adjustment(tweet_list);
-	gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
-	online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->tweet_list);
+	if(minutes)
+		online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
 }/*tweet_list_start(TweetList *tweet_list);*/
 
 guint tweet_list_get_notify_delay(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return 10;
 	TweetListPriv *this=GET_PRIV(tweet_list);
-	return this->tweet_list*this->page*10;
+	return this->monitoring*this->page*10;
 }/*tweet_list_get_notify_delay(tweet_list);*/
 
 static void tweet_list_set_adjustment(TweetList *tweet_list){
@@ -430,9 +439,6 @@ static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *
 
 static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
-	
-	if(this->total) online_services_update_ids_reset(online_services);
 	tweet_list_clear(tweet_list);
 	tweet_list_refresh(tweet_list);
 }/*tweet_list_refresh_clicked(tweet_list);*/
@@ -482,7 +488,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	TimelineLabels *timeline_labels=TimelineLabelsList;
 	while(timeline_labels->timeline){
 		if(g_str_has_prefix(timeline, timeline_labels->timeline )){
-			this->tweet_list=timeline_labels->tweet_list;
+			this->monitoring=timeline_labels->monitoring;
 			this->timeline=g_strdup(timeline);
 			if(!g_str_has_prefix(timeline, "/statuses/user_timeline/")){
 				this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
@@ -511,7 +517,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	}
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
-	if( (this->tweet_list==Archive) || (this->tweet_list==Users) )
+	if( (this->monitoring==Archive) || (this->monitoring==Users) )
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, FALSE);
 }/*tweet_list_set_timeline_label(timeline, tweet_list);*/
 
