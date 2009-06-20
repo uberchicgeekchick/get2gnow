@@ -204,6 +204,8 @@ static void tweet_list_clean_up(TweetList *tweet_list);
 static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, TweetList *tweet_list);
 static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list);
 
+static void tweet_list_normalize_labels(TweetList *tweet_list);
+static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list);
 static void tweet_list_focus_in_event_cb(GtkWidget *widget, GdkEventFocus *event, TweetList *tweet_list);
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *tweet_list);
 static void tweet_list_changed_cb(GtkTreeView *tweet_list_tree_view, TweetList *tweet_list);
@@ -238,6 +240,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	g_signal_connect(tweet_list, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(this->timeline_tree_view, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
+	g_signal_connect(tweet_list, "grab-focus", G_CALLBACK(tweet_list_grab_focus_cb), tweet_list);
 	g_signal_connect(tweet_list, "focus-in-event", G_CALLBACK(tweet_list_focus_in_event_cb), tweet_list);
 	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(selected_tweet_reply), tweet_list);
 	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), tweet_list);
@@ -597,8 +600,12 @@ static void tweet_list_setup(TweetList *tweet_list){
 								
 								"tweet_list_tab_label", "button-press-event", tweet_list_focus_in_event_cb,
 								"tweet_list_tab_label", "focus-in-event", tweet_list_focus_in_event_cb,
+								"tweet_list_tab_label", "grab-focus", tweet_list_grab_focus_cb,
+								
+								"tweet_list_menu_label", "grab-focus", tweet_list_grab_focus_cb,
 								"tweet_list_menu_label", "focus-in-event", tweet_list_focus_in_event_cb,
 								
+								"tweet_list_scrolled_window", "grab-focus", tweet_list_grab_focus_cb,
 								"tweet_list_scrolled_window", "focus-in-event", tweet_list_focus_in_event_cb,
 								"tweet_list_scrolled_window", "size-allocate", tweet_list_size_cb,
 								
@@ -719,17 +726,29 @@ static void tweet_list_clear(TweetList *tweet_list){
 	this->total=0;
 }/* tweet_list_refreshed */
 
+static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list){
+	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	tweet_list_normalize_labels(tweet_list);
+}/*tweet_list_grab_focus_cb(widget, event, tweet_list);*/
+
 static void tweet_list_focus_in_event_cb(GtkWidget *widget, GdkEventFocus *event, TweetList *tweet_list){
+	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	tweet_list_normalize_labels(tweet_list);
+}/*tweet_list_focus_in_event_cb(widget, event, tweet_list);*/
+
+static void tweet_list_normalize_labels(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPriv *this=GET_PRIV(tweet_list);
 	
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
-}/*tweet_list_focus_in_event_cb(widget, event, tweet_list);*/
+}/*tweet_list_normalize_labels(tweet_list);*/
 
 static void tweet_list_changed_cb(GtkTreeView *tweet_list_tree_view, TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPriv *this=GET_PRIV(tweet_list);
+	
+	tweet_list_normalize_labels(tweet_list);
 	
 	GtkTreeSelection	*sel;
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
