@@ -393,8 +393,6 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPriv *this=GET_PRIV(tweet_list);
 	
-	gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
-	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
 		max_updates=this->maximum;
@@ -404,7 +402,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	
 	for(gint i=this->total; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		if( (gtk_tree_model_iter_nth_child(this->tree_model, iter, NULL, i)) ){
+		if( (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(this->tree_model_sort), iter, NULL, i)) ){
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
 		}
@@ -459,6 +457,7 @@ void tweet_list_complete(TweetList *tweet_list){
 	
 	tweet_list_scroll_to_top(tweet_list);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
+	gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
 }/*tweet_list_complete(tweet_list);*/
 
 static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list){
