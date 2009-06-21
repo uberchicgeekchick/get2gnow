@@ -262,6 +262,8 @@ TweetList *tweet_list_new(const gchar *timeline){
 	gtk_widget_show_all(GTK_WIDGET(GET_PRIVATE(tweet_list)->vbox));
 	gtk_widget_show_all(GTK_WIDGET(tweet_list));
 	
+	tweet_list=g_object_ref_sink(tweet_list);
+	
 	return tweet_list;
 }/*tweet_list_new(timeline);*/
 
@@ -278,6 +280,8 @@ static void tweet_list_finalize(TweetList *tweet_list){
 	if(this->menu_label) gtk_widget_destroy(GTK_WIDGET(this->menu_label));
 	if(this->vbox) gtk_widget_destroy(GTK_WIDGET(this->vbox));
 	if(this->tree_model_sort) g_object_unref(this->tree_model_sort);
+	
+	G_OBJECT_CLASS(tweet_list_parent_class)->finalize(G_OBJECT(tweet_list));
 }/* tweet_list_finalized */
 
 

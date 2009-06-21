@@ -124,6 +124,8 @@ static void my_gobject_finalize(MyGObject *my_gobject){
 	MyGObjectPrivate *this=GET_PRIVATE(my_gobject);
 	
 	program_timeout_remove(&this->timeout_id, g_strrstr(this->string, "/"));
+	
+	G_OBJECT_CLASS(my_gobject_parent_class)->finalize(G_OBJECT(my_object));
 }/* my_gobject_finalized */
 
 

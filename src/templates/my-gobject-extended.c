@@ -209,6 +209,8 @@ static void my_gobject_finalize(MyGObject *my_gobject){
 
 	if(this->widget) gtk_widget_destroy(GTK_WIDGET(this->widget));
 	if(this->tree_model_sort) g_object_unref(this->tree_model_sort);
+	
+	G_OBJECT_CLASS(my_gobject_parent_class)->finalize(G_OBJECT(my_object));
 }/* my_gobject_finalized */
 
 
