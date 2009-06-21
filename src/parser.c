@@ -306,7 +306,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		case None: default: return 0;
 	}
-	if(tweet_list_get_total(tweet_list))
+	if( tweet_list_has_loaded(tweet_list) || (monitoring==DMs || monitoring==Replies) )
 		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	last_notified_update=id_newest_update;
 	if(!id_oldest_update && notify) notify=FALSE;

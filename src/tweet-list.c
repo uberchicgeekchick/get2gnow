@@ -112,6 +112,8 @@ struct _TweetListPrivate {
 	gint			page;
 	
 	TweetLists		monitoring;
+	gint			has_loaded;
+	
 	gchar			*timeline;
 	gchar			*timeline_tab_label;
 	gchar			*timeline_menu_label;
@@ -234,6 +236,7 @@ static void tweet_list_class_init(TweetListClass *klass){
 static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
+	this->has_loaded=-1;
 	this->connected_online_services=this->timeout_id=this->index=this->total=0;
 	this->maximum=this->minimum=0.0;
 	this->timeline=this->timeline_tab_label=this->timeline_menu_label=NULL;
@@ -286,6 +289,11 @@ static void tweet_list_finalize(TweetList *tweet_list){
 
 
 /*BEGIN: Custom TweetList methods.*/
+gint tweet_list_has_loaded(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
+	return GET_PRIVATE(tweet_list)->has_loaded;
+}/*tweet_list_has_loaded(tweet_list);*/
+
 const gchar *tweet_list_get_timeline(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
 	return GET_PRIVATE(tweet_list)->timeline;
@@ -358,6 +366,7 @@ void tweet_list_start(TweetList *tweet_list){
 	}
 	guint seconds=0;
 	if(gtk_progress_bar_get_fraction(this->progress_bar)!=0.0){
+		if(this->has_loaded < 2) this->has_loaded++;
 		seconds=minutes*60;
 		gtk_progress_bar_set_fraction(this->progress_bar, 0.0);
 	}else{

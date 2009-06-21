@@ -95,6 +95,8 @@ GType tweet_list_get_type(void) G_GNUC_CONST;
 TweetList *tweet_list_new(const gchar *timeline);
 const gchar *tweet_list_get_timeline(TweetList *tweet_list);
 
+gint tweet_list_has_loaded(TweetList *tweet_list);
+
 gint tweet_list_get_page(TweetList *tweet_list);
 gint tweet_list_get_total(TweetList *tweet_list);
 guint tweet_list_get_notify_delay(TweetList *tweet_list);

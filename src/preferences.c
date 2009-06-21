@@ -226,7 +226,10 @@ static void preferences_direct_reply_toggled(GtkToggleButton *check_button, Pref
 static void preferences_timeline_setup (PreferencesDialog *prefs){
 	debug("Binding timelines to preference.");
 	static const gchar *timelines[] = {
+		API_TIMELINE_FRIENDS,	N_("My Friends' Updates"),
+		API_REPLIES,		N_("@ Replies"),
 		API_MENTIONS,		N_("@ Mentions"),
+		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
 		API_FAVORITES,		N_("My Favorites"),
 		API_TIMELINE_MINE,	N_("My Tweets"),
 		API_TIMELINE_PUBLIC,	N_("All Public Tweets"),
