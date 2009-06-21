@@ -635,6 +635,7 @@ void tweet_view_beep(void){
 }/*tweet_view_beep*/
 
 void tweet_view_sexy_select(void){
+	if(gtk_widget_has_focus(GTK_WIDGET(tweet_view->sexy_entry))) return;
 	gtk_widget_grab_focus(GTK_WIDGET(tweet_view->sexy_entry));
 	gtk_entry_set_position(GTK_ENTRY(tweet_view->sexy_entry), -1 );
 }/*tweet_view_sexy_select*/

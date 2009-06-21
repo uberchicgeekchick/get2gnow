@@ -915,14 +915,16 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	
 	gulong id_newest_update=0, id_oldest_update=0;
 	online_service_update_ids_get(service, *request_uri, &id_newest_update, &id_oldest_update);
-	if(!id_newest_update) return;
 	
 	gchar *request_uri_swap=NULL;
 	if( has_loaded==2 )
-		if( !tweet_list_get_total(tweet_list) ) return;
+		if(!id_newest_update) return;
+		else if( !tweet_list_get_total(tweet_list) ) return;
 		else request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_newest_update);
 	else if(monitoring==DMs || monitoring==Replies)
-		request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_oldest_update);
+		if(!id_oldest_update) return;
+		else request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_oldest_update);
+	else return;
 	
 	g_free(*request_uri);
 	*request_uri=request_uri_swap;

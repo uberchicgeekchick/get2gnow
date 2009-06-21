@@ -77,8 +77,15 @@
 #define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Tweets.c"
 #include "debug.h"
 
+static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
 
-void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
+
+void tweets_hotkey(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
+	tweets_hotkey_process(widget, event, user_date);
+	tweet_view_sexy_select();
+}/*void tweets_hotkey(widget, event, user_date){*/
+
+static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
 	switch(event->state){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
@@ -205,7 +212,7 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event){
 			break;
 	}
 	tweet_list_key_pressed(main_window_tweet_lists_get_current(), event);
-}/*tweets_hotkey*/
+}/*tweets_hotkey_process(widget, event, user_date);*/
 
 void tweets_beep(void){
 	tweet_view_beep();

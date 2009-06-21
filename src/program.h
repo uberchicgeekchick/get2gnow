@@ -58,30 +58,34 @@
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-
+#include <glib.h>
+#include <gtk/gtk.h>
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
 #ifndef uber_free
-#define	uber_free(mem)				{ g_free(mem); mem=NULL; }
+#define	uber_free(mem)					{ g_free(mem); mem=NULL; }
 #endif
 
 
 #ifndef	uber_construct
-#define	uber_construct(type)			g_slice_alloc0(sizeof(type))
+#define	uber_construct(type)				g_slice_alloc0(sizeof(type))
 #endif
 
 
 #ifndef	uber_deconstruct
-#define	uber_deconstruct(mem, type)		{ g_slice_free1(sizeof(type), mem); mem=NULL; }
+#define	uber_deconstruct(mem, type)			{ g_slice_free1(sizeof(type), mem); mem=NULL; }
 #endif
 
 
 #ifndef g_str_n_equal
-#define	g_str_n_equal(string1, string2)		(!g_str_equal(string1, string2))
+#define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
 #endif
 
+#ifndef	gtk_widget_has_focus
+#define	gtk_widget_has_focus(widget)			program_gtk_widget_get_focus(widget)
+#endif
 
 #ifndef	uber_g_str_equal
 #	if defined(G_HAVE_ISO_VARARGS)
@@ -116,6 +120,7 @@ void program_init(int argc, char **argv);
 const gchar *program_gtk_response_to_string(gint response);
 void program_uber_free(gpointer pointer1, ...);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
+gboolean program_gtk_widget_get_focus(GtkWidget *widget);
 void program_timeout_remove(guint *id, const gchar *usage);
 void program_deinit(void);
 

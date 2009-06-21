@@ -34,7 +34,7 @@
 
 G_BEGIN_DECLS
 
-void tweets_hotkey(GtkWidget *widget, GdkEventKey *event);
+void tweets_hotkey(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
 
 void tweets_beep(void);
 

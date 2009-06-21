@@ -306,7 +306,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		case None: default: return 0;
 	}
-	if( tweet_list_has_loaded(tweet_list) || (monitoring==DMs || monitoring==Replies) )
+	if( tweet_list_has_loaded(tweet_list) || monitoring==DMs || monitoring==Replies )
 		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	last_notified_update=id_newest_update;
 	if(!id_oldest_update && notify) notify=FALSE;
@@ -361,11 +361,13 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
-		if(status_id > id_newest_update) id_newest_update=status_id;
+		if(status_id){
+			id_oldest_update=status_id;
+			if(status_id > id_newest_update) id_newest_update=status_id;
+		}
 		
 		if(free_status) user_status_free(status);
 	}
-	id_oldest_update=status_id;
 	
 	if(id_newest_update)
 		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);

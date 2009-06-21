@@ -171,6 +171,13 @@ void program_timeout_remove(guint *id, const gchar *usage){
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
 
+gboolean program_gtk_widget_get_focus(GtkWidget *widget){
+	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
+	gboolean has_focus=FALSE;
+	g_object_get(widget, "has-focus", &has_focus, NULL);
+	return has_focus;
+}/*program_gtk_widget_get_focus(widget);*/
+
 void program_deinit(void){
 	/* Close libnotify */
 	if(notifing) notify_uninit();
