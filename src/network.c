@@ -144,8 +144,8 @@ gboolean network_check_http(OnlineService *service, SoupMessage *xml){
 	
 	if(!SOUP_STATUS_IS_SUCCESSFUL(xml->status_code))
 		return FALSE;
-	else
-		return TRUE;
+	
+	return TRUE;
 }/*network_check_http(service, xml);*/
 
 /* Post a new tweet - text must be Url encoded */

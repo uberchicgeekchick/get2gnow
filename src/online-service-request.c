@@ -235,11 +235,11 @@ gchar *online_service_request_action_to_string(RequestAction action){
 		case ViewTweets:
 			return _("displaying tweets");
 		case Follow:
-			return _("started following:");
+			return _("following");
 		case UnFollow:
-			return _("unfollowed:");
+			return _("unfollowed");
 		case Block:
-			return _("blocked:");
+			return _("blocked");
 		case UnBlock:
 			return _("unblocked user");
 		case Fave:
@@ -347,7 +347,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
 	const gchar *service_key=online_service_get_key(service);
-	if(!network_check_http(service, msg)){
+	if( msg->status_code!=403 && !network_check_http(service, msg) ){
 		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_data, service_key, msg->status_code);
 		
 		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_key, msg->reason_phrase, msg->status_code);
@@ -357,6 +357,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 	
 	User *user=NULL;
 	OnlineServiceWrapper *request_wrapper=NULL;
+	debug("OnlineServiceRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_key);
 	switch(request->action){
 		case ViewTweets:
 			request_wrapper=online_service_wrapper_new(service, online_service_wrapper_get_requested_uri(service_wrapper), NULL, network_display_timeline, main_window_tweet_lists_get_timeline(request->uri), (gpointer)Users);
@@ -366,11 +367,15 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 		case UnFollow:
 		case Block:
 		case Follow:
-			/* parse new user */
-			debug("OnlineServiceRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_key);
 			if(!(user=user_parse_profile(online_service_get_session(service), msg, service_wrapper))){
-				debug("\t\t[failed]");
-				main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_data, service_key);
+				if(msg->status_code!=403){
+					debug("\t\t[failed]");
+					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_data, service_key);
+				}else{
+					debug("\t\t[duplicate request]");
+					debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_data, service_key);
+					statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_data, service_key);
+				}
 			}else{
 				debug("\t\t[succeeded]");
 				if(request->action==Follow)
@@ -389,8 +394,13 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 		case Fave:
 		case UnFave:
 		case UnBlock:
-			debug("OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\t[successed]", request->message, request->user_data, service_key);
-			main_window_statusbar_printf("Successfully %s on %s.", request->message, service_key);
+			if(msg->status_code!=403){
+				debug("\t\t[succceed]");
+				main_window_statusbar_printf("Successfully %s on %s.", request->message, service_key);
+			}else{
+				debug("\t\t[duplicate request]");
+				main_window_statusbar_printf("You've already %s on %s.", request->message, service_key);
+			}
 			break;
 		case SelectService:
 		case ViewProfile:
