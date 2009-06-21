@@ -907,7 +907,8 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 		return;
 	
 	TweetLists monitoring=(TweetLists)*form_data;
-	gint has_loaded=tweet_list_has_loaded( ((TweetList *)(*user_data)) );
+	TweetList *tweet_list=(TweetList *)*user_data;
+	gint has_loaded=tweet_list_has_loaded(tweet_list);
 	if(!( (*form_data) && (*user_data) && ( has_loaded || (monitoring==DMs || monitoring==Replies) ) )) return;
 	
 	if(g_strrstr(*request_uri, "?since_id=")) return;
@@ -918,7 +919,8 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	
 	gchar *request_uri_swap=NULL;
 	if( has_loaded==2 )
-		request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_newest_update);
+		if( !tweet_list_get_total(tweet_list) ) return;
+		else request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_newest_update);
 	else if(monitoring==DMs || monitoring==Replies)
 		request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_oldest_update);
 	
