@@ -120,6 +120,7 @@ struct _TweetListPrivate {
 	
 	gint			index;
 	guint			total;
+	gboolean		new_updates;
 	
 	guint			connected_online_services;
 	gdouble			maximum;
@@ -237,6 +238,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	this->has_loaded=-1;
+	this->new_updates=FALSE;
 	this->connected_online_services=this->timeout_id=this->index=this->total=0;
 	this->maximum=this->minimum=0.0;
 	this->timeline=this->timeline_tab_label=this->timeline_menu_label=NULL;
@@ -428,7 +430,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		max_updates=this->minimum;
 	if(this->total <= max_updates) return;
 	
-	for(gint i=this->total; i>max_updates; i--){
+	for(gint i=this->total; i>=max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		gchar *path_string=g_strdup_printf("%d", i);
 		if( (gtk_tree_model_get_iter_from_string(this->tree_model, iter, path_string)) && (gtk_list_store_iter_is_valid(this->list_store, iter)) ){
@@ -561,6 +563,8 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 void tweet_list_increment(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(!this->new_updates) this->new_updates=TRUE;
 	
 	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
@@ -756,6 +760,10 @@ static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list){
 void tweet_list_mark_as_read(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(!this->new_updates) return;
+	
+	this->new_updates=FALSE;
 	
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
