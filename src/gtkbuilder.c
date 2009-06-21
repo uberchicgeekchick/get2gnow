@@ -57,7 +57,7 @@
 
 static gchar *gtkbuilder_get_path( const gchar *filename );
 
-static gchar *gtkbuilder_get_path( const gchar *filename ){
+static gchar *gtkbuilder_get_path(const gchar *filename){
 #ifndef GNOME_ENABLE_DEBUG
 	gchar *gtkbuilder_ui_file=NULL;
 	if( (g_file_test( (gtkbuilder_ui_file=g_build_filename( DATADIR, PACKAGE_TARNAME, filename, NULL )), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )) )
@@ -76,41 +76,34 @@ static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *fir
 	GObject    **pointer;
 	const char  *name;
 	gchar       *path;
-	GError      *err = NULL;
+	GError      *error = NULL;
 
 	/* Create gtkbuilder & load the xml file */
 	ui = gtk_builder_new ();
 	gtk_builder_set_translation_domain (ui, GETTEXT_PACKAGE);
 	path = gtkbuilder_get_path(filename);
-	if (gtk_builder_add_from_file (ui, path, &err) == 0) {
-		g_warning ("XML file error: %s", err->message);
-		g_error_free (err);
+	if(!gtk_builder_add_from_file (ui, path, &error)){
+		g_warning ("XML file error: %s", error->message);
+		g_error_free (error);
 		g_free (path);
 		return NULL;
 	}
 	g_free (path);
 
-	/* Grab the widgets */
-	for (name = first_widget; name; name = va_arg (args, char *)) {
-		pointer = va_arg(args, void *);
-		
-		*pointer = gtk_builder_get_object(ui, name);
-		
-		if (!*pointer) {
+	for(name=first_widget; name; name=va_arg (args, char *)){
+		pointer=va_arg(args, void *);
+		if(!( *pointer=gtk_builder_get_object(ui, name) ))
 			g_warning ("Widget '%s' at '%s' is missing.", name, filename);
-			continue;
-		}
 	}
 
 	return ui;
 }
 
 GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widget, ...){
-	GtkBuilder *ui;
 	va_list args;
 
 	va_start(args, first_widget);
-	ui=gtkbuilder_load_file(filename, first_widget, args);
+	GtkBuilder *ui=gtkbuilder_load_file(filename, first_widget, args);
 	va_end(args);
 
 	return ( ui ? ui : NULL );

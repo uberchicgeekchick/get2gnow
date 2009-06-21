@@ -90,16 +90,24 @@ void main_window_disconnect(void);
 void main_window_create(void);
 MainWindow *main_window_get(void);
 
+
+
+void main_window_tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window);
+TweetList *main_window_tweet_lists_new(const gchar *timeline);
 TweetList *main_window_tweet_lists_get_next(void);
 TweetList *main_window_tweet_lists_get_current(void);
 TweetList *main_window_tweet_lists_get_previous(void);
 TweetList *main_window_tweet_lists_get_timeline(const gchar *timeline);
 TweetList *main_window_tweet_lists_get_page(gint page, gboolean close);
+
 void main_window_tweet_lists_start(void);
 void main_window_tweet_lists_refresh(void);
 void main_window_tweet_lists_stop(void);
 void main_window_tweet_lists_close(void);
 void main_window_tweet_lists_close_page(gint page);
+void main_window_tweet_lists_destroy(void);
+
+
 
 void main_window_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 

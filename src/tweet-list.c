@@ -84,7 +84,7 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPriv))
+#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_TWEET_LIST, TweetListPrivate))
 
 typedef struct _TimelineLabels TimelineLabels;
 
@@ -96,7 +96,7 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Tweets,	API_TIMELINE_FRIENDS,	N_("My _Friends' Updates"),	N_("My_Friends' Updates")},
+	{Tweets,	API_TIMELINE_FRIENDS,	N_("My _Friends' Updates"),	N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,		N_("@ _Replies"),		N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),		N_("@ Mentions")},
 	{DMs,		API_DIRECT_MESSAGES,	N_("My _DMs Inbox"),		N_("My DMs Inbox")},
@@ -107,7 +107,7 @@ TimelineLabels TimelineLabelsList[]={
 	{None,		NULL,			N_("Unknown timeline"),		N_("Unknown timeline")}
 };
 
-struct _TweetListPriv {
+struct _TweetListPrivate {
 	guint			timeout_id;
 	gint			page;
 	
@@ -119,7 +119,7 @@ struct _TweetListPriv {
 	gint			index;
 	guint			total;
 	
-	guint			connected;
+	guint			connected_online_services;
 	gdouble			maximum;
 	gdouble			minimum;
 	
@@ -190,23 +190,23 @@ struct _TweetListPriv {
  *               object methods, handlers, callbacks, & etc.                    *
  ********************************************************************************/
 static void tweet_list_class_init(TweetListClass *klass);
-static void tweet_list_init(TweetList *tweet);
-static void tweet_list_finalize(GObject *object);
+static void tweet_list_init(TweetList *tweet_list);
+static void tweet_list_finalize(TweetList *tweet_list);
 
 static void tweet_list_setup(TweetList *tweet_list);
 static void tweet_list_setup(TweetList *tweet_list);
 
 static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *timeline);
 
+static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list);
 static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list);
 static void tweet_list_set_adjustment(TweetList *tweet_list);
-static void tweet_list_clean_up(TweetList *tweet_list);
-static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, TweetList *tweet_list);
-static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list);
 
-static void tweet_list_normalize_labels(TweetList *tweet_list);
+static void tweet_list_clean_up(TweetList *tweet_list);
+static void tweet_list_sort(TweetList *tweet_list);
+static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, TweetList *tweet_list);
+
 static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list);
-static void tweet_list_focus_in_event_cb(GtkWidget *widget, GdkEventFocus *event, TweetList *tweet_list);
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *tweet_list);
 static void tweet_list_changed_cb(GtkTreeView *tweet_list_tree_view, TweetList *tweet_list);
 static void tweet_list_clear(TweetList *tweet_list);
@@ -226,37 +226,47 @@ G_DEFINE_TYPE(TweetList, tweet_list, SEXY_TYPE_TREE_VIEW);
 static void tweet_list_class_init(TweetListClass *klass){
 	GObjectClass	*object_class=G_OBJECT_CLASS(klass);
 	
-	object_class->finalize=tweet_list_finalize;
+	object_class->finalize=(GObjectFinalizeFunc)tweet_list_finalize;
 	
-	g_type_class_add_private(object_class, sizeof(TweetListPriv));
+	g_type_class_add_private(object_class, sizeof(TweetListPrivate));
 }/* tweet_list_class_init */
 
 static void tweet_list_init(TweetList *tweet_list){
-	TweetListPriv *this=GET_PRIV(tweet_list);
-		
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	this->connected_online_services=this->timeout_id=this->index=this->total=0;
+	this->maximum=this->minimum=0.0;
+	this->timeline=this->timeline_tab_label=this->timeline_menu_label=NULL;
+	this->tab_label=this->menu_label=NULL;
+	this->vbox=NULL;
+	this->tree_model_sort=NULL;
 	tweet_list_setup(tweet_list);
-	this->index=this->total=0;
+	
 	g_object_set(tweet_list, "rules-hint", TRUE, "reorderable", TRUE, "headers-visible", FALSE, NULL);
 	g_signal_connect(tweet_list, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(this->timeline_tree_view, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
 	g_signal_connect(tweet_list, "grab-focus", G_CALLBACK(tweet_list_grab_focus_cb), tweet_list);
-	g_signal_connect(tweet_list, "focus-in-event", G_CALLBACK(tweet_list_focus_in_event_cb), tweet_list);
 	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(selected_tweet_reply), tweet_list);
 	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), tweet_list);
 }/* tweet_list_init */
 
 TweetList *tweet_list_new(const gchar *timeline){
 	TweetList *tweet_list=g_object_new(TYPE_TWEET_LIST, NULL);
+	
 	debug("Creating new TweetView for timeline: %s.", timeline);
+	
 	tweet_list_set_timeline_label(tweet_list, timeline);
 	tweet_list_start(tweet_list);
+	
+	gtk_widget_show_all(GTK_WIDGET(GET_PRIVATE(tweet_list)->vbox));
+	gtk_widget_show_all(GTK_WIDGET(tweet_list));
+	
 	return tweet_list;
 }/*tweet_list_new(timeline);*/
 
-static void tweet_list_finalize( GObject *object ){
-	TweetList *tweet_list=TWEET_LIST(object);
-	TweetListPriv *this=GET_PRIV(tweet_list);
+static void tweet_list_finalize(TweetList *tweet_list){
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
 	
@@ -264,60 +274,62 @@ static void tweet_list_finalize( GObject *object ){
 	if(this->timeline_tab_label) uber_free(this->timeline_tab_label);
 	if(this->timeline_menu_label) uber_free(this->timeline_menu_label);
 
-	if(this->tree_model_sort) g_object_unref(this->tree_model_sort);
+	if(this->tab_label) gtk_widget_destroy(GTK_WIDGET(this->tab_label));
+	if(this->menu_label) gtk_widget_destroy(GTK_WIDGET(this->menu_label));
 	if(this->vbox) gtk_widget_destroy(GTK_WIDGET(this->vbox));
+	if(this->tree_model_sort) g_object_unref(this->tree_model_sort);
 }/* tweet_list_finalized */
 
 
 /*BEGIN: Custom TweetList methods.*/
 const gchar *tweet_list_get_timeline(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
-	return GET_PRIV(tweet_list)->timeline;
+	return GET_PRIVATE(tweet_list)->timeline;
 }/*tweet_list_get_timeline(tweet_list);*/
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
-	return GET_PRIV(tweet_list)->vbox;
+	return GET_PRIVATE(tweet_list)->vbox;
 }/*tweet_list_get_child(tweet_list);*/
 
 GtkLabel *tweet_list_get_tab(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
-	return GET_PRIV(tweet_list)->tab_label;
+	return GET_PRIVATE(tweet_list)->tab_label;
 }/*tweet_list_get_label(TweetList *tweet_list);*/
 
 GtkLabel *tweet_list_get_menu(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
-	return GET_PRIV(tweet_list)->menu_label;
+	return GET_PRIVATE(tweet_list)->menu_label;
 }/*tweet_list_get_label(TweetList *tweet_list);*/
 
 GtkListStore *tweet_list_get_list_store(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
-	return GET_PRIV(tweet_list)->list_store;
+	return GET_PRIVATE(tweet_list)->list_store;
 }/*tweet_list_get_list_store(tweet_list);*/
 
 GtkTreeModel *tweet_list_get_tree_model(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
-	return GET_PRIV(tweet_list)->tree_model;
+	return GET_PRIVATE(tweet_list)->tree_model;
 }/*tweet_list_get_tree_model(tweet_list);*/
 
 gint tweet_list_get_page(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return -1;
-	return GET_PRIV(tweet_list)->page;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return -1;
+	return GET_PRIVATE(tweet_list)->page;
 }/*tweet_list_get_page(tweet_list);*/
 
 gint tweet_list_get_total(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
-	return GET_PRIV(tweet_list)->total;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
+	return GET_PRIVATE(tweet_list)->total;
 }/*tweet_list_get_total(tweet_list);*/
 
 void tweet_list_set_page(TweetList *tweet_list, gint page){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
-	GET_PRIV(tweet_list)->page=page;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	GET_PRIVATE(tweet_list)->page=page;
 }/*tweet_list_set_page(tweet_list, 0);*/
 
 void tweet_list_start(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gint minutes=0;
 	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
@@ -363,22 +375,22 @@ void tweet_list_start(TweetList *tweet_list){
 }/*tweet_list_start(TweetList *tweet_list);*/
 
 guint tweet_list_get_notify_delay(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return 10;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return 10;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	return this->monitoring*this->page*10;
 }/*tweet_list_get_notify_delay(tweet_list);*/
 
 static void tweet_list_set_adjustment(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	guint connected=online_services_has_connected(online_services, 0);
-	if(connected==this->connected) return;
+	guint connected_online_services=online_services_has_connected(online_services, 0);
+	if(connected_online_services==this->connected_online_services) return;
 	
-	this->minimum=connected*MINIMUM_TWEETS;
+	this->minimum=connected_online_services*MINIMUM_TWEETS;
 	gtk_adjustment_set_lower(this->max_tweets_adjustment, this->minimum);
 	
-	this->maximum=connected*MAXIMUM_TWEETS;
+	this->maximum=connected_online_services*MAXIMUM_TWEETS;
 	gtk_adjustment_set_upper(this->max_tweets_adjustment, this->maximum);
 	
 	gdouble max_updates=gtk_adjustment_get_value(this->max_tweets_adjustment);
@@ -393,8 +405,8 @@ static void tweet_list_set_adjustment(TweetList *tweet_list){
 }/*tweet_list_set_adjustment(tweet_list);*/
 
 static void tweet_list_clean_up(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
@@ -405,23 +417,31 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	
 	for(gint i=this->total; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		if( (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(this->tree_model_sort), iter, NULL, i)) ){
+		gchar *path_string=g_strdup_printf("%d", i);
+		if( (gtk_tree_model_get_iter_from_string(this->tree_model, iter, path_string)) && (gtk_list_store_iter_is_valid(this->list_store, iter)) ){
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
 		}
 		uber_free(iter);
+		uber_free(path_string);
 	}
+	tweet_list_sort(tweet_list);
 }/*static void tweet_list_clean_up(TweetList *tweet_list);*/
 
+static void tweet_list_sort(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	gtk_tree_model_foreach(GTK_TREE_MODEL(( GET_PRIVATE(tweet_list)->tree_model )), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
+}/*tweet_list_sort(tweet_list);*/
+
 static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return FALSE;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return FALSE;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gulong 		created_seconds_ago=0;
 	gchar		*created_at_str=NULL, *created_how_long_ago=NULL;
 	
 	gtk_tree_model_get(
-				GTK_TREE_MODEL(this->tree_model_sort), iter,
+				this->tree_model, iter,
 					STRING_CREATED_AT, &created_at_str,
 				-1
 	);
@@ -442,30 +462,30 @@ static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *
 }/*static gboolean tweet_list_update_created_ago(model, path, iter, tweet_list);*/
 
 static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	tweet_list_clear(tweet_list);
 	tweet_list_refresh(tweet_list);
 }/*tweet_list_refresh_clicked(tweet_list);*/
 
 gboolean tweet_list_refresh(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return FALSE;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return FALSE;
 	tweet_list_stop(tweet_list);
 	tweet_list_start(tweet_list);
 	return FALSE;
 }/*tweet_list_refresh(tweet_list);*/
 
 void tweet_list_complete(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	tweet_list_scroll_to_top(tweet_list);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
-	gtk_tree_model_foreach(GTK_TREE_MODEL(this->tree_model_sort), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
+	tweet_list_sort(tweet_list);
 }/*tweet_list_complete(tweet_list);*/
 
 static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	tweet_list_stop(tweet_list);
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button))
@@ -473,21 +493,21 @@ static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_
 }/*tweet_list_auto_refresh_toggle(tweet_list_stop_toggle_tool_button, tweet_list);*/
 
 void tweet_list_stop(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
 }/*tweet_list_stop(tweet_list);*/
 
 static void tweet_list_close(GtkToolButton *tweet_list_close_tool_button, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	main_window_tweet_lists_close_page(this->page);
 }/*tweet_list_close(tweet_list_close_tool_button, tweet_list);*/
 
 static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *timeline){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	TimelineLabels *timeline_labels=TimelineLabelsList;
 	while(timeline_labels->timeline){
@@ -523,11 +543,11 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
 	if( (this->monitoring==Archive) || (this->monitoring==Users) )
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, FALSE);
-}/*tweet_list_set_timeline_label(timeline, tweet_list);*/
+}/*tweet_list_set_timeline_label(tweet_list, timeline);*/
 
 void tweet_list_increment(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
@@ -541,8 +561,8 @@ void tweet_list_increment(TweetList *tweet_list){
 }/*tweet_list_increment(tweet_list);*/
 
 static void tweet_list_setup(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	GtkBuilder *gtk_builder_ui=gtkbuilder_get_file(
 							GtkBuilderUI,
@@ -598,18 +618,11 @@ static void tweet_list_setup(TweetList *tweet_list){
 								"tweet_list_stop_toggle_tool_button", "toggled", tweet_list_stop_toggled,
 								"tweet_list_close_tool_button", "clicked", tweet_list_close,
 								
-								"tweet_list_tab_label", "button-press-event", tweet_list_focus_in_event_cb,
-								"tweet_list_tab_label", "focus-in-event", tweet_list_focus_in_event_cb,
-								"tweet_list_tab_label", "grab-focus", tweet_list_grab_focus_cb,
-								
-								"tweet_list_menu_label", "grab-focus", tweet_list_grab_focus_cb,
-								"tweet_list_menu_label", "focus-in-event", tweet_list_focus_in_event_cb,
-								
 								"tweet_list_scrolled_window", "grab-focus", tweet_list_grab_focus_cb,
-								"tweet_list_scrolled_window", "focus-in-event", tweet_list_focus_in_event_cb,
 								"tweet_list_scrolled_window", "size-allocate", tweet_list_size_cb,
 								
-								"tweet_list_timeline_tree_view", "focus-in-event", tweet_list_focus_in_event_cb,
+								"tweet_list_timeline_tree_view", "grab-focus", tweet_list_grab_focus_cb,
+								
 								"tweet_list_timeline_tree_view", "cursor-changed", tweet_list_changed_cb,
 								"tweet_list_timeline_tree_view", "size-allocate", tweet_list_size_cb,
 								"tweet_list_timeline_tree_view", "row-activated", selected_tweet_reply,
@@ -626,13 +639,10 @@ static void tweet_list_setup(TweetList *tweet_list){
 	sexy_tree_view_set_tooltip_label_column( SEXY_TREE_VIEW(tweet_list), STRING_SEXY_TWEET);
 	
 	tweet_list_set_adjustment(tweet_list);
-	
-	gtk_widget_show_all(GTK_WIDGET(this->vbox));
-	gtk_widget_show_all(GTK_WIDGET(tweet_list));
 }/*tweet_list_setup(tweet_list);*/
 
 void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	if(event->keyval!=GDK_Return && event->keyval!=GDK_KP_Enter) return tweet_list_move(tweet_list, event);
 	
 	switch(event->state){
@@ -652,8 +662,8 @@ void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event){
 }/*tweet_list_key_pressed(widget, event);*/
 
 static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
@@ -682,8 +692,8 @@ static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event){
 }/* tweet_list_move */
 
 static void tweet_list_goto_index(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(this->index<0) {
 		tweets_beep();
@@ -695,7 +705,6 @@ static void tweet_list_goto_index(TweetList *tweet_list){
 	
 	debug("Selecting tweet %d, maximum tweets are: %d.", this->index, this->total);
 	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
-	/*gtk_tree_view_set_cursor( GTK_TREE_VIEW(tweet_list), path, NULL, FALSE );*/
 	gtk_tree_view_set_cursor(this->timeline_tree_view, path, NULL, FALSE);
 	gtk_tree_path_free(path);
 	
@@ -703,8 +712,8 @@ static void tweet_list_goto_index(TweetList *tweet_list){
 }/*tweet_list_goto_index();*/
 
 static void tweet_list_scroll_to_top(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 		
 	if(!(GTK_TREE_VIEW(this->timeline_tree_view))){
 		debug("**ERROR:** TweetList cannot be cast to GtkTreeView.  Unable to move to top.");
@@ -717,38 +726,33 @@ static void tweet_list_scroll_to_top(TweetList *tweet_list){
 }/* tweet_list_scroll_to_top */
 
 static void tweet_list_clear(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	debug("Re-setting tweet_list_index.");
 	gtk_list_store_clear(this->list_store);
 	this->index=0;
 	this->total=0;
-}/* tweet_list_refreshed */
+}/*tweet_list_clear(tweet_list);*/
 
 static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	tweet_list_normalize_labels(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	tweet_list_mark_as_read(tweet_list);
 }/*tweet_list_grab_focus_cb(widget, event, tweet_list);*/
 
-static void tweet_list_focus_in_event_cb(GtkWidget *widget, GdkEventFocus *event, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	tweet_list_normalize_labels(tweet_list);
-}/*tweet_list_focus_in_event_cb(widget, event, tweet_list);*/
-
-static void tweet_list_normalize_labels(TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+void tweet_list_mark_as_read(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
-}/*tweet_list_normalize_labels(tweet_list);*/
+}/*tweet_list_mark_as_read(tweet_list);*/
 
 static void tweet_list_changed_cb(GtkTreeView *tweet_list_tree_view, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	tweet_list_normalize_labels(tweet_list);
+	tweet_list_mark_as_read(tweet_list);
 	
 	GtkTreeSelection	*sel;
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
@@ -792,11 +796,11 @@ static void tweet_list_changed_cb(GtkTreeView *tweet_list_tree_view, TweetList *
 	g_free(iter);
 	
 	tweet_view_sexy_select();
-}
+}/*tweet_list_changed_cb(tweet_list_tree_view, tweet_list);*/
 
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *tweet_list){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	g_object_set(this->string_tweet_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(this->string_tweet_tree_view_column))-10), NULL);
 	g_object_set(this->string_rcpt_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(this->string_rcpt_tree_view_column))-10), NULL);
@@ -805,8 +809,8 @@ static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, Twe
 }/*tweet_list_size_cb(widget, allocation, tweet_list);*/
 
 void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter){
-	if(!(tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	TweetListPriv *this=GET_PRIV(tweet_list);
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	GdkPixbuf *pixbuf;
 	if(!(pixbuf=images_get_pixbuf_from_filename((gchar *)image_filename)))

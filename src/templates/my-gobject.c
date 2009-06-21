@@ -1,11 +1,9 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Greet-Tweet-Know is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
- *
+ * Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * For more information or to find the latest release, visit our
- * website at: http://uberChicGeekChick.Com/?projects=Greet-Tweet-Know
+ * website at:
+ * 		http://uberChicGeekChick.Com/
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -53,112 +51,100 @@
 
 
 /********************************************************************************
- * project, objece, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ *      Project, system & library headers, eg #include <gdk/gdkkeysyms.h>       *
  ********************************************************************************/
-#include "config.h"
-#include "this.h"
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+#include <libsexy/sexy.h>
 
+#include "config.h"
+#include "main.h"
+#include "my-gobject.h"
 
 
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-typedef struct {
-	GtkWindow	*window;
-} ThisPrivate;
+#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_MY_GOBJECT, MyGObjectPrivate))
 
-#define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_THIS, ThisPrivate))
-
-#define DEBUG_DOMAINS "This:UI:GtkBuilder:GtkBuildable:Objects:Networking:Requests:Authentication:Setup:Start-Up"
-#define GtkBuilderUI "this.ui"
-
-static This *this=NULL;
-
-G_DEFINE_TYPE(This, this, G_TYPE_OBJECT);
-/* G_DEFINE_TYPE's third agument needs to be 'This' parent's type as defined in "this.h". */
-/* Commonly Used:
- *	G_TYPE_OBJECT
- *		GTK_TYPE_OBJECT
- *			GTK_TYPE_WIDGET
- *	GTK_TYPE_CONTAINER
- *	GTK_TYPE_BIN
- *	GTK_TYPE_WINDOW
- *	GTK_TYPE_ITEM
- *	SEXY_TYPE_URL_LABEL
- */
-
+struct _MyGObjectPrivate {
+	guint			timeout_id;
+	
+	gint			index;
+	guint			total;
+};
 
 
 /********************************************************************************
- *                    prototypes for private method & function                  *
+ *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-static void this_class_init(ThisClass *klass);
-static GObject *this_constructor(GType type, guint n_construct_params, GObjectConstructParam *construct_params){
-static void this_init(This *singleton_this);
-static void this_constructed(GOject *object);
-static void this_finalize(GObject *object);
+#define DEBUG_DOMAINS "{Stuff}:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MyGObject.c"
+#include "debug.h"
+
+#define GtkBuilderUI "my-gobject.ui"
 
 
 /********************************************************************************
- *                  'Here be Dragons'...art, beauty, fun, & magic.              *
+ *               object methods, handlers, callbacks, & etc.                    *
  ********************************************************************************/
+static void my_gobject_class_init(MyGObjectClass *klass);
+static void my_gobject_init(MyGObject *my_gobject);
+static void my_gobject_finalize(MyGObject *my_gobject);
+
+/*G_DEFINE_TYPE(MyGObject, my_gobject, G_TYPE_OBJECT);*/
+G_DEFINE_TYPE(MyGObject, my_gobject, GTK_WIDGET);
 
 
-static void this_class_init(ThisClass *klass){
-	GObjectClass  *object_class=G_OBJECT_CLASS(klass);
-	object_class->finalize=this_finalize;
-	g_type_class_add_private(object_class, sizeof(ThisPrivate));
-}
-
-static GObject *this_constructor(GType type, guint n_construct_params, GObjectConstructParam *construct_params){
-	GObject *object;
+/********************************************************************************
+ *              creativity...art, beauty, fun, & magic...programming            *
+ ********************************************************************************/
+/* BEGIN: GObject core methods. */
+static void my_gobject_class_init(MyGObjectClass *klass){
+	GObjectClass	*object_class=G_OBJECT_CLASS(klass);
 	
-	if(this)
-	          object=g_object_ref(G_OBJECT(this));
-	else{
-		object=G_OBJECT_CLASS(parent_class)->constructor( type, n_construct_params, construct_params);
-		this=THIS(object);
-	}
-}
-
-static void this_init(This *singleton_this){
-	this=singleton_this;
-}
-
-static void this_constructed(GOject *object){
-	/* Add signal hanlers & etc. */
-	G_OBJECT_CLASS(parent_class)->constructed(object);
-}
-
-static void this_dispose(GObject *object){
-	G_OBJECT_CLASS(parent_class)->dispose(object);
-}
-
-static void this_finalize(GObject *object){
-	G_OBJECT_CLASS(parent_class)->finalize(object);
-}
-
-static void this_response(GtkWidget *widget, gint response){
-	gtk_widget_destroy(widget);
-}//friends_message_response
-
-static void this_destroy(GtkWidget *widget){
-	g_object_unref(this);
-	this=NULL;
-}//this_destroy
-
-This *this_new(void){
-	return g_object_new(TYPE_THIS, NULL);
-}//this_new
-
-This *this_new_from(const gchar *first_property, ...){
-	if(!first_property)
-		return g_object_new(TYPE_THIS, NULL);
+	object_class->finalize=(GObjectFinalizeFunc)my_gobject_finalize;
 	
-	va_list properties;
-	va_start(first_property, properties);
-	GObject *this=gobject_new(first_property, properties);
-	va_end(properties);
-	return this;
-}//this_new_from
+	g_type_class_add_private(object_class, sizeof(MyGObjectPrivate));
+}/* my_gobject_class_init */
+
+static void my_gobject_init(MyGObject *my_gobject){
+	MyGObjectPrivate *this=GET_PRIVATE(my_gobject);
+	
+	my_gobject_setup(my_gobject);
+	this->timeout_id=this->index=this->total=0;
+	g_object_set(my_gobject, "expand", TRUE, "fill", TRUE, NULL);
+	g_signal_connect(my_gobject, "grab-focus", G_CALLBACK(my_gobject_grab_focus_cb), my_gobject);
+}/* my_gobject_init */
+
+MyGObject *my_gobject_new(void){
+	return g_object_new(TYPE_MY_GOBJECT, NULL);
+}/*my_gobject_new(timeline);*/
+
+static void my_gobject_finalize(MyGObject *my_gobject){
+	MyGObjectPrivate *this=GET_PRIVATE(my_gobject);
+	
+	program_timeout_remove(&this->timeout_id, g_strrstr(this->string, "/"));
+}/* my_gobject_finalized */
+
+
+/*BEGIN: Custom MyGObject methods.*/
+gint my_gobject_get_total(MyGObject *my_gobject){
+	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return -1;
+	return GET_PRIVATE(my_gobject)->total;
+}/*my_gobject_get_page(my_gobject);*/
+
+void my_gobject_increment_total(MyGObject *my_gobject, guint total){
+	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return;
+	GET_PRIVATE(my_gobject)->total+=total;
+}/*my_gobject_set_page(my_gobject, 2);*/
+
+void my_gobject_set_total(MyGObject *my_gobject, guint total){
+	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return;
+	GET_PRIVATE(my_gobject)->total=total;
+}/*my_gobject_set_page(my_gobject, 0);*/
+
+
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
 

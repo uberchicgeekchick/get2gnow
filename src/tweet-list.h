@@ -61,7 +61,7 @@ G_BEGIN_DECLS
 
 typedef struct _TweetList      TweetList;
 typedef struct _TweetListClass TweetListClass;
-typedef struct _TweetListPriv  TweetListPriv;
+typedef struct _TweetListPrivate  TweetListPrivate;
 
 struct _TweetList {
 	SexyTreeView            parent;
@@ -113,8 +113,9 @@ gboolean tweet_list_refresh(TweetList *tweet_list);
 void tweet_list_stop(TweetList *tweet_list);
 void tweet_list_complete(TweetList *tweet_list);
 
-void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
+void tweet_list_mark_as_read(TweetList *tweet_list);
 
+void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
 void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter);
 
 G_END_DECLS

@@ -197,9 +197,6 @@ static gboolean main_window_statusbar_reset(gpointer user_data);
 
 static void main_window_setup(void);
 
-static TweetList *main_window_tweet_lists_new(const gchar *timeline);
-static void main_window_tweet_lists_destroy(void);
-
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window);
 static void main_window_quit_cb(GtkWidget *window, MainWindow *main_window); 
@@ -396,6 +393,8 @@ static void main_window_setup(void){
 					"accounts_tool_button", "clicked", main_window_services_cb,
 					"select_service_tool_button", "clicked", main_window_select_service,
 					"preferences_tool_button", "clicked", main_window_preferences_cb,
+					
+					"tweet_list_notebook", "switch-page", main_window_tweet_lists_mark_as_read,
 				NULL
 	);
 	
@@ -444,7 +443,11 @@ static void main_window_setup(void){
 	main_window_accounts_treeview_fill();
 }/*main_window_setup();*/
 
-static TweetList *main_window_tweet_lists_new(const gchar *timeline){
+void main_window_tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window){
+	tweet_list_mark_as_read(main_window_tweet_lists_get_page(page_num, FALSE));
+}/*main_window_tweet_lists_mark_as_read(main_window_priv->tweet_list_notebook, page, 0, main_window);*/
+
+TweetList *main_window_tweet_lists_new(const gchar *timeline){
 	TweetList *tweet_list=tweet_list_new(timeline);
 	
 	main_window_priv->tweet_list_glist=g_list_append(main_window_priv->tweet_list_glist, tweet_list);
@@ -530,7 +533,7 @@ void main_window_tweet_lists_close_page(gint page){
 	g_object_unref(tweet_list);
 }/*void main_window_tweet_lists_close_page(0);*/
 
-static void main_window_tweet_lists_destroy(void){
+void main_window_tweet_lists_destroy(void){
 	TweetList *tweet_list=NULL;
 	GList *tl=NULL;
 	for(tl=main_window_priv->tweet_list_glist; tl; tl=tl->next){
