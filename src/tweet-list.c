@@ -331,6 +331,11 @@ gint tweet_list_get_page(TweetList *tweet_list){
 	return GET_PRIVATE(tweet_list)->page;
 }/*tweet_list_get_page(tweet_list);*/
 
+guint tweet_list_get_notify_delay(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return 1*10;
+	return (GET_PRIVATE(tweet_list)->page+1)*10;
+}/*tweet_list_get_notify_delay(tweet_list);*/
+
 gint tweet_list_get_total(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
 	return GET_PRIVATE(tweet_list)->total;
@@ -389,18 +394,14 @@ void tweet_list_start(TweetList *tweet_list){
 		online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
 }/*tweet_list_start(TweetList *tweet_list);*/
 
-guint tweet_list_get_notify_delay(TweetList *tweet_list){
-	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return 10;
-	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-	return this->monitoring*this->page*10;
-}/*tweet_list_get_notify_delay(tweet_list);*/
-
 static void tweet_list_set_adjustment(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	guint connected_online_services=online_services_has_connected(online_services, 0);
 	if(connected_online_services==this->connected_online_services) return;
+	
+	this->connected_online_services=connected_online_services;
 	
 	this->minimum=connected_online_services*MINIMUM_TWEETS;
 	gtk_adjustment_set_lower(this->max_tweets_adjustment, this->minimum);
@@ -430,7 +431,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		max_updates=this->minimum;
 	if(this->total <= max_updates) return;
 	
-	for(gint i=this->total; i>=max_updates; i--){
+	for(gint i=0; i<=max_updates; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		gchar *path_string=g_strdup_printf("%d", i);
 		if( (gtk_tree_model_get_iter_from_string(this->tree_model, iter, path_string)) && (gtk_list_store_iter_is_valid(this->list_store, iter)) ){

@@ -99,8 +99,8 @@ gint tweet_list_has_loaded(TweetList *tweet_list);
 
 gint tweet_list_get_page(TweetList *tweet_list);
 gint tweet_list_get_total(TweetList *tweet_list);
-guint tweet_list_get_notify_delay(TweetList *tweet_list);
 void tweet_list_set_page(TweetList *tweet_list, gint page);
+guint tweet_list_get_notify_delay(TweetList *tweet_list);
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list);
 GtkLabel *tweet_list_get_tab(TweetList *tweet_list);

@@ -276,7 +276,12 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	gboolean	notify;
 	guint		tweets_parsed=0;
 	gulong		status_id=0;
-	gulong		id_newest_update=0, id_oldest_update=0, last_notified_update=0;
+	gulong		id_newest_update=0, id_oldest_update=0;
+	
+	gint has_loaded=tweet_list_has_loaded(tweet_list);
+	if( has_loaded || monitoring==DMs || monitoring==Replies )
+		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
+	gulong last_notified_update=id_newest_update;
 	
 	switch(monitoring){
 		case DMs:
@@ -306,14 +311,11 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		case None: default: return 0;
 	}
-	gint has_loaded=tweet_list_has_loaded(tweet_list);
-	if( has_loaded || monitoring==DMs || monitoring==Replies )
-		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
-	last_notified_update=id_newest_update;
 	if(!id_oldest_update && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
 	guint tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
-	const int	tweet_display_interval=10;
+	const gint	tweet_display_interval=10;
+	const gint notify_priority=(monitoring-2)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("**ERROR:** Failed to parse xml document, timeline: %s.", timeline);
@@ -344,6 +346,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		debug("Parsing tweet.  Its a %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
 		
+		status=NULL;
 		debug("Creating tweet's Status *.");
 		if(!( (( status=user_status_parse(service, current_node->children, monitoring ))) && (status_id=user_status_get_id(status)) )){
 			if(status) user_status_free(status);
@@ -358,12 +361,12 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		if( notify && status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_username) ){
 			free_status=FALSE;
-			g_timeout_add_seconds_full(((monitoring+1)*100), tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
 		if(status_id > id_newest_update) id_newest_update=status_id;
-		if( (monitoring!=DMs && monitoring!=Replies) || has_loaded != 2 )
+		if( (monitoring!=DMs && monitoring!=Replies) || !(has_loaded == 2 && id_oldest_update) )
 			id_oldest_update=status_id;
 		
 		if(free_status) user_status_free(status);

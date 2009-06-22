@@ -102,6 +102,7 @@ gint online_services_has_total(OnlineServices *services, guint count);
 gint online_services_has_connected(OnlineServices *services, guint count);
 
 OnlineService *online_services_connected_get_first(OnlineServices *services);
+OnlineService *online_services_connected_get_last(OnlineServices *services);
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 

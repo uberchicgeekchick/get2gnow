@@ -257,7 +257,9 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 	}
 	
 	if(retrying) retrying=FALSE;
-	tweet_list_complete(tweet_list);
+	if(service==online_services_connected_get_last(online_services))
+		tweet_list_complete(tweet_list);
+	
 	uber_free(request_uri);
 	return NULL;
 }/*network_display_timeline(session, msg, service_wrapper);*/

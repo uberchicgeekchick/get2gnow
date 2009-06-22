@@ -108,9 +108,9 @@ enum _RequestMethod{
 
 enum _TweetLists{
 	None,
-	Tweets,
-	Replies,
 	DMs,
+	Replies,
+	Tweets,
 	Timelines,
 	Users,
 	Archive,

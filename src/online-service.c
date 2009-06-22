@@ -906,12 +906,12 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	))
 		return;
 	
+	if(g_strrstr(*request_uri, "?since_id=")) return;
+	
 	TweetLists monitoring=(TweetLists)*form_data;
 	TweetList *tweet_list=(TweetList *)*user_data;
 	gint has_loaded=tweet_list_has_loaded(tweet_list);
 	if(!( (*form_data) && (*user_data) && ( has_loaded || (monitoring==DMs || monitoring==Replies) ) )) return;
-	
-	if(g_strrstr(*request_uri, "?since_id=")) return;
 	
 	gulong id_newest_update=0, id_oldest_update=0;
 	online_service_update_ids_get(service, *request_uri, &id_newest_update, &id_oldest_update);

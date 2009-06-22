@@ -403,13 +403,24 @@ OnlineService *online_services_connected_get_first(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
-		if(online_service_is_connected(service))
-			break;
-	}
+	for(a=services->accounts; a; a=a->next)
+		if(online_service_is_connected( (service=(OnlineService *)a->data) ))
+			return service;
+	
+	return NULL;
+}/*online_services_connected_get_first(online_services);*/
+
+OnlineService *online_services_connected_get_last(OnlineServices *services){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
+	
+	for(a=services->accounts; a; a=a->next)
+		if(online_service_is_connected( (OnlineService *)a->data ))
+			service=(OnlineService *)a->data;
+	
 	return service;
-}/*online_services_connected_get_first*/
+}/*online_services_connected_get_last(online_services);*/
+
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	GList		*a=NULL;
