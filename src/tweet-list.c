@@ -434,7 +434,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	for(gint i=0; i<=max_updates; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		gchar *path_string=g_strdup_printf("%d", i);
-		if( (gtk_tree_model_get_iter_from_string(this->tree_model, iter, path_string)) && (gtk_list_store_iter_is_valid(this->list_store, iter)) ){
+		if( (gtk_tree_model_get_iter_from_string(this->tree_model, iter, path_string)) && gtk_list_store_iter_is_valid(this->list_store, iter) ){
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
 		}
@@ -446,7 +446,9 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 
 static void tweet_list_sort(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
-	gtk_tree_model_foreach(GTK_TREE_MODEL(( GET_PRIVATE(tweet_list)->tree_model )), (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	gtk_tree_model_foreach(this->tree_model, (GtkTreeModelForeachFunc)tweet_list_update_created_ago, tweet_list);
 }/*tweet_list_sort(tweet_list);*/
 
 static gboolean tweet_list_update_created_ago(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, TweetList *tweet_list){

@@ -521,7 +521,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	
 	debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %lu; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", online_service_get_key(status->service), status->user->user_name, online_service_get_uri(status->service), status->id, status->created_at_str, status->text, status->sexy_tweet);
 	
-	gtk_list_store_append(tweet_list_store, iter);
+	gtk_list_store_insert(tweet_list_store, iter, tweet_list_get_total(tweet_list));
 	gtk_list_store_set(
 				tweet_list_store, iter,
 					ULONG_TWEET_ID, status->id,				/*Tweet's ID.*/
