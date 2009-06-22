@@ -284,7 +284,7 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 		debug("\t\tConnecting to: '%s'\t[succeeded]", decoded_key);
 
 		online_service_login(service, FALSE);
-		main_window_tweet_lists_refresh();
+		tweet_lists_refresh();
 	}else
 		debug("\t\tConnecting to: '%s'\t[failed]", decoded_key);
 	

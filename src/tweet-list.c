@@ -96,15 +96,15 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Tweets,	API_TIMELINE_FRIENDS,	N_("My _Friends' Updates"),	N_("My Friends' Updates")},
+	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fri_ends' Updates"),	N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,		N_("@ _Replies"),		N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),		N_("@ Mentions")},
-	{DMs,		API_DIRECT_MESSAGES,	N_("My _DMs Inbox"),		N_("My DMs Inbox")},
-	{Timelines,	API_TIMELINE_PUBLIC,	N_("Public Updates"),		N_("Public Updates")},
-	{Users,		API_TIMELINE_USER,	N_("%s_'s Updates"),		N_("%s's Updates")},
-	{Archive,	API_FAVORITES,		N_("My _Star'd Updates"),	N_("My Star'd Updates")},
+	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),		N_("My DMs Inbox")},
+	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),		N_("Public Updates")},
+	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),	N_("%s's Recent Updates")},
+	{Archive,	API_FAVORITES,		N_("My Star_'d Updates"),	N_("My Star'd Updates")},
 	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),		N_("My Tweets")},
-	{None,		NULL,			N_("Unknown timeline"),		N_("Unknown timeline")}
+	{None,		NULL,			N_("Unknow_n timeline"),	N_("Unknown timeline")}
 };
 
 struct _TweetListPrivate {
@@ -120,7 +120,7 @@ struct _TweetListPrivate {
 	
 	gint			index;
 	guint			total;
-	gboolean		new_updates;
+	gboolean		unread;
 	
 	guint			connected_online_services;
 	gdouble			maximum;
@@ -238,7 +238,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	this->has_loaded=-1;
-	this->new_updates=FALSE;
+	this->unread=TRUE;
 	this->connected_online_services=this->timeout_id=this->index=this->total=0;
 	this->maximum=this->minimum=0.0;
 	this->timeline=this->timeline_tab_label=this->timeline_menu_label=NULL;
@@ -522,7 +522,7 @@ void tweet_list_stop(TweetList *tweet_list){
 static void tweet_list_close(GtkToolButton *tweet_list_close_tool_button, TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-	main_window_tweet_lists_close_page(this->page);
+	tweet_lists_close_page(this->page);
 }/*tweet_list_close(tweet_list_close_tool_button, tweet_list);*/
 
 static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *timeline){
@@ -559,27 +559,14 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 		this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
 		this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
 	}
-	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
-	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
+	tweet_list_mark_as_read(tweet_list);
 	if( (this->monitoring==Archive) || (this->monitoring==Users) )
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, FALSE);
 }/*tweet_list_set_timeline_label(tweet_list, timeline);*/
 
 void tweet_list_increment(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
-	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-	
-	if(!this->new_updates) this->new_updates=TRUE;
-	
-	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_tab_label);
-	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
-	uber_free(label_markup);
-	
-	label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_menu_label);
-	gtk_label_set_markup_with_mnemonic(this->menu_label, label_markup);
-	uber_free(label_markup);
-	
-	this->total++;
+	GET_PRIVATE(tweet_list)->total++;
 }/*tweet_list_increment(tweet_list);*/
 
 static void tweet_list_setup(TweetList *tweet_list){
@@ -764,17 +751,41 @@ static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list){
 	tweet_list_mark_as_read(tweet_list);
 }/*tweet_list_grab_focus_cb(widget, event, tweet_list);*/
 
+gboolean tweet_list_is_unread(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return FALSE;
+	return GET_PRIVATE(tweet_list)->unread;
+}/*tweet_list_mark_as_read(tweet_list);*/
+
 void tweet_list_mark_as_read(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	if(!this->new_updates)	return;
+	if(!this->unread)	return;
 	
-	this->new_updates=FALSE;
+	this->unread=FALSE;
 	
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
 }/*tweet_list_mark_as_read(tweet_list);*/
+
+void tweet_list_mark_as_unread(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(this->unread)	return;
+	
+	this->unread=TRUE;
+	
+	tweets_beep();
+	
+	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_tab_label);
+	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
+	uber_free(label_markup);
+	
+	label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_menu_label);
+	gtk_label_set_markup_with_mnemonic(this->menu_label, label_markup);
+	uber_free(label_markup);
+}/*tweet_list_mark_as_unread(tweet_list);*/
 
 static void tweet_list_changed_cb(GtkTreeView *tweet_list_tree_view, TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;

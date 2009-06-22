@@ -359,10 +359,13 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		debug("Adding UserStatus from: %s, ID: %lu, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
 		user_status_store(status, tweet_list);
 		
-		if( notify && status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_username) ){
-			free_status=FALSE;
-			g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			tweet_list_notify_delay+=tweet_display_interval;
+		if( status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_username) ){
+			if(!tweet_list_is_unread(tweet_list)) tweet_list_mark_as_unread(tweet_list);
+			if(notify){
+				free_status=FALSE;
+				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				tweet_list_notify_delay+=tweet_display_interval;
+			}
 		}
 		
 		if(status_id > id_newest_update) id_newest_update=status_id;

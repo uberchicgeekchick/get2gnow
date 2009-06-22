@@ -136,10 +136,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					online_service_request_selected_tweet_unblock();
 					return;
 				case GDK_Page_Up:
-					main_window_tweet_lists_get_previous();
+					tweet_lists_get_previous();
 					return;
 				case GDK_Page_Down:
-					main_window_tweet_lists_get_next();
+					tweet_lists_get_next();
 					return;
 				default: break;
 			}
@@ -182,10 +182,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					tweets_new_dm();
 					return;
 				case GDK_Page_Up:
-					main_window_tweet_lists_get_previous();
+					tweet_lists_get_previous();
 					return;
 				case GDK_Page_Down:
-					main_window_tweet_lists_get_next();
+					tweet_lists_get_next();
 					return;
 				default: break;
 			}
@@ -196,7 +196,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					help_show(main_window_get_window());
 					return;
 				case GDK_F5:
-					tweet_list_refresh(main_window_tweet_lists_get_current()); 
+					tweet_list_refresh(tweet_lists_get_current()); 
 					return;
 				case GDK_greater:
 					selected_tweet_retweet();
@@ -211,7 +211,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 			}
 			break;
 	}
-	tweet_list_key_pressed(main_window_tweet_lists_get_current(), event);
+	tweet_list_key_pressed(tweet_lists_get_current(), event);
 }/*tweets_hotkey_process(widget, event, user_date);*/
 
 void tweets_beep(void){

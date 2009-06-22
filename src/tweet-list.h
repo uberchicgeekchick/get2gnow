@@ -115,7 +115,9 @@ gboolean tweet_list_refresh(TweetList *tweet_list);
 void tweet_list_stop(TweetList *tweet_list);
 void tweet_list_complete(TweetList *tweet_list);
 
+gboolean tweet_list_is_unread(TweetList *tweet_list);
 void tweet_list_mark_as_read(TweetList *tweet_list);
+void tweet_list_mark_as_unread(TweetList *tweet_list);
 
 void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
 void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter);

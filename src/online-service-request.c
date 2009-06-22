@@ -360,7 +360,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 	debug("OnlineServiceRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_key);
 	switch(request->action){
 		case ViewTweets:
-			request_wrapper=online_service_wrapper_new(service, online_service_wrapper_get_requested_uri(service_wrapper), NULL, network_display_timeline, main_window_tweet_lists_get_timeline(request->uri), (gpointer)Users);
+			request_wrapper=online_service_wrapper_new(service, online_service_wrapper_get_requested_uri(service_wrapper), NULL, network_display_timeline, tweet_lists_get_timeline(request->uri), (gpointer)Users);
 			network_display_timeline(session, msg, request_wrapper);
 			online_service_wrapper_free(request_wrapper);
 			break;

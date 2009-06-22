@@ -92,20 +92,20 @@ MainWindow *main_window_get(void);
 
 
 
-void main_window_tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window);
-TweetList *main_window_tweet_lists_new(const gchar *timeline);
-TweetList *main_window_tweet_lists_get_next(void);
-TweetList *main_window_tweet_lists_get_current(void);
-TweetList *main_window_tweet_lists_get_previous(void);
-TweetList *main_window_tweet_lists_get_timeline(const gchar *timeline);
-TweetList *main_window_tweet_lists_get_page(gint page, gboolean close);
+void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window);
+TweetList *tweet_lists_new(const gchar *timeline);
+TweetList *tweet_lists_get_next(void);
+TweetList *tweet_lists_get_current(void);
+TweetList *tweet_lists_get_previous(void);
+TweetList *tweet_lists_get_timeline(const gchar *timeline);
+TweetList *tweet_lists_get_page(gint page, gboolean close);
 
-void main_window_tweet_lists_start(void);
-void main_window_tweet_lists_refresh(void);
-void main_window_tweet_lists_stop(void);
-void main_window_tweet_lists_close(void);
-void main_window_tweet_lists_close_page(gint page);
-void main_window_tweet_lists_destroy(void);
+void tweet_lists_start(void);
+void tweet_lists_refresh(void);
+void tweet_lists_stop(void);
+void tweet_lists_close(void);
+void tweet_lists_close_page(gint page);
+void tweet_lists_destroy(void);
 
 
 
