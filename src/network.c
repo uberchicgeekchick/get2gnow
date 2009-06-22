@@ -169,7 +169,9 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 	const gchar *notice_prefix=NULL;
 	switch(state){
 		case Retry:
-			retrying=TRUE;
+			notice_prefix=_("Retrying");
+			break;
+			
 		case Reload:
 			notice_prefix=_("Reloading");
 			break;
@@ -265,6 +267,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 }/*network_display_timeline(session, msg, service_wrapper);*/
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper){
+	retrying=TRUE;
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
