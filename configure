@@ -732,10 +732,18 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#0000F9aEC"
+PACKAGE_VERSION="0000F9aEC"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"
+
+LIBSOUP_MIN_VERSION=2.24.3
+LIBXML_MIN_VERSION=2.6.16
+GLIB_MIN_VERSION=2.20.0
+GTK_MIN_VERSION=2.12.12
+GCONF_MIN_VERSION=1.2.0
+LIBGIO_MIN_VERSION=2.15.5
+LIBCANBERRA_MIN_VERSION=0.4
 
 ac_unique_file="src/main.c"
 # Factoring default headers for most tests.
@@ -781,6 +789,13 @@ PACKAGE_TARNAME
 PACKAGE_VERSION
 PACKAGE_STRING
 PACKAGE_BUGREPORT
+LIBSOUP_MIN_VERSION
+LIBXML_MIN_VERSION
+GLIB_MIN_VERSION
+GTK_MIN_VERSION
+GCONF_MIN_VERSION
+LIBGIO_MIN_VERSION
+LIBCANBERRA_MIN_VERSION
 exec_prefix
 prefix
 program_transform_name
@@ -22757,16 +22772,6 @@ _ACEOF
 
 
 
-
-LIBSOUP_MIN_VERSION=2.24.3
-LIBXML_MIN_VERSION=2.6.16
-GLIB_MIN_VERSION=2.20.0
-GTK_MIN_VERSION=2.12.12
-GCONF_MIN_VERSION=1.2.0
-LIBGIO_MIN_VERSION=2.15.5
-LIBCANBERRA_MIN_VERSION=0.4
-
-
 # Check whether --enable-gnome_keyring was given.
 if test "${enable_gnome_keyring+set}" = set; then
   enableval=$enable_gnome_keyring;
@@ -24659,7 +24664,7 @@ echo "${ECHO_T}$LINGUAS" >&6; }
 	< $srcdir/po/POTFILES.in > po/POTFILES
 
 
-ac_config_files="$ac_config_files Makefile data/Makefile data/get2gnow.desktop help/Makefile src/Makefile po/Makefile"
+ac_config_files="$ac_config_files Makefile data/Makefile data/get2gnow.desktop help/Makefile src/Makefile po/Makefile get2gnow.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -25308,6 +25313,7 @@ do
     "help/Makefile") CONFIG_FILES="$CONFIG_FILES help/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "po/Makefile.in") CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
+    "get2gnow.spec") CONFIG_FILES="$CONFIG_FILES get2gnow.spec" ;;
     "po/stamp-it") CONFIG_COMMANDS="$CONFIG_COMMANDS po/stamp-it" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
@@ -25379,6 +25385,13 @@ PACKAGE_VERSION!$PACKAGE_VERSION$ac_delim
 PACKAGE_PREFIX!$PACKAGE_PREFIX$ac_delim
 PACKAGE_STRING!$PACKAGE_STRING$ac_delim
 PACKAGE_BUGREPORT!$PACKAGE_BUGREPORT$ac_delim
+LIBSOUP_MIN_VERSION!$LIBSOUP_MIN_VERSION$ac_delim
+LIBXML_MIN_VERSION!$LIBXML_MIN_VERSION$ac_delim
+GLIB_MIN_VERSION!$GLIB_MIN_VERSION$ac_delim
+GTK_MIN_VERSION!$GTK_MIN_VERSION$ac_delim
+GCONF_MIN_VERSION!$GCONF_MIN_VERSION$ac_delim
+LIBGIO_MIN_VERSION!$LIBGIO_MIN_VERSION$ac_delim
+LIBCANBERRA_MIN_VERSION!$LIBCANBERRA_MIN_VERSION$ac_delim
 exec_prefix!$exec_prefix$ac_delim
 prefix!$prefix$ac_delim
 program_transform_name!$program_transform_name$ac_delim
@@ -25469,7 +25482,7 @@ CPP!$CPP$ac_delim
 CXX!$CXX$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 96; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 103; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

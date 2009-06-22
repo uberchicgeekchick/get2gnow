@@ -366,7 +366,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		}
 		
 		if(status_id > id_newest_update) id_newest_update=status_id;
-		if( (monitoring!=DMs && monitoring!=Replies) || !(has_loaded == 2 && id_oldest_update) )
+		if( (monitoring!=DMs && monitoring!=Replies) || !(has_loaded && id_oldest_update) )
 			id_oldest_update=status_id;
 		
 		if(free_status) user_status_free(status);

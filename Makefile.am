@@ -16,6 +16,7 @@ EXTRA_DIST = 			\
 	README                  \
 	AUTHORS			\
 	NEWS			\
+	get2gnow.spec		\
 	xmldocs.make		\
 	omf.make		\
 	gnome-doc-utils.make	\
@@ -25,6 +26,7 @@ DISTCLEANFILES = 		\
 	intltool-extract	\
 	intltool-merge		\
 	intltool-update		\
+	get2gnow.spec		\
 	gnome-doc-utils.make
 
 DISTCHECK_CONFIGURE_FLAGS =	\

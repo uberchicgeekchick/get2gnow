@@ -917,7 +917,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	online_service_update_ids_get(service, *request_uri, &id_newest_update, &id_oldest_update);
 	
 	gchar *request_uri_swap=NULL;
-	if( has_loaded==2 )
+	if(has_loaded)
 		if(!id_newest_update) return;
 		else if( !tweet_list_get_total(tweet_list) ) return;
 		else request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_newest_update);

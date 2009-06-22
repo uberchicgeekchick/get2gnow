@@ -1,13 +1,33 @@
-Summary: get2gnow's the ultimate micro-blogging client. Letting you get and do the most on all micro-blogging platforms.
-Name: get2gnow
-Version: 0000F9aEC
-Release: 20090620
-License: RPL v1.3
-BuildRequires: libsexy-devel libopenssl-devel libsoup-devel libnotify-devel gnome-vfs2-devel gtk2-devel glib2-devel libgio-2_0-0 libcanberra-gtk libxml2-devel libgobject-2_0-0 libgthread-2_0-0 gconf2-devel gnome-keyring-devel
-Group: Applications/Internet/Chat
-Source: get2gnow.tar.bz2
-URL: http://local.uberchicgeekchick.com/?projects=get2gnow
-Packager: Kaity G. B. <uberChick@uberChicGeekChick.Com>
+Summary:	get2gnow's the ultimate micro-blogging client. Letting you get and do the most on all micro-blogging platforms.
+Name:		get2gnow
+Version:	@PACKAGE_VERSION@
+Release:	20090620
+License:	RPL v1.3
+URL:		http://local.uberchicgeekchick.com/?projects=get2gnow
+Source0:	%{name}-%{version}.tar.gz
+Group:		Applications/Internet
+Packager:	Kaity G. B. <uberChick@uberChicGeekChick.Com>
+Requires:	libsexy
+Requires:	libnotify
+Requires:	gnome-vfs2
+Requires:	libxml2 >= @LIBXML_MIN_VERSION@
+Requires:	gtk2 >= @GTK_MIN_VERSION@
+Requires:	gconf2 >= @GCONF_MIN_VERSION@
+Requires:	gnome-keyring
+Requires:	libsexy
+BuildRequires:	libopenssl-devel
+BuildRequires:	libsoup-devel >= @LIBSOUP_MIN_VERSION@
+BuildRequires:	libxml2-devel >= @LIBXML_MIN_VERSION@
+BuildRequires:	glib2-devel >= @GLIB_MIN_VERSION@
+BuildRequires:	libgio-2_0-0 >= @LIBGIO_MIN_VERSION@
+BuildRequires:	gtk2-devel >= @GTK_MIN_VERSION@
+BuildRequires:	gconf2-devel >= @GCONF_MIN_VERSION@
+BuildRequires:	libcanberra-gtk >= @LIBCANBERRA_MIN_VERSION@
+BuildRequires:	libnotify-devel
+BuildRequires:	gnome-vfs2-devel
+BuildRequires:	libgobject-2_0-0
+BuildRequires:	libgthread-2_0-0
+BuildRequires:	gnome-keyring-devel
 
 %description
 get2gnow's the ultimate micro-blogging client.
@@ -21,56 +41,37 @@ get2gnow's focus is to createg the most full featured
 online communication platform available one any platform,
 And for Linux/GTK/GNOME open source artists:
 	get2gnow can easily be embeddable into other applications
-
 Q.) What is 'micro-blogging'?
-
 A.) Micro-blogging is a way of quickly communicating
 any thing from complex ideas to the very simple:
 'What are you doing?'
 
+
 %prep
-rm -rf get2gnow
-tar -xjf get2gnow.tar.bz2
+%setup -q
 
 %build
-cd get2gnow
-./configure
+%configure
 make
 
 %install
-cd get2gnow
-make install
-
-%files
-/usr/share/applications/get2gnow.desktop
-/usr/share/locale/ja/LC_MESSAGES/get2gnow.mo
-/usr/share/locale/sv/LC_MESSAGES/get2gnow.mo
-/usr/share/locale/es/LC_MESSAGES/get2gnow.mo
-/usr/share/locale/pt/LC_MESSAGES/get2gnow.mo
-/usr/share/locale/fr/LC_MESSAGES/get2gnow.mo
-/usr/share/locale/de/LC_MESSAGES/get2gnow.mo
-/usr/share/gnome/help/get2gnow
-/usr/share/gnome/help/get2gnow/C
-/usr/share/gnome/help/get2gnow/C/get2gnow.xml
-/usr/share/gnome/help/get2gnow/C/figures
-/usr/share/gnome/help/get2gnow/C/figures/client.png
-/usr/share/gnome/help/get2gnow/C/legal.xml
-/usr/share/get2gnow
-/usr/share/get2gnow/friends-manager.ui
-/usr/share/get2gnow/user-profile-viewer.ui
-/usr/share/get2gnow/tweet-list.ui
-/usr/share/get2gnow/following-viewer.ui
-/usr/share/get2gnow/tweet-view.ui
-/usr/share/get2gnow/online-services-dialog.ui
-/usr/share/get2gnow/preferences.ui
-/usr/share/get2gnow/online-services-request-popup.ui
-/usr/share/get2gnow/main-window.ui
-/usr/bin/get2gnow
-/usr/etc/gconf/schemas/get2gnow.schemas
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT mandir=%{_mandir}
 
 %clean
-cd get2gnow
-make distclean
-cd ..
-rm -rf get2gnow
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%{_bindir}/get2gnow
+%{_datadir}/applications/get2gnow.desktop
+%{_datadir}/locale/ja/LC_MESSAGES/get2gnow.mo
+%{_datadir}/locale/sv/LC_MESSAGES/get2gnow.mo
+%{_datadir}/locale/es/LC_MESSAGES/get2gnow.mo
+%{_datadir}/locale/pt/LC_MESSAGES/get2gnow.mo
+%{_datadir}/locale/fr/LC_MESSAGES/get2gnow.mo
+%{_datadir}/locale/de/LC_MESSAGES/get2gnow.mo
+%{_datadir}/gnome/help/get2gnow
+%{_datadir}/get2gnow/
+%{_sysconfdir}/gconf/schemas/get2gnow.schemas
 

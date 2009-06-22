@@ -291,6 +291,9 @@ static void tweet_list_finalize(TweetList *tweet_list){
 
 
 /*BEGIN: Custom TweetList methods.*/
+/**
+ *@returns: -1, 0, 1 if the timeline hasn't loaded, is loading, or is reloading.
+ */
 gint tweet_list_has_loaded(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
 	return GET_PRIVATE(tweet_list)->has_loaded;
@@ -423,6 +426,8 @@ static void tweet_list_set_adjustment(TweetList *tweet_list){
 static void tweet_list_clean_up(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if( !this->has_loaded && (this->monitoring==DMs || this->monitoring==Replies) ) return;
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
@@ -751,6 +756,8 @@ static void tweet_list_clear(TweetList *tweet_list){
 	
 	debug("Re-setting tweet_list_index.");
 	gtk_list_store_clear(this->list_store);
+	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
+	this->has_loaded=-1;
 	this->index=0;
 	this->total=0;
 }/*tweet_list_clear(tweet_list);*/
