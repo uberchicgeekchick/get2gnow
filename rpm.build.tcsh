@@ -23,6 +23,7 @@ if( ! -d /projects/ssh/uberChicGeekChick.Com/apps/oss-canvas/downloads ) then
 	printf "Cannot copy our packages to uberChicGeekChick.Com.  sshfs has prolly disconnected."
 else
 	printf "Copying our packages to uberChicGeekChick.Com."
+	rm /projects/ssh/uberChicGeekChick.Com/apps/oss-canvas/downloads/get2gnow*;
 	cp releases/*/get2gnow*  /projects/ssh/uberChicGeekChick.Com/apps/oss-canvas/downloads/ &;
 endif
 
