@@ -213,7 +213,7 @@
         <property name="hscrollbar_policy">automatic</property>
         <property name="vscrollbar_policy">automatic</property>
         <child>
-          <object class="GtkTreeView" id="tweet_list_timeline_tree_view">
+          <object class="GtkTreeView" id="tweet_list_sexy_tree_view">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="model">tweet_list_list_store</property>
@@ -225,7 +225,6 @@
             <property name="level_indentation">5</property>
             <property name="enable_grid_lines">both</property>
             <property name="enable_tree_lines">True</property>
-            <property name="tooltip_column">6</property>
             <child>
               <object class="GtkTreeViewColumn" id="tweet_list_pixbuf_avatar_tree_view_column">
                 <property name="sizing">fixed</property>
