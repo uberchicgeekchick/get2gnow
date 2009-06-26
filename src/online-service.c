@@ -130,9 +130,6 @@ struct _OnlineService{
 	gboolean			enabled;
 	gboolean			auto_connect;
 	
-	gulong				id_newest_update;
-	gulong				id_oldest_update;
-	
 	gchar				*key;
 	gchar				*guid;
 	MicroBloggingService		micro_blogging_service;
@@ -158,7 +155,7 @@ static void online_service_set_micro_blogging_service(OnlineService *service);
 static void online_service_http_authenticate(SoupSession *session, SoupMessage *msg, SoupAuth *auth, gboolean retrying, gpointer user_data);
 static void *online_service_login_check(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
-static void online_service_set_profile(User *user);
+static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, User *user);
 
 static void online_service_message_restarted(SoupMessage *msg, gpointer user_data);
 
@@ -182,7 +179,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 
 OnlineService *selected_service=NULL;
 
-gulong in_reply_to_status_id=0;
+gfloat in_reply_to_status_id=0.0;
 OnlineService *in_reply_to_service=NULL;
 
 #define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:OnlineService.c"
@@ -526,7 +523,7 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	return TRUE;
 }/*online_service_delete*/
 
-void online_service_update_ids_get(OnlineService *service, const gchar *uri, gulong *id_newest_update, gulong *id_oldest_update){
+void online_service_update_ids_get(OnlineService *service, const gchar *uri, gfloat *id_newest_update, gfloat *id_oldest_update){
 	if(G_STR_EMPTY(uri)) return;
 	gchar **uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
 	const gchar *timeline=uri_split[0];
@@ -542,21 +539,23 @@ void online_service_update_ids_get(OnlineService *service, const gchar *uri, gul
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "newest");
 	swap_id=0;
 	gconfig_get_float(prefs_path, &swap_id);
-	if(swap_id>0) *id_newest_update=(gulong)swap_id;
 	uber_free(prefs_path);
-	debug("Loaded <%s>'s; newest [%s] ID:\t\t%lu.", service->uri, timeline, *id_newest_update);
+	
+	if(swap_id>0) *id_newest_update=swap_id;
+	debug("Loaded <%s>'s; [%s] newest ID: %f.", service->uri, timeline, *id_newest_update);
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "oldest");
 	swap_id=0;
 	gconfig_get_float(prefs_path, &swap_id);
-	if(swap_id>0) *id_oldest_update=(gulong)swap_id;
 	uber_free(prefs_path);
-	debug("Loaded <%s>'s; oldest [%s] ID:\t\t%lu.", service->uri, timeline, *id_oldest_update);
+	
+	if(swap_id>0) *id_oldest_update=swap_id;
+	debug("Loaded <%s>'s; [%s] oldest ID: %f.", service->uri, timeline, *id_oldest_update);
 	
 	g_strfreev(uri_split);
 }/*online_service_update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
-void online_service_update_ids_set(OnlineService *service, const gchar *uri, gulong id_newest_update, gulong id_oldest_update){
+void online_service_update_ids_set(OnlineService *service, const gchar *uri, gfloat id_newest_update, gfloat id_oldest_update){
 	if(G_STR_EMPTY(uri)) return;
 	
 	gchar **uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
@@ -570,14 +569,14 @@ void online_service_update_ids_set(OnlineService *service, const gchar *uri, gul
 	gchar *prefs_path=NULL;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "newest");
-	gconfig_set_float(prefs_path, (gfloat)id_newest_update);
+	gconfig_set_float(prefs_path, id_newest_update);
 	uber_free(prefs_path);
-	debug("Saved <%s>'s; newest [%s] ID:\t\t%lu.", service->uri, timeline, id_newest_update);
+	debug("Saved <%s>'s; [%s] newest ID: %f.", service->uri, timeline, id_newest_update);
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "oldest");
-	gconfig_set_float(prefs_path, (gfloat)id_oldest_update);
+	gconfig_set_float(prefs_path, id_oldest_update);
 	uber_free(prefs_path);
-	debug("Saved: <%s>'s; oldest [%s] ID:\t\t%lu.", service->uri, timeline, id_oldest_update);
+	debug("Saved: <%s>'s; [%s] oldest ID: %f.", service->uri, timeline, id_oldest_update);
 	
 	g_strfreev(uri_split);
 }/*online_service_update_ids_set(service, "/direct_messages.xml", id_newest_update, id_oldest_update);*/
@@ -607,7 +606,7 @@ gboolean online_service_connect(OnlineService *service){
 	}
 	
 	debug("Adding authenticating callback for: '%s'. username: %s, password: %s", service->guid, service->username, service->password);
-	g_signal_connect(service->session, "authenticate", G_CALLBACK(online_service_http_authenticate), service);
+	g_signal_connect(service->session, "authenticate", (GCallback)online_service_http_authenticate, service);
 	
 #ifdef GNOME_ENABLE_DEBUG
 	
@@ -617,7 +616,7 @@ gboolean online_service_connect(OnlineService *service){
 	
 #else
 	
-	if(IF_DEBUG){
+	IF_DEBUG{
 		SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_HEADERS, -1);
 		soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(logger));
 		g_object_unref(logger);
@@ -673,16 +672,18 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	debug("OnlineService: %s.  Status: authenticated: [%s].", service->guid, (service->authenticated ?"TRUE" :"FALSE" ) );
 	if(!temporary_connection) online_services_increment_connected(online_services);
 	
-	/*Its a hack but it forces a log-in.*/
-	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, service->username);
-	online_service_request(service, QUEUE, user_profile_uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL);
-	uber_free(user_profile_uri);
-	
 	return TRUE;
 }/*online_service_login*/
 
-static void online_service_set_profile(User *user){
-	OnlineService *service=user_get_online_service(user);
+static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, User *user){
+	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
+	if(!user){
+		debug("Failed to validate user profile for <%s>.  Using username instead.", service->key);
+		service->nickname=g_strdup(service->username);
+		service->connected=FALSE;
+		return;
+	}
+	service->connected=TRUE;
 	service->nickname=g_strdup(user_get_nick_name(user));
 	debug("Setting nickname for: %s to %s.", service->key, service->nickname);
 	user_free(user);
@@ -738,6 +739,9 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 		debug("**ERROR**: Authentication attempts %d exceeded maximum attempts: %d.", service->logins, MAX_LOGINS);
 		service->authenticated=FALSE;
 	}
+	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, service->username);
+	online_service_request(service, QUEUE, user_profile_uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL);
+	uber_free(user_profile_uri);
 }/*online_service_http_authenticate(service);*/
 
 gboolean online_service_refresh(OnlineService *service, const gchar *uri){
@@ -910,25 +914,38 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	
 	TweetLists monitoring=(TweetLists)*form_data;
 	TweetList *tweet_list=(TweetList *)*user_data;
-	gint has_loaded=tweet_list_has_loaded(tweet_list);
-	if(!( (*form_data) && (*user_data) && ( has_loaded || (monitoring==DMs || monitoring==Replies) ) )) return;
+	gint8 has_loaded=tweet_list_has_loaded(tweet_list);
+	if(!( (*form_data) && (*user_data) && has_loaded )) return;
 	
-	gulong id_newest_update=0, id_oldest_update=0;
-	online_service_update_ids_get(service, *request_uri, &id_newest_update, &id_oldest_update);
+	gfloat id_newest_update=0, id_oldest_update=0;
+	const gchar *timeline=g_strrstr(*request_uri, "/");
+	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	
 	gchar *request_uri_swap=NULL;
-	if(has_loaded)
+	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
+	if(has_loaded){
 		if(!id_newest_update) return;
-		else if( !tweet_list_get_total(tweet_list) ) return;
-		else request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_newest_update);
-	else if(monitoring==DMs || monitoring==Replies)
+		if(!tweet_list_get_total(tweet_list)) return;
+		else{
+			gchar *id_newest_update_str=float_no_zeros(id_newest_update);
+			request_uri_swap=g_strdup_printf("%s?since_id=%s", *request_uri, id_newest_update_str);
+			debug("Requesting <%s>'s timeline: %s; new updates since: %f (using string: %s).", service->key, timeline, id_newest_update, id_newest_update_str);
+			uber_free(id_newest_update_str);
+		}
+	}else if(monitoring==DMs || monitoring==Replies){
 		if(!id_oldest_update) return;
-		else request_uri_swap=g_strdup_printf("%s?since_id=%lu", *request_uri, id_oldest_update);
-	else return;
+		else{
+			gchar *id_oldest_update_str=float_no_zeros(id_oldest_update);
+			request_uri_swap=g_strdup_printf("%s?since_id=%s", *request_uri, id_oldest_update_str);
+			debug("Requesting <%s>'s timeline: %s; total updates since: %f (using string: %s).", service->key, timeline, id_oldest_update, id_oldest_update_str);
+			uber_free(id_oldest_update_str);
+		}
+	}else return;
 	
 	g_free(*request_uri);
 	*request_uri=request_uri_swap;
 	request_uri_swap=NULL;
+	debug("Updated request uri for <%s> to new updates posted since %s.", service->key, *request_uri);
 }/*online_service_request_validate_uri(service, &request_uri, callback, &user_data, &form_data);*/
 
 static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
@@ -942,8 +959,10 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		debug("Posting update to: <%s>", service->key);
 		reply_form_data=g_strdup_printf( "source=%s&status=%s", online_service_get_micro_blogging_client(service), (gchar *)(*form_data));
 	}else{
-		debug("Replying to Update: [#%lu].", in_reply_to_status_id);
-		reply_form_data=g_strdup_printf( "source=%s&in_reply_to_status_id=%lu&status=%s", online_service_get_micro_blogging_client(service), in_reply_to_status_id, (gchar *)(*form_data));
+		gchar *in_reply_to_status_id_str=float_no_zeros(in_reply_to_status_id);
+		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
+		reply_form_data=g_strdup_printf( "source=%s&in_reply_to_status_id=%s&status=%s", online_service_get_micro_blogging_client(service), in_reply_to_status_id_str, (gchar *)(*form_data));
+		uber_free(in_reply_to_status_id_str);
 	}
 	
 	(*form_data)=(gpointer)reply_form_data;
@@ -965,7 +984,7 @@ static void online_service_message_restarted(SoupMessage *msg, gpointer user_dat
 	online_service_disconnect(service, FALSE);
 }/*onlin_service_message_restarted*/
 
-void online_service_soup_session_callback_return_processor_func_default(gpointer soup_session_callback_return_gpointer){
+void online_service_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer){
 	debug("\n\t\t\t\t\t\t|-----------------------------------------------------------------------------|\n"
 		"\t\t\t\t\t\t|     online_service_soup_session_callback_return_processor_func_default      |\n"
 		"\t\t\t\t\t\t|_____________________________________________________________________________|"

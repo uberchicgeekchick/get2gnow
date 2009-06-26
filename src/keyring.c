@@ -93,7 +93,7 @@ gboolean keyring_get_password(OnlineService *service, gchar **password){
 	data=passwords->data;
 	GList *p=NULL;
 	*password=g_strdup(data->password);
-	if(IF_DEBUG){
+	IF_DEBUG{
 		debug("Password(s) found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", online_service_get_key(service), online_service_get_uri(service), online_service_get_username(service), *password );
 		debug("Passwords found: (=");
 		for(p=passwords; p; p=p->next){

@@ -22,10 +22,10 @@
   </object>
   <object class="GtkListStore" id="tweet_list_list_store">
     <columns>
-      <!-- column-name ULONG_TWEET_ID -->
-      <column type="gulong"/>
-      <!-- column-name ULONG_USER_ID -->
-      <column type="gulong"/>
+      <!-- column-name GFLOAT_TWEET_ID -->
+      <column type="gfloat"/>
+      <!-- column-name GFLOAT_USER_ID -->
+      <column type="gfloat"/>
       <!-- column-name STRING_USER -->
       <column type="gchararray"/>
       <!-- column-name STRING_NICK -->

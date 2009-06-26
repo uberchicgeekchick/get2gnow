@@ -73,8 +73,8 @@ struct _TweetListClass {
 
 
 enum TweetListStoreColumns{	/********************************************************************************/
-	ULONG_TWEET_ID,		/*	Tweet's ID.								*/
-	ULONG_USER_ID,		/*	User's ID.								*/
+	GFLOAT_TWEET_ID,	/*	Tweet's ID.								*/
+	GFLOAT_USER_ID,		/*	User's ID.								*/
 	STRING_USER,		/*	Username string.							*/
 	STRING_NICK,		/*	Author name string.							*/
 	STRING_TEXT,		/*	Unformated Tweet string.						*/
@@ -95,11 +95,13 @@ GType tweet_list_get_type(void) G_GNUC_CONST;
 TweetList *tweet_list_new(const gchar *timeline);
 const gchar *tweet_list_get_timeline(TweetList *tweet_list);
 
-gint tweet_list_has_loaded(TweetList *tweet_list);
+gint8 tweet_list_has_loaded(TweetList *tweet_list);
 
 gint tweet_list_get_page(TweetList *tweet_list);
-gint tweet_list_get_total(TweetList *tweet_list);
 void tweet_list_set_page(TweetList *tweet_list, gint page);
+
+gint tweet_list_get_total(TweetList *tweet_list);
+gint tweet_list_increment(TweetList *tweet_list);
 guint tweet_list_get_notify_delay(TweetList *tweet_list);
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list);
@@ -108,14 +110,12 @@ GtkLabel *tweet_list_get_menu(TweetList *tweet_list);
 
 GtkListStore *tweet_list_get_list_store(TweetList *tweet_list);
 GtkTreeModel *tweet_list_get_tree_model(TweetList *tweet_list);
-void tweet_list_increment(TweetList *tweet_list);
 
 void tweet_list_start(TweetList *tweet_list);
 gboolean tweet_list_refresh(TweetList *tweet_list);
 void tweet_list_stop(TweetList *tweet_list);
 void tweet_list_complete(TweetList *tweet_list);
 
-gboolean tweet_list_is_unread(TweetList *tweet_list);
 void tweet_list_mark_as_read(TweetList *tweet_list);
 void tweet_list_mark_as_unread(TweetList *tweet_list);
 

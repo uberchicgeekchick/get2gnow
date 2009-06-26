@@ -81,7 +81,7 @@
 typedef enum{
 	DataSet,
 	DataFree,
-} OnlineServiceWrapperDataHandler;
+} OnlineServiceWrapperDataProcessor;
 
 struct _OnlineServiceWrapper {
 	OnlineService						*service;
@@ -90,12 +90,13 @@ struct _OnlineServiceWrapper {
 	OnlineServiceSoupSessionCallbackFunc			callback;
 	gpointer						user_data;
 	gpointer						form_data;
+	gboolean						can_run;
 };
 
 
-static void online_service_wrapper_data_handler(gpointer *data, OnlineServiceWrapperDataHandler data_handler);
-static void online_service_wrapper_form_data_handler(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataHandler data_handler);
-static void online_service_wrapper_user_data_handler(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataHandler data_handler);
+static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceWrapperDataProcessor data_processor);
+static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
+static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
 
 
 
@@ -119,16 +120,21 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const g
 	service_wrapper->user_data=user_data;
 	service_wrapper->form_data=form_data;
 	
-	if(callback==NULL) return service_wrapper;
+	if(callback!=NULL)
+		service_wrapper->can_run=TRUE;
+	else{
+		service_wrapper->can_run=FALSE;
+		return service_wrapper;
+	}
 	
-	online_service_wrapper_user_data_handler(service_wrapper, DataSet);
+	online_service_wrapper_user_data_processor(service_wrapper, DataSet);
 	
-	online_service_wrapper_form_data_handler(service_wrapper, DataSet);
+	online_service_wrapper_form_data_processor(service_wrapper, DataSet);
 	
 	return service_wrapper;
 }/*online_service_wrapper_new(service, request_uri, callback, user_data, form_data);*/
 
-static void online_service_wrapper_user_data_handler(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataHandler data_handler){
+static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(
 		service_wrapper->user_data!=NULL
 		&&
@@ -146,11 +152,11 @@ static void online_service_wrapper_user_data_handler(OnlineServiceWrapper *servi
 	))
 		return;
 	
-	online_service_wrapper_data_handler(&service_wrapper->user_data, data_handler);
+	online_service_wrapper_data_processor(&service_wrapper->user_data, data_processor);
 	
-}/*online_service_wrapper_handler_user_data_handler(service_wrapper, DataSet|DataFree);*/
+}/*online_service_wrapper_user_data_processor(service_wrapper, DataSet|DataFree);*/
 
-static void online_service_wrapper_form_data_handler(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataHandler data_handler){
+static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(
 		service_wrapper->callback!=NULL
 		&&
@@ -160,13 +166,13 @@ static void online_service_wrapper_form_data_handler(OnlineServiceWrapper *servi
 	))
 		return;
 	
-	online_service_wrapper_data_handler(&service_wrapper->form_data, data_handler);
-}/*online_service_wrapper_form_data_handler(service_wrapper, DataSet|DataFree);*/
+	online_service_wrapper_data_processor(&service_wrapper->form_data, data_processor);
+}/*online_service_wrapper_form_data_processor(service_wrapper, DataSet|DataFree);*/
 
 
-static void online_service_wrapper_data_handler(gpointer *data, OnlineServiceWrapperDataHandler data_handler){
+static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(*data)) return;
-	switch(data_handler){
+	switch(data_processor){
 		case DataFree:
 			uber_free( (*data) );
 			break;
@@ -174,16 +180,16 @@ static void online_service_wrapper_data_handler(gpointer *data, OnlineServiceWra
 			*data=g_strdup(*data);
 			break;
 		default:
-			debug("**ERROR:** OnlineServiceWrapperDataHandler reached unsupported user_data_method.");
+			debug("**ERROR:** OnlineServiceWrapperDataProcessor reached unsupported data_processor.");
 			break;
 	}
-}/*online_service_wrapper_handler_user_data(&data, DataSet|DataFree);*/
+}/*online_service_wrapper_data_processor(&data, DataSet|DataFree);*/
 
 
 void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml){
-	if(service_wrapper->callback==NULL) return;
-	
-	service_wrapper->online_service_soup_session_callback_return_processor_func( service_wrapper->callback(session, xml, service_wrapper) );
+	if(!(service_wrapper->callback && service_wrapper->can_run)) return;
+	service_wrapper->can_run=FALSE;
+	service_wrapper->online_service_soup_session_callback_return_processor_func( service_wrapper, (service_wrapper->callback(session, xml, service_wrapper)) );
 }/*online_service_wrapper_run*/
 
 const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper){
@@ -209,9 +215,9 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *service_wrap
 void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper){
 	if(!service_wrapper) return;
 	
-	online_service_wrapper_user_data_handler(service_wrapper, DataFree);
+	online_service_wrapper_user_data_processor(service_wrapper, DataFree);
 	
-	online_service_wrapper_form_data_handler(service_wrapper, DataFree);
+	online_service_wrapper_form_data_processor(service_wrapper, DataFree);
 	
 	service_wrapper->online_service_soup_session_callback_return_processor_func=NULL;
 	service_wrapper->callback=NULL;

@@ -73,7 +73,7 @@
  *********************************************************************/
 extern OnlineService *selected_service;
 
-extern gulong in_reply_to_status_id;
+extern gfloat in_reply_to_status_id;
 extern OnlineService *in_reply_to_service;
 
 
@@ -115,8 +115,8 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-void online_service_update_ids_get(OnlineService *service, const gchar *uri, gulong *newest_id, gulong *oldest_id);
-void online_service_update_ids_set(OnlineService *service, const gchar *uri, gulong newest_id, gulong oldest_id);
+void online_service_update_ids_get(OnlineService *service, const gchar *uri, gfloat *newest_id, gfloat *oldest_id);
+void online_service_update_ids_set(OnlineService *service, const gchar *uri, gfloat newest_id, gfloat oldest_id);
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 
@@ -125,7 +125,7 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 
-void online_service_soup_session_callback_return_processor_func_default(gpointer soup_session_callback_return_gpointer);
+void online_service_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
 

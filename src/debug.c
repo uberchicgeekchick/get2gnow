@@ -47,91 +47,175 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
 
 
-
-#include "config.h"
-
+/********************************************************************************
+ *      Project, system & library headers, eg #include <gdk/gdkkeysyms.h>       *
+ ********************************************************************************/
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
 
 #include <glib.h>
 #include <glib/gprintf.h>
+
+#include "config.h"
 #include "main.h"
 #include "cache.h"
 
-/*
- * Set DEBUG to a colon/comma/space separated list of domains, or "all"
- * to get all debug output.
- */
-#define DEBUG_DOMAINS "All"
-#include "debug.h"
 
-static gchar **debug_strv=NULL;
+/********************************************************************************
+ *               object methods, handlers, callbacks, & etc.                    *
+ ********************************************************************************/
+static gboolean debug_reinit(void);
+
+
+/********************************************************************************
+ *                 prototypes for private method & function                     *
+ ********************************************************************************/
+static FILE *debug_log_rotate(void);
+gboolean debug_check_devel(void);
+static void debug_environment_check(void);
+static void debug_domains_check(const gchar *domains);
+
+
+/********************************************************************************
+ *              Debugging information static objects, and local defines         *
+ ********************************************************************************/
+static gchar **debug_environment=NULL;
 static gboolean all_domains=FALSE;
-static gboolean devel=FALSE;
-static gchar *debug_last_domain=NULL;
-static gchar *debug_environmental_variable=NULL;
+static gboolean debug_devel=FALSE;
 
+static gchar **debug_domains=NULL;
+static gchar *debug_last_domains=NULL;
+static gchar *debug_last_domain=NULL;
+
+static gchar *debug_environmental_variable=NULL;
 static FILE *debug_log_fp=NULL;
 static const gchar *debug_log_filename=NULL;
 static const gchar *debug_log_filename_swp=NULL;
 
+static gboolean debug_pause=FALSE;
+static gboolean debug_output=FALSE;
+static guint debug_timeout_id=0;
+
+/*
+ * Set DEBUG_DOMAINS to a colon separated list of debugging areas.
+ * Each value is checked against value in the environmental variable:
+ *	GETTEXT_PACKAGE_DEBUG, in this case its: GET2GNOW_DEBUG.
+ */
+#define DEBUG_DOMAINS "All"
+#include "debug.h"
+
+
+/********************************************************************************
+ *              creativity...art, beauty, fun, & magic...programming            *
+ ********************************************************************************/
 gboolean debug_check_devel(void){
 #ifndef GNOME_ENABLE_DEBUG
 	if(!( (g_getenv(debug_environmental_variable)) && (g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_ENABLE_DEBUG" )) ))
-		return FALSE;
+		return (debug_devel=FALSE);
 	
-#define GNOME_ENABLE_DEBUG
+	#define GNOME_ENABLE_DEBUG
+	
 #else
-	if( (g_getenv(debug_environmental_variable)) && !(g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_ENABLE_DEBUG" )) )
-		return FALSE;
-	
+	if( (g_getenv(debug_environmental_variable)) && (g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_DISABLE_DEBUG" )) )
+		return (debug_devel=FALSE);
 #endif
 	
-	devel=TRUE;
+	if(debug_environment) g_strfreev(debug_environment);
+	debug_output=TRUE;
 	all_domains=TRUE;
-	debug_strv=g_strsplit("All", ":", 1);
+	debug_environment=g_strsplit("All", ":", 1);
 	
-	return TRUE;
-}//debug_check_devel
+	return (debug_devel=TRUE);
+}/*debug_check_devel();*/
 
 void debug_init(void){
+	/*re-checks GET(2GNOW_DEBUG every 6 minutes.*/
+	debug_timeout_id=g_timeout_add(600000, (GSourceFunc)debug_reinit, NULL);
+	
 	gchar *debug_package=g_utf8_strup(PACKAGE_TARNAME, -1);
 	debug_environmental_variable=g_strdup_printf("%s_DEBUG", debug_package);
 	g_free(debug_package);
+	
 	debug_log_filename=cache_file_touch("debug.log");
 	debug_log_filename_swp=g_strdup_printf("%s.swp", debug_log_filename);
 	debug_log_fp=fopen(debug_log_filename, "w");
+	
+	debug_environment_check();
+}/*debug_init();*/
+
+static gboolean debug_reinit(void){
+	debug_pause=TRUE;
+	debug_timeout_id=g_timeout_add(600000, (GSourceFunc)debug_reinit, NULL);
+	debug_environment_check();
+	return (debug_pause=FALSE);
+}/*static void debug_refresh(void);*/
+
+void debug_deinit(void){
+	program_timeout_remove(&debug_timeout_id, "DEBUG environment testing.");
+	
+	fclose(debug_log_fp);
+	g_free((gchar *)debug_log_filename);
+	g_free((gchar *)debug_log_filename_swp);
+	
+	g_free(debug_environmental_variable);
+	g_strfreev(debug_environment);
+	
+	if(debug_last_domains){
+		g_free(debug_last_domains);
+		g_strfreev(debug_domains);
+	}
+}/*debug_deinit();*/
+
+static void debug_environment_check(void){
 	if(debug_check_devel()) return;
 	
 	const gchar *env;
 	gint         i;
 	
+	if(debug_environment) g_strfreev(debug_environment);
 	if(!(env=g_getenv(debug_environmental_variable))){
-		debug_strv=g_strsplit("-", ":", -1);
+		debug_environment=g_strsplit("-", ":", -1);
+		debug_output=FALSE;
 		return;
 	}
 	
-	debug_strv=g_strsplit(env, ":", -1);
+	debug_environment=g_strsplit(env, ":", -1);
+	debug_output=TRUE;
 	
-	for(i=0; debug_strv && debug_strv[i]; i++)
-		if(!(strcasecmp ("All", debug_strv[i])))
+	for(i=0; debug_environment && debug_environment[i]; i++)
+		if(!strcasecmp ("All", debug_environment[i]))
 			all_domains=TRUE;
-}/*debug_init();*/
+}/*debug_environment_check();*/
 
-static void debug_log_rotate(void){
+static void debug_domains_check(const gchar *domains){
+	if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;
+	
+	if(debug_last_domains) g_free(debug_last_domains);
+	debug_last_domains=g_strdup(domains);
+	
+	if(debug_domains) g_strfreev(debug_domains);
+	debug_domains=g_strsplit(domains, ":", -1);
+	
+	if(debug_last_domain) uber_free(debug_last_domain);
+}/*debug_domains_check(domain);*/
+
+static FILE *debug_log_rotate(void){
 	struct stat debug_log_stat;
 	
 	if(stat(debug_log_filename, &debug_log_stat)){
 		g_error("Failed to stat log file: %s.", debug_log_filename);
-		return;
+		return NULL;
 	}
 	
-	/*Not a mega-byte but close.. cause get2gnow has a shite load of debugging output.*/
+	/*Not a mega-byte but close.. cause get2gnow has tons of debugging output.*/
 	if(debug_log_stat.st_size <= 1000000)
-		return;
+		return debug_log_fp;
 	
 	fclose(debug_log_fp);
 	debug_log_fp=fopen(debug_log_filename, "r");
@@ -146,27 +230,28 @@ static void debug_log_rotate(void){
 	g_remove(debug_log_filename);
 	g_rename(debug_log_filename_swp, debug_log_filename);
 	debug_log_fp=fopen(debug_log_filename, "a");
+	return debug_log_fp;
 }/*debug_log_rotate();*/
 
-void debug_impl(const gchar *domain, const gchar *msg, ...){
-	g_return_if_fail (domain != NULL);
-	g_return_if_fail (msg != NULL);
+void debug_impl(const gchar *domains, const gchar *msg, ...){
+	if(!(domains && msg)) return;
+	while(debug_pause){}
+	
+	time_t current_time=time(NULL);
+	gchar *datetime=ctime(&current_time);
 	
 	static gboolean output_started=FALSE;
 	FILE *debug_output_fp=NULL;
 	
-	debug_log_rotate();
-	
-	gchar **domains=g_strsplit(domain, ":", -1);
-	for(gint x=0; domains[x]; x++){
-		for(gint i=0; debug_strv && debug_strv[i]; i++) {
-			if(!domains[x+1])
-				debug_output_fp=debug_log_fp;
-			else if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
+	debug_domains_check(domains);
+	for(guint x=0; debug_domains[x]; x++){
+		for(guint y=0; debug_environment[y]; y++) {
+			if(!debug_domains[x+1])
+				debug_output_fp=debug_log_rotate();
+			else if(!(all_domains && strcasecmp(debug_domains[x], debug_environment[y]) ))
 				continue;
 			else{
 				debug_output_fp=stdout;
-				
 				if(!output_started){
 					output_started=TRUE;
 					g_fprintf(debug_output_fp, "\n");
@@ -174,17 +259,18 @@ void debug_impl(const gchar *domain, const gchar *msg, ...){
 			}
 			
 			if(g_str_has_prefix(msg, "**ERROR:**")){
+				g_fprintf(stderr, "\n**%s %s %s**", _(GETTEXT_PACKAGE), _(debug_domains[x]), _("error"));
 				va_list args;
 				va_start(args, msg);
-				g_fprintf(stderr, "\n**%s %s %s**:\n\t", GETTEXT_PACKAGE, domains[x], _("error"));
 				g_vfprintf(stderr, msg, args);
 				va_end(args);
+				g_fprintf(stderr, " @ %s", datetime);
 			}
 			
-			if(!( debug_last_domain && g_str_equal(debug_last_domain, domains[x]) )){
+			if(!( debug_last_domain && g_str_equal(debug_last_domain, debug_domains[x]) )){
 				if(debug_last_domain) g_free(debug_last_domain);
-				debug_last_domain=g_strdup(domains[x]);
-				g_fprintf(debug_output_fp, "\n%s:\n", domains[x]);
+				debug_last_domain=g_strdup(debug_domains[x]);
+				g_fprintf(debug_output_fp, "\n%s:\n", debug_domains[x]);
 			}
 			
 			va_list args;
@@ -192,40 +278,31 @@ void debug_impl(const gchar *domain, const gchar *msg, ...){
 			g_fprintf(debug_output_fp, "\t\t");
 			g_vfprintf(debug_output_fp, msg, args);
 			va_end(args);
+			g_fprintf(debug_output_fp, " @ %s", datetime);
 			
-			g_fprintf(debug_output_fp, "\n");
-			
-			g_strfreev(domains);
 			return;
 		}
 	}
-	g_strfreev(domains);
-}
+}/*debug_printf(DEBUG_DOMAINS, "message" __format, format_args...);*/
 
-gboolean debug_if_domain(const gchar *domain){
-	if(G_STR_EMPTY(domain))
+gboolean debug_if_domain(const gchar *domains){
+	if(G_STR_EMPTY(domains))
 		return FALSE;
 	
-	gchar **domains=g_strsplit(domain, ":", -1);
-	for(gint i=0; debug_strv && debug_strv[i]; i++) {
-		for(gint x=0; domains[x]; x++){
-			if(!(all_domains || g_str_equal(domains[x], debug_strv[i]) ))
+	debug_domains_check(domains);
+	for(guint x=0; debug_domains[x]; x++){
+		for(guint y=0; debug_environment[y]; y++) {
+			if(!(all_domains && strcasecmp(debug_domains[x], debug_environment[y]) ))
 				continue;
 			
-			g_strfreev(domains);
 			return TRUE;
 		}
 	}
-	g_strfreev(domains);
 	return FALSE;
-}
+}/*macro:DEBUG_IF==if(debug_if_domain(DEBUG_DOMAINS))*/
 
-void debug_deinit(void){
-	if(debug_last_domain) g_free(debug_last_domain);
-	fclose(debug_log_fp);
-	g_free((gchar *)debug_log_filename);
-	g_free((gchar *)debug_log_filename_swp);
-	g_free(debug_environmental_variable);
-	g_strfreev(debug_strv);
-}/*debug_deinit*/
+
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
 

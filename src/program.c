@@ -164,12 +164,21 @@ void program_uber_free(gpointer pointer1, ...){
 }/*void program_uber_free(pointer1, pointer2, NULL);*/
 
 void program_timeout_remove(guint *id, const gchar *usage){
-	if(!( (*id)>0 )) return;
+	if(!( *id > 0 )) return;
 	
-	debug("Stopping %s monitoring.  Timeout id: %i.", ( G_STR_N_EMPTY(usage) ?usage :"[unknown pthread timer]" ), (*id) );
+	debug("Stopping %s monitoring.  Timeout id: %i.", ( G_STR_N_EMPTY(usage) ?usage :"[unknown pthread timer]" ), (*id));
 	g_source_remove( (*id) );
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
+
+gchar *program_float_drop_precision(const gfloat gfloat_value){
+	gchar *gfloat_str=g_strdup_printf("%f", gfloat_value);
+	gchar **gfloat_precision=g_strsplit(gfloat_str, ".", 2);
+	g_free(gfloat_str);
+	gfloat_str=g_strdup(gfloat_precision[0]);
+	g_strfreev(gfloat_precision);
+	return gfloat_str;
+}/*program_float_drop_precision();*/
 
 gboolean program_gtk_widget_get_focus(GtkWidget *widget){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;

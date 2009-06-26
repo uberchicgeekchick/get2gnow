@@ -211,7 +211,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	return new_users;
 }/*users_glist_parse(session, xml, service_wrapper);*/
 
-void users_glist_save(gpointer soup_session_callback_return_gpointer){
+void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer){
 	GList *new_users=(GList *)soup_session_callback_return_gpointer;
 	
 	if(!(new_users)){

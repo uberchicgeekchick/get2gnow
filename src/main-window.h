@@ -104,6 +104,7 @@ void tweet_lists_start(void);
 void tweet_lists_refresh(void);
 void tweet_lists_stop(void);
 void tweet_lists_close(void);
+void tweet_lists_close_current_page(void);
 void tweet_lists_close_page(gint page);
 void tweet_lists_destroy(void);
 

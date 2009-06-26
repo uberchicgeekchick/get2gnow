@@ -108,6 +108,8 @@ static void gconfig_class_init(GConfigClass *class);
 static void gconfig_init(GConfig *gconfig);
 static void gconfig_finalize(GObject *object);
 
+static void gconfig_suggest_sync(const gchar *gtype, const gchar *key);
+static void gconfig_print_list_values(const gchar *key, GSList *value, GConfValueType list_type);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
@@ -154,11 +156,28 @@ void gconfig_shutdown(void){
 	if(gconfig) uber_unref(gconfig);
 }/*gconfig_shutdown();*/
 
+static void gconfig_suggest_sync(const gchar *gtype, const gchar *key){
+	GError *error=NULL;
+	gconf_client_suggest_sync(gconfig_priv->gconf_client, &error);
+	if(error){
+		debug("**ERROR:** Failed to suggest gconf client syncing w/gconf deamon.");
+		debug("**ERROR:** \t\tGConf deamon return: [%s] after saving: %s (%s).", key, error->message, gtype);
+		g_error_free(error);
+	}
+}/*gconfig_suggest_sync(key);*/
+
 gboolean gconfig_set_int(const gchar *key, gint value){
 	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
 		cached_int_value=value;
 	debug("Setting int:'%s' to %d", key, value);
-	return gconf_client_set_int(gconfig_priv->gconf_client, key, value, NULL);
+	GError *error=NULL;
+	gboolean success=gconf_client_set_int(gconfig_priv->gconf_client, key, value, &error);
+	if(!success){
+		debug("**ERROR:** GConf Client failed: save %s %s to %i. gconf error: %s", "int", key, value, error->message);
+		g_error_free(error);
+	}else
+		gconfig_suggest_sync("int", key);
+	return success;
 }/*gconfig_get_int(key, int);*/
 
 gboolean gconfig_get_int(const gchar *key, gint *value){
@@ -191,8 +210,15 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 gboolean gconfig_set_float(const gchar *key, gfloat value){
 	if( G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) )
 		cached_float_value=value;
-	debug("Setting float:'%s' to %f", key, value);
-	return gconf_client_set_float(gconfig_priv->gconf_client, key, value, NULL);
+	debug("Setting: '%s' to %f [type: float]", key, value);
+	GError *error=NULL;
+	gboolean success=gconf_client_set_float(gconfig_priv->gconf_client, key, value, &error);
+	if(!success){
+		debug("**ERROR:** GConf Client failed: save %s %s to %f. gconf error: %s", "float", key, value, error->message);
+		g_error_free(error);
+	}else
+		gconfig_suggest_sync("float", key);
+	return success;
 }/*gconfig_get_float(key, float);*/
 
 gboolean gconfig_get_float(const gchar *key, gfloat *value){
@@ -208,10 +234,10 @@ gboolean gconfig_get_float(const gchar *key, gfloat *value){
 	
 	*value=gconf_client_get_float(gconfig_priv->gconf_client, key, &error);
 	
-	debug("Getting float:'%s'(=%f)", key, *value);
+	debug("Getting: '%s'(=%f) [type: float]", key, *value);
 	
 	if(error){
-		debug("\t\t**ERROR:** %s", error->message);
+		debug("**ERROR:** failed to load %s.  GConf error: %s", key, error->message);
 		g_error_free(error);
 		return FALSE;
 	}
@@ -241,7 +267,7 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 			return bool_default;
 		}
 		
-		gconf_client_suggest_sync(gconfig_priv->gconf_client, &error);
+		gconfig_suggest_sync("bool", key);
 		uber_free(cached_bool_key);
 		cached_bool_key=g_strdup(key);
 		cached_bool_value=bool_default;
@@ -271,7 +297,15 @@ gboolean gconfig_set_bool(const gchar *key, gboolean value){
 		cached_bool_value=value;
 	
 	debug("Setting bool:'%s' to %s.", key, (value ? "TRUE" : "FALSE"));
-	return gconf_client_set_bool(gconfig_priv->gconf_client, key, value,NULL);
+	GError *error=NULL;
+	gboolean success=gconf_client_set_bool(gconfig_priv->gconf_client, key, value, &error);
+	if(!success){
+		debug("**ERROR:** Failed to save %s to %s. gconf error: %s", key, (value?"TRUE":"FALSE"), error->message);
+		g_error_free(error);
+	}else
+		gconfig_suggest_sync("string", key);
+	
+	return success;
 }/*gconfig_set_bool(key, boolean);*/
 
 gboolean gconfig_get_bool(const gchar *key, gboolean *value){
@@ -304,8 +338,14 @@ gboolean gconfig_set_string(const gchar *key, const gchar *value){
 	}
 	
 	debug("Setting string:'%s' to '%s'", key, value);
-	
-	return gconf_client_set_string(gconfig_priv->gconf_client, key, value, NULL);
+	GError *error=NULL;
+	gboolean success=gconf_client_set_string(gconfig_priv->gconf_client, key, value, &error);
+	if(!success){
+		debug("**ERROR:** GConf Client failed: save %s %s to %s. gconf error: %s", "string", key, value, error->message);
+		g_error_free(error);
+	}else
+		gconfig_suggest_sync("string", key);
+	return success;
 }/*gconfig_set_string(key, string);*/
 
 gboolean gconfig_get_string(const gchar *key, gchar **value){
@@ -347,14 +387,15 @@ gboolean gconfig_get_list_string(const gchar *key, GSList **value){
 /* Possible values for 'list_type' are one of the follwing:
  * 	GCONF_VALUE_STRING, GCONF_VALUE_INT, GCONF_VALUE_BOOL, GCONF_VALUE_FLOAT, GCONF_VALUE_INVALID, GCONF_VALUE_SCHEMA, or 
  */
-static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
+static void gconfig_print_list_values(const gchar *key, GSList *value, GConfValueType list_type){
 	GSList *l=NULL;
 	if( list_type==GCONF_VALUE_INVALID || list_type==GCONF_VALUE_SCHEMA || list_type==GCONF_VALUE_LIST || list_type==GCONF_VALUE_PAIR ){
 		debug("[undisplayable/mixed values]");
 		return;
 	}
 	
-	for(l=value; l; l=l->next)
+	debug("GConf list: '%s', values:(=", key);
+	for(l=value; l; l=l->next){
 		switch(list_type){
 			case GCONF_VALUE_STRING:
 			case GCONF_VALUE_INT:
@@ -372,16 +413,24 @@ static void gconfig_print_list_values(GSList *value, GConfValueType list_type){
 				/* yes we know this is never executed, it catches gcc errors & warning. */
 				break;
 		}
-}/*gconfig_print_list(list, GCONF_VALUE_STRING);*/
+	}
+	debug(")");
+}/*gconfig_print_list_values(list, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_type){
-	if(IF_DEBUG){
-		debug("Saving list: '%s', values:(=", key);
-		gconfig_print_list_values(value, list_type);
-		debug(")" );
+	IF_DEBUG{
+		debug("Saving list:");
+		gconfig_print_list_values(key, value, list_type);
 	}
-	return gconf_client_set_list(gconfig_priv->gconf_client, key, list_type, value, NULL );
-}/*gconfig_set_bool(key, value, GCONF_VALUE_STRING);*/
+	GError *error=NULL;
+	gboolean success=gconf_client_set_list(gconfig_priv->gconf_client, key, list_type, value, &error);
+	if(!success){
+		debug("**ERROR:** GConf client save failure.  GConf save %s %s. gconf error: %s", "list", key, error->message);
+		g_error_free(error);
+	}else
+		gconfig_suggest_sync("list", key);
+	return success;
+}/*gconfig_set_list(key, value, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list_type){
 	GError *error=NULL;
@@ -392,9 +441,9 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 		debug("\t\t**ERROR:** failed to retrieve list: %s, error: %s.", key, error->message);
 		g_error_free(error);
 		return FALSE;
-	}else if(IF_DEBUG){
-		debug("Retrieved list: '%s':(=", key);
-		gconfig_print_list_values(*value, list_type);
+	}else IF_DEBUG{
+		debug("Retrieved list:");
+		gconfig_print_list_values(key, *value, list_type);
 		debug("\t)" );
 	}
 	return TRUE;
@@ -415,14 +464,7 @@ gboolean gconfig_rm_rf(const gchar *key){
 		return FALSE;
 	}
 	
-	error=NULL;
-	gconf_client_suggest_sync(gconfig_priv->gconf_client, &error);
-	if(error){
-		debug("**ERROR:** Failed to suggest gconf client syncing w/gconf deamon. GConf deamon return: %s", error->message);
-		g_error_free(error);
-		return FALSE;
-	}
-	
+	gconfig_suggest_sync("list", key);
 	return TRUE;
 }/*gconfig_rm_rf*/
 

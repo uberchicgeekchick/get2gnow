@@ -250,7 +250,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 	debug("Started processing timeline: %s.", timeline);
 	
 	guint tweets_parsed=parse_timeline(service, msg, timeline, tweet_list, monitoring);
-		
+	
 	debug("Total tweets in this timeline: %d.", tweets_parsed);
 	if(!retrying && !tweets_parsed && !g_strrstr(request_uri, "?since_id=") && msg->status_code==200){
 		uber_free(request_uri);
@@ -259,8 +259,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 	}
 	
 	if(retrying) retrying=FALSE;
-	if(service==online_services_connected_get_last(online_services))
-		tweet_list_complete(tweet_list);
+	tweet_list_complete(tweet_list);
 	
 	uber_free(request_uri);
 	return NULL;

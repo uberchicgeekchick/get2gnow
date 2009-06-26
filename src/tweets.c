@@ -181,6 +181,9 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_D:	case GDK_d:
 					tweets_new_dm();
 					return;
+				case GDK_W: case GDK_w:
+					tweet_lists_close_current_page();
+					return;
 				case GDK_Page_Up:
 					tweet_lists_get_previous();
 					return;

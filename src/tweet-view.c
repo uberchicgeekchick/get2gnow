@@ -540,7 +540,7 @@ static void tweet_view_reorder(void){
 }/*tweet_view_reorder*/
 
 
-void tweet_view_show_tweet(OnlineService *service, const gulong id, const gulong user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
+void tweet_view_show_tweet(OnlineService *service, const gfloat id, const gfloat user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if(!id)
 		unset_selected_tweet();
 	else

@@ -48,10 +48,10 @@ G_BEGIN_DECLS
 #endif
 
 
-#ifdef DISABLE_DEBUG
-#	define IF_DEBUG
+#ifndef DISABLE_DEBUG
+#	define IF_DEBUG		if(debug_if_domain(DEBUG_DOMAINS))
 #else
-#	define IF_DEBUG		debug_if_domain(DEBUG_DOMAINS)
+#	define IF_DEBUG
 #endif
 
 #define	check_devel()	debug_check_devel()

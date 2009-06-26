@@ -95,7 +95,7 @@ typedef enum _ReloadState ReloadState;
 typedef enum _RequestMethod RequestMethod;
 typedef enum _UsersGListGetWhich UsersGListGetWhich;
 
-typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (gpointer soup_session_callback_return_gpointer);
+typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
 typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 typedef void (*UsersGListLoadFunc) (GList *users);
 

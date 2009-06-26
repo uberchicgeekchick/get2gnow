@@ -541,6 +541,10 @@ void tweet_lists_close(void){
 		tweet_lists_close_page(tweet_list_get_page((TweetList *)tl->data));
 }/*tweet_lists_stop();*/
 
+void tweet_lists_close_current_page(void){
+	tweet_lists_close_page(gtk_notebook_get_current_page(main_window_priv->tweet_list_notebook));
+}/*tweet_lists_close_current_page();*/
+
 void tweet_lists_close_page(gint page){
 	TweetList *tweet_list=tweet_lists_get_page(page, TRUE);
 	gtk_notebook_remove_page(main_window_priv->tweet_list_notebook, page);

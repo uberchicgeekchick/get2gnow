@@ -97,7 +97,7 @@ typedef struct  _UserProfileViewer UserProfileViewer;
 struct _User {
 	OnlineService		*service;
 	
-	gulong			id;
+	gfloat			id;
 	gchar			*id_str;
 	
 	gchar			*user_name;
@@ -126,10 +126,10 @@ struct _UserStatus {
 	
 	TweetLists	type;
 	
-	gulong		id;
+	gfloat		id;
 	gchar		*id_str;
 	
-	gulong		in_reply_to_status_id;
+	gfloat		in_reply_to_status_id;
 	
 	guint		notification_timeout_id;
 	
@@ -221,7 +221,7 @@ static User *user_new(OnlineService *service, gboolean a_follower){
 	return user;
 }/*user_new*/
 
-gulong user_get_id(User *user){
+gfloat user_get_id(User *user){
 	if(!user) return 0;
 	return user->id;
 }/*user_get_id(user);*/
@@ -302,8 +302,8 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		
 		if(g_str_equal(current_node->name, "id" )){
 			user->id_str=g_strdup(content);
-			user->id=strtoul( content, NULL, 10 );
-			debug("User ID: %s(=%lu).", user->id_str, user->id);
+			user->id=strtof(content, NULL);
+			debug("User ID: %s(=%f).", user->id_str, user->id);
 			
 		}else if(g_str_equal(current_node->name, "name" ))
 			user->nick_name=g_strdup(content);
@@ -357,7 +357,7 @@ void user_free(User *user){
 	if(user->status) user_status_free(user->status);
 	
 	user->service=NULL;
-			
+	
 	uber_object_free(&user->user_name, &user->nick_name, &user->location, &user->bio, &user->url, &user->image_url, &user->image_filename, &user, NULL);
 }/*user_free*/
 
@@ -372,13 +372,13 @@ static UserStatus *user_status_new(OnlineService *service, TweetLists tweet_list
 	status->user=NULL;
 	status->type=tweet_list;
 	status->id_str=status->text=status->tweet=status->notification=status->sexy_tweet=status->created_at_str=status->created_how_long_ago=NULL;
-	status->id=status->in_reply_to_status_id=0;
+	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=status->created_seconds_ago=0;
 	
 	return status;
 }/*user_status_new(service, Tweets|Replies|Dms);*/
 
-gulong user_status_get_id(UserStatus *status){
+gfloat user_status_get_id(UserStatus *status){
 	if(!status) return 0;
 	return status->id;
 }/*user_status_get_id(status);*/
@@ -420,11 +420,11 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Twe
 		
 		if(g_str_equal(current_node->name, "id")){
 			status->id_str=g_strdup(content);
-			status->id=strtoul(content, NULL, 10);
-			debug("Status ID: %s(=%lu).", content, status->id);
+			status->id=strtof(content, NULL);
+			debug("Status ID: %s(=%f).", content, status->id);
 			
 		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
-			status->in_reply_to_status_id=strtoul(content, NULL, 10);
+			status->in_reply_to_status_id=strtof(content, NULL);
 		
 		else if(g_str_equal(current_node->name, "source"))
 			status->source=g_strdup(content);
@@ -455,18 +455,17 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Twe
 }/*user_status_parse(service, current_node->children, tweet_list);*/
 
 static void user_status_format_dates(UserStatus *status){
-	struct tm	*ta;
-	struct tm	post;
-	time_t		t=time(NULL);
-	
 	tzset();
-	
-	ta=gmtime(&t);
+	time_t		t=time(NULL);
+	struct tm	*ta=gmtime(&t);
 	ta->tm_isdst=-1;
 	
+	gchar *oldenv=setlocale(LC_TIME, "C");
+	struct tm	post;
 	strptime(status->created_at_str, "%s", &post);
 	post.tm_isdst=-1;
 	status->created_at=mktime(&post);
+	setlocale(LC_TIME, oldenv);
 	
 	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
@@ -519,13 +518,13 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
-	debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %lu; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", online_service_get_key(status->service), status->user->user_name, online_service_get_uri(status->service), status->id, status->created_at_str, status->text, status->sexy_tweet);
+	debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %f; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", online_service_get_key(status->service), status->user->user_name, online_service_get_uri(status->service), status->id, status->created_at_str, status->text, status->sexy_tweet);
 	
-	gtk_list_store_insert(tweet_list_store, iter, tweet_list_get_total(tweet_list));
+	gtk_list_store_insert(tweet_list_store, iter, tweet_list_increment(tweet_list));
 	gtk_list_store_set(
 				tweet_list_store, iter,
-					ULONG_TWEET_ID, status->id,				/*Tweet's ID.*/
-					ULONG_USER_ID, status->user->id,			/*User's ID.*/
+					GFLOAT_TWEET_ID, status->id,				/*Tweet's ID.*/
+					GFLOAT_USER_ID, status->user->id,			/*User's ID.*/
 					STRING_USER, status->user->user_name,			/*Username string.*/
 					STRING_NICK, status->user->nick_name,			/*Author name string.*/
 					STRING_TEXT, status->text,				/*Tweet string.*/
@@ -541,8 +540,6 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 				-1
 	);
 	
-	tweet_list_increment(tweet_list);
-	
 	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 	if(!g_file_test(status->user->image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return network_get_image(status->service, tweet_list, status->user->image_filename, status->user->image_url, iter);
@@ -553,7 +550,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 
 void user_status_free(UserStatus *status){
 	if(!status) return;
-	debug("Destroying status object %lu, from <%s>.", status->id, online_service_get_key(status->service));
+	debug("Destroying status object %f, from <%s>.", status->id, online_service_get_key(status->service));
 	if(status->user) user_free(status->user);
 			
 	status->service=NULL;

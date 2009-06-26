@@ -34,7 +34,7 @@
 
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TweetList *tweet_list, TweetLists monitoring);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, TweetLists monitoring);
 gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);

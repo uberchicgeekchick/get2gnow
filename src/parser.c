@@ -266,7 +266,7 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TweetList *tweet_list, TweetLists monitoring){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, TweetLists monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -275,13 +275,17 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	/* Count new tweets */
 	gboolean	notify;
 	guint		tweets_parsed=0;
-	gulong		status_id=0;
-	gulong		id_newest_update=0, id_oldest_update=0;
+	gfloat		status_id=0;
+	gfloat		id_newest_update=0, id_oldest_update=0;
 	
-	gint has_loaded=tweet_list_has_loaded(tweet_list);
+	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
+	gchar		*timeline=g_strdup(uri_split[0]);
+			g_strfreev(uri_split);
+	
+	gint8	has_loaded=tweet_list_has_loaded(tweet_list);
 	if( has_loaded || monitoring==DMs || monitoring==Replies )
 		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
-	gulong last_notified_update=id_newest_update;
+	gfloat	last_notified_update=id_newest_update;
 	
 	switch(monitoring){
 		case DMs:
@@ -309,17 +313,20 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 			notify=FALSE;
 			break;
 		
-		case None: default: return 0;
+		case None: default:
+			uber_free(timeline);
+			return 0;
 	}
 	if(!id_oldest_update && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
-	guint tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
+	guint		tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
 	const gint	tweet_display_interval=10;
-	const gint notify_priority=(monitoring-2)*100;
+	const gint	notify_priority=(monitoring-2)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
-		debug("**ERROR:** Failed to parse xml document, timeline: %s.", timeline);
+		debug("Failed to parse xml document, timeline: %s.", timeline);
 		xmlCleanupParser();
+		uber_free(timeline);
 		return tweets_parsed;
 	}
 	
@@ -352,15 +359,19 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 			if(status) user_status_free(status);
 			continue;
 		}
+		if(has_loaded && id_newest_update && status_id <= id_newest_update){
+			user_status_free(status);
+			continue;
+		}
 		
 		tweets_parsed++;
 		free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
-		debug("Adding UserStatus from: %s, ID: %lu, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
+		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
 		user_status_store(status, tweet_list);
 		
 		if( status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_username) ){
-			if(!tweet_list_is_unread(tweet_list)) tweet_list_mark_as_unread(tweet_list);
+			tweet_list_mark_as_unread(tweet_list);
 			if(notify){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
@@ -369,15 +380,21 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		}
 		
 		if(status_id > id_newest_update) id_newest_update=status_id;
+		
 		if( (monitoring!=DMs && monitoring!=Replies) || !(has_loaded && id_oldest_update) )
 			id_oldest_update=status_id;
 		
 		if(free_status) user_status_free(status);
 	}
 	
-	if(id_newest_update)
+	if(tweets_parsed){
+		const gchar *online_service_guid=online_service_get_guid(service);
+		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
+		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);
 		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);
+	}
 	
+	uber_free(timeline);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
@@ -399,62 +416,51 @@ gchar *parser_escape_text(gchar *text){
 gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
 	struct tm	*ta;
 	struct tm	post;
-	int			 seconds_local;
-	int			 seconds_post;
-	int 		 diff;
-	char        *oldenv;
-	time_t		 t = time(NULL);
+	int		seconds_local;
+	int		seconds_post;
+	int		diff;
+	char		*oldenv;
+	time_t		t=time(NULL);
 	
 	tzset();
+	ta=gmtime(&t);
+	ta->tm_isdst=-1;
+	seconds_local=mktime(ta);
 	
-	ta = gmtime(&t);
-	ta->tm_isdst = -1;
-	seconds_local = mktime(ta);
-	
-	oldenv = setlocale(LC_TIME, "C");
+	oldenv=setlocale(LC_TIME, "C");
 	strptime(datetime, "%a %b %d %T +0000 %Y", &post);
-	post.tm_isdst = -1;
-	seconds_post =  mktime(&post);
-	
+	post.tm_isdst=-1;
+	seconds_post=mktime(&post);
 	setlocale(LC_TIME, oldenv);
 	
-	(*my_diff)=diff=difftime(seconds_local, seconds_post);
+	(*my_diff)=(diff=difftime(seconds_local, seconds_post));
 	
-	if(diff < 2) {
-		return g_strdup(_("1 second ago"));
-	}
-	/* Seconds */
-	if(diff < 60 ) {
-		return g_strdup_printf(_("%i seconds ago"), diff);
-	} else if(diff < 120) {
-		return g_strdup(_("1 minute ago"));
-	} else {
-		/* Minutes */
-		diff = diff/60;
-		if(diff < 60) {
-			return g_strdup_printf(_("%i minutes ago"), diff);
-		} else if(diff < 120) {
-			return g_strdup(_("1 hour ago"));
-		} else {
-			/* Hours */
-			diff = diff/60;
-			if(diff < 24) {
-				return g_strdup_printf(_("%i hours ago"), diff);
-			} else if(diff < 48) {
-				return g_strdup(_("1 day ago"));
-			} else {
-				/* Days */
-				diff = diff/24;
-				if(diff < 30) {
-					return g_strdup_printf(_("%i days ago"), diff);
-				} else if(diff < 60) {
-					return g_strdup(_("1 month ago"));
-				} else {
-					return g_strdup_printf(_("%i months ago"), (diff/30));
-				}
-			}
-		}
-	}
-	return NULL;
-}
+	/* Up to one minute ago. */
+	if(diff < 2) return g_strdup(_("1 second ago"));
+	if(diff < 60 ) return g_strdup_printf(_("%i seconds ago"), diff);
+	if(diff < 120) return g_strdup(_("1 minute ago"));
+	
+	/* Minutes */
+	diff=diff/60;
+	if(diff < 60) return g_strdup_printf(_("%i minutes ago"), diff);
+	if(diff < 120) return g_strdup(_("1 hour ago"));
+	
+	/* Hours */
+	diff=diff/60;
+	if(diff < 24) return g_strdup_printf(_("%i hours ago"), diff);
+	if(diff < 48) return g_strdup(_("1 day ago"));
+	
+	/* Days */
+	diff=diff/24;
+	if(diff < 30) return g_strdup_printf(_("%i days ago"), diff);
+	if(diff < 365) return g_strdup_printf(_("%i months ago"), (diff/30));
+	
+	return g_strdup_printf(_("%i years ago"), (diff/365));
+	/* NOTE:
+	 * 	About time, month, & year precision, "years aren't...blah blah".
+	 * 	yeah well I agree!
+	 * 	but I'm dealing w/integers not floating point arthmatic.
+	 * 	so we'll all just have to get over is.
+	 */
+}/*parser_convert_time(date_created_string, &created_seconds_ago);*/
 
