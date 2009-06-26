@@ -432,6 +432,7 @@ gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
 	setlocale(LC_TIME, oldenv);
 	
 	(*my_diff)=(diff=difftime(seconds_local, seconds_post));
+	if(!(*my_diff >= 1)) *my_diff=1;
 	
 	/* Up to one minute ago. */
 	if(diff < 2) return g_strdup(_("1 second ago"));
