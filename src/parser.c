@@ -273,7 +273,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
-	gboolean	notify;
+	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 	guint		tweets_parsed=0;
 	gfloat		status_id=0;
 	gfloat		id_newest_update=0, id_oldest_update=0;
@@ -290,27 +290,25 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	switch(monitoring){
 		case DMs:
 			debug("Parsing DMs.");
-			notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
+			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
 			break;
 			
 		case Replies:
 			debug("Parsing Replies.");
-			notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
+			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
 			break;
 		
 		case Tweets:
 			debug("Parsing my friends' tweets");
-			notify=gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE);
+			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE);
 			break;
 		
 		case Timelines: case Users:
 			debug("Parsing timeline.");
-			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 			break;
 			
 		case Archive:
 			debug("Parsing my own tweets or favorites.");
-			notify=FALSE;
 			break;
 		
 		case None: default:

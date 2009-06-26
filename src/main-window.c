@@ -673,13 +673,12 @@ static void main_window_toggle_visibility(void){
 }
 
 static void main_window_set_visibility(gboolean visible){
-	GtkWindow *window=main_window_get_window();
 	gconfig_set_bool(PREFS_UI_HIDDEN, !visible);
 	
 	if(!visible)
-		gtk_widget_hide(GTK_WIDGET(window));
+		gtk_widget_hide(GTK_WIDGET(main_window_priv->window));
 	else{
-		window_present(GTK_WINDOW(window), TRUE);
+		window_present(GTK_WINDOW(main_window_priv->window), TRUE);
 		if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
 			window_present(GTK_WINDOW(main_window_priv->tweet_view_window), TRUE);
 	}

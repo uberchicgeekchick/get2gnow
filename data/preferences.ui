@@ -331,8 +331,8 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="notify_all_new_tweets_check_button">
-                                <property name="label" translatable="yes">_Notify me when I get any other new messages.</property>
+                              <object class="GtkCheckButton" id="notify_all_new_updates_check_button">
+                                <property name="label" translatable="yes">_Notify me when I get all new messages.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>

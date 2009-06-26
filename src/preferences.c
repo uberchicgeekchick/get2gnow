@@ -509,7 +509,7 @@ void preferences_dialog_show (GtkWindow *parent){
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,
 					"notify_my_friends_updates_check_button", &prefs->notify_my_friends_updates_check_button,
 					"notify_all_new_updates_check_button", &prefs->notify_all_new_updates,
-					"notify_beep_tweets_check_button", &prefs->notify_beep_updates_check_button,
+					"notify_beep_updates_check_button", &prefs->notify_beep_updates_check_button,
 					
 					"no_length_alert_checkbutton", &prefs->no_length_alert,
 					

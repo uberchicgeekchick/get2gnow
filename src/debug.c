@@ -194,7 +194,7 @@ static void debug_environment_check(void){
 }/*debug_environment_check();*/
 
 static void debug_domains_check(const gchar *domains){
-	if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;
+	/*if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;*/
 	
 	if(debug_last_domains) g_free(debug_last_domains);
 	debug_last_domains=g_strdup(domains);
