@@ -376,8 +376,8 @@ void tweet_list_start(TweetList *tweet_list){
 		debug("Creating timeout to reload %s.", this->timeline_menu_label);
 		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
-	tweet_list_update_age(tweet_list);
 	tweet_list_clean_up(tweet_list);
+	tweet_list_update_age(tweet_list);
 	
 	tweet_list_set_adjustment(tweet_list);
 	if(this->minutes)

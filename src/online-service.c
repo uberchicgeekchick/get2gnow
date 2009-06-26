@@ -532,16 +532,13 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	return TRUE;
 }/*online_service_delete*/
 
-void online_service_update_ids_get(OnlineService *service, const gchar *uri, gfloat *id_newest_update, gfloat *id_oldest_update){
-	if(G_STR_EMPTY(uri)) return;
-	gchar **uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
-	const gchar *timeline=uri_split[0];
-	
+void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gfloat *id_newest_update, gfloat *id_oldest_update){
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_IDS_TWEETS:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
 	 * 				service->key			/timeline.xml	(newest|oldest)
 	 */
+	if(G_STR_EMPTY(timeline)) return;
 	gchar *prefs_path=NULL;
 	gfloat swap_id;
 	
@@ -560,21 +557,15 @@ void online_service_update_ids_get(OnlineService *service, const gchar *uri, gfl
 	
 	if(swap_id>0) *id_oldest_update=swap_id;
 	debug("Loaded <%s>'s; [%s] oldest ID: %f.", service->uri, timeline, *id_oldest_update);
-	
-	g_strfreev(uri_split);
 }/*online_service_update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
-void online_service_update_ids_set(OnlineService *service, const gchar *uri, gfloat id_newest_update, gfloat id_oldest_update){
-	if(G_STR_EMPTY(uri)) return;
-	
-	gchar **uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
-	const gchar *timeline=uri_split[0];
-
+void online_service_update_ids_set(OnlineService *service, const gchar *timeline, gfloat id_newest_update, gfloat id_oldest_update){
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_IDS_TWEETS:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
 	 * 				service->key			/timeline.xml (newest|oldest)
 	 */
+	if(G_STR_EMPTY(timeline)) return;
 	gchar *prefs_path=NULL;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, "newest");
@@ -586,8 +577,6 @@ void online_service_update_ids_set(OnlineService *service, const gchar *uri, gfl
 	gconfig_set_float(prefs_path, id_oldest_update);
 	uber_free(prefs_path);
 	debug("Saved: <%s>'s; [%s] oldest ID: %f.", service->uri, timeline, id_oldest_update);
-	
-	g_strfreev(uri_split);
 }/*online_service_update_ids_set(service, "/direct_messages.xml", id_newest_update, id_oldest_update);*/
 
 gboolean online_service_connect(OnlineService *service){

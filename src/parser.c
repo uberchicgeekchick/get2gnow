@@ -278,7 +278,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gfloat		status_id=0;
 	gfloat		id_newest_update=0, id_oldest_update=0;
 	
-	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", -1);
+	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
@@ -355,10 +355,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		debug("Creating tweet's Status *.");
 		if(!( (( status=user_status_parse(service, current_node->children, monitoring ))) && (status_id=user_status_get_id(status)) )){
 			if(status) user_status_free(status);
-			continue;
-		}
-		if(has_loaded && id_newest_update && status_id <= id_newest_update){
-			user_status_free(status);
 			continue;
 		}
 		

@@ -116,8 +116,8 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-void online_service_update_ids_get(OnlineService *service, const gchar *uri, gfloat *newest_id, gfloat *oldest_id);
-void online_service_update_ids_set(OnlineService *service, const gchar *uri, gfloat newest_id, gfloat oldest_id);
+void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gfloat *newest_id, gfloat *oldest_id);
+void online_service_update_ids_set(OnlineService *service, const gchar *timeline, gfloat newest_id, gfloat oldest_id);
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 
