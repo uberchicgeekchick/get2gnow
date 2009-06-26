@@ -473,7 +473,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		max_updates=this->minimum;
 	if(this->total <= max_updates)	return;
 	
-	for(gint i=0; i<max_updates && i<this->total; i++){
+	for(gint i=this->total; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if( (gtk_tree_model_get_iter(this->tree_model, iter, path)) ){
