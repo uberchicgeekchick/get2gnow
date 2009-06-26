@@ -48,6 +48,7 @@
 
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
+#include "online-services-typedefs.h"
 
 
 G_BEGIN_DECLS
@@ -99,6 +100,8 @@ gint8 tweet_list_has_loaded(TweetList *tweet_list);
 
 gint tweet_list_get_page(TweetList *tweet_list);
 void tweet_list_set_page(TweetList *tweet_list, gint page);
+
+TweetLists tweet_list_get_monitoring(TweetList *tweet_list);
 
 gint tweet_list_get_total(TweetList *tweet_list);
 gint tweet_list_increment(TweetList *tweet_list);

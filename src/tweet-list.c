@@ -211,8 +211,8 @@ static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_
 
 static void tweet_list_set_adjustment(TweetList *tweet_list);
 
-static void tweet_list_clean_up(TweetList *tweet_list);
 static void tweet_list_update_age(TweetList *tweet_list);
+static void tweet_list_clean_up(TweetList *tweet_list);
 
 static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list);
 static void tweet_list_set_sexy_tooltip(SexyTreeView *sexy_tree_view, GtkTreePath *path, GtkTreeViewColumn *column, TweetList *tweet_list);
@@ -346,6 +346,11 @@ gint tweet_list_get_page(TweetList *tweet_list){
 	return GET_PRIVATE(tweet_list)->page;
 }/*tweet_list_get_page(tweet_list);*/
 
+TweetLists tweet_list_get_monitoring(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return None;
+	return GET_PRIVATE(tweet_list)->monitoring;
+}/*tweet_list_get_monitoring(tweet_list);*/
+
 guint tweet_list_get_notify_delay(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return 1*10;
 	return (GET_PRIVATE(tweet_list)->page+1)*10;
@@ -371,6 +376,7 @@ void tweet_list_start(TweetList *tweet_list){
 		debug("Creating timeout to reload %s.", this->timeline_menu_label);
 		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
+	tweet_list_update_age(tweet_list);
 	tweet_list_clean_up(tweet_list);
 	
 	tweet_list_set_adjustment(tweet_list);
@@ -488,7 +494,7 @@ static void tweet_list_update_age(TweetList *tweet_list){
 	gulong 		created_seconds_ago=0;
 	gchar		*created_at_str=NULL, *created_how_long_ago=NULL;
 	
-	for(gint i=0; i<this->total; i++){
+	for(gint i=0; i<=this->total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
@@ -502,10 +508,7 @@ static void tweet_list_update_age(TweetList *tweet_list){
 						STRING_CREATED_AT, &created_at_str,
 					-1
 		);
-		/*if(!gtk_list_store_iter_is_valid(this->list_store, iter)){
-			if(created_at_str) uber_free(created_at_str);
-			return FALSE;
-		}*/
+		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_seconds_ago);
 		gtk_list_store_set(
 				this->list_store, iter,
@@ -538,7 +541,6 @@ void tweet_list_complete(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->connected_online_services)	return;
-	tweet_list_update_age(tweet_list);
 	tweet_list_scroll_to_top(tweet_list);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*tweet_list_complete(tweet_list);*/
@@ -623,7 +625,8 @@ gint tweet_list_increment(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gtk_progress_bar_pulse(this->progress_bar);
-	return (this->total++);
+	this->total++;
+	return (this->total-1);
 }/*tweet_list_increment(tweet_list);*/
 
 static void tweet_list_setup(TweetList *tweet_list){

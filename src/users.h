@@ -102,11 +102,12 @@ void user_free(User *user);
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, TweetLists tweet_list);
 void user_status_store(UserStatus *status, TweetList *tweet_list);
 
+OnlineService *user_status_get_online_service(UserStatus *status);
+
 gfloat user_status_get_id(UserStatus *status);
 const gchar *user_status_get_id_str(UserStatus *status);
 const gchar *user_status_get_user_name(UserStatus *status);
 const gchar *user_status_get_notification(UserStatus *status);
-OnlineService *user_status_get_online_service(UserStatus *status);
 
 void user_status_free(UserStatus *status);
 

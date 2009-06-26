@@ -198,7 +198,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_F1:
 					help_show(main_window_get_window());
 					return;
-				case GDK_F5:
+				case GDK_R: case GDK_r:
 					tweet_list_refresh(tweet_lists_get_current()); 
 					return;
 				case GDK_greater:

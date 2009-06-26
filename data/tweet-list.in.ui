@@ -72,6 +72,7 @@
                     <property name="label" translatable="yes">_Refresh</property>
                     <property name="use_underline">True</property>
                     <property name="stock_id">gtk-refresh</property>
+                    <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>

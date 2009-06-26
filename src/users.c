@@ -518,9 +518,10 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
-	debug("Appending tweet to TweetList\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %f; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", online_service_get_key(status->service), status->user->user_name, online_service_get_uri(status->service), status->id, status->created_at_str, status->text, status->sexy_tweet);
+	guint tweet_list_total=tweet_list_increment(tweet_list);
+	debug("Appending tweet to TweetList at index: %d\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %f; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", tweet_list_total, online_service_get_key(status->service), status->user->user_name, online_service_get_uri(status->service), status->id, status->created_at_str, status->text, status->sexy_tweet);
 	
-	gtk_list_store_insert(tweet_list_store, iter, tweet_list_increment(tweet_list));
+	gtk_list_store_prepend(tweet_list_store, iter);
 	gtk_list_store_set(
 				tweet_list_store, iter,
 					GFLOAT_TWEET_ID, status->id,				/*Tweet's ID.*/
@@ -539,6 +540,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
 				-1
 	);
+	/*tweet_list_increment(tweet_list);*/
 	
 	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 	if(!g_file_test(status->user->image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
