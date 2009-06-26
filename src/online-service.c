@@ -125,6 +125,7 @@ struct _OnlineService{
 	
 	gboolean			authenticated;
 	gboolean			connected;
+	gboolean			has_loaded;
 	guint				logins;
 	
 	gboolean			enabled;
@@ -148,6 +149,8 @@ struct _OnlineService{
 	
 	gchar				*status;
 };
+
+static OnlineService *online_service_constructor(void);
 
 static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_blogging_service);
 static void online_service_set_micro_blogging_service(OnlineService *service);
@@ -249,6 +252,12 @@ gboolean online_service_is_connected(OnlineService *service){
 }/*online_service_is_connected(service);*/
 
 
+gboolean online_service_has_loaded(OnlineService *service){
+	if(!service) return FALSE;
+	return service->has_loaded;
+}/*online_service_has_loaded(service);*/
+
+
 SoupSession *online_service_get_session(OnlineService *service){
 	if(!service) return NULL;
 	return service->session;
@@ -268,6 +277,9 @@ const gchar *online_service_get_micro_blogging_client(OnlineService *service){
 }/*online_service_get_micro_blogging_client(service);*/
 
 static void online_service_set_micro_blogging_service(OnlineService *service){
+	if(!service) return;
+	if(service->server) service->micro_blogging_service=Unknown;
+	
 	MicroBloggingServices *micro_blogging_services=MicroBloggingServicesList;
 	while(micro_blogging_services->client){
 		if( G_STR_N_EMPTY(micro_blogging_services->server) && (g_str_equal(service->server, micro_blogging_services->server) || g_str_equal(micro_blogging_services->server, "*")) ){
@@ -332,28 +344,40 @@ void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich u
 	}
 }/*online_service_users_glist_get(service, GetFriends|GetFollowers|GetBoth, new_users);*/
 
+static OnlineService *online_service_constructor(void){
+	OnlineService *service=g_new0(OnlineService, 1);
+	
+	service->connected=FALSE;
+	service->authenticated=TRUE;
+	service->has_loaded=FALSE;
+	
+	service->session=NULL;
+	service->status=NULL;
+	service->nickname=NULL;
+	service->logins=0;
+	
+	service->password=NULL;
+	
+	service->friends=service->followers=service->friends_and_followers=NULL;
+	service->timer=timer_new();
+	
+	service->micro_blogging_service=Unknown;
+	
+	return service;
+}/*online_service_constructor();*/
+
 OnlineService *online_service_open(const gchar *account_key){
 	debug("Loading OnlineService instance for: '%s' account.", account_key);
 	
-	OnlineService *service=g_new0(OnlineService, 1);
-
-	service->connected=FALSE;
-	service->authenticated=TRUE;
-	service->session=NULL;
-	service->status=NULL;
-	service->logins=0;
+	OnlineService *service=online_service_constructor();
 	
 	gchar **account_data=g_strsplit(account_key, "@", 3);
-	
 	service->guid=g_strdup(account_key);
 	service->uri=g_strdup(account_data[1]);
 	service->username=g_strdup(account_data[0]);
-	service->nickname=NULL;
 	g_strfreev(account_data);
 	
-	service->friends=service->followers=service->friends_and_followers=NULL;
-	
-	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
+	gchar **parsed_uri=g_strsplit(service->uri, "/", 2);
 	service->server=g_strdup(parsed_uri[0]);
 	if(G_STR_EMPTY(parsed_uri[1]))
 		service->path=g_strdup("");
@@ -361,10 +385,7 @@ OnlineService *online_service_open(const gchar *account_key){
 		service->path=g_strdup(parsed_uri[1]);
 	g_strfreev(parsed_uri);
 	
-	service->micro_blogging_service=Unknown;
 	online_service_set_micro_blogging_service(service);
-	
-	service->timer=timer_new();
 	
 	debug("Loading OnlineService settings for: '%s'" , service->guid);
 	
@@ -384,8 +405,6 @@ OnlineService *online_service_open(const gchar *account_key){
 	service->enabled=gconfig_if_bool(prefs_auth_path, TRUE);
 	g_free(prefs_auth_path);
 	debug("%sabling [%s] OnlineService.", (service->enabled ?"En" :"Dis" ), service->guid);
-	
-	service->password=NULL;
 	
 #ifdef HAVE_GNOME_KEYRING
 	if(!(keyring_get_password(service, &service->password)))
@@ -411,25 +430,16 @@ OnlineService *online_service_open(const gchar *account_key){
 
 OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
 	debug("Creating new OnlineService for '%s@%s'.", username, uri);
-	OnlineService *service=g_new0(OnlineService, 1);
-	service->session=NULL;
+	OnlineService *service=online_service_constructor();
 	
-	service->connected=FALSE;
-	service->authenticated=TRUE;
 	service->enabled=enabled;
-	service->status=NULL;
-	service->logins=0;
 	
-	service->timer=timer_new();
 	service->auto_connect=auto_connect;
 	
 	service->guid=g_strdup_printf("%s@%s", username, uri );
 	service->username=g_strdup(username);
-	service->nickname=NULL;
 	service->password=g_strdup(password);
 	service->https=https;
-	
-	service->friends=service->followers=service->friends_and_followers=NULL;
 	
 	service->uri=g_strdup(uri);
 	gchar **parsed_uri=g_strsplit(service->uri, "/", 1);
@@ -440,7 +450,6 @@ OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean h
 		service->path=g_strdup(parsed_uri[1]);
 	g_strfreev(parsed_uri);
 	
-	service->micro_blogging_service=Unknown;
 	online_service_set_micro_blogging_service(service);
 	
 	gchar *encoded_username=g_uri_escape_string(username, NULL, TRUE);
@@ -669,6 +678,7 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	debug("Logging into: '%s'. username: %s, password: %s.", service->guid, service->username, service->password);
 	
 	online_service_request(service, QUEUE, API_LOGIN, NULL, online_service_login_check, API_LOGIN, NULL);
+	
 	debug("OnlineService: %s.  Status: authenticated: [%s].", service->guid, (service->authenticated ?"TRUE" :"FALSE" ) );
 	if(!temporary_connection) online_services_increment_connected(online_services);
 	
@@ -680,10 +690,10 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, Us
 	if(!user){
 		debug("Failed to validate user profile for <%s>.  Using username instead.", service->key);
 		service->nickname=g_strdup(service->username);
-		service->connected=FALSE;
+		service->has_loaded=FALSE;
 		return;
 	}
-	service->connected=TRUE;
+	service->has_loaded=TRUE;
 	service->nickname=g_strdup(user_get_nick_name(user));
 	debug("Setting nickname for: %s to %s.", service->key, service->nickname);
 	user_free(user);
@@ -775,7 +785,8 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 		
 		uber_unref(service->session);
 	}
-	service->connected=service->authenticated=FALSE;
+	if(service->nickname) uber_free(service->nickname);
+	service->has_loaded=service->connected=service->authenticated=FALSE;
 	service->logins=0;
 	debug("Disconnected from OnlineService [%s].", service->guid);
 	online_services_decrement_connected(online_services, no_state_change);
@@ -915,7 +926,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	TweetLists monitoring=(TweetLists)*form_data;
 	TweetList *tweet_list=(TweetList *)*user_data;
 	gint8 has_loaded=tweet_list_has_loaded(tweet_list);
-	if(!( (*form_data) && (*user_data) && has_loaded )) return;
+	if(!( (*form_data) && (*user_data) && has_loaded && service->has_loaded )) return;
 	
 	gfloat id_newest_update=0, id_oldest_update=0;
 	const gchar *timeline=g_strrstr(*request_uri, "/");

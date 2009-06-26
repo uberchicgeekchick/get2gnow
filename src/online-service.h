@@ -99,6 +99,7 @@ gboolean online_service_is_secure(OnlineService *service);
 gboolean online_service_is_auto_connected(OnlineService *service);
 
 gboolean online_service_is_connected(OnlineService *service);
+gboolean online_service_has_loaded(OnlineService *service);
 
 SoupSession *online_service_get_session(OnlineService *service);
 
