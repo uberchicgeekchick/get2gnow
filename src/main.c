@@ -28,12 +28,12 @@
 #include "config.h"
 #include "program.h"
 
+GnomeProgram *get2gnow_program=NULL;
+
 int main(int argc, char **argv){
-	program_init(argc, argv);
+	get2gnow_program=program_init(argc, argv);
 	
 	gtk_main();
 
-	program_deinit();
-	
 	return 0;
 }

@@ -87,6 +87,7 @@ PKG_CHECK_MODULES(get2gnow,
 	libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
 	libxml-2.0 >= $LIBXML_MIN_VERSION
 	gobject-2.0
+	libgnome-2.0
 	gthread-2.0
 	gconf-2.0 >= $GCONF_MIN_VERSION
 	$gnome_keyring_pkgconfig

@@ -82,7 +82,7 @@ typedef struct _UserStatus UserStatus;
 /**********************************************************************
  *          Global method & function prototypes                      *
  **********************************************************************/
-gfloat user_get_id(User *user);
+gdouble user_get_id(User *user);
 const gchar *user_status_get_id_str(UserStatus *status);
 const gchar *user_get_user_name(User *user);
 const gchar *user_get_nick_name(User *user);
@@ -104,7 +104,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list);
 
 OnlineService *user_status_get_online_service(UserStatus *status);
 
-gfloat user_status_get_id(UserStatus *status);
+gdouble user_status_get_id(UserStatus *status);
 const gchar *user_status_get_id_str(UserStatus *status);
 const gchar *user_status_get_user_name(UserStatus *status);
 const gchar *user_status_get_notification(UserStatus *status);

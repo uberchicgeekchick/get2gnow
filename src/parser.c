@@ -275,8 +275,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	/* Count new tweets */
 	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 	guint		tweets_parsed=0;
-	gfloat		status_id=0;
-	gfloat		id_newest_update=0, id_oldest_update=0;
+	gdouble		status_id=0;
+	gdouble		id_newest_update=0, id_oldest_update=0;
 	
 	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
 	gchar		*timeline=g_strdup(uri_split[0]);
@@ -285,7 +285,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gint8	has_loaded=tweet_list_has_loaded(tweet_list);
 	if( has_loaded || monitoring==DMs || monitoring==Replies )
 		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
-	gfloat	last_notified_update=id_newest_update;
+	gdouble	last_notified_update=id_newest_update;
+	id_newest_update=0.0;
 	
 	switch(monitoring){
 		case DMs:
@@ -373,7 +374,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			}
 		}
 		
-		if(status_id > id_newest_update) id_newest_update=status_id;
+		if(!id_newest_update) id_newest_update=status_id;
 		
 		if( (monitoring!=DMs && monitoring!=Replies) || !(has_loaded && id_oldest_update) )
 			id_oldest_update=status_id;
@@ -381,7 +382,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		if(free_status) user_status_free(status);
 	}
 	
-	if(tweets_parsed){
+	if(tweets_parsed && id_newest_update){
 		const gchar *online_service_guid=online_service_get_guid(service);
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
 		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);
@@ -413,7 +414,6 @@ gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
 	int		seconds_local;
 	int		seconds_post;
 	int		diff;
-	char		*oldenv;
 	time_t		t=time(NULL);
 	
 	tzset();
@@ -421,20 +421,17 @@ gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
 	ta->tm_isdst=-1;
 	seconds_local=mktime(ta);
 	
-	oldenv=setlocale(LC_TIME, "C");
 	strptime(datetime, "%a %b %d %T +0000 %Y", &post);
 	post.tm_isdst=-1;
 	seconds_post=mktime(&post);
-	setlocale(LC_TIME, oldenv);
 	
-	(*my_diff)=(diff=difftime(seconds_local, seconds_post));
+	diff=difftime(seconds_local, seconds_post);
+	if(diff < 0) *my_diff=0;
+	else *my_diff=diff;
 	
 	/* Up to one minute ago. */
-	if(diff < 2){
-		*my_diff=2;
-		return g_strdup(_("1 second ago"));
-	}
 	
+	if(diff < 2) return g_strdup(_("1 second ago"));
 	if(diff < 60 ) return g_strdup_printf(_("%i seconds ago"), diff);
 	if(diff < 120) return g_strdup(_("1 minute ago"));
 	

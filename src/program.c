@@ -86,6 +86,7 @@
  *          Variable definitions.                       *
  ********************************************************/
 static gboolean notifing=FALSE;
+static gchar *old_locale=NULL;
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -95,10 +96,12 @@ static gboolean notifing=FALSE;
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-void program_init(int argc, char **argv){
+GnomeProgram *program_init(int argc, char **argv){
+	old_locale=setlocale(LC_TIME, "C");
 	if( (ipc_init_check( argc-1, argv-1)) ){
 		g_fprintf(stdout, "%s is already running.  Be sure to check system try for %s's icon.\n", GETTEXT_PACKAGE, GETTEXT_PACKAGE);
 		ipc_deinit();
+		setlocale(LC_TIME, old_locale);
 		exit(0);
 	}
 	
@@ -133,7 +136,51 @@ void program_init(int argc, char **argv){
 	
 	/* On to the GUI. */
 	main_window_create();
+	gchar **remaining_argv=NULL;
+	
+	GOptionContext *option_context=g_option_context_new(GETTEXT_PACKAGE);
+	GOptionEntry option_entries[]={
+			{
+				G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY,
+				&remaining_argv,
+				"Special option that collects any remaining arguments for us"
+			},
+			{ NULL }
+	};
+	
+	g_option_context_add_main_entries(option_context, option_entries, NULL);
+	
+	return gnome_program_init(	GETTEXT_PACKAGE, PACKAGE_VERSION,
+					LIBGNOME_MODULE,
+					argc, argv,
+					GNOME_PARAM_GOPTION_CONTEXT, option_context,
+					GNOME_PARAM_NONE
+	);
 }/*program_init*/
+
+void get2gnow_program_deinit(void){
+	/* Close libnotify */
+	if(notifing) notify_uninit();
+	
+	gconfig_shutdown();
+	
+	cache_deinit();
+	
+	/* Close the network */
+	unset_selected_tweet();
+	online_services_deinit(online_services);
+	proxy_deinit();
+	
+	ipc_deinit();
+	
+	debug_deinit();
+	setlocale(LC_TIME, old_locale);
+	gtk_main_quit();
+}/*get2gnow_program_deinit();*/
+
+void program_deinit(void){
+	get2gnow_program_deinit();
+}/*void program_deinit(void);*/
 
 const gchar *program_gtk_response_to_string(gint response){
 	switch(response){
@@ -171,13 +218,13 @@ void program_timeout_remove(guint *id, const gchar *usage){
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
 
-gchar *program_float_drop_precision(const gfloat gfloat_value){
-	gchar *gfloat_str=g_strdup_printf("%f", gfloat_value);
-	gchar **gfloat_precision=g_strsplit(gfloat_str, ".", 2);
-	g_free(gfloat_str);
-	gfloat_str=g_strdup(gfloat_precision[0]);
-	g_strfreev(gfloat_precision);
-	return gfloat_str;
+gchar *program_double_drop_precision(const gdouble gdouble_value){
+	gchar *gdouble_str=g_strdup_printf("%f", gdouble_value);
+	gchar **gdouble_precision=g_strsplit(gdouble_str, ".", 2);
+	g_free(gdouble_str);
+	gdouble_str=g_strdup(gdouble_precision[0]);
+	g_strfreev(gdouble_precision);
+	return gdouble_str;
 }/*program_float_drop_precision();*/
 
 gboolean program_gtk_widget_get_focus(GtkWidget *widget){
@@ -186,24 +233,6 @@ gboolean program_gtk_widget_get_focus(GtkWidget *widget){
 	g_object_get(widget, "has-focus", &has_focus, NULL);
 	return has_focus;
 }/*program_gtk_widget_get_focus(widget);*/
-
-void program_deinit(void){
-	/* Close libnotify */
-	if(notifing) notify_uninit();
-	
-	gconfig_shutdown();
-	
-	cache_deinit();
-	
-	/* Close the network */
-	unset_selected_tweet();
-	online_services_deinit(online_services);
-	proxy_deinit();
-	
-	ipc_deinit();
-	
-	debug_deinit();
-}/*program_deinit();*/
 
 /********************************************************
  *                       eof                            *

@@ -79,7 +79,7 @@ GtkHBox *tweet_view_get_embed(void);
 
 void tweet_view_beep(void);
 
-void tweet_view_show_tweet(OnlineService *service, const gfloat id, const gfloat user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
 
 void tweet_view_dm_data_fill(GList *followers);
 

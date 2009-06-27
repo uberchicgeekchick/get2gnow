@@ -60,6 +60,7 @@
  **********************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <libgnome/libgnome.h>
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
@@ -102,24 +103,25 @@
 #endif
 
 #ifndef	float_no_zeros
-#	define	float_no_zeros					program_float_drop_precision
+#	define	double_no_zeros					program_double_drop_precision
 #endif
 
 
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
-void program_init(int argc, char **argv);
+GnomeProgram *program_init(int argc, char **argv);
 
 const gchar *program_gtk_response_to_string(gint response);
 
 void program_uber_free(gpointer pointer1, ...);
-gchar *program_float_drop_precision(const gfloat gfloat_value);
+gchar *program_double_drop_precision(const gdouble gdouble_value);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 
 gboolean program_gtk_widget_get_focus(GtkWidget *widget);
 void program_timeout_remove(guint *id, const gchar *usage);
 
+void get2gnow_program_deinit(void);
 void program_deinit(void);
 
 #endif /* __PROGRAM_H__ */

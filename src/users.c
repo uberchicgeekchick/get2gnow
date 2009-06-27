@@ -97,7 +97,7 @@ typedef struct  _UserProfileViewer UserProfileViewer;
 struct _User {
 	OnlineService		*service;
 	
-	gfloat			id;
+	gdouble			id;
 	gchar			*id_str;
 	
 	gchar			*user_name;
@@ -126,10 +126,10 @@ struct _UserStatus {
 	
 	TweetLists	type;
 	
-	gfloat		id;
+	gdouble		id;
 	gchar		*id_str;
 	
-	gfloat		in_reply_to_status_id;
+	gdouble		in_reply_to_status_id;
 	
 	guint		notification_timeout_id;
 	
@@ -221,7 +221,7 @@ static User *user_new(OnlineService *service, gboolean a_follower){
 	return user;
 }/*user_new*/
 
-gfloat user_get_id(User *user){
+gdouble user_get_id(User *user){
 	if(!user) return 0;
 	return user->id;
 }/*user_get_id(user);*/
@@ -302,7 +302,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		
 		if(g_str_equal(current_node->name, "id" )){
 			user->id_str=g_strdup(content);
-			user->id=strtof(content, NULL);
+			user->id=strtod(content, NULL);
 			debug("User ID: %s(=%f).", user->id_str, user->id);
 			
 		}else if(g_str_equal(current_node->name, "name" ))
@@ -378,7 +378,7 @@ static UserStatus *user_status_new(OnlineService *service, TweetLists tweet_list
 	return status;
 }/*user_status_new(service, Tweets|Replies|Dms);*/
 
-gfloat user_status_get_id(UserStatus *status){
+gdouble user_status_get_id(UserStatus *status){
 	if(!status) return 0;
 	return status->id;
 }/*user_status_get_id(status);*/
@@ -420,11 +420,11 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Twe
 		
 		if(g_str_equal(current_node->name, "id")){
 			status->id_str=g_strdup(content);
-			status->id=strtof(content, NULL);
+			status->id=strtod(content, NULL);
 			debug("Status ID: %s(=%f).", content, status->id);
 			
 		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
-			status->in_reply_to_status_id=strtof(content, NULL);
+			status->in_reply_to_status_id=strtod(content, NULL);
 		
 		else if(g_str_equal(current_node->name, "source"))
 			status->source=g_strdup(content);
@@ -460,12 +460,10 @@ static void user_status_format_dates(UserStatus *status){
 	struct tm	*ta=gmtime(&t);
 	ta->tm_isdst=-1;
 	
-	gchar *oldenv=setlocale(LC_TIME, "C");
 	struct tm	post;
 	strptime(status->created_at_str, "%s", &post);
 	post.tm_isdst=-1;
 	status->created_at=mktime(&post);
-	setlocale(LC_TIME, oldenv);
 	
 	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
@@ -519,13 +517,13 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
 	guint tweet_list_total=tweet_list_increment(tweet_list);
-	debug("Appending tweet to TweetList at index: %d\n\t\t\tTo: <%s> From: <%s@%s>\n\t\t\tTweet ID: %f; posted on [%s]\n\t\t\tStatus update: %s\n\t\t\tFormatted Tweet: %s", tweet_list_total, online_service_get_key(status->service), status->user->user_name, online_service_get_uri(status->service), status->id, status->created_at_str, status->text, status->sexy_tweet);
+	debug("Appending tweet to TweetList <%s>'s; update ID for [%s].  %f - status ID.  Total updates: %u", online_service_get_guid(status->service), tweet_list_get_timeline(tweet_list), status->id, tweet_list_total);
 	
 	gtk_list_store_prepend(tweet_list_store, iter);
 	gtk_list_store_set(
 				tweet_list_store, iter,
-					GFLOAT_TWEET_ID, status->id,				/*Tweet's ID.*/
-					GFLOAT_USER_ID, status->user->id,			/*User's ID.*/
+					GDOUBLE_TWEET_ID, status->id,				/*Tweet's ID.*/
+					GDOUBLE_USER_ID, status->user->id,			/*User's ID.*/
 					STRING_USER, status->user->user_name,			/*Username string.*/
 					STRING_NICK, status->user->nick_name,			/*Author name string.*/
 					STRING_TEXT, status->text,				/*Tweet string.*/
@@ -540,7 +538,6 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
 				-1
 	);
-	/*tweet_list_increment(tweet_list);*/
 	
 	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 	if(!g_file_test(status->user->image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))

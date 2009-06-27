@@ -74,8 +74,8 @@ struct _TweetListClass {
 
 
 enum TweetListStoreColumns{	/********************************************************************************/
-	GFLOAT_TWEET_ID,	/*	Tweet's ID.								*/
-	GFLOAT_USER_ID,		/*	User's ID.								*/
+	GDOUBLE_TWEET_ID,	/*	Tweet's ID.								*/
+	GDOUBLE_USER_ID,		/*	User's ID.								*/
 	STRING_USER,		/*	Username string.							*/
 	STRING_NICK,		/*	Author name string.							*/
 	STRING_TEXT,		/*	Unformated Tweet string.						*/
@@ -104,7 +104,7 @@ void tweet_list_set_page(TweetList *tweet_list, gint page);
 TweetLists tweet_list_get_monitoring(TweetList *tweet_list);
 
 gint tweet_list_get_total(TweetList *tweet_list);
-gint tweet_list_increment(TweetList *tweet_list);
+guint tweet_list_increment(TweetList *tweet_list);
 guint tweet_list_get_notify_delay(TweetList *tweet_list);
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list);
