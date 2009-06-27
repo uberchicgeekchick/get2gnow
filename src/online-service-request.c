@@ -117,8 +117,8 @@ typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
 
 struct _SelectedTweet{
 	OnlineService	*service;
-	gfloat		id;
-	gfloat		user_id;
+	gdouble		id;
+	gdouble		user_id;
 	gchar		*user_name;
 	gchar		*tweet;
 };
@@ -423,7 +423,7 @@ static void online_service_request_free(OnlineServiceRequest *request){
 /********************************************************************************
  *               selected_tweet methods, handlers, callbacks, & etc.            *
  ********************************************************************************/
-void set_selected_tweet(OnlineService *service, const gfloat id, const gfloat user_id, const gchar *user_name, const gchar *tweet){
+void set_selected_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
 	/*	gint id=atoi(string);	*/
 	if(selected_tweet) unset_selected_tweet();
 	
@@ -440,16 +440,16 @@ OnlineService *selected_tweet_get_service(void){
 	return ( (selected_tweet && selected_tweet->service) ?selected_tweet->service :NULL );
 }/*selected_tweet_get_service();*/
 
-gfloat selected_tweet_get_id(void){
-	return ( (selected_tweet && selected_tweet->id) ?selected_tweet->id :0 );
-}/*selected_tweet_get_user_id();*/
+gdouble selected_tweet_get_id(void){
+	return ( (selected_tweet && selected_tweet->id) ?selected_tweet->id :0.0 );
+}/*selected_tweet_get_id();*/
 
 gchar *selected_tweet_get_user_name(void){
 	return ( (selected_tweet && selected_tweet->user_name) ?selected_tweet->user_name :NULL );
 }/*selected_tweet_get_user_name();*/
 
-gfloat selected_tweet_get_user_id(void){
-	return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0 );
+gdouble selected_tweet_get_user_id(void){
+	return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0.0 );
 }/*selected_tweet_get_user_id();*/
 
 gchar *selected_tweet_reply_to_strdup(gboolean retweet){
@@ -530,14 +530,14 @@ void online_service_request_selected_tweet_unblock(void){
 
 void online_service_request_selected_tweet_save_fave(void){
 	if(!(selected_tweet && selected_tweet->id)) return;
-	gchar *fave_tweet_id=g_strdup_printf( "%f", selected_tweet->id );
+	gchar *fave_tweet_id=gdouble_to_str(selected_tweet->id);
 	online_service_request_main(selected_tweet->service, Fave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
 	g_free(fave_tweet_id);
 }/*online_service_request_selected_tweet_save_fave*/
 
 void online_service_request_selected_tweet_destroy_fave(void){
 	if(!(selected_tweet && selected_tweet->id)) return;
-	gchar *fave_tweet_id=g_strdup_printf( "%f", selected_tweet->id );
+	gchar *fave_tweet_id=gdouble_to_str(selected_tweet->id);
 	online_service_request_main(selected_tweet->service, UnFave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
 	g_free(fave_tweet_id);
 }/*online_service_request_selected_tweet_destroy_fave*/

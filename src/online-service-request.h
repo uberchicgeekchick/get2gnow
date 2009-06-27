@@ -101,11 +101,11 @@ void online_service_request_selected_tweet_unblock(void);
 void online_service_request_selected_tweet_save_fave(void);
 void online_service_request_selected_tweet_destroy_fave(void);
 
-void set_selected_tweet(OnlineService *service, const gfloat id, const gfloat user_id, const gchar *user_name, const gchar *tweet);
+void set_selected_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
 OnlineService *selected_tweet_get_service(void);
-gfloat selected_tweet_get_id(void);
+gdouble selected_tweet_get_id(void);
 gchar *selected_tweet_get_user_name(void);
-gfloat selected_tweet_get_user_id(void);
+gdouble selected_tweet_get_user_id(void);
 gchar *selected_tweet_reply_to_strdup(gboolean retweet);
 void selected_tweet_reply(void);
 void selected_tweet_retweet(void);

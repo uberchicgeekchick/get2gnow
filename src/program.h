@@ -102,8 +102,8 @@
 	#define		uber_str_n_equal			!uber_str_equal
 #endif
 
-#ifndef	float_no_zeros
-#	define	double_no_zeros					program_double_drop_precision
+#ifndef	gdouble_to_str
+#	define	gdouble_to_str					program_double_drop_precision
 #endif
 
 

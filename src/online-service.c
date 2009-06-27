@@ -956,7 +956,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 		if(!id_newest_update) return;
 		if(!tweet_list_get_total(tweet_list)) return;
 		else{
-			gchar *id_newest_update_str=double_no_zeros(id_newest_update);
+			gchar *id_newest_update_str=gdouble_to_str(id_newest_update);
 			request_uri_swap=g_strdup_printf("%s?since_id=%s", *request_uri, id_newest_update_str);
 			debug("Requesting <%s>'s timeline: %s; new updates since: %f (using string: %s).", service->key, timeline, id_newest_update, id_newest_update_str);
 			uber_free(id_newest_update_str);
@@ -964,7 +964,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	}else if(monitoring==DMs || monitoring==Replies){
 		if(!id_oldest_update) return;
 		else{
-			gchar *id_oldest_update_str=double_no_zeros(id_oldest_update);
+			gchar *id_oldest_update_str=gdouble_to_str(id_oldest_update);
 			request_uri_swap=g_strdup_printf("%s?since_id=%s", *request_uri, id_oldest_update_str);
 			debug("Requesting <%s>'s timeline: %s; total updates since: %f (using string: %s).", service->key, timeline, id_oldest_update, id_oldest_update_str);
 			uber_free(id_oldest_update_str);
@@ -987,7 +987,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		debug("Posting update to: <%s>", service->key);
 		reply_form_data=g_strdup_printf( "source=%s&status=%s", online_service_get_micro_blogging_client(service), (gchar *)(*form_data));
 	}else{
-		gchar *in_reply_to_status_id_str=double_no_zeros(in_reply_to_status_id);
+		gchar *in_reply_to_status_id_str=gdouble_to_str(in_reply_to_status_id);
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
 		reply_form_data=g_strdup_printf( "source=%s&in_reply_to_status_id=%s&status=%s", online_service_get_micro_blogging_client(service), in_reply_to_status_id_str, (gchar *)(*form_data));
 		uber_free(in_reply_to_status_id_str);
