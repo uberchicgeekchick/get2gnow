@@ -476,6 +476,10 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	if(this->total < max_updates)	return;
 	
 	debug("Cleaning up TweetList for %s.  Total updates in TweetList: %d.  Maximum allowed updates: %f", this->timeline, this->total, max_updates);
+	if(!this->index){
+		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
+		tweet_list_scroll_to_top(tweet_list);
+	}
 	for(gint i=this->total; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -484,7 +488,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		else{
 			debug("Removing iter at index: %d", i);
 			if(i==this->index){
-				debug("Moving focus to TweetList's top since the iter being removed was currently selected.");
+				debug("Moving focus to TweetList's top since the currently selected iter is being removed.");
 				tweet_list_scroll_to_top(tweet_list);
 			}
 			gtk_list_store_remove(this->list_store, iter);
@@ -814,7 +818,8 @@ static void tweet_list_clear(TweetList *tweet_list){
 	gtk_list_store_clear(this->list_store);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 	this->has_loaded=0;
-	this->index=0;
+	if(this->index)
+		tweet_list_scroll_to_top(tweet_list);
 	this->total=0;
 }/*tweet_list_clear(tweet_list);*/
 
