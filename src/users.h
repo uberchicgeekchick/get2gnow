@@ -54,6 +54,9 @@
 #ifndef __USERS_H__
 #define __USERS_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -85,7 +88,7 @@ typedef struct _UserStatus UserStatus;
 gdouble user_get_id(User *user);
 const gchar *user_status_get_id_str(UserStatus *status);
 const gchar *user_get_user_name(User *user);
-const gchar *user_get_nick_name(User *user);
+const gchar *user_get_user_nick(User *user);
 OnlineService *user_get_online_service(User *user);
 gboolean user_is_follower(User *user);
 

@@ -54,6 +54,9 @@
 #ifndef __TWEET_VIEW_H__
 #define __TWEET_VIEW_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -68,6 +71,8 @@
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
 /* My, Kaity G. B., new uber tweet viewer. */
+G_BEGIN_DECLS
+
 typedef struct _TweetView TweetView;
 
 /********************************************************
@@ -101,8 +106,8 @@ void tweet_view_reply(void);
 void tweet_view_send(GtkWidget *activated_widget);
 void tweet_view_sexy_send_dm(void);
 
+G_END_DECLS
 #endif /* __TWEET_VIEW_H__ */
-
 /********************************************************
  *                       eof                            *
  ********************************************************/

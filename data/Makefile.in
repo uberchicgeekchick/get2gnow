@@ -55,12 +55,12 @@ am__installdirs = "$(DESTDIR)$(desktopdir)" "$(DESTDIR)$(gtkbuilderdir)" \
 	"$(DESTDIR)$(icondir)" "$(DESTDIR)$(schemasdir)" \
 	"$(DESTDIR)$(svgicondir)"
 desktopDATA_INSTALL = $(INSTALL_DATA)
-tweet_listDATA_INSTALL = $(INSTALL_DATA)
+sexyDATA_INSTALL = $(INSTALL_DATA)
 gtkbuilderDATA_INSTALL = $(INSTALL_DATA)
 iconDATA_INSTALL = $(INSTALL_DATA)
 schemasDATA_INSTALL = $(INSTALL_DATA)
 svgiconDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(tweet_list_DATA) $(desktop_DATA) $(gtkbuilder_DATA) $(schemas_DATA) $(svgicon_DATA)
+DATA = $(sexy_DATA) $(desktop_DATA) $(gtkbuilder_DATA) $(schemas_DATA) $(svgicon_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
@@ -238,43 +238,59 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+
+
 desktopdir = $(datadir)/applications
 desktop_in_files = get2gnow.desktop.in
 desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
+
+
 schemasdir = $(GCONF_SCHEMA_FILE_DIR)
 schemas_in_files = get2gnow.schemas.in
 schemas_DATA = $(schemas_in_files:.schemas.in=.schemas)
-gtkbuilderdir = $(datadir)/get2gnow
-gtkbuilder_DATA = 				\
-	online-services-dialog.ui		\
-	following-viewer.ui			\
-	friends-manager.ui			\
-	main-window.ui				\
-	tweet-view.ui				\
-	online-services-request-popup.ui	\
-	preferences.ui				\
-	user-profile-viewer.ui
 
-tweet_list_DATA = tweet-list.ui
-tweet_list_in_DATA = tweet-list.in.ui
+
+gtkbuilderdir = $(datadir)/get2gnow
+gtkbuilder_DATA =	 					\
+			online-services-dialog.ui		\
+			main-window.ui				\
+			tweet-view.ui				\
+			online-services-request-popup.ui	\
+			preferences.ui				\
+			user-profile-viewer.ui
+
+sexy_DATA =							\
+			tweet-list.ui				\
+			friends-manager.ui			\
+			following-viewer.ui
+
+un_sexy_DATA =							\
+			tweet-list.in.ui			\
+			friends-manager.in.ui			\
+			following-viewer.in.ui
+
+tweet-list.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! tweet-list.ui' 'tweet-list.in.ui';
+friends-manager.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! friends-manager.ui' 'friends-manager.in.ui';
+following-viewer.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! following-viewer.ui' 'following-viewer.in.ui';
+sexy_DATA: $(un_sexy_DATA)
 
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = get2gnow.svg
-EXTRA_DIST =			\
-	$(tweet_list_DATA)	\
-	$(gtkbuilder_DATA)	\
-	$(svgicon_DATA)		\
-	$(desktop_in_files)	\
-	$(schemas_in_files)
+EXTRA_DIST =							\
+			$(sexy_DATA)				\
+			$(gtkbuilder_DATA)			\
+			$(svgicon_DATA)				\
+			$(desktop_in_files)			\
+			$(schemas_in_files)
 
-DISTCLEANFILES =		\
-	$(tweet_list_DATA)	\
-	$(desktop_DATA)		\
-	$(schemas_DATA)
+DISTCLEANFILES =						\
+			$(sexy_DATA)				\
+			$(desktop_DATA)				\
+			$(schemas_DATA)
 
-
-tweet-list.ui: $(tweet_list_in_DATA)
-	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! $(top_builddir)/data/$(tweet_list_DATA)' '$(top_builddir)/data/$(tweet_list_in_DATA)'
 
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 all: all-am
@@ -336,19 +352,19 @@ uninstall-desktopDATA:
 	  rm -f "$(DESTDIR)$(desktopdir)/$$f"; \
 	done
 
-install-tweet_listDATA: $(tweet_list_DATA)
+install-sexyDATA: $(sexy_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(gtkbuilderdir)" || $(MKDIR_P) "$(DESTDIR)$(gtkbuilderdir)"
-	@list='$(tweet_list_DATA)'; for p in $$list; do \
+	@list='$(sexy_DATA)'; for p in $$list; do \
 		if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 		f=$(am__strip_dir) \
-		echo " $(tweet_listDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gtkbuilderdir)/$$f'"; \
-		$(tweet_listDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gtkbuilderdir)/$$f"; \
+		echo " $(sexyDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gtkbuilderdir)/$$f'"; \
+		$(sexyDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gtkbuilderdir)/$$f"; \
 	done
 
-uninstall-tweet_listDATA:
+uninstall-sexyDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(tweet_list_DATA)'; for p in $$list; do \
+	@list='$(sexy_DATA)'; for p in $$list; do \
 		f=$(am__strip_dir) \
 		echo " rm -f '$(DESTDIR)$(gtkbuilderdir)/$$f'"; \
 		rm -f "$(DESTDIR)$(gtkbuilderdir)/$$f"; \
@@ -490,7 +506,7 @@ info: info-am
 info-am:
 
 install-data-am: install-data-local install-desktopDATA \
-	install-tweet_listDATA install-gtkbuilderDATA install-schemasDATA \
+	install-sexyDATA install-gtkbuilderDATA install-schemasDATA \
 	install-iconDATA install-svgiconDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
@@ -527,7 +543,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-desktopDATA uninstall-tweet_listDATA uninstall-gtkbuilderDATA \
+uninstall-am: uninstall-desktopDATA uninstall-sexyDATA uninstall-gtkbuilderDATA \
 	uninstall-iconDATA uninstall-schemasDATA uninstall-svgiconDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
@@ -539,14 +555,14 @@ uninstall-am: uninstall-desktopDATA uninstall-tweet_listDATA uninstall-gtkbuilde
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-data-hook \
 	install-data-local install-desktopDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-tweet_listDATA install-gtkbuilderDATA \
+	install-dvi-am install-exec install-exec-am install-sexyDATA install-gtkbuilderDATA \
 	install-html install-html-am install-iconDATA install-info \
 	install-info-am install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-schemasDATA install-strip \
 	install-svgiconDATA installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-desktopDATA install-tweet_listDATA \
+	uninstall uninstall-am uninstall-desktopDATA install-sexyDATA \
 	uninstall-gtkbuilderDATA uninstall-hook uninstall-iconDATA \
 	uninstall-schemasDATA uninstall-svgiconDATA
 

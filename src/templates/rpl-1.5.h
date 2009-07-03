@@ -47,3 +47,6 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+

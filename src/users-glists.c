@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************
@@ -233,47 +236,78 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_sessi
 }/*users_glist_save*/
 
 /**
- *returns: 1 if a is different from b, -1 if b is different from a, 0 if they're the same
+ *returns: 1 if a is different from b, -1 if b is different from a, if they're equal
+ *		than it returns 1 if a is a follower & b is not
  */
-int users_glists_sort_by_user_name(User *a, User *b){
-	return strcasecmp( user_get_user_name(a), user_get_user_name(b) );
+int users_glists_sort_by_user_name(User *user1, User *user2){
+	int user_cmp_return_value=0;
+	gboolean user1_follows_me=getting_followers, user2_follows_me=getting_followers;
+	
+	if( (user_cmp_return_value=strcasecmp( user_get_user_name(user1), user_get_user_name(user2) )) )
+		return user_cmp_return_value;
+	
+	if( (user1_follows_me=user_is_follower(user1)) && (user2_follows_me=user_is_follower(user2)) )
+		user_cmp_return_value=0;
+	else if( user1_follows_me && !user2_follows_me )
+		user_cmp_return_value=1;
+	else if( !user1_follows_me && user2_follows_me )
+		user_cmp_return_value=-1;
+	
+	return user_cmp_return_value;
 }/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; } );*/
 
 
 GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	xmlNode		*current_node=NULL;
 	
-	/* parse the xml */
 	debug("Parsing users xml.");
 	if(!( (doc=parse_xml_doc(xml, &root_element)) && root_element )){
 		xmlCleanupParser();
 		return NULL;
 	}
 	
-	
-	GList		*users=NULL;
-	User		*user=NULL;
-	debug("\t\t\tParsing new users. Starting with: '%s' node.", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE)
+	gboolean users_found=FALSE;
+	xmlNode *current_node=NULL;
+	debug("Parsed new users. Starting with: '%s' node.", root_element->name);
+	while(!users_found){
+		if(!current_node) current_node=root_element;
+		else if(!current_node->next) break;
+		else current_node=current_node->next;
+		
+		if(!( (current_node->type==XML_ELEMENT_NODE) && g_str_equal(current_node->name, "users") ))
 			continue;
 		
-		if(g_str_equal(current_node->name, "user")){
-			debug("\t\t\tCreating User * from current node.");
-			user=user_parse_node(service, current_node->children);
-			debug("\t\t\tAdding user: [%s] to user list.", user_get_user_name(user));
-			users=g_list_append(users, user);
-		}else if(g_str_equal(current_node->name, "users") && current_node->children){
-			current_node=current_node->children;
-		}
+		if(!current_node->children) break;
+		
+		users_found=TRUE;
+		current_node=current_node->children;
+	}
+	
+	if(!users_found){
+		xmlFreeDoc(doc);
+		xmlCleanupParser();
+		return NULL;
+	}
+	
+	User *new_user=NULL;
+	GList *new_users=NULL;
+	for(; current_node; current_node=current_node->next){
+		if(!( (current_node->type==XML_ELEMENT_NODE) && g_str_equal(current_node->name, "user") ))
+			continue;
+		
+		if(!(new_user=user_parse_node(service, current_node->children)))
+			continue;
+		
+		debug("Added user: [%s] to user list.", user_get_user_name(new_user));
+		new_users=g_list_append(new_users, new_user);
+		new_user=NULL;
 	}
 	
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
-	return users;
+	return new_users;
 }/*users_glist_parse(service, xml)*/
 
 

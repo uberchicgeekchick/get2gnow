@@ -53,6 +53,9 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 /********************************************************
  *        System & library headers.                     *
  ********************************************************/
@@ -60,13 +63,11 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
 
-#ifndef soup_message_headers_get_one
-#define soup_message_headers_get_one soup_message_headers_get
-#endif
-
 /********************************************************
  *        Objects, structures, and etc typedefs         *
  ********************************************************/
+G_BEGIN_DECLS
+
 typedef struct _RateLimitTimer RateLimitTimer;
 
 
@@ -74,9 +75,10 @@ typedef struct _RateLimitTimer RateLimitTimer;
  *          Global method  & function prototypes        *
  ********************************************************/
 RateLimitTimer *timer_new(void);
-void timer_main(RateLimitTimer *timer, SoupMessage *msg);
-
+void timer_main(RateLimitTimer *timer, SoupMessage *xml);
+void timer_wait(RateLimitTimer *timer, gdouble pause);
 void timer_free(RateLimitTimer *timer);
 
+G_END_DECLS
 #endif /* __TIMER_H__  */
 

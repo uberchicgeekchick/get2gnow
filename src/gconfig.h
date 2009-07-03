@@ -51,6 +51,9 @@
 #ifndef __GCONFIG_H__
 #define __GCONFIG_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib-object.h>
 #include <gconf/gconf-client.h>
 
@@ -82,6 +85,7 @@ gboolean gconfig_notify_remove(guint id);
 
 
 gboolean gconfig_set_int(const gchar *key, gint value);
+gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_int);
 gboolean gconfig_get_int(const gchar *key, gint *value);
 
 
@@ -89,7 +93,7 @@ gboolean gconfig_set_float(const gchar *key, gfloat value);
 gboolean gconfig_get_float(const gchar *key, gfloat *value);
 
 
-gboolean gconfig_if_bool(const gchar *key, gboolean default_bool);
+gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean);
 gboolean gconfig_set_bool(const gchar *key, gboolean value);
 gboolean gconfig_get_bool(const gchar *key, gboolean *value);
 

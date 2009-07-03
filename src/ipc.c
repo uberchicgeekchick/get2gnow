@@ -48,6 +48,9 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -95,7 +98,7 @@ typedef struct{
 #define DEBUG_DOMAINS "IPC:CLI:Settings:Setup:Start-Up"
 #include "debug.h"
 
-static Input *input = NULL;
+static Input *input=NULL;
 
 
 static void ipc_main(void);
@@ -104,7 +107,7 @@ static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition conditio
 
 gboolean ipc_init_check( int argc, char **argv ){
 	GDir *dir;
-	const char *entry, *username, *tmp_path;
+	const char *entry, *user_name, *tmp_path;
 	char *prefix;
 	guint prefix_len;
 	char *cur_dir_tmp;
@@ -113,16 +116,16 @@ gboolean ipc_init_check( int argc, char **argv ){
 	
 	g_return_val_if_fail(input == NULL, FALSE);
 	
-	tmp_path = g_get_tmp_dir();
-	dir = g_dir_open(tmp_path, 0, NULL);
+	tmp_path=g_get_tmp_dir();
+	dir=g_dir_open(tmp_path, 0, NULL);
 	g_return_val_if_fail(dir != NULL, FALSE);
 	
-	username = g_get_user_name();
-	prefix=g_strdup_printf(PIPE_PREFIX, username, GETTEXT_PACKAGE);
-	prefix_len = strlen(prefix);
+	user_name=g_get_user_name();
+	prefix=g_strdup_printf(PIPE_PREFIX, user_name, GETTEXT_PACKAGE);
+	prefix_len=strlen(prefix);
 
-	cur_dir_tmp = g_get_current_dir();
-	cur_dir = g_strdup_printf("%s/", cur_dir_tmp);
+	cur_dir_tmp=g_get_current_dir();
+	cur_dir=g_strdup_printf("%s/", cur_dir_tmp);
 	g_free(cur_dir_tmp);
 	
 	/* if another process creates a pipe while we are doing this,
@@ -134,10 +137,10 @@ gboolean ipc_init_check( int argc, char **argv ){
 			char *filename;
 			
 			errno=0;
-			pid_string = entry + prefix_len;
+			pid_string=entry + prefix_len;
 			/* this is not right, but should not cause real problems */
-			pid = strtol(pid_string, NULL, 10);
-			filename = g_build_filename(tmp_path, entry, NULL);
+			pid=strtol(pid_string, NULL, 10);
+			filename=g_build_filename(tmp_path, entry, NULL);
 			
 			if(!errno && pid > 0 && !kill(pid, 0)){
 				/* it would be cool to check that the file is indeed a fifo,
@@ -149,7 +152,7 @@ gboolean ipc_init_check( int argc, char **argv ){
 				}else{
 					/* TODO: validate argumants. */
 					write(fd, "", 1);
-					for(int i = 0; i < argc; ++i) {
+					for(int i=0; i < argc; ++i) {
 						if(g_path_is_absolute(argv[i]))
 							to_open=gnome_vfs_uri_make_full_from_relative(NULL, argv[i]);
 						else
@@ -187,7 +190,7 @@ static void ipc_commit(Input *input){
 	
 	if(input->buffer->len > MAX_BUFFER_SIZE){
 		g_byte_array_free(input->buffer, TRUE);
-		input->buffer = g_byte_array_new();
+		input->buffer=g_byte_array_new();
 	}else{
 		g_byte_array_set_size(input->buffer, 0);
 	}
@@ -198,55 +201,55 @@ static void ipc_commit(Input *input){
 
 
 static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition, Input *input ){
-	gboolean error_occured = FALSE;
-	GError *err = NULL;
-	gboolean again = TRUE;
-	gboolean got_zero = FALSE;
+	gboolean error_occured=FALSE;
+	GError *err=NULL;
+	gboolean again=TRUE;
+	gboolean got_zero=FALSE;
 	
 	if(condition &(G_IO_ERR | G_IO_HUP))
 		if(errno != EINTR && errno != EAGAIN)
-			error_occured = TRUE;
+			error_occured=TRUE;
 	
 	while(again && !error_occured && !err) {
 		char c;
 		int bytes_read;
 		
-		struct pollfd fd = {input->pipe, POLLIN | POLLPRI, 0};
+		struct pollfd fd={input->pipe, POLLIN | POLLPRI, 0};
 		
-		int res = poll(&fd, 1, 0);
+		int res=poll(&fd, 1, 0);
 		
 		switch(res){
 			case -1:
 				if(errno != EINTR && errno != EAGAIN)
-					error_occured = TRUE;
+					error_occured=TRUE;
 				perror("poll");
 				break;
 				
 			case 0:
-				again = FALSE;
+				again=FALSE;
 				break;
 				
 			case 1:
 				if(fd.revents &(POLLERR)){
 					if(errno != EINTR && errno != EAGAIN)
-						error_occured = TRUE;
+						error_occured=TRUE;
 					perror("poll");
 				}else{
-					bytes_read = read(input->pipe, &c, 1);
+					bytes_read=read(input->pipe, &c, 1);
 					
 					if(bytes_read == 1){
 						g_byte_array_append(input->buffer, (guint8 *)&c, 1);
 						
 						if(!c){
-							got_zero = TRUE;
-							again = FALSE;
+							got_zero=TRUE;
+							again=FALSE;
 						}
 					}else if(bytes_read == -1){
 						perror("read");
 						if(errno != EINTR && errno != EAGAIN)
-							error_occured = TRUE;
+							error_occured=TRUE;
 					}else{
-						again = FALSE;
+						again=FALSE;
 					}
 				}
 				break;
@@ -280,12 +283,12 @@ static void ipc_main( void ){
 	
 	input=g_new0(Input, 1);
 	
-	input->pipe = -1;
-	input->pipe_name = NULL;
-	input->io = NULL;
-	input->io_watch = 0;
-	input->ready = FALSE;
-	input->buffer = g_byte_array_new();
+	input->pipe=-1;
+	input->pipe_name=NULL;
+	input->io=NULL;
+	input->io_watch=0;
+	input->ready=FALSE;
+	input->buffer=g_byte_array_new();
 	
 	input->pipe_name=g_strdup_printf(
 					PIPE_PREFIX_FULL,
@@ -308,9 +311,9 @@ static void ipc_main( void ){
 		return;
 	}
 	
-	input->io = g_io_channel_unix_new(input->pipe);
+	input->io=g_io_channel_unix_new(input->pipe);
 	g_io_channel_set_encoding(input->io, NULL, NULL);
-	input->io_watch = g_io_add_watch(
+	input->io_watch=g_io_add_watch(
 						input->io,
 						G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
 						(GIOFunc) ipc_read,
@@ -326,20 +329,20 @@ void ipc_deinit( void ){
 	
 	if(input->io_watch){
 		g_source_remove(input->io_watch);
-		input->io_watch = 0;
+		input->io_watch=0;
 	}
 	
 	if(input->io){
 		g_io_channel_shutdown(input->io, TRUE, NULL);
 		g_io_channel_unref(input->io);
-		input->io = NULL;
+		input->io=NULL;
 	}
 	
 	if(input->pipe_name){
-		input->pipe  = -1;
+		input->pipe =-1;
 		unlink(input->pipe_name);
 		g_free(input->pipe_name);
-		input->pipe_name = NULL;
+		input->pipe_name=NULL;
 	}
 		
 	g_byte_array_free(input->buffer, TRUE);

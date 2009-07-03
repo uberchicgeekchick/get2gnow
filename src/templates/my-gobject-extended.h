@@ -1,9 +1,11 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * get2gnow is:
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
+ *
  * For more information or to find the latest release, visit our
- * website at:
- * 		http://uberChicGeekChick.Com/
+ * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
  * Writen by an uberChick, other uberChicks please meet me & others @:
  * 	http://uberChicks.Net/
@@ -13,10 +15,10 @@
  * 	http://Dystonia-DREAMS.Org/
  *
  *
- * 
+ *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -28,17 +30,17 @@
  * language governing rights and limitations under the RPL.
  *
  * The User-Visible Attribution Notice below, when provided, must appear in each
- * user-visible display as defined in Section 6.4(d):
+ * user-visible display as defined in Section 6.4 (d):
  * 
  * Initial art work including: design, logic, programming, and graphics are
- * Copyright(C) 2009 Kaity G. B. and released under the RPL where sapplicable.
+ * Copyright (C) 2009 Kaity G. B. and released under the RPL where sapplicable.
  * All materials not covered under the terms of the RPL are all still
- * Copyright(C) 2009 Kaity G. B. and released under the terms of the
+ * Copyright (C) 2009 Kaity G. B. and released under the terms of the
  * Creative Commons Non-Comercial, Attribution, Share-A-Like version 3.0 US license.
  * 
  * Any & all data stored by this Software created, generated and/or uploaded by any User
  * and any data gathered by the Software that connects back to the User.  All data stored
- * by this Software is Copyright(C) of the User the data is connected to.
+ * by this Software is Copyright (C) of the User the data is connected to.
  * Users may lisences their data under the terms of an OSI approved or Creative Commons
  * license.  Users must be allowed to select their choice of license for each piece of data
  * on an individual bases and cannot be blanketly applied to all of the Users.  The User may
@@ -46,12 +48,27 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __MY_GOBJECT_H__
-#define __MY_GOBJECT_H__
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef __MY_GOBJECT_EXTENDED_H__
+#define __MY_GOBJECT_EXTENDED_H__
 
+
+
+/********************************************************************************
+ * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ ********************************************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
+#include <glib.h>
 #include <gtk/gtk.h>
 
 
+/********************************************************************************
+ *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ ********************************************************************************/
 G_BEGIN_DECLS
 
 #define TYPE_MY_GOBJECT			(my_gobject_get_type())
@@ -80,6 +97,10 @@ GType my_gobject_get_type(void) G_GNUC_CONST;
 MyGObject *my_gobject_new(const gchar *uri);
 
 
+
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
 GtkWidget *my_gobject_get_widget(MyGObject *my_gobject);
 const gchar *my_gobject_get_uri(MyGObject *my_gobject);
 const gchar *my_gobject_get_title(MyGObject *my_gobject);
@@ -92,5 +113,11 @@ gboolean my_gobject_refresh(MyGObject *my_gobject);
 
 void my_gobject_append(MyGObject *my_gobject, gulong id, gulong age, gchar *title, const gchar *image_filename, gpointer *pointer);
 
+
+
 G_END_DECLS
-#endif /* __MY_GOBJECT_H__ */
+#endif /* __MY_GOBJECT_EXTENDED_H__ */
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+

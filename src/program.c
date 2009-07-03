@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************
@@ -86,7 +89,6 @@
  *          Variable definitions.                       *
  ********************************************************/
 static gboolean notifing=FALSE;
-static gchar *old_locale=NULL;
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -96,13 +98,11 @@ static gchar *old_locale=NULL;
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-GnomeProgram *program_init(int argc, char **argv){
-	old_locale=setlocale(LC_TIME, "C");
+gboolean program_init(int argc, char **argv){
 	if( (ipc_init_check( argc-1, argv-1)) ){
-		g_fprintf(stdout, "%s is already running.  Be sure to check system try for %s's icon.\n", GETTEXT_PACKAGE, GETTEXT_PACKAGE);
+		g_fprintf(stdout, "%s is already running.  Be sure to check your desktop's notification tray for %s's icon.\n", GETTEXT_PACKAGE, GETTEXT_PACKAGE);
 		ipc_deinit();
-		setlocale(LC_TIME, old_locale);
-		exit(0);
+		return FALSE;
 	}
 	
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
@@ -110,55 +110,32 @@ GnomeProgram *program_init(int argc, char **argv){
 	textdomain(GETTEXT_PACKAGE);
 	
 	g_set_application_name(GETTEXT_PACKAGE);
+	gtk_window_set_default_icon_name(GETTEXT_PACKAGE);
 	
 	if(!g_thread_supported()) g_thread_init(NULL);
 	
 	gtk_init(&argc, &argv);
 	
-	gtk_window_set_default_icon_name(GETTEXT_PACKAGE);
-	
 	cache_init();
 	
-	/* debugging: output & logging */
 	debug_init();
 	
-	/* Connect to gconf */
 	gconfig_start();
 	
-	/* Start libnotify */
 	notifing=notify_init(GETTEXT_PACKAGE);
 	
-	/*Starting networking start-up*/
 	proxy_init();
-	
-	/* Load's accounts & sets them in 'extern OnlineServices *online_services;'. */
 	online_services_init();
 	
-	/* On to the GUI. */
 	main_window_create();
-	gchar **remaining_argv=NULL;
-	
-	GOptionContext *option_context=g_option_context_new(GETTEXT_PACKAGE);
-	GOptionEntry option_entries[]={
-			{
-				G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY,
-				&remaining_argv,
-				"Special option that collects any remaining arguments for us"
-			},
-			{ NULL }
-	};
-	
-	g_option_context_add_main_entries(option_context, option_entries, NULL);
-	
-	return gnome_program_init(	GETTEXT_PACKAGE, PACKAGE_VERSION,
-					LIBGNOME_MODULE,
-					argc, argv,
-					GNOME_PARAM_GOPTION_CONTEXT, option_context,
-					GNOME_PARAM_NONE
-	);
+	return TRUE;
 }/*program_init*/
 
 void get2gnow_program_deinit(void){
+	program_deinit();
+}/*void get2gnow_program_deinit(void);*/
+
+void program_deinit(void){
 	/* Close libnotify */
 	if(notifing) notify_uninit();
 	
@@ -166,7 +143,6 @@ void get2gnow_program_deinit(void){
 	
 	cache_deinit();
 	
-	/* Close the network */
 	unset_selected_tweet();
 	online_services_deinit(online_services);
 	proxy_deinit();
@@ -174,13 +150,7 @@ void get2gnow_program_deinit(void){
 	ipc_deinit();
 	
 	debug_deinit();
-	setlocale(LC_TIME, old_locale);
-	gtk_main_quit();
-}/*get2gnow_program_deinit();*/
-
-void program_deinit(void){
-	get2gnow_program_deinit();
-}/*void program_deinit(void);*/
+}/*program_deinit();*/
 
 const gchar *program_gtk_response_to_string(gint response){
 	switch(response){

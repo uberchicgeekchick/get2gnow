@@ -48,6 +48,9 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 #include "config.h"
 #include <sys/stat.h>

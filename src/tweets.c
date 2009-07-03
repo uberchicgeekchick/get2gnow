@@ -48,6 +48,9 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -111,6 +114,9 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_H:	case GDK_h:
 					g_signal_emit_by_name(main_window_get_menu("help"), "activate");
 					return;
+				case GDK_R: case GDK_r:
+					tweet_list_refresh(tweet_lists_get_current()); 
+					return;
 				case GDK_P:	case GDK_p:
 				case GDK_question:
 					online_service_request_selected_tweet_view_profile();
@@ -169,6 +175,9 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_S:	case GDK_s:
 					online_service_request_selected_tweet_save_fave();
 					return;
+				case GDK_F5:
+					tweet_list_refresh(tweet_lists_get_current()); 
+					return;
 				case GDK_Z:	case GDK_z:
 					online_service_request_selected_tweet_destroy_fave();
 					return;
@@ -197,9 +206,6 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 			switch( event->keyval ){
 				case GDK_F1:
 					help_show(main_window_get_window());
-					return;
-				case GDK_R: case GDK_r:
-					tweet_list_refresh(tweet_lists_get_current()); 
 					return;
 				case GDK_greater:
 					selected_tweet_retweet();

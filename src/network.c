@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************
@@ -74,7 +77,6 @@
 #include "online-services.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
-#include "online-service-request.h"
 #include "network.h"
 
 #include "parser.h"
@@ -82,16 +84,6 @@
 
 #include "main-window.h"
 #include "preferences.h"
-
-#include "users.h"
-#include "friends-manager.h"
-#include "following-viewer.h"
-#include "tweet-view.h"
-
-#include "tweet-list.h"
-#include "tweets.h"
-#include "timer.h"
-
 
 /********************************************************
  *          Variable definitions.                       *
@@ -115,26 +107,11 @@ static gboolean retrying=FALSE;
 static NetworkTweetListImageDL *network_tweet_list_image_dl_new(TweetList *tweet_list, const gchar *filename, GtkTreeIter *iter);
 static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image);
 
-static void *network_tweet_cb(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
-
 static void *network_retry(OnlineServiceWrapper *service_wrapper);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-static NetworkTweetListImageDL *network_tweet_list_image_dl_new(TweetList *tweet_list, const gchar *filename, GtkTreeIter *iter){
-	NetworkTweetListImageDL *image=g_new0(NetworkTweetListImageDL, 1);
-	image->tweet_list=tweet_list;
-	image->filename=g_strdup(filename);
-	image->iter=iter;
-	return image;
-}/*network_tweet_list_image_dl_new*/
-			
-static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image){
-	image->tweet_list=NULL;
-	uber_object_free(&image->filename, &image->iter, &image, NULL);
-}/*network_image_free*/
-
 /* Check HTTP response code */
 gboolean network_check_http(OnlineService *service, SoupMessage *xml){
 	if(!( SOUP_IS_MESSAGE(xml) )){
@@ -142,28 +119,125 @@ gboolean network_check_http(OnlineService *service, SoupMessage *xml){
 		return FALSE;
 	}
 	
-	if(!SOUP_STATUS_IS_SUCCESSFUL(xml->status_code))
+	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) ))
 		return FALSE;
 	
 	return TRUE;
 }/*network_check_http(service, xml);*/
 
-/* Post a new tweet - text must be Url encoded */
-void network_post_status(const gchar *update){
+
+
+
+static NetworkTweetListImageDL *network_tweet_list_image_dl_new(TweetList *tweet_list, const gchar *filename, GtkTreeIter *iter){
+	NetworkTweetListImageDL *image=g_new0(NetworkTweetListImageDL, 1);
+	image->tweet_list=tweet_list;
+	image->filename=g_strdup(filename);
+	image->iter=iter;
+	return image;
+}/*network_tweet_list_image_dl_new*/
+
+
+void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
+	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
+	NetworkTweetListImageDL *image=network_tweet_list_image_dl_new(tweet_list, image_filename, iter);
+	
+	online_service_request_uri(service, QUEUE, image_url, NULL, network_cb_on_image, image, NULL);
+}/*network_get_image*/
+
+
+void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
+	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
+	NetworkTweetListImageDL *image=(NetworkTweetListImageDL *)online_service_wrapper_get_user_data(service_wrapper);
+	if(!( image && image->tweet_list && image->filename && image->iter )){
+		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", image->filename, (image->iter ?"valid" :"unknown") );
+		return NULL;
+	}
+	
+	gchar *image_filename=NULL;
+	if(!(network_check_http(service, xml)))
+		image_filename=cache_images_get_unknown_image_filename();
+	else{
+		debug("Saving avatar to file: %s", image->filename);
+		if(!(g_file_set_contents(
+					image->filename,
+						xml->response_body->data,
+						xml->response_body->length,
+					NULL
+		)))
+			image_filename=cache_images_get_unknown_image_filename();
+		else
+			image_filename=g_strdup(image->filename);
+	}
+	
+	main_window_statusbar_printf("New avatar added to TweetList.");
+	tweet_list_set_image(image->tweet_list, image_filename, image->iter);
+	
+	uber_free(image_filename);
+	
+	network_tweet_list_image_dl_free(image);
+	return NULL;
+}/*network_cb_on_image(session, xml, user_data);*/
+
+static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image){
+	image->tweet_list=NULL;
+	uber_object_free(&image->filename, &image->iter, &image, NULL);
+}/*network_image_free*/
+
+
+
+
+void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
 	
 	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE)))
-		online_services_request(online_services, POST, API_POST_STATUS, NULL, network_tweet_cb, "Tweet", (gchar *)update);
+		online_services_request(online_services, POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
 	else
-		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_tweet_cb, "Tweet", (gchar *)update);
+		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
 }/*network_post_status(tweet);*/
 
-/* Send a direct message to a follower - text must be Url encoded  */
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *dm){
-	gchar *form_data=g_strdup_printf("source=%s&user=%s&text=%s", online_service_get_micro_blogging_client(service), friend, dm);
-	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_tweet_cb, "DM", form_data);
-	g_free(form_data);
+void network_send_message(OnlineService *service, const gchar *friend, gchar *dm){
+	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_tweet_cb, (gchar *)friend, dm);
 }/*network_send_message(service, friend, dm);*/
+
+
+void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
+	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
+	gchar *user_data=(gchar *)online_service_wrapper_get_user_data(service_wrapper);
+	
+	gboolean direct_message=FALSE;
+	if(!g_str_equal("post->update", user_data)) direct_message=TRUE;
+	
+	gchar *message=NULL;
+	if(!direct_message) message=g_strdup_printf("<%s>'s status", online_service_get_guid(service));
+	else message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, online_service_get_uri(service), online_service_get_guid(service));
+	
+	if(!network_check_http(service, xml)){
+		debug("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
+		debug("http error: #%i: %s", xml->status_code, xml->reason_phrase);
+		
+		statusbar_printf("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
+		statusbar_printf("http error: #%i: %s", xml->status_code, xml->reason_phrase);
+	}else{
+		debug("%s %s :-)", message, (direct_message?"succeeded":"updated"));
+		statusbar_printf("%s %s :-)", message, (direct_message?"sent":"updated"));
+	}
+	uber_free(message);
+	
+	debug("HTTP response: %s(#%i)", xml->reason_phrase, xml->status_code);
+	
+	if(in_reply_to_service && service==in_reply_to_service){
+		in_reply_to_service=NULL;
+		in_reply_to_status_id=0;
+		if(xml->status_code==404){
+			debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", online_service_get_key(service));
+			online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_tweet_cb, user_data, online_service_wrapper_get_form_data(service_wrapper));
+		}
+	}
+	return NULL;
+}/*network_tweet_cb*/
+
+
+
 
 void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 	const gchar *notice_prefix=NULL;
@@ -187,57 +261,18 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 }/*network_timeline_loading_notification*/
 
 
-void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
-	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
-	NetworkTweetListImageDL *image=network_tweet_list_image_dl_new(tweet_list, image_filename, iter);
-	
-	online_service_request_uri(service, QUEUE, image_url, NULL, network_cb_on_image, image, NULL);
-}/*network_get_image*/
-
-
-/* On send a direct message */
-static void *network_tweet_cb(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
-	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	gchar *status=(gchar *)online_service_wrapper_get_user_data(service_wrapper);
-	
-	if(!network_check_http(service, msg)){
-		gchar *status_error=g_utf8_strup(status, -1);
-		debug("**%s-ERROR:** send failed for: '%s'.", status_error, online_service_get_key(service));
-		statusbar_printf("%s's %s was not sent.", online_service_get_key(service), status);
-		uber_free(status_error);
-	}else{
-		debug("%s sent successfully to: '%s'.", status, online_service_get_key(service));
-		statusbar_printf("%s's %s sent successfully.", online_service_get_key(service), status);
-	}
-	
-	debug("HTTP response: %s(#%i)", msg->reason_phrase, msg->status_code);
-	
-	if(in_reply_to_service){
-		if(service==in_reply_to_service){
-			in_reply_to_service=NULL;
-			in_reply_to_status_id=0;
-			if(msg->status_code==404){
-				debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", online_service_get_key(service));
-				online_service_request(service, POST, API_POST_STATUS, NULL, network_tweet_cb, "Tweet", (gchar *)online_service_wrapper_get_form_data(service_wrapper));
-			}
-		}
-	}
-	return NULL;
-}/*network_tweet_cb*/
-
-/* On get a timeline */
-void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
+void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
 	TweetLists monitoring=(TweetLists)online_service_wrapper_get_form_data(service_wrapper);
 
-	if(!network_check_http(service, msg)){
-		if(msg->status_code==401){
+	if(!network_check_http(service, xml)){
+		if(xml->status_code==401){
 			debug("*WARNING:* Authentication failed for online service: %s.", online_service_get_key(service));
 			return NULL;
 		}
 		
-		if(!retrying && (msg->status_code==100||msg->status_code==404)){
+		if(!retrying && (xml->status_code==100||xml->status_code==404)){
 			network_retry(service_wrapper);
 			return NULL;
 		}
@@ -249,10 +284,10 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 	
 	debug("Started processing timeline: %s.", timeline);
 	
-	guint tweets_parsed=parse_timeline(service, msg, timeline, tweet_list, monitoring);
+	guint tweets_parsed=parse_timeline(service, xml, timeline, tweet_list, monitoring);
 	
 	debug("Total tweets in this timeline: %d.", tweets_parsed);
-	if(!retrying && !tweets_parsed && !g_strrstr(request_uri, "?since_id=") && msg->status_code==200){
+	if(!retrying && !tweets_parsed && !g_strrstr(request_uri, "?since_id=") && xml->status_code==200){
 		uber_free(request_uri);
 		network_retry(service_wrapper);
 		return NULL;
@@ -263,7 +298,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineSer
 	
 	uber_free(request_uri);
 	return NULL;
-}/*network_display_timeline(session, msg, service_wrapper);*/
+}/*network_display_timeline(session, xml, service_wrapper);*/
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	retrying=TRUE;
@@ -277,39 +312,6 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/
 
-/* On get a image */
-void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
-	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	NetworkTweetListImageDL *image=(NetworkTweetListImageDL *)online_service_wrapper_get_user_data(service_wrapper);
-	if(!( image && image->tweet_list && image->filename && image->iter )){
-		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", image->filename, (image->iter ?"valid" :"unknown") );
-		return NULL;
-	}
-	
-	gchar *image_filename=NULL;
-	if(!(network_check_http(service, msg)))
-		image_filename=cache_images_get_unknown_image_filename();
-	else{
-		debug("Saving avatar to file: %s", image->filename);
-		if(!(g_file_set_contents(
-					image->filename,
-						msg->response_body->data,
-						msg->response_body->length,
-					NULL
-		)))
-			image_filename=cache_images_get_unknown_image_filename();
-		else
-			image_filename=g_strdup(image->filename);
-	}
-	
-	main_window_statusbar_printf("New avatar added to TweetList.");
-	tweet_list_set_image(image->tweet_list, image_filename, image->iter);
-	
-	uber_free(image_filename);
-	
-	network_tweet_list_image_dl_free(image);
-	return NULL;
-}/*network_cb_on_image(session, msg, user_data);*/
 
 
 /********************************************************

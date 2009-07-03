@@ -1,16 +1,16 @@
 C_STD_MODE=gnu99
-AM_CFLAGS=						\
-	-I$(top_srcdir)                          	\
-	-I${top_builddir}				\
-	-DBUILDDIR=\""${abs_top_builddir}"\"		\
-	-DPREFIX="\"$(prefix)"\"			\
-	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
-	-DDATADIR=\""$(datadir)"\"              	\
-	-DLOCALEDIR=\""$(localedir)"\"			\
-	-DLIBDIR=\""$(libdir)"\"			\
-	$(get2gnow_CFLAGS)				\
-	$(WARN_CFLAGS)					\
-	-std=$(C_STD_MODE)
+AM_CFLAGS=									\
+		-I$(top_srcdir)                        			  	\
+		-I${top_builddir}						\
+		-DBUILDDIR=\""${abs_top_builddir}"\"				\
+		-DPREFIX="\"$(prefix)"\"					\
+		-DSYSCONFDIR=\""$(sysconfdir)"\"				\
+		-DDATADIR=\""$(datadir)"\"              			\
+		-DLOCALEDIR=\""$(localedir)"\"					\
+		-DLIBDIR=\""$(libdir)"\"					\
+		$(get2gnow_CFLAGS)						\
+		$(WARN_CFLAGS)							\
+		-std=$(C_STD_MODE)
 
 bin_PROGRAMS = get2gnow
 

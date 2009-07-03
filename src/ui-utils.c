@@ -18,7 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
+#include "config.h"
 
 #include <glib/gi18n.h>
 

@@ -21,10 +21,17 @@
 #ifndef __FOLLOWING_DIALOG_H__
 #define __FOLLOWING_DIALOG_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 void following_viewer_show(GtkWindow *parent);
 void following_viewer_load_lists(GList *users);
 
+G_END_DECLS
 #endif /* __FOLLOWING_DIALOG_H__ */
+

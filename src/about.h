@@ -17,12 +17,18 @@
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
-
 #ifndef __ABOUT_DIALOG_H__
 #define __ABOUT_DIALOG_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
+
 #include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 void about_dialog_new (GtkWindow *parent);
 
+G_END_DECLS
 #endif /*  __ABOUT_DIALOG_H__ */

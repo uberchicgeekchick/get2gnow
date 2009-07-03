@@ -54,6 +54,9 @@
 #ifndef __ONLINE_SERVICE_H__
 #define __ONLINE_SERVICE_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -71,6 +74,8 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
+G_BEGIN_DECLS
+
 extern OnlineService *selected_service;
 
 extern gdouble in_reply_to_status_id;
@@ -81,8 +86,8 @@ extern OnlineService *in_reply_to_service;
  *          Global method  & function prototypes        *
  ********************************************************/
 OnlineService *online_service_open(const gchar *guid);
-OnlineService *online_service_new(gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
-gboolean online_service_save(OnlineService *service, gboolean enabled, gboolean https, const gchar *password, gboolean auto_connect);
+OnlineService *online_service_new(const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
+gboolean online_service_save(OnlineService *service, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
 gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf);
 
 gboolean online_service_validate_key(OnlineService *service, const gchar *guid);
@@ -90,8 +95,8 @@ gboolean online_service_validate_key(OnlineService *service, const gchar *guid);
 const gchar *online_service_get_guid(OnlineService *service);
 const gchar *online_service_get_key(OnlineService *service);
 const gchar *online_service_get_uri(OnlineService *service);
-const gchar *online_service_get_username(OnlineService *service);
-const gchar *online_service_get_nickname(OnlineService *service);
+const gchar *online_service_get_user_name(OnlineService *service);
+const gchar *online_service_get_user_nick(OnlineService *service);
 const gchar *online_service_get_password(OnlineService *service);
 
 gboolean online_service_is_enabled(OnlineService *service);
@@ -130,9 +135,10 @@ void online_service_soup_session_callback_return_processor_func_default(OnlineSe
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
 
-gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **msg);
+gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml);
 
 void online_service_free(OnlineService *service);
 
+G_END_DECLS
 #endif /* __ONLINE_SERVICE_H__ */
 

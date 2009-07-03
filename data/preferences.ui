@@ -278,23 +278,22 @@
                             <property name="border_width">5</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="notify_beep_updates_check_button">
-                                <property name="label" translatable="yes">_Beep when notifying me.</property>
+                              <object class="GtkCheckButton" id="notify_my_friends_updates_check_button">
+                                <property name="label" translatable="yes">Load my _Friends' Updates at start-up.
+And notify me when they post new update(s).</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="notify_dms_check_button">
-                                <property name="label" translatable="yes">Notify me when I get new _Direct Messages (DMs)</property>
+                                <property name="label" translatable="yes">Load my _Direct Messages(DMs) at start-up.
+And notify me when I get DMs.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -307,7 +306,8 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="notify_at_mentions_check_button">
-                                <property name="label" translatable="yes">Notify me when I get new _@ replies.</property>
+                                <property name="label" translatable="yes">Load my @_replies at start-up.
+And notify me when I get new replies.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -319,15 +319,27 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="notify_my_friends_updates_check_button">
-                                <property name="label" translatable="yes">Notify me when I get new updates from friends updates</property>
+                              <object class="GtkHSeparator" id="hseparator1">
+                                <property name="visible">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="notify_beep_updates_check_button">
+                                <property name="label" translatable="yes">_Beep when notifying me.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
-                                <property name="position">3</property>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">4</property>
                               </packing>
                             </child>
                             <child>
@@ -342,7 +354,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">4</property>
+                                <property name="position">5</property>
                               </packing>
                             </child>
                           </object>
@@ -368,9 +380,9 @@
               </packing>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="alerts_tab_label">
+              <object class="GtkLabel" id="tabs_tab_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">New _Messages</property>
+                <property name="label" translatable="yes">_Tabs</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
@@ -385,17 +397,17 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">20</property>
                 <child>
-                  <object class="GtkFrame" id="frame5">
+                  <object class="GtkFrame" id="updates_compose_frame">
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment3">
+                      <object class="GtkAlignment" id="updates_compose_alignment">
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox7">
+                          <object class="GtkVBox" id="updates_compose_vbox">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
@@ -411,6 +423,34 @@
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkFrame" id="frame2">
+                                <property name="visible">True</property>
+                                <property name="label_xalign">0</property>
+                                <property name="shadow_type">none</property>
+                                <child>
+                                  <object class="GtkAlignment" id="alignment3">
+                                    <property name="visible">True</property>
+                                    <property name="left_padding">12</property>
+                                    <child>
+                                      <object class="GtkComboBox" id="replace_me_with_combo_box">
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child type="label">
+                                  <object class="GtkLabel" id="label1">
+                                    <property name="visible">True</property>
+                                    <property name="label" translatable="yes">When I start an update with '/me' replace it with:</property>
+                                    <property name="use_markup">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                           </object>

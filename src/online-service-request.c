@@ -50,12 +50,13 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
 
 /********************************************************************************
  *      Project, system & library headers, eg #include <gdk/gdkkeysyms.h>       *
  ********************************************************************************/
-#define _XOPEN_SOURCE
 #include <time.h>
 #include <strings.h>
 #include <gtk/gtk.h>
@@ -66,6 +67,7 @@
 
 #include "main.h"
 #include "program.h"
+#include "tweets.h"
 
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
@@ -84,7 +86,9 @@
 
 #include "gtkbuilder.h"
 #include "main-window.h"
+
 #include "tweet-view.h"
+
 #include "friends-manager.h"
 #include "following-viewer.h"
 
@@ -151,9 +155,9 @@ struct  _OnlineServiceRequestPopup{
 	
 	GtkMessageDialog	*dialog;
 
-	GtkFrame		*username_frame;
-	GtkLabel		*username_label;
-	GtkEntry		*entry;
+	GtkFrame		*user_name_frame;
+	GtkLabel		*user_name_label;
+	GtkEntry		*user_name_entry;
 	
 	GtkFrame		*online_services_frame;
 	GtkComboBox		*online_services_combo_box;
@@ -360,7 +364,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 	debug("OnlineServiceRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_key);
 	switch(request->action){
 		case ViewTweets:
-			request_wrapper=online_service_wrapper_new(service, online_service_wrapper_get_requested_uri(service_wrapper), NULL, network_display_timeline, tweet_lists_get_timeline(request->uri), (gpointer)Users);
+			request_wrapper=online_service_wrapper_new(service, QUEUE, online_service_wrapper_get_requested_uri(service_wrapper), NULL, network_display_timeline, tweet_lists_get_timeline(request->uri), (gpointer)Users);
 			network_display_timeline(session, msg, request_wrapper);
 			online_service_wrapper_free(request_wrapper);
 			break;
@@ -453,7 +457,7 @@ gdouble selected_tweet_get_user_id(void){
 }/*selected_tweet_get_user_id();*/
 
 gchar *selected_tweet_reply_to_strdup(gboolean retweet){
-	if(!(G_STR_N_EMPTY(selected_tweet->user_name)))
+	if(!(selected_tweet && selected_tweet->user_name && G_STR_N_EMPTY(selected_tweet->user_name)))
 		return NULL;
 	
 	if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(online_services, 1) ))
@@ -472,7 +476,8 @@ void selected_tweet_retweet(void){
 
 static void selected_tweet_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
 	if(!( ( tweet && G_STR_N_EMPTY(tweet) ) )){
-		if(tweet) uber_free(tweet);
+		tweets_beep();
+		if(tweet && release) uber_free(tweet);
 		return;
 	}
 	
@@ -559,27 +564,27 @@ static void online_service_request_popup_set_title_and_label(RequestAction actio
 			break;
 		case ViewTweets:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Who's tweets do you want to see?" );
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user name, or user id, who's resent updates you would like to view:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or user id, who's resent updates you would like to view:");
 			break;
 		case ViewProfile:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Who's profile do you want to see?" );
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user name, or id, of whom you want to view:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to view:");
 			break;
 		case Block:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to block?" );
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user name, or id, of whom you want to block?  They'll no longer be able to read your tweets, send you messages, and you'll no longer be notified when they 'mention' you, using the @ symbol:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to block?  They'll no longer be able to read your tweets, send you messages, and you'll no longer be notified when they 'mention' you, using the @ symbol:");
 			break;
 		case UnBlock:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to un-block?" );
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user name, or id, of whom you want to un-block?  They'll be able to once again read your tweets and you'll see when they mention you, using the @ symbol, again:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-block?  They'll be able to once again read your tweets and you'll see when they mention you, using the @ symbol, again:");
 			break;
 		case UnFollow:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom you want to un-follow?" );
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user name, or id, of whom you want to un-follow?");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-follow?");
 			break;
 		case Follow:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to follow:" );
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user name, or id, of whom you want to follow:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to follow:");
 			break;
 		case Fave:
 		case UnFave:
@@ -643,27 +648,26 @@ static void online_service_request_popup_response_cb(GtkWidget *widget, gint res
 
 static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	OnlineService		*service=NULL;
-	const gchar		*username=gtk_entry_get_text( online_service_request_popup->entry);
+	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
-	if(G_STR_EMPTY(username)){
-		gtk_widget_error_bell(GTK_WIDGET( online_service_request_popup->entry));
+	if(G_STR_EMPTY(user_name)){
+		gtk_widget_error_bell(GTK_WIDGET(online_service_request_popup->user_name_entry));
 		return FALSE;
 	}
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	if(!(gtk_combo_box_get_active_iter( online_service_request_popup->online_services_combo_box, iter))) {
+	if(!(gtk_combo_box_get_active_iter(online_service_request_popup->online_services_combo_box, iter))) {
 		if(iter) g_free(iter);
 		return FALSE;
 	}
 	
 	gtk_tree_model_get(
-			 online_service_request_popup->online_service_model,
-			iter,
-			OnlineServicePointer, &service,
+			online_service_request_popup->online_service_model, iter,
+				OnlineServicePointer, &service,
 			-1
 	);
 	
-	online_service_request_main(service,  online_service_request_popup->action, GTK_WINDOW( online_service_request_popup->dialog), username);
+	online_service_request_main(service,  online_service_request_popup->action, GTK_WINDOW( online_service_request_popup->dialog), user_name);
 	return TRUE;
 }/*online_service_request_popup_dialog_process_requests(widget, response, popup);*/
 
@@ -733,7 +737,7 @@ gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_p
 	
 	gtk_widget_show_all(GTK_WIDGET( online_service_request_popup->dialog));
 	
-	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->username_frame));
+	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->user_name_frame));
 	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->online_services_frame));
 	
 	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
@@ -756,7 +760,7 @@ void online_service_request_popup_select_service(void){
 	debug("Prompting to select OnlineService to use as 'selected_service'.");
 	online_service_request_popup_dialog_show(SelectService);
 	
-	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->username_frame));
+	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->user_name_frame));
 	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
 }/*online_service_request_popup_select_service*/
 
@@ -832,9 +836,9 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 					GtkBuilderUI,
 						"entry_popup", &online_service_request_popup->dialog,
 						
-						"username_frame", &online_service_request_popup->username_frame,
-						"entry", &online_service_request_popup->entry,
-						"username_label", &online_service_request_popup->username_label,
+						"user_name_frame", &online_service_request_popup->user_name_frame,
+						"user_name_entry", &online_service_request_popup->user_name_entry,
+						"user_name_label", &online_service_request_popup->user_name_label,
 						
 						"online_services_frame", &online_service_request_popup->online_services_frame,
 						"online_services_combo_box", &online_service_request_popup->online_services_combo_box,

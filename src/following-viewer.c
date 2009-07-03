@@ -51,6 +51,9 @@
 /********************************************************
  *        System & library headers.                     *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include "config.h"
 
 #include <glib/gi18n.h>
@@ -236,7 +239,7 @@ void following_viewer_load_lists(GList *users){
 					following_viewer->following_list_store,
 					iter,
 					FOLLOWER_USER, user_get_user_name(user),
-					FOLLOWER_NAME, user_get_nick_name(user),
+					FOLLOWER_NAME, user_get_user_nick(user),
 					USER_POINTER, user,
 					-1
 		);

@@ -51,13 +51,16 @@
 #ifndef __IMAGES_H__
 #define __IMAGES_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include "users.h"
 
-
 G_BEGIN_DECLS
+
 
 enum {
 	ImagesMaximum		=	96,
@@ -91,6 +94,7 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename(gchar *image_filename);
 GdkPixbuf *images_get_scaled_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
 GdkPixbuf *images_get_and_scale_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
 
-G_END_DECLS
 
+G_END_DECLS
 #endif /* __IMAGES_H__ */
+

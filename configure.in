@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#000EEEa0C"], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#00EEECaC0"], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -35,9 +35,8 @@ dnl Library Dependencies, uses pkg-config to detect correct version, etc
 dnl
 dnl -----------------------------------------------------------
 
-LIBSOUP_MIN_VERSION=2.24.3
+LIBSOUP_MIN_VERSION=2.26.1
 LIBXML_MIN_VERSION=2.6.16
-GLIB_MIN_VERSION=2.20.0
 GTK_MIN_VERSION=2.12.12
 GCONF_MIN_VERSION=1.2.0
 LIBGIO_MIN_VERSION=2.15.5
@@ -87,7 +86,7 @@ PKG_CHECK_MODULES(get2gnow,
 	libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
 	libxml-2.0 >= $LIBXML_MIN_VERSION
 	gobject-2.0
-	libgnome-2.0
+	libgnomeui-2.0
 	gthread-2.0
 	gconf-2.0 >= $GCONF_MIN_VERSION
 	$gnome_keyring_pkgconfig

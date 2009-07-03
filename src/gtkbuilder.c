@@ -48,8 +48,11 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
-#include <config.h>
+
+#include "config.h"
 
 #define	DEBUG_DOMAINS	"Debug:UI:GtkBuilder:GtkBuildable:Setup"
 #include "debug.h"

@@ -18,6 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include "config.h"
 
 #include <glib/gi18n.h>
@@ -64,7 +67,7 @@ typedef struct {
 	GtkTreeModel		*service_type_model;
 	*/
 	
-	GtkEntry		*username;
+	GtkEntry		*user_name;
 	GtkEntry		*password;
 	GtkCheckButton		*show_password;
 	GtkCheckButton		*auto_connect;
@@ -121,7 +124,7 @@ static void online_services_dialog_new_service(GtkButton *online_service_new_but
 	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->enabled), TRUE);
 	gtk_toggle_button_set_active(online_services_dialog->https_toggle_button, TRUE);
-	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->username), "");
+	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->user_name), "");
 	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->password), "");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect), TRUE);
 	
@@ -135,10 +138,10 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	okay_to_exit=FALSE;
 	
 	gchar *uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(online_services_dialog->urls));
-	const gchar *username=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->username));
+	const gchar *user_name=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->user_name));
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->password));
-	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(username) && G_STR_N_EMPTY(password) )){
-		debug("Failed to save current account.  Server, username, and/or password missing.");
+	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(password) )){
+		debug("Failed to save current account.  Server, user_name, and/or password missing.");
 		okay_to_exit=TRUE;
 		g_free(uri);
 		return;
@@ -157,14 +160,14 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	if(!( (service=online_services_save_service(
 				online_services,
 				service,
-				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->enabled)),
 				(const gchar *)uri,
-				gtk_toggle_button_get_active(online_services_dialog->https_toggle_button),
-				username,
+				user_name,
 				password,
+				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->enabled)),
+				gtk_toggle_button_get_active(online_services_dialog->https_toggle_button),
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect))
 	)) )){
-		debug("**ERROR:** Failed to save online service for '%s@%s' please see above for further details.", username, uri);
+		debug("**ERROR:** Failed to save online service for '%s@%s' please see above for further details.", user_name, uri);
 		g_free(uri);
 		return;
 	}
@@ -175,7 +178,7 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 		return;
 	}
 	
-	if(!( service && online_service_get_key(service) && online_service_get_uri(service) && online_service_get_username(service) )){
+	if(!( service && online_service_get_key(service) && online_service_get_uri(service) && online_service_get_user_name(service) )){
 		debug("**ERROR:** OnlineServices saved resulting OnlineService is invalid.");
 		g_free(uri);
 		return;
@@ -206,17 +209,17 @@ static void online_services_dialog_connect(GtkButton *connect_button, OnlineServ
 	gboolean https=gtk_toggle_button_get_active(online_services_dialog->https_toggle_button);
 	
 	gchar *uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(online_services_dialog->urls));
-	const gchar *username=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->username));
+	const gchar *user_name=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->user_name));
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->password));
 	
 	gboolean auto_connect=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect));
 	
 	if(!(service=online_services_dialog_get_active_service(online_services_dialog))){
 		debug("OnlineService is not saved.  Creating temporary OnlineService to connect with.");
-		service=online_service_new(enabled, uri, https, username, password, auto_connect);
+		service=online_service_new(uri, user_name, password, enabled, https, auto_connect);
 		online_service_connect(service);
 		online_service_login(service, TRUE);
-	}else if( service && G_STR_N_EMPTY(uri) && g_str_equal(online_service_get_uri(service), uri) && G_STR_N_EMPTY(username) && g_str_equal(online_service_get_username(service), username) && G_STR_N_EMPTY(password) && g_str_equal(online_service_get_password(service), password) ){
+	}else if( service && G_STR_N_EMPTY(uri) && g_str_equal(online_service_get_uri(service), uri) && G_STR_N_EMPTY(user_name) && g_str_equal(online_service_get_user_name(service), user_name) && G_STR_N_EMPTY(password) && g_str_equal(online_service_get_password(service), password) ){
 		if(online_service_is_connected(service)){
 			debug("OnlineService: %s is already connected.", online_service_get_key(service));
 			return;
@@ -281,7 +284,7 @@ static OnlineService *online_services_dialog_get_active_service(OnlineServicesDi
 					OnlineServicePointer, &service,
 				-1
 	);
-	if(!(service && online_service_get_key(service) && online_service_get_uri(service) && online_service_get_username(service)))
+	if(!(service && online_service_get_key(service) && online_service_get_uri(service) && online_service_get_user_name(service)))
 		return NULL;
 	
 	return service;
@@ -296,7 +299,7 @@ static void online_services_dialog_check_service(OnlineServicesDialog *online_se
 	OnlineService		*service=online_services_dialog_get_active_service(online_services_dialog);
 	
 	gchar *uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(online_services_dialog->urls));
-	const gchar *username=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->username));
+	const gchar *user_name=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->user_name));
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->password));
 	
 	if(service){
@@ -304,14 +307,14 @@ static void online_services_dialog_check_service(OnlineServicesDialog *online_se
 		service_exists=TRUE;
 	}
 	
-	if( service && G_STR_N_EMPTY(uri) && g_str_equal(online_service_get_uri(service), uri) && G_STR_N_EMPTY(username) && g_str_equal(online_service_get_username(service), username) && G_STR_N_EMPTY(password) && g_str_equal(online_service_get_password(service), password) ){
+	if( service && G_STR_N_EMPTY(uri) && g_str_equal(online_service_get_uri(service), uri) && G_STR_N_EMPTY(user_name) && g_str_equal(online_service_get_user_name(service), user_name) && G_STR_N_EMPTY(password) && g_str_equal(online_service_get_password(service), password) ){
 		debug("Services is up to date, no changes need saved.");
 		service_is_saved=TRUE;
 		service_okay_to_save=FALSE;
-	}else if( service && G_STR_N_EMPTY(uri) && !g_str_equal(online_service_get_uri(service), uri) && G_STR_N_EMPTY(username) && !g_str_equal(online_service_get_username(service), username) && !G_STR_N_EMPTY(password) && !g_str_equal(online_service_get_password(service), password) ){
+	}else if( service && G_STR_N_EMPTY(uri) && !g_str_equal(online_service_get_uri(service), uri) && G_STR_N_EMPTY(user_name) && !g_str_equal(online_service_get_user_name(service), user_name) && !G_STR_N_EMPTY(password) && !g_str_equal(online_service_get_password(service), password) ){
 		debug("Existing service has changes that need to be saved.");
 		service_okay_to_save=TRUE;
-	}else if(!service && (G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(username) && G_STR_N_EMPTY(password)) ){
+	}else if(!service && (G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(password)) ){
 		debug("Service Dialog is creating a OnlineService & all needed fields have data so the service may be saved.");
 		service_okay_to_save=TRUE;
 	}
@@ -360,7 +363,7 @@ static void online_services_dialog_setup(GtkWindow *parent){
 					
 					"https_toggle_button", &online_services_dialog->https_toggle_button,
 					
-					"username_entry", &online_services_dialog->username,
+					"user_name_entry", &online_services_dialog->user_name,
 					"password_entry", &online_services_dialog->password,
 					
 					"show_password_checkbutton", &online_services_dialog->show_password,
@@ -387,7 +390,7 @@ static void online_services_dialog_setup(GtkWindow *parent){
 				"online_service_new_button", "clicked", online_services_dialog_new_service,
 				"online_service_delete_button", "clicked", online_services_dialog_delete_service,
 				
-				"username_entry", "key-release-event", online_services_dialog_check,
+				"user_name_entry", "key-release-event", online_services_dialog_check,
 				"password_entry", "key-release-event", online_services_dialog_check,
 				
 				"online_service_connect_button", "clicked", online_services_dialog_connect,
@@ -428,19 +431,19 @@ static void online_services_dialog_load_service(GtkComboBoxEntry *urls, OnlineSe
 		return;
 	}
 	
-	if(!( online_service_get_key(service) && online_service_get_username(service) )){
+	if(!( online_service_get_key(service) && online_service_get_user_name(service) )){
 		debug("Unable to load valid account information from 'urls_liststore'.");
 		online_services_dialog_check_service(online_services_dialog);
 		return;
 	}
 	
-	debug("Accounts dialog loaded OnlineService.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice url: %s; username: %s; password: %s; auto_connect: [%s]", online_service_get_key(service), online_service_get_key(service), (online_service_is_enabled(service)?"en":"dis"), online_service_get_uri(service), online_service_get_username(service), online_service_get_password(service), (online_service_is_auto_connected(service)?"TRUE":"FALSE"));
+	debug("Accounts dialog loaded OnlineService.\n\t\taccount '%s(=%s)'\t\t\t[%sabled]\n\t\tservice url: %s; user_name: %s; password: %s; auto_connect: [%s]", online_service_get_key(service), online_service_get_key(service), (online_service_is_enabled(service)?"en":"dis"), online_service_get_uri(service), online_service_get_user_name(service), online_service_get_password(service), (online_service_is_auto_connected(service)?"TRUE":"FALSE"));
 	
 	online_services_dialog_check_service(online_services_dialog);
 	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->enabled), online_service_is_enabled(service));
 	gtk_toggle_button_set_active(online_services_dialog->https_toggle_button, online_service_is_secure(service));
-	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->username), online_service_get_username(service) );
+	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->user_name), online_service_get_user_name(service) );
 	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->password), online_service_get_password(service) );
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect), online_service_is_auto_connected(service));
 	online_services_dialog_check_service(online_services_dialog);

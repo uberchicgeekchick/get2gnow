@@ -23,6 +23,9 @@
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 
@@ -32,14 +35,20 @@
 #include "tweet-list.h"
 #include "users.h"
 
+G_BEGIN_DECLS
+
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, TweetLists monitoring);
+
+const gchar *parser_xml_node_type_to_string(xmlElementType type);
+
 gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, gulong *my_diff);
 
+G_END_DECLS
 #endif /*  __PARSER_H__ */
 

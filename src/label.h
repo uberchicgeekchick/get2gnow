@@ -24,6 +24,9 @@
 #ifndef __LABEL_H__
 #define __LABEL_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <glib-object.h>
@@ -59,5 +62,5 @@ void label_set_text(OnlineService *service, Label  *nav, const gchar *text, gboo
 gchar *label_msg_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS
-
 #endif /* __LABEL_H__ */
+

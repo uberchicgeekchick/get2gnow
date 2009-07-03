@@ -48,6 +48,9 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include "config.h"
 #include <sys/stat.h>
 #include <string.h>
@@ -193,7 +196,7 @@ static void main_window_class_init(MainWindowClass *klass);
 static void main_window_init(MainWindow *main_window);
 static void main_window_finalize(GObject *object);
 
-static gboolean main_window_statusbar_reset(gpointer user_data);
+static gboolean main_window_statusbar_display(const gchar *message);
 
 static void main_window_setup(void);
 
@@ -273,12 +276,6 @@ static void main_window_finalize(GObject *object){
 	
 	G_OBJECT_CLASS(main_window_parent_class)->finalize(object);
 }
-
-static gboolean main_window_statusbar_reset(gpointer user_data){
-	main_window_set_statusbar_msg(NULL);
-	program_timeout_remove(&main_window_priv->timeout_id_status_bar, _("status bar message"));
-	return FALSE;
-}/*main_window_statusbar_reset();*/
 
 static void main_window_setup(void){
 	GtkBuilder	*ui;
@@ -1071,22 +1068,31 @@ void main_window_statusbar_printf(const gchar *msg, ...){
 	
 	main_window_set_statusbar_msg(message);
 	g_free(message);
-}/*main_window_update_status_bar*/
+}/*main_window_statusbar_printf("__format", ...);*/
 
-
+static guint statusbar_messages=0;
 void main_window_set_statusbar_msg(gchar *message){
-	/* Avoid some warnings */
+	
 	if(!( main_window_priv && main_window_priv->statusbar && GTK_IS_STATUSBAR(main_window_priv->statusbar) ))
 		return;
 	
-	if(message){
-		program_timeout_remove(&main_window_priv->timeout_id_status_bar, _("status bar message"));
-		main_window_priv->timeout_id_status_bar=g_timeout_add(10000, (GSourceFunc)main_window_statusbar_reset, NULL);
+	if(G_STR_N_EMPTY(message)){
+		statusbar_messages++;
+		g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free);
 	}
 	
+	program_timeout_remove(&main_window_priv->timeout_id_status_bar, _("status bar message"));
+	main_window_priv->timeout_id_status_bar=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, (statusbar_messages>=5?statusbar_messages:5), (GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
+}/*main_window_set_statusbar_msg("Message...");*/
+
+static gboolean main_window_statusbar_display(const gchar *message){
 	gtk_statusbar_pop(GTK_STATUSBAR(main_window_priv->statusbar), 1);
 	gtk_statusbar_push(GTK_STATUSBAR(main_window_priv->statusbar), 1, (G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
-}
+	
+	if(statusbar_messages) statusbar_messages--;
+	
+	return FALSE;
+}/*main_window_set_statusbar_display(gpointer);*/
 
 
 gboolean main_window_notify_on_timeout(gpointer data){

@@ -22,6 +22,9 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <glib/gprintf.h>
 
@@ -54,15 +57,19 @@ G_BEGIN_DECLS
 #	define IF_DEBUG
 #endif
 
-#define	check_devel()	debug_check_devel()
+#define	IF_DEVEL		if(debug_if_devel())
 
 void debug_init(void);
-gboolean debug_check_devel(void);
+
+gboolean debug_if_devel(void);
+gboolean debug_check_devel(const gchar *debug_environmental_value);
+
 void debug_impl(const gchar *domain, const gchar *msg, ...) G_GNUC_PRINTF(2, 3);
+
 gboolean debug_if_domain(const gchar *domain);
+
 void debug_deinit(void);
 
 G_END_DECLS
-
 #endif /* __DEBUG_H__ */
 

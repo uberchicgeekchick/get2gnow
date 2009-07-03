@@ -299,8 +299,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/no_length_alert</key>
-			<applyto>/apps/get2gnow/ui/no_length_alert</applyto>
+			<key>/schemas/apps/get2gnow/tweets/compose/no_length_beep</key>
+			<applyto>/apps/get2gnow/tweets/compose/no_length_beep</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -310,6 +310,24 @@
 			</locale>
 		</schema>
 		
+		<schema>
+			<key>/schemas/apps/get2gnow/tweets/compose/replace_me_w_nick</key>
+			<applyto>/apps/get2gnow/tweets/compose/replace_me_w_nick</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>2</default>
+			<locale name="C">
+				<short>What to replace /me 'replacement' triggers with.</short>
+				<long>
+					What to replace /me 'replacement' triggers with.
+					Possible values are:
+						2) Replaces /me with the accounts user name, i.e. their user name / login.
+						1) Replaces /me with the accounts nick name, i.e. their screen name / full name.
+						-1) Replaces /me with the accounts nothing.
+			</long>
+			</locale>
+		</schema>
+
 		<schema>
 			<key>/schemas/apps/get2gnow/hints/close_main_window</key>
 			<applyto>/apps/get2gnow/hints/close_main_window</applyto>

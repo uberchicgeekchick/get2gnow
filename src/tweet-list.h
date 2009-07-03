@@ -46,12 +46,15 @@
 #ifndef __TWEET_LIST_H__
 #define __TWEET_LIST_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
 #include "online-services-typedefs.h"
 
-
 G_BEGIN_DECLS
+
 
 #define TYPE_TWEET_LIST			(tweet_list_get_type())
 #define TWEET_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_TWEET_LIST, TweetList))
@@ -73,39 +76,29 @@ struct _TweetListClass {
 };
 
 
-enum TweetListStoreColumns{	/********************************************************************************/
-	GDOUBLE_TWEET_ID,	/*	Tweet's ID.								*/
+enum TweetListStoreColumns{		/********************************************************************************/
+	GUINT_TWEET_LIST_INDEX,		/*	The update's index in the list-store.                                   */
+	GDOUBLE_TWEET_ID,		/*	Tweet's ID.								*/
 	GDOUBLE_USER_ID,		/*	User's ID.								*/
-	STRING_USER,		/*	Username string.							*/
-	STRING_NICK,		/*	Author name string.							*/
-	STRING_TEXT,		/*	Unformated Tweet string.						*/
-	STRING_TWEET,		/*	Tweet for display string in the TweetList, SexyTreeView, GtkTreeView.	*/
-	STRING_SEXY_TWEET,	/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
-	STRING_CREATED_AGO,	/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
-	STRING_CREATED_AT,	/*	Date string.								*/
-	ULONG_CREATED_AGO,	/*	How old the post is, in seconds, for sorting.				*/
-	ULONG_CREATED_AT,	/*	Unix seconds since epoc of how old the tweet's is.			*/
-	PIXBUF_AVATAR,		/*	Avatar pixbuf.								*/
-	ONLINE_SERVICE,		/*	OnlineService pointer.							*/
-	STRING_FROM,		/*	<status's auther @ OnlineService URI>					*/
-	STRING_RCPT,		/* 	OnlineService key To: <user@service>					*/
-				/********************************************************************************/
+	STRING_USER,			/*	Username string.							*/
+	STRING_NICK,			/*	Author name string.							*/
+	STRING_TEXT,			/*	Unformated Tweet string.						*/
+	STRING_TWEET,			/*	Tweet for display string in the TweetList, SexyTreeView, GtkTreeView.	*/
+	STRING_SEXY_TWEET,		/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
+	STRING_CREATED_AGO,		/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
+	STRING_CREATED_AT,		/*	Date string.								*/
+	ULONG_CREATED_AGO,		/*	How old the post is, in seconds, for sorting.				*/
+	ULONG_CREATED_AT,		/*	Unix seconds since epoc of how old the tweet's is.			*/
+	PIXBUF_AVATAR,			/*	Avatar pixbuf.								*/
+	ONLINE_SERVICE,			/*	OnlineService pointer.							*/
+	STRING_FROM,			/*	<status's auther @ OnlineService URI>					*/
+	STRING_RCPT,			/* 	OnlineService key To: <user@service>					*/
+					/********************************************************************************/
 };
 
 GType tweet_list_get_type(void) G_GNUC_CONST;
 TweetList *tweet_list_new(const gchar *timeline);
 const gchar *tweet_list_get_timeline(TweetList *tweet_list);
-
-gint8 tweet_list_has_loaded(TweetList *tweet_list);
-
-gint tweet_list_get_page(TweetList *tweet_list);
-void tweet_list_set_page(TweetList *tweet_list, gint page);
-
-TweetLists tweet_list_get_monitoring(TweetList *tweet_list);
-
-gint tweet_list_get_total(TweetList *tweet_list);
-guint tweet_list_increment(TweetList *tweet_list);
-guint tweet_list_get_notify_delay(TweetList *tweet_list);
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list);
 GtkLabel *tweet_list_get_tab(TweetList *tweet_list);
@@ -122,9 +115,20 @@ void tweet_list_complete(TweetList *tweet_list);
 void tweet_list_mark_as_read(TweetList *tweet_list);
 void tweet_list_mark_as_unread(TweetList *tweet_list);
 
+gint8 tweet_list_has_loaded(TweetList *tweet_list);
+
+gint tweet_list_get_page(TweetList *tweet_list);
+void tweet_list_set_page(TweetList *tweet_list, gint page);
+
+TweetLists tweet_list_get_monitoring(TweetList *tweet_list);
+
+gint tweet_list_get_total(TweetList *tweet_list);
+guint tweet_list_increment(TweetList *tweet_list);
+guint tweet_list_get_notify_delay(TweetList *tweet_list);
+
 void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
 void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter);
 
-G_END_DECLS
 
+G_END_DECLS
 #endif /* __TWEET_LIST_H__ */

@@ -21,12 +21,14 @@
  *
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include "config.h"
 
 /*
  * Just make sure we include the prototype for strptime as well
  */
-#define _XOPEN_SOURCE
 #include <string.h> /* for g_memmove - memmove */
 #include <strings.h>
 
@@ -56,7 +58,6 @@
 #include "debug.h"
 
 
-static gchar *parser_xml_node_type_to_string(xmlElementType type);
 static xmlDoc *parse_dom_content(SoupMessage *xml);
 
 
@@ -65,8 +66,9 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	SoupURI	*suri=NULL;
 	gchar *uri=NULL;
-	if(!( (suri=soup_message_get_uri(xml)) && (uri=soup_uri_to_string(suri, FALSE)) )){
+	if(!( (((suri=soup_message_get_uri(xml)))) && ((uri=soup_uri_to_string(suri, FALSE))) && (G_STR_N_EMPTY(uri)) )){
 		debug("*WARNING*: Unknown XML document URI.");
+		if(uri) g_free(uri);
 		uri=g_strdup("[*unknown*]");
 	}
 	if(suri) soup_uri_free(suri);
@@ -80,29 +82,29 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	
 	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type & DOM information from:\n\t\t%s", uri);
+	debug("Parsing xml document's content-type & DOM information from: %s", uri);
 	gchar *content_info=NULL;
-	if(!(content_info=(gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type"))){
-		debug("**ERROR**: Failed to determine content-type for:\n\t\t %s.", uri);
+	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
+		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
 	
-	debug("Parsing content info: [%s] from:\n\t\t%s", content_info, uri);
+	debug("Parsing content info: [%s] from: %s", content_info, uri);
 	content_v=g_strsplit(content_info, "; ", -1);
 	g_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR**: Failed to determine content-type for:\n\t\t %s.", uri);
+		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
 		g_strfreev(content_v);
 		g_free(uri);
 		return NULL;
 	}
-	
+	debug("Parsed Content-Type: [%s] for: %s", content_type, uri);
 	
 	gchar *charset=NULL;
 	if(!( ((content_v[1])) && (charset=g_strdup(content_v[1])) )){
-		debug("**ERROR**: Failed to determine charset for:\n\t\t %s.", uri);
+		debug("**ERROR**: Failed to determine charset for:  %s.", uri);
 		g_free(content_type);
 		g_strfreev(content_v);
 		g_free(uri);
@@ -111,15 +113,15 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	g_strfreev(content_v);
 	
 	
-	debug("Parsing charset: [%s] for:\n\t\t%s", charset, uri);
+	debug("Parsing charset: [%s] for: %s", charset, uri);
 	content_v=g_strsplit(charset, "=", -1);
 	g_free(charset);
 	if(!(content_v && content_v[1])){
-		debug("Defaulting to charset: [utf-8] for:\n\t\t%s", uri);
+		debug("Defaulting to charset: [utf-8] for: %s", uri);
 		charset=g_strdup("utf-8");
 	}else{
 		charset=g_strdup(content_v[1]);
-		debug("Setting parsed charset: [%s] for:\n\t\t%s", charset, uri);
+		debug("Setting parsed charset: [%s] for: %s", charset, uri);
 	}
 	g_strfreev(content_v);
 	
@@ -133,7 +135,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	content_v=g_strsplit(content_type, "/", -1);
 	gchar *dom_base_entity=NULL;
 	if(!( ((content_v[1])) && (dom_base_entity=g_strdup(content_v[1])) )){
-		debug("**ERROR**: Failed to determine DOM base entity URL for:\n\t\t%s.", uri);
+		debug("**ERROR**: Failed to determine DOM base entity URL for: %s.", uri);
 		g_free(uri);
 		g_free(content_type);
 		g_strfreev(content_v);
@@ -142,7 +144,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	g_strfreev(content_v);
 	
 	
-	debug("Parsed xml document's information.\n\t\tURI: [%s]\n\t\tcontent-type: [%s]; charset: [%s]; encoding: [%s]; dom element: [%s]", uri, content_type, charset, encoding, dom_base_entity);
+	debug("Parsed xml document's information. URI: [%s] content-type: [%s]; charset: [%s]; encoding: [%s]; dom element: [%s]", uri, content_type, charset, encoding, dom_base_entity);
 	
 	
 	debug("Parsing %s document.", dom_base_entity);
@@ -189,7 +191,7 @@ xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element){
 	return doc;
 }
 
-static gchar *parser_xml_node_type_to_string(xmlElementType type){
+const gchar *parser_xml_node_type_to_string(xmlElementType type){
 	switch(type){
 		case XML_ELEMENT_NODE: return _("XML_ELEMENT_NODE");
 		case XML_ATTRIBUTE_NODE: return _("XML_ATTRIBUTE_NODE");
@@ -219,7 +221,9 @@ static gchar *parser_xml_node_type_to_string(xmlElementType type){
 gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
+	debug("Parsing xml document before searching for xpath: '%s' content.", xpath);
 	if(!(doc=parse_xml_doc(xml, &root_element))){
+		debug("Unable to parse xml doc.");
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -232,7 +236,6 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	
 	debug("Searching for xpath: '%s' content.", xpath);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
-		debug("Checking current xpath: '%s' against current node: '%s'\n\t\t\txmlElementType: enum typdef %s(#%d)'.", xpathv[xpath_index], current_node->name, parser_xml_node_type_to_string(current_node->type), current_node->type);
 		
 		if(xpath_index>xpath_target_index) break;
 		
@@ -254,13 +257,12 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlCleanupParser();
 	g_strfreev(xpathv);
 	
-	if(!G_STR_EMPTY(xpath_content))
-		return g_strstrip(xpath_content);
+	if(!( ((xpath_content)) && (xpath_content=g_strstrip(xpath_content)) && G_STR_N_EMPTY(xpath_content) )){
+		if(xpath_content) g_free(xpath_content);
+		return NULL;
+	}
 	
-	if(xpath_content)
-		g_free(xpath_content);
-	
-	return NULL;
+	return xpath_content;
 }/*parser_get_xpath*/
 
 
@@ -274,6 +276,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	/* Count new tweets */
 	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
+	gboolean	save_oldest_id=FALSE;
 	guint		tweets_parsed=0;
 	gdouble		status_id=0;
 	gdouble		id_newest_update=0, id_oldest_update=0;
@@ -282,20 +285,23 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
-	gint8	has_loaded=tweet_list_has_loaded(tweet_list);
-	if( has_loaded || monitoring==DMs || monitoring==Replies )
-		online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
+	if(!tweet_list_has_loaded(tweet_list)) save_oldest_id=TRUE;
+	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	gdouble	last_notified_update=id_newest_update;
 	id_newest_update=0.0;
 	
 	switch(monitoring){
 		case DMs:
 			debug("Parsing DMs.");
+			if(!id_oldest_update) save_oldest_id=TRUE;
+			else save_oldest_id=FALSE;
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
 			break;
 			
 		case Replies:
 			debug("Parsing Replies.");
+			if(!id_oldest_update) save_oldest_id=TRUE;
+			else save_oldest_id=FALSE;
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
 			break;
 		
@@ -323,7 +329,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	const gint	notify_priority=(monitoring-2)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
-		debug("Failed to parse xml document, timeline: %s.", timeline);
+		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
 		xmlCleanupParser();
 		uber_free(timeline);
 		return tweets_parsed;
@@ -331,7 +337,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
-	const gchar *service_username=online_service_get_username(service);
+	const gchar *service_user_name=online_service_get_user_name(service);
 	gboolean free_status;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
@@ -365,7 +371,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
 		user_status_store(status, tweet_list);
 		
-		if( status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_username) ){
+		if(!save_oldest_id && status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
 			if(notify){
 				free_status=FALSE;
@@ -376,7 +382,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		
 		if(!id_newest_update) id_newest_update=status_id;
 		
-		if( (monitoring!=DMs && monitoring!=Replies) || !(has_loaded && id_oldest_update) )
+		if(save_oldest_id)
 			id_oldest_update=status_id;
 		
 		if(free_status) user_status_free(status);

@@ -23,6 +23,9 @@
 #ifndef __TWEETS_H__
 #define __TWEETS_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>

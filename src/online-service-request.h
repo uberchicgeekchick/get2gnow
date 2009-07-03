@@ -54,6 +54,9 @@
 #ifndef __ONLINE_SERVICE_REQUEST_H__
 #define __ONLINE_SERVICE_REQUEST_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *

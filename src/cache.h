@@ -54,6 +54,9 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -78,6 +81,8 @@
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
+G_BEGIN_DECLS
+
 void cache_init(void);
 void cache_deinit(void);
 
@@ -93,8 +98,9 @@ gboolean cache_save_page(OnlineService *service, SoupMessageBody *page, const gc
 gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...);
 
 gchar *cache_images_get_unknown_image_filename(void);
-gchar *cache_images_get_user_filename(OnlineService *service, const gchar *user_name, const gchar *image_url);
+gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar *user_name, const gchar *image_url);
 
+G_END_DECLS
 #endif /* __CACHE_H__ */
 /**********************************************************************
  *                               eof                                  *

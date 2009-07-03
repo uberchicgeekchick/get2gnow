@@ -54,6 +54,9 @@
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <libsoup/soup.h>
@@ -71,20 +74,25 @@
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
+G_BEGIN_DECLS
+
 gboolean network_check_http(OnlineService *service, SoupMessage *xml);
-void network_set_state_loading_timeline(const gchar *uri, ReloadState state);
 
-void network_post_status(const gchar *text);
-void network_send_message(OnlineService *service, const gchar *friend, const gchar *text);
-
-void network_get_user_timeline(OnlineService *service, const gchar *username);
 
 void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
 void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
+
+void network_post_status(gchar *text);
+void network_send_message(OnlineService *service, const gchar *friend, gchar *text);
+void *network_tweet_cb(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+
+
+void network_set_state_loading_timeline(const gchar *uri, ReloadState state);
 void *network_display_timeline(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
 
+G_END_DECLS
 #endif /*  __NETWORK_H__ */
 /**********************************************************************
  *                               eof                                  *

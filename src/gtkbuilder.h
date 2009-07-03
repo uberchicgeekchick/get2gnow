@@ -19,10 +19,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __GLADE_H__
-#define __GLADE_H__
+#ifndef __GTKBUILDER_H__
+#define __GTKBUILDER_H__
+
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
 #include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 GtkBuilder *gtkbuilder_get_file (const gchar *filename,
                                  const gchar *first_widget,
@@ -33,5 +38,6 @@ void        gtkbuilder_connect  (GtkBuilder  *gui,
                                  gchar       *first_widget,
                                  ...);
 
-#endif /*  __GLADE_H__ */
+G_END_DECLS
+#endif /*  __GTKBUILDER_H__ */
 

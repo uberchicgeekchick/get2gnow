@@ -50,6 +50,9 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************************************
@@ -77,7 +80,6 @@ static gboolean debug_reinit(void);
  *                 prototypes for private method & function                     *
  ********************************************************************************/
 static FILE *debug_log_rotate(void);
-gboolean debug_check_devel(void);
 static void debug_environment_check(void);
 static void debug_domains_check(const gchar *domains);
 
@@ -114,29 +116,33 @@ static guint debug_timeout_id=0;
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
-gboolean debug_check_devel(void){
+gboolean debug_if_devel(void){
+	return debug_devel;
+}/*IF_DEVEL==if(debug_if_devel())*/
+
+gboolean debug_check_devel(const gchar *debug_environmental_value){
 #ifndef GNOME_ENABLE_DEBUG
-	if(!( (g_getenv(debug_environmental_variable)) && (g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_ENABLE_DEBUG" )) ))
+	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
 		return (debug_devel=FALSE);
-	
 	#define GNOME_ENABLE_DEBUG
 	
 #else
-	if( (g_getenv(debug_environmental_variable)) && (g_str_equal( (g_getenv(debug_environmental_variable)), "GNOME_DISABLE_DEBUG" )) )
+	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
 		return (debug_devel=FALSE);
 #endif
 	
 	if(debug_environment) g_strfreev(debug_environment);
+	
 	debug_output=TRUE;
 	all_domains=TRUE;
 	debug_environment=g_strsplit("All", ":", 1);
 	
 	return (debug_devel=TRUE);
-}/*debug_check_devel();*/
+}/*debug_check_devel(g_getenv("GET2GNOW_DEBUG"));*/
 
 void debug_init(void){
-	/*re-checks GET(2GNOW_DEBUG every 6 minutes.*/
-	debug_timeout_id=g_timeout_add(600000, (GSourceFunc)debug_reinit, NULL);
+	/*re-checks GET(2GNOW_DEBUG every 10 minutes.*/
+	debug_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)debug_reinit, NULL);
 	
 	gchar *debug_package=g_utf8_strup(PACKAGE_TARNAME, -1);
 	debug_environmental_variable=g_strdup_printf("%s_DEBUG", debug_package);
@@ -166,30 +172,26 @@ void debug_deinit(void){
 	g_free(debug_environmental_variable);
 	g_strfreev(debug_environment);
 	
-	if(debug_last_domains){
-		g_free(debug_last_domains);
-		g_strfreev(debug_domains);
-	}
+	if(debug_last_domains) g_free(debug_last_domains);
+	if(debug_domains) g_strfreev(debug_domains);
 }/*debug_deinit();*/
 
 static void debug_environment_check(void){
-	if(debug_check_devel()) return;
-	
-	const gchar *env;
-	gint         i;
+	const gchar *debug_environmental_value=g_getenv(debug_environmental_variable);
+	if(debug_check_devel(debug_environmental_value)) return;
 	
 	if(debug_environment) g_strfreev(debug_environment);
-	if(!(env=g_getenv(debug_environmental_variable))){
+	if(!debug_environmental_value){
 		debug_environment=g_strsplit("-", ":", -1);
 		debug_output=FALSE;
 		return;
 	}
 	
-	debug_environment=g_strsplit(env, ":", -1);
+	debug_environment=g_strsplit(debug_environmental_value, ":", -1);
 	debug_output=TRUE;
 	
-	for(i=0; debug_environment && debug_environment[i]; i++)
-		if(!strcasecmp ("All", debug_environment[i]))
+	for(guint i=0; debug_environment[i]; i++)
+		if(!strcasecmp("All", debug_environment[i]))
 			all_domains=TRUE;
 }/*debug_environment_check();*/
 
@@ -238,7 +240,7 @@ void debug_impl(const gchar *domains, const gchar *msg, ...){
 	while(debug_pause){}
 	
 	time_t current_time=time(NULL);
-	gchar *datetime=ctime(&current_time);
+	const gchar *datetime=ctime(&current_time);
 	
 	static gboolean output_started=FALSE;
 	FILE *debug_output_fp=NULL;

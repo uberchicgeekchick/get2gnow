@@ -24,9 +24,16 @@
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 void geometry_load(void);
 void geometry_save(void);
 
+G_END_DECLS
 #endif /* __GEOMETRY_H__ */
+

@@ -54,30 +54,44 @@
 #ifndef __ONLINE_SERVICE_TYPEDEFS_H__
 #define __ONLINE_SERVICE_TYPEDEFS_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
+#include <glib.h>
+#include <libsoup/soup.h>
 #include "timer.h"
 
 
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
-#define API_LOGIN		"/account/verify_credentials.xml"
+G_BEGIN_DECLS
 
-#define API_DIRECT_MESSAGES	"/direct_messages.xml"
-#define API_REPLIES		"/statuses/replies.xml"
-#define API_MENTIONS		"/statuses/mentions.xml"
-#define API_TIMELINE_FRIENDS	"/statuses/friends_timeline.xml"
-#define API_FAVORITES		"/favorites.xml"
 
-#define API_TIMELINE_MINE	"/statuses/user_timeline.xml"
-#define API_TIMELINE_USER	"/statuses/user_timeline/%s.xml"
+#ifndef	soup_message_headers_get_one
+#	define soup_message_headers_get_one	soup_message_headers_get
+#endif
 
-#define API_TIMELINE_PUBLIC	"/statuses/public_timeline.xml"
+#define API_LOGIN				"/account/verify_credentials.xml"
 
-#define API_POST_STATUS		"/statuses/update.xml"
-#define API_SEND_MESSAGE	"/direct_messages/new.xml"
+#define API_DIRECT_MESSAGES			"/direct_messages.xml"
+#define API_REPLIES				"/statuses/replies.xml"
+#define API_MENTIONS				"/statuses/mentions.xml"
+#define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
+#define API_FAVORITES				"/favorites.xml"
+
+#define API_TIMELINE_MINE			"/statuses/user_timeline.xml"
+#define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
+
+#define API_TIMELINE_PUBLIC			"/statuses/public_timeline.xml"
+
+#define API_POST_STATUS				"/statuses/update.xml"
+#define API_SEND_MESSAGE			"/direct_messages/new.xml"
+
+#define	PREFS_TWEET_REPLACE_ME_W_NICK		GCONF_PATH "/tweets/compose/replace_me_w_nick"
 
 
 /**********************************************************************
@@ -96,7 +110,7 @@ typedef enum _RequestMethod RequestMethod;
 typedef enum _UsersGListGetWhich UsersGListGetWhich;
 
 typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
-typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 typedef void (*UsersGListLoadFunc) (GList *users);
 
 
@@ -134,6 +148,7 @@ enum _UsersGListGetWhich{
 };
 
 
+G_END_DECLS
 #endif /* __ONLINE_SERVICE_TYPEDEFS_H__ */
 /**********************************************************************
  *                               eof                                  *

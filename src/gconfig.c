@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <string.h>
 #include <gconf/gconf-client.h>
 
@@ -180,27 +183,68 @@ gboolean gconfig_set_int(const gchar *key, gint value){
 	return success;
 }/*gconfig_get_int(key, int);*/
 
+gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_int){
+	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
+		return cached_int_value;
+	
+	GConfValue *gconf_value=NULL;
+	GError *error=NULL;
+	if( (!(gconf_value=gconf_client_get(gconfig_priv->gconf_client, key, &error))) || error){
+		*value=default_int;
+		if(error){
+			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s.", key, error->message);
+			g_error_free(error);
+			return FALSE;
+		}
+		
+		debug("*NOTICE:* Setting default value for: %s to [%i].", key, default_int);
+		if(!(gconfig_set_int(key, default_int))){
+			debug("**ERROR:** failed to set '%s' to default value: '%i'.", key, default_int);
+			return FALSE;
+		}
+		
+		gconfig_suggest_sync("int", key);
+		uber_free(cached_int_key);
+		cached_int_key=g_strdup(key);
+		cached_int_value=default_int;
+		
+		return FALSE;
+	}
+	
+	if(gconf_value->type!=GCONF_VALUE_INT){
+		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value.", key);
+		*value=default_int;
+	}else{
+		*value=gconf_value_get_int(gconf_value);
+		debug("Retrieved boolean value for %s [%i].", key, *value);
+	}
+	gconf_value_free(gconf_value);
+	
+	uber_free(cached_int_key);
+	cached_int_key=g_strdup(key);
+	cached_int_value=*value;
+	
+	return TRUE;
+}/*gconfig_get_int_or_default(key, default_boolean);*/
+
+
 gboolean gconfig_get_int(const gchar *key, gint *value){
 	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) ){
 		*value=cached_int_value;
 		return TRUE;
 	}
-	GError         *error=NULL;
-	
 	*value=0;
-	
-	g_return_val_if_fail(value != NULL, FALSE);
-	
+	GError         *error=NULL;
 	*value=gconf_client_get_int(gconfig_priv->gconf_client, key, &error);
 	
-	debug("Getting int:'%s'(=%d)", key, *value);
-	
 	if(error){
-		debug("\t\t**ERROR:** %s", error->message);
+		debug("**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
 	
+	debug("Retrieved int:'%s'(=%d)", key, *value);
+		
 	uber_free(cached_int_key);
 	cached_int_key=g_strdup(key);
 	cached_int_value=(*value);
@@ -234,21 +278,21 @@ gboolean gconfig_get_float(const gchar *key, gfloat *value){
 	
 	*value=gconf_client_get_float(gconfig_priv->gconf_client, key, &error);
 	
-	debug("Getting: '%s'(=%f) [type: float]", key, *value);
-	
 	if(error){
 		debug("**ERROR:** failed to load %s.  GConf error: %s", key, error->message);
 		g_error_free(error);
 		return FALSE;
 	}
 	
+	debug("Retrieved: '%s'(=%f) [type: float]", key, *value);
+		
 	uber_free(cached_float_key);
 	cached_float_key=g_strdup(key);
 	cached_float_value=(*value);
 	return TRUE;
 }/*gconfig_get_float(key, &float);*/
 
-gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
+gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
 	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
 		return cached_bool_value;
 	
@@ -258,27 +302,27 @@ gboolean gconfig_if_bool(const gchar *key, gboolean bool_default){
 		if(error){
 			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s.", key, error->message);
 			g_error_free(error);
-			return bool_default;
+			return default_boolean;
 		}
 		
-		debug("*NOTICE:* Setting default value for: %s to [%s].", key, (bool_default ?"TRUE" :"FALSE") );
-		if(!(gconfig_set_bool(key, bool_default))){
-			debug("**ERROR:** failed to set '%s' to default value: '%s'.", key, (bool_default ?"TRUE" :"FALSE"));
-			return bool_default;
+		debug("*NOTICE:* Setting default value for: %s to [%s].", key, (default_boolean ?"TRUE" :"FALSE") );
+		if(!(gconfig_set_bool(key, default_boolean))){
+			debug("**ERROR:** failed to set '%s' to default value: '%s'.", key, (default_boolean ?"TRUE" :"FALSE"));
+			return default_boolean;
 		}
 		
 		gconfig_suggest_sync("bool", key);
 		uber_free(cached_bool_key);
 		cached_bool_key=g_strdup(key);
-		cached_bool_value=bool_default;
+		cached_bool_value=default_boolean;
 		
-		return bool_default;
+		return default_boolean;
 	}
 	
 	gboolean value;
 	if(gconf_value->type!=GCONF_VALUE_BOOL){
 		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value.", key);
-		value=bool_default;
+		value=default_boolean;
 	}else{
 		value=gconf_value_get_bool(gconf_value);
 		debug("Retrieved boolean value for %s [%s].", key, (value ?"TRUE" :"FALSE") );
@@ -320,14 +364,14 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	g_return_val_if_fail(value != NULL, FALSE);
 	*value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
 
-	debug("Getting bool:'%s' to %s(=%d).", key, (*value ? "TRUE" : "FALSE"), *value);
-	
 	if(error) {
-		debug("\t\t**ERROR:** %s", error->message);
+		debug("**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
 
+	debug("Retrieved bool:'%s' to %s(=%d).", key, (*value ? "TRUE" : "FALSE"), *value);
+		
 	return TRUE;
 }/*gconfig_get_bool(key, &boolean);*/
 
@@ -355,18 +399,16 @@ gboolean gconfig_get_string(const gchar *key, gchar **value){
 	}
 	
 	GError         *error=NULL;
-
 	*value=NULL;
-	
 	*value=gconf_client_get_string(gconfig_priv->gconf_client, key, &error);
 
-	debug("Getting string: '%s'(='%s').", key, *value);
-
-	if(error) {
-		debug("\t\t**ERROR:** %s", error->message);
+	if(error){
+		debug("**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
+	
+	debug("Retrieved string: '%s'(='%s').", key, *value);
 	
 	uber_free(cached_string_key);
 	cached_string_key=g_strdup(key);
@@ -400,10 +442,10 @@ static void gconfig_print_list_values(const gchar *key, GSList *value, GConfValu
 			case GCONF_VALUE_STRING:
 			case GCONF_VALUE_INT:
 			case GCONF_VALUE_FLOAT:
-				debug("\t'%s'", (gchar *)l->data);
+				debug("'%s'", (gchar *)l->data);
 				break;
 			case GCONF_VALUE_BOOL:
-				debug("\t'%s'", (g_str_equal( (gchar *)l->data, "true") ?"TRUE" :"FALSE" ));
+				debug("'%s'", (g_str_equal( (gchar *)l->data, "true") ?"TRUE" :"FALSE" ));
 				break;
 			case GCONF_VALUE_INVALID:
 			case GCONF_VALUE_SCHEMA:
@@ -438,13 +480,12 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 	
 	*value=gconf_client_get_list(gconfig_priv->gconf_client, key, list_type, &error);
 	if(error){
-		debug("\t\t**ERROR:** failed to retrieve list: %s, error: %s.", key, error->message);
+		debug("**ERROR:** failed to retrieve list: %s, error: %s.", key, error->message);
 		g_error_free(error);
 		return FALSE;
 	}else IF_DEBUG{
 		debug("Retrieved list:");
 		gconfig_print_list_values(key, *value, list_type);
-		debug("\t)" );
 	}
 	return TRUE;
 }/*gconfig_get_list(key, &list, GCONF_VALUE_STRING);*/

@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************
@@ -250,7 +253,7 @@ static void cache_file_clean_up(const gchar *cache_file){
 	GFile *cache_gfile=g_file_new_for_path(cache_file);
 	GFileInfo *cache_gfileinfo=g_file_query_info(cache_gfile, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE, G_FILE_QUERY_INFO_NONE, NULL, NULL);
 	if(g_file_info_get_attribute_boolean(cache_gfileinfo, G_FILE_ATTRIBUTE_ACCESS_CAN_DELETE)){
-		debug("\t\tCache clean-up, deleting: [%s].", cache_file);
+		debug("Cache clean-up, deleting: [%s].", cache_file);
 		g_remove(cache_file);
 	}
 	g_object_unref(cache_gfile);
@@ -275,17 +278,17 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	gchar	*file=NULL;
 	gchar	*filename=NULL;
 	
-	dir=cache_path_create("services", online_service_get_uri(service), online_service_get_username(service), NULL);
+	dir=cache_path_create("services", online_service_get_uri(service), online_service_get_user_name(service), NULL);
 	
 	va_list cache_subdirs_and_file;
 	va_start(cache_subdirs_and_file, subdir1_or_file);
 	for(cache_subdir_or_file=(gchar *)subdir1_or_file; cache_subdir_or_file; cache_subdir_or_file=va_arg(cache_subdirs_and_file, gchar *)){
-		file=cache_path_create(dir, cache_subdir_or_file, NULL);
-		filename=cache_subdir_or_file;
-		
-		g_free(dir);
-		dir=file;
-		file=cache_path_create(dir, filename, NULL);
+		if(file){
+			g_free(dir);
+			dir=cache_path_create(dir, file, NULL);
+			g_free(file);
+		}
+		file=cache_path_create(dir, cache_subdir_or_file);
 	}
 	va_end(cache_subdirs_and_file);
 	
@@ -306,8 +309,8 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	}
 	
 	debug("Created <%s>'s cache file: %s.", online_service_get_key(service), file);
-	debug("\tDirectory: [%s].", directory);
-	debug("\tFilename: [%s].", filename);
+	debug("Directory: [%s].", directory);
+	debug("Filename: [%s].", filename);
 	
 	uber_free(dir);
 	uber_free(file);
@@ -349,9 +352,9 @@ gchar *cache_images_get_unknown_image_filename(void){
 	return cache_images_get_unknown_image_filename();
 }/*cache_images_get_unknown_image_filename*/
 
-gchar *cache_images_get_user_filename(OnlineService *service, const gchar *user_name, const gchar *image_url){
-	if(G_STR_EMPTY(user_name) || G_STR_EMPTY(image_url)){
-		debug("**ERROR** Unable to parse an empty url into an image filename.");
+gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar *user_name, const gchar *image_url){
+	if(!(G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(image_url) )){
+		debug("**ERROR** Unable to parse an empty url into an image filename.  Attempting to load avatar for user: <%s>; using url: [%s].", user_name, image_url);
 		return cache_images_get_unknown_image_filename();
 	}
 	
@@ -372,7 +375,7 @@ gchar *cache_images_get_user_filename(OnlineService *service, const gchar *user_
 	
 	if(G_STR_EMPTY(image_file)){
 		if(image_file) g_free(image_file);
-		debug("\t\t**WARNING:** Unable to parse url into a valid image filename.\n\t\tURL: [%s]", image_url);
+		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading avatar for user: <%s>; using url: [%s].", user_name, image_url);
 		return cache_images_get_unknown_image_filename();
 	}
 	
@@ -385,14 +388,14 @@ gchar *cache_images_get_user_filename(OnlineService *service, const gchar *user_
 		cache_dir_clean_up(avatar_dir, FALSE);
 	
 	
-	debug("\t\tSetting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
+	debug("Setting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
 	
 	g_free(avatar_path);
 	g_free(avatar_dir);
 	g_free(image_file);
 	
 	return image_filename;
-}/*cache_images_get_filename*/
+}/*cache_images_get_user_avatar_filename(service, user->user_name, user->image_url);*/
 
 
 /********************************************************

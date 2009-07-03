@@ -54,6 +54,9 @@
 #ifndef __ONLINE_SERVICE_WRAPPER_H__
 #define __ONLINE_SERVICE_WRAPPER_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -73,18 +76,25 @@
 /**********************************************************************
  *          Global method & function prototypes                       *
  **********************************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+G_BEGIN_DECLS
 
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, RequestMethod request, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+
+void online_service_wrapper_retry(OnlineServiceWrapper *service_wrapper);
 void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml);
 
-const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper);
 OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *service_wrapper);
+RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *service_wrapper);
+const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper);
+OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(OnlineServiceWrapper *service_wrapper);
+OnlineServiceSoupSessionCallbackFunc online_service_wrapper_get_callback(OnlineServiceWrapper *service_wrapper);
 gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *service_wrapper);
 gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *service_wrapper);
 
 void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper);
 
 
+G_END_DECLS
 #endif /* __ONLINE_SERVICE_WRAPPER_H__ */
 /**********************************************************************
  *                               eof                                  *

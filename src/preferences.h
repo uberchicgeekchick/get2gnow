@@ -27,6 +27,9 @@
 #ifndef __PREFERENCES_H__
 #define __PREFERENCES_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <gtk/gtk.h>
 
@@ -47,7 +50,8 @@ G_BEGIN_DECLS
 #define	PREFS_URLS_EXPAND_DISABLED		GCONF_PATH "/ui/urls/expand/disabled"
 
 #define PREFS_TWEET_VIEW_DIALOG			GCONF_PATH "/ui/tweet_view/use_dialog"
-#define	PREFS_TWEET_LENGTH_ALERT		GCONF_PATH "/tweets/beep/no_length_alert"
+
+#define	PREFS_TWEET_LENGTH_ALERT		GCONF_PATH "/tweets/compose/no_length_beep"
 
 #define	PREFS_TWEETS_HOME_TIMELINE		GCONF_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES		GCONF_PATH "/tweets/reload_timeline"

@@ -51,8 +51,15 @@
 #ifndef __ONLINE_SERVICES_DIALOG_H__
 #define __ONLINE_SERVICES_DIALOG_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 void online_services_dialog_show(GtkWindow *parent);
 
+G_END_DECLS
 #endif /* __ONLINE_SERVICES_DIALOG_H__ */
+

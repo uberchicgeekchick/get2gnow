@@ -54,6 +54,9 @@
 #ifndef __ONLINE_SERVICES_H__
 #define __ONLINE_SERVICES_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -71,6 +74,8 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
+G_BEGIN_DECLS
+
 extern OnlineServices *online_services;
 
 
@@ -83,7 +88,7 @@ gboolean online_services_login(OnlineServices *services);
 gboolean online_services_relogin(OnlineServices *services);
 void online_services_disconnect(OnlineServices *services);
 
-OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *url, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect);
+OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
 void online_services_delete_service(OnlineServices *services, OnlineService *service);
 
 /**
@@ -104,15 +109,20 @@ gint online_services_has_connected(OnlineServices *services, guint count);
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 OnlineService *online_services_connected_get_last(OnlineServices *services);
 
+gssize online_services_get_length_of_longest_user_nick(OnlineServices *services);
+
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
-void online_services_increment_connected(OnlineServices *services);
+void online_services_increment_total(OnlineServices *services, const gchar *service_guid);
+void online_services_decrement_total(OnlineServices *services, const gchar *service_guid);
 
-void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change);
+void online_services_increment_connected(OnlineServices *services, const gchar *service_guid);
+void online_services_decrement_connected(OnlineServices *services, const gchar *service_guid, gboolean no_state_change);
 
 gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only);
 
 void online_services_deinit(OnlineServices *services);
 
+G_END_DECLS
 #endif /* __ONLINE_SERVICES_H__ */
 

@@ -1,6 +1,6 @@
 Summary:	get2gnow's the ultimate micro-blogging client. Letting you get and do the most on all micro-blogging platforms.
-Name:		get2gnow
-Version:	@PACKAGE_VERSION@
+Name:		@PACKAGE_NAME@
+Version:	"@PACKAGE_VERSION@"
 Release:	20090620
 License:	RPL v1.3
 URL:		http://local.uberchicgeekchick.com/?projects=get2gnow
@@ -18,7 +18,7 @@ Requires:	libsexy
 BuildRequires:	libopenssl-devel
 BuildRequires:	libsoup-devel >= @LIBSOUP_MIN_VERSION@
 BuildRequires:	libxml2-devel >= @LIBXML_MIN_VERSION@
-BuildRequires:	glib2-devel >= @GLIB_MIN_VERSION@
+BuildRequires:	glib2-devel
 BuildRequires:	libgio-2_0-0 >= @LIBGIO_MIN_VERSION@
 BuildRequires:	gtk2-devel >= @GTK_MIN_VERSION@
 BuildRequires:	gconf2-devel >= @GCONF_MIN_VERSION@

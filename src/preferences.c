@@ -50,6 +50,9 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************************************
@@ -64,6 +67,7 @@
 #include "gtkbuilder.h"
 
 #include "main.h"
+#include "online-services-typedefs.h"
 #include "main-window.h"
 #include "preferences.h"
 
@@ -72,12 +76,15 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
+static gboolean i_changed_no_profile=FALSE;
+
 #define GtkBuilderUI "preferences.ui"
 
 #define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Settings:Setup:Start-Up:Preferences.c"
 #include "debug.h"
 
 typedef struct _PreferencesDialog PreferencesDialog;
+typedef struct _replace_me_with replace_me_with;
 typedef struct _reload_time reload_time;
 
 struct _PreferencesDialog{
@@ -88,6 +95,7 @@ struct _PreferencesDialog{
 	
 	/* Checkbuttons */
 	GtkCheckButton	*no_length_alert;
+	GtkComboBox	*replace_me_with_combo_box;
 	
 	GtkCheckButton	*notify_dms_check_button;
 	GtkCheckButton	*notify_at_mentions_check_button;
@@ -113,13 +121,25 @@ struct _reload_time{
 	gchar *display_text;
 };
 
-reload_time reload_list[] = {
+reload_time reload_list[]={
 	{5, N_("5 minutes")},
 	{10, N_("10 minutes")},
 	{15, N_("15 minutes")},
 	{30, N_("30 minutes")},
 	{45, N_("45 minutes")},
 	{60, N_("1 hour")},
+	{0, NULL}
+};
+
+struct _replace_me_with{
+	gint value;
+	gchar *display_text;
+};
+
+replace_me_with replace_me_list[]={
+	{2, N_("My user name, i.e. the user name I use login.")},
+	{1, N_("My nick name, i.e. my screen name / full name.")},
+	{-1, N_("Nothing")},
 	{0, NULL}
 };
 
@@ -143,6 +163,9 @@ enum {
  ********************************************************************************/
 static void preferences_setup_widgets(PreferencesDialog *prefs);
 static void preferences_timeline_setup(PreferencesDialog *prefs);
+static void preferences_replace_with_setup(PreferencesDialog *prefs);
+static void preferences_reload_setup(PreferencesDialog *prefs);
+static void preferences_direct_reply_setup(PreferencesDialog *prefs);
 static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs);
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button);
@@ -191,6 +214,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
 	
+	preferences_hookup_int_combo(prefs, PREFS_TWEET_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
+	
 	preferences_hookup_int_combo(prefs, PREFS_TWEETS_RELOAD_TIMELINES, prefs->combo_reload);
 }
 
@@ -201,29 +226,26 @@ static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
 
 static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
 	debug("Saving preference: %s.", key );
-	preferences_widget_sync_string_combo (key, user_data);
+	preferences_widget_sync_string_combo(key, user_data);
 }
 
 static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
 	debug("Saving preference: %s.", key );
-	preferences_widget_sync_int_combo (key, user_data);
+	preferences_widget_sync_int_combo(key, user_data);
 }
 
 static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs){
-	static gboolean change_checked=FALSE, i_changed_no_profile=FALSE;
-	
-	if(!(change_checked)){
-		i_changed_no_profile=!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton));
-		change_checked=TRUE;
-	}
-	
 	if(gtk_toggle_button_get_active(check_button))
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), TRUE);
 	else if(i_changed_no_profile)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), FALSE);
 }/*preferences_direct_reply_toggled*/
 
-static void preferences_timeline_setup (PreferencesDialog *prefs){
+static void preferences_direct_reply_setup(PreferencesDialog *prefs){
+	i_changed_no_profile=!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton));
+}/*preferences_direct_reply_setup(prefs);*/
+
+static void preferences_timeline_setup(PreferencesDialog *prefs){
 	debug("Binding timelines to preference.");
 	static const gchar *timelines[] = {
 		API_TIMELINE_FRIENDS,	N_("My Friends' Updates"),
@@ -247,12 +269,11 @@ static void preferences_timeline_setup (PreferencesDialog *prefs){
 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (prefs->combo_default_timeline),
 									renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
 
-	model = gtk_list_store_new (COL_COMBO_COUNT,
+	model = gtk_list_store_new(COL_COMBO_COUNT,
 								G_TYPE_STRING,
 								G_TYPE_STRING);
 
-	gtk_combo_box_set_model (GTK_COMBO_BOX (prefs->combo_default_timeline),
-							 GTK_TREE_MODEL (model));
+	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_default_timeline), GTK_TREE_MODEL (model));
 
 	for (i = 0; timelines[i]; i += 2) {
 		gtk_list_store_append (model, &iter);
@@ -263,7 +284,36 @@ static void preferences_timeline_setup (PreferencesDialog *prefs){
 	}
 
 	g_object_unref (model);
-}
+}/*static void preferences_timeline_setup(prefs);*/
+
+static void preferences_replace_with_setup(PreferencesDialog *prefs){
+	debug("Setting-up timeline refresh preference.");
+	GtkTreeIter	*iter=NULL;
+	replace_me_with	*options=replace_me_list;
+	
+	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	
+	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_INT, G_TYPE_STRING);
+	
+	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->replace_me_with_combo_box), GTK_TREE_MODEL(list_store));
+	
+	while(options->display_text != NULL) {
+		iter=g_new0(GtkTreeIter, 1);
+		gtk_list_store_append(list_store, iter);
+		gtk_list_store_set(
+					list_store, iter,
+						COL_COMBO_VISIBLE_NAME, _(options->display_text),
+						COL_COMBO_NAME, options->value,
+					-1
+		);
+		options++;
+		uber_free(iter);
+	}
+	
+	g_object_unref(list_store);
+}/*static void preferences_replace_with_setup(prefs);*/
 
 static void preferences_reload_setup(PreferencesDialog *prefs){
 	debug("Setting-up timeline refresh preference.");
@@ -292,7 +342,7 @@ static void preferences_reload_setup(PreferencesDialog *prefs){
 	}
 	
 	g_object_unref(list_store);
-}
+}/*preferences_reload_setup(prefs);*/
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button){
 	gchar *pref_bool_default=(gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default");
@@ -345,42 +395,35 @@ static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox 
 	g_free (value);
 }
 
-static void preferences_widget_sync_int_combo (const gchar *key, GtkComboBox *combo_box){
+static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *combo_box){
 	debug("Binding ComboBox to preference: %s.", key );
 	gint          value;
 	if(!gconfig_get_int(key, &value)) return;
-	GtkTreeModel *model;
-	GtkTreeIter   iter;
-	gboolean      found;
+	GtkTreeModel *model=gtk_combo_box_get_model(combo_box);;
+	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
+	gboolean      found=FALSE;
 	
+	if(gtk_tree_model_get_iter_first(model, iter))
+		gtk_combo_box_set_active_iter (combo_box, iter);
+	g_free(iter);
 	
-	model=gtk_combo_box_get_model(combo_box);
+	if(!value) return;
 	
-	found = FALSE;
-	if (value && gtk_tree_model_get_iter_first (model, &iter)) {
-		gint minutes;
-
-		do {
-			gtk_tree_model_get (model, &iter,
-								COL_COMBO_NAME, &minutes,
-								-1);
-
-			if (minutes == value) {
-				found = TRUE;
-				gtk_combo_box_set_active_iter (combo_box, &iter);
-				break;
-			} else {
-				found = FALSE;
-			}
-
-		} while (gtk_tree_model_iter_next (model, &iter));
-	}
-
-	/* Fallback to the first one. */
-	if (!found) {
-		if (gtk_tree_model_get_iter_first (model, &iter)) {
-			gtk_combo_box_set_active_iter (combo_box, &iter);
+	gint option;
+	while(gtk_tree_model_iter_next(model, iter)){
+		iter=g_new0(GtkTreeIter, 1);
+		gtk_tree_model_get(model, iter,
+					COL_COMBO_NAME, &option,
+				-1
+		);
+		
+		if(option==value) {
+			found=TRUE;
+			gtk_combo_box_set_active_iter(combo_box, iter);
+			g_free(iter);
+			return;
 		}
+		g_free(iter);
 	}
 }
 
@@ -487,12 +530,12 @@ void preferences_dialog_show (GtkWindow *parent){
 	static PreferencesDialog *prefs;
 	GtkBuilder         *ui;
 
-	if (prefs) {
-		gtk_window_present (GTK_WINDOW (prefs->dialog));
+	if(prefs){
+		gtk_window_present(GTK_WINDOW (prefs->dialog));
 		return;
 	}
 
-	prefs=g_new0 (PreferencesDialog, 1);
+	prefs=g_new0(PreferencesDialog, 1);
 
 	/* Get widgets */
 	ui=gtkbuilder_get_file(
@@ -502,6 +545,11 @@ void preferences_dialog_show (GtkWindow *parent){
 					
 					"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
 					
+					"titles_only_checkbutton", &prefs->titles_only_checkbutton,
+					"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
+					"expand_users_checkbutton", &prefs->expand_users_checkbutton,
+					"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
+
 					"combobox_timeline", &prefs->combo_default_timeline,
 					"combobox_reload", &prefs->combo_reload,
 					
@@ -512,14 +560,10 @@ void preferences_dialog_show (GtkWindow *parent){
 					"notify_beep_updates_check_button", &prefs->notify_beep_updates_check_button,
 					
 					"no_length_alert_checkbutton", &prefs->no_length_alert,
+					"replace_me_with_combo_box", &prefs->replace_me_with_combo_box,
 					
-					"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
 					"tweets_no_profile_link_checkbutton", &prefs->tweets_no_profile_link_checkbutton,
-					
-					"titles_only_checkbutton", &prefs->titles_only_checkbutton,
-					"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
-					"expand_users_checkbutton", &prefs->expand_users_checkbutton,
-					"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
+					"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
 				NULL
 	);
 
@@ -533,18 +577,20 @@ void preferences_dialog_show (GtkWindow *parent){
 				NULL
 	);
 
-	g_object_unref (ui);
+	g_object_unref(ui);
 
-	g_object_add_weak_pointer (G_OBJECT (prefs->dialog), (gpointer) &prefs);
-	gtk_window_set_transient_for (GTK_WINDOW (prefs->dialog), parent);
+	g_object_add_weak_pointer(G_OBJECT (prefs->dialog), (gpointer) &prefs);
+	gtk_window_set_transient_for(GTK_WINDOW (prefs->dialog), parent);
 
 	/* Set up the rest of the widget */
-	preferences_timeline_setup (prefs);
-	preferences_reload_setup (prefs);
+	preferences_timeline_setup(prefs);
+	preferences_direct_reply_setup(prefs);
+	preferences_replace_with_setup(prefs);
+	preferences_reload_setup(prefs);
 
-	preferences_setup_widgets (prefs);
+	preferences_setup_widgets(prefs);
 
-	gtk_widget_show (GTK_WIDGET(prefs->dialog));
+	gtk_widget_show(GTK_WIDGET(prefs->dialog));
 }
 
 

@@ -54,14 +54,18 @@
 #ifndef __PROGRAM_H__
 #define __PROGRAM_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <libgnome/libgnome.h>
 
+
+G_BEGIN_DECLS
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
@@ -110,7 +114,7 @@
 /**********************************************************************
  *          Global method  & function prototypes                      *
  **********************************************************************/
-GnomeProgram *program_init(int argc, char **argv);
+gboolean program_init(int argc, char **argv);
 
 const gchar *program_gtk_response_to_string(gint response);
 
@@ -124,6 +128,8 @@ void program_timeout_remove(guint *id, const gchar *usage);
 void get2gnow_program_deinit(void);
 void program_deinit(void);
 
+
+G_END_DECLS
 #endif /* __PROGRAM_H__ */
 /**********************************************************************
  *                               eof                                  *

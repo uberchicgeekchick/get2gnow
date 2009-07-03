@@ -54,6 +54,9 @@
 #ifndef __USERS_GLISTS_H__
 #define __USERS_GLISTS_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -67,6 +70,8 @@
 /**********************************************************************
  *  Methods, macros, constants, objects, structs, and enum typedefs   *
  **********************************************************************/
+G_BEGIN_DECLS
+
 #define usrglistscasecmp	users_glists_sort_by_user_name
 #define	usrglistscmp		users_glists_sort_by_user_name
 
@@ -80,7 +85,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
 
-int users_glists_sort_by_user_name(User *a, User *b);
+int users_glists_sort_by_user_name(User *user1, User *user2);
 
 void users_glists_append_friend(OnlineService *service, User *user);
 void users_glists_remove_friend(OnlineService *service, User *user);
@@ -90,6 +95,7 @@ void users_glists_remove_follower(OnlineService *service, User *user);
 void users_glists_free_lists(OnlineService *service);
 
 
+G_END_DECLS
 #endif /* __USERS_GLISTS_H__ */
 /**********************************************************************
  *                               eof                                  *

@@ -54,6 +54,9 @@
 #ifndef __PROXY_H__
 #define __PROXY_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
@@ -65,6 +68,8 @@
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
+G_BEGIN_DECLS
+
 typedef enum{
 	PROXY_STATUS_DISABLED	=	-1,
 	PROXY_STATUS_UNKNOWN	=	0,
@@ -78,6 +83,7 @@ gboolean proxy_init(void);
 gboolean proxy_attach_online_service(OnlineService *service);
 void proxy_deinit(void);
 
+G_END_DECLS
 #endif /* __PROXY_H__ */
 /**********************************************************************
  *                               eof                                  *

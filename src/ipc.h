@@ -52,6 +52,9 @@
 #ifndef __IPC_H__
 #define __IPC_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 
 G_BEGIN_DECLS
@@ -60,5 +63,5 @@ gboolean ipc_init_check( int argc, char **argv );
 void ipc_deinit( void );
 
 G_END_DECLS
+#endif /* __IPC_H__ */
 
-#endif

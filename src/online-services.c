@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 
@@ -69,21 +72,12 @@
 #include "config.h"
 #include "main.h"
 
-#include "online-service-request.h"
-#include "online-service.h"
+#include "online-services-typedefs.h"
 #include "online-services.h"
-#include "network.h"
-
-#include "tweet-list.h"
-#include "tweets.h"
-#include "users.h"
-
-#include "parser.h"
+#include "online-service.h"
 
 #include "main-window.h"
 #include "gconfig.h"
-#include "cache.h"
-#include "preferences.h"
 #include "online-services-dialog.h"
 
 
@@ -110,6 +104,7 @@ static gint online_services_cmp_count(guint compare, guint count);
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
+static gint longest_user_nick_length=0;
 static OnlineServices *services=NULL;
 OnlineServices *online_services=NULL;
 
@@ -220,17 +215,17 @@ static gint online_services_cmp_count(guint compare, guint count){
 	return 1;
 }/*online_services_has_connected(services, >1);*/
 
-OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, gboolean enabled, const gchar *uri, gboolean https, const gchar *username, const gchar *password, gboolean auto_connect){
-	if( G_STR_EMPTY(uri) || G_STR_EMPTY(username) )
+OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect){
+	if( G_STR_EMPTY(uri) || G_STR_EMPTY(user_name) )
 		return FALSE;
 	
-	gchar *decoded_key=g_strdup_printf("%s@%s", username, uri);
+	gchar *decoded_key=g_strdup_printf("%s@%s", user_name, uri);
 	if(service){
 		if(!(online_service_validate_key(service, decoded_key)))
 			online_services_delete_service(services, service);
 		else{
 			debug("Saving existing service: '%s'.", decoded_key);
-			if( (online_service_save(service, enabled, https, password, auto_connect)) )
+			if( (online_service_save(service, password, enabled, https, auto_connect)) )
 				if(online_service_reconnect(service))
 					return service;
 			debug("Unable to save existing OnlineService for: [%s].", decoded_key);
@@ -239,8 +234,10 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 		}
 	}
 	
+	longest_user_nick_length=0;
+	
 	debug("Creating & saving new service: '%s'.", decoded_key);
-	service=online_service_new(enabled, uri, https, username, password, auto_connect);
+	service=online_service_new(uri, user_name, password, enabled, https, auto_connect);
 	debug("New OnlineService '%s' created.  Saving OnlineServices", decoded_key);
 	
 	services->total++;
@@ -273,7 +270,7 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 	services->accounts=g_list_first(services->accounts);
 	
 	debug("Saving OnlineService: '%s' reloaded from OnlineServices accounts.", decoded_key);
-	if(!( online_service_save(service, enabled, https, password, auto_connect) )){
+	if(!( online_service_save(service, password, enabled, https, auto_connect) )){
 		debug("**ERROR**: Failed saving new service: '%s'.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
@@ -344,6 +341,7 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 		main_window_state_on_connection(FALSE);
 		online_services_dialog_show(main_window_get_window());
 	}
+	longest_user_nick_length=0;
 }/*online_services_delete(services, service);*/
 
 static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store){
@@ -421,6 +419,23 @@ OnlineService *online_services_connected_get_last(OnlineServices *services){
 	return service;
 }/*online_services_connected_get_last(online_services);*/
 
+gssize online_services_get_length_of_longest_user_nick(OnlineServices *services){
+	GList		*a=NULL;
+	OnlineService	*service=NULL;
+	gssize		user_nick_length=0;
+	
+	/*if(!longest_user_nick_length){*/
+		for(a=services->accounts; a; a=a->next){
+			service=(OnlineService *)a->data;
+			if(online_service_is_connected(service))
+				if( (user_nick_length=strlen(online_service_get_user_nick(service))) > longest_user_nick_length)
+					longest_user_nick_length=user_nick_length;
+		}
+	/*}*/
+	
+	return longest_user_nick_length;
+}/*online_services_get_length_of_longest_user_nick(online_services);*/
+
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	GList		*a=NULL;
@@ -439,15 +454,30 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 	}
 }/*online_services_request*/
 
-void online_services_increment_connected(OnlineServices *services){
+void online_services_increment_total(OnlineServices *services, const gchar *service_guid){
+	services->total++;
+	debug("OnlineServices has enabled the OnlineService: <%s>.  Total services: #%d.", service_guid, services->total);
+}/*online_services_increment_total(online_services);*/
+
+void online_services_decrement_total(OnlineServices *services, const gchar *service_guid){
+	if(services->total) services->total--;
+	
+	debug("OnlineServices has had OnlineService: <%s> removed.  Remaining services: #%d.", service_guid, services->total);
+	if(services->total) return;
+	
+	main_window_state_on_connection(FALSE);
+	online_services_dialog_show(main_window_get_window());
+}/*online_services_decrement_total(online_services);*/
+
+void online_services_increment_connected(OnlineServices *services, const gchar *service_guid){
 	services->connected++;
-	debug("OnlineServices has a new connections.  Total connected: #%d.", services->connected);
+	debug("OnlineServices has connected to OnlineService: <%s>.  Total connected: #%d.", service_guid, services->connected);
 }/*online_services_increment_connected(online_services);*/
 
-void online_services_decrement_connected(OnlineServices *services, gboolean no_state_change){
+void online_services_decrement_connected(OnlineServices *services, const gchar *service_guid, gboolean no_state_change){
 	if(services->connected) services->connected--;
 	
-	debug("OnlineServices still connected: #%d.", services->connected);
+	debug("OnlineServices has disconnected from OnlineService: <%s>.  Remaining connections: #%d.", service_guid, services->connected);
 	if(services->connected) return;
 	
 	main_window_state_on_connection(FALSE);

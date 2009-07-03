@@ -3,43 +3,58 @@ desktop_in_files = get2gnow.desktop.in
 desktop_DATA 	 = $(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
+
+
 schemasdir	 = $(GCONF_SCHEMA_FILE_DIR)
 schemas_in_files = get2gnow.schemas.in
 schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 @INTLTOOL_SCHEMAS_RULE@
 
-gtkbuilderdir = $(datadir)/get2gnow
-gtkbuilder_DATA = 				\
-	online-services-dialog.ui		\
-	following-viewer.ui			\
-	friends-manager.ui			\
-	main-window.ui				\
-	tweet-view.ui				\
-	online-services-request-popup.ui	\
-	preferences.ui				\
-	user-profile-viewer.ui
 
-tweet_list_DATA = tweet-list.ui
-tweet_list_in_DATA = tweet-list.in.ui
+
+gtkbuilderdir = $(datadir)/get2gnow
+gtkbuilder_DATA =		 				\
+			online-services-dialog.ui		\
+			main-window.ui				\
+			tweet-view.ui				\
+			online-services-request-popup.ui	\
+			preferences.ui				\
+			user-profile-viewer.ui
+
+sexy_DATA =							\
+			tweet-list.ui				\
+			friends-manager.ui			\
+			following-viewer.ui
+
+un_sexy_DATA =							\
+			tweet-list.ui.in.ui			\
+			friends-manager.ui.ui			\
+			following-viewer.ui.ui
+
+tweet-list.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! tweet-list.ui' 'tweet-list.in.ui';
+friends-manager.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! friends-manager.ui' 'friends-manager.in.ui';
+following-viewer.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! following-viewer.ui' 'following-viewer.in.ui';
+sexy_DATA: $(un_sexy_DATA)
 
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = get2gnow.svg
-	
-EXTRA_DIST =			\
-	$(tweet_list_DATA)	\
-	$(gtkbuilder_DATA)	\
-	$(svgicon_DATA)		\
-	$(desktop_in_files)	\
-	$(schemas_in_files)
-	
-DISTCLEANFILES =		\
-	$(tweet_list_DATA)	\
-	$(desktop_DATA)		\
-	$(schemas_DATA)
 
+EXTRA_DIST =							\
+			$(sexy_DATA)				\
+			$(gtkbuilder_DATA)			\
+			$(svgicon_DATA)				\
+			$(desktop_in_files)			\
+			$(schemas_in_files)
+	
 
-tweet-list.ui: $(tweet_list_in_DATA)
-	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! $(top_builddir)/data/$(tweet_list_DATA)' '$(top_builddir)/data/$(tweet_list_in_DATA)'
+DISTCLEANFILES =						\
+			$(sexy_DATA)				\
+			$(desktop_DATA)				\
+			$(schemas_DATA)
+
 
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 

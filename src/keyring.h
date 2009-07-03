@@ -24,6 +24,9 @@
 #ifndef __KEYRING_H__
 #define __KEYRING_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include "online-services.h"
 
@@ -34,5 +37,5 @@ gboolean keyring_get_password(OnlineService *service, gchar **password);
 gboolean keyring_set_password(OnlineService *service, gchar *password);
 
 G_END_DECLS
-
 #endif /* __KEYRING_H__ */
+

@@ -50,6 +50,9 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************************************
@@ -277,7 +280,6 @@ TweetList *tweet_list_new(const gchar *timeline){
 	tweet_list_start(tweet_list);
 	
 	gtk_widget_show_all(GTK_WIDGET(GET_PRIVATE(tweet_list)->vbox));
-	gtk_widget_show_all(GTK_WIDGET(tweet_list));
 	
 	tweet_list=g_object_ref_sink(tweet_list);
 	
@@ -390,7 +392,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	
 	if(gtk_progress_bar_get_fraction(this->progress_bar)==0.0){
 		this->minutes=0;
-		this->reload=this->monitoring*5000;
+		this->reload=(this->monitoring+this->page+1)*5000;
 		return 0.0;
 	}
 	
@@ -471,7 +473,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		max_updates=this->maximum;
 	else if(max_updates < this->minimum)
 		max_updates=this->minimum;
-	if(this->total <= max_updates)	return;
+	if(this->total < max_updates)	return;
 	
 	debug("Cleaning up TweetList for %s.  Total updates in TweetList: %d.  Maximum allowed updates: %f", this->timeline, this->total, max_updates);
 	for(gint i=this->total; i>max_updates; i--){
@@ -481,6 +483,10 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
 		else{
 			debug("Removing iter at index: %d", i);
+			if(i==this->index){
+				debug("Moving focus to TweetList's top since the iter being removed was currently selected.");
+				tweet_list_scroll_to_top(tweet_list);
+			}
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
 		}
@@ -548,7 +554,6 @@ void tweet_list_complete(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->connected_online_services)	return;
-	tweet_list_scroll_to_top(tweet_list);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*tweet_list_complete(tweet_list);*/
 
@@ -632,8 +637,7 @@ guint tweet_list_increment(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gtk_progress_bar_pulse(this->progress_bar);
-	this->total++;
-	return (this->total-1);
+	return (this->total++);
 }/*tweet_list_increment(tweet_list);*/
 
 static void tweet_list_setup(TweetList *tweet_list){
@@ -795,6 +799,7 @@ static void tweet_list_scroll_to_top(TweetList *tweet_list){
 	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total ))
 		return;
 	
+	this->index=0;
 	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
 	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)))
 		gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
@@ -808,7 +813,7 @@ static void tweet_list_clear(TweetList *tweet_list){
 	debug("Re-setting tweet_list_index.");
 	gtk_list_store_clear(this->list_store);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
-	this->has_loaded=-1;
+	this->has_loaded=0;
 	this->index=0;
 	this->total=0;
 }/*tweet_list_clear(tweet_list);*/
@@ -876,10 +881,11 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(this->tree_model_sort), iter,
+					GUINT_TWEET_LIST_INDEX, &this->index,
 					GDOUBLE_TWEET_ID, &tweet_id,
 					GDOUBLE_USER_ID, &user_id,
 					STRING_NICK, &user_nick,
-					STRING_TWEET, &text_tweet,
+					STRING_TEXT, &text_tweet,
 					STRING_SEXY_TWEET, &sexy_tweet,
 					STRING_CREATED_AGO, &date,
 					STRING_USER, &user_name,
@@ -888,7 +894,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 				-1
 	);
 	
-	debug("Displaying tweet: #%f from '%s'.", tweet_id, online_service_get_key(service));
+	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, online_service_get_guid(service));
 	tweet_view_show_tweet(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	
 	g_free(user_name);

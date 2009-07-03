@@ -21,6 +21,9 @@
  *
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include "config.h"
 
 #include <glib.h>
@@ -48,6 +51,7 @@ static void label_init(Label *label);
 static void label_finalize(GObject *object);
 
 static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer user_data);
+static gssize find_first_non_user_name(const gchar *str);
 static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_url_prefix, gchar *users_at, gboolean expand_profiles, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean titles_strip_uris);
 static gchar *label_find_user_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean include_uris);
@@ -132,7 +136,7 @@ static gboolean url_check_word (char *word, int len){
 	return FALSE;
 }
 
-static gssize find_first_non_username(const gchar *str){
+static gssize find_first_non_user_name(const gchar *str){
 	gssize i;
 
 	for (i = 0; str[i]; ++i) {
@@ -176,7 +180,7 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 	gssize end;
 	gchar delim;
 	
-	if( (end=( find_first_non_username(&users_at[1])+1 ) )){
+	if( (end=( find_first_non_user_name(&users_at[1])+1 ) )){
 		delim=users_at[end];
 		users_at[end]='\0';
 	}
@@ -250,14 +254,15 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	
 	
 	main_window_statusbar_printf("Please wait while %s's title is found.", uri);
+	debug("Attempting to determine content-type for: %s.", uri);
 	if(!(content_type=online_service_get_uri_content_type(service, uri, &msg))){
-		debug("\t\tUnable to determine the content-type from uri: '%s'.", uri);
+		debug("Unable to determine the content-type from uri: '%s'.", uri);
 		return temp;
 	}
 	
 	
 	if(!g_str_equal(content_type, "text/html")){
-		debug("\t\tNon-XHTML content-type from uri: '%s'.", uri);
+		debug("Non-XHTML content-type from uri: '%s'.", uri);
 		g_free(content_type);
 		return temp;
 	}
@@ -275,7 +280,7 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	escaped_title=parser_escape_text(uri_title);
 	g_free(uri_title);
 	
-	debug("Attempting to display link info.\n\t\t\ttitle: %s\n\t\t\tfor uri: '%s'.", escaped_title, uri);
+	debug("Attempting to display link info. title: %s for uri: '%s'.", escaped_title, uri);
 	gchar *hyperlink_suffix=NULL;
 	if(include_uris)
 		hyperlink_suffix=g_strdup_printf(" &lt;- %s", uri);

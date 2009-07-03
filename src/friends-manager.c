@@ -47,6 +47,9 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 #include "config.h"
 
@@ -289,7 +292,7 @@ void friends_manager_display_following_and_followers(GList *friends_and_follower
 					friends_manager->friends_manager_liststore,
 					iter,
 						USER_NAME, user_get_user_name(user1),
-						USER_NICK, user_get_nick_name(user1),
+						USER_NICK, user_get_user_nick(user1),
 						FOLLOWING, (following_too?"Yes":"No"),
 						FOLLOWER, (follower_too?"Yes":"No"),
 						USER_POINTER, user1,

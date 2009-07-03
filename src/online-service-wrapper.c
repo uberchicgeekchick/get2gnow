@@ -51,6 +51,9 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 
 
 /********************************************************
@@ -85,6 +88,7 @@ typedef enum{
 
 struct _OnlineServiceWrapper {
 	OnlineService						*service;
+	RequestMethod						request_method;
 	gchar							*requested_uri;
 	OnlineServiceSoupSessionCallbackReturnProcessorFunc	online_service_soup_session_callback_return_processor_func;
 	OnlineServiceSoupSessionCallbackFunc			callback;
@@ -103,11 +107,13 @@ static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *ser
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, RequestMethod request, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+	if(callback==NULL) return NULL;
+	
 	OnlineServiceWrapper *service_wrapper=g_new0(OnlineServiceWrapper, 1);
 	
 	service_wrapper->service=service;
-	
+	service_wrapper->request_method=request;
 	service_wrapper->requested_uri=g_strdup(request_uri);
 	
 	if(online_service_soup_session_callback_return_processor_func!=NULL)
@@ -120,12 +126,7 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const g
 	service_wrapper->user_data=user_data;
 	service_wrapper->form_data=form_data;
 	
-	if(callback!=NULL)
-		service_wrapper->can_run=TRUE;
-	else{
-		service_wrapper->can_run=FALSE;
-		return service_wrapper;
-	}
+	service_wrapper->can_run=TRUE;
 	
 	online_service_wrapper_user_data_processor(service_wrapper, DataSet);
 	
@@ -137,8 +138,6 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, const g
 static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(
 		service_wrapper->user_data!=NULL
-		&&
-		service_wrapper->callback!=NULL
 		&&
 		service_wrapper->callback!=online_service_callback
 		&&
@@ -158,8 +157,6 @@ static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *ser
 
 static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(
-		service_wrapper->callback!=NULL
-		&&
 		service_wrapper->form_data!=NULL
 		&&
 		service_wrapper->callback!=network_display_timeline
@@ -185,6 +182,17 @@ static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceW
 	}
 }/*online_service_wrapper_data_processor(&data, DataSet|DataFree);*/
 
+void online_service_wrapper_retry(OnlineServiceWrapper *service_wrapper){
+	online_service_request(
+				service_wrapper->service,
+				service_wrapper->request_method,
+				service_wrapper->requested_uri,
+				service_wrapper->online_service_soup_session_callback_return_processor_func,
+				service_wrapper->callback,
+				service_wrapper->user_data,
+				service_wrapper->form_data
+	);
+}/*void online_service_wrapper_retry(service_wrapper);*/
 
 void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml){
 	if(!(service_wrapper->callback && service_wrapper->can_run)) return;
@@ -192,15 +200,32 @@ void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSessi
 	service_wrapper->online_service_soup_session_callback_return_processor_func( service_wrapper, (service_wrapper->callback(session, xml, service_wrapper)) );
 }/*online_service_wrapper_run*/
 
+OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *service_wrapper){
+	if(!service_wrapper) return NULL;
+	return service_wrapper->service;
+}/*online_service_wrapper_get_online_service(service_wrapper);*/
+
+RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *service_wrapper){
+	if(!service_wrapper) return QUEUE;
+	return service_wrapper->request_method;
+}/*RequestMethod online_service_wrapper_get_requested_method(service_wrapper);*/
+
 const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper){
 	if(!service_wrapper) return NULL;
 	return service_wrapper->requested_uri;
 }/*online_service_wrapper_get_requested_uri(service_wrapper);*/
 
-OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return NULL;
-	return service_wrapper->service;
-}/*online_service_wrapper_get_online_service(service_wrapper);*/
+OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(OnlineServiceWrapper *service_wrapper){
+	if(!service_wrapper && service_wrapper->can_run) return NULL;
+	return service_wrapper->online_service_soup_session_callback_return_processor_func;
+}/*online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(service_wrapper);*/
+
+
+OnlineServiceSoupSessionCallbackFunc online_service_wrapper_get_callback(OnlineServiceWrapper *service_wrapper){
+	if(!service_wrapper && service_wrapper->can_run) return NULL;
+	return service_wrapper->callback;
+}/*online_service_wrapper_get_callback(service_wrapper);*/
+
 
 gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *service_wrapper){
 	if(!service_wrapper) return NULL;

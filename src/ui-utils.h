@@ -21,13 +21,17 @@
 #ifndef __UI_UTILS_H__
 #define __UI_UTILS_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <gtk/gtk.h>
 
-/* Windows */
-gboolean     window_get_is_visible          (GtkWindow        *window);
-gboolean     window_get_is_present          (GtkWindow        *window);
-void         window_present                 (GtkWindow        *window,
-													gboolean          steal_focus);
-void         help_show                      (GtkWindow        *parent);
+G_BEGIN_DECLS
 
+gboolean window_get_is_visible(GtkWindow *window);
+gboolean window_get_is_present(GtkWindow *window);
+void window_present(GtkWindow *window, gboolean steal_focus);
+void help_show(GtkWindow *parent);
+
+G_END_DECLS
 #endif /*  __UI_UTILS_H__ */

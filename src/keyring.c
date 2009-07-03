@@ -21,6 +21,9 @@
  *
  */
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include "config.h"
 
 #include <gnome-keyring.h>
@@ -69,10 +72,12 @@ gboolean keyring_get_password(OnlineService *service, gchar **password){
 	GnomeKeyringResult               result;
 	GList                           *passwords;
 	
+	const gchar *service_key=online_service_get_key(service), *service_uri=online_service_get_uri(service), *service_user_name=online_service_get_user_name(service);
+	
 	result=gnome_keyring_find_network_password_sync(
-							online_service_get_username(service),       /* User */
+							service_user_name,       /* User */
 								DOMAIN,           /* Domain */
-								online_service_get_uri(service), /* Server */
+								service_uri, /* Server */
 								NULL,           /* Object */
 								NULL,           /* Protocol */
 								NULL,           /* Authentication Type */
@@ -93,31 +98,31 @@ gboolean keyring_get_password(OnlineService *service, gchar **password){
 	data=passwords->data;
 	GList *p=NULL;
 	*password=g_strdup(data->password);
-	IF_DEBUG{
-		debug("Password(s) found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", online_service_get_key(service), online_service_get_uri(service), online_service_get_username(service), *password );
-		debug("Passwords found: (=");
-		for(p=passwords; p; p=p->next){
-			data=(GnomeKeyringNetworkPasswordData *)p->data;
-			debug("\t'%s'", (gchar *)data->password);
-		}
-		debug(")");
+	debug("Password(s) found for OnlineService: '%s'.  Server: %s; Username: '%s'; Password: %s.", service_key, service_uri, service_user_name, *password );
+	debug("Passwords found: (=");
+	for(p=passwords; p; p=p->next){
+		data=(GnomeKeyringNetworkPasswordData *)p->data;
+		debug("\t'%s'", (gchar *)data->password);
 	}
+	debug(")");
 	
 	g_list_foreach(passwords, (GFunc)g_free, NULL);
 	g_list_free(passwords);
 	
 	return TRUE;
-}
+}/*keyring_get_password(service, &password);*/
 
 gboolean keyring_set_password(OnlineService *service, gchar *password){
 	GnomeKeyringResult result;
 	guint              id;
+	
+	const gchar *service_key=online_service_get_key(service), *service_uri=online_service_get_uri(service), *service_user_name=online_service_get_user_name(service);
 
 	result = gnome_keyring_set_network_password_sync(
 								NULL,            /* Keyring */
-								online_service_get_username(service),        /* User */
+								service_user_name,        /* User */
 								DOMAIN,            /* Domain */
-								online_service_get_uri(service),  /* Server */
+								service_uri,  /* Server */
 								NULL,            /* Object */
 								NULL,            /* Protocol */
 								NULL,            /* Authentication Type */
@@ -128,10 +133,9 @@ gboolean keyring_set_password(OnlineService *service, gchar *password){
 
 	if (result != GNOME_KEYRING_RESULT_OK) {
 		debug("Could not set password to keyring, result: %d->'%s'", result, account_gnome_keyring_result_to_string(result));
-
 		return FALSE;
 	}
 
-	debug("Password found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", online_service_get_key(service), online_service_get_uri(service), online_service_get_username(service), password );
+	debug("Password found for OnlineService: '%s'.\n\t\tServer: %s; Username: '%s'; Password: %s.", service_key, service_uri, service_user_name, password);
 	return TRUE;
-}
+}/*keyring_set_password(service, password);*/

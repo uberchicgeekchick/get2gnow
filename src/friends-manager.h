@@ -21,10 +21,17 @@
 #ifndef __FRIENDS_MANAGER_H__
 #define __FRIENDS_MANAGER_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
 #include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 void friends_manager_show(GtkWindow *parent);
 void friends_manager_display_following_and_followers(GList *friends_and_followers);
 
+G_END_DECLS
 #endif /* __FRIENDS_MANAGER_H__ */
+

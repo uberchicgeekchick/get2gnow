@@ -23,14 +23,23 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
 #include <glib.h>
+#include <gtk/gtk.h>
+#include <libgnome/libgnome.h>
+#include <libgnomeui/libgnomeui.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "config.h"
 #include "program.h"
 
+
+
 G_BEGIN_DECLS
 
-/* GConf Keys */
+
 #ifndef GCONF_PATH
 #	if defined GNOME_ENABLE_DEBUG
 #		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME "/debug"
@@ -50,6 +59,13 @@ G_BEGIN_DECLS
 #define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
 #endif
 
+#ifndef uber_free
+#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
+#endif
+
+#ifndef g_str_n_equal
+#	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
+#endif
 
 #ifndef uber_unref
 #define		uber_unref(object)			{ g_object_unref(object); object=NULL; }
@@ -62,5 +78,5 @@ G_BEGIN_DECLS
 
 
 G_END_DECLS
-
 #endif /* _MAIN_H_ */
+

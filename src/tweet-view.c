@@ -51,7 +51,8 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
-
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
 
 /********************************************************
@@ -187,7 +188,7 @@ static void tweet_view_selected_tweet_buttons_show(gboolean selected_tweet);
 
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
 
-static void tweet_view_sexy_send(gpointer service, gpointer user_data);
+static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name);
 
 static void tweet_view_dm_show(GtkToggleButton *toggle_button);
 static void tweet_view_dm_form_activate(gboolean dm_activate);
@@ -550,21 +551,21 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 	tweet_view_selected_tweet_buttons_show( (id ?TRUE :FALSE ) );
 	
 	const gchar *service_uri=online_service_get_uri(service);
-	const gchar *service_key=online_service_get_key(service);
-	const gchar *service_username=online_service_get_username(service);
-	
+	const gchar *service_user_name=online_service_get_user_name(service);
+	const gchar *service_user_nick=online_service_get_user_nick(service);
+
 	gchar *sexy_text=NULL;
 	if(!id)
 		sexy_text=g_strdup("");
 	else
-		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: [<a href=\"https://%s/%s\">%s</a>]</span>", service_uri, service_username, service_key);
+		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"https://%s/%s\">&lt;@%s on %s&gt;</a></span>", service_user_nick, service_uri, service_user_name, service_user_name, service_uri);
 	debug("Setting 'sexy_to' for 'selected_tweet':\n\t\t%s.", sexy_text);
 	label_set_text(service, tweet_view->sexy_to, sexy_text, FALSE, TRUE);
 	g_free(sexy_text);
 	
 	
 	if(!( G_STR_EMPTY(user_nick) && G_STR_EMPTY(user_name) ))
-		sexy_text=g_strdup_printf("<b>From: %s &lt; @%s on <a href=\"http://%s/%s\">%s</a> &gt;</b>", user_nick, user_name, service_uri, user_name, service_uri);
+		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"https://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, service_uri, user_name, user_name, service_uri);
 	else
 		sexy_text=g_strdup("");
 	debug("Setting 'sexy_from' for 'selected_tweet':\n\t\t%s.", sexy_text);
@@ -606,10 +607,20 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 
 static gshort tweetlen(gchar *tweet){
 	gushort character_count=0;
+	gushort me_match=0;
 	while(*tweet){
 		unsigned char l=*tweet++;
 		if(l=='<' || l=='>')
 			character_count+=3;
+		else if( l=='/')
+			me_match=1;
+		else if(l=='m' && me_match==1)
+			me_match=2;
+		else if(l=='e' && me_match==2)
+			character_count+=online_services_get_length_of_longest_user_nick(online_services)-1;
+		else if(me_match)
+			me_match=0;
+		
 		character_count++;
 	}
 	
@@ -699,7 +710,7 @@ void tweet_view_send(GtkWidget *activated_widget){
 	}
 	
 	if( activated_widget==GTK_WIDGET(tweet_view->sexy_dm) )
-		tweet_view_sexy_send(selected_tweet_get_service(), selected_tweet_get_user_name() );
+		tweet_view_sexy_send_dm();
 	
 	else if( (activated_widget==GTK_WIDGET(tweet_view->followers_send_dm)) && (GTK_WIDGET_IS_SENSITIVE(tweet_view->followers_combo_box)) && (user_name=gtk_combo_box_get_active_text(tweet_view->followers_combo_box)) ){
 		uber_free(user_name);
@@ -712,28 +723,25 @@ void tweet_view_send(GtkWidget *activated_widget){
 						USER_POINTER, &user,
 					-1
 		);
-		tweet_view_sexy_send(user_get_online_service(user), (gpointer)user_get_user_name(user));
+		tweet_view_sexy_send(user_get_online_service(user), user_get_user_name(user));
 		g_free(iter);
 		gtk_combo_box_set_active(tweet_view->followers_combo_box, 0);
 	}else
 		tweet_view_sexy_send(NULL, NULL);
 }/*tweet_view_send*/
 	
-static void tweet_view_sexy_send(gpointer service, gpointer user_data){
+static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name){
 	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) <= TWEET_MAX_CHARS) )){
 		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
 			gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
 		return;
 	}
 	
-	gchar *tweet=g_uri_escape_string(GTK_ENTRY(tweet_view->sexy_entry)->text, NULL, TRUE);
-	const gchar *user_name=(const gchar *)user_data;
-	if(G_STR_EMPTY(user_name))
-		network_post_status(tweet);
+	if(!(service && user_name && G_STR_N_EMPTY(user_name) ))
+		network_post_status(GTK_ENTRY(tweet_view->sexy_entry)->text);
 	else
-		network_send_message((OnlineService *)service, user_name, (const gchar *)tweet);
+		network_send_message(service, user_name, GTK_ENTRY(tweet_view->sexy_entry)->text);
 	
-	g_free(tweet);
 	tweet_view_sexy_set((gchar *)"");
 }/*tweet_view_sexy_send(selected_tweet_get_service(), selected_tweet_get_user_name() );*/
 
@@ -802,7 +810,7 @@ void tweet_view_dm_data_fill(GList *followers){
 			gtk_label_set_use_underline(tweet_view->dm_frame_label, TRUE);
 			gtk_label_set_single_line_mode(tweet_view->dm_frame_label, TRUE);
 		}
-		gchar *user_label=g_strdup_printf("%s <%s>", user_get_user_name(user), user_get_nick_name(user));
+		gchar *user_label=g_strdup_printf("%s <%s>", user_get_user_name(user), user_get_user_nick(user));
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(tweet_view->followers_list_store, iter);
 		gtk_list_store_set(

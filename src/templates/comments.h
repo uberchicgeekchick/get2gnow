@@ -54,7 +54,11 @@
 #ifndef	__HEADER_H__
 #define	__HEADER_H__
 
-#define	_XOPEN_SOURCE
+#define _GNU_SOURCE
+#define _THREAD_SAFE
+
+#include <glib.h>
+#include <gtk/gtk.h>
 
 
 /********************************************************************************
