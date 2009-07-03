@@ -1,0 +1,592 @@
+<gconfschemafile>
+	<schemalist>
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/accounts</key>
+			<applyto>/apps/get2gnow/auth/accounts</applyto>
+			<owner>get2gnow</owner>
+			<type>list</type>
+			<list_type>string</list_type>
+			<default>[me@twitter.com,me@identi.ca]</default>
+			<locale name="C">
+				<short>A list of your services</short>
+				<long>All of your accounts formated as username@URL for all accounts &amp; services.  All services will be connected to using HTTPS.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/dont_confirm_delete</key>
+			<applyto>/apps/get2gnow/auth/dont_confirm_delete</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Disable prompting before deleting accounts</short>
+				<long>Disable prompting before deleting accounts.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@identi.ca/enabled</key>
+			<applyto>/apps/get2gnow/auth/me@identi.ca/enabled</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Enable me@identi.ca account</short>
+				<long>Enable's your me@identi.ca accout.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@identi.ca/password</key>
+			<applyto>/apps/get2gnow/auth/me@identi.ca/password</applyto>
+			<owner>get2gnow</owner>
+			<type>string</type>
+			<default></default>
+			<locale name="C">
+				<short>me@identi.ca password</short>
+				<long>User's me@identi.ca password.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@identi.ca/https</key>
+			<applyto>/apps/get2gnow/auth/me@identi.ca/https</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whether to use https or not when connecting to me@identi.ca.</short>
+				<long>Whether to use https or not when connecting to me@identi.ca.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@identi.ca/auto_connect</key>
+			<applyto>/apps/get2gnow/auth/me@identi.ca/auto_connect</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Log in to me@identi.ca on start-up.</short>
+				<long>Log in to me@identi.ca start-up.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@twitter.com/enabled</key>
+			<applyto>/apps/get2gnow/auth/me@twitter.com/enabled</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Enable me@twitter.com account</short>
+				<long>Enable's your me@twitter.com accout.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@twitter.com/password</key>
+			<applyto>/apps/get2gnow/auth/me@twitter.com/password</applyto>
+			<owner>get2gnow</owner>
+			<type>string</type>
+			<default></default>
+			<locale name="C">
+				<short>twitter password</short>
+				<long>User's twitter password.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@twitter.com/https</key>
+			<applyto>/apps/get2gnow/auth/me@twitter.com/https</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whether to use https or not when connecting to me@identi.ca.</short>
+				<long>Whether to use https or not when connecting to me@identi.ca.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/auth/me@twitter.com/auto_connect</key>
+			<applyto>/apps/get2gnow/auth/me@twitter.com/auto_connect</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Log in to me@twitter.com start-up.</short>
+				<long>Log in to me@twitter.com start-up.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/tweets/home_timeline</key>
+			<applyto>/apps/get2gnow/tweets/home_timeline</applyto>
+			<owner>get2gnow</owner>
+			<type>string</type>
+			<default>/statuses/friends_timeline.xml</default>
+			<locale name="C">
+				<short>User's home timeline</short>
+				<long>User's home timeline.</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Linhas de tempo do usuário</short>
+				<long>Linhas de tempo do usuário.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/tweets/reload_timeline</key>
+			<applyto>/apps/get2gnow/tweets/reload_timeline</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>5</default>
+			<locale name="C">
+				<short>Minutes between timeline retrievals</short>
+				<long>Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and 60</long>
+			</locale>
+
+			<locale name="ja">
+				<short>タイムラインを取り寄せる時間間隔（分）</short>
+				<long>タイムラインを取り寄せる間隔を分で設定。可能な値は、3, 5, 15, 30, 60のいずれか</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Minutos entre recuperações de linha de tempo</short>
+				<long>Minutos entre recuperações de linha de tempo. Valores suportados são 3, 5, 15, 30, e 60</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/hidden</key>
+			<applyto>/apps/get2gnow/ui/hidden</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Hide main window</short>
+				<long>Hide the main window.</long>
+			</locale>
+
+			<locale name="ja">
+				<short>メインウインドウを隠す</short>
+				<long>メインウインドウを隠す</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweets/use_dialog</key>
+			<applyto>/apps/get2gnow/ui/tweets/use_dialog</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>To write &amp; view messages in a seperate window</short>
+				<long>To write &amp; view messages in a seperate window.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweets/direct_reply_only</key>
+			<applyto>/apps/get2gnow/ui/tweets/direct_reply_only</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>How to handle replying to a tweet.</short>
+				<long>
+					Rather to post @ replies to all accounts or just the account/service the user belongs to.
+					This implies 'no_link_in_replies'.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweets/no_link_in_replies</key>
+			<applyto>/apps/get2gnow/ui/tweets/no_link_in_replies</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>How to format replying to a tweet.</short>
+				<long>
+					Rather to add a hyperlink to a user&#039;s profile
+					when replying to a tweet in addition to the normal @user.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/disabled</key>
+			<applyto>/apps/get2gnow/ui/expand/disabled</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Stops URLs from being expanded to include the page title</short>
+				<long>
+					Stops URLs from being expanded to include the page title.
+					This is done when a particular tweet is selected.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/selected_only</key>
+			<applyto>/apps/get2gnow/ui/expand/selected_only</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Expand URLs to include page titles only when a tweet is selected.</short>
+				<long>Expand URLs to include page titles only when a tweet is selected.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/user_profiles</key>
+			<applyto>/apps/get2gnow/ui/expand/user_profiles</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Expand URLs to include user profile titles for @ links.</short>
+				<long>Expand URLs to include user profile titles for @ links.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/expand/replace_with_titles</key>
+			<applyto>/apps/get2gnow/ui/expand/replace_with_titles</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Replace hyperlink URLs with page titles without including the URI.</short>
+				<long>Replace hyperlink URLs with page titles without including the URI.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/notify</key>
+			<applyto>/apps/get2gnow/ui/notify</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification of new Twitter messages</short>
+				<long>Show notification of new Twitter messages.</long>
+			</locale>
+
+			<locale name="ja">
+				<short>新しいTwitterメッセージの通知を表示する</short>
+				<long>新しいTwitterメッセージの通知を表示する。</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Mostrar notificações de novas mensagens do Twitter</short>
+				<long>Mostrar notificações de novas mensagens do Twitter.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/notify_at_mentions</key>
+			<applyto>/apps/get2gnow/ui/notify_at_mentions</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification for new messages containing @username</short>
+				<long>Show notification of new messages where the user is @ replied or mentioned.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/notify_dms</key>
+			<applyto>/apps/get2gnow/ui/notify_at_dms</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification of direct messages</short>
+				<long>Show notification of new direct messages sent directly to you.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/beep</key>
+			<applyto>/apps/get2gnow/ui/beep</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Sound notification of new Twitter messages</short>
+				<long>Sound notification of new Twitter messages.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/tweets/compose/no_length_beep</key>
+			<applyto>/apps/get2gnow/tweets/compose/no_length_beep</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Sound notification of long messages</short>
+				<long>Sound notification of long messages.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/tweets/compose/replace_me_w_nick</key>
+			<applyto>/apps/get2gnow/tweets/compose/replace_me_w_nick</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>2</default>
+			<locale name="C">
+				<short>What to replace /me 'replacement' triggers with.</short>
+				<long>
+					What to replace /me 'replacement' triggers with.
+					Possible values are:
+						2) Replaces /me with the accounts user name, i.e. their user name / login.
+						1) Replaces /me with the accounts nick name, i.e. their screen name / full name.
+						-1) Replaces /me with the accounts nothing.
+			</long>
+			</locale>
+		</schema>
+
+		<schema>
+			<key>/schemas/apps/get2gnow/hints/close_main_window</key>
+			<applyto>/apps/get2gnow/hints/close_main_window</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Confirm closing the main window</short>
+				<long>
+					Whether or not to show the message dialog about
+					closing the main window with the 'x' button in the
+					actually exiting, instead of 'hiding', it until
+					with the tray icon.  This prompt is shown when no
+					tray icon exist to use to restore the windows.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/hints/hide_main_window</key>
+			<applyto>/apps/get2gnow/hints/hide_main_window</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Confirm hiding the main window</short>
+				<long>
+					Whether or not to show the message dialog about
+					hiding the main window with the 'x' button in the
+					title bar not actually exiting, but instead 'hiding'
+					it until the tray icon is used to restore or quit the program.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/embed_view/height</key>
+			<applyto>/apps/get2gnow/ui/embed_view/height</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>690</default>
+			<locale name="C">
+				<short>Embed view height</short>
+				<long>Embed view height.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/embed_view/width</key>
+			<applyto>/apps/get2gnow/ui/embed_view/width</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>730</default>
+			<locale name="C">
+				<short>Embed view width</short>
+				<long>Embed view width.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/embed_view_x</key>
+			<applyto>/apps/get2gnow/ui/positions/embed_view_x</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>680</default>
+			<locale name="C">
+				<short>Embed view X position</short>
+				<long>Embed view X position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/embed_view_y</key>
+			<applyto>/apps/get2gnow/ui/positions/embed_view_y</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>25</default>
+			<locale name="C">
+				<short>Embed view Y position</short>
+				<long>Embed view Y position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/vpaned_tweet_view</key>
+			<applyto>/apps/get2gnow/ui/positions/vpaned_tweet_view</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>25</default>
+			<locale name="C">
+				<short>Tweet View's vertical slider bar's position</short>
+				<long>Tweet View's vertical slider bar's position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/main_window/height</key>
+			<applyto>/apps/get2gnow/ui/main_window/height</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>445</default>
+			<locale name="C">
+				<short>Main window height</short>
+				<long>Main window height.</long>
+			</locale>
+
+			<locale name="ja">
+				<short>メインウインドウの高さ</short>
+				<long>メインウインドウの高さ</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Altura da janela principal</short>
+				<long>Altura da janela principal.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/main_window/width</key>
+			<applyto>/apps/get2gnow/ui/main_window/width</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>730</default>
+			<locale name="C">
+				<short>Main window width</short>
+				<long>Main window width.</long>
+			</locale>
+
+			<locale name="ja">
+				<short>メインウインドウの幅</short>
+				<long>メインウインドウの幅</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Largura da Janela principal</short>
+				<long>Largura da janela principal.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/main_window_x</key>
+			<applyto>/apps/get2gnow/ui/positions/main_window_x</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>680</default>
+			<locale name="C">
+				<short>Main window X position</short>
+				<long>Main window X position.</long>
+			</locale>
+
+			<locale name="ja">
+				<short>メインウインドウのX位置</short>
+				<long>メインウインドウのX位置</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Janela principal posição X</short>
+				<long>Janela principal posição X.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/main_window_y</key>
+			<applyto>/apps/get2gnow/ui/positions/main_window_y</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>25</default>
+			<locale name="C">
+				<short>Main window Y position</short>
+				<long>Main window Y position.</long>
+			</locale>
+
+			<locale name="ja">
+				<short>メインウインドウのY位置</short>
+				<long>メインウインドウのY位置</long>
+			</locale>
+
+			<locale name="pt">
+				<short>Janela principal posição Y</short>
+				<long>Janela principal posição Y.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweet_view/height</key>
+			<applyto>/apps/get2gnow/ui/tweet_view/height</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>300</default>
+			<locale name="C">
+				<short>Tweet View height</short>
+				<long>Tweet View height.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/tweet_view/width</key>
+			<applyto>/apps/get2gnow/ui/tweet_view/width</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>575</default>
+			<locale name="C">
+				<short>Tweet View width</short>
+				<long>Tweet View width.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/tweet_view_x</key>
+			<applyto>/apps/get2gnow/ui/positions/tweet_view_x</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>690</default>
+			<locale name="C">
+				<short>Tweet View X position</short>
+				<long>Tweet View X position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/ui/positions/tweet_view_y</key>
+			<applyto>/apps/get2gnow/ui/positions/tweet_view_y</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>505</default>
+			<locale name="C">
+				<short>Tweet View Y position</short>
+				<long>Tweet View Y position.</long>
+			</locale>
+		</schema>
+	</schemalist>
+</gconfschemafile>

@@ -557,7 +557,10 @@ void tweet_list_complete(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
+	if(!this->index) tweet_list_scroll_to_top(tweet_list);
+	
 	if(!this->connected_online_services)	return;
+	
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*tweet_list_complete(tweet_list);*/
 
@@ -794,21 +797,20 @@ static void tweet_list_goto_index(TweetList *tweet_list){
 	gtk_tree_path_free(path);
 	
 	tweet_view_sexy_select();
-}/*tweet_list_goto_index();*/
+}/*tweet_list_goto_index(tweet_list);*/
 
 static void tweet_list_scroll_to_top(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 		
-	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total ))
-		return;
+	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return;
 	
-	this->index=0;
-	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);
+	if(this->index) this->index=0;
+	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
 	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)))
 		gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
 	gtk_tree_path_free(path);
-}/* tweet_list_scroll_to_top */
+}/*tweet_list_scroll_to_top(tweet_list);*/
 
 static void tweet_list_clear(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
@@ -818,8 +820,7 @@ static void tweet_list_clear(TweetList *tweet_list){
 	gtk_list_store_clear(this->list_store);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 	this->has_loaded=0;
-	if(this->index)
-		tweet_list_scroll_to_top(tweet_list);
+	if(this->index) tweet_list_scroll_to_top(tweet_list);
 	this->total=0;
 }/*tweet_list_clear(tweet_list);*/
 
