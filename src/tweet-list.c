@@ -466,7 +466,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->total) return;
-	if( this->has_loaded<1 && (this->monitoring==DMs || this->monitoring==Replies) )	return;
+	if(this->monitoring==DMs || this->monitoring==Replies)	return;
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
