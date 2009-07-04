@@ -887,7 +887,6 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(this->tree_model_sort), iter,
-					GUINT_TWEET_LIST_INDEX, &this->index,
 					GDOUBLE_TWEET_ID, &tweet_id,
 					GDOUBLE_USER_ID, &user_id,
 					STRING_NICK, &user_nick,
