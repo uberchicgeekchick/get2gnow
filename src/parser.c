@@ -356,7 +356,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			continue;
 		}
 		
-		debug("Parsing tweet.  Its a %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
 		
 		status=NULL;
 		debug("Creating tweet's Status *.");
@@ -389,6 +389,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	}
 	
 	if(tweets_parsed && id_newest_update){
+		/*TODO implement this only once it won't ending up causing bloating.
+		 *cache_save_page(service, uri, xml->response_body);
+		 */
 		const gchar *online_service_guid=online_service_get_guid(service);
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
 		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);

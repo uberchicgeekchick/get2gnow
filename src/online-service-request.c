@@ -431,7 +431,8 @@ void set_selected_tweet(OnlineService *service, const gdouble id, const gdouble 
 	/*	gint id=atoi(string);	*/
 	if(selected_tweet) unset_selected_tweet();
 	
-	debug("SelectedTweet created from '%s', tweet id: #%f from '%s' on '%s'.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
+	debug("SelectedTweet created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
+	debug("SelectedTweet's update: %s.", tweet);
 	selected_tweet=g_new0(SelectedTweet, 1);
 	selected_tweet->service=service;
 	selected_tweet->id=id;

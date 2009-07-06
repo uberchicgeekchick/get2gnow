@@ -1,0 +1,200 @@
+System: Linux 2.6.27.23-0.1-default #1 SMP 2009-05-26 17:02:05 -0400 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Gilouche
+Icon Theme: Lila
+GTK+ Modules: canberra-gtk-module, pk-gtk-module, gnomebreakpad
+
+Memory status: size: 432812032 vsize: 432812032 resident: 22630400 share: 14946304 rss: 22630400 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1246847927 rtime: 53 utime: 41 stime: 12 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/projects/gtk/get2gnow/src/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+[New Thread 0x7ffbba4ff950 (LWP 7016)]
+[New Thread 0x7ffbaffff950 (LWP 7015)]
+[New Thread 0x7ffbb55ae950 (LWP 7000)]
+[New Thread 0x7ffbb65b0950 (LWP 6996)]
+0x00007ffbc0b805af in waitpid () from /lib64/libpthread.so.0
+#0  0x00007ffbc0b805af in waitpid () from /lib64/libpthread.so.0
+#1  0x00007ffbc0e01599 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+#2  0x00007ffbc0e018a8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+#3  0x00007ffbbc573bf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+#4  <signal handler called>
+#5  0x00007ffbc0db8f9d in ?? () from /usr/lib64/libglib-2.0.so.0
+#6  0x00007ffbc0db9279 in g_build_filename () from /usr/lib64/libglib-2.0.so.0
+#7  0x0000000000414874 in cache_path_create ()
+#8  0x00000000004150ad in cache_file_create_file_for_online_service ()
+#9  0x00000000004153b2 in cache_save_page ()
+#10 0x0000000000420429 in user_parse_profile ()
+#11 0x000000000040cf1f in online_service_wrapper_run ()
+#12 0x000000000040a870 in online_service_callback ()
+#13 0x00007ffbc89502b2 in queue_message_callback () from /usr/lib64/libsoup-2.4.so.1
+#14 0x00007ffbc0dc9dfa in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
+#15 0x00007ffbc0dcd488 in ?? () from /usr/lib64/libglib-2.0.so.0
+#16 0x00007ffbc0dcd97d in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+#17 0x00007ffbc4ff7397 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
+#18 0x000000000041618e in main ()
+
+Thread 5 (Thread 0x7ffbb65b0950 (LWP 6996)):
+#0  0x00007ffbc0b7fc51 in recv () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007ffbc8689207 in ?? () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#2  0x00007ffbc86895f0 in _gnutls_io_read_buffered () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#3  0x00007ffbc8685c5d in _gnutls_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#4  0x00007ffbc893fadc in soup_gnutls_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#5  0x00007ffbc0dbfd0d in g_io_channel_read_chars () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007ffbc8950beb in read_from_network () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#7  0x00007ffbc89523f4 in soup_socket_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#8  0x00007ffbc8946bf5 in read_body_chunk () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#9  0x00007ffbc8947b78 in io_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#10 0x00007ffbc895044a in process_queue_item () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#11 0x00007ffbc8950819 in queue_message_thread () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#12 0x00007ffbc0df3164 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#13 0x00007ffbc0b79070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#14 0x00007ffbc08ec10d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#15 0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 4 (Thread 0x7ffbb55ae950 (LWP 7000)):
+#0  0x00007ffbc0b7fc51 in recv () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007ffbc8689207 in ?? () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#2  0x00007ffbc86895f0 in _gnutls_io_read_buffered () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#3  0x00007ffbc8685b8a in _gnutls_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#4  0x00007ffbc893fadc in soup_gnutls_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#5  0x00007ffbc0dbfd0d in g_io_channel_read_chars () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007ffbc8950beb in read_from_network () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#7  0x00007ffbc8950f76 in soup_socket_read_until () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#8  0x00007ffbc8947061 in read_metadata () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#9  0x00007ffbc8947be5 in io_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#10 0x00007ffbc895044a in process_queue_item () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#11 0x00007ffbc8950819 in queue_message_thread () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#12 0x00007ffbc0df3164 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#13 0x00007ffbc0b79070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#14 0x00007ffbc08ec10d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#15 0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 3 (Thread 0x7ffbaffff950 (LWP 7015)):
+#0  0x00007ffbc0b7fc51 in recv () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007ffbc8689207 in ?? () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#2  0x00007ffbc86895f0 in _gnutls_io_read_buffered () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#3  0x00007ffbc8685b8a in _gnutls_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#4  0x00007ffbc893fadc in soup_gnutls_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#5  0x00007ffbc0dbfd0d in g_io_channel_read_chars () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007ffbc8950beb in read_from_network () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#7  0x00007ffbc8950f76 in soup_socket_read_until () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#8  0x00007ffbc8947061 in read_metadata () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#9  0x00007ffbc8947be5 in io_read () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#10 0x00007ffbc895044a in process_queue_item () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#11 0x00007ffbc8950819 in queue_message_thread () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#12 0x00007ffbc0df3164 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#13 0x00007ffbc0b79070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#14 0x00007ffbc08ec10d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#15 0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 2 (Thread 0x7ffbba4ff950 (LWP 7016)):
+#0  0x00007ffbc08e3386 in poll () from /lib64/libc.so.6
+No symbol table info available.
+#1  0x00007ffbc0dcd359 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#2  0x00007ffbc0dcd97d in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#3  0x00007ffbc574b0c0 in ?? () from /usr/lib64/libORBit-2.so.0
+No symbol table info available.
+#4  0x00007ffbc0df3164 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#5  0x00007ffbc0b79070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#6  0x00007ffbc08ec10d in clone () from /lib64/libc.so.6
+No symbol table info available.
+#7  0x0000000000000000 in ?? ()
+No symbol table info available.
+
+Thread 1 (Thread 0x7ffbc951a7d0 (LWP 6966)):
+#0  0x00007ffbc0b805af in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007ffbc0e01599 in g_spawn_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#2  0x00007ffbc0e018a8 in g_spawn_command_line_sync () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#3  0x00007ffbbc573bf2 in ?? () from /usr/lib64/gtk-2.0/modules/libgnomebreakpad.so
+No symbol table info available.
+#4  <signal handler called>
+No symbol table info available.
+#5  0x00007ffbc0db8f9d in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#6  0x00007ffbc0db9279 in g_build_filename () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#7  0x0000000000414874 in cache_path_create ()
+No locals.
+#8  0x00000000004150ad in cache_file_create_file_for_online_service ()
+No locals.
+#9  0x00000000004153b2 in cache_save_page ()
+No locals.
+#10 0x0000000000420429 in user_parse_profile ()
+No locals.
+#11 0x000000000040cf1f in online_service_wrapper_run ()
+No locals.
+#12 0x000000000040a870 in online_service_callback ()
+No locals.
+#13 0x00007ffbc89502b2 in queue_message_callback () from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#14 0x00007ffbc0dc9dfa in g_main_context_dispatch () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#15 0x00007ffbc0dcd488 in ?? () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#16 0x00007ffbc0dcd97d in g_main_loop_run () from /usr/lib64/libglib-2.0.so.0
+No symbol table info available.
+#17 0x00007ffbc4ff7397 in gtk_main () from /usr/lib64/libgtk-x11-2.0.so.0
+No symbol table info available.
+#18 0x000000000041618e in main ()
+No locals.
+The program is running.  Quit anyway (and detach it)? (y or n) [answered Y; input not from terminal]

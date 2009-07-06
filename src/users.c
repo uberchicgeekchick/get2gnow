@@ -70,6 +70,7 @@
 #include "program.h"
 #include "main-window.h"
 
+#include "online-services-typedefs.h"
 #include "online-service.h"
 #include "online-services.h"
 #include "online-service-wrapper.h"
@@ -261,6 +262,10 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 	
 	if(g_str_equal(root_element->name, "user"))
 		user=user_parse_node(service, root_element->children);
+		/*TODO finish caching
+		if((user=user_parse_node(service, root_element->children)))
+			cache_save_page(service, online_service_wrapper_get_requested_uri(service_wrapper), xml->response_body);
+		*/
 	
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
@@ -341,12 +346,8 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		
 	}
 	
-	if(user->status){
-		/*TODO: implement cache checking to limit saved statuses or its gonna bloat the hard drive really quick.
-		 * cache_save_xml(service, root_element, "users", status->id_str);
-		 */
+	if(user->status)
 		user_status_format_updates(service, user, user->status);
-	}
 	
 	user->image_file=cache_images_get_user_avatar_filename(service, user->user_name, user->image_url);
 	
@@ -448,12 +449,8 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Twe
 		
 	}
 	
-	if(status->user){
-		/*TODO: implement cache checking to limit saved statuses or its gonna bloat the hard drive really quick.
-		 * cache_save_xml(service, root_element, "statuses", status->id_str);
-		 */
+	if(status->user)
 		user_status_format_updates(service, status->user, status);
-	}
 	
 	return status;
 }/*user_status_parse(service, current_node->children, tweet_list);*/

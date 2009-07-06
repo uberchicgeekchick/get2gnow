@@ -86,13 +86,15 @@ static void label_url_activated_cb(GtkWidget *url_label, gchar *url, gpointer us
 
 void label_set_text(OnlineService *service, Label *my_sexy_label, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(G_STR_EMPTY(text)){
-		sexy_url_label_set_markup(SEXY_URL_LABEL(my_sexy_label), "");
+		gtk_label_set_text(GTK_LABEL(my_sexy_label), "");
 		return;
 	}
 	
-	gchar *parsed_text=label_msg_format_urls(service, text, expand_hyperlinks, make_hyperlinks);
-	sexy_url_label_set_markup(SEXY_URL_LABEL(my_sexy_label), parsed_text);
-	g_free(parsed_text);
+	debug("Rendering sexy markup from text: %s", text);
+	gchar *sexy_text=label_msg_format_urls(service, text, expand_hyperlinks, make_hyperlinks);
+	sexy_url_label_set_markup(SEXY_URL_LABEL(my_sexy_label), sexy_text);
+	debug("Rendered sexy markup: %s", sexy_text);
+	uber_free(sexy_text);
 }/*label_set_text*/
 
 static gboolean url_check_word (char *word, int len){
@@ -108,6 +110,8 @@ static gboolean url_check_word (char *word, int len){
 		{ D("ftp://") },
 		{ D("http://") },
 		{ D("https://") },
+		{ D("irc://") },
+		{ D("irc.") },
 		{ D("@") },
 	};
 #undef D
@@ -150,22 +154,22 @@ static gssize find_first_non_user_name(const gchar *str){
 gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(G_STR_EMPTY(message)) return g_strdup("");
 	
-	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http://%s", online_service_get_uri(service) );
+	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http%s://%s", (online_service_is_secure(service) ?"s" :""), online_service_get_uri(service) );
 	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPAND_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPAND_USER_PROFILES, TRUE);
 	
 	tokens=g_strsplit_set(message, " \t\n", 0);
 	for(gint i=0; tokens[i]; i++) {
 		if(url_check_word(tokens[i], strlen(tokens[i]))) {
 			if(tokens[i][0]=='@') {
-				debug("Formatting display title for user: '%s' on '%s'", tokens[i], online_service_get_uri(service) );
-				temp=label_format_user_at_link(service, at_url_prefix, tokens[i], expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris );
+				debug("Formatting display title for user: '%s' on '%s'", tokens[i], online_service_get_uri(service));
+				temp=label_format_user_at_link(service, at_url_prefix, tokens[i], expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris);
 			} else {
 				debug("Formatting display title for uri: '%s'.", tokens[i]);
-				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks, !titles_strip_uris );
+				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks, !titles_strip_uris);
 			}
-			main_window_set_statusbar_msg(NULL);
 			g_free(tokens[i]);
 			tokens[i]=temp;
+			temp=NULL;
 		}
 	}
 	result = g_strjoinv(" ", tokens);
@@ -193,9 +197,9 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 		title=label_find_user_title(service, uri, expand_hyperlinks, make_hyperlinks);
 	
 	if(!make_hyperlinks)
-		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :users_at) );
+		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[1]) );
 	else
-		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :users_at ) );
+		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[1] ) );
 	
 	if(end){
 		gchar *user_at_link2=g_strdup_printf(
@@ -210,7 +214,7 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 	g_free(title);
 	
 	return user_at_link;
-}/*static gchar *label_find_uri_title(service, users_at, expand_hyperlinks, make_hyperlinks, titles_strip_uris);*/
+}/*label_format_user_at_link(service, "https://identi.ca/", "@user", expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris);*/
 
 static gchar *label_find_user_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	gchar *title=NULL;
@@ -236,11 +240,11 @@ static gchar *label_find_user_title(OnlineService *service, const gchar *uri, gb
 	g_free(title_test);
 
 	return title;
-}/*label_find_user_service_details(service, uri, expand_hyperlinks, make_hyperlinks);*/
+}/*label_find_user_title(service, uri, expand_hyperlinks, make_hyperlinks);*/
 
 static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean include_uris){
 	gchar *temp=NULL;
-	if(!(make_hyperlinks))
+	if(!make_hyperlinks)
 		temp=g_strdup_printf("<u>%s</u>", uri);
 	else
 		temp=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
@@ -248,10 +252,8 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	if(gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || !expand_hyperlinks)
 		return temp;
 	
-	
 	SoupMessage *msg=NULL;
 	gchar *content_type=NULL;
-	
 	
 	main_window_statusbar_printf("Please wait while %s's title is found.", uri);
 	debug("Attempting to determine content-type for: %s.", uri);

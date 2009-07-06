@@ -79,8 +79,8 @@ static gchar *unknown_image_filename=NULL;
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *subdir, const gchar *filename);
-static gboolean cache_file_save_online_service_xml(OnlineService *service, const gchar *subdir, const gchar *filename, const gchar *xml, goffset length);
+static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *uri);
+static gboolean cache_file_save_online_service_xml(OnlineService *service, const gchar *uri, const gchar *xml, goffset length);
 static gchar *cache_path_create(const gchar *cache_file, ...);
 
 static void cache_dir_absolute_clean_up(const gchar *cache_dir, gboolean rm_parent);
@@ -115,41 +115,44 @@ void cache_deinit(void){
 	unknown_image_filename=NULL;
 }/*cache_deinit*/
 
-static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *subdir, const gchar *filename){
-	gchar *filename_xml=g_strdup_printf("%s.xml", filename);
-	gchar *cache_file_xml=cache_file_create_file_for_online_service(service, subdir, filename_xml, NULL);
+static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *uri){
+	gchar *query_string;
+	gchar *subdir=cache_get_uri_filename(uri, &query_string);
+	const gchar *page;
+	if(!( ((query_string)) && (page=g_strrstr(query_string, "page=")) ))
+		page="0";
+	gchar *filename_xml=g_strdup_printf("%s/page_%s", subdir, (page?page:""));
+	
+	
+	gchar *cache_file_xml=NULL;
+	debug("Attempting to cache %s in subdir: %s as file: %s.", uri, subdir, filename_xml);
+	if(!(cache_file_xml=cache_file_create_file_for_online_service(service, subdir, filename_xml, NULL)))
+		debug("**ERROR:** caching failed.");
+	else
+		debug("Cached URI: %s to: %s.", uri, cache_file_xml);
+	
+	uber_free(query_string);
+	uber_free(subdir);
 	uber_free(filename_xml);
 	return cache_file_xml;
-}/*cache_file_create_online_service_xml_file(service, subdir, filename);*/
+}/*cache_file_create_online_service_xml_file(service, uri);*/
 
-gboolean cache_save_xml(OnlineService *service, xmlNode *xml_node, const gchar *subdir, const gchar *filename){
-	gchar *xml=NULL;
-	if( G_STR_EMPTY( (xml=(gchar *)xmlNodeGetContent(xml_node)) ) ) return FALSE;
-	if(!( cache_file_save_online_service_xml(service, subdir, filename, xml, g_utf8_strlen(xml, -1)) )){
-		debug("**ERROR:** Unable to cache xmlNode's %s contents.  Attempting to cache page to file: %s; subdir: %s.", xml_node->name, filename, subdir);
+gboolean cache_save_page(OnlineService *service, const gchar *uri, SoupMessageBody *xml){
+	debug("Caching page.");
+	if(!( cache_file_save_online_service_xml(service, uri, xml->data, xml->length) ))
 		return FALSE;
-	}
-	debug("Saved xmlNode's %s content.  Cached as %s in subdir: %s.", xml_node->name, filename, subdir);
-	return TRUE;
-}/*cache_xml_save(OnlineService *service, root_element, subdir, filename);*/
-
-gboolean cache_save_page(OnlineService *service, SoupMessageBody *xml, const gchar *subdir, const gchar *filename){
-	if(!xml->length) return FALSE;
-	if(!( cache_file_save_online_service_xml(service, subdir, filename, xml->data, xml->length) )){
-		debug("**ERROR:** Unable to cache page.  Attempting to cache page to file: %s; subdir: %s.", filename, subdir);
-		return FALSE;
-	}
-	debug("Saved page's content.  Cached as %s in subdir: %s.", filename, subdir);
+	
+	debug("Cached page's content.");
 	return TRUE;
 }/*void cache_save_page(service, xml, subdir, filename);*/
 
-static gboolean cache_file_save_online_service_xml(OnlineService *service, const gchar *subdir, const gchar *filename, const gchar *xml, goffset length){
+static gboolean cache_file_save_online_service_xml(OnlineService *service, const gchar *uri, const gchar *xml, goffset length){
 	if(!length){
-		debug("Unable to save xml cache file: %s; subdir: %s.  Saving would result in an empty file.", filename, subdir);
+		debug("Stubornly refusing to save an empty xml file.");
 		return FALSE;
 	}
 	gchar *cache_file_xml=NULL;
-	if(!( cache_file_xml=cache_file_create_online_service_xml_file(service, subdir, filename) )){
+	if(!( cache_file_xml=cache_file_create_online_service_xml_file(service, uri) )){
 		debug("**ERROR:** Unable to create xml cache filename.");
 		return FALSE;
 	}
@@ -260,13 +263,28 @@ static void cache_file_clean_up(const gchar *cache_file){
 	g_object_unref(cache_gfileinfo);
 }/*cache_file_clean_up*/
 
-gchar *cache_filename_get_from_uri(const gchar *uri){
-	gchar *uri_dup=g_strdup(uri);
-	gchar *cache_file=g_strdelimit(uri_dup, ":/&?", '_');
-	gchar *cache_filename=cache_path_create(cache_file, NULL);
-	uber_free(uri_dup);
-	uber_free(cache_file);
-	return cache_filename;
+gchar *cache_get_uri_filename(const gchar *uri, gchar **query_string){
+	/*
+	 * uri_info[] index explanation:
+	 * 	0 == the url scheme, e.g. https, http, etc.
+	 * 	1 == this is empty as a result of the '://' in url scheme.
+	 * 	2 == the domain name
+	 * 	3-n == the finale part of the url, e.g. an image's file name or xml page w/its query string.
+	 */
+	gchar **uri_info=g_strsplit_set(uri, "/?", -1);
+	guint n=0;
+	if(!g_strrstr(uri, "?")){
+		n=g_strv_length(uri_info)-1;
+		(*query_string)=NULL;
+	}else{
+		n=g_strv_length(uri_info)-2;
+		if((*query_string)!=NULL){
+			(*query_string)=g_strdup(uri_info[n+1]);
+		}
+	}
+	gchar *filename=g_strdup(uri_info[n]);
+	g_strfreev(uri_info);
+	return filename;
 }/*cache_file_from_uri*/
 
 
@@ -360,19 +378,9 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 	
 	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, online_service_get_uri(service), image_url);
 	
-	/*
-	 * image_name_info[] index explanation:
-	 *	0 == the url scheme, e.g. https, http, etc.
-	 *	1 == this is empty as a result of the '://' in url scheme.
-	 *	2 == the domain name
-	 *	n == the finale part of the url, i.e. the actual image's file name.
-	 */
-	gchar *image_file=NULL, **image_info=NULL;
-	image_info=g_strsplit(image_url, "/", -1);
-	guint n=g_strv_length(image_info)-1;
-	image_file=g_strdup(image_info[n]);
-	g_strfreev(image_info);
-	
+	gchar *query_string=NULL;
+	gchar *image_file=cache_get_uri_filename(image_url, &query_string);
+	if(query_string) uber_free(query_string);
 	if(G_STR_EMPTY(image_file)){
 		if(image_file) g_free(image_file);
 		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading avatar for user: <%s>; using url: [%s].", user_name, image_url);

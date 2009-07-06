@@ -89,11 +89,10 @@ void cache_deinit(void);
 gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir);
 void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent);
 
-gchar *cache_filename_get_from_uri(const gchar *uri);
+gchar *cache_get_uri_filename(const gchar *uri, gchar **query_string);
 gchar *cache_file_touch(const gchar *cache_file);
 
-gboolean cache_save_xml(OnlineService *service, xmlNode *xml_node, const gchar *subdir, const gchar *filename);
-gboolean cache_save_page(OnlineService *service, SoupMessageBody *page, const gchar *subdir, const gchar *filename);
+gboolean cache_save_page(OnlineService *service, const gchar *uri, SoupMessageBody *page);
 
 gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...);
 

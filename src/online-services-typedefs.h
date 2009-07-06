@@ -83,6 +83,8 @@ G_BEGIN_DECLS
 #define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
 #define API_FAVORITES				"/favorites.xml"
 
+
+#define API_USER_PROFILE			"/users/show/%s.xml"
 #define API_TIMELINE_MINE			"/statuses/user_timeline.xml"
 #define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
 

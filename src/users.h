@@ -75,10 +75,6 @@
 #define view_profile(service, user_name, parent)	user_profile_viewer_show(service, user_name, parent);
 #endif
 
-
-#define API_USER_PROFILE	"/users/show/%s.xml"
-
-
 typedef struct _User User;
 typedef struct _UserStatus UserStatus;
 

@@ -553,19 +553,20 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 	const gchar *service_uri=online_service_get_uri(service);
 	const gchar *service_user_name=online_service_get_user_name(service);
 	const gchar *service_user_nick=online_service_get_user_nick(service);
+	const gchar *service_uri_scheme_suffix=(online_service_is_secure(service)?"s":"");
 
 	gchar *sexy_text=NULL;
 	if(!id)
 		sexy_text=g_strdup("");
 	else
-		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"https://%s/%s\">&lt;@%s on %s&gt;</a></span>", service_user_nick, service_uri, service_user_name, service_user_name, service_uri);
+		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service_user_nick, service_uri_scheme_suffix, service_uri, service_user_name, service_user_name, service_uri);
 	debug("Setting 'sexy_to' for 'selected_tweet':\n\t\t%s.", sexy_text);
 	label_set_text(service, tweet_view->sexy_to, sexy_text, FALSE, TRUE);
 	g_free(sexy_text);
 	
 	
 	if(!( G_STR_EMPTY(user_nick) && G_STR_EMPTY(user_name) ))
-		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"https://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, service_uri, user_name, user_name, service_uri);
+		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, service_uri_scheme_suffix, service_uri, user_name, user_name, service_uri);
 	else
 		sexy_text=g_strdup("");
 	debug("Setting 'sexy_from' for 'selected_tweet':\n\t\t%s.", sexy_text);
@@ -595,10 +596,12 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 	else{
 		debug("Setting avatar for the user who wrote the 'selected_tweet'.");
 		GdkPixbuf *resized=NULL;
-		resized=images_expand_pixbuf( pixbuf );
-		gtk_image_set_from_pixbuf(tweet_view->user_image, resized);
-		if(resized)
+		if(!(resized=images_expand_pixbuf(pixbuf)))
+			gtk_image_set_from_pixbuf(tweet_view->user_image, pixbuf);
+		else{
+			gtk_image_set_from_pixbuf(tweet_view->user_image, resized);
 			g_object_unref(resized);
+		}
 	}
 	
 	debug("Selecting 'sexy_entry' for entering a new tweet.");

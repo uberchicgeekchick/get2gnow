@@ -183,10 +183,10 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
-	GList *new_users;
 	const gchar *which_glist_str=(which_pass?_("followers") :_("friends") );
-	const gchar *page_num_str=g_strrstr( online_service_wrapper_get_requested_uri(service_wrapper), "=");
+	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	const gchar *service_key=online_service_get_key(service);
+	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service_key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
 	
 	if(!network_check_http(service, xml)){
@@ -195,21 +195,14 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		return NULL;
 	}
 	
-	/* parse user list */
+	GList *new_users=NULL;
 	debug("Parsing user list");
 	if(!(new_users=users_glist_parse(service, xml)) ){
 		debug("No more %s where found, yippies we've got'em all.", which_glist_str);
 		return NULL;
 	}
 	
-	gint page=atoi(page_num_str);
-	page_num_str=NULL;
-	if(page<10) page_num_str=g_strdup_printf("pages/00%d", page);
-	else if(page<100) page_num_str=g_strdup_printf("pages/0%d", page);
-	else page_num_str=g_strdup_printf("pages/%d", page);
-	
-	cache_save_page(service, xml->response_body, which_glist_str, page_num_str); 
-	g_free((gchar *)page_num_str);
+	cache_save_page(service, uri, xml->response_body);
 	
 	return new_users;
 }/*users_glist_parse(session, xml, service_wrapper);*/
