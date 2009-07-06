@@ -636,11 +636,11 @@ static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, Gtk
 	if(character_count < 0){
 		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
 			tweet_view_beep();
-		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
+		remaining_characters=g_strdup_printf("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
 	}else
-		remaining_characters=g_markup_printf_escaped("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
+		remaining_characters=g_strdup_printf("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
 	
-	gtk_label_set_markup( tweet_character_counter, remaining_characters );
+	gtk_label_set_markup(tweet_character_counter, remaining_characters);
 	g_free(remaining_characters);
 }/*tweet_view_count_tweet_char*/
 
@@ -699,7 +699,7 @@ gint tweet_view_sexy_puts(const gchar *str, gint position){
 void tweet_view_send(GtkWidget *activated_widget){
 	gchar *user_name=NULL;
 	
-	gchar *text=GTK_ENTRY(tweet_view->sexy_entry)->text;
+	const gchar *text=GTK_ENTRY(tweet_view->sexy_entry)->text;
 	if(G_STR_EMPTY(text)){
 		gchar *reply_to_string=selected_tweet_reply_to_strdup(FALSE);
 		if(!selected_tweet_get_user_name())
@@ -734,7 +734,7 @@ void tweet_view_send(GtkWidget *activated_widget){
 }/*tweet_view_send*/
 	
 static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name){
-	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) <= TWEET_MAX_CHARS) )){
+	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) > -1) )){
 		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
 			gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
 		return;

@@ -89,7 +89,7 @@ void cache_deinit(void);
 gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir);
 void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent);
 
-gchar *cache_get_uri_filename(const gchar *uri, gchar **query_string);
+void cache_get_uri_filename(const gchar *uri, gboolean set_subdir, gchar **subdir, gboolean set_filename, gchar **filename, gboolean set_query_string, gchar **query_string);
 gchar *cache_file_touch(const gchar *cache_file);
 
 gboolean cache_save_page(OnlineService *service, const gchar *uri, SoupMessageBody *page);

@@ -116,12 +116,12 @@ void cache_deinit(void){
 }/*cache_deinit*/
 
 static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *uri){
-	gchar *query_string;
-	gchar *subdir=cache_get_uri_filename(uri, &query_string);
+	gchar *subdir, *filename, *query_string;
+	cache_get_uri_filename(uri, TRUE, &subdir, TRUE, &filename, TRUE, &query_string);
 	const gchar *page;
 	if(!( ((query_string)) && (page=g_strrstr(query_string, "page=")) ))
 		page="0";
-	gchar *filename_xml=g_strdup_printf("%s/page_%s", subdir, (page?page:""));
+	gchar *filename_xml=g_strdup_printf("%s/page_%s", subdir, page);
 	
 	
 	gchar *cache_file_xml=NULL;
@@ -263,7 +263,10 @@ static void cache_file_clean_up(const gchar *cache_file){
 	g_object_unref(cache_gfileinfo);
 }/*cache_file_clean_up*/
 
-gchar *cache_get_uri_filename(const gchar *uri, gchar **query_string){
+/**
+ * Do not initalize any of the pointers you want to use prior to sending them as parameters.
+ */
+void cache_get_uri_filename(const gchar *uri, gboolean set_subdir, gchar **subdir, gboolean set_filename, gchar **filename, gboolean set_query_string, gchar **query_string){
 	/*
 	 * uri_info[] index explanation:
 	 * 	0 == the url scheme, e.g. https, http, etc.
@@ -273,19 +276,22 @@ gchar *cache_get_uri_filename(const gchar *uri, gchar **query_string){
 	 */
 	gchar **uri_info=g_strsplit_set(uri, "/?", -1);
 	guint n=0;
-	if(!g_strrstr(uri, "?")){
+	if(!g_strrstr(uri, "?"))
 		n=g_strv_length(uri_info)-1;
-		(*query_string)=NULL;
-	}else{
+	else
 		n=g_strv_length(uri_info)-2;
-		if((*query_string)!=NULL){
-			(*query_string)=g_strdup(uri_info[n+1]);
-		}
-	}
-	gchar *filename=g_strdup(uri_info[n]);
+	
+	if(set_query_string)
+		(*query_string)=g_strdup(g_strrstr(uri, "?"));
+	
+	if(set_subdir)
+		(*subdir)=g_strdup(uri_info[n-1]);
+	
+	if(set_filename)
+		(*filename)=g_strdup(uri_info[n]);
+	
 	g_strfreev(uri_info);
-	return filename;
-}/*cache_file_from_uri*/
+}/*gchar *filename; cache_get_uri_filename(const gchar *uri, NULL, &filename, NULL);*/
 
 
 gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...){
@@ -378,9 +384,8 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 	
 	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, online_service_get_uri(service), image_url);
 	
-	gchar *query_string=NULL;
-	gchar *image_file=cache_get_uri_filename(image_url, &query_string);
-	if(query_string) uber_free(query_string);
+	gchar *image_file;
+	cache_get_uri_filename(image_url, FALSE, NULL, TRUE, &image_file, FALSE, NULL);
 	if(G_STR_EMPTY(image_file)){
 		if(image_file) g_free(image_file);
 		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading avatar for user: <%s>; using url: [%s].", user_name, image_url);
