@@ -224,7 +224,8 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 }/*tweets_hotkey_process(widget, event, user_date);*/
 
 void tweets_beep(void){
-	tweet_view_beep();
+	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
+		tweet_view_beep();
 }/*tweets_beep();*/
 
 void tweets_new_tweet(void){

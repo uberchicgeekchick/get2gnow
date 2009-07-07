@@ -80,6 +80,8 @@
 #include "network.h"
 
 #include "parser.h"
+#include "groups.h"
+#include "searches.h"
 #include "cache.h"
 
 #include "main-window.h"
@@ -284,10 +286,30 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	
 	debug("Started processing timeline: %s.", timeline);
 	
-	guint tweets_parsed=parse_timeline(service, xml, timeline, tweet_list, monitoring);
+	guint new_updates=0;
+	switch(monitoring){
+		case None:
+			debug("Attempting to parse an unsupport network request.");
+			break;
+		case Searches:
+			new_updates=searches_parse_results(service, xml, timeline, tweet_list);
+			break;
+		case Groups:
+			new_updates=groups_parse_conversation(service, xml, timeline, tweet_list);
+			break;
+		case DMs:
+		case Replies:
+		case Tweets:
+		case Timelines:
+		case Users:
+		case Archive:
+		default:
+			new_updates=parse_timeline(service, xml, timeline, tweet_list, monitoring);
+			break;
+	}
 	
-	debug("Total tweets in this timeline: %d.", tweets_parsed);
-	if(!retrying && !tweets_parsed && !g_strrstr(request_uri, "since_id=") && xml->status_code==200){
+	debug("Total tweets in this timeline: %d.", new_updates);
+	if(!retrying && !new_updates && !g_strrstr(request_uri, "since_id=") && xml->status_code==200){
 		uber_free(request_uri);
 		network_retry(service_wrapper);
 		return NULL;

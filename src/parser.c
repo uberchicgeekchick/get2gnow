@@ -275,9 +275,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
-	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
-	gboolean	save_oldest_id=FALSE;
-	guint		tweets_parsed=0;
+	gboolean	notify=FALSE;
+	gboolean	save_oldest_id=(tweet_list_has_loaded(tweet_list)?FALSE:TRUE);
+	
+	guint		new_updates=0;
 	gdouble		status_id=0;
 	gdouble		id_newest_update=0, id_oldest_update=0;
 	
@@ -285,37 +286,44 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
-	if(!tweet_list_has_loaded(tweet_list)) save_oldest_id=TRUE;
 	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
 	gdouble	last_notified_update=id_newest_update;
 	id_newest_update=0.0;
 	
 	switch(monitoring){
+		case Searches: case Groups:
+			debug("**ERROR:** parse_timeline requested to parse %s.  This method sould not have been called.", (monitoring==Groups?"Groups":"Searches"));
+			uber_free(timeline);
+			return 0;
+			
 		case DMs:
 			debug("Parsing DMs.");
-			if(!id_oldest_update) save_oldest_id=TRUE;
-			else save_oldest_id=FALSE;
-			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
-			break;
+			notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
 			
 		case Replies:
-			debug("Parsing Replies.");
 			if(!id_oldest_update) save_oldest_id=TRUE;
 			else save_oldest_id=FALSE;
-			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
+			
+			/*Stop the fall-through.*/
+			if(monitoring!=Replies) break;
+			
+			debug("Parsing Replies.");
+			notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
 			break;
 		
 		case Tweets:
 			debug("Parsing my friends' tweets");
-			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE);
+			notify=gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE);
 			break;
 		
 		case Timelines: case Users:
 			debug("Parsing timeline.");
+			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 			break;
 			
 		case Archive:
 			debug("Parsing my own tweets or favorites.");
+			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 			break;
 		
 		case None: default:
@@ -326,13 +334,13 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	guint		tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
 	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(monitoring-2)*100;
+	const gint	notify_priority=(tweet_list_get_page(tweet_list)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
 		xmlCleanupParser();
 		uber_free(timeline);
-		return tweets_parsed;
+		return 0;
 	}
 	
 	/* get tweets or direct messages */
@@ -365,7 +373,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			continue;
 		}
 		
-		tweets_parsed++;
+		new_updates++;
 		free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
@@ -388,7 +396,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		if(free_status) user_status_free(status);
 	}
 	
-	if(tweets_parsed && id_newest_update){
+	if(new_updates && id_newest_update){
 		/*TODO implement this only once it won't ending up causing bloating.
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
@@ -402,8 +410,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
-	return tweets_parsed;
-}
+	return new_updates;
+}/*parse_timeline(service, xml, uri, tweet_list);*/
 
 gchar *parser_escape_text(gchar *text){
 	gchar *escaped_text=NULL;

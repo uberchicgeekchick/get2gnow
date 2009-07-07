@@ -103,6 +103,7 @@ struct _PreferencesDialog{
 	GtkCheckButton	*notify_all_new_updates;
 	GtkCheckButton	*notify_beep_updates_check_button;
 	
+	GtkCheckButton	*disable_system_bell;
 	GtkCheckButton	*use_tweet_dialog;
 	
 	GtkCheckButton	*expand_urls_disabled_checkbutton;
@@ -203,6 +204,7 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_TWEET_LENGTH_ALERT, FALSE, prefs->no_length_alert);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEET_VIEW_DIALOG, FALSE, prefs->use_tweet_dialog);
+	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, TRUE, prefs->disable_system_bell);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
@@ -544,6 +546,7 @@ void preferences_dialog_show (GtkWindow *parent){
 					"preferences_notebook", &prefs->notebook,
 					
 					"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
+					"general_look_and_feel_disable_system_bell_check_button", &prefs->disable_system_bell,
 					
 					"titles_only_checkbutton", &prefs->titles_only_checkbutton,
 					"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,

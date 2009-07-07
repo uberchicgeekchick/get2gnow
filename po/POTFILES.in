@@ -23,6 +23,7 @@ src/following-viewer.c
 src/friend-manager.c
 src/gconfig.c
 src/geometry.c
+src/groups.c
 src/gtkbuilder.c
 src/images.c
 src/ipc.c
@@ -39,6 +40,7 @@ src/parser.c
 src/preferences.c
 src/program.c
 src/proxy.c
+src/searches.c
 src/timer.c
 src/tweet-list.c
 src/tweets.c

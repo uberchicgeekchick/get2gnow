@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__HEADER_H__
-#define	__HEADER_H__
+#ifndef	__SEARCHES_H__
+#define	__SEARCHES_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -64,6 +64,10 @@
 /********************************************************************************
  * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
  ********************************************************************************/
+#include <glib/gi18n.h>
+#include <libsoup/soup-message.h>
+
+#include "tweet-list.h"
 
 
 G_BEGIN_DECLS
@@ -75,11 +79,13 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list);
 
 
 G_END_DECLS
-#endif /* __HEADER_H__*/
+#endif /* __SEARCHES_H__*/
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
+
 

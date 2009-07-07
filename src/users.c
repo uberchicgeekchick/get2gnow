@@ -56,7 +56,7 @@
 
 
 /********************************************************************************
- * project, objece, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
  ********************************************************************************/
 #include <time.h>
 #include <strings.h>
@@ -474,7 +474,7 @@ static void user_status_format_dates(UserStatus *status){
 
 static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status){
 	if(!(online_service_is_connected(service) && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->user_nick))) return;
-	debug("Formating status text for display.");
+	debug("Formatting status text for display.");
 	
 	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
 	if(!gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)){

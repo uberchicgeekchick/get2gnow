@@ -82,7 +82,7 @@ static gboolean debug_reinit(void);
 static FILE *debug_log_rotate(void);
 static void debug_environment_check(void);
 static void debug_domains_check(const gchar *domains);
-
+static void debug_output(FILE *debug_output_fp, const gchar *debug_domain, const gchar *msg, va_list args);
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
@@ -101,7 +101,7 @@ static const gchar *debug_log_filename=NULL;
 static const gchar *debug_log_filename_swp=NULL;
 
 static gboolean debug_pause=FALSE;
-static gboolean debug_output=FALSE;
+static gboolean debug_output_enabled=FALSE;
 static guint debug_timeout_id=0;
 
 /*
@@ -133,9 +133,9 @@ gboolean debug_check_devel(const gchar *debug_environmental_value){
 	
 	if(debug_environment) g_strfreev(debug_environment);
 	
-	debug_output=TRUE;
+	debug_output_enabled=TRUE;
 	all_domains=TRUE;
-	debug_environment=g_strsplit("All", ":", 1);
+	debug_environment=g_strsplit("UI:All", ":", -1);
 	
 	return (debug_devel=TRUE);
 }/*debug_check_devel(g_getenv("GET2GNOW_DEBUG"));*/
@@ -173,6 +173,7 @@ void debug_deinit(void){
 	g_strfreev(debug_environment);
 	
 	if(debug_last_domains) g_free(debug_last_domains);
+	if(debug_last_domain) g_free(debug_last_domain);
 	if(debug_domains) g_strfreev(debug_domains);
 }/*debug_deinit();*/
 
@@ -182,13 +183,13 @@ static void debug_environment_check(void){
 	
 	if(debug_environment) g_strfreev(debug_environment);
 	if(!debug_environmental_value){
-		debug_environment=g_strsplit("-", ":", -1);
-		debug_output=FALSE;
+		debug_environment=g_strsplit("UI:All", ":", -1);
+		debug_output_enabled=FALSE;
 		return;
 	}
 	
 	debug_environment=g_strsplit(debug_environmental_value, ":", -1);
-	debug_output=TRUE;
+	debug_output_enabled=TRUE;
 	
 	for(guint i=0; debug_environment[i]; i++)
 		if(!strcasecmp("All", debug_environment[i]))
@@ -196,7 +197,7 @@ static void debug_environment_check(void){
 }/*debug_environment_check();*/
 
 static void debug_domains_check(const gchar *domains){
-	/*if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;*/
+	//if( (debug_last_domains) && g_str_equal(domains, debug_last_domains) ) return;
 	
 	if(debug_last_domains) g_free(debug_last_domains);
 	debug_last_domains=g_strdup(domains);
@@ -239,57 +240,59 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 	if(!(domains && msg)) return;
 	while(debug_pause){}
 	
-	time_t current_time=time(NULL);
-	const gchar *datetime=ctime(&current_time);
-	
-	static gboolean output_started=FALSE;
 	FILE *debug_output_fp=NULL;
 	
 	debug_domains_check(domains);
-	gchar **debug_domains=g_strsplit(domains, ":", -1);
-	for(guint x=0; debug_domains[x]; x++){
-		for(guint y=0; debug_environment[y]; y++) {
-			if(!(debug_domains[x+1] && debug_environment[y+1]))
-				debug_output_fp=debug_log_rotate();
-			else if(!(all_domains && strcasecmp(debug_domains[x], debug_environment[y]) ))
+	gboolean debug_x_found=FALSE;
+	const gchar *debug_domain=NULL;
+	for(guint x=0; debug_domains[x] && !debug_x_found; x++){
+		for(guint y=0; debug_environment[y] && !debug_x_found; y++) {
+			if(!(all_domains && strcasecmp(debug_domains[x], debug_environment[y]) ))
 				continue;
-			else{
-				debug_output_fp=stdout;
-				if(!output_started){
-					output_started=TRUE;
-					g_fprintf(debug_output_fp, "\n");
-				}
-			}
-			
-			if(g_str_has_prefix(msg, "**ERROR:**")){
-				g_fprintf(stderr, "\n**%s %s %s**", _(GETTEXT_PACKAGE), _(debug_domains[x]), _("error"));
-				va_list args;
-				va_start(args, msg);
-				g_vfprintf(stderr, msg, args);
-				va_end(args);
-				g_fprintf(stderr, " @ %s", datetime);
-			}
-			
-			if(!( debug_last_domain && g_str_equal(debug_last_domain, debug_domains[x]) )){
-				if(debug_last_domain) g_free(debug_last_domain);
-				debug_last_domain=g_strdup(debug_domains[x]);
-				g_fprintf(debug_output_fp, "\n%s:\n", debug_domains[x]);
-			}
-			
-			va_list args;
-			va_start(args, msg);
-			g_fprintf(debug_output_fp, "\t\t");
-			g_vfprintf(debug_output_fp, msg, args);
-			va_end(args);
-			g_fprintf(debug_output_fp, "\n\t\t\t@ %s", datetime);
-			
-			g_strfreev(debug_domains);
-
-			return;
+			debug_x_found=TRUE;
+			debug_output_fp=stdout;
+			debug_domain=debug_environment[y];
+			break;
 		}
 	}
-	g_strfreev(debug_domains);
+	if(!(debug_domain && debug_output_fp)){
+		debug_domain=debug_domains[(g_strv_length(debug_domains)-1)];
+		debug_output_fp=debug_log_rotate();
+	}
+	
+	va_list args;
+	va_start(args, msg);
+	debug_output(debug_output_fp, debug_domain, msg, args);
+	va_end(args);
 }/*debug_printf(DEBUG_DOMAINS, "message" __format, format_args...);*/
+
+static void debug_output(FILE *debug_output_fp, const gchar *debug_domain, const gchar *msg, va_list args){
+	static gboolean output_started=FALSE;
+	
+	time_t current_time=time(NULL);
+	const gchar *datetime=ctime(&current_time);
+	
+	if(!output_started){
+		output_started=TRUE;
+		g_fprintf(debug_output_fp, "\n");
+	}
+	
+	if(g_str_has_prefix(msg, "**ERROR:**")){
+		g_fprintf(stderr, "\n**%s %s %s**", _(GETTEXT_PACKAGE), _(debug_domain), _("error"));
+		g_vfprintf(stderr, msg, args);
+		g_fprintf(stderr, " @ %s", datetime);
+	}
+	
+	if(!( debug_last_domain && g_str_equal(debug_last_domain, debug_domain) )){
+		if(debug_last_domain) g_free(debug_last_domain);
+		debug_last_domain=g_strdup(debug_domain);
+		g_fprintf(debug_output_fp, "\n%s:\n", debug_domain);
+	}
+	
+	g_fprintf(debug_output_fp, "\t\t");
+	g_vfprintf(debug_output_fp, msg, args);
+	g_fprintf(debug_output_fp, " @ %s", datetime);
+}/*debug_output(message, args);*/
 
 gboolean debug_if_domain(const gchar *domains){
 	if(G_STR_EMPTY(domains))

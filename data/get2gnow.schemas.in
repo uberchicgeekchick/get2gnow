@@ -287,8 +287,20 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/beep</key>
-			<applyto>/apps/get2gnow/ui/beep</applyto>
+			<key>/schemas/apps/get2gnow/alerts/disable_system_bell</key>
+			<applyto>/apps/get2gnow/alerts/disable_system_bell</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Disables all sound notifications</short>
+				<long>Disables all sound notifications.</long>
+			</locale>
+		</schema>
+
+		<schema>
+			<key>/schemas/apps/get2gnow/alerts/beep</key>
+			<applyto>/apps/get2gnow/alerts/beep</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -299,8 +311,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweets/compose/no_length_beep</key>
-			<applyto>/apps/get2gnow/tweets/compose/no_length_beep</applyto>
+			<key>/schemas/apps/get2gnow/alerts/no_length_beep</key>
+			<applyto>/apps/get2gnow/alerts/no_length_beep</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>

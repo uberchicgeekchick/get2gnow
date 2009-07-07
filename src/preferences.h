@@ -42,16 +42,17 @@ G_BEGIN_DECLS
 #define PREFS_NOTIFY_MY_FRIENDS_TWEETS		GCONF_PATH "/notifications/my_friends_tweets"
 #define	PREFS_NOTIFY_REPLIES			GCONF_PATH "/notifications/replies"
 #define	PREFS_NOTIFY_DMS			GCONF_PATH "/notifications/dms"
-#define	PREFS_NOTIFY_BEEP			GCONF_PATH "/notifications/beep"
+#define	PREFS_NOTIFY_BEEP			GCONF_PATH "/alerts/beep"
 
 #define	PREFS_URLS_EXPAND_SELECTED_ONLY		GCONF_PATH "/ui/urls/expand/selected_only"
 #define PREFS_URLS_EXPAND_REPLACE_WITH_TITLES	GCONF_PATH "/ui/urls/expand/replace_with_titles"
 #define	PREFS_URLS_EXPAND_USER_PROFILES		GCONF_PATH "/ui/urls/expand/user_profiles"
 #define	PREFS_URLS_EXPAND_DISABLED		GCONF_PATH "/ui/urls/expand/disabled"
 
+#define	PREFS_DISABLE_SYSTEM_BELL		GCONF_PATH "/alerts/disable_system_bell"
 #define PREFS_TWEET_VIEW_DIALOG			GCONF_PATH "/ui/tweet_view/use_dialog"
 
-#define	PREFS_TWEET_LENGTH_ALERT		GCONF_PATH "/tweets/compose/no_length_beep"
+#define	PREFS_TWEET_LENGTH_ALERT		GCONF_PATH "/alerts/no_length_beep"
 
 #define	PREFS_TWEETS_HOME_TIMELINE		GCONF_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES		GCONF_PATH "/tweets/reload_timeline"

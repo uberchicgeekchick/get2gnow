@@ -652,7 +652,7 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *
 	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
 	if(G_STR_EMPTY(user_name)){
-		gtk_widget_error_bell(GTK_WIDGET(online_service_request_popup->user_name_entry));
+		tweets_beep();
 		return FALSE;
 	}
 	

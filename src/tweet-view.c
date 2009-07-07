@@ -162,7 +162,7 @@ typedef enum{
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"TweetView:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Start-Up"
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Start-Up:TweetView.c"
 #include "debug.h"
 
 #define GtkBuilderUI "tweet-view.ui"
@@ -645,7 +645,8 @@ static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, Gtk
 }/*tweet_view_count_tweet_char*/
 
 void tweet_view_beep(void){
-	gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
+	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
+		gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
 }/*tweet_view_beep*/
 
 void tweet_view_sexy_select(void){
@@ -703,9 +704,9 @@ void tweet_view_send(GtkWidget *activated_widget){
 	if(G_STR_EMPTY(text)){
 		gchar *reply_to_string=selected_tweet_reply_to_strdup(FALSE);
 		if(!selected_tweet_get_user_name())
-			gtk_widget_error_bell(GTK_WIDGET(activated_widget));
+			tweets_beep();
 		else if(g_str_has_prefix(text, reply_to_string))
-			gtk_widget_error_bell(GTK_WIDGET(activated_widget));
+			tweets_beep();
 		else
 			selected_tweet_reply();
 		uber_free(reply_to_string);
@@ -736,7 +737,7 @@ void tweet_view_send(GtkWidget *activated_widget){
 static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name){
 	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) > -1) )){
 		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
-			gtk_widget_error_bell(GTK_WIDGET(tweet_view->sexy_entry));
+			tweets_beep();
 		return;
 	}
 	

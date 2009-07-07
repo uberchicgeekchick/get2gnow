@@ -70,6 +70,8 @@ get2gnow_SOURCES =			online-services-typedefs.h	\
 	geometry.c			geometry.h			\
 	label.c				label.h				\
 	parser.c			parser.h			\
+	groups.c			groups.h			\
+	searches.c			searches.h			\
 	preferences.c			preferences.h			\
 	ui-utils.c			ui-utils.h			\
 	following-viewer.c		following-viewer.h		\
@@ -104,6 +106,8 @@ get2gnow_OBJECTS =					\
 	geometry.$(OBJEXT)				\
 	label.$(OBJEXT)					\
 	parser.$(OBJEXT)				\
+	groups.$(OBJEXT)				\
+	searches.$(OBJEXT)				\
 	preferences.$(OBJEXT)				\
 	ui-utils.$(OBJEXT)				\
 	following-viewer.$(OBJEXT)			\
@@ -412,6 +416,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/groups.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-view.Po@am__quote@

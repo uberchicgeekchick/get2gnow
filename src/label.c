@@ -43,7 +43,7 @@
 #include "online-services.h"
 #include "preferences.h"
 
-#define	DEBUG_DOMAIN	"UI:Lable"
+#define	DEBUG_DOMAINS	"UI:Parse:Sexy:URLs:TweetView:OnlineServices:Networking:Tweets:XPath:Auto-Magical:Label.c"
 #include "debug.h"
 
 static void label_class_init(LabelClass *klass);

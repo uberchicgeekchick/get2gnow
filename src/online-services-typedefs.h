@@ -88,6 +88,8 @@ G_BEGIN_DECLS
 #define API_TIMELINE_MINE			"/statuses/user_timeline.xml"
 #define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
 
+#define API_TIMELINE_GROUP			"/statuses/groups.xml"
+#define API_TIMELINE_SEARCH			"/statuses/search.atom"
 #define API_TIMELINE_PUBLIC			"/statuses/public_timeline.xml"
 
 #define API_POST_STATUS				"/statuses/update.xml"
@@ -127,6 +129,8 @@ enum _TweetLists{
 	DMs,
 	Replies,
 	Tweets,
+	Searches,
+	Groups,
 	Timelines,
 	Users,
 	Archive,

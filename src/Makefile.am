@@ -41,6 +41,8 @@ get2gnow_SOURCES = 			online-services-typedefs.h	\
 	geometry.c			geometry.h			\
 	label.c				label.h				\
 	parser.c			parser.h			\
+	groups.c			groups.h			\
+	searches.c			searches.h			\
 	preferences.c			preferences.h			\
 	ui-utils.c			ui-utils.h			\
 	following-viewer.c		following-viewer.h		\

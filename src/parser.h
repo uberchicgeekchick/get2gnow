@@ -26,7 +26,7 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include <gtk/gtk.h>
+#include <glib.h>
 #include <libxml/parser.h>
 
 #include <libsoup/soup-message.h>
@@ -40,6 +40,7 @@ G_BEGIN_DECLS
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, TweetLists monitoring);
+guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list);
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
 

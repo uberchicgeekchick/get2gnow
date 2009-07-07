@@ -103,9 +103,12 @@ TimelineLabels TimelineLabelsList[]={
 	{Replies,	API_REPLIES,		N_("@ _Replies"),		N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),		N_("@ Mentions")},
 	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),		N_("My DMs Inbox")},
+	{Searches,	API_TIMELINE_SEARCH,	N_("_Serch Results"),		N_("Serch Results")},
+	{Groups,	API_TIMELINE_GROUP,	N_("_Serch Results"),		N_("Serch Results")},
 	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),		N_("Public Updates")},
 	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),	N_("%s's Recent Updates")},
 	{Archive,	API_FAVORITES,		N_("My Star_'d Updates"),	N_("My Star'd Updates")},
+	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),		N_("My Tweets")},
 	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),		N_("My Tweets")},
 	{None,		NULL,			N_("Unknow_n timeline"),	N_("Unknown timeline")}
 };
@@ -411,7 +414,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 			return 1.0;
 		case Archive:	case Users:	case Timelines:
 			if(minutes<15) minutes=15;
-			else minutes+=5;
+			else minutes+=8;
 			break;
 		case Replies:
 			minutes+=1;
@@ -419,6 +422,8 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 		case DMs:
 			minutes+=3;
 			break;
+		case Searches: case Groups:
+			minutes+=5;
 		case Tweets:
 			break;
 	}
