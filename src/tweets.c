@@ -115,6 +115,9 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_H:	case GDK_h:
 					g_signal_emit_by_name(main_window_get_menu("help"), "activate");
 					return;
+				case GDK_Down: case GDK_KP_Down:
+					tweet_view_show_previous_tweets();
+					return;
 				case GDK_R: case GDK_r:
 					tweet_list_refresh(tweet_lists_get_current()); 
 					return;

@@ -689,6 +689,10 @@ gint tweet_view_sexy_puts(const gchar *str, gint position){
 	return position;
 }/*tweet_view_sexy_puts*/
 
+void tweet_view_show_previous_tweets(void){
+	g_signal_emit_by_name(tweet_view->sexy_entry_combo_box_entry, "popup");
+}/*tweet_view_show_previous_tweets();*/
+
 void tweet_view_send(GtkWidget *activated_widget){
 	gchar *user_name=NULL;
 	

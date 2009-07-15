@@ -103,6 +103,7 @@ gint tweet_view_sexy_puts(const gchar *str, gint position);
 
 void tweet_view_new_dm(void);
 void tweet_view_reply(void);
+void tweet_view_show_previous_tweets(void);
 void tweet_view_send(GtkWidget *activated_widget);
 void tweet_view_sexy_send_dm(void);
 
