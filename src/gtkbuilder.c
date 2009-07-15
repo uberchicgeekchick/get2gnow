@@ -53,24 +53,57 @@
 
 
 #include "config.h"
+#include "program.h"
 
 #define	DEBUG_DOMAINS	"Debug:UI:GtkBuilder:GtkBuildable:Setup"
 #include "debug.h"
 #include "gtkbuilder.h"
 
 static gchar *gtkbuilder_get_path( const gchar *filename );
+static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename);
 
-static gchar *gtkbuilder_get_path(const gchar *filename){
-#ifndef GNOME_ENABLE_DEBUG
-	gchar *gtkbuilder_ui_file=NULL;
-	if( (g_file_test( (gtkbuilder_ui_file=g_build_filename( DATADIR, PACKAGE_TARNAME, filename, NULL )), G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )) )
-		return gtkbuilder_ui_file;
+static gchar *gtkbuilder_get_path(const gchar *base_filename){
+	gchar *gtkbuilder_ui_file=NULL, *gtkbuilder_ui_filename=NULL;
 	
-	g_free( gtkbuilder_ui_file );
-#endif
+	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
+	gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
+	if(gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
+		uber_free(gtkbuilder_ui_file);
+		return gtkbuilder_ui_filename;
+	}
 	
-	return g_build_filename( BUILDDIR, "data", filename, NULL );
-}
+	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
+	uber_free(gtkbuilder_ui_file);
+	if(gtkbuilder_ui_test_filename(gtkbuilder_ui_filename))
+		return gtkbuilder_ui_filename;
+	
+	gtkbuilder_ui_file=g_strdup_printf("%s.in.ui", base_filename);
+	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
+	uber_free(gtkbuilder_ui_file);
+	
+	if(gtkbuilder_ui_test_filename(gtkbuilder_ui_filename))
+		return gtkbuilder_ui_filename;
+	
+	debug("**ERROR:** Unable to load gtkbuilder ui: %s", gtkbuilder_ui_filename);
+	uber_free(gtkbuilder_ui_filename);
+	
+	return NULL;
+}/*gtkbuilder_get_path("tweet-view");*/
+
+static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
+	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
+	if(!g_file_test( gtkbuilder_ui_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )){
+		debug("Unable to load GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
+		uber_free(gtkbuilder_ui_filename);
+		
+		/* uber_free releases gtkbuilder_ui_filename's memory & sets it to NULL.
+		 * So it will end up with this function returning NULL as well.
+		 */
+	}
+	
+	debug("GtkBuilder UI found filename: %s.", gtkbuilder_ui_filename);
+	return gtkbuilder_ui_filename;
+}/*gtkbuilder_ui_test_file(gtkbuilder_ui_filename);*/
 
 
 

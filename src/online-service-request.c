@@ -65,9 +65,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include "main.h"
+#include "gconfig.h"
 #include "program.h"
-#include "tweets.h"
 
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
@@ -87,6 +86,7 @@
 #include "gtkbuilder.h"
 #include "main-window.h"
 
+#include "tweets.h"
 #include "tweet-view.h"
 
 #include "friends-manager.h"
@@ -99,8 +99,12 @@
 #define	DEBUG_DOMAINS	"OnlineServices:Requests:Settings:UI:GtkBuilder:GtkBuildable:Settings:Popup:OnlineServiceReoqest.c"
 #include "debug.h"
 
-#define GtkBuilderUI "online-services-request-popup.ui"
+#define GtkBuilderUI "online-services-request-popup"
 
+gdouble in_reply_to_status_id=0.0;
+OnlineService *in_reply_to_service=NULL;
+
+OnlineService *selected_service=NULL;
 
 #define API_USER_FOLLOW		"/friendships/create/%s.xml"
 #define API_USER_UNFOLLOW	"/friendships/destroy/%s.xml"

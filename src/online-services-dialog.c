@@ -21,7 +21,6 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "config.h"
 
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
@@ -30,18 +29,21 @@
 #include "gconfig.h"
 #include "gtkbuilder.h"
 
-#include "main.h"
-#include "online-services-dialog.h"
-#include "network.h"
+#include "config.h"
+#include "program.h"
+
 #include "online-services-typedefs.h"
+#include "online-services-dialog.h"
 #include "online-services.h"
 #include "online-service.h"
 #include "online-service-request.h"
 
+#include "network.h"
+
 #include "preferences.h"
 
 
-#define GtkBuilderUI "online-services-dialog.ui"
+#define GtkBuilderUI "online-services-dialog"
 
 #define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Requests:Authentication:Preferences:Accounts:Settings:Setup:OnlineServicesDialog.c"
 #include "debug.h"

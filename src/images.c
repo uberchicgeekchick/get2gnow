@@ -51,12 +51,13 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
+#include <sys/stat.h>
 
 #include "config.h"
-#include <sys/stat.h>
-#include "images.h"
-#include "main.h"
+#include "program.h"
+
 #include "cache.h"
+#include "images.h"
 
 
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"

@@ -24,12 +24,8 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "config.h"
 
-/*
- * Just make sure we include the prototype for strptime as well
- */
-#include <string.h> /* for g_memmove - memmove */
+#include <string.h>
 #include <strings.h>
 
 #include <gtk/gtk.h>
@@ -40,7 +36,9 @@
 
 #include <libsoup/soup-message.h>
 
-#include "main.h"
+#include "config.h"
+#include "program.h"
+
 #include "online-services.h"
 #include "network.h"
 #include "users.h"

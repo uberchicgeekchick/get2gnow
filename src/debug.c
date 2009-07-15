@@ -56,7 +56,7 @@
 
 
 /********************************************************************************
- *      Project, system & library headers, eg #include <gdk/gdkkeysyms.h>       *
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <errno.h>
 #include <stdarg.h>
@@ -66,10 +66,9 @@
 #include <glib/gprintf.h>
 
 #include "config.h"
-#include "main.h"
+#include "program.h"
+
 #include "cache.h"
-
-
 /********************************************************************************
  *               object methods, handlers, callbacks, & etc.                    *
  ********************************************************************************/

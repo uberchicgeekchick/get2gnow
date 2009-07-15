@@ -63,7 +63,8 @@
 #include <libxml/parser.h>
 
 #include "config.h"
-#include "main.h"
+#include "program.h"
+
 #include "cache.h"
 
 /********************************************************

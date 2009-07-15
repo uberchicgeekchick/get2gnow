@@ -54,15 +54,15 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "config.h"
-
 #include <glib/gi18n.h>
+
+#include "config.h"
+#include "program.h"
 
 /********************************************************
  *        Project headers.                              *
  ********************************************************/
 #include "gtkbuilder.h"
-#include "main.h"
 
 #include "online-service.h"
 #include "online-service-request.h"
@@ -100,7 +100,7 @@ typedef struct {
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define GtkBuilderUI "following-viewer.ui"
+#define GtkBuilderUI "following-viewer"
 
 static FollowingViewer *following_viewer=NULL;
 

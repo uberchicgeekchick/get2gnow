@@ -60,7 +60,8 @@
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
 #include "config.h"
-#include "main.h"
+#include "program.h"
+
 #include "gconfig.h"
 
 #include "online-services.h"

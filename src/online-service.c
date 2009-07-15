@@ -70,7 +70,7 @@
 #include <libxml/parser.h>
 
 #include "config.h"
-#include "main.h"
+#include "program.h"
 
 #include "online-services-typedefs.h"
 #include "online-services.h"
@@ -89,6 +89,7 @@
 #include "cache.h"
 
 #include "online-services-dialog.h"
+#include "online-service-request.h"
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -179,12 +180,6 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 #define	ONLINE_SERVICE_LAST_REQUEST		ONLINE_SERVICE_PREFIX "/timestamps/last_request"
 
 #define ONLINE_SERVICE_IDS_TWEETS		ONLINE_SERVICE_PREFIX	"/xml-cache%s/%s"
-
-
-OnlineService *selected_service=NULL;
-
-gdouble in_reply_to_status_id=0.0;
-OnlineService *in_reply_to_service=NULL;
 
 #define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:OnlineService.c"
 #include "debug.h"

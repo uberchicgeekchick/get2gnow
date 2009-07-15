@@ -33,31 +33,32 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "main.h"
+#include "config.h"
+#include "program.h"
 
 G_BEGIN_DECLS
 
-/* Values used & setup by the prefernces window. */
-#define	PREFS_NOTIFY_ALL			GCONF_PATH "/notifications/all"
-#define PREFS_NOTIFY_MY_FRIENDS_TWEETS		GCONF_PATH "/notifications/my_friends_tweets"
-#define	PREFS_NOTIFY_REPLIES			GCONF_PATH "/notifications/replies"
-#define	PREFS_NOTIFY_DMS			GCONF_PATH "/notifications/dms"
-#define	PREFS_NOTIFY_BEEP			GCONF_PATH "/alerts/beep"
+#define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
+#define PREFS_NOTIFY_MY_FRIENDS_TWEETS			GCONF_PATH "/notifications/my_friends_tweets"
+#define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
+#define	PREFS_NOTIFY_DMS				GCONF_PATH "/notifications/dms"
+#define	PREFS_NOTIFY_BEEP				GCONF_PATH "/alerts/beep"
 
-#define	PREFS_URLS_EXPAND_SELECTED_ONLY		GCONF_PATH "/ui/urls/expand/selected_only"
-#define PREFS_URLS_EXPAND_REPLACE_WITH_TITLES	GCONF_PATH "/ui/urls/expand/replace_with_titles"
-#define	PREFS_URLS_EXPAND_USER_PROFILES		GCONF_PATH "/ui/urls/expand/user_profiles"
-#define	PREFS_URLS_EXPAND_DISABLED		GCONF_PATH "/ui/urls/expand/disabled"
+#define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/tweet_view/url_expansion/disabled"
+#define	PREFS_URLS_EXPANSION_SELECTED_ONLY		GCONF_PATH "/tweet_view/url_expansion/selected_only"
+#define PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES	GCONF_PATH "/tweet_view/url_expansion/replace_with_titles"
+#define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/tweet_view/url_expansion/user_profiles"
 
-#define	PREFS_DISABLE_SYSTEM_BELL		GCONF_PATH "/alerts/disable_system_bell"
-#define PREFS_TWEET_VIEW_DIALOG			GCONF_PATH "/ui/tweet_view/use_dialog"
+#define	PREFS_DISABLE_SYSTEM_BELL			GCONF_PATH "/alerts/disable_system_bell"
+#define PREFS_TWEET_VIEW_DIALOG				GCONF_PATH "/tweet_view/use_dialog"
 
-#define	PREFS_TWEET_LENGTH_ALERT		GCONF_PATH "/alerts/no_length_beep"
+#define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
-#define	PREFS_TWEETS_HOME_TIMELINE		GCONF_PATH "/tweets/home_timeline"
-#define	PREFS_TWEETS_RELOAD_TIMELINES		GCONF_PATH "/tweets/reload_timeline"
-#define PREFS_TWEETS_NO_PROFILE_LINK		GCONF_PATH "/tweets/no_link_in_replies"
-#define	PREFS_TWEETS_DIRECT_REPLY_ONLY		GCONF_PATH "/tweets/direct_reply_only"
+#define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/tweets/home_timeline"
+#define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/tweets/reload_timeline"
+
+#define PREFS_TWEETS_NO_PROFILE_LINK			GCONF_PATH "/tweets/no_link_in_replies"
+#define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/tweets/direct_reply_only"
 
 
 void preferences_dialog_show (GtkWindow *parent);

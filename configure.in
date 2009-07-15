@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#00EEECaC1"], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#00EEECaC2"], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -35,12 +35,12 @@ dnl Library Dependencies, uses pkg-config to detect correct version, etc
 dnl
 dnl -----------------------------------------------------------
 
-LIBSOUP_MIN_VERSION=2.26.1
-LIBXML_MIN_VERSION=2.6.16
-GTK_MIN_VERSION=2.12.12
-GCONF_MIN_VERSION=1.2.0
-LIBGIO_MIN_VERSION=2.15.5
-LIBCANBERRA_MIN_VERSION=0.4
+LIBSOUP_VERSION_REQUIRED=2.26.1
+LIBXML_VERSION_REQUIRED=2.6.16
+GTK_VERSION_REQUIRED=2.12.12
+GCONF_VERSION_REQUIRED=1.2.0
+LIBGIO_VERSION_REQUIRED=2.15.5
+LIBCANBERRA_VERSION_REQUIRED=0.4
 
 dnl -----------------------------------------------------------
 dnl GNOME Keyring
@@ -77,18 +77,18 @@ PKG_CHECK_MODULES(get2gnow,
 [
 	libsexy
 	openssl
-	libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	libnotify
 	gnome-vfs-2.0
-	gtk+-2.0 >= $GTK_MIN_VERSION
-	glib-2.0 >= $GLIB_MIN_VERSION
-	gio-2.0 >= $LIBGIO_MIN_VERSION
-	libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	libxml-2.0 >= $LIBXML_MIN_VERSION
+	gtk+-2.0 >= $GTK_VERSION_REQUIRED
+	glib-2.0 >= $GLIB_VERSION_REQUIRED
+	gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	gobject-2.0
 	libgnomeui-2.0
 	gthread-2.0
-	gconf-2.0 >= $GCONF_MIN_VERSION
+	gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	$gnome_keyring_pkgconfig
 ])
 AC_SUBST(get2gnow_CFLAGS)

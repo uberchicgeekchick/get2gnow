@@ -208,7 +208,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="status_compose_vbox">
+              <object class="GtkVBox" id="update_compose_vbox">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
                 <child>
@@ -267,14 +267,30 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkComboBoxEntry" id="tweet_view_sexy_entry_combo_box_entry">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Select a previous update to edit or re-send.</property>
+                        <property name="model">previous_updates_list_store</property>
+                        <property name="add_tearoffs">True</property>
+                        <property name="tearoff_title">Previous Updates</property>
+                        <property name="text_column">0</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="previous_update_cell_renderer_text"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="sexy_send">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Tweet/Update your status. (&lt;Alt&gt;+S)</property>
+                        <property name="tooltip_text" translatable="yes">Update your status/Send your Tweet (&lt;Alt&gt;+S)</property>
                         <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <child>
@@ -405,6 +421,9 @@
                             <property name="tooltip_text" translatable="yes">Friends you can send direct messages to.</property>
                             <property name="model">followers_list_store</property>
                             <property name="active">0</property>
+                            <property name="add_tearoffs">True</property>
+                            <property name="tearoff_title">Send this message as a Direct Message to:</property>
+                            <property name="button_sensitivity">off</property>
                             <child>
                               <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
                               <attributes>
@@ -427,8 +446,8 @@
                             <child>
                               <object class="GtkImage" id="dm_send_image">
                                 <property name="visible">True</property>
-                                <property name="tooltip_text" translatable="yes">Send this tweet as a DM, direct message, to the selected friend.</property>
-                                <property name="stock">gtk-leave-fullscreen</property>
+                                <property name="tooltip_markup">&lt;b&gt;Send this tweet as a DM, direct message, to the selected follower:&lt;/b&gt;</property>
+                                <property name="stock">gnome-stock-mail-fwd</property>
                               </object>
                             </child>
                           </object>
@@ -645,5 +664,14 @@
     <property name="visible">True</property>
     <property name="stock">gtk-goto-top</property>
   </object>
-  <object class="GtkListStore" id="previous_tweets_list_store"/>
+  <object class="GtkListStore" id="previous_updates_list_store">
+    <columns>
+      <!-- column-name GSTRING_UPDATE -->
+      <column type="gchararray"/>
+      <!-- column-name IN_REPLY_TO_SERVICE -->
+      <column type="gpointer"/>
+      <!-- column-name IN_REPLY_TO_STATUS_ID -->
+      <column type="gdouble"/>
+    </columns>
+  </object>
 </interface>

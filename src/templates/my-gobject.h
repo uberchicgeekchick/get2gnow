@@ -59,7 +59,7 @@
 
 
 /********************************************************************************
- * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>

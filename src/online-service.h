@@ -75,13 +75,6 @@
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
 G_BEGIN_DECLS
-
-extern OnlineService *selected_service;
-
-extern gdouble in_reply_to_status_id;
-extern OnlineService *in_reply_to_service;
-
-
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/

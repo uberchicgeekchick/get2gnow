@@ -569,6 +569,8 @@
                             </child>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -619,6 +621,28 @@
                     <property name="label" translatable="yes">Prefere_nces</property>
                     <property name="use_underline">True</property>
                     <property name="stock_id">gtk-preferences</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparatorToolItem" id="toolbutton1">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="main_window_main_tool_bar_exit_tool_button">
+                    <property name="visible">True</property>
+                    <property name="tooltip_markup">&lt;b&gt;Close all tabs &amp;amp; quit.&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">E_xit</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-quit</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

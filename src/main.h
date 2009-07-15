@@ -23,57 +23,30 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <libgnome/libgnome.h>
-#include <libgnomeui/libgnomeui.h>
-#include <gdk/gdkkeysyms.h>
-
-#include "config.h"
-#include "program.h"
-
-
-
 G_BEGIN_DECLS
 
-
-#ifndef GCONF_PATH
-#	if defined GNOME_ENABLE_DEBUG
-#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME "/debug"
-#	else
-#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME
-#	endif
-#endif
-
-#define STATUSBAR_DEFAULT "HotKeys: [Ctrl+N] start a new tweet; [Ctrl+D] or [Shift+Return] to DM; [Ctrl+R], [Return], or '@' to reply, [Ctrl+F] or '>' to re-tweet."
-
 #ifndef	G_STR_EMPTY
-#define		G_STR_EMPTY(string)			((string) == NULL || (string)[0] == '\0')
+#	define		G_STR_EMPTY(string)			((string) == NULL || (string)[0] == '\0')
 #endif
 
 
 #ifndef	G_STR_N_EMPTY
-#define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
+#	define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
 #endif
 
-#ifndef uber_free
-#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
-#endif
 
 #ifndef g_str_n_equal
 #	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
 #endif
 
+
 #ifndef uber_unref
-#define		uber_unref(object)			{ g_object_unref(object); object=NULL; }
+#	define		uber_unref(object)			{ g_object_unref(object); object=NULL; }
 #endif
 
 
 #ifndef	uber_list_free
-#define		uber_list_free(glist)			{ g_list_free(glist); glist=NULL; }
+#	define		uber_list_free(glist)			{ g_list_free(glist); glist=NULL; }
 #endif
 
 

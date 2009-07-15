@@ -75,6 +75,11 @@ typedef struct _OnlineServiceRequest OnlineServiceRequest;
 typedef enum _RequestAction RequestAction;
 
 
+extern OnlineService *selected_service;
+
+extern gdouble in_reply_to_status_id;
+extern OnlineService *in_reply_to_service;
+
 /**********************************************************************
  *          Global method & function prototypes                      *
  **********************************************************************/

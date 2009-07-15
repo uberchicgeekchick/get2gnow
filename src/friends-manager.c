@@ -60,7 +60,7 @@
 
 #include "gtkbuilder.h"
 
-#include "main.h"
+#include "program.h"
 
 #include "main-window.h"
 
@@ -100,7 +100,7 @@ static FriendsManager *friends_manager=NULL;
 #define	DEBUG_DOMAINS	"FriendsManager:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Requests:Users:Setup"
 #include "debug.h"
 
-#define GtkBuilderUI "friends-manager.ui"
+#define GtkBuilderUI "friends-manager"
 
 /* GtkBuilder methods.
  * 'friends_manager_show' is this object's public method & prototyped in 'friends-manager.h' */

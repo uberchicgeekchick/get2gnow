@@ -60,8 +60,9 @@
 #include <glib/gprintf.h>
 
 
-#include "main.h"
 #include "config.h"
+#include "program.h"
+
 #include "main-window.h"
 #include "tweets.h"
 

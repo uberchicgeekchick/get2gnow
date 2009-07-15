@@ -24,8 +24,6 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "config.h"
-
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +31,9 @@
 #include <glib-object.h>
 #include <libsexy/sexy.h>
 
-#include "main.h"
+#include "config.h"
+#include "program.h"
+
 #include "main-window.h"
 #include "label.h"
 #include "tweets.h"
@@ -155,7 +155,7 @@ gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gbool
 	if(G_STR_EMPTY(message)) return g_strdup("");
 	
 	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http%s://%s", (online_service_is_secure(service) ?"s" :""), online_service_get_uri(service) );
-	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPAND_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPAND_USER_PROFILES, TRUE);
+	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPANSION_USER_PROFILES, TRUE);
 	
 	tokens=g_strsplit_set(message, " \t\n", 0);
 	for(gint i=0; tokens[i]; i++) {
@@ -197,9 +197,9 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 		title=label_find_user_title(service, uri, expand_hyperlinks, make_hyperlinks);
 	
 	if(!make_hyperlinks)
-		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[1]) );
+		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :users_at) );
 	else
-		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[1] ) );
+		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :users_at ) );
 	
 	if(end){
 		gchar *user_at_link2=g_strdup_printf(
@@ -238,7 +238,7 @@ static gchar *label_find_user_title(OnlineService *service, const gchar *uri, gb
 		title=g_strdup("");
 	}
 	g_free(title_test);
-
+	
 	return title;
 }/*label_find_user_title(service, uri, expand_hyperlinks, make_hyperlinks);*/
 
@@ -249,7 +249,7 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, gbo
 	else
 		temp=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri);
 	
-	if(gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || !expand_hyperlinks)
+	if(gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || !expand_hyperlinks)
 		return temp;
 	
 	SoupMessage *msg=NULL;

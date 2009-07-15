@@ -69,33 +69,34 @@
 
 
 #include "config.h"
-#include "ipc.h"
-/* Where ever your projects 'main window' is define.
- * Its used by 'gtk_window_present' on line:175.
- * There are more notes there.
- */
+#include "program.h"
+
+#include "ui-utils.h"
 #include "main-window.h"
+#include "ipc.h"
+
 
 #ifndef GNOME_ENABLE_DEBUG
-#define PIPE_PREFIX         "%s-%s-"
+#	define	PIPE_PREFIX		"%s-%s-"
 #else
-#define PIPE_PREFIX		"%s-debug-%s-"
+#	define	PIPE_PREFIX		"%s-debug-%s-"
 #endif
 
-#define PIPE_PREFIX_FULL    "%s/" PIPE_PREFIX "%d"
-#define MAX_BUFFER_SIZE 4096
+#define	PIPE_PREFIX_FULL	"%s/" PIPE_PREFIX "%d"
+#define	MAX_BUFFER_SIZE		4096
 
+typedef struct _Input Input;
 
-typedef struct{
-	int          pipe;
-	char        *pipe_name;
-	GIOChannel  *io;
-	guint        io_watch;
-	GByteArray  *buffer;
-	gboolean     ready;
-} Input;
+struct _Input{
+	int		pipe;
+	char		*pipe_name;
+	GIOChannel	*io;
+	guint		io_watch;
+	GByteArray	*buffer;
+	gboolean	ready;
+};
 
-#define DEBUG_DOMAINS "IPC:CLI:Settings:Setup:Start-Up"
+#define DEBUG_DOMAINS "Settings:Setup:Start-Up:CLI:Options:IPC.c"
 #include "debug.h"
 
 static Input *input=NULL;
@@ -103,9 +104,9 @@ static Input *input=NULL;
 
 static void ipc_main(void);
 static void ipc_commit(Input *input);
-static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition, Input *input );
+static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition, Input *input);
 
-gboolean ipc_init_check( int argc, char **argv ){
+gboolean ipc_init_check(int argc, char **argv){
 	GDir *dir;
 	const char *entry, *user_name, *tmp_path;
 	char *prefix;
@@ -186,7 +187,7 @@ gboolean ipc_init_check( int argc, char **argv ){
 static void ipc_commit(Input *input){
 	g_assert(input->buffer->len > 0 && input->buffer->data[input->buffer->len-1] == 0);
 	
-	gtk_window_present(GTK_WINDOW( (main_window_get_window()) ));
+	window_present(main_window_get_window(), TRUE);
 	
 	if(input->buffer->len > MAX_BUFFER_SIZE){
 		g_byte_array_free(input->buffer, TRUE);
@@ -272,13 +273,12 @@ static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition conditio
 		return FALSE;
 	}
 	
-	if(got_zero)
-		ipc_commit(input);
+	if(got_zero) ipc_commit(input);
 	return TRUE;
 }
 
 
-static void ipc_main( void ){
+static void ipc_main(void){
 	g_return_if_fail(input == NULL);
 	
 	input=g_new0(Input, 1);
@@ -324,7 +324,7 @@ static void ipc_main( void ){
 }
 
 
-void ipc_deinit( void ){
+void ipc_deinit(void){
 	if(!input) return;
 	
 	if(input->io_watch){
@@ -344,8 +344,8 @@ void ipc_deinit( void ){
 		g_free(input->pipe_name);
 		input->pipe_name=NULL;
 	}
-		
+	
 	g_byte_array_free(input->buffer, TRUE);
-	g_free(input);
-	input=NULL;
-}
+	uber_free(input);
+}/*ipc_deinit();*/
+

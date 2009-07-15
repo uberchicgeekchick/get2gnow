@@ -732,17 +732,17 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#00EEECaC1"
+PACKAGE_VERSION="#00EEECaC2"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"
 
-LIBSOUP_MIN_VERSION=2.26.1
-LIBXML_MIN_VERSION=2.6.16
-GTK_MIN_VERSION=2.12.12
-GCONF_MIN_VERSION=1.2.0
-LIBGIO_MIN_VERSION=2.15.5
-LIBCANBERRA_MIN_VERSION=0.4
+LIBSOUP_VERSION_REQUIRED=2.26.1
+LIBXML_VERSION_REQUIRED=2.6.16
+GTK_VERSION_REQUIRED=2.12.12
+GCONF_VERSION_REQUIRED=1.2.0
+LIBGIO_VERSION_REQUIRED=2.15.5
+LIBCANBERRA_VERSION_REQUIRED=0.4
 
 ac_unique_file="src/main.c"
 # Factoring default headers for most tests.
@@ -788,12 +788,12 @@ PACKAGE_TARNAME
 PACKAGE_VERSION
 PACKAGE_STRING
 PACKAGE_BUGREPORT
-LIBSOUP_MIN_VERSION
-LIBXML_MIN_VERSION
-GTK_MIN_VERSION
-GCONF_MIN_VERSION
-LIBGIO_MIN_VERSION
-LIBCANBERRA_MIN_VERSION
+LIBSOUP_VERSION_REQUIRED
+LIBXML_VERSION_REQUIRED
+GTK_VERSION_REQUIRED
+GCONF_VERSION_REQUIRED
+LIBGIO_VERSION_REQUIRED
+LIBCANBERRA_VERSION_REQUIRED
 exec_prefix
 prefix
 program_transform_name
@@ -22889,35 +22889,35 @@ if test -n "$get2gnow_CFLAGS"; then
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= \$LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= \$GTK_MIN_VERSION
+	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= \$LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= \$LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= \$LIBXML_MIN_VERSION
+	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= \$LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= \$GCONF_MIN_VERSION
+	    gconf-2.0 >= \$GCONF_VERSION_REQUIRED
 	    \$gnome_keyring_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 ") 2>&5
   ac_status=$?
@@ -22926,18 +22926,18 @@ if test -n "$get2gnow_CFLAGS"; then
   pkg_cv_get2gnow_CFLAGS=`$PKG_CONFIG --cflags "
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>/dev/null`
 else
@@ -22953,35 +22953,35 @@ if test -n "$get2gnow_LIBS"; then
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= \$LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= \$GTK_MIN_VERSION
+	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= \$LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= \$LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= \$LIBXML_MIN_VERSION
+	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= \$LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= \$GCONF_MIN_VERSION
+	    gconf-2.0 >= \$GCONF_VERSION_REQUIRED
 	    \$gnome_keyring_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 ") 2>&5
   ac_status=$?
@@ -22990,18 +22990,18 @@ if test -n "$get2gnow_LIBS"; then
   pkg_cv_get2gnow_LIBS=`$PKG_CONFIG --libs "
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>/dev/null`
 else
@@ -23024,36 +23024,36 @@ fi
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>&1`
         else
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 " 2>&1`
         fi
@@ -23063,18 +23063,18 @@ fi
 	{ { echo "$as_me:$LINENO: error: Package requirements (
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 ) were not met:
 
@@ -23090,18 +23090,18 @@ See the pkg-config man page for more details.
 echo "$as_me: error: Package requirements (
 	    openssl
 	    libsexy
-	    libsoup-2.4 >= $LIBSOUP_MIN_VERSION
+	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
-	    gtk+-2.0 >= $GTK_MIN_VERSION
+	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0
-	    gio-2.0 >= $LIBGIO_MIN_VERSION
-	    libcanberra-gtk >= $LIBCANBERRA_MIN_VERSION
-	    libxml-2.0 >= $LIBXML_MIN_VERSION
+	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
+	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
+	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    gobject-2.0
 	    libgnomeui-2.0
 	    gthread-2.0
-	    gconf-2.0 >= $GCONF_MIN_VERSION
+	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
 ) were not met:
 
@@ -25393,12 +25393,12 @@ PACKAGE_VERSION!$PACKAGE_VERSION$ac_delim
 PACKAGE_PREFIX!$PACKAGE_PREFIX$ac_delim
 PACKAGE_STRING!$PACKAGE_STRING$ac_delim
 PACKAGE_BUGREPORT!$PACKAGE_BUGREPORT$ac_delim
-LIBSOUP_MIN_VERSION!$LIBSOUP_MIN_VERSION$ac_delim
-LIBXML_MIN_VERSION!$LIBXML_MIN_VERSION$ac_delim
-GTK_MIN_VERSION!$GTK_MIN_VERSION$ac_delim
-GCONF_MIN_VERSION!$GCONF_MIN_VERSION$ac_delim
-LIBGIO_MIN_VERSION!$LIBGIO_MIN_VERSION$ac_delim
-LIBCANBERRA_MIN_VERSION!$LIBCANBERRA_MIN_VERSION$ac_delim
+LIBSOUP_VERSION_REQUIRED!$LIBSOUP_VERSION_REQUIRED$ac_delim
+LIBXML_VERSION_REQUIRED!$LIBXML_VERSION_REQUIRED$ac_delim
+GTK_VERSION_REQUIRED!$GTK_VERSION_REQUIRED$ac_delim
+GCONF_VERSION_REQUIRED!$GCONF_VERSION_REQUIRED$ac_delim
+LIBGIO_VERSION_REQUIRED!$LIBGIO_VERSION_REQUIRED$ac_delim
+LIBCANBERRA_VERSION_REQUIRED!$LIBCANBERRA_VERSION_REQUIRED$ac_delim
 exec_prefix!$exec_prefix$ac_delim
 prefix!$prefix$ac_delim
 program_transform_name!$program_transform_name$ac_delim

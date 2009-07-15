@@ -66,7 +66,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include "main.h"
+#include "config.h"
 #include "program.h"
 #include "main-window.h"
 
@@ -186,7 +186,7 @@ struct _UserProfileViewer{
 #define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Dates:Times:Users:Settings:UserProfileViewer:ViewProfile:Users.c"
 #include "debug.h"
 
-#define GtkBuilderUI "user-profile-viewer.ui"
+#define GtkBuilderUI "user-profile-viewer"
 static UserProfileViewer *user_profile_viewer=NULL;
 
 
@@ -477,7 +477,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	debug("Formatting status text for display.");
 	
 	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
-	if(!gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)){
+	if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
 		status->sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
 		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
 	}else{

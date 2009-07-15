@@ -29,7 +29,7 @@
 #include <glib/gprintf.h>
 
 #include "config.h"
-#include "main.h"
+#include "program.h"
 
 const gchar *old_locale=NULL;
 gchar **remaining_argv=NULL;
@@ -59,7 +59,7 @@ int main(const int argc, const char **argv, const char **envp){
 	);
 	
 	if(remaining_argv)
-		remaining_argc=g_strv_length(remaining_argv);
+		remaining_argc=g_strv_length(remaining_argv)-1;
 	
 	if(!program_init(remaining_argc, remaining_argv)){
 		setlocale(LC_TIME, old_locale);

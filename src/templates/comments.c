@@ -56,7 +56,7 @@
 
 
 /********************************************************************************
- *      Project, system & library headers, eg #include <gdk/gdkkeysyms.h>       *
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 
 

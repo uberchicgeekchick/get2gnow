@@ -4,25 +4,25 @@ Version:	"@PACKAGE_VERSION@"
 Release:	20090620
 License:	RPL v1.3
 URL:		http://local.uberchicgeekchick.com/?projects=get2gnow
-Source0:	%{name}-%{version}.tar.gz
+Source0:	"%{name}-%{version}.tar.gz"
 Group:		Applications/Internet
 Packager:	Kaity G. B. <uberChick@uberChicGeekChick.Com>
 Requires:	libsexy
 Requires:	libnotify
 Requires:	gnome-vfs2
-Requires:	libxml2 >= @LIBXML_MIN_VERSION@
-Requires:	gtk2 >= @GTK_MIN_VERSION@
-Requires:	gconf2 >= @GCONF_MIN_VERSION@
+Requires:	libxml2 >= @LIBXML_VERSION_REQUIRED@
+Requires:	gtk2 >= @GTK_VERSION_REQUIRED@
+Requires:	gconf2 >= @GCONF_VERSION_REQUIRED@
 Requires:	gnome-keyring
 Requires:	libsexy
 BuildRequires:	libopenssl-devel
-BuildRequires:	libsoup-devel >= @LIBSOUP_MIN_VERSION@
-BuildRequires:	libxml2-devel >= @LIBXML_MIN_VERSION@
+BuildRequires:	libsoup-devel = @LIBSOUP_VERSION_REQUIRED@
+BuildRequires:	libxml2-devel >= @LIBXML_VERSION_REQUIRED@
 BuildRequires:	glib2-devel
-BuildRequires:	libgio-2_0-0 >= @LIBGIO_MIN_VERSION@
-BuildRequires:	gtk2-devel >= @GTK_MIN_VERSION@
-BuildRequires:	gconf2-devel >= @GCONF_MIN_VERSION@
-BuildRequires:	libcanberra-gtk >= @LIBCANBERRA_MIN_VERSION@
+BuildRequires:	libgio-2_0-0 >= @LIBGIO_VERSION_REQUIRED@
+BuildRequires:	gtk2-devel >= @GTK_VERSION_REQUIRED@
+BuildRequires:	gconf2-devel >= @GCONF_VERSION_REQUIRED@
+BuildRequires:	libcanberra-gtk >= @LIBCANBERRA_VERSION_REQUIRED@
 BuildRequires:	libnotify-devel
 BuildRequires:	gnome-vfs2-devel
 BuildRequires:	libgobject-2_0-0

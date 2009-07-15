@@ -61,24 +61,47 @@
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-#include <glib.h>
-#include <gtk/gtk.h>
 
+#include <glib.h>
+#include <glib/gi18n.h>
+
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+
+#include <libgnome/libgnome.h>
+#include <libgnomeui/libgnomeui.h>
+
+#include "config.h"
+#include "main.h"
 
 G_BEGIN_DECLS
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
+#ifndef GCONF_PATH
+#	if defined GNOME_ENABLE_DEBUG
+#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME "/debug"
+#	else
+#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME
+#	endif
+#endif
+
+#define STATUSBAR_DEFAULT "HotKeys: [Ctrl+N] start a new tweet; [Ctrl+D] or [Shift+Return] to DM; [Ctrl+R], [Return], or '@' to reply, [Ctrl+F] or '>' to re-tweet."
+
 #ifndef uber_free
-	#define	uber_free(mem)					{ g_free(mem); mem=NULL; }
+#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
 #endif
 
 #ifndef g_str_n_equal
-	#define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
+#	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
+#endif
+
+#ifndef	gtk_widget_is_sensitive
+#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_sensitive(widget)
 #endif
 
 #ifndef	gtk_widget_has_focus
-	#define	gtk_widget_has_focus(widget)			program_gtk_widget_get_focus(widget)
+#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_focus(widget)
 #endif
 
 #ifndef	uber_g_str_equal
@@ -103,7 +126,7 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef uber_g_str_n_equal
-	#define		uber_str_n_equal			!uber_str_equal
+#	define		uber_str_n_equal			!uber_str_equal
 #endif
 
 #ifndef	gdouble_to_str
@@ -122,6 +145,7 @@ void program_uber_free(gpointer pointer1, ...);
 gchar *program_double_drop_precision(const gdouble gdouble_value);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 
+gboolean program_gtk_widget_get_sensitive(GtkWidget *widget);
 gboolean program_gtk_widget_get_focus(GtkWidget *widget);
 void program_timeout_remove(guint *id, const gchar *usage);
 

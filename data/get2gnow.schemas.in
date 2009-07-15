@@ -158,8 +158,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/tweets/use_dialog</key>
-			<applyto>/apps/get2gnow/ui/tweets/use_dialog</applyto>
+			<key>/schemas/apps/get2gnow/tweet_view/use_dialog</key>
+			<applyto>/apps/get2gnow/tweet_view/use_dialog</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -185,8 +185,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/tweets/no_link_in_replies</key>
-			<applyto>/apps/get2gnow/ui/tweets/no_link_in_replies</applyto>
+			<key>/schemas/apps/get2gnow/tweets/no_link_in_replies</key>
+			<applyto>/apps/get2gnow/tweets/no_link_in_replies</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -200,8 +200,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/expand/disabled</key>
-			<applyto>/apps/get2gnow/ui/expand/disabled</applyto>
+			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/disabled</key>
+			<applyto>/apps/get2gnow/tweet_view/url_expansion/disabled</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -215,8 +215,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/expand/selected_only</key>
-			<applyto>/apps/get2gnow/ui/expand/selected_only</applyto>
+			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/selected_only</key>
+			<applyto>/apps/get2gnow/tweet_view/url_expansion/selected_only</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -227,8 +227,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/expand/user_profiles</key>
-			<applyto>/apps/get2gnow/ui/expand/user_profiles</applyto>
+			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/user_profiles</key>
+			<applyto>/apps/get2gnow/tweet_view/url_expansion/user_profiles</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -239,8 +239,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/expand/replace_with_titles</key>
-			<applyto>/apps/get2gnow/ui/expand/replace_with_titles</applyto>
+			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/replace_with_titles</key>
+			<applyto>/apps/get2gnow/tweet_view/url_expansion/replace_with_titles</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -251,32 +251,44 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/notify</key>
-			<applyto>/apps/get2gnow/ui/notify</applyto>
+			<key>/schemas/apps/get2gnow/notifications/all</key>
+			<applyto>/apps/get2gnow/notifications/all</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification of new Twitter messages</short>
-				<long>Show notification of new Twitter messages.</long>
+				<short>Show notifications for all new messages</short>
+				<long>Show notification for all new messages.</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/notify_at_mentions</key>
-			<applyto>/apps/get2gnow/ui/notify_at_mentions</applyto>
+			<key>/schemas/apps/get2gnow/notifications/replies</key>
+			<applyto>/apps/get2gnow/notifications/replies</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification for ynew messages from someone you follow</short>
+				<long>Show notification for all new messages posted by any one the user is following.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/notifications/replies</key>
+			<applyto>/apps/get2gnow/notifications/replies</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
 				<short>Show notification for new messages containing @username</short>
-				<long>Show notification of new messages where the user is @ replied or mentioned.</long>
+				<long>Show notification of new messages where the user is beng replied to or talked to.</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/notify_dms</key>
-			<applyto>/apps/get2gnow/ui/notify_at_dms</applyto>
+			<key>/schemas/apps/get2gnow/notifications/dms</key>
+			<applyto>/apps/get2gnow/ui/notifications/dms</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -311,8 +323,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/alerts/no_length_beep</key>
-			<applyto>/apps/get2gnow/alerts/no_length_beep</applyto>
+			<key>/schemas/apps/get2gnow/alerts/disable_update_length_alert</key>
+			<applyto>/apps/get2gnow/alerts/disable_update_length_alert</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>

@@ -58,15 +58,16 @@
 /********************************************************************************
  * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
  ********************************************************************************/
-#include "config.h"
 #include <string.h>
 #include <glib/gi18n.h>
+
+#include "config.h"
+#include "program.h"
 
 #include "network.h"
 #include "gconfig.h"
 #include "gtkbuilder.h"
 
-#include "main.h"
 #include "online-services-typedefs.h"
 #include "main-window.h"
 #include "preferences.h"
@@ -78,7 +79,7 @@
  ********************************************************************************/
 static gboolean i_changed_no_profile=FALSE;
 
-#define GtkBuilderUI "preferences.ui"
+#define GtkBuilderUI "preferences"
 
 #define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Settings:Setup:Start-Up:Preferences.c"
 #include "debug.h"
@@ -94,7 +95,7 @@ struct _PreferencesDialog{
 	GtkComboBox	*combo_reload;
 	
 	/* Checkbuttons */
-	GtkCheckButton	*no_length_alert;
+	GtkCheckButton	*disable_update_length_alert_check_button;
 	GtkComboBox	*replace_me_with_combo_box;
 	
 	GtkCheckButton	*notify_dms_check_button;
@@ -134,7 +135,7 @@ reload_time reload_list[]={
 
 struct _replace_me_with{
 	gint value;
-	gchar *display_text;
+	gchar *label;
 };
 
 replace_me_with replace_me_list[]={
@@ -145,10 +146,9 @@ replace_me_with replace_me_list[]={
 };
 
 enum {
-	COL_LANG_ENABLED,
-	COL_LANG_CODE,
-	COL_LANG_NAME,
-	COL_LANG_COUNT
+	COL_REPLACE_ENABLED,
+	COL_REPLACE_LABEL,
+	COL_REPLACE_COUNT,
 };
 
 enum {
@@ -201,15 +201,15 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_ALL, TRUE, prefs->notify_all_new_updates);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEEP, TRUE, prefs->notify_beep_updates_check_button);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_TWEET_LENGTH_ALERT, FALSE, prefs->no_length_alert);
+	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE, prefs->disable_update_length_alert_check_button);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEET_VIEW_DIALOG, FALSE, prefs->use_tweet_dialog);
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, TRUE, prefs->disable_system_bell);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPAND_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_NO_PROFILE_LINK, TRUE, prefs->tweets_no_profile_link_checkbutton);
@@ -271,18 +271,18 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (prefs->combo_default_timeline),
 									renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
 
-	model = gtk_list_store_new(COL_COMBO_COUNT,
-								G_TYPE_STRING,
-								G_TYPE_STRING);
+	model = gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
 
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_default_timeline), GTK_TREE_MODEL (model));
 
 	for (i = 0; timelines[i]; i += 2) {
 		gtk_list_store_append (model, &iter);
-		gtk_list_store_set (model, &iter,
-							COL_COMBO_VISIBLE_NAME, _(timelines[i + 1]),
-							COL_COMBO_NAME, timelines[i],
-							-1);
+		gtk_list_store_set(
+					model, &iter,
+						COL_COMBO_VISIBLE_NAME, timelines[i+1],
+						COL_COMBO_NAME, timelines[i],
+					-1
+		);
 	}
 
 	g_object_unref (model);
@@ -297,17 +297,17 @@ static void preferences_replace_with_setup(PreferencesDialog *prefs){
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
 	
-	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_INT, G_TYPE_STRING);
+	GtkListStore *list_store=gtk_list_store_new(COL_REPLACE_COUNT, G_TYPE_INT, G_TYPE_STRING);
 	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->replace_me_with_combo_box), GTK_TREE_MODEL(list_store));
 	
-	while(options->display_text != NULL) {
+	while(options->label != NULL) {
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_COMBO_VISIBLE_NAME, _(options->display_text),
-						COL_COMBO_NAME, options->value,
+						COL_REPLACE_ENABLED, options->value,
+						COL_REPLACE_LABEL, options->label,
 					-1
 		);
 		options++;
@@ -335,7 +335,7 @@ static void preferences_reload_setup(PreferencesDialog *prefs){
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_COMBO_VISIBLE_NAME, _(options->display_text),
+						COL_COMBO_VISIBLE_NAME, options->display_text,
 						COL_COMBO_NAME, options->minutes,
 					-1
 		);
@@ -528,7 +528,7 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs){
 	g_free(prefs);
 }
 
-void preferences_dialog_show (GtkWindow *parent){
+void preferences_dialog_show(GtkWindow *parent){
 	static PreferencesDialog *prefs;
 	GtkBuilder         *ui;
 
@@ -562,7 +562,7 @@ void preferences_dialog_show (GtkWindow *parent){
 					"notify_all_new_updates_check_button", &prefs->notify_all_new_updates,
 					"notify_beep_updates_check_button", &prefs->notify_beep_updates_check_button,
 					
-					"no_length_alert_checkbutton", &prefs->no_length_alert,
+					"disable_update_length_alert_check_button", &prefs->disable_update_length_alert_check_button,
 					"replace_me_with_combo_box", &prefs->replace_me_with_combo_box,
 					
 					"tweets_no_profile_link_checkbutton", &prefs->tweets_no_profile_link_checkbutton,
@@ -584,17 +584,16 @@ void preferences_dialog_show (GtkWindow *parent){
 
 	g_object_add_weak_pointer(G_OBJECT (prefs->dialog), (gpointer) &prefs);
 	gtk_window_set_transient_for(GTK_WINDOW (prefs->dialog), parent);
-
-	/* Set up the rest of the widget */
+	
 	preferences_timeline_setup(prefs);
 	preferences_direct_reply_setup(prefs);
 	preferences_replace_with_setup(prefs);
 	preferences_reload_setup(prefs);
-
+	
 	preferences_setup_widgets(prefs);
-
+	
 	gtk_widget_show(GTK_WIDGET(prefs->dialog));
-}
+}/*preferences_dialog_show(parent);*/
 
 
 /********************************************************************************

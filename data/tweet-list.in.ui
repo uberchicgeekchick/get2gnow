@@ -169,9 +169,7 @@
                 <child>
                   <object class="GtkToggleToolButton" id="tweet_list_stop_toggle_tool_button">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">_Stop</property>
                     <property name="use_underline">True</property>
-                    <property name="stock_id">gtk-stop</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

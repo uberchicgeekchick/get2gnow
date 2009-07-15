@@ -60,8 +60,9 @@
  *        Project headers.                              *
  ********************************************************/
 #include <stdlib.h>
+
 #include "config.h"
-#include "main.h"
+#include "program.h"
 
 #include "timer.h"
 #include "main-window.h"

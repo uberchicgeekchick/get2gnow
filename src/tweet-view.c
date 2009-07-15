@@ -61,7 +61,6 @@
 #include <glib.h>
 
 #include "config.h"
-#include "main.h"
 #include "program.h"
 
 #include "images.h"
@@ -106,12 +105,18 @@ struct _TweetView{
 	Label			*sexy_tweet;
 	
 	/* Tweet, status, & DM writing area & widgets. */
-	GtkVBox			*status_compose_vbox;
+	GtkVBox			*update_compose_vbox;
 	GtkHBox			*char_count_hbox;
 	GtkLabel		*char_count;
 	
 	GtkHBox			*tweet_hbox;
+	
+	guint			updates;
+	GtkComboBoxEntry	*sexy_entry_combo_box_entry;
+	GtkListStore		*previous_updates_list_store;
+	GtkTreeModel		*previous_updates_tree_model;
 	SexySpellEntry		*sexy_entry;
+	
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm;
 	GtkVSeparator		*sexy_vseparator;
@@ -158,6 +163,12 @@ typedef enum{
 	USER_POINTER,
 } FriendsDMColumns;
 
+typedef enum{
+	GSTRING_UPDATE,
+	IN_REPLY_TO_SERVICE,
+	IN_REPLY_TO_STATUS_ID,
+} PeviousUpdateInfo;
+
 
 /********************************************************
  *          Variable definitions.                       *
@@ -165,7 +176,7 @@ typedef enum{
 #define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Start-Up:TweetView.c"
 #include "debug.h"
 
-#define GtkBuilderUI "tweet-view.ui"
+#define GtkBuilderUI "tweet-view"
 #define	TWEET_MAX_CHARS	140
 
 static TweetView *tweet_view=NULL;
@@ -189,6 +200,9 @@ static void tweet_view_selected_tweet_buttons_show(gboolean selected_tweet);
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
 
 static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name);
+static void tweet_view_sexy_append(void);
+static void tweet_view_select_previous_update(GtkComboBoxEntry *sexy_entry_combo_box_entry, TweetView *tweet_view);
+static void tweet_view_free_updates(TweetView *tweet_view);
 
 static void tweet_view_dm_show(GtkToggleButton *toggle_button);
 static void tweet_view_dm_form_activate(gboolean dm_activate);
@@ -204,6 +218,7 @@ GtkHBox *tweet_view_get_embed(void){
 
 static void tweet_view_destroy_cb(GtkWidget *window, TweetView *tweet_view){
 	debug("Destroying Tweet View & freeing resources");
+	tweet_view_free_updates(tweet_view);
 	gtk_widget_destroy( GTK_WIDGET(tweet_view->tweet_view) );
 	g_free(tweet_view);
 }/*tweet_view_destroy_cb*/
@@ -240,6 +255,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	
 	tweet_view=g_new0(TweetView, 1);
 	debug("Building Tweet View");
+	tweet_view->updates=0;
 	ui=gtkbuilder_get_file(
 				GtkBuilderUI,
 					"tweet_view", &tweet_view->tweet_view,
@@ -256,11 +272,13 @@ TweetView *tweet_view_new(GtkWindow *parent){
 					"status_view_vbox", &tweet_view->status_view_vbox,
 					"tweet_datetime_label", &tweet_view->tweet_datetime_label,
 					
-					"status_compose_vbox", &tweet_view->status_compose_vbox,
+					"update_compose_vbox", &tweet_view->update_compose_vbox,
 					"char_count_hbox", &tweet_view->char_count_hbox,
 					"char_count", &tweet_view->char_count,
 					
 					"tweet_hbox", &tweet_view->tweet_hbox,
+					"tweet_view_sexy_entry_combo_box_entry", &tweet_view->sexy_entry_combo_box_entry,
+					"previous_updates_list_store", &tweet_view->previous_updates_list_store,
 					"sexy_send", &tweet_view->sexy_send,
 					"sexy_dm", &tweet_view->sexy_dm,
 					"sexy_vseparator", &tweet_view->sexy_vseparator,
@@ -273,7 +291,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 					"followers_combo_box", &tweet_view->followers_combo_box,
 					"followers_list_store", &tweet_view->followers_list_store,
 					"followers_send_dm", &tweet_view->followers_send_dm,
-				
+					
 					"dm_form_active_togglebutton", &tweet_view->dm_form_active_togglebutton,
 					"dm_form_active_image", &tweet_view->dm_form_active_image,
 					
@@ -286,6 +304,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				NULL
 	);
 	tweet_view->followers_model=gtk_combo_box_get_model(tweet_view->followers_combo_box);
+	tweet_view->previous_updates_tree_model=gtk_combo_box_get_model(GTK_COMBO_BOX(tweet_view->sexy_entry_combo_box_entry));
 	
 	debug("Building & setting up new Tweet entry area.");
 	tweet_view_sexy_init();
@@ -308,13 +327,14 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"user_unfollow_button", "clicked", online_service_request_selected_tweet_unfollow,
 				"user_block_button", "clicked", online_service_request_selected_tweet_block,
 				
-				"followers_send_dm", "clicked", tweet_view_send,
+				"tweet_view_sexy_entry_combo_box_entry", "changed", tweet_view_select_previous_update,
 				"sexy_send", "clicked", tweet_view_send,
 				"sexy_dm", "clicked", tweet_view_send,
 				"new_tweet_button", "clicked", tweets_new_tweet,
+				"dm_form_active_togglebutton", "toggled", tweet_view_dm_show,
 				
 				"dm_refresh", "clicked", tweet_view_dm_refresh,
-				"dm_form_active_togglebutton", "toggled", tweet_view_dm_show,
+				"followers_send_dm", "clicked", tweet_view_send,
 				
 				"reply_button", "clicked", selected_tweet_reply,
 				"retweet_button", "clicked", selected_tweet_retweet,
@@ -360,14 +380,14 @@ void tweet_view_set_embed_toggle_and_image(void){
 		debug("Setting TweetView's embed state indicators to split Tweet View off into a floating window.");
 		gtk_toggle_button_set_active(tweet_view->embed_togglebutton, FALSE);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(tweet_view->embed_togglebutton), "<span weight=\"bold\">Split Tweet View into its own window.</span>");
-		gtk_image_set_from_icon_name(tweet_view->embed_image, "gtk-goto-top", ImagesMinimum);
+		gtk_image_set_from_icon_name(tweet_view->embed_image, "gtk-go-up", ImagesMinimum);
 	}else{
 		debug("Setting TweetView's embed state indicators to embed Tweet View into %s's main window.", PACKAGE_NAME);
 		gtk_toggle_button_set_active(tweet_view->embed_togglebutton, TRUE);
 		gchar *tooltip_markup=g_strdup_printf("<span weight=\"light\">Move Tweet View back into %s's main window.</span>", PACKAGE_NAME);
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(tweet_view->embed_togglebutton), tooltip_markup );
 		g_free(tooltip_markup);
-		gtk_image_set_from_icon_name(tweet_view->embed_image, "gtk-goto-bottom", ImagesMinimum);
+		gtk_image_set_from_icon_name(tweet_view->embed_image, "gtk-go-down", ImagesMinimum);
 	}
 }/*tweet_view_set_embed_toggle_and_image*/
 
@@ -419,10 +439,10 @@ static void tweet_view_dm_form_activate(gboolean dm_activate){
 	tweet_view_dm_form_set_toggle_and_image();
 	
 	if(!dm_activate){
-		gtk_widget_hide( GTK_WIDGET(tweet_view->dm_frame) );
+		gtk_widget_hide(GTK_WIDGET(tweet_view->dm_frame));
 		gtk_widget_grab_focus(GTK_WIDGET(tweet_view->sexy_entry));
 	}else{
-		gtk_widget_show( GTK_WIDGET(tweet_view->dm_frame) );
+		gtk_widget_show(GTK_WIDGET(tweet_view->dm_frame));
 		gtk_widget_grab_focus(GTK_WIDGET(tweet_view->followers_combo_box));
 	}
 }/*tweet_view_dm_form_activate*/
@@ -463,45 +483,12 @@ static void tweet_view_sexy_init(void){
 	g_object_set( tweet_view->sexy_tweet, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL );
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_tweet));
 	
-	debug("Creating Tweet's entry, 'tweet_view->sexy_entry', using sexy entry.");
+	debug("Creating Tweet's entry, 'tweet_view->sexy_entry', using SexyEntry, and adding it to TweetView's 'sexy_entry_combo_box_entry'.");
 	tweet_view->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
+	tweet_view->sexy_entry=g_object_ref_sink(tweet_view->sexy_entry);
+	gtk_container_remove(GTK_CONTAINER(tweet_view->sexy_entry_combo_box_entry), gtk_bin_get_child(GTK_BIN(tweet_view->sexy_entry_combo_box_entry)));
+	gtk_container_add(GTK_CONTAINER(tweet_view->sexy_entry_combo_box_entry), GTK_WIDGET(tweet_view->sexy_entry));
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_entry));
-	gtk_box_pack_start(
-			GTK_BOX(tweet_view->tweet_hbox),
-			GTK_WIDGET(tweet_view->sexy_entry),
-			TRUE, TRUE, 0
-	);
-	
-	debug("Reording Tweet's entry area.");
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->tweet_hbox),
-			GTK_WIDGET(tweet_view->sexy_entry),
-			1
-	);
-	
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->tweet_hbox),
-			GTK_WIDGET(tweet_view->sexy_send),
-			2
-	);
-	
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->tweet_hbox),
-			GTK_WIDGET(tweet_view->sexy_dm),
-			3
-	);
-	
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->tweet_hbox),
-			GTK_WIDGET(tweet_view->sexy_vseparator),
-			4
-	);
-	
-	gtk_box_reorder_child(
-			GTK_BOX(tweet_view->tweet_hbox),
-			GTK_WIDGET(tweet_view->new_tweet_button),
-			5
-	);
 	
 	g_signal_connect_after(tweet_view->sexy_entry, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
 	g_signal_connect_after(tweet_view->sexy_entry, "key-release-event", G_CALLBACK(tweet_view_count_tweet_char), tweet_view->char_count);
@@ -586,7 +573,7 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 	 * So we just set it as a SexyLable & bypass Label
 	 */
 	debug("Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", sexy_tweet);
-	if(!(gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE)))
+	if(!(gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)))
 		sexy_url_label_set_markup(SEXY_URL_LABEL(tweet_view->sexy_tweet), sexy_tweet);
 	else
 		label_set_text(service, tweet_view->sexy_tweet, sexy_tweet, TRUE, TRUE);
@@ -628,17 +615,22 @@ static gshort tweetlen(gchar *tweet){
 	}
 	
 	return TWEET_MAX_CHARS-character_count;
-}/*tweetlen*/
+}/*tweetlen(update);*/
 
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
 	gshort character_count=tweetlen(entry->text);
 	gchar *remaining_characters=NULL;
 	if(character_count < 0){
-		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
+		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
 			tweet_view_beep();
 		remaining_characters=g_strdup_printf("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
-	}else
+	}else{
+		if(TWEET_MAX_CHARS==character_count && in_reply_to_status_id){
+			in_reply_to_status_id=0.0;
+			in_reply_to_service=NULL;
+		}
 		remaining_characters=g_strdup_printf("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
+	}
 	
 	gtk_label_set_markup(tweet_character_counter, remaining_characters);
 	g_free(remaining_characters);
@@ -729,14 +721,13 @@ void tweet_view_send(GtkWidget *activated_widget){
 		);
 		tweet_view_sexy_send(user_get_online_service(user), user_get_user_name(user));
 		g_free(iter);
-		gtk_combo_box_set_active(tweet_view->followers_combo_box, 0);
 	}else
 		tweet_view_sexy_send(NULL, NULL);
 }/*tweet_view_send*/
 	
 static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name){
 	if(!( (GTK_ENTRY(tweet_view->sexy_entry)->text) && (tweetlen(GTK_ENTRY(tweet_view->sexy_entry)->text) > -1) )){
-		if(!gconfig_if_bool(PREFS_TWEET_LENGTH_ALERT, FALSE))
+		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
 			tweets_beep();
 		return;
 	}
@@ -746,6 +737,7 @@ static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name)
 	else
 		network_send_message(service, user_name, GTK_ENTRY(tweet_view->sexy_entry)->text);
 	
+	tweet_view_sexy_append();
 	tweet_view_sexy_set((gchar *)"");
 }/*tweet_view_sexy_send(selected_tweet_get_service(), selected_tweet_get_user_name() );*/
 
@@ -754,6 +746,75 @@ void tweet_view_sexy_send_dm(void){
 	if(!( (user_name=selected_tweet_get_user_name()) && G_STR_N_EMPTY(user_name) )) return tweets_beep();
 	tweet_view_sexy_send(selected_tweet_get_service(), user_name);
 }/*tweet_view_sexy_send_dm();*/
+
+
+static void tweet_view_sexy_append(void){
+	const guint max_updates=50;
+	const gchar *update=GTK_ENTRY(tweet_view->sexy_entry)->text;
+	if(G_STR_EMPTY(update)) return;
+	
+	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
+	gtk_list_store_prepend(tweet_view->previous_updates_list_store, iter);
+	gtk_list_store_set(
+				tweet_view->previous_updates_list_store, iter,
+					GSTRING_UPDATE, g_strdup(update),
+					IN_REPLY_TO_SERVICE, (in_reply_to_service?in_reply_to_service:NULL),
+					IN_REPLY_TO_STATUS_ID, (in_reply_to_status_id?in_reply_to_status_id:0.0),
+				-1
+	);
+	uber_free(iter);
+	if(tweet_view->updates<=max_updates){
+		tweet_view->updates++;
+		return;
+	}
+	iter=g_new0(GtkTreeIter, 1);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(max_updates, -1);
+	debug("Removing saved update #%d.  Total update saved: %d", max_updates, tweet_view->updates);
+	if(!(gtk_tree_model_get_iter(tweet_view->previous_updates_tree_model, iter, path)))
+		debug("Removing saved update #%d failed: it appears to be an invalid iter for the list store.", max_updates);
+	else{
+		debug("Removing iter at index: %d", max_updates);
+		gtk_list_store_remove(tweet_view->previous_updates_list_store, iter);
+	}
+	uber_free(iter);
+}/*tweet_view_sexy_append();*/
+
+static void tweet_view_select_previous_update(GtkComboBoxEntry *sexy_entry_combo_box_entry, TweetView *tweet_view){
+	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
+	if(!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(tweet_view->sexy_entry_combo_box_entry), iter)){
+		uber_free(iter);
+		return;
+	}
+	
+	gchar	*update=NULL;
+	gtk_tree_model_get(
+				tweet_view->previous_updates_tree_model, iter,
+					GSTRING_UPDATE, &update,
+					IN_REPLY_TO_SERVICE, &in_reply_to_service,
+					IN_REPLY_TO_STATUS_ID, &in_reply_to_status_id,
+				-1
+	);
+	tweet_view_sexy_set(g_strdup(update));
+	uber_free(update);
+	uber_free(iter);
+}/*tweet_view_select_previous_update(tweet_view->sexy_entry_combo_box_entry);*/
+
+static void tweet_view_free_updates(TweetView *tweet_view){
+	debug("Removing all %d saved updates from this session.", tweet_view->updates);
+	
+	for(guint i=0; i <= tweet_view->updates; i++){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter(tweet_view->previous_updates_tree_model, iter, path)))
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+		else{
+			debug("Destroying saved update #%d.", i);
+			gtk_list_store_remove(tweet_view->previous_updates_list_store, iter);
+		}
+		gtk_tree_path_free(path);
+		uber_free(iter);
+	}
+}/*tweet_view_free_updates(tweet_view);*/
 
 void tweet_view_new_dm(void){
 	gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, !gtk_toggle_button_get_active(tweet_view->dm_form_active_togglebutton));
@@ -784,7 +845,7 @@ static void tweet_view_dm_refresh(void){
 }/*tweet_view_dm_refresh*/
 
 void tweet_view_dm_data_fill(GList *followers){
-	if(!(followers)) return;
+	if(!followers) return;
 	
 	GList		*list;
 	User		*user;

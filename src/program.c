@@ -65,9 +65,8 @@
 #include <glib/gprintf.h>
 
 #include "config.h"
-#include "main.h"
-
 #include "program.h"
+
 #include "ipc.h"
 #include "debug.h"
 #include "gconfig.h"
@@ -99,7 +98,7 @@ static gboolean notifing=FALSE;
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 gboolean program_init(int argc, char **argv){
-	if( (ipc_init_check( argc-1, argv-1)) ){
+	if( (ipc_init_check( argc, argv)) ){
 		g_fprintf(stdout, "%s is already running.  Be sure to check your desktop's notification tray for %s's icon.\n", GETTEXT_PACKAGE, GETTEXT_PACKAGE);
 		ipc_deinit();
 		return FALSE;
@@ -147,7 +146,9 @@ void program_deinit(void){
 	online_services_deinit(online_services);
 	proxy_deinit();
 	
+#ifndef GNOME_ENABLE_DEBUG
 	ipc_deinit();
+#endif
 	
 	debug_deinit();
 }/*program_deinit();*/
@@ -197,12 +198,19 @@ gchar *program_double_drop_precision(const gdouble gdouble_value){
 	return gdouble_str;
 }/*program_float_drop_precision();*/
 
+gboolean program_gtk_widget_get_sensitive(GtkWidget *widget){
+	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
+	gboolean is_sensitive=FALSE;
+	g_object_get(widget, "sensitive", &is_sensitive, NULL);
+	return is_sensitive;
+}/*MACRO:gtk_widget_is_sensitive(widget); == program_gtk_widget_get_sensitive(widget);*/
+
 gboolean program_gtk_widget_get_focus(GtkWidget *widget){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
 	gboolean has_focus=FALSE;
 	g_object_get(widget, "has-focus", &has_focus, NULL);
 	return has_focus;
-}/*program_gtk_widget_get_focus(widget);*/
+}/*MACRO:gtk_widget_has_focus(widget); == program_gtk_widget_get_focus(widget);*/
 
 /********************************************************
  *                       eof                            *

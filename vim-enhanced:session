@@ -12,4 +12,4 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./bugreport.txt" "./src/cache.c" "./src/online-service.c" "./src/online-service-request.c" "./src/online-service-wrapper.c" "./src/online-service-wrapper.h" "./src/tweet-list.c" "./src/users.c"
+${my_editor} "./data/get2gnow.schemas.in" "./src/preferences.c" "./src/preferences.h"

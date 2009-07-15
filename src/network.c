@@ -59,7 +59,6 @@
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
-#include "config.h"
 #include <string.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -68,15 +67,16 @@
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
-#include "gconfig.h"
-
-#include "main.h"
+#include "config.h"
 #include "program.h"
+
+#include "gconfig.h"
 
 #include "online-services-typedefs.h"
 #include "online-services.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
+#include "online-service-request.h"
 #include "network.h"
 
 #include "parser.h"
@@ -259,7 +259,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 	}
 	const gchar *timeline=g_strrstr(uri, "/");
 	debug("%s current timeline: %s", notice_prefix, timeline);
-	statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPAND_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPAND_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
+	statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
 }/*network_timeline_loading_notification*/
 
 

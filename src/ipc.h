@@ -59,8 +59,8 @@
 
 G_BEGIN_DECLS
 
-gboolean ipc_init_check( int argc, char **argv );
-void ipc_deinit( void );
+gboolean ipc_init_check(int argc, char **argv);
+void ipc_deinit(void);
 
 G_END_DECLS
 #endif /* __IPC_H__ */

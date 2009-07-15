@@ -21,9 +21,10 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "config.h"
-
 #include <glib/gi18n.h>
+
+#include "config.h"
+#include "program.h"
 
 #include "ui-utils.h"
 

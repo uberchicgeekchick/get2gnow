@@ -70,9 +70,10 @@
 #include <libxml/parser.h>
 
 #include "config.h"
-#include "main.h"
+#include "program.h"
 
 #include "online-services-typedefs.h"
+#include "online-service-request.h"
 #include "online-services.h"
 #include "online-service.h"
 

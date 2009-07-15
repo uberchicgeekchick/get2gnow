@@ -51,7 +51,6 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "config.h"
 #include <sys/stat.h>
 #include <string.h>
 
@@ -62,8 +61,9 @@
 #include <gdk/gdkkeysyms.h>
 #include <libsexy/sexy.h>
 
-#include "main.h"
+#include "config.h"
 #include "program.h"
+
 #include "gconfig.h"
 #include "gtkbuilder.h"
 #include "parser.h"
@@ -140,7 +140,7 @@ struct _MainWindowPriv {
 	
 	/* 'New Tabs' Timeline menu items */
 	GtkMenu			*tabs_menu;
-
+	
 	GtkComboBoxEntry	*search_combo_box_entry;
 	GtkListStore		*search_list_store;
 	GtkTreeModel		*search_tree_model;
@@ -148,6 +148,7 @@ struct _MainWindowPriv {
 	
 	GtkToolButton		*preferences_tool_button;
 	GtkToolButton		*accounts_tool_button;
+	GtkToolButton		*exit_tool_button;
 	
 	/* Widgets that are enabled when we are connected/disconnected */
 	GList			*widgets_connected;
@@ -189,7 +190,7 @@ struct _MainWindowPriv {
 #define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:MainWindow.c"
 #include "debug.h"
 
-#define	GtkBuilderUI	"main-window.ui"
+#define	GtkBuilderUI	"main-window"
 
 
 static void main_window_class_init(MainWindowClass *klass);
@@ -202,7 +203,7 @@ static void main_window_setup(void);
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window);
-static void main_window_quit_cb(GtkWidget *window, MainWindow *main_window); 
+static void main_window_exit(GtkWidget *window, MainWindow *main_window); 
 static void main_window_services_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_select_service(GtkMenuItem *item, MainWindow *main_window);
 static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_window); 
@@ -324,6 +325,7 @@ static void main_window_setup(void){
 					
 					"preferences_tool_button", &main_window_priv->preferences_tool_button,
 					"accounts_tool_button", &main_window_priv->accounts_tool_button,
+					"main_window_main_tool_bar_exit_tool_button", &main_window_priv->exit_tool_button,
 					
 					"online_services_tree_view", &main_window_priv->online_services_tree_view,
 					"online_services_list_store", &main_window_priv->online_services_list_store,
@@ -355,7 +357,7 @@ static void main_window_setup(void){
 					"accounts_image_menu_item", "activate", main_window_services_cb,
 					"select_service_image_menu_item", "activate", main_window_select_service,
 					"preferences", "activate", main_window_preferences_cb,
-					"quit", "activate", main_window_quit_cb,
+					"quit", "activate", main_window_exit,
 					
 					"tweets_new_tweet", "activate", tweets_new_tweet,
 					"tweets_new_dm", "activate", tweet_view_new_dm,
@@ -390,6 +392,7 @@ static void main_window_setup(void){
 					"accounts_tool_button", "clicked", main_window_services_cb,
 					"select_service_tool_button", "clicked", main_window_select_service,
 					"preferences_tool_button", "clicked", main_window_preferences_cb,
+					"main_window_main_tool_bar_exit_tool_button", "clicked", main_window_exit,
 					
 					"tweet_list_notebook", "switch-page", tweet_lists_mark_as_read,
 				NULL
@@ -681,7 +684,7 @@ static void main_window_set_visibility(gboolean visible){
 	}
 }
 
-static void main_window_quit_cb(GtkWidget  *widget, MainWindow  *main_window){
+static void main_window_exit(GtkWidget  *widget, MainWindow  *main_window){
 	gtk_main_quit();
 }
 
@@ -817,7 +820,7 @@ static void main_window_status_icon_create_menu(void){
 	g_signal_connect(G_OBJECT(new_dm), "activate", G_CALLBACK(main_window_about_cb), main_window);
 	
 	quit=gtk_action_new("tray_quit", _("_Quit"), NULL, "gtk-quit");
-	g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(main_window_quit_cb), main_window);
+	g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(main_window_exit), main_window);
 	
 	main_window_priv->popup_menu=gtk_menu_new();
 	w=gtk_action_create_menu_item(GTK_ACTION(main_window_priv->popup_menu_show_main_window));

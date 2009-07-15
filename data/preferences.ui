@@ -16,33 +16,38 @@
           <object class="GtkNotebook" id="preferences_notebook">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="scrollable">True</property>
+            <property name="enable_popup">True</property>
             <child>
-              <object class="GtkVBox" id="vbox4">
+              <object class="GtkVBox" id="look_and_feel_vbox">
                 <property name="visible">True</property>
                 <property name="border_width">12</property>
+                <property name="orientation">vertical</property>
                 <property name="spacing">18</property>
                 <child>
                   <object class="GtkFrame" id="general_look_and_feel_frame">
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
                       <object class="GtkAlignment" id="general_look_and_feel_alignment">
                         <property name="visible">True</property>
+                        <property name="top_padding">12</property>
+                        <property name="bottom_padding">12</property>
                         <property name="left_padding">12</property>
+                        <property name="right_padding">12</property>
                         <child>
                           <object class="GtkVBox" id="general_look_and_feel_vbox">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="general_look_and_feel_disable_system_bell_check_button">
-                                <property name="label" translatable="yes">Disable system _bell / beep for any alerts.</property>
+                                <property name="label" translatable="yes">Disable system _bell, i.e. beeping, for any alerts.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -56,8 +61,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -76,7 +80,6 @@
                         <property name="use_markup">True</property>
                         <property name="use_underline">True</property>
                         <property name="selectable">True</property>
-                        <property name="mnemonic_widget">general_look_and_feel_disable_system_bell_check_button</property>
                       </object>
                     </child>
                   </object>
@@ -91,23 +94,26 @@
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="shadow_type">in</property>
                     <child>
                       <object class="GtkAlignment" id="alignment2">
                         <property name="visible">True</property>
+                        <property name="top_padding">12</property>
+                        <property name="bottom_padding">12</property>
                         <property name="left_padding">12</property>
+                        <property name="right_padding">12</property>
                         <child>
                           <object class="GtkVBox" id="expand_urls_vbox">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="titles_only_checkbutton">
-                                <property name="label" translatable="yes">When _titles are found hide its URLs/web address.</property>
+                                <property name="label" translatable="yes">When _titles are found hide its web address/URL.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="position">0</property>
@@ -120,7 +126,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="position">1</property>
@@ -133,7 +139,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -148,7 +154,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -172,23 +178,29 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
+                    <property name="pack_type">end</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
               </object>
+              <packing>
+                <property name="menu_label">Look &amp; Feel</property>
+              </packing>
             </child>
             <child type="tab">
               <object class="GtkLabel" id="look_and_feel_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Look &amp; _Feel</property>
+                <property name="label" translatable="yes">Look &amp;amp; _Feel</property>
+                <property name="use_markup">True</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
+                <property name="menu_label">Look &amp; Feel</property>
                 <property name="tab_fill">False</property>
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="vbox1">
+              <object class="GtkVBox" id="tabs_vbox">
                 <property name="visible">True</property>
                 <property name="border_width">12</property>
                 <property name="orientation">vertical</property>
@@ -197,7 +209,6 @@
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
                       <object class="GtkAlignment" id="alignment5">
                         <property name="visible">True</property>
@@ -283,11 +294,13 @@
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
                       <object class="GtkAlignment" id="alignment1">
                         <property name="visible">True</property>
+                        <property name="top_padding">12</property>
+                        <property name="bottom_padding">12</property>
                         <property name="left_padding">12</property>
+                        <property name="right_padding">12</property>
                         <child>
                           <object class="GtkVBox" id="vbox2">
                             <property name="visible">True</property>
@@ -300,9 +313,12 @@ And notify me when they post new update(s).</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="padding">6</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
@@ -314,9 +330,12 @@ And notify me when I get DMs.</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="padding">6</property>
                                 <property name="position">1</property>
                               </packing>
                             </child>
@@ -328,9 +347,12 @@ And notify me when I get new replies.</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="padding">6</property>
                                 <property name="position">2</property>
                               </packing>
                             </child>
@@ -350,11 +372,12 @@ And notify me when I get new replies.</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
+                                <property name="padding">6</property>
                                 <property name="position">4</property>
                               </packing>
                             </child>
@@ -365,11 +388,12 @@ And notify me when I get new replies.</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
+                                <property name="padding">6</property>
                                 <property name="position">5</property>
                               </packing>
                             </child>
@@ -392,6 +416,7 @@ And notify me when I get new replies.</property>
                 </child>
               </object>
               <packing>
+                <property name="menu_label">Tabs</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -407,7 +432,7 @@ And notify me when I get new replies.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="vbox3">
+              <object class="GtkVBox" id="posting_updates_vbox">
                 <property name="visible">True</property>
                 <property name="border_width">12</property>
                 <property name="orientation">vertical</property>
@@ -417,7 +442,7 @@ And notify me when I get new replies.</property>
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="shadow_type">etched-out</property>
                     <child>
                       <object class="GtkAlignment" id="updates_compose_alignment">
                         <property name="visible">True</property>
@@ -427,13 +452,14 @@ And notify me when I get new replies.</property>
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="no_length_alert_checkbutton">
+                              <object class="GtkCheckButton" id="disable_update_length_alert_check_button">
                                 <property name="label" translatable="yes">Do not _beep to alert me when my Tweets are to long.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="border_width">12</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -458,10 +484,14 @@ And notify me when I get new replies.</property>
                                   </object>
                                 </child>
                                 <child type="label">
-                                  <object class="GtkLabel" id="label1">
+                                  <object class="GtkLabel" id="replace_me_with_label">
                                     <property name="visible">True</property>
-                                    <property name="label" translatable="yes">When I start an update with '/me' replace it with:</property>
+                                    <property name="xpad">6</property>
+                                    <property name="ypad">6</property>
+                                    <property name="label" translatable="yes">&lt;b&gt;Replace "/me", (without the quotes) in my updates with:&lt;/b&gt;</property>
                                     <property name="use_markup">True</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="mnemonic_widget">replace_me_with_combo_box</property>
                                   </object>
                                 </child>
                               </object>
@@ -492,7 +522,7 @@ And notify me when I get new replies.</property>
                     <property name="visible">True</property>
                     <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
+                    <property name="shadow_type">out</property>
                     <child>
                       <object class="GtkAlignment" id="alignment6">
                         <property name="visible">True</property>
@@ -507,8 +537,9 @@ And notify me when I get new replies.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="border_width">12</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -522,8 +553,9 @@ And notify me when I get new replies.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="border_width">12</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -544,11 +576,14 @@ And notify me when I get new replies.</property>
                     </child>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
               </object>
               <packing>
+                <property name="menu_label">Posting Updates</property>
                 <property name="position">2</property>
               </packing>
             </child>

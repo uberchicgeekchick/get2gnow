@@ -59,14 +59,19 @@
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
-#include "main.h"
+#include "config.h"
+#include "program.h"
+
 #include "cache.h"
 #include "users-glists.h"
 
 #include "main-window.h"
 #include "users.h"
+
 #include "online-service-wrapper.h"
+#include "online-service-request.h"
 #include "online-service.h"
+
 #include "network.h"
 #include "parser.h"
 
@@ -202,7 +207,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		return NULL;
 	}
 	
-	cache_save_page(service, uri, xml->response_body);
+	/*cache_save_page(service, uri, xml->response_body);*/
 	
 	return new_users;
 }/*users_glist_parse(session, xml, service_wrapper);*/

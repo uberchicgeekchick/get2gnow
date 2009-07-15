@@ -63,7 +63,8 @@
 #include <libsexy/sexy.h>
 
 #include "config.h"
-#include "main.h"
+#include "program.h"
+
 #include "tweet-list.h"
 
 #include "images.h"
@@ -192,7 +193,7 @@ struct _TweetListPrivate {
 #define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Tweets:Requests:Notification:Settings:Setup:Start-Up:TweetList.c"
 #include "debug.h"
 
-#define GtkBuilderUI "tweet-list.ui"
+#define GtkBuilderUI "tweet-list"
 
 #define	MINIMUM_TWEETS	20.00
 #define	MAXIMUM_TWEETS	100.00
@@ -383,7 +384,6 @@ void tweet_list_start(TweetList *tweet_list){
 	}
 	tweet_list_clean_up(tweet_list);
 	tweet_list_update_age(tweet_list);
-	
 	tweet_list_set_adjustment(tweet_list);
 	if(this->minutes)
 		online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
@@ -452,18 +452,29 @@ static void tweet_list_set_adjustment(TweetList *tweet_list){
 	gtk_adjustment_set_upper(this->max_tweets_adjustment, this->maximum);
 	gtk_adjustment_set_upper(this->progress_bar_adjustment, this->maximum);
 	
-	gdouble max_updates=gtk_adjustment_get_value(this->max_tweets_adjustment);
-	
-	if(max_updates > this->maximum){
-		gtk_adjustment_set_value(this->max_tweets_adjustment, this->maximum);
-		gtk_adjustment_set_value(this->progress_bar_adjustment, this->maximum);
-	}else if(max_updates < this->minimum){
-		gtk_adjustment_set_value(this->max_tweets_adjustment, this->minimum);
-		gtk_adjustment_set_value(this->progress_bar_adjustment, this->minimum);
-	}else
+	gdouble updates=0.0, max_updates=gtk_adjustment_get_value(this->max_tweets_adjustment);
+	if(!max_updates)
+		if(this->monitoring==DMs || this->monitoring==Replies)
+			updates=this->maximum;
+		else
+			updates=this->minimum;
+	else if(max_updates > this->maximum)
+		updates=this->maximum;
+	else if(max_updates < this->minimum)
+		updates=this->minimum;
+	else
 		return;
 	
+	gtk_adjustment_set_value(this->max_tweets_adjustment, updates);
+	gtk_adjustment_set_value(this->progress_bar_adjustment, updates);
+	
 	gtk_spin_button_set_value(this->max_tweets_spin_button, gtk_adjustment_get_value(this->max_tweets_adjustment));
+	
+	if(!(this->monitoring==DMs || this->monitoring==Replies))
+		return;
+	
+	gtk_widget_set_sensitive(GTK_WIDGET(this->max_tweets_spin_button), FALSE);
+	gtk_widget_hide(GTK_WIDGET(this->max_tweets_spin_button));
 }/*tweet_list_set_adjustment(tweet_list);*/
 
 static void tweet_list_clean_up(TweetList *tweet_list){
@@ -471,7 +482,6 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->total) return;
-	if(this->monitoring==DMs || this->monitoring==Replies)	return;
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
@@ -480,7 +490,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		max_updates=this->minimum;
 	if(this->total < max_updates)	return;
 	
-	debug("Cleaning up TweetList for %s.  Total updates in TweetList: %d.  Maximum allowed updates: %f", this->timeline, this->total, max_updates);
+	debug("Cleaning up TweetList for %s.  TweetList's total updates: %d.  Maximum allowed updates: %f", this->timeline, this->total, max_updates);
 	if(!this->index){
 		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
 		tweet_list_scroll_to_top(tweet_list);
@@ -582,11 +592,11 @@ static void tweet_list_stop_toggle_setup(TweetList *tweet_list){
 	
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button)){
 		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"light\">Enable auto_-update.</span>");
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-media-stop");
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-remove");
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Start auto-reloading these updates.</span>");
 	}else{
 		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"bold\">Disable auto_-update.</span>");
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-media-play");
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-add");
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Stop auto-reloading these updates.</span>");
 	}
 }/*tweet_list_stop_toggle_setup(tweet_list);*/
@@ -720,7 +730,7 @@ static void tweet_list_setup(TweetList *tweet_list){
 								
 								"tweet_list_sexy_tree_view", "cursor-changed", tweet_list_changed_cb,
 								"tweet_list_sexy_tree_view", "size-allocate", tweet_list_size_cb,
-								"tweet_list_sexy_tree_view", "row-activated", selected_tweet_reply,
+								//"tweet_list_sexy_tree_view", "row-activated", selected_tweet_reply,
 								"tweet_list_sexy_tree_view", "key-press-event", tweets_hotkey,
 							NULL
 	);
