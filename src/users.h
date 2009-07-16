@@ -98,7 +98,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element);
 
 void user_free(User *user);
 
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, TweetLists tweet_list);
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list);
 void user_status_store(UserStatus *status, TweetList *tweet_list);
 
 OnlineService *user_status_get_online_service(UserStatus *status);

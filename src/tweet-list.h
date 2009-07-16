@@ -87,7 +87,7 @@ enum TweetListStoreColumns{		/**************************************************
 	STRING_SEXY_TWEET,		/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
 	STRING_CREATED_AGO,		/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,		/*	Date string.								*/
-	ULONG_CREATED_AGO,		/*	How old the post is, in seconds, for sorting.				*/
+	UINT_CREATED_AGO,		/*	How old the post is, in seconds, for sorting.				*/
 	ULONG_CREATED_AT,		/*	Unix seconds since epoc of how old the tweet's is.			*/
 	PIXBUF_AVATAR,			/*	Avatar pixbuf.								*/
 	ONLINE_SERVICE,			/*	OnlineService pointer.							*/
@@ -120,7 +120,8 @@ gint8 tweet_list_has_loaded(TweetList *tweet_list);
 gint tweet_list_get_page(TweetList *tweet_list);
 void tweet_list_set_page(TweetList *tweet_list, gint page);
 
-TweetLists tweet_list_get_monitoring(TweetList *tweet_list);
+UpdateMonitor tweet_list_get_monitoring(TweetList *tweet_list);
+const gchar *monitoring_to_string(UpdateMonitor monitoring);
 
 gint tweet_list_get_total(TweetList *tweet_list);
 guint tweet_list_increment(TweetList *tweet_list);

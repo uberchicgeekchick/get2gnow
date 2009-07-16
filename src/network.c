@@ -266,7 +266,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
-	TweetLists monitoring=(TweetLists)online_service_wrapper_get_form_data(service_wrapper);
+	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 
 	if(!network_check_http(service, xml)){
 		if(xml->status_code==401){
@@ -288,7 +288,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	
 	guint new_updates=0;
 	switch(monitoring){
-		case None:
+		case None: case BestFriends:
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
@@ -327,7 +327,7 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
-	TweetLists monitoring=(TweetLists)online_service_wrapper_get_form_data(service_wrapper);
+	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	debug("Resubmitting: %s to <%s>.", requested_uri, online_service_get_uri(service));
 	network_set_state_loading_timeline(requested_uri, Retry);
 	online_service_request_uri(service, QUEUE, requested_uri, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);

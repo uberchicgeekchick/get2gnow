@@ -302,23 +302,22 @@
                         <property name="left_padding">12</property>
                         <property name="right_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox2">
+                          <object class="GtkVBox" id="notifications_vbox">
                             <property name="visible">True</property>
                             <property name="border_width">5</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="notify_my_friends_updates_check_button">
-                                <property name="label" translatable="yes">Load my _Friends' Updates at start-up.
-And notify me when they post new update(s).</property>
+                              <object class="GtkCheckButton" id="notify_best_friends_updates_check_button">
+                                <property name="label" translatable="yes">Notify me when my Best _Friends' post new update(s).</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
                                 <property name="draw_indicator">False</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="padding">6</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
@@ -330,6 +329,7 @@ And notify me when I get DMs.</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
+                                <property name="xalign">0.10000000149011612</property>
                                 <property name="draw_indicator">False</property>
                               </object>
                               <packing>
@@ -341,12 +341,13 @@ And notify me when I get DMs.</property>
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="notify_at_mentions_check_button">
-                                <property name="label" translatable="yes">Load my @_replies at start-up.
+                                <property name="label" translatable="yes">Load @_replies, and mentions, sent to me at start-up.
 And notify me when I get new replies.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
+                                <property name="xalign">0.34999999403953552</property>
                                 <property name="draw_indicator">False</property>
                               </object>
                               <packing>
@@ -366,6 +367,24 @@ And notify me when I get new replies.</property>
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkCheckButton" id="notify_following_updats_check_button">
+                                <property name="label" translatable="yes">Load _Updates of whomever I'm following at start-up.
+And notify me when they post new update(s).</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="xalign">0.10000000149011612</property>
+                                <property name="draw_indicator">False</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="padding">6</property>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkCheckButton" id="notify_beep_updates_check_button">
                                 <property name="label" translatable="yes">_Beep when notifying me.</property>
                                 <property name="visible">True</property>
@@ -378,7 +397,7 @@ And notify me when I get new replies.</property>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="padding">6</property>
-                                <property name="position">4</property>
+                                <property name="position">5</property>
                               </packing>
                             </child>
                             <child>
@@ -394,7 +413,7 @@ And notify me when I get new replies.</property>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="padding">6</property>
-                                <property name="position">5</property>
+                                <property name="position">6</property>
                               </packing>
                             </child>
                           </object>

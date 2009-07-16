@@ -266,7 +266,7 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, TweetLists monitoring){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -279,6 +279,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	guint		new_updates=0;
 	gdouble		status_id=0;
 	gdouble		id_newest_update=0, id_oldest_update=0;
+	gint		update_expiration=0;
 	
 	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
 	gchar		*timeline=g_strdup(uri_split[0]);
@@ -295,8 +296,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			return 0;
 			
 		case DMs:
-			debug("Parsing DMs.");
+			/*Direct Messages are kept for 4 weeks, by default.*/
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_DMS, &update_expiration, 2419200);
 			notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
+			debug("Parsing DMs.");
 			
 		case Replies:
 			if(!id_oldest_update) save_oldest_id=TRUE;
@@ -305,29 +308,30 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			/*Stop the fall-through.*/
 			if(monitoring!=Replies) break;
 			
-			debug("Parsing Replies.");
+			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_REPLIES, &update_expiration, 604800);
 			notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
+			debug("Parsing Replies or @ Mentions.");
 			break;
 		
-		case Tweets:
-			debug("Parsing my friends' tweets");
-			notify=gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE);
+		case Tweets: case BestFriends:
+			debug("Parsing updates from someone I'm following.");
+			notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
 			break;
 		
 		case Timelines: case Users:
 			debug("Parsing timeline.");
-			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 			break;
 			
 		case Archive:
-			debug("Parsing my own tweets or favorites.");
-			notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
+			debug("Parsing my own updates or favorites.");
 			break;
 		
 		case None: default:
 			uber_free(timeline);
 			return 0;
 	}
+	if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);
 	if(!id_oldest_update && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
 	guint		tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
@@ -423,7 +427,7 @@ gchar *parser_escape_text(gchar *text){
 	return escaped_text;
 }/*parser_escape_text(text);*/
 
-gchar *parser_convert_time(const gchar *datetime, gulong *my_diff){
+gchar *parser_convert_time(const gchar *datetime, gint *my_diff){
 	struct tm	*ta;
 	struct tm	post;
 	int		seconds_local;

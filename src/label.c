@@ -181,10 +181,11 @@ gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gbool
 
 static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_url_prefix, gchar *users_at, gboolean expand_profiles, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean titles_strip_uris){
 	gchar *user_at_link=NULL;
-	gssize end;
+	gssize end=0;
 	gchar delim;
 	
-	if( (end=( find_first_non_user_name(&users_at[1])+1 ) )){
+	if( (end=find_first_non_user_name(&users_at[1])) ){
+		end++;
 		delim=users_at[end];
 		users_at[end]='\0';
 	}

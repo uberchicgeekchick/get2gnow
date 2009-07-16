@@ -263,26 +263,26 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/replies</key>
-			<applyto>/apps/get2gnow/notifications/replies</applyto>
+			<key>/schemas/apps/get2gnow/notifications/best_friends</key>
+			<applyto>/apps/get2gnow/notifications/best_friends</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification for ynew messages from someone you follow</short>
-				<long>Show notification for all new messages posted by any one the user is following.</long>
+				<short>Show notification for new messages from one of my 'best friends'</short>
+				<long>Show notification for all new messages from one of my 'best friends'.</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/replies</key>
-			<applyto>/apps/get2gnow/notifications/replies</applyto>
+			<key>/schemas/apps/get2gnow/notifications/following</key>
+			<applyto>/apps/get2gnow/notifications/following</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification for new messages containing @username</short>
-				<long>Show notification of new messages where the user is beng replied to or talked to.</long>
+				<short>Show notification for new messages from someone you follow</short>
+				<long>Show notification for new messages posted by any one you're following.</long>
 			</locale>
 		</schema>
 		
@@ -295,6 +295,18 @@
 			<locale name="C">
 				<short>Show notification of direct messages</short>
 				<long>Show notification of new direct messages sent directly to you.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/notifications/replies</key>
+			<applyto>/apps/get2gnow/notifications/replies</applyto>
+			<owner>get2gnow</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Show notification for new messages containing @username</short>
+				<long>Show notification of new messages where the user is beng replied to or talked to.</long>
 			</locale>
 		</schema>
 		

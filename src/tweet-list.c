@@ -93,32 +93,33 @@
 typedef struct _TimelineLabels TimelineLabels;
 
 struct _TimelineLabels{
-	TweetLists	monitoring;
+	UpdateMonitor	monitoring;
 	const gchar	*timeline;
 	const gchar	*timeline_tab_label;
 	const gchar	*timeline_menu_label;
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fri_ends' Updates"),	N_("My Friends' Updates")},
-	{Replies,	API_REPLIES,		N_("@ _Replies"),		N_("@ Replies")},
-	{Replies,	API_MENTIONS,		N_("@ _Mentions"),		N_("@ Mentions")},
-	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),		N_("My DMs Inbox")},
-	{Searches,	API_TIMELINE_SEARCH,	N_("_Serch Results"),		N_("Serch Results")},
-	{Groups,	API_TIMELINE_GROUP,	N_("_Serch Results"),		N_("Serch Results")},
-	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),		N_("Public Updates")},
-	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),	N_("%s's Recent Updates")},
-	{Archive,	API_FAVORITES,		N_("My Star_'d Updates"),	N_("My Star'd Updates")},
-	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),		N_("My Tweets")},
-	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),		N_("My Tweets")},
-	{None,		NULL,			N_("Unknow_n timeline"),	N_("Unknown timeline")}
+	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fri_ends' Updates"),		N_("My Friends' Updates")},
+	{Replies,	API_REPLIES,		N_("@ _Replies"),			N_("@ Replies")},
+	{Replies,	API_MENTIONS,		N_("@ _Mentions"),			N_("@ Mentions")},
+	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),			N_("My DMs Inbox")},
+	{BestFriends,	NULL,			N_("My _Best Friends' Updates"),	N_("My _Best Friends' Updates")},
+	{Searches,	API_TIMELINE_SEARCH,	N_("_Search Results"),			N_("Search Results")},
+	{Groups,	API_TIMELINE_GROUP,	N_("_Group Discussions"),		N_("Group Discussions")},
+	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),			N_("Public Updates")},
+	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),		N_("%s's Recent Updates")},
+	{Archive,	API_FAVORITES,		N_("My Star_'d Updates"),		N_("My Star'd Updates")},
+	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),			N_("My Tweets")},
+	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),			N_("My Tweets")},
+	{None,		NULL,			N_("Unknow_n timeline"),		N_("Unknown timeline")}
 };
 
 struct _TweetListPrivate {
 	guint			timeout_id;
 	gint			page;
 	
-	TweetLists		monitoring;
+	UpdateMonitor		monitoring;
 	gint8			has_loaded;
 	
 	gint			minutes;
@@ -218,8 +219,9 @@ static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_
 
 static void tweet_list_set_adjustment(TweetList *tweet_list);
 
-static void tweet_list_update_age(TweetList *tweet_list);
+static void tweet_list_update_age(TweetList *tweet_list, gulong delete_older_then);
 static void tweet_list_clean_up(TweetList *tweet_list);
+static void tweet_list_check_inbox(TweetList *tweet_list);
 
 static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list);
 static void tweet_list_set_sexy_tooltip(SexyTreeView *sexy_tree_view, GtkTreePath *path, GtkTreeViewColumn *column, TweetList *tweet_list);
@@ -307,6 +309,21 @@ static void tweet_list_finalize(TweetList *tweet_list){
 	G_OBJECT_CLASS(tweet_list_parent_class)->finalize(G_OBJECT(tweet_list));
 }/* tweet_list_finalized */
 
+const gchar *monitoring_to_string(UpdateMonitor monitoring){
+	switch(monitoring){
+		case None: return _("None");
+		case DMs: return _("DMs");
+		case Replies: return _("Replies");
+		case BestFriends: return _("BestFriends");
+		case Tweets: return _("Tweets");
+		case Searches: return _("Searches");
+		case Groups: return _("Groups");
+		case Timelines: return _("Timelines");
+		case Users: return _("Users");
+		case Archive: return _("Archive");
+		default: return _("Unknown UpdateMonitor");
+	}
+}/*monitoring_to_string(monitoring);*/
 
 /*BEGIN: Custom TweetList methods.*/
 /**
@@ -352,7 +369,7 @@ gint tweet_list_get_page(TweetList *tweet_list){
 	return GET_PRIVATE(tweet_list)->page;
 }/*tweet_list_get_page(tweet_list);*/
 
-TweetLists tweet_list_get_monitoring(TweetList *tweet_list){
+UpdateMonitor tweet_list_get_monitoring(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return None;
 	return GET_PRIVATE(tweet_list)->monitoring;
 }/*tweet_list_get_monitoring(tweet_list);*/
@@ -383,7 +400,7 @@ void tweet_list_start(TweetList *tweet_list){
 		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
 	tweet_list_clean_up(tweet_list);
-	tweet_list_update_age(tweet_list);
+	tweet_list_update_age(tweet_list, 0);
 	tweet_list_set_adjustment(tweet_list);
 	if(this->minutes)
 		online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
@@ -409,8 +426,8 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 		gconfig_set_int(PREFS_TWEETS_RELOAD_TIMELINES, this->minutes);
 	}
 	switch(this->monitoring){
-		case None:	default:
-			debug("unsupport tweet-list type");
+		case BestFriends:	case None:	default:
+			debug("TweetList(s) monitoring %s do not auto-reload.", monitoring_to_string(this->monitoring));
 			return 1.0;
 		case Archive:	case Users:	case Timelines:
 			if(minutes<15) minutes=15;
@@ -482,6 +499,10 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->total) return;
+	if(this->monitoring==DMs || this->monitoring==Replies){
+		tweet_list_check_inbox(tweet_list);
+		return;
+	}
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
@@ -515,13 +536,40 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	}
 }/*static void tweet_list_clean_up(TweetList *tweet_list);*/
 
-static void tweet_list_update_age(TweetList *tweet_list){
+static void tweet_list_check_inbox(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	/*TODO Finish making these preferences.*/
+	gint update_expiration=0;
+	switch(this->monitoring){
+		case DMs:
+			/*By default Direct Messages from the last 4 weeks are loaded.*/
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_DMS, &update_expiration, 2419200);
+			break;
+		case Replies:
+			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_REPLIES, &update_expiration, 604800);
+			break;
+		case BestFriends:
+			/*By default "Best Friends' Updates" from the last 24 hrs are loaded.*/
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
+			break;
+		case	None:	case	Tweets:	case	Searches:	case Groups:
+		case	Timelines: case	Users:	case	Archive:
+			return;
+	}
+
+	
+	tweet_list_update_age(tweet_list, 0);
+}/*tweet_list_check_inbox(tweet_list);*/
+
+static void tweet_list_update_age(TweetList *tweet_list, gulong delete_older_then){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 		
 	if(!this->total) return;
 	
-	gulong 		created_ago=0;
+	gint 		created_ago=0;
 	gchar		*created_at_str=NULL, *created_how_long_ago=NULL;
 	
 	for(gint i=0; i<=this->total; i++){
@@ -543,18 +591,23 @@ static void tweet_list_update_age(TweetList *tweet_list){
 		);
 		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
-		gtk_list_store_set(
-				this->list_store, iter,
-					STRING_CREATED_AGO, created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
-					ULONG_CREATED_AGO, created_ago,			/*How old the post is, in seconds, for sorting.*/
-				-1
-		);
+		if(delete_older_then && created_ago>delete_older_then)
+			gtk_list_store_remove(this->list_store, iter);
+		else
+			gtk_list_store_set(
+					this->list_store, iter,
+						STRING_CREATED_AGO, created_how_long_ago,
+							/*(seconds|minutes|hours|day) ago.*/
+						UINT_CREATED_AGO, created_ago,
+							/*How old the post is, in seconds, for sorting.*/
+					-1
+			);
 		uber_free(created_how_long_ago);
 		uber_free(created_at_str);
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-}/*tweet_list_update_age(tweet_list);*/
+}/*tweet_list_update_age(tweet_list, 0);*/
 
 static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
@@ -591,13 +644,13 @@ static void tweet_list_stop_toggle_setup(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button)){
-		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"light\">Enable auto_-update.</span>");
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-remove");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Start auto-reloading these updates.</span>");
-	}else{
 		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"bold\">Disable auto_-update.</span>");
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-add");
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-media-pause");
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Stop auto-reloading these updates.</span>");
+	}else{
+		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"light\">Enable auto_-update.</span>");
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-media-play");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Start auto-reloading these updates.</span>");
 	}
 }/*tweet_list_stop_toggle_setup(tweet_list);*/
 
@@ -619,7 +672,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	TimelineLabels *timeline_labels=TimelineLabelsList;
-	while(timeline_labels->timeline){
+	while(timeline_labels->monitoring){
 		if(g_str_has_prefix(timeline, timeline_labels->timeline )){
 			this->monitoring=timeline_labels->monitoring;
 			this->timeline=g_strdup(timeline);
@@ -737,7 +790,7 @@ static void tweet_list_setup(TweetList *tweet_list){
 	
 	this->tree_model=GTK_TREE_MODEL(this->list_store);
 	this->tree_model_sort=gtk_tree_model_sort_new_with_model(this->tree_model);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), ULONG_CREATED_AGO, GTK_SORT_ASCENDING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), UINT_CREATED_AGO, GTK_SORT_ASCENDING);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(this->sexy_tree_view), this->tree_model_sort);
 	sexy_tree_view_set_tooltip_label_column(this->sexy_tree_view, STRING_SEXY_TWEET);

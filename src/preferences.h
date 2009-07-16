@@ -39,7 +39,8 @@
 G_BEGIN_DECLS
 
 #define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
-#define PREFS_NOTIFY_MY_FRIENDS_TWEETS			GCONF_PATH "/notifications/my_friends_tweets"
+#define PREFS_NOTIFY_FOLLOWING				GCONF_PATH "/notifications/following"
+#define PREFS_NOTIFY_BEST_FRIENDS			GCONF_PATH "/notifications/best_friends"
 #define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
 #define	PREFS_NOTIFY_DMS				GCONF_PATH "/notifications/dms"
 #define	PREFS_NOTIFY_BEEP				GCONF_PATH "/alerts/beep"
@@ -53,6 +54,10 @@ G_BEGIN_DECLS
 #define PREFS_TWEET_VIEW_DIALOG				GCONF_PATH "/tweet_view/use_dialog"
 
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
+
+#define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/tweets/archives/dms"
+#define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/tweets/archives/replies"
+#define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/tweets/archives/best_friends"
 
 #define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/tweets/reload_timeline"

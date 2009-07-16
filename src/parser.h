@@ -39,7 +39,7 @@ G_BEGIN_DECLS
 
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, TweetLists monitoring);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, UpdateMonitor monitoring);
 guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list);
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
@@ -48,7 +48,7 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath);
 
 void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
 gchar *parser_escape_text(gchar *status);
-gchar *parser_convert_time(const gchar *datetime, gulong *my_diff);
+gchar *parser_convert_time(const gchar *datetime, gint *my_diff);
 
 G_END_DECLS
 #endif /*  __PARSER_H__ */

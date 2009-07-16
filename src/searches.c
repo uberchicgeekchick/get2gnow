@@ -107,7 +107,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	id_newest_update=0.0;
 	
 	gboolean	has_loaded=tweet_list_has_loaded(tweet_list);
-	gboolean	notify=((id_oldest_update&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE):FALSE);
+	gboolean	notify=((id_oldest_update&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE):FALSE);
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
 	guint		tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);

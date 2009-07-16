@@ -920,7 +920,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	
 	if(g_strrstr(*request_uri, "?since_id=")) return;
 	
-	TweetLists monitoring=(TweetLists)*form_data;
+	UpdateMonitor monitoring=(UpdateMonitor)*form_data;
 	TweetList *tweet_list=(TweetList *)*user_data;
 	gint8 has_loaded=tweet_list_has_loaded(tweet_list);
 	if(!( (*form_data) && (*user_data) )) return;

@@ -147,10 +147,15 @@ struct _TweetView{
 	GtkButton		*user_unfollow_button;
 	GtkButton		*user_block_button;
 	
+	/* Container for TweetView's right side widgets. */
+	GtkVBox			*controls_vbox;
+	GtkHBox			*window_control_hbox;
+	
 	/* Togglebutton & image used to indicate & switch between embed tweet-view & floating. */
 	GtkToggleButton		*embed_togglebutton;
 	GtkImage		*embed_image;
 	
+	GtkHBox			*status_control_hbox;
 	/* Buttons for stuff to do with the current selected & extended tweet. */
 	GtkButton		*reply_button;
 	GtkButton		*retweet_button;
@@ -195,6 +200,7 @@ static void tweet_view_sexy_init(void);
 static void tweet_view_reorder(void);
 
 static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui);
+static void tweet_view_bind_hotkeys(GtkBuilder *ui);
 static void tweet_view_selected_tweet_buttons_show(gboolean selected_tweet);
 
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
@@ -269,6 +275,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 					"user_unfollow_button", &tweet_view->user_unfollow_button,
 					"user_block_button", &tweet_view->user_block_button,
 					
+					"status_vbox", &tweet_view->status_vbox,
 					"status_view_vbox", &tweet_view->status_view_vbox,
 					"tweet_datetime_label", &tweet_view->tweet_datetime_label,
 					
@@ -295,9 +302,12 @@ TweetView *tweet_view_new(GtkWindow *parent){
 					"dm_form_active_togglebutton", &tweet_view->dm_form_active_togglebutton,
 					"dm_form_active_image", &tweet_view->dm_form_active_image,
 					
+					"controls_vbox", &tweet_view->controls_vbox,
+					"window_control_hbox", &tweet_view->window_control_hbox,
 					"tweet_view_embed_togglebutton", &tweet_view->embed_togglebutton,
 					"tweet_view_embed_image", &tweet_view->embed_image,
 					
+					"status_control_hbox", &tweet_view->status_control_hbox,
 					"reply_button", &tweet_view->reply_button, 
 					"retweet_button", &tweet_view->retweet_button,
 					"make_fave_button", &tweet_view->make_fave_button,
@@ -312,9 +322,9 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	debug("TweetView view & entry area setup.  Grabbing selected widgets.");
 	tweet_view_selected_tweet_buttons_setup(ui);
 	
-	/* Connect the signals */
-	debug("TweetView interface created & setup.  Setting signal handlers.");
-	g_signal_connect_after(tweet_view->tweet_view_embed, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
+	tweet_view_bind_hotkeys(ui);
+	
+	debug("TweetView's hotkey connected.  Connecting signal handlers.");
 	gtkbuilder_connect( ui, tweet_view,
 				"tweet_view", "destroy", tweet_view_destroy_cb,
 				"tweet_view", "delete_event", tweet_view_delete_event_cb,
@@ -414,6 +424,40 @@ static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui){
 	tweet_view->selected_tweet_buttons=list;
 }/*tweet_view_selected_widgets_setup*/
 
+static void tweet_view_bind_hotkeys(GtkBuilder *ui){
+	const gchar *hotkey_widgets[]={
+	/* Connect the signals */
+		"tweet_view",
+		"tweet_view_embed",
+		"user_vbox",
+		
+		"status_vbox",
+		"status_view_vbox",
+		"update_compose_vbox",
+		"char_count_hbox",
+		"tweet_hbox",
+		"tweet_view_sexy_entry_combo_box_entry",
+		"dm_frame",
+		"followers_combo_box",
+
+		"controls_vbox",
+		"window_control_hbox",
+		"status_control_hbox",
+	};
+	GObject *widget=NULL;
+	debug("TweetView interface loaded.  Setting up hotkeys.");
+	for(int i=0; i<G_N_ELEMENTS(hotkey_widgets); i++){
+		widget=NULL;
+		if(!(widget=gtk_builder_get_object(ui, hotkey_widgets[i]))){
+			debug("**ERROR:** Cannot bind %s's hotkeys to %s, the widget could not be found in %s", _(GETTEXT_PACKAGE), hotkey_widgets[i], GtkBuilderUI);
+			continue;
+		}
+		
+		debug("Binding %s's hotkeys to %s.", _(GETTEXT_PACKAGE), hotkey_widgets[i]);
+		g_signal_connect_after(widget, "key-press-event", (GCallback)tweets_hotkey, widget);
+	}
+}/*tweet_view_bind_hotkey(ui);*/
+
 static void tweet_view_selected_tweet_buttons_show(gboolean selected_tweet){
 	main_window_selected_tweet_image_menu_items_show(selected_tweet);
 	GList *l=NULL;
@@ -486,6 +530,7 @@ static void tweet_view_sexy_init(void){
 	debug("Creating Tweet's entry, 'tweet_view->sexy_entry', using SexyEntry, and adding it to TweetView's 'sexy_entry_combo_box_entry'.");
 	tweet_view->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
 	tweet_view->sexy_entry=g_object_ref_sink(tweet_view->sexy_entry);
+	g_object_set(tweet_view->sexy_entry, "xpad", 5, NULL);
 	gtk_container_remove(GTK_CONTAINER(tweet_view->sexy_entry_combo_box_entry), gtk_bin_get_child(GTK_BIN(tweet_view->sexy_entry_combo_box_entry)));
 	gtk_container_add(GTK_CONTAINER(tweet_view->sexy_entry_combo_box_entry), GTK_WIDGET(tweet_view->sexy_entry));
 	gtk_widget_show(GTK_WIDGET(tweet_view->sexy_entry));

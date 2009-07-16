@@ -100,7 +100,8 @@ struct _PreferencesDialog{
 	
 	GtkCheckButton	*notify_dms_check_button;
 	GtkCheckButton	*notify_at_mentions_check_button;
-	GtkCheckButton	*notify_my_friends_updates_check_button;
+	GtkCheckButton	*notify_following_updates_check_button;
+	GtkCheckButton	*notify_best_friends_updates_check_button;
 	GtkCheckButton	*notify_all_new_updates;
 	GtkCheckButton	*notify_beep_updates_check_button;
 	
@@ -197,7 +198,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	debug("Binding widgets to preferences.");
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
-	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_MY_FRIENDS_TWEETS, TRUE, prefs->notify_my_friends_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_FOLLOWING, TRUE, prefs->notify_following_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEST_FRIENDS, TRUE, prefs->notify_best_friends_updates_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_ALL, TRUE, prefs->notify_all_new_updates);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEEP, TRUE, prefs->notify_beep_updates_check_button);
 	
@@ -558,7 +560,8 @@ void preferences_dialog_show(GtkWindow *parent){
 					
 					"notify_dms_check_button", &prefs->notify_dms_check_button,
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,
-					"notify_my_friends_updates_check_button", &prefs->notify_my_friends_updates_check_button,
+					"notify_following_updates_check_button", &prefs->notify_following_updates_check_button,
+					"notify_best_friends_updates_check_button", &prefs->notify_best_friends_updates_check_button,
 					"notify_all_new_updates_check_button", &prefs->notify_all_new_updates,
 					"notify_beep_updates_check_button", &prefs->notify_beep_updates_check_button,
 					

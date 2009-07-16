@@ -42,8 +42,8 @@
       <column type="gchararray"/>
       <!-- column-name STRING_CREATED_AT -->
       <column type="gchararray"/>
-      <!-- column-name ULONG_CREATED_AGO -->
-      <column type="gulong"/>
+      <!-- column-name UINT_CREATED_AGO -->
+      <column type="gint"/>
       <!-- column-name ULONG_CREATED_AT -->
       <column type="gulong"/>
       <!-- column-name PIXBUP_AVATAR -->

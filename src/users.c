@@ -127,7 +127,7 @@ struct _UserStatus {
 	
 	User		*user;
 	
-	TweetLists	type;
+	UpdateMonitor	type;
 	
 	gdouble		id;
 	gchar		*id_str;
@@ -150,7 +150,7 @@ struct _UserStatus {
 	gchar		*created_how_long_ago;
 	
 	gulong		created_at;
-	gulong		created_seconds_ago;
+	gint		created_seconds_ago;
 };
 
 struct _UserProfileViewer{
@@ -195,7 +195,7 @@ static UserProfileViewer *user_profile_viewer=NULL;
  ********************************************************************************/
 static User *user_new(OnlineService *service, gboolean a_follower);
 
-static UserStatus *user_status_new(OnlineService *service, TweetLists tweet_list);
+static UserStatus *user_status_new(OnlineService *service, UpdateMonitor tweet_list);
 static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status);
 static void user_status_format_dates(UserStatus *status);
 
@@ -370,7 +370,7 @@ void user_free(User *user){
 /********************************************************************************
  *                           UserStatus methods                                 *
  ********************************************************************************/
-static UserStatus *user_status_new(OnlineService *service, TweetLists tweet_list){
+static UserStatus *user_status_new(OnlineService *service, UpdateMonitor tweet_list){
 	UserStatus	*status=g_new0(UserStatus, 1);
 	
 	status->service=service;
@@ -378,7 +378,8 @@ static UserStatus *user_status_new(OnlineService *service, TweetLists tweet_list
 	status->type=tweet_list;
 	status->id_str=status->text=status->tweet=status->notification=status->sexy_tweet=status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
-	status->created_at=status->created_seconds_ago=0;
+	status->created_at=0;
+	status->created_seconds_ago=0;
 	
 	return status;
 }/*user_status_new(service, Tweets|Replies|Dms);*/
@@ -408,7 +409,7 @@ OnlineService *user_status_get_online_service(UserStatus *status){
 	return status->service;
 }/*user_status_get_online_service(status);*/
 
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, TweetLists tweet_list){
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list){
 	xmlNode		*current_node = NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, tweet_list);
@@ -468,7 +469,7 @@ static void user_status_format_dates(UserStatus *status){
 	
 	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
-	debug("Display time set to: %s, %lu.", status->created_how_long_ago, status->created_seconds_ago);
+	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
 
 
@@ -533,7 +534,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 					STRING_SEXY_TWEET, status->sexy_tweet,			/*SexyTreeView's tooltip.*/
 					STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
 					STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
-					ULONG_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
+					UINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
 					ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
 					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/

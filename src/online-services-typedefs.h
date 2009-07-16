@@ -105,7 +105,7 @@ typedef struct _OnlineServices OnlineServices;
 typedef struct _OnlineService OnlineService;
 typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
 
-typedef enum _TweetLists TweetLists;
+typedef enum _UpdateMonitor UpdateMonitor;
 
 typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
 
@@ -124,10 +124,11 @@ enum _RequestMethod{
 	QUEUE,
 };
 
-enum _TweetLists{
+enum _UpdateMonitor{
 	None,
 	DMs,
 	Replies,
+	BestFriends,
 	Tweets,
 	Searches,
 	Groups,
