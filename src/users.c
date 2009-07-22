@@ -404,6 +404,11 @@ const gchar *user_status_get_notification(UserStatus *status){
 	return status->notification;
 }/*user_status_get_notification(status);*/
 
+gint user_status_get_created_seconds_ago(UserStatus *status){
+	if(!(status && status->created_seconds_ago )) return -1;
+	return status->created_seconds_ago;
+}/*user_status_get_created_seconds_ago(status);*/
+
 OnlineService *user_status_get_online_service(UserStatus *status){
 	if(!status) return NULL;
 	return status->service;

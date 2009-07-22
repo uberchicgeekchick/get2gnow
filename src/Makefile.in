@@ -316,6 +316,7 @@ AM_CFLAGS=									\
 		-DDATADIR=\""$(datadir)"\"              			\
 		-DLOCALEDIR=\""$(localedir)"\"					\
 		-DLIBDIR=\""$(libdir)"\"					\
+		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"	\
 		$(get2gnow_CFLAGS)						\
 		$(WARN_CFLAGS)							\
 		-std=$(C_STD_MODE)

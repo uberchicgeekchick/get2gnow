@@ -51,13 +51,13 @@ G_BEGIN_DECLS
 #define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/tweet_view/url_expansion/user_profiles"
 
 #define	PREFS_DISABLE_SYSTEM_BELL			GCONF_PATH "/alerts/disable_system_bell"
-#define PREFS_TWEET_VIEW_DIALOG				GCONF_PATH "/tweet_view/use_dialog"
+#define PREFS_TWEET_VIEW_DIALOG				GCONF_PATH "/ui/tweet_view_dialog"
 
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
-#define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/tweets/archives/dms"
-#define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/tweets/archives/replies"
-#define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/tweets/archives/best_friends"
+#define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/xml-cache/archive/dms"
+#define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/xml-cache/archive/replies"
+#define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/xml-cache/archive/best_friends"
 
 #define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/tweets/reload_timeline"

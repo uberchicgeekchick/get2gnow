@@ -16,7 +16,7 @@ Requires:	gconf2 >= @GCONF_VERSION_REQUIRED@
 Requires:	gnome-keyring
 Requires:	libsexy
 BuildRequires:	libopenssl-devel
-BuildRequires:	libsoup-devel = @LIBSOUP_VERSION_REQUIRED@
+BuildRequires:	libsoup-devel >= @LIBSOUP_VERSION_REQUIRED@
 BuildRequires:	libxml2-devel >= @LIBXML_VERSION_REQUIRED@
 BuildRequires:	glib2-devel
 BuildRequires:	libgio-2_0-0 >= @LIBGIO_VERSION_REQUIRED@

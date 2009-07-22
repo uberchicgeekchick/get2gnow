@@ -274,6 +274,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	/* Count new tweets */
 	gboolean	notify=FALSE;
+	
+	gboolean	oldest_update_id_saved=FALSE;
 	gboolean	save_oldest_id=(tweet_list_has_loaded(tweet_list)?FALSE:TRUE);
 	
 	guint		new_updates=0;
@@ -308,13 +310,15 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			/*Stop the fall-through.*/
 			if(monitoring!=Replies) break;
 			
-			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
+			/*By default Replies, & @ Mentions, from the last 14 days are loaded.*/
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_REPLIES, &update_expiration, 604800);
 			notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
 			debug("Parsing Replies or @ Mentions.");
 			break;
 		
-		case Tweets: case BestFriends:
+		case BestFriends:
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
+		case Tweets:
 			debug("Parsing updates from someone I'm following.");
 			notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
 			break;
@@ -391,9 +395,11 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		}
 		
 		if(!id_newest_update) id_newest_update=status_id;
-		
-		if(save_oldest_id)
+		if(!oldest_update_id_saved && update_expiration && user_status_get_created_seconds_ago(status) > update_expiration) save_oldest_id=TRUE;
+		if(save_oldest_id){
+			oldest_update_id_saved=TRUE;
 			id_oldest_update=status_id;
+		}
 		
 		if(free_status) user_status_free(status);
 	}

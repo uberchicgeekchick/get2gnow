@@ -146,6 +146,42 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/get2gnow/xml-cache/archive/dms</key>
+			<applyto>/apps/get2gnow/xml-cache/archive/dms</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>2419200</default>
+			<locale name="C">
+				<short>Seconds to keep retrieving DMs since</short>
+				<long>Seconds to keep retrieving DMs since.  By default DMs from the last 4 weeks are loaded.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/xml-cache/archive/replies</key>
+			<applyto>/apps/get2gnow/xml-cache/archive/replies</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>604800</default>
+			<locale name="C">
+				<short>Seconds to keep retrieving replies since</short>
+				<long>Seconds to keep retrieving replies since.  By default Replies, &amp; @ Mentions, from the last 14 days are loaded.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/get2gnow/xml-cache/archive/best_friends</key>
+			<applyto>/apps/get2gnow/xml-cache/archive/best_friends</applyto>
+			<owner>get2gnow</owner>
+			<type>int</type>
+			<default>86400</default>
+			<locale name="C">
+				<short>Seconds to keep retrieving the user's best friends' updates since</short>
+				<long>Seconds to keep retrieving the user's best friends' updates since.  By default &quot;Best Friends' Updates&quot; from the last 24 hrs are loaded.</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/get2gnow/ui/hidden</key>
 			<applyto>/apps/get2gnow/ui/hidden</applyto>
 			<owner>get2gnow</owner>
@@ -158,8 +194,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweet_view/use_dialog</key>
-			<applyto>/apps/get2gnow/tweet_view/use_dialog</applyto>
+			<key>/schemas/apps/get2gnow/ui/tweet_view_dialog</key>
+			<applyto>/apps/get2gnow/ui/tweet_view_dialog</applyto>
 			<owner>get2gnow</owner>
 			<type>bool</type>
 			<default>false</default>

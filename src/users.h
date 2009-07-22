@@ -107,6 +107,7 @@ gdouble user_status_get_id(UserStatus *status);
 const gchar *user_status_get_id_str(UserStatus *status);
 const gchar *user_status_get_user_name(UserStatus *status);
 const gchar *user_status_get_notification(UserStatus *status);
+gint user_status_get_created_seconds_ago(UserStatus *status);
 
 void user_status_free(UserStatus *status);
 

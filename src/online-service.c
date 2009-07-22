@@ -621,6 +621,7 @@ gboolean online_service_connect(OnlineService *service){
 }/*online_service_connect*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
+	/*TODO: use compiled define LIBSOUP_VERSION to test for soup_cookie_jar_text_new
 	SoupCookieJar	*cookie_jar=NULL;
 	gchar		*cookie_jar_filename=NULL;
 	
@@ -636,6 +637,7 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	
 	g_free(cookie_jar_filename);
 	g_object_unref(cookie_jar);
+	*/
 }/*online_servce_open_cookie_jar*/
 
 /* Login to service. */

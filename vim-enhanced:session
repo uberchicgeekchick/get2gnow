@@ -12,4 +12,4 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./data/get2gnow.schemas.in" "./src/preferences.c" "./src/preferences.h"
+${my_editor} "./configure.in" "./configure" "./data/get2gnow.schemas.in" "./src/label.c" "./src/network.c" "./src/online-services-typedefs.h" "./src/parser.c" "./src/preferences.c" "./src/preferences.h" "./src/tweet-list.c" "./src/tweet-view.c" "./src/users.c"

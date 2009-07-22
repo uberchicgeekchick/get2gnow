@@ -547,7 +547,7 @@ static void tweet_list_check_inbox(TweetList *tweet_list){
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_DMS, &update_expiration, 2419200);
 			break;
 		case Replies:
-			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
+			/*By default Replies, & @ Mentions, from the last 14 days are loaded.*/
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_REPLIES, &update_expiration, 604800);
 			break;
 		case BestFriends:
@@ -713,6 +713,7 @@ guint tweet_list_increment(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	gtk_progress_bar_pulse(this->progress_bar);
+	if(this->index) this->index++;
 	return (this->total++);
 }/*tweet_list_increment(tweet_list);*/
 

@@ -109,10 +109,10 @@ static gboolean url_check_word (char *word, int len){
 		{ D("www.") },
 		{ D("ftp://") },
 		{ D("http://") },
+		{ D("@") },
 		{ D("https://") },
 		{ D("irc://") },
 		{ D("irc.") },
-		{ D("@") },
 	};
 #undef D
 
@@ -185,7 +185,6 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 	gchar delim;
 	
 	if( (end=find_first_non_user_name(&users_at[1])) ){
-		end++;
 		delim=users_at[end];
 		users_at[end]='\0';
 	}
@@ -198,9 +197,9 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 		title=label_find_user_title(service, uri, expand_hyperlinks, make_hyperlinks);
 	
 	if(!make_hyperlinks)
-		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :users_at) );
+		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (expand_profiles && G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[0]) );
 	else
-		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :users_at ) );
+		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( expand_profiles && (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[0] ) );
 	
 	if(end){
 		gchar *user_at_link2=g_strdup_printf(

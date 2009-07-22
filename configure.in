@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#00EEECaC2"], [http://uberChicGeekChick.Com/?projects=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#00EEECaC4"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -35,7 +35,7 @@ dnl Library Dependencies, uses pkg-config to detect correct version, etc
 dnl
 dnl -----------------------------------------------------------
 
-LIBSOUP_VERSION_REQUIRED=2.26.1
+LIBSOUP_VERSION_REQUIRED=2.24.0
 LIBXML_VERSION_REQUIRED=2.6.16
 GTK_VERSION_REQUIRED=2.12.12
 GCONF_VERSION_REQUIRED=1.2.0
@@ -77,7 +77,7 @@ PKG_CHECK_MODULES(get2gnow,
 [
 	libsexy
 	openssl
-	libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	libnotify
 	gnome-vfs-2.0
 	gtk+-2.0 >= $GTK_VERSION_REQUIRED

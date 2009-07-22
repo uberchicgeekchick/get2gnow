@@ -732,12 +732,12 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#00EEECaC2"
+PACKAGE_VERSION="#00EEECaC4"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
-PACKAGE_BUGREPORT="http://uberChicGeekChick.Com/?projects=${PACKAGE_NAME}"
+PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
 
-LIBSOUP_VERSION_REQUIRED=2.26.1
+LIBSOUP_VERSION_REQUIRED=2.24.0
 LIBXML_VERSION_REQUIRED=2.6.16
 GTK_VERSION_REQUIRED=2.12.12
 GCONF_VERSION_REQUIRED=1.2.0
@@ -22889,7 +22889,7 @@ if test -n "$get2gnow_CFLAGS"; then
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
 	    openssl
 	    libsexy
-	    libsoup-2.4 = \$LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
@@ -22906,7 +22906,7 @@ if test -n "$get2gnow_CFLAGS"; then
   ($PKG_CONFIG --exists --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -22926,7 +22926,7 @@ if test -n "$get2gnow_CFLAGS"; then
   pkg_cv_get2gnow_CFLAGS=`$PKG_CONFIG --cflags "
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -22953,7 +22953,7 @@ if test -n "$get2gnow_LIBS"; then
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
 	    openssl
 	    libsexy
-	    libsoup-2.4 = \$LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
@@ -22970,7 +22970,7 @@ if test -n "$get2gnow_LIBS"; then
   ($PKG_CONFIG --exists --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -22990,7 +22990,7 @@ if test -n "$get2gnow_LIBS"; then
   pkg_cv_get2gnow_LIBS=`$PKG_CONFIG --libs "
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23024,7 +23024,7 @@ fi
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23042,7 +23042,7 @@ fi
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --print-errors "
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23063,7 +23063,7 @@ fi
 	{ { echo "$as_me:$LINENO: error: Package requirements (
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23090,7 +23090,7 @@ See the pkg-config man page for more details.
 echo "$as_me: error: Package requirements (
 	    openssl
 	    libsexy
-	    libsoup-2.4 = $LIBSOUP_VERSION_REQUIRED
+	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
