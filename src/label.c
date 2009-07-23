@@ -155,25 +155,27 @@ gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gbool
 	if(G_STR_EMPTY(message)) return g_strdup("");
 	
 	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http%s://%s", (online_service_is_secure(service) ?"s" :""), online_service_get_uri(service) );
-	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPANSION_USER_PROFILES, TRUE);
+	gboolean titles_strip_uris=!gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPANSION_USER_PROFILES, TRUE);
 	
 	tokens=g_strsplit_set(message, " \t\n", 0);
 	for(gint i=0; tokens[i]; i++) {
 		if(url_check_word(tokens[i], strlen(tokens[i]))) {
 			if(tokens[i][0]=='@') {
-				debug("Formatting display title for user: '%s' on '%s'", tokens[i], online_service_get_uri(service));
+				debug("Rendering user @ link for user: '%s' on '%s'", tokens[i], online_service_get_uri(service));
 				temp=label_format_user_at_link(service, at_url_prefix, tokens[i], expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris);
+				debug("Rendered user @ link.  %s will be replaced with %s.", tokens[i], temp);
 			} else {
-				debug("Formatting display title for uri: '%s'.", tokens[i]);
-				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks, !titles_strip_uris);
+				debug("Rendering URI for display including title.  URI: '%s'.", tokens[i]);
+				temp=label_find_uri_title(service, tokens[i], expand_hyperlinks, make_hyperlinks, titles_strip_uris);
+				debug("Rendered URI for display.  %s will be replaced with %s.", tokens[i], temp);
 			}
 			g_free(tokens[i]);
 			tokens[i]=temp;
 			temp=NULL;
 		}
 	}
-	result = g_strjoinv(" ", tokens);
-	g_strfreev (tokens);
+	result=g_strjoinv(" ", tokens);
+	g_strfreev(tokens);
 	g_free(at_url_prefix);
 	
 	return result;	
@@ -184,7 +186,7 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 	gssize end=0;
 	gchar delim;
 	
-	if( (end=find_first_non_user_name(&users_at[1])) ){
+	if( (end=(find_first_non_user_name(&users_at[1])+1) ) ){
 		delim=users_at[end];
 		users_at[end]='\0';
 	}
@@ -196,10 +198,11 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 	else
 		title=label_find_user_title(service, uri, expand_hyperlinks, make_hyperlinks);
 	
+	const gchar *hyperlink_suffix=( (expand_profiles && G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[0] );
 	if(!make_hyperlinks)
-		user_at_link=g_strdup_printf("<u>%s%s</u>", title, ( (expand_profiles && G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[0]) );
+		user_at_link=g_strdup_printf("<u>%s%s</u>", title, hyperlink_suffix);
 	else
-		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, ( expand_profiles && (G_STR_N_EMPTY(title) && titles_strip_uris) ?"" :&users_at[0] ) );
+		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, hyperlink_suffix);
 	
 	if(end){
 		gchar *user_at_link2=g_strdup_printf(
@@ -210,8 +213,8 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 		user_at_link=user_at_link2;
 		user_at_link2=NULL;
 	}
-	g_free(uri);
-	g_free(title);
+	uber_free(uri);
+	uber_free(title);
 	
 	return user_at_link;
 }/*label_format_user_at_link(service, "https://identi.ca/", "@user", expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris);*/

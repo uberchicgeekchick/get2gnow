@@ -729,7 +729,7 @@ void tweet_view_sexy_append_string(const gchar *str){
 
 gint tweet_view_sexy_puts(const gchar *str, gint position){
 	gtk_editable_insert_text(GTK_EDITABLE(tweet_view->sexy_entry), str, -1, &position );
-	gtk_entry_set_position(GTK_ENTRY(tweet_view->sexy_entry), position );
+	/*gtk_entry_set_position(GTK_ENTRY(tweet_view->sexy_entry), position );*/
 	tweet_view_sexy_select();
 	return position;
 }/*tweet_view_sexy_puts*/
