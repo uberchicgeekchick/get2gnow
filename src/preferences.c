@@ -64,11 +64,13 @@
 #include "config.h"
 #include "program.h"
 
+#include "online-services-typedefs.h"
+#include "online-services.h"
+
 #include "network.h"
 #include "gconfig.h"
 #include "gtkbuilder.h"
 
-#include "online-services-typedefs.h"
 #include "main-window.h"
 #include "preferences.h"
 
@@ -182,9 +184,9 @@ static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gch
 static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box);
 static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box);
 
-static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button, gpointer user_data);
-static void preferences_string_combo_changed_cb(GtkComboBox *combo_box, gpointer user_data);
-static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, gpointer user_data);
+static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button, PreferencesDialog *prefs);
+static void preferences_string_combo_changed_cb(GtkComboBox *combo_box, PreferencesDialog *prefs);
+static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, PreferencesDialog *prefs);
 
 static void preferences_response_cb(GtkDialog *dialog, gint response, PreferencesDialog *prefs);
 static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
@@ -221,7 +223,7 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_int_combo(prefs, PREFS_TWEET_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
 	
 	preferences_hookup_int_combo(prefs, PREFS_TWEETS_RELOAD_TIMELINES, prefs->combo_reload);
-}
+}/*preferences_setup_widgets(prefs);*/
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
 	debug("Saving preference: %s.", key );
@@ -262,57 +264,52 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 		NULL
 	};
 
-	GtkListStore    *model;
-	GtkTreeIter      iter;
-	GtkCellRenderer *renderer;
-	gint             i;
+	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
 
-	renderer = gtk_cell_renderer_text_new ();
-	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (prefs->combo_default_timeline),
-								renderer, TRUE);
-	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (prefs->combo_default_timeline),
-									renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
 
-	model = gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
+	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_default_timeline), GTK_TREE_MODEL(list_store));
 
-	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_default_timeline), GTK_TREE_MODEL (model));
-
-	for (i = 0; timelines[i]; i += 2) {
-		gtk_list_store_append (model, &iter);
+	for(gint i=0; timelines[i]; i+=2) {
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
-					model, &iter,
+					list_store, iter,
 						COL_COMBO_VISIBLE_NAME, timelines[i+1],
 						COL_COMBO_NAME, timelines[i],
 					-1
 		);
+		uber_free(iter);
 	}
 
-	g_object_unref (model);
+	g_object_unref(list_store);
 }/*static void preferences_timeline_setup(prefs);*/
 
 static void preferences_replace_with_setup(PreferencesDialog *prefs){
-	debug("Setting-up timeline refresh preference.");
-	GtkTreeIter	*iter=NULL;
-	replace_me_with	*options=replace_me_list;
+	debug("Setting-up /me replacement preference.");
 	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_REPLACE_LABEL, NULL);
 	
 	GtkListStore *list_store=gtk_list_store_new(COL_REPLACE_COUNT, G_TYPE_INT, G_TYPE_STRING);
 	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->replace_me_with_combo_box), GTK_TREE_MODEL(list_store));
 	
-	while(options->label != NULL) {
+	GtkTreeIter	*iter=NULL;
+	replace_me_with	*replacements=replace_me_list;
+	while(replacements->label){
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_REPLACE_ENABLED, options->value,
-						COL_REPLACE_LABEL, options->label,
+						COL_REPLACE_ENABLED, replacements->value,
+						COL_REPLACE_LABEL, replacements->label,
 					-1
 		);
-		options++;
+		replacements++;
 		uber_free(iter);
 	}
 	
@@ -355,7 +352,7 @@ static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key, bool_default));
 }
 
-static void preferences_widget_sync_string_combo (const gchar *key, GtkComboBox *combo_box){
+static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box){
 	debug("Binding ComboBox to preference: %s.", key );
 	gchar        *value;
 	GtkTreeModel *model;
@@ -441,21 +438,21 @@ static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gch
 	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
 	g_object_set_data_full(G_OBJECT(check_button), "bool_default", g_strdup( (bool_default?"TRUE" :"FALSE") ), g_free);
 	
-	g_signal_connect(check_button, "toggled", G_CALLBACK(preferences_toggle_button_toggled_cb), NULL);
+	g_signal_connect(check_button, "toggled", (GCallback)preferences_toggle_button_toggled_cb, prefs);
 	preferences_widget_sync_bool(key, check_button);
 	
 	if( (id=gconfig_notify_add(g_strdup(key), preferences_notify_bool_cb, check_button)) )
 		preferences_add_id(prefs, id);
 }
 
-static void preferences_hookup_string_combo (PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box){
+static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box){
 	guint id;
 
-	preferences_widget_sync_string_combo (key, combo_box);
+	preferences_widget_sync_string_combo(key, combo_box);
 
 	g_object_set_data_full(G_OBJECT(combo_box), "key", g_strdup(key), g_free);
 
-	g_signal_connect(combo_box, "changed", G_CALLBACK (preferences_string_combo_changed_cb), NULL );
+	g_signal_connect(combo_box, "changed", (GCallback)preferences_string_combo_changed_cb, prefs);
 
 	if( (id=gconfig_notify_add(g_strdup(key), preferences_notify_string_combo_cb, combo_box)) )
 		preferences_add_id(prefs, id);
@@ -468,19 +465,19 @@ static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *
 	
 	g_object_set_data_full(G_OBJECT (combo_box), "key", g_strdup(key), g_free);
 	
-	g_signal_connect(combo_box, "changed", G_CALLBACK(preferences_int_combo_changed_cb), NULL);
+	g_signal_connect(combo_box, "changed", (GCallback)preferences_int_combo_changed_cb, prefs);
 	
 	if( (id=gconfig_notify_add(key, preferences_notify_int_combo_cb, combo_box)) )
 		preferences_add_id (prefs, id);
 }
 
-static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button, gpointer user_data){
+static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button, PreferencesDialog *prefs){
 	const gchar *key;
 	key=g_object_get_data(G_OBJECT(check_button), "key");
 	gconfig_set_bool(key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (check_button)));
 }
 
-static void preferences_string_combo_changed_cb (GtkComboBox *combo_box, gpointer user_data){
+static void preferences_string_combo_changed_cb (GtkComboBox *combo_box, PreferencesDialog *prefs){
 	GtkTreeModel	*model;
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 	gchar		*name;
@@ -497,12 +494,14 @@ static void preferences_string_combo_changed_cb (GtkComboBox *combo_box, gpointe
 	}
 }
 
-static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, gpointer user_data){
+static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, PreferencesDialog *prefs){
 	GtkTreeModel *model;
 	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
 	gint          minutes;
 
 	const gchar *key=g_object_get_data (G_OBJECT (combo_box), "key");
+	if(combo_box==prefs->replace_me_with_combo_box)
+		online_services_reset_length_of_longest_replacement(online_services);
 	
 	if(gtk_combo_box_get_active_iter(combo_box, iter)) {
 		model = gtk_combo_box_get_model(combo_box);

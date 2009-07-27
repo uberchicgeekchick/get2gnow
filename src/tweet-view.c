@@ -643,16 +643,18 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 static gshort tweetlen(gchar *tweet){
 	gushort character_count=0;
 	gushort me_match=0;
+	gint		replace_me=0;
+	gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace_me, 2);
 	while(*tweet){
 		unsigned char l=*tweet++;
 		if(l=='<' || l=='>')
 			character_count+=3;
-		else if( l=='/')
+		else if(l=='/' && replace_me>0)
 			me_match=1;
 		else if(l=='m' && me_match==1)
 			me_match=2;
 		else if(l=='e' && me_match==2)
-			character_count+=online_services_get_length_of_longest_user_nick(online_services)-1;
+			character_count+=online_services_get_length_of_longest_replacement(online_services);
 		else if(me_match)
 			me_match=0;
 		
@@ -727,11 +729,13 @@ void tweet_view_sexy_append_string(const gchar *str){
 	tweet_view_sexy_puts(str, (gint)gtk_entry_get_text_length(GTK_ENTRY(tweet_view->sexy_entry)) );
 }/*tweet_view_sexy_append_string*/
 
-gint tweet_view_sexy_puts(const gchar *str, gint position){
-	gtk_editable_insert_text(GTK_EDITABLE(tweet_view->sexy_entry), str, -1, &position );
-	/*gtk_entry_set_position(GTK_ENTRY(tweet_view->sexy_entry), position );*/
+gint tweet_view_sexy_puts(const gchar *str, gint position_after){
+	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(tweet_view->sexy_entry));
+	gtk_editable_insert_text(GTK_EDITABLE(tweet_view->sexy_entry), str, -1, &position_after );
+	if(position_after>position_prior)
+		gtk_entry_set_position(GTK_ENTRY(tweet_view->sexy_entry), position_after);
 	tweet_view_sexy_select();
-	return position;
+	return position_after;
 }/*tweet_view_sexy_puts*/
 
 void tweet_view_show_previous_tweets(void){

@@ -55,9 +55,9 @@ G_BEGIN_DECLS
 
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
-#define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/xml-cache/archive/dms"
-#define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/xml-cache/archive/replies"
-#define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/xml-cache/archive/best_friends"
+#define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/online-services/xml-cache/archive/expiration/dms"
+#define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/online-services/xml-cache/archive/expiration/replies"
+#define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 
 #define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/tweets/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/tweets/reload_timeline"

@@ -61,6 +61,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
                                 <property name="draw_indicator">False</property>
                               </object>
                               <packing>
@@ -367,7 +368,7 @@ And notify me when I get new replies.</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="notify_following_updats_check_button">
+                              <object class="GtkCheckButton" id="notify_following_updates_check_button">
                                 <property name="label" translatable="yes">Load _Updates of whomever I'm following at start-up.
 And notify me when they post new update(s).</property>
                                 <property name="visible">True</property>

@@ -500,8 +500,8 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	
 	if(!this->total) return;
 	if(this->monitoring==DMs || this->monitoring==Replies){
-		tweet_list_check_inbox(tweet_list);
 		return;
+		tweet_list_check_inbox(tweet_list);
 	}
 	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
@@ -547,7 +547,7 @@ static void tweet_list_check_inbox(TweetList *tweet_list){
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_DMS, &update_expiration, 2419200);
 			break;
 		case Replies:
-			/*By default Replies, & @ Mentions, from the last 14 days are loaded.*/
+			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_REPLIES, &update_expiration, 604800);
 			break;
 		case BestFriends:
@@ -560,7 +560,7 @@ static void tweet_list_check_inbox(TweetList *tweet_list){
 	}
 
 	
-	tweet_list_update_age(tweet_list, 0);
+	tweet_list_update_age(tweet_list, update_expiration);
 }/*tweet_list_check_inbox(tweet_list);*/
 
 static void tweet_list_update_age(TweetList *tweet_list, gulong delete_older_then){

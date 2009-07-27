@@ -146,38 +146,47 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/xml-cache/archive/dms</key>
-			<applyto>/apps/get2gnow/xml-cache/archive/dms</applyto>
+			<key>/schemas/apps/get2gnow/online-services/xml-cache/archive/expiration/dms</key>
+			<applyto>/apps/get2gnow/online-services/xml-cache/archive/expiration/dms</applyto>
 			<owner>get2gnow</owner>
 			<type>int</type>
 			<default>2419200</default>
 			<locale name="C">
 				<short>Seconds to keep retrieving DMs since</short>
-				<long>Seconds to keep retrieving DMs since.  By default DMs from the last 4 weeks are loaded.</long>
+				<long>
+					Seconds to keep retrieving DMs since.
+					By default DMs from the last 4 weeks are loaded.
+				</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/xml-cache/archive/replies</key>
-			<applyto>/apps/get2gnow/xml-cache/archive/replies</applyto>
+			<key>/schemas/apps/get2gnow/online-services/xml-cache/archive/expiration/replies</key>
+			<applyto>/apps/get2gnow/online-services/xml-cache/archive/expiration/replies</applyto>
 			<owner>get2gnow</owner>
 			<type>int</type>
 			<default>604800</default>
 			<locale name="C">
 				<short>Seconds to keep retrieving replies since</short>
-				<long>Seconds to keep retrieving replies since.  By default Replies, &amp; @ Mentions, from the last 14 days are loaded.</long>
+				<long>
+					Seconds to keep retrieving replies since.
+					By default Replies, &amp; @ Mentions, from the last 7 days are loaded.
+				</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/xml-cache/archive/best_friends</key>
-			<applyto>/apps/get2gnow/xml-cache/archive/best_friends</applyto>
+			<key>/schemas/apps/get2gnow/online-services/xml-cache/archive/expiration/best_friends</key>
+			<applyto>/apps/get2gnow/online-services/xml-cache/archive/expiration/best_friends</applyto>
 			<owner>get2gnow</owner>
 			<type>int</type>
 			<default>86400</default>
 			<locale name="C">
 				<short>Seconds to keep retrieving the user's best friends' updates since</short>
-				<long>Seconds to keep retrieving the user's best friends' updates since.  By default &quot;Best Friends' Updates&quot; from the last 24 hrs are loaded.</long>
+				<long>
+					Seconds to keep retrieving the user's best friends' updates since.
+					By default &quot;Best Friends' Updates&quot; from the last 24 hrs are loaded.
+				</long>
 			</locale>
 		</schema>
 		

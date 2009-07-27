@@ -105,7 +105,7 @@ static gint online_services_cmp_count(guint compare, guint count);
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-static gint longest_user_nick_length=0;
+static gint longest_replacement_length=0;
 static OnlineServices *services=NULL;
 OnlineServices *online_services=NULL;
 
@@ -235,7 +235,7 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 		}
 	}
 	
-	longest_user_nick_length=0;
+	longest_replacement_length=0;
 	
 	debug("Creating & saving new service: '%s'.", decoded_key);
 	service=online_service_new(uri, user_name, password, enabled, https, auto_connect);
@@ -342,7 +342,7 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 		main_window_state_on_connection(FALSE);
 		online_services_dialog_show(main_window_get_window());
 	}
-	longest_user_nick_length=0;
+	longest_replacement_length=0;
 }/*online_services_delete(services, service);*/
 
 static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store){
@@ -420,22 +420,29 @@ OnlineService *online_services_connected_get_last(OnlineServices *services){
 	return service;
 }/*online_services_connected_get_last(online_services);*/
 
-gssize online_services_get_length_of_longest_user_nick(OnlineServices *services){
+void online_services_reset_length_of_longest_replacement(OnlineServices *services){
+	if(longest_replacement_length) longest_replacement_length=0;
+}/*online_services_reset_length_of_longest_replacement(online_services);*/
+
+gssize online_services_get_length_of_longest_replacement(OnlineServices *services){
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
-	gssize		user_nick_length=0;
+	gssize		replacement_length=0;
 	
-	/*if(!longest_user_nick_length){*/
+	if(!longest_replacement_length){
+		gint		replace_with=0;
+		gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace_with, 2);
+		
 		for(a=services->accounts; a; a=a->next){
 			service=(OnlineService *)a->data;
 			if(online_service_is_connected(service))
-				if( (user_nick_length=strlen(online_service_get_user_nick(service))) > longest_user_nick_length)
-					longest_user_nick_length=user_nick_length;
+				if( (replacement_length=strlen( (replace_with==1?online_service_get_user_nick(service):online_service_get_user_name(service)) )) > longest_replacement_length)
+					longest_replacement_length=replacement_length-1;
 		}
-	/*}*/
+	}
 	
-	return longest_user_nick_length;
-}/*online_services_get_length_of_longest_user_nick(online_services);*/
+	return longest_replacement_length;
+}/*online_services_get_length_of_longest_replacement(online_services);*/
 
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){

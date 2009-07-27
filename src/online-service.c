@@ -172,14 +172,13 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
  *          Variable definitions.                       *
  ********************************************************/
 #define ONLINE_SERVICE_PREFIX			GCONF_PATH "/online-services/%s"
+#define ONLINE_SERVICE_IDS_TWEETS		GCONF_PATH "/online-services/xml-cache/archive/since-ids/%s%s/%s"
 
 #define	ONLINE_SERVICE_PASSWORD			ONLINE_SERVICE_PREFIX "/password"
 #define	ONLINE_SERVICE_AUTO_CONNECT		ONLINE_SERVICE_PREFIX "/auto_connect"
 #define	ONLINE_SERVICE_HTTPS			ONLINE_SERVICE_PREFIX "/https"
 #define	ONLINE_SERVICE_ENABLED			ONLINE_SERVICE_PREFIX "/enabled"
 #define	ONLINE_SERVICE_LAST_REQUEST		ONLINE_SERVICE_PREFIX "/timestamps/last_request"
-
-#define ONLINE_SERVICE_IDS_TWEETS		ONLINE_SERVICE_PREFIX	"/xml-cache%s/%s"
 
 #define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:OnlineService.c"
 #include "debug.h"
