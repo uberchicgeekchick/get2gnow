@@ -55,8 +55,8 @@ typedef struct {
 	GtkCheckButton		*enabled;
 	
 	GtkComboBoxEntry	*urls;
-	GtkListStore		*urls_liststore;
-	GtkTreeModel		*urls_model;
+	GtkListStore		*urls_list_store;
+	GtkTreeModel		*urls_tree_model;
 	
 	GtkButton		*online_service_new_button;
 	GtkButton		*online_service_delete_button;
@@ -65,7 +65,7 @@ typedef struct {
 	
 	/*currently unused
 	GtkComboBox		*service_type_combobox;
-	GtkListStore		*service_type_liststore;
+	GtkListStore		*service_type_list_store;
 	GtkTreeModel		*service_type_model;
 	*/
 	
@@ -82,7 +82,7 @@ typedef struct {
 } OnlineServicesDialog;
 
 static OnlineServicesDialog	*online_services_dialog=NULL;
-static gboolean		okay_to_exit=TRUE;
+static gboolean		exit_okay=TRUE;
 
 static void online_services_dialog_response(GtkDialog *dialog, gint response, OnlineServicesDialog *services);
 static void online_services_dialog_destroy(GtkDialog *dialog);
@@ -115,7 +115,7 @@ static void online_services_dialog_response(GtkDialog *dialog, gint response, On
 	
 	online_services_dialog_save_service(online_services_dialog->online_services_save_button, online_services_dialog);
 	
-	if(response==GTK_RESPONSE_OK && okay_to_exit ){
+	if(response==GTK_RESPONSE_OK && exit_okay ){
 		gtk_widget_destroy(GTK_WIDGET(dialog));
 		online_services_dialog=NULL;
 	}
@@ -137,14 +137,14 @@ static void online_services_dialog_new_service(GtkButton *online_service_new_but
 
 static void online_services_dialog_save_service(GtkButton *save_button, OnlineServicesDialog *online_services_dialog){
 	debug("Saving services.");
-	okay_to_exit=FALSE;
+	exit_okay=FALSE;
 	
 	gchar *uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(online_services_dialog->urls));
 	const gchar *user_name=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->user_name));
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->password));
 	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(password) )){
 		debug("Failed to save current account.  Server, user_name, and/or password missing.");
-		okay_to_exit=TRUE;
+		exit_okay=TRUE;
 		g_free(uri);
 		return;
 	}
@@ -175,7 +175,7 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	}
 	
 	if(!new_service){
-		okay_to_exit=TRUE;
+		exit_okay=TRUE;
 		g_free(uri);
 		return;
 	}
@@ -188,9 +188,9 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	debug("Storing new service: '%s'.", online_service_get_key(service));
-	gtk_list_store_append(online_services_dialog->urls_liststore, iter);
+	gtk_list_store_append(online_services_dialog->urls_list_store, iter);
 	gtk_list_store_set(
-				online_services_dialog->urls_liststore, iter,
+				online_services_dialog->urls_list_store, iter,
 					UrlString, uri,
 					OnlineServicePointer, service,
 				-1
@@ -199,7 +199,7 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	g_free(uri);
 	
 	debug("New service stored, selecting it new loction in the dialog.");
-	okay_to_exit=TRUE;
+	exit_okay=TRUE;
 	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(online_services_dialog->urls), iter);
 	uber_free(iter);
 }/*online_services_dialog_save_service(online_services_dialog->online_services_save_button, online_services_dialog);*/
@@ -258,7 +258,7 @@ static void online_services_dialog_delete_service(GtkButton *online_service_dele
 	online_services_delete_service(online_services, service);
 	
 	debug("Reloading OnlineServices into OnlineServicesDialog 'urls_list_store.");
-	online_services_combo_box_fill(online_services, GTK_COMBO_BOX(online_services_dialog->urls), online_services_dialog->urls_liststore, FALSE);
+	online_services_combo_box_fill(online_services, GTK_COMBO_BOX(online_services_dialog->urls), online_services_dialog->urls_list_store, FALSE);
 	online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);
 }/*online_services_dialog_delete_service(online_services_dialog->online_service_delete_button, online_services_dialog);*/
 
@@ -282,7 +282,7 @@ static OnlineService *online_services_dialog_get_active_service(OnlineServicesDi
 	}
 	
 	gtk_tree_model_get(
-				online_services_dialog->urls_model, iter,
+				online_services_dialog->urls_tree_model, iter,
 					OnlineServicePointer, &service,
 				-1
 	);
@@ -358,7 +358,7 @@ static void online_services_dialog_setup(GtkWindow *parent){
 					"online_service_enabled", &online_services_dialog->enabled,
 					
 					"urls", &online_services_dialog->urls,
-					"urls_liststore", &online_services_dialog->urls_liststore,
+					"urls_list_store", &online_services_dialog->urls_list_store,
 					
 					"online_service_new_button", &online_services_dialog->online_service_new_button,
 					"online_service_delete_button", &online_services_dialog->online_service_delete_button,
@@ -379,7 +379,8 @@ static void online_services_dialog_setup(GtkWindow *parent){
 	);
 	
 	debug("UI loaded... setting services tree view model.");
-	online_services_dialog->urls_model=gtk_combo_box_get_model(GTK_COMBO_BOX(online_services_dialog->urls));
+	//online_services_dialog->urls_tree_model=gtk_combo_box_get_model(GTK_COMBO_BOX(online_services_dialog->urls));
+	online_services_dialog->urls_tree_model=(GtkTreeModel *)online_services_dialog->urls_list_store;
 	
 	/* Connect the signals */
 	debug("Services tree view model retrieved... setting signal handlers.");
@@ -405,7 +406,7 @@ static void online_services_dialog_setup(GtkWindow *parent){
 	
 	debug("Signal handlers set... loading accounts.");
 	gtk_combo_box_entry_set_text_column(online_services_dialog->urls, UrlString);
-	if(!( online_services_combo_box_fill(online_services, GTK_COMBO_BOX(online_services_dialog->urls), online_services_dialog->urls_liststore, FALSE) )){
+	if(!( online_services_combo_box_fill(online_services, GTK_COMBO_BOX(online_services_dialog->urls), online_services_dialog->urls_list_store, FALSE) )){
 		debug("No services found to load, new accounts need to be setup.");
 		online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);
 	}else
@@ -434,7 +435,7 @@ static void online_services_dialog_load_service(GtkComboBoxEntry *urls, OnlineSe
 	}
 	
 	if(!( online_service_get_key(service) && online_service_get_user_name(service) )){
-		debug("Unable to load valid account information from 'urls_liststore'.");
+		debug("Unable to load valid account information from 'urls_list_store'.");
 		online_services_dialog_check_service(online_services_dialog);
 		return;
 	}

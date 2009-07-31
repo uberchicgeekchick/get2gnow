@@ -35,3 +35,8 @@ DISTCHECK_CONFIGURE_FLAGS =	\
 # Workaround broken scrollkeeper that doesn't remove its files on
 # uninstall.
 distuninstallcheck_listfiles = find . -type f -print | grep -v '^\./var/scrollkeeper'
+
+clean: clean-recursive
+	gconftool-2 --recursive-unset /apps/get2gnow/debug
+	if( -d "~/.gnome2/get2gnow/debug" ) rm -r ~/.gnome2/get2gnow/debug ;
+

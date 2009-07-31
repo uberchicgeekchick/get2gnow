@@ -18,7 +18,7 @@
  *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
- * License ("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
+ * License( "RPL" ) Version 1.5, or subsequent versions as allowed by the RPL,
  * and You may not copy or use this file in either source code or executable
  * form, except in compliance with the terms and conditions of the RPL.
  *
@@ -65,36 +65,41 @@ static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename);
 static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	gchar *gtkbuilder_ui_file=NULL, *gtkbuilder_ui_filename=NULL;
 	
+#ifndef	GNOME_ENABLE_DEBUG
 	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
 	gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
-	if(gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		uber_free(gtkbuilder_ui_file);
+	if( gtkbuilder_ui_test_filename( gtkbuilder_ui_filename )){
+		uber_free( gtkbuilder_ui_file );
 		return gtkbuilder_ui_filename;
 	}
+#endif
 	
+	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
 	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
-	uber_free(gtkbuilder_ui_file);
-	if(gtkbuilder_ui_test_filename(gtkbuilder_ui_filename))
+	uber_free( gtkbuilder_ui_file );
+	if( gtkbuilder_ui_test_filename( gtkbuilder_ui_filename ))
 		return gtkbuilder_ui_filename;
 	
-	gtkbuilder_ui_file=g_strdup_printf("%s.in.ui", base_filename);
-	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
-	uber_free(gtkbuilder_ui_file);
+	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", base_filename, NULL );
+	uber_free( gtkbuilder_ui_file );
 	
-	if(gtkbuilder_ui_test_filename(gtkbuilder_ui_filename))
-		return gtkbuilder_ui_filename;
+	if( gtkbuilder_ui_test_filename( gtkbuilder_ui_filename )){
+		debug( "**ERROR:** GtkBuilderUI [%s] needs converted.", gtkbuilder_ui_filename );
+		debug( "**ERROR:** GtkBuilderUI template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename );
+		debug( "**ERROR:** GtkBuilderUI can be converted by running: (cd data/ ; make %s.ui).  Or re-run `make`.", base_filename );
+	}
 	
-	debug("**ERROR:** Unable to load gtkbuilder ui: %s", gtkbuilder_ui_filename);
-	uber_free(gtkbuilder_ui_filename);
+	debug("**ERROR:** Unable to load gtkbuilder ui: %s.ui", gtkbuilder_ui_filename);
+	uber_free( gtkbuilder_ui_filename );
 	
 	return NULL;
-}/*gtkbuilder_get_path("tweet-view");*/
+}/*gtkbuilder_get_path( "tweet-view" );*/
 
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
 	if(!g_file_test( gtkbuilder_ui_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )){
 		debug("Unable to load GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
-		uber_free(gtkbuilder_ui_filename);
+		uber_free( gtkbuilder_ui_filename );
 		
 		/* uber_free releases gtkbuilder_ui_filename's memory & sets it to NULL.
 		 * So it will end up with this function returning NULL as well.
@@ -103,7 +108,7 @@ static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	
 	debug("GtkBuilder UI found filename: %s.", gtkbuilder_ui_filename);
 	return gtkbuilder_ui_filename;
-}/*gtkbuilder_ui_test_file(gtkbuilder_ui_filename);*/
+}/*gtkbuilder_ui_test_file( gtkbuilder_ui_filename );*/
 
 
 
@@ -112,35 +117,36 @@ static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *fir
 	GObject    **pointer;
 	const char  *name;
 	gchar       *path;
-	GError      *error = NULL;
+	GError      *error=NULL;
 
 	/* Create gtkbuilder & load the xml file */
-	ui = gtk_builder_new ();
+	ui=gtk_builder_new ();
 	gtk_builder_set_translation_domain (ui, GETTEXT_PACKAGE);
-	path = gtkbuilder_get_path(filename);
+	path=gtkbuilder_get_path( filename );
 	if(!gtk_builder_add_from_file (ui, path, &error)){
 		g_warning ("XML file error: %s", error->message);
-		g_error_free (error);
-		g_free (path);
+		g_error_free( error );
+		g_free( path );
 		return NULL;
 	}
-	g_free (path);
-
+	
 	for(name=first_widget; name; name=va_arg (args, char *)){
 		pointer=va_arg(args, void *);
 		if(!( *pointer=gtk_builder_get_object(ui, name) ))
-			g_warning ("Widget '%s' at '%s' is missing.", name, filename);
+			g_warning ("Widget '%s' at '%s' is missing.", name, path);
 	}
-
+	
+	uber_free( path );
+	
 	return ui;
-}
+}/*gtkbuilder_load_file(GtkBuilderUI, "widget", private_objects_ui->widget, NULL);*/
 
 GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widget, ...){
 	va_list args;
 
 	va_start(args, first_widget);
 	GtkBuilder *ui=gtkbuilder_load_file(filename, first_widget, args);
-	va_end(args);
+	va_end( args );
 
 	return ( ui ? ui : NULL );
 }
@@ -159,14 +165,14 @@ void gtkbuilder_connect(GtkBuilder *ui, gpointer user_data, gchar *first_widget,
 		callback = va_arg (args, void *);
 
 		instance=gtk_builder_get_object(ui, name);
-		if (!instance) {
+		if( !instance ) {
 			g_warning ("Missing widget '%s'", name);
 			continue;
 		}
 
-		g_signal_connect(instance, signal, G_CALLBACK (callback), user_data);
+		g_signal_connect(instance, signal, G_CALLBACK( callback ), user_data);
 	}
 
-	va_end (args);
+	va_end( args );
 }
 

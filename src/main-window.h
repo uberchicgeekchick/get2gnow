@@ -78,10 +78,11 @@ G_BEGIN_DECLS
 
 typedef struct _MainWindow      	MainWindow;
 typedef struct _MainWindowClass 	MainWindowClass;
-typedef struct _MainWindowPriv  	MainWindowPriv;
+typedef struct _MainWindowPrivate  	MainWindowPrivate;
 
 struct _MainWindow {
-        GObject        parent;
+        GObject			parent;
+	MainWindowPrivate	*private;
 };
 
 struct _MainWindowClass {
@@ -95,6 +96,7 @@ MainWindow *main_window_get(void);
 
 
 
+void tweet_lists_init( void );
 void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window);
 TweetList *tweet_lists_new(const gchar *timeline);
 TweetList *tweet_lists_get_next(void);

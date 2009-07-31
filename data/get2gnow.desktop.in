@@ -1,11 +1,11 @@
 [Desktop Entry]
-Version=0.0.0.a9eC
+Version="#00EEEDa01"
 _Name=get2gnow
-_Comment=A Twitter client
+_Comment=A GTK+ platform for micro-blogging &amp; online communication - taking talking to an entirely new level.
 Exec=get2gnow
 Icon=get2gnow
 StartupNotify=true
 Terminal=false
 Type=Application
-Categories=GTK;Network;
+Categories=InternetChat;InternetMicroBlogging;NetworkSocial;NetworkCommunication
 

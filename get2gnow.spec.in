@@ -15,6 +15,7 @@ Requires:	gtk2 >= @GTK_VERSION_REQUIRED@
 Requires:	gconf2 >= @GCONF_VERSION_REQUIRED@
 Requires:	gnome-keyring
 Requires:	libsexy
+BuildRequires:	libgnomeui
 BuildRequires:	libopenssl-devel
 BuildRequires:	libsoup-devel >= @LIBSOUP_VERSION_REQUIRED@
 BuildRequires:	libxml2-devel >= @LIBXML_VERSION_REQUIRED@
@@ -27,6 +28,7 @@ BuildRequires:	libnotify-devel
 BuildRequires:	gnome-vfs2-devel
 BuildRequires:	libgobject-2_0-0
 BuildRequires:	libgthread-2_0-0
+BuildRequires:	libgnomeui-devel
 BuildRequires:	gnome-keyring-devel
 
 %description
@@ -63,15 +65,15 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{_bindir}/get2gnow
 %{_datadir}/applications/get2gnow.desktop
+%{_bindir}/get2gnow
+%{_datadir}/gnome/help/get2gnow
+%{_datadir}/get2gnow/
+%{_sysconfdir}/gconf/schemas/get2gnow.schemas
 %{_datadir}/locale/ja/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/sv/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/es/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/pt/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/fr/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/de/LC_MESSAGES/get2gnow.mo
-%{_datadir}/gnome/help/get2gnow
-%{_datadir}/get2gnow/
-%{_sysconfdir}/gconf/schemas/get2gnow.schemas
 

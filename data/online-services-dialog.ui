@@ -36,7 +36,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="username_entry">
+              <object class="GtkEntry" id="user_name_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x2022;</property>
@@ -68,7 +68,7 @@
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Username:	</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">username_entry</property>
+                <property name="mnemonic_widget">user_name_entry</property>
               </object>
               <packing>
                 <property name="top_attach">4</property>
@@ -113,7 +113,7 @@
             <child>
               <object class="GtkComboBoxEntry" id="urls">
                 <property name="visible">True</property>
-                <property name="model">urls_liststore</property>
+                <property name="model">urls_list_store</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -167,7 +167,7 @@
             <child>
               <object class="GtkComboBox" id="service_type_combobox">
                 <property name="sensitive">False</property>
-                <property name="model">service_type_liststore</property>
+                <property name="model">service_type_list_store</property>
                 <property name="active">0</property>
                 <child>
                   <object class="GtkCellRendererText" id="service_type_cellrenderertext"/>
@@ -185,7 +185,7 @@
             </child>
             <child>
               <object class="GtkButton" id="online_service_delete_button">
-                <property name="label" translatable="yes">gtk-delete</property>
+                <property name="label">gtk-delete</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -232,7 +232,7 @@
             </child>
             <child>
               <object class="GtkButton" id="online_service_new_button">
-                <property name="label" translatable="yes">gtk-new</property>
+                <property name="label">gtk-new</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -254,7 +254,7 @@
                 <property name="yscale">0</property>
                 <child>
                   <object class="GtkButton" id="online_service_connect_button">
-                    <property name="label" translatable="yes">gtk-connect</property>
+                    <property name="label">gtk-connect</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
@@ -308,7 +308,7 @@
             </child>
             <child>
               <object class="GtkButton" id="online_service_save_button">
-                <property name="label" translatable="yes">gtk-save</property>
+                <property name="label">gtk-save</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -335,15 +335,7 @@
       <action-widget response="0">online_service_save_button</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkListStore" id="urls_liststore">
-    <columns>
-      <!-- column-name url -->
-      <column type="gchararray"/>
-      <!-- column-name OnlineService -->
-      <column type="gpointer"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="service_type_liststore">
+  <object class="GtkListStore" id="service_type_list_store">
     <columns>
       <!-- column-name service_type -->
       <column type="gchararray"/>
@@ -366,5 +358,13 @@
     <property name="label">_Save</property>
     <property name="tooltip">Save changes to the selected service and/or save a new service</property>
     <property name="stock_id">gtk-save</property>
+  </object>
+  <object class="GtkListStore" id="urls_list_store">
+    <columns>
+      <!-- column-name UrlString -->
+      <column type="gchararray"/>
+      <!-- column-name OnlineService -->
+      <column type="gpointer"/>
+    </columns>
   </object>
 </interface>

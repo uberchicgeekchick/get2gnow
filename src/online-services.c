@@ -282,7 +282,12 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 		debug("\t\tConnecting to: '%s'\t[succeeded]", decoded_key);
 
 		online_service_login(service, FALSE);
-		tweet_lists_refresh();
+		if( services->total!=1 )
+			tweet_lists_refresh();
+		else{
+			tweet_lists_init();
+			main_window_state_on_connection(TRUE);
+		}
 	}else
 		debug("\t\tConnecting to: '%s'\t[failed]", decoded_key);
 	

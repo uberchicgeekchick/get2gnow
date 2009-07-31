@@ -650,7 +650,9 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
-
+	gconftool-2 --recursive-unset /apps/get2gnow/debug
+	if( -d "~/.gnome2/get2gnow/debug" ) rm -r ~/.gnome2/get2gnow/debug ;
+	
 clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-recursive

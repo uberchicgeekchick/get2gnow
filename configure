@@ -732,7 +732,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#00EEECaC4"
+PACKAGE_VERSION="#00EEEDa01"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
@@ -22750,14 +22750,10 @@ else
 fi
 
 
-	if test x$enable_debug = xyes ; then
-
-debug_CFLAGS="-g -ggdb"
-cat >>confdefs.h <<\_ACEOF
-#define GNOME_ENABLE_DEBUG 1
-_ACEOF
-
-	fi
+if test x$enable_debug = xyes ; then
+	debug_CFLAGS="-g -ggdb"
+	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
+fi
 
 
 

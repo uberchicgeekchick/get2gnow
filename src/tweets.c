@@ -162,8 +162,14 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				default: break;
 			}
 			break;
+		case GDK_CONTROL_MASK|GDK_SHIFT_MASK:
+			switch(event->keyval){
+				case GDK_asterisk:
+					online_service_request_selected_tweet_destroy_fave();
+				return;
+			}
 		case GDK_CONTROL_MASK:
-			switch( event->keyval ){
+			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 					tweet_view_sexy_insert_char('\n');
 					return;
@@ -177,6 +183,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					gtk_main_quit();
 					return;
 				case GDK_S:	case GDK_s:
+				case GDK_asterisk:
 					online_service_request_selected_tweet_save_fave();
 					return;
 				case GDK_F5:

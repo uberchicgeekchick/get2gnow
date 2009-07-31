@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#00EEECaC4"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#00EEEDa01"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -29,11 +29,10 @@ GNOME_CXX_WARNINGS
 GNOME_DEBUG_CHECK
 GNOME_MAINTAINER_MODE_DEFINES
 
-dnl -----------------------------------------------------------
-dnl
-dnl Library Dependencies, uses pkg-config to detect correct version, etc
-dnl
-dnl -----------------------------------------------------------
+dnl /************************************************************
+dnl  *	Library Dependencies,					*
+dnl  *	uses pkg-config, see PKG_CHECK_MODULES.			*
+dnl  ************************************************************/
 
 LIBSOUP_VERSION_REQUIRED=2.24.0
 LIBXML_VERSION_REQUIRED=2.6.16
@@ -42,9 +41,9 @@ GCONF_VERSION_REQUIRED=1.2.0
 LIBGIO_VERSION_REQUIRED=2.15.5
 LIBCANBERRA_VERSION_REQUIRED=0.4
 
-dnl -----------------------------------------------------------
-dnl GNOME Keyring
-dnl -----------------------------------------------------------
+dnl /************************************************************
+dnl  *	GNOME Keyring						*
+dnl  ************************************************************/
 AC_ARG_ENABLE(gnome_keyring,
 	      AS_HELP_STRING([--enable-gnome-keyring=@<:@no/yes/auto@:>@],
 		             [compile with Gnome Keyring support]), ,
@@ -70,9 +69,9 @@ fi
 
 AM_CONDITIONAL(HAVE_GNOME_KEYRING, test x$have_gnome_keyring = xyes)
 
-dnl -----------------------------------------------------------
-dnl Pkg-Config dependency checks
-dnl -----------------------------------------------------------
+dnl /************************************************************
+dnl  * Pkg-Config dependency checks				*
+dnl  ************************************************************/
 PKG_CHECK_MODULES(get2gnow,
 [
 	libsexy
@@ -94,11 +93,17 @@ PKG_CHECK_MODULES(get2gnow,
 AC_SUBST(get2gnow_CFLAGS)
 AC_SUBST(get2gnow_LIBS)
 
-dnl *******************************
+dnl /************************************************************
 dnl *   debug & gdb support       *
-dnl *******************************
-AM_CONDITIONAL(HAVE_GNOME_KEYRING, test x$have_gnome_keyring = xyes)
+dnl /************************************************************
+AM_CONDITIONAL(debug_CFLAGS="-g -ggdb", test x$enable_debug = xyes)
+AM_CONDITIONAL(GNOME_ENABLE_DEBUG, test x$enable_debug = xyes)
 
+if test x$enable_debug = xyes ; then
+	debug_CFLAGS="-g -ggdb"
+	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
+fi
+		
 dnl -----------------------------------------------------------
 dnl Language Support
 dnl -----------------------------------------------------------
