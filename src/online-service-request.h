@@ -98,26 +98,26 @@ void online_service_request_unfave(OnlineService *service, GtkWindow *parent, co
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
-void online_service_request_selected_tweet_view_tweets(void);
-void online_service_request_selected_tweet_view_profile(void);
+void online_service_request_selected_update_view_tweets(void);
+void online_service_request_selected_update_view_profile(void);
 
-void online_service_request_selected_tweet_follow(void);
-void online_service_request_selected_tweet_unfollow(void);
-void online_service_request_selected_tweet_block(void);
-void online_service_request_selected_tweet_unblock(void);
+void online_service_request_selected_update_follow(void);
+void online_service_request_selected_update_unfollow(void);
+void online_service_request_selected_update_block(void);
+void online_service_request_selected_update_unblock(void);
 
-void online_service_request_selected_tweet_save_fave(void);
-void online_service_request_selected_tweet_destroy_fave(void);
+void online_service_request_selected_update_save_fave(void);
+void online_service_request_selected_update_destroy_fave(void);
 
-void set_selected_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
-OnlineService *selected_tweet_get_service(void);
-gdouble selected_tweet_get_id(void);
-gchar *selected_tweet_get_user_name(void);
-gdouble selected_tweet_get_user_id(void);
-gchar *selected_tweet_reply_to_strdup(gboolean retweet);
-void selected_tweet_reply(void);
-void selected_tweet_retweet(void);
-void unset_selected_tweet(void);
+void set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
+OnlineService *selected_update_get_service(void);
+gdouble selected_update_get_id(void);
+gchar *selected_update_get_user_name(void);
+gdouble selected_update_get_user_id(void);
+gchar *selected_update_reply_to_strdup(gboolean retweet);
+void selected_update_reply(void);
+void selected_update_retweet(void);
+void unset_selected_update(void);
 
 void online_service_request_popup_select_service(void);
 void online_service_request_popup_friend_profile(void);

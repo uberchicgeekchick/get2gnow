@@ -87,7 +87,6 @@
 #include "tweets.h"
 
 #include "friends-manager.h"
-#include "following-viewer.h"
 
 #include "tweet-list.h"
 #include "tweet-view.h"
@@ -116,7 +115,6 @@ struct _MainWindowPrivate {
         GtkMenuItem		*menu_edit;
 	GtkMenuItem		*menu_online_service_request;
 	GtkImageMenuItem	*online_service_request_menu_friends_manager;
-	GtkImageMenuItem	*online_service_request_menu_timelines;
 	GtkImageMenuItem	*online_service_request_menu_follow;
 	GtkImageMenuItem	*online_service_request_menu_unfollow;
 	GtkImageMenuItem	*online_service_request_menu_block;
@@ -152,7 +150,7 @@ struct _MainWindowPrivate {
 	/* Widgets that are enabled when we are connected/disconnected */
 	GList			*widgets_connected;
 	GList			*widgets_disconnected;
-	GList			*selected_tweet_image_menu_items;
+	GList			*selected_update_image_menu_items;
 	
 	/* OnlineServices stuff...but for future use. */
 	GtkTreeView		*online_services_tree_view;
@@ -217,7 +215,7 @@ static void main_window_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, gu
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window);
 
 static void main_window_connection_items_setup(GtkBuilder *ui);
-static void main_window_selected_tweet_widgets_setup(GtkBuilder *ui);
+static void main_window_selected_update_widgets_setup(GtkBuilder *ui);
 static void main_window_login( void );
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window);
 
@@ -255,7 +253,7 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window->private->widgets_connected=NULL;
 	main_window->private->widgets_disconnected=NULL;
 	main_window->private->tweet_list_glist=NULL;
-	unset_selected_tweet();
+	unset_selected_update();
 	main_window->private->tabs_to_right_align=g_strdup("\t");
 }
 
@@ -304,7 +302,6 @@ static void main_window_setup( void ){
 					
 					"online_service_request", &main_window->private->menu_online_service_request,
 					"online_service_request_menu_friends_manager", &main_window->private->online_service_request_menu_friends_manager,
-					"online_service_request_menu_timelines", &main_window->private->online_service_request_menu_timelines,
 					"online_service_request_menu_follow", &main_window->private->online_service_request_menu_follow,
 					"online_service_request_menu_unfollow", &main_window->private->online_service_request_menu_unfollow,
 					"online_service_request_menu_block", &main_window->private->online_service_request_menu_block,
@@ -361,14 +358,14 @@ static void main_window_setup( void ){
 					
 					"tweets_new_tweet", "activate", tweets_new_tweet,
 					"tweets_new_dm", "activate", tweet_view_new_dm,
-					"selected_tweet_reply_image_menu_item", "activate", selected_tweet_reply,
-					"selected_tweet_retweet_image_menu_item", "activate", selected_tweet_retweet,
-					"selected_tweet_save_fave_image_menu_item", "activate", online_service_request_selected_tweet_save_fave,
-					"selected_tweet_view_profile_image_menu_item", "activate", online_service_request_selected_tweet_view_profile,
-					"selected_tweet_view_tweets_image_menu_item", "activate", online_service_request_selected_tweet_view_tweets,
-					"selected_tweet_follow_image_menu_item", "activate", online_service_request_selected_tweet_follow,
-					"selected_tweet_unfollow_image_menu_item", "activate", online_service_request_selected_tweet_unfollow,
-					"selected_tweet_block_image_menu_item", "activate", online_service_request_selected_tweet_block,
+					"selected_update_reply_image_menu_item", "activate", selected_update_reply,
+					"selected_update_retweet_image_menu_item", "activate", selected_update_retweet,
+					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_save_fave,
+					"selected_update_author_view_profile_image_menu_item", "activate", online_service_request_selected_update_view_profile,
+					"selected_update_author_view_updates_image_menu_item", "activate", online_service_request_selected_update_view_tweets,
+					"selected_update_author_follow_image_menu_item", "activate", online_service_request_selected_update_follow,
+					"selected_update_author_unfollow_image_menu_item", "activate", online_service_request_selected_update_unfollow,
+					"selected_update_author_block_image_menu_item", "activate", online_service_request_selected_update_block,
 					
 					"view_public_timeline", "activate", tweet_lists_timeline_selected,
 					"view_friends_timeline", "activate", tweet_lists_timeline_selected,
@@ -379,7 +376,6 @@ static void main_window_setup( void ){
 					"view_favorites_timeline", "activate", tweet_lists_timeline_selected,
 					
 					"online_service_request_menu_friends_manager", "activate", online_service_request_menu_process,
-					"online_service_request_menu_timelines", "activate", online_service_request_menu_process,
 					"online_service_request_menu_follow", "activate", online_service_request_menu_process,
 					"online_service_request_menu_unfollow", "activate", online_service_request_menu_process,
 					"online_service_request_menu_block", "activate", online_service_request_menu_process,
@@ -400,7 +396,7 @@ static void main_window_setup( void ){
 	
 	/* Set up connected related widgets */
 	main_window_connection_items_setup( ui );
-	main_window_selected_tweet_widgets_setup( ui );
+	main_window_selected_update_widgets_setup( ui );
 	g_object_unref( ui );
 	
 	/* Set-up the notification area */
@@ -620,7 +616,7 @@ GtkMenuItem *main_window_get_menu(const gchar *menu){
 }/*main_window_get_menu*/
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
-	unset_selected_tweet();
+	unset_selected_update();
 	/* Add any clean-up code above this function call */
 	gtk_widget_destroy( GTK_WIDGET( GET_PRIVATE( main_window )->window) );
 }
@@ -734,9 +730,6 @@ static void tweet_lists_timeline_selected(GtkRadioMenuItem *item, MainWindow *ma
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
 	if(item == main_window->private->online_service_request_menu_friends_manager)
 		return friends_manager_show( GTK_WINDOW( main_window->private->window ));
-	
-	if(item == main_window->private->online_service_request_menu_timelines)
-		return following_viewer_show( GTK_WINDOW( main_window->private->window ));
 	
 	if(item == main_window->private->online_service_request_menu_follow)
 		return online_service_request_popup_friend_follow();
@@ -977,24 +970,24 @@ void tweet_lists_init( void ){
 	uber_free( timeline );
 }/*tweet_lists_init();*/
 
-static void main_window_selected_tweet_widgets_setup(GtkBuilder *ui){
-	const gchar *selected_tweet_buttons[]={
-		"selected_tweet",
-		"selected_tweet_reply_image_menu_item",
-		"selected_tweet_retweet_image_menu_item",
-		"selected_tweet_save_fave_image_menu_item",
-		"selected_tweet_view_profile_image_menu_item",
-		"selected_tweet_view_tweets_image_menu_item",
-		"selected_tweet_follow_image_menu_item",
-		"selected_tweet_unfollow_image_menu_item",
-		"selected_tweet_block_image_menu_item",
+static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
+	const gchar *selected_update_buttons[]={
+		"selected_update",
+		"selected_update_reply_image_menu_item",
+		"selected_update_retweet_image_menu_item",
+		"selected_update_save_fave_image_menu_item",
+		"selected_update_author_view_profile_image_menu_item",
+		"selected_update_author_view_updates_image_menu_item",
+		"selected_update_author_follow_image_menu_item",
+		"selected_update_author_unfollow_image_menu_item",
+		"selected_update_author_block_image_menu_item",
 	};
 	
 	GList *list=NULL;
-	for(int i=0; i < G_N_ELEMENTS( selected_tweet_buttons ); i++)
-		list=g_list_append(list, (gtk_builder_get_object(ui, selected_tweet_buttons[i])) );
-	main_window->private->selected_tweet_image_menu_items=list;
-}/*main_window_selected_tweet_widgets_setup( ui );*/
+	for(int i=0; i < G_N_ELEMENTS( selected_update_buttons ); i++)
+		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_buttons[i])) );
+	main_window->private->selected_update_image_menu_items=list;
+}/*main_window_selected_update_widgets_setup( ui );*/
 
 static void main_window_connection_items_setup(GtkBuilder *ui){
 	GList         *list;
@@ -1027,7 +1020,7 @@ void main_window_state_on_connection(gboolean connected){
 	
 	GList         *l;
 	if( !connected ){
-		unset_selected_tweet();
+		unset_selected_update();
 		tweet_lists_stop();
 	}else
 		tweet_lists_refresh();
@@ -1043,15 +1036,15 @@ void main_window_state_on_connection(gboolean connected){
 	if( connected ) tweet_view_sexy_select();
 }
 
-void main_window_selected_tweet_image_menu_items_show(gboolean selected_tweet){
-	if(!(main_window->private && main_window->private->selected_tweet_image_menu_items )) return;
+void main_window_selected_update_image_menu_items_show(gboolean selected_update){
+	if(!(main_window->private && main_window->private->selected_update_image_menu_items )) return;
 	
-	GList *selected_tweet_image_menu_items;
-	for(selected_tweet_image_menu_items=main_window->private->selected_tweet_image_menu_items; selected_tweet_image_menu_items; selected_tweet_image_menu_items=selected_tweet_image_menu_items->next)
-		gtk_widget_set_sensitive( GTK_WIDGET( selected_tweet_image_menu_items->data ), selected_tweet);
-	g_list_free( selected_tweet_image_menu_items );
+	GList *selected_update_image_menu_items;
+	for(selected_update_image_menu_items=main_window->private->selected_update_image_menu_items; selected_update_image_menu_items; selected_update_image_menu_items=selected_update_image_menu_items->next)
+		gtk_widget_set_sensitive( GTK_WIDGET( selected_update_image_menu_items->data ), selected_update);
+	g_list_free( selected_update_image_menu_items );
 	tweet_view_sexy_select();
-}/*main_window_selected_tweet_image_menu_items_show( TRUE|FALSE );*/
+}/*main_window_selected_update_image_menu_items_show( TRUE|FALSE );*/
 
 void main_window_statusbar_printf(const gchar *msg, ...){
 	if(!( main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR( main_window->private->statusbar ) ))

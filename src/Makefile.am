@@ -16,7 +16,7 @@ AM_CFLAGS=									\
 bin_PROGRAMS = get2gnow
 
 if HAVE_GNOME_KEYRING
-keyring_sources = keyring.c keyring.h
+	keyring_sources=keyring.c			keyring.h
 endif
 
 get2gnow_SOURCES = 			online-services-typedefs.h	\
@@ -46,7 +46,6 @@ get2gnow_SOURCES = 			online-services-typedefs.h	\
 	searches.c			searches.h			\
 	preferences.c			preferences.h			\
 	ui-utils.c			ui-utils.h			\
-	following-viewer.c		following-viewer.h		\
 	friend-manager.c		friend-manager.h		\
 	tweet-view.c			tweet-view.h			\
 	tweets.c			tweets.h			\

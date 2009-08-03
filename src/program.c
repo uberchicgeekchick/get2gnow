@@ -142,7 +142,7 @@ void program_deinit(void){
 	
 	cache_deinit();
 	
-	unset_selected_tweet();
+	unset_selected_update();
 	online_services_deinit(online_services);
 	proxy_deinit();
 	

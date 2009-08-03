@@ -77,21 +77,12 @@
 #include "gconfig.h"
 #include "preferences.h"
 
-#include "parser.h"
-#include "label.h"
-
-#include "users.h"
 #include "users-glists.h"
 
 #include "gtkbuilder.h"
+
 #include "main-window.h"
-
-#include "tweets.h"
 #include "tweet-view.h"
-
-#include "friends-manager.h"
-#include "following-viewer.h"
-
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
@@ -173,7 +164,7 @@ struct  _OnlineServiceRequestPopup{
 	GtkButton		*cancel_button;
 };
 
-static SelectedTweet *selected_tweet=NULL;
+static SelectedTweet *selected_update=NULL;
 
 static OnlineServiceRequestPopup *online_service_request_popup=NULL;
 static gint online_service_request_popup_dialog_response=0;
@@ -187,7 +178,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 static void online_service_request_free(OnlineServiceRequest *request);
 
 
-static void selected_tweet_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release);
+static void selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release);
 
 
 static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup);
@@ -429,68 +420,68 @@ static void online_service_request_free(OnlineServiceRequest *request){
 
 
 /********************************************************************************
- *               selected_tweet methods, handlers, callbacks, & etc.            *
+ *               selected_update methods, handlers, callbacks, & etc.            *
  ********************************************************************************/
-void set_selected_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
+void set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
 	/*	gint id=atoi(string);	*/
-	if(selected_tweet) unset_selected_tweet();
+	if(selected_update) unset_selected_update();
 	
 	debug("SelectedTweet created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
 	debug("SelectedTweet's update: %s.", tweet);
-	selected_tweet=g_new0(SelectedTweet, 1);
-	selected_tweet->service=service;
-	selected_tweet->id=id;
-	selected_tweet->user_id=user_id;
-	selected_tweet->user_name=g_strdup(user_name);
-	selected_tweet->tweet=g_uri_unescape_string(tweet, NULL);
-}/*set_selected_tweet*/
+	selected_update=g_new0(SelectedTweet, 1);
+	selected_update->service=service;
+	selected_update->id=id;
+	selected_update->user_id=user_id;
+	selected_update->user_name=g_strdup(user_name);
+	selected_update->tweet=g_uri_unescape_string(tweet, NULL);
+}/*set_selected_update*/
 
-OnlineService *selected_tweet_get_service(void){
-	return ( (selected_tweet && selected_tweet->service) ?selected_tweet->service :NULL );
-}/*selected_tweet_get_service();*/
+OnlineService *selected_update_get_service(void){
+	return ( (selected_update && selected_update->service) ?selected_update->service :NULL );
+}/*selected_update_get_service();*/
 
-gdouble selected_tweet_get_id(void){
-	return ( (selected_tweet && selected_tweet->id) ?selected_tweet->id :0.0 );
-}/*selected_tweet_get_id();*/
+gdouble selected_update_get_id(void){
+	return ( (selected_update && selected_update->id) ?selected_update->id :0.0 );
+}/*selected_update_get_id();*/
 
-gchar *selected_tweet_get_user_name(void){
-	return ( (selected_tweet && selected_tweet->user_name) ?selected_tweet->user_name :NULL );
-}/*selected_tweet_get_user_name();*/
+gchar *selected_update_get_user_name(void){
+	return ( (selected_update && selected_update->user_name) ?selected_update->user_name :NULL );
+}/*selected_update_get_user_name();*/
 
-gdouble selected_tweet_get_user_id(void){
-	return ( (selected_tweet && selected_tweet->user_id) ?selected_tweet->user_id :0.0 );
-}/*selected_tweet_get_user_id();*/
+gdouble selected_update_get_user_id(void){
+	return ( (selected_update && selected_update->user_id) ?selected_update->user_id :0.0 );
+}/*selected_update_get_user_id();*/
 
-gchar *selected_tweet_reply_to_strdup(gboolean retweet){
-	if(!(selected_tweet && selected_tweet->user_name && G_STR_N_EMPTY(selected_tweet->user_name)))
+gchar *selected_update_reply_to_strdup(gboolean retweet){
+	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
 		return NULL;
 	
 	if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(online_services, 1) ))
-		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_tweet->user_name, online_service_get_uri(selected_tweet->service), selected_tweet->user_name, (retweet ?selected_tweet->tweet :"" ));
+		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_update->user_name, online_service_get_uri(selected_update->service), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
 	
-	return g_strdup_printf("%s@%s %s", (retweet ?"RT " :""), selected_tweet->user_name, (retweet ?selected_tweet->tweet :"" ));
-}/*selected_tweet_reply_to_strdup();*/
+	return g_strdup_printf("%s@%s %s", (retweet ?"RT " :""), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
+}/*selected_update_reply_to_strdup();*/
 
-void selected_tweet_reply(void){
-	selected_tweet_include_and_begin_to_send(selected_tweet_reply_to_strdup(FALSE), TRUE, TRUE);
-}/*selected_tweet_reply();*/
+void selected_update_reply(void){
+	selected_update_include_and_begin_to_send(selected_update_reply_to_strdup(FALSE), TRUE, TRUE);
+}/*selected_update_reply();*/
 
-void selected_tweet_retweet(void){
-	selected_tweet_include_and_begin_to_send(selected_tweet_reply_to_strdup(TRUE), TRUE, TRUE);
-}/*selected_tweet_reply();*/
+void selected_update_retweet(void){
+	selected_update_include_and_begin_to_send(selected_update_reply_to_strdup(TRUE), TRUE, TRUE);
+}/*selected_update_reply();*/
 
-static void selected_tweet_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
+static void selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
 	if(!( ( tweet && G_STR_N_EMPTY(tweet) ) )){
-		tweets_beep();
+		tweet_view_beep();
 		if(tweet && release) uber_free(tweet);
 		return;
 	}
 	
-	if(!selected_tweet) return;
+	if(!selected_update) return;
 	
 	if(in_response){
-		in_reply_to_status_id=selected_tweet->id;
-		in_reply_to_service=selected_tweet->service;
+		in_reply_to_status_id=selected_update->id;
+		in_reply_to_service=selected_update->service;
 	}
 	
 	tweet_view_sexy_prefix_string(tweet);
@@ -498,59 +489,59 @@ static void selected_tweet_include_and_begin_to_send(gchar *tweet, gboolean in_r
 	if(!release) return;
 	
 	uber_free(tweet);
-}/*selected_tweet_include_and_begin_to_send*/
+}/*selected_update_include_and_begin_to_send*/
 
-void unset_selected_tweet(void){
-	if(!selected_tweet) return;
-	debug("Destroying current selected_tweet object.");
-	selected_tweet->service=NULL;
+void unset_selected_update(void){
+	if(!selected_update) return;
+	debug("Destroying current selected_update object.");
+	selected_update->service=NULL;
 	
-	uber_object_free(&selected_tweet->user_name, &selected_tweet->tweet, &selected_tweet, NULL);
-}/*unset_selected_tweet*/
+	uber_object_free(&selected_update->user_name, &selected_update->tweet, &selected_update, NULL);
+}/*unset_selected_update*/
 
-void online_service_request_selected_tweet_view_tweets(void){
-	if(!(selected_tweet && selected_tweet->user_name)) return;
-	online_service_request_main(selected_tweet->service, ViewTweets, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_tweet->user_name);
+void online_service_request_selected_update_view_tweets(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	online_service_request_main(selected_update->service, ViewTweets, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_view_tweets();*/
 
-void online_service_request_selected_tweet_view_profile(void){
-	if(!(selected_tweet && selected_tweet->user_name)) return;
-	online_service_request_main(selected_tweet->service, ViewProfile, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_tweet->user_name);
-}/*online_service_request_selected_tweet_view_profile*/
+void online_service_request_selected_update_view_profile(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_view_profile*/
 
-void online_service_request_selected_tweet_follow(void){
-	if(!(selected_tweet && selected_tweet->user_name)) return;
-	online_service_request_main(selected_tweet->service, Follow, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_tweet->user_name);
-}/*online_service_request_selected_tweet_follow*/
+void online_service_request_selected_update_follow(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	online_service_request_main(selected_update->service, Follow, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_follow*/
 
-void online_service_request_selected_tweet_unfollow(void){
-	if(!(selected_tweet && selected_tweet->user_name)) return;
-	online_service_request_main(selected_tweet->service, UnFollow, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_tweet->user_name);
-}/*online_service_request_selected_tweet_unfollow*/
+void online_service_request_selected_update_unfollow(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	online_service_request_main(selected_update->service, UnFollow, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_unfollow*/
 
-void online_service_request_selected_tweet_block(void){
-	if(!(selected_tweet && selected_tweet->user_name)) return;
-	online_service_request_main(selected_tweet->service, Block, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_tweet->user_name);
-}/*online_service_request_selected_tweet_block*/
+void online_service_request_selected_update_block(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	online_service_request_main(selected_update->service, Block, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_block*/
 
-void online_service_request_selected_tweet_unblock(void){
-	if(!(selected_tweet && selected_tweet->user_name)) return;
-	online_service_request_main(selected_tweet->service, UnBlock, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_tweet->user_name);
-}/*online_service_request_selected_tweet_unblock*/
+void online_service_request_selected_update_unblock(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	online_service_request_main(selected_update->service, UnBlock, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_unblock*/
 
-void online_service_request_selected_tweet_save_fave(void){
-	if(!(selected_tweet && selected_tweet->id)) return;
-	gchar *fave_tweet_id=gdouble_to_str(selected_tweet->id);
-	online_service_request_main(selected_tweet->service, Fave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
+void online_service_request_selected_update_save_fave(void){
+	if(!(selected_update && selected_update->id)) return;
+	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
+	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
 	g_free(fave_tweet_id);
-}/*online_service_request_selected_tweet_save_fave*/
+}/*online_service_request_selected_update_save_fave*/
 
-void online_service_request_selected_tweet_destroy_fave(void){
-	if(!(selected_tweet && selected_tweet->id)) return;
-	gchar *fave_tweet_id=gdouble_to_str(selected_tweet->id);
-	online_service_request_main(selected_tweet->service, UnFave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
+void online_service_request_selected_update_destroy_fave(void){
+	if(!(selected_update && selected_update->id)) return;
+	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
+	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
 	g_free(fave_tweet_id);
-}/*online_service_request_selected_tweet_destroy_fave*/
+}/*online_service_request_selected_update_destroy_fave*/
 
 
 /********************************************************************************
@@ -656,7 +647,7 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *
 	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
 	if(G_STR_EMPTY(user_name)){
-		tweets_beep();
+		tweet_view_beep();
 		return FALSE;
 	}
 	

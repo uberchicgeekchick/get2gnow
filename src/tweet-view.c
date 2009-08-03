@@ -118,7 +118,7 @@ struct _TweetView{
 	SexySpellEntry		*sexy_entry;
 	
 	GtkButton		*sexy_send;
-	GtkButton		*sexy_dm;
+	GtkButton		*sexy_dm_button;
 	GtkVSeparator		*sexy_vseparator;
 	GtkButton		*new_tweet_button;
 	
@@ -136,7 +136,7 @@ struct _TweetView{
 	GtkImage		*dm_form_active_image;
 	
 	/* Widgets that are enabled when we a tweet is selected */
-	GList			*selected_tweet_buttons;
+	GList			*selected_update_buttons;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkButton		*view_user_profile_button;
@@ -199,9 +199,9 @@ static gboolean tweet_view_configure_event_timeout_cb(GtkWidget *widget);
 static void tweet_view_sexy_init( void );
 static void tweet_view_reorder( void );
 
-static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui);
+static void tweet_view_selected_update_buttons_setup(GtkBuilder *ui);
 static void tweet_view_bind_hotkeys(GtkBuilder *ui);
-static void tweet_view_selected_tweet_buttons_show(gboolean selected_tweet);
+static void tweet_view_selected_update_buttons_show(gboolean selected_update);
 
 static void tweet_view_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
 
@@ -287,7 +287,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 					"tweet_view_sexy_entry_combo_box_entry", &tweet_view->sexy_entry_combo_box_entry,
 					"previous_updates_list_store", &tweet_view->previous_updates_list_store,
 					"sexy_send", &tweet_view->sexy_send,
-					"sexy_dm", &tweet_view->sexy_dm,
+					"sexy_dm_button", &tweet_view->sexy_dm_button,
 					"sexy_vseparator", &tweet_view->sexy_vseparator,
 					"new_tweet_button", &tweet_view->new_tweet_button,
 					
@@ -320,7 +320,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	tweet_view_sexy_init();
 	tweet_view_reorder();
 	debug("TweetView view & entry area setup.  Grabbing selected widgets.");
-	tweet_view_selected_tweet_buttons_setup( ui );
+	tweet_view_selected_update_buttons_setup( ui );
 	
 	tweet_view_bind_hotkeys( ui );
 	
@@ -330,25 +330,25 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"tweet_view", "delete_event", tweet_view_delete_event_cb,
 				"tweet_view", "configure_event", tweet_view_configure_event_cb,
 
-				"view_user_profile_button", "clicked", online_service_request_selected_tweet_view_profile,
-				"view_user_tweets_button", "clicked", online_service_request_selected_tweet_view_tweets,
+				"view_user_profile_button", "clicked", online_service_request_selected_update_view_profile,
+				"view_user_tweets_button", "clicked", online_service_request_selected_update_view_tweets,
 				
-				"user_follow_button", "clicked", online_service_request_selected_tweet_follow,
-				"user_unfollow_button", "clicked", online_service_request_selected_tweet_unfollow,
-				"user_block_button", "clicked", online_service_request_selected_tweet_block,
+				"user_follow_button", "clicked", online_service_request_selected_update_follow,
+				"user_unfollow_button", "clicked", online_service_request_selected_update_unfollow,
+				"user_block_button", "clicked", online_service_request_selected_update_block,
 				
 				"tweet_view_sexy_entry_combo_box_entry", "changed", tweet_view_select_previous_update,
 				"sexy_send", "clicked", tweet_view_send,
-				"sexy_dm", "clicked", tweet_view_send,
+				"sexy_dm_button", "clicked", tweet_view_send,
 				"new_tweet_button", "clicked", tweets_new_tweet,
 				"dm_form_active_togglebutton", "toggled", tweet_view_dm_show,
 				
 				"dm_refresh", "clicked", tweet_view_dm_refresh,
 				"followers_send_dm", "clicked", tweet_view_send,
 				
-				"reply_button", "clicked", selected_tweet_reply,
-				"retweet_button", "clicked", selected_tweet_retweet,
-				"make_fave_button", "clicked", online_service_request_selected_tweet_save_fave,
+				"reply_button", "clicked", selected_update_reply,
+				"retweet_button", "clicked", selected_update_retweet,
+				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
 			NULL
 	);
 	
@@ -371,12 +371,12 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	tweet_view_set_embed_toggle_and_image();
 	
 	debug("Disabling 'selected widgets' since no tweet could be selected when we 1st start.");
-	tweet_view_selected_tweet_buttons_show( FALSE );
+	tweet_view_selected_update_buttons_show( FALSE );
 	
 	debug("Disabling & hiding tweet view's dm form since friends have not yet been loaded.");
 	tweet_view_dm_form_activate( FALSE );
 	
-	unset_selected_tweet();
+	unset_selected_update();
 	
 	return tweet_view;
 }/*tweet_view_new*/
@@ -401,8 +401,8 @@ void tweet_view_set_embed_toggle_and_image( void ){
 	}
 }/*tweet_view_set_embed_toggle_and_image*/
 
-static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui){
-	const gchar *selected_tweet_buttons[]={
+static void tweet_view_selected_update_buttons_setup(GtkBuilder *ui){
+	const gchar *selected_update_buttons[]={
 		"view_user_profile_button",
 		"view_user_tweets_button",
 		
@@ -410,7 +410,7 @@ static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui){
 		"user_unfollow_button",
 		"user_block_button",
 		
-		"sexy_dm",
+		"sexy_dm_button",
 		"new_tweet_button",
 		
 		"reply_button",
@@ -419,9 +419,9 @@ static void tweet_view_selected_tweet_buttons_setup(GtkBuilder *ui){
 	};
 	
 	GList *list=NULL;
-	for(int i=0; i < G_N_ELEMENTS( selected_tweet_buttons ); i++)
-		list=g_list_append(list, (gtk_builder_get_object(ui, selected_tweet_buttons[i])) );
-	tweet_view->selected_tweet_buttons=list;
+	for(int i=0; i < G_N_ELEMENTS( selected_update_buttons ); i++)
+		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_buttons[i])) );
+	tweet_view->selected_update_buttons=list;
 }/*tweet_view_selected_widgets_setup*/
 
 static void tweet_view_bind_hotkeys(GtkBuilder *ui){
@@ -458,11 +458,11 @@ static void tweet_view_bind_hotkeys(GtkBuilder *ui){
 	}
 }/*tweet_view_bind_hotkey( ui );*/
 
-static void tweet_view_selected_tweet_buttons_show(gboolean selected_tweet){
-	main_window_selected_tweet_image_menu_items_show( selected_tweet );
+static void tweet_view_selected_update_buttons_show(gboolean selected_update){
+	main_window_selected_update_image_menu_items_show( selected_update );
 	GList *l=NULL;
-	for(l=tweet_view->selected_tweet_buttons; l; l=l->next)
-		gtk_widget_set_sensitive( GTK_WIDGET( l->data ), selected_tweet);
+	for(l=tweet_view->selected_update_buttons; l; l=l->next)
+		gtk_widget_set_sensitive( GTK_WIDGET( l->data ), selected_update);
 	g_list_free(l);
 	tweet_view_sexy_select();
 }/*tweet_view_selected_widgets_show*/
@@ -574,12 +574,12 @@ static void tweet_view_reorder( void ){
 
 void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if( !id )
-		unset_selected_tweet();
+		unset_selected_update();
 	else
-		set_selected_tweet(service, id, user_id, user_name, text_tweet);
+		set_selected_update(service, id, user_id, user_name, text_tweet);
 	
-	debug("%sabling 'selected_tweet_buttons'.", (id ?"En" :"Dis") );
-	tweet_view_selected_tweet_buttons_show( (id ?TRUE :FALSE ) );
+	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
+	tweet_view_selected_update_buttons_show( (id ?TRUE :FALSE ) );
 	
 	const gchar *service_uri=online_service_get_uri( service );
 	const gchar *service_user_name=online_service_get_user_name( service );
@@ -591,7 +591,7 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 		sexy_text=g_strdup( "" );
 	else
 		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service_user_nick, service_uri_scheme_suffix, service_uri, service_user_name, service_user_name, service_uri);
-	debug("Setting 'sexy_to' for 'selected_tweet':\n\t\t%s.", sexy_text);
+	debug("Setting 'sexy_to' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, tweet_view->sexy_to, sexy_text, FALSE, TRUE);
 	g_free( sexy_text );
 	
@@ -600,7 +600,7 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, service_uri_scheme_suffix, service_uri, user_name, user_name, service_uri);
 	else
 		sexy_text=g_strdup( "" );
-	debug("Setting 'sexy_from' for 'selected_tweet':\n\t\t%s.", sexy_text);
+	debug("Setting 'sexy_from' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, tweet_view->sexy_from, sexy_text, FALSE, TRUE);
 	g_free( sexy_text );
 	
@@ -616,7 +616,7 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 	 * gchar sexy_tweet has already been formatted to include urls, hyperlinks, titles, & etc.
 	 * So we just set it as a SexyLable & bypass Label
 	 */
-	debug("Setting 'sexy_tweet' for 'selected_tweet':\n\t\t%s.", sexy_tweet);
+	debug("Setting 'sexy_tweet' for 'selected_update':\n\t\t%s.", sexy_tweet);
 	if(!(gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)))
 		sexy_url_label_set_markup( SEXY_URL_LABEL( tweet_view->sexy_tweet ), sexy_tweet);
 	else
@@ -625,7 +625,7 @@ void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdoub
 	if( !pixbuf )
 		gtk_image_set_from_icon_name(tweet_view->user_image, GETTEXT_PACKAGE, ImagesExpanded);
 	else{
-		debug("Setting avatar for the user who wrote the 'selected_tweet'.");
+		debug("Setting avatar for the user who wrote the 'selected_update'.");
 		GdkPixbuf *resized=NULL;
 		if( !( resized=images_expand_pixbuf( pixbuf )))
 			gtk_image_set_from_pixbuf(tweet_view->user_image, pixbuf);
@@ -746,18 +746,18 @@ void tweet_view_send(GtkWidget *activated_widget){
 	
 	const gchar *text=GTK_ENTRY( tweet_view->sexy_entry )->text;
 	if( G_STR_EMPTY( text )){
-		gchar *reply_to_string=selected_tweet_reply_to_strdup( FALSE );
-		if( !selected_tweet_get_user_name( ))
-			tweets_beep();
+		gchar *reply_to_string=selected_update_reply_to_strdup( FALSE );
+		if( !selected_update_get_user_name( ))
+			tweet_view_beep();
 		else if(g_str_has_prefix(text, reply_to_string))
-			tweets_beep();
+			tweet_view_beep();
 		else
-			selected_tweet_reply();
+			selected_update_reply();
 		uber_free( reply_to_string );
 		return;
 	}
 	
-	if( activated_widget==GTK_WIDGET( tweet_view->sexy_dm ) )
+	if( activated_widget==GTK_WIDGET( tweet_view->sexy_dm_button ) )
 		tweet_view_sexy_send_dm();
 	
 	else if(( activated_widget==GTK_WIDGET( tweet_view->followers_send_dm )) &&( GTK_WIDGET_IS_SENSITIVE( tweet_view->followers_combo_box )) &&( user_name=gtk_combo_box_get_active_text( tweet_view->followers_combo_box )) ){
@@ -780,7 +780,7 @@ void tweet_view_send(GtkWidget *activated_widget){
 static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name){
 	if(!(( GTK_ENTRY( tweet_view->sexy_entry )->text) &&( tweetlen( GTK_ENTRY( tweet_view->sexy_entry )->text) > -1) )){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
-			tweets_beep();
+			tweet_view_beep();
 		return;
 	}
 	
@@ -791,12 +791,12 @@ static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name)
 	
 	tweet_view_sexy_append( GTK_ENTRY( tweet_view->sexy_entry )->text, tweet_view);
 	tweet_view_sexy_set((gchar *)"");
-}/*tweet_view_sexy_send( selected_tweet_get_service( ), selected_tweet_get_user_name() );*/
+}/*tweet_view_sexy_send( selected_update_get_service( ), selected_update_get_user_name() );*/
 
 void tweet_view_sexy_send_dm( void ){
 	gchar *user_name;
-	if(!(( user_name=selected_tweet_get_user_name( )) && G_STR_N_EMPTY( user_name ) )) return tweets_beep();
-	tweet_view_sexy_send( selected_tweet_get_service( ), user_name);
+	if(!(( user_name=selected_update_get_user_name( )) && G_STR_N_EMPTY( user_name ) )) return tweet_view_beep();
+	tweet_view_sexy_send( selected_update_get_service( ), user_name);
 }/*tweet_view_sexy_send_dm();*/
 
 

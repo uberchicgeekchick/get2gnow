@@ -1,9 +1,9 @@
 [Desktop Entry]
-Version="#00EEEDa01"
-_Name=get2gnow
+Version=@PACKAGE_VERSION@
+_Name=@PACKAGE_NAME@
 _Comment=A GTK+ platform for micro-blogging &amp; online communication - taking talking to an entirely new level.
-Exec=get2gnow
-Icon=get2gnow
+Exec=@PACKAGE_NAME@
+Icon=@PACKAGE_NAME@
 StartupNotify=true
 Terminal=false
 Type=Application

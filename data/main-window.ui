@@ -109,128 +109,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="selected_tweet">
-                        <property name="label" translatable="yes">_Selected Update / Tweet</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">image2</property>
-                        <property name="use_stock">False</property>
-                        <child type="submenu">
-                          <object class="GtkMenu" id="menu2">
-                            <property name="visible">True</property>
-                            <child>
-                              <object class="GtkImageMenuItem" id="selected_tweet_reply_image_menu_item">
-                                <property name="label" translatable="yes">_Reply</property>
-                                <property name="visible">True</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">image5</property>
-                                <property name="use_stock">False</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkImageMenuItem" id="selected_tweet_retweet_image_menu_item">
-                                <property name="label">Retweet / _Forward</property>
-                                <property name="visible">True</property>
-                                <property name="sensitive">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">compos_menu_retweet_image</property>
-                                <property name="use_stock">False</property>
-                                <accelerator key="greater" signal="activate"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkSeparatorMenuItem" id="menuitem3">
-                                <property name="visible">True</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkImageMenuItem" id="selected_tweet_save_fave_image_menu_item">
-                                <property name="label" translatable="yes">Mark as _Star'd</property>
-                                <property name="visible">True</property>
-                                <property name="tooltip_text" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">help_menu_about_image</property>
-                                <property name="use_stock">False</property>
-                                <accelerator key="asterisk" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkSeparatorMenuItem" id="menuitem6">
-                                <property name="visible">True</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkImageMenuItem" id="selected_tweet_author_image_menu_item">
-                                <property name="label" translatable="yes">Update's _Author</property>
-                                <property name="visible">True</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">image7</property>
-                                <property name="use_stock">False</property>
-                                <child type="submenu">
-                                  <object class="GtkMenu" id="menu3">
-                                    <property name="visible">True</property>
-                                    <child>
-                                      <object class="GtkImageMenuItem" id="selected_tweet_view_profile_image_menu_item">
-                                        <property name="label" translatable="yes">View Author's _Profile</property>
-                                        <property name="visible">True</property>
-                                        <property name="tooltip_text" translatable="yes">View the profile for the user who wrote the selected update.</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="image">image3</property>
-                                        <property name="use_stock">False</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkImageMenuItem" id="selected_tweet_view_tweets_image_menu_item">
-                                        <property name="label" translatable="yes">View Author's _Updates</property>
-                                        <property name="visible">True</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="image">image4</property>
-                                        <property name="use_stock">False</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSeparatorMenuItem" id="menuitem7">
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkImageMenuItem" id="selected_tweet_follow_image_menu_item">
-                                        <property name="label" translatable="yes">_Follow the Author</property>
-                                        <property name="visible">True</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="image">image6</property>
-                                        <property name="use_stock">False</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkImageMenuItem" id="selected_tweet_unfollow_image_menu_item">
-                                        <property name="label" translatable="yes">_Unfollow the Author</property>
-                                        <property name="visible">True</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="image">image8</property>
-                                        <property name="use_stock">False</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkImageMenuItem" id="selected_tweet_block_image_menu_item">
-                                        <property name="label" translatable="yes">_Block the Author</property>
-                                        <property name="visible">True</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="image">image9</property>
-                                        <property name="use_stock">False</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -386,20 +266,137 @@
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_friends_manager_image</property>
                         <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_timelines">
-                        <property name="label" translatable="yes">Friends Tweet _Viewer</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Select a friend &amp; view their tweets &amp; status updates.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">friends_menu_tweet_viewer_image</property>
-                        <property name="use_stock">False</property>
+                        <accelerator key="m" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="selected_update">
+                        <property name="label" translatable="yes">_Selected Update / Tweet</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image2</property>
+                        <property name="use_stock">False</property>
+                        <child type="submenu">
+                          <object class="GtkMenu" id="selected_update_menu">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_reply_image_menu_item">
+                                <property name="label" translatable="yes">_Reply</property>
+                                <property name="visible">True</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">image5</property>
+                                <property name="use_stock">False</property>
+                                <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_retweet_image_menu_item">
+                                <property name="label">Retweet / _Forward</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">compos_menu_retweet_image</property>
+                                <property name="use_stock">False</property>
+                                <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkSeparatorMenuItem" id="menuitem3">
+                                <property name="visible">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_save_fave_image_menu_item">
+                                <property name="label" translatable="yes">Mark as _Star'd</property>
+                                <property name="visible">True</property>
+                                <property name="tooltip_text" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">help_menu_about_image</property>
+                                <property name="use_stock">False</property>
+                                <accelerator key="asterisk" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkSeparatorMenuItem" id="menuitem6">
+                                <property name="visible">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_author_image_menu_item">
+                                <property name="label" translatable="yes">Update's _Author</property>
+                                <property name="visible">True</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">image7</property>
+                                <property name="use_stock">False</property>
+                                <child type="submenu">
+                                  <object class="GtkMenu" id="selected_update_author_menu">
+                                    <property name="visible">True</property>
+                                    <child>
+                                      <object class="GtkImageMenuItem" id="selected_update_author_view_profile_image_menu_item">
+                                        <property name="label" translatable="yes">View Author's _Profile</property>
+                                        <property name="visible">True</property>
+                                        <property name="tooltip_text" translatable="yes">View the profile for the user who wrote the selected update.</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="image">image3</property>
+                                        <property name="use_stock">False</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkImageMenuItem" id="selected_update_author_view_updates_image_menu_item">
+                                        <property name="label" translatable="yes">View Author's _Updates</property>
+                                        <property name="visible">True</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="image">image4</property>
+                                        <property name="use_stock">False</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSeparatorMenuItem" id="menuitem7">
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkImageMenuItem" id="selected_update_author_follow_image_menu_item">
+                                        <property name="label" translatable="yes">_Follow the Author</property>
+                                        <property name="visible">True</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="image">image6</property>
+                                        <property name="use_stock">False</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkImageMenuItem" id="selected_update_author_unfollow_image_menu_item">
+                                        <property name="label" translatable="yes">_Unfollow the Author</property>
+                                        <property name="visible">True</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="image">image8</property>
+                                        <property name="use_stock">False</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkImageMenuItem" id="selected_update_author_block_image_menu_item">
+                                        <property name="label" translatable="yes">_Block the Author</property>
+                                        <property name="visible">True</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="image">image9</property>
+                                        <property name="use_stock">False</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem5">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -442,7 +439,7 @@
                       <object class="GtkImageMenuItem" id="online_service_request_menu_tweets">
                         <property name="label" translatable="yes">View someone's _Tweets</property>
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">View someone's recent Tweets.</property>
+                        <property name="tooltip_text" translatable="yes">View someone's recent Updates.</property>
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_view_timeline_image</property>
                         <property name="use_stock">False</property>
@@ -828,10 +825,6 @@
     <property name="visible">True</property>
     <property name="stock">gtk-page-setup</property>
   </object>
-  <object class="GtkImage" id="friends_menu_tweet_viewer_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-orientation-portrait</property>
-  </object>
   <object class="GtkImage" id="friends_menu_follow_image">
     <property name="visible">True</property>
     <property name="stock">gtk-add</property>
@@ -877,25 +870,33 @@
     <property name="visible">True</property>
     <property name="stock">gtk-leave-fullscreen</property>
   </object>
+  <object class="GtkImage" id="compose_menu_new_tweet_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="accounts_menu_preferences_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-preferences</property>
+  </object>
+  <object class="GtkImage" id="image10">
+    <property name="visible">True</property>
+    <property name="stock">gtk-media-next</property>
+  </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
   </object>
-  <object class="GtkImage" id="help_menu_about_image">
+  <object class="GtkImage" id="image5">
     <property name="visible">True</property>
-    <property name="stock">gtk-about</property>
+    <property name="stock">gtk-missing-image</property>
   </object>
   <object class="GtkImage" id="compos_menu_retweet_image">
     <property name="visible">True</property>
     <property name="stock">gtk-convert</property>
   </object>
-  <object class="GtkImage" id="compose_menu_new_tweet_image">
+  <object class="GtkImage" id="help_menu_about_image">
     <property name="visible">True</property>
-    <property name="stock">gtk-edit</property>
-  </object>
-  <object class="GtkImage" id="image5">
-    <property name="visible">True</property>
-    <property name="stock">gtk-missing-image</property>
+    <property name="stock">gtk-about</property>
   </object>
   <object class="GtkImage" id="image7">
     <property name="visible">True</property>
@@ -920,13 +921,5 @@
   <object class="GtkImage" id="image9">
     <property name="visible">True</property>
     <property name="stock">gtk-stop</property>
-  </object>
-  <object class="GtkImage" id="accounts_menu_preferences_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-preferences</property>
-  </object>
-  <object class="GtkImage" id="image10">
-    <property name="visible">True</property>
-    <property name="stock">gtk-media-next</property>
   </object>
 </interface>

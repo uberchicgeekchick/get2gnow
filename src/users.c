@@ -503,7 +503,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 							:""
 						)
 					),
-					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
+					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
 	);
 	
 	status->notification=g_strdup_printf(

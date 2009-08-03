@@ -128,7 +128,7 @@ gboolean main_window_notify_on_timeout(gpointer data);
 const gchar *main_window_tabs_to_right_align(void);
 
 void main_window_state_on_connection(gboolean connected);
-void main_window_selected_tweet_image_menu_items_show(gboolean selected_tweet);
+void main_window_selected_update_image_menu_items_show(gboolean selected_update);
 
 G_END_DECLS
 

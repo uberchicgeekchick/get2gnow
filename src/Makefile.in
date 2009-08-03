@@ -46,7 +46,7 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-@HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
+@HAVE_GNOME_KEYRING_TRUE@keyring_sources=keyring.c			keyring.h
 get2gnow_SOURCES =			online-services-typedefs.h	\
 	$(keyring_sources)						\
 	program.c			program.h			\
@@ -74,7 +74,6 @@ get2gnow_SOURCES =			online-services-typedefs.h	\
 	searches.c			searches.h			\
 	preferences.c			preferences.h			\
 	ui-utils.c			ui-utils.h			\
-	following-viewer.c		following-viewer.h		\
 	friend-manager.c		friend-manager.h		\
 	tweet-view.c			tweet-view.h			\
 	tweets.c			tweets.h			\
@@ -110,7 +109,6 @@ get2gnow_OBJECTS =					\
 	searches.$(OBJEXT)				\
 	preferences.$(OBJEXT)				\
 	ui-utils.$(OBJEXT)				\
-	following-viewer.$(OBJEXT)			\
 	friends-manager.$(OBJEXT)			\
 	users.$(OBJEXT)					\
 	images.$(OBJEXT)				\
@@ -415,7 +413,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/groups.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@

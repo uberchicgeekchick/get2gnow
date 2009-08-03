@@ -123,27 +123,27 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					return;
 				case GDK_P:	case GDK_p:
 				case GDK_question:
-					online_service_request_selected_tweet_view_profile();
+					online_service_request_selected_update_view_profile();
 					return;
 				case GDK_U:	case GDK_u:
 				case GDK_asciitilde:	case GDK_ampersand:
-					online_service_request_selected_tweet_view_tweets();
+					online_service_request_selected_update_view_tweets();
 					return;
 				case GDK_A:	case GDK_a:
 				case GDK_greater:	case GDK_plus:
-					online_service_request_selected_tweet_follow();
+					online_service_request_selected_update_follow();
 					return;
 				case GDK_Z:	case GDK_z:
 				case GDK_less:		case GDK_minus:
-					online_service_request_selected_tweet_unfollow();
+					online_service_request_selected_update_unfollow();
 					return;
 				case GDK_B:	case GDK_b:
 				case GDK_numbersign:	case GDK_semicolon:
-					online_service_request_selected_tweet_block();
+					online_service_request_selected_update_block();
 					return;
 				case GDK_O:	case GDK_o:
 				case GDK_colon:	case GDK_exclam:
-					online_service_request_selected_tweet_unblock();
+					online_service_request_selected_update_unblock();
 					return;
 				case GDK_Page_Up:
 					tweet_lists_get_previous();
@@ -165,7 +165,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 		case GDK_CONTROL_MASK|GDK_SHIFT_MASK:
 			switch(event->keyval){
 				case GDK_asterisk:
-					online_service_request_selected_tweet_destroy_fave();
+					online_service_request_selected_update_destroy_fave();
 				return;
 			}
 		case GDK_CONTROL_MASK:
@@ -184,19 +184,19 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					return;
 				case GDK_S:	case GDK_s:
 				case GDK_asterisk:
-					online_service_request_selected_tweet_save_fave();
+					online_service_request_selected_update_save_fave();
 					return;
 				case GDK_F5:
 					tweet_list_refresh(tweet_lists_get_current()); 
 					return;
 				case GDK_Z:	case GDK_z:
-					online_service_request_selected_tweet_destroy_fave();
+					online_service_request_selected_update_destroy_fave();
 					return;
 				case GDK_R:	case GDK_r:
-					selected_tweet_reply();
+					selected_update_reply();
 					return;
 				case GDK_F:	case GDK_f:
-					selected_tweet_retweet();
+					selected_update_retweet();
 					return;
 				case GDK_D:	case GDK_d:
 					tweets_new_dm();
@@ -219,10 +219,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					help_show(main_window_get_window());
 					return;
 				case GDK_greater:
-					selected_tweet_retweet();
+					selected_update_retweet();
 					return;
 				case GDK_at:
-					selected_tweet_reply();
+					selected_update_reply();
 					return;
 				case GDK_asciitilde:
 					tweets_new_dm();
@@ -234,17 +234,12 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 	tweet_list_key_pressed(tweet_lists_get_current(), event);
 }/*tweets_hotkey_process(widget, event, user_date);*/
 
-void tweets_beep(void){
-	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
-		tweet_view_beep();
-}/*tweets_beep();*/
-
 void tweets_new_tweet(void){
 	if(in_reply_to_status_id) in_reply_to_status_id=0;
 	if(in_reply_to_service) in_reply_to_service=NULL;
 	tweet_view_show_tweet((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
-	unset_selected_tweet();
+	unset_selected_update();
 }/*tweets_new_tweet*/
 
 void tweets_new_dm(void){

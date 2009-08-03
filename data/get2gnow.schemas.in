@@ -1,9 +1,9 @@
 <gconfschemafile>
 	<schemalist>
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/accounts</key>
-			<applyto>/apps/get2gnow/auth/accounts</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/accounts</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/accounts</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>list</type>
 			<list_type>string</list_type>
 			<default>[me@twitter.com,me@identi.ca]</default>
@@ -14,9 +14,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/dont_confirm_delete</key>
-			<applyto>/apps/get2gnow/auth/dont_confirm_delete</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/dont_confirm_delete</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/dont_confirm_delete</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -26,9 +26,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@identi.ca/enabled</key>
-			<applyto>/apps/get2gnow/auth/me@identi.ca/enabled</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/enabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/enabled</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -38,9 +38,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@identi.ca/password</key>
-			<applyto>/apps/get2gnow/auth/me@identi.ca/password</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/password</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/password</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>string</type>
 			<default></default>
 			<locale name="C">
@@ -50,9 +50,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@identi.ca/https</key>
-			<applyto>/apps/get2gnow/auth/me@identi.ca/https</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/https</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/https</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -62,9 +62,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@identi.ca/auto_connect</key>
-			<applyto>/apps/get2gnow/auth/me@identi.ca/auto_connect</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/auto_connect</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/auto_connect</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -74,9 +74,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@twitter.com/enabled</key>
-			<applyto>/apps/get2gnow/auth/me@twitter.com/enabled</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/enabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/enabled</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -86,9 +86,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@twitter.com/password</key>
-			<applyto>/apps/get2gnow/auth/me@twitter.com/password</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/password</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/password</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>string</type>
 			<default></default>
 			<locale name="C">
@@ -98,9 +98,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@twitter.com/https</key>
-			<applyto>/apps/get2gnow/auth/me@twitter.com/https</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/https</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/https</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -110,9 +110,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/auth/me@twitter.com/auto_connect</key>
-			<applyto>/apps/get2gnow/auth/me@twitter.com/auto_connect</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/auto_connect</key>
+			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/auto_connect</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -122,9 +122,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweets/home_timeline</key>
-			<applyto>/apps/get2gnow/tweets/home_timeline</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweets/home_timeline</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweets/home_timeline</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>string</type>
 			<default>/statuses/friends_timeline.xml</default>
 			<locale name="C">
@@ -134,9 +134,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweets/reload_timeline</key>
-			<applyto>/apps/get2gnow/tweets/reload_timeline</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweets/reload_timeline</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweets/reload_timeline</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>5</default>
 			<locale name="C">
@@ -146,9 +146,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/online-services/xml-cache/archive/expiration/dms</key>
-			<applyto>/apps/get2gnow/online-services/xml-cache/archive/expiration/dms</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/xml-cache/archive/expiration/dms</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/xml-cache/archive/expiration/dms</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>2419200</default>
 			<locale name="C">
@@ -161,9 +161,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/online-services/xml-cache/archive/expiration/replies</key>
-			<applyto>/apps/get2gnow/online-services/xml-cache/archive/expiration/replies</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/xml-cache/archive/expiration/replies</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/xml-cache/archive/expiration/replies</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>604800</default>
 			<locale name="C">
@@ -176,9 +176,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/online-services/xml-cache/archive/expiration/best_friends</key>
-			<applyto>/apps/get2gnow/online-services/xml-cache/archive/expiration/best_friends</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/xml-cache/archive/expiration/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/xml-cache/archive/expiration/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>86400</default>
 			<locale name="C">
@@ -191,9 +191,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/hidden</key>
-			<applyto>/apps/get2gnow/ui/hidden</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/hidden</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/hidden</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -203,9 +203,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/tweet_view_dialog</key>
-			<applyto>/apps/get2gnow/ui/tweet_view_dialog</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweet_view_dialog</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/tweet_view_dialog</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -215,9 +215,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/tweets/direct_reply_only</key>
-			<applyto>/apps/get2gnow/ui/tweets/direct_reply_only</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweets/direct_reply_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/tweets/direct_reply_only</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -230,9 +230,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweets/no_link_in_replies</key>
-			<applyto>/apps/get2gnow/tweets/no_link_in_replies</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweets/no_link_in_replies</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweets/no_link_in_replies</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -245,9 +245,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/disabled</key>
-			<applyto>/apps/get2gnow/tweet_view/url_expansion/disabled</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/disabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/disabled</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -260,9 +260,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/selected_only</key>
-			<applyto>/apps/get2gnow/tweet_view/url_expansion/selected_only</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/selected_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/selected_only</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -272,9 +272,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/user_profiles</key>
-			<applyto>/apps/get2gnow/tweet_view/url_expansion/user_profiles</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/user_profiles</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/user_profiles</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -284,9 +284,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweet_view/url_expansion/replace_with_titles</key>
-			<applyto>/apps/get2gnow/tweet_view/url_expansion/replace_with_titles</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/replace_with_titles</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/replace_with_titles</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -296,9 +296,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/all</key>
-			<applyto>/apps/get2gnow/notifications/all</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/notifications/all</key>
+			<applyto>/apps/@PACKAGE_NAME@/notifications/all</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -308,9 +308,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/best_friends</key>
-			<applyto>/apps/get2gnow/notifications/best_friends</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/notifications/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/notifications/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -320,9 +320,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/following</key>
-			<applyto>/apps/get2gnow/notifications/following</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/notifications/following</key>
+			<applyto>/apps/@PACKAGE_NAME@/notifications/following</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -332,9 +332,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/dms</key>
-			<applyto>/apps/get2gnow/ui/notifications/dms</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/notifications/dms</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/notifications/dms</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -344,9 +344,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/notifications/replies</key>
-			<applyto>/apps/get2gnow/notifications/replies</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/notifications/replies</key>
+			<applyto>/apps/@PACKAGE_NAME@/notifications/replies</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -356,9 +356,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/alerts/disable_system_bell</key>
-			<applyto>/apps/get2gnow/alerts/disable_system_bell</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/alerts/disable_system_bell</key>
+			<applyto>/apps/@PACKAGE_NAME@/alerts/disable_system_bell</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -368,9 +368,9 @@
 		</schema>
 
 		<schema>
-			<key>/schemas/apps/get2gnow/alerts/beep</key>
-			<applyto>/apps/get2gnow/alerts/beep</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/alerts/beep</key>
+			<applyto>/apps/@PACKAGE_NAME@/alerts/beep</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -380,9 +380,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/alerts/disable_update_length_alert</key>
-			<applyto>/apps/get2gnow/alerts/disable_update_length_alert</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/alerts/disable_update_length_alert</key>
+			<applyto>/apps/@PACKAGE_NAME@/alerts/disable_update_length_alert</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
@@ -392,9 +392,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/tweets/compose/replace_me_w_nick</key>
-			<applyto>/apps/get2gnow/tweets/compose/replace_me_w_nick</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/tweets/compose/replace_me_w_nick</key>
+			<applyto>/apps/@PACKAGE_NAME@/tweets/compose/replace_me_w_nick</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>2</default>
 			<locale name="C">
@@ -410,9 +410,9 @@
 		</schema>
 
 		<schema>
-			<key>/schemas/apps/get2gnow/hints/close_main_window</key>
-			<applyto>/apps/get2gnow/hints/close_main_window</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/hints/close_main_window</key>
+			<applyto>/apps/@PACKAGE_NAME@/hints/close_main_window</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -428,9 +428,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/hints/hide_main_window</key>
-			<applyto>/apps/get2gnow/hints/hide_main_window</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/hints/hide_main_window</key>
+			<applyto>/apps/@PACKAGE_NAME@/hints/hide_main_window</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
@@ -445,9 +445,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/embed_view/height</key>
-			<applyto>/apps/get2gnow/ui/embed_view/height</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/height</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>690</default>
 			<locale name="C">
@@ -457,9 +457,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/embed_view/width</key>
-			<applyto>/apps/get2gnow/ui/embed_view/width</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/width</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/width</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>730</default>
 			<locale name="C">
@@ -469,9 +469,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/embed_view_x</key>
-			<applyto>/apps/get2gnow/ui/positions/embed_view_x</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/embed_view_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/embed_view_x</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>680</default>
 			<locale name="C">
@@ -481,9 +481,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/embed_view_y</key>
-			<applyto>/apps/get2gnow/ui/positions/embed_view_y</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/embed_view_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/embed_view_y</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>25</default>
 			<locale name="C">
@@ -493,9 +493,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/vpaned_tweet_view</key>
-			<applyto>/apps/get2gnow/ui/positions/vpaned_tweet_view</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/vpaned_tweet_view</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/vpaned_tweet_view</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>25</default>
 			<locale name="C">
@@ -505,9 +505,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/main_window/height</key>
-			<applyto>/apps/get2gnow/ui/main_window/height</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/main_window/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/height</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>445</default>
 			<locale name="C">
@@ -517,9 +517,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/main_window/width</key>
-			<applyto>/apps/get2gnow/ui/main_window/width</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/main_window/width</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/width</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>730</default>
 			<locale name="C">
@@ -529,9 +529,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/main_window_x</key>
-			<applyto>/apps/get2gnow/ui/positions/main_window_x</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/main_window_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/main_window_x</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>680</default>
 			<locale name="C">
@@ -541,9 +541,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/main_window_y</key>
-			<applyto>/apps/get2gnow/ui/positions/main_window_y</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/main_window_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/main_window_y</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>25</default>
 			<locale name="C">
@@ -553,9 +553,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/tweet_view/height</key>
-			<applyto>/apps/get2gnow/ui/tweet_view/height</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweet_view/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/tweet_view/height</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>300</default>
 			<locale name="C">
@@ -565,9 +565,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/tweet_view/width</key>
-			<applyto>/apps/get2gnow/ui/tweet_view/width</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweet_view/width</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/tweet_view/width</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>575</default>
 			<locale name="C">
@@ -577,9 +577,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/tweet_view_x</key>
-			<applyto>/apps/get2gnow/ui/positions/tweet_view_x</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/tweet_view_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/tweet_view_x</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>690</default>
 			<locale name="C">
@@ -589,9 +589,9 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/get2gnow/ui/positions/tweet_view_y</key>
-			<applyto>/apps/get2gnow/ui/positions/tweet_view_y</applyto>
-			<owner>get2gnow</owner>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/tweet_view_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/tweet_view_y</applyto>
+			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>505</default>
 			<locale name="C">

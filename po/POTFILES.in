@@ -1,7 +1,6 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
-[type: gettext/glade]data/following-viewer.ui
 [type: gettext/glade]data/friends-manager.ui
 [type: gettext/glade]data/main-window.ui
 [type: gettext/glade]data/online-services-dialog.ui
@@ -19,7 +18,6 @@ data/get2gnow.schemas.in
 src/about.c
 src/cache.c
 src/debug.c
-src/following-viewer.c
 src/friend-manager.c
 src/gconfig.c
 src/geometry.c
