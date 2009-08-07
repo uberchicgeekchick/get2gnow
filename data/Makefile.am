@@ -23,16 +23,20 @@ gtkbuilder_DATA =		 				\
 
 sexy_DATA =							\
 			tweet-list.ui				\
-			friends-manager.ui
+			friends-manager.ui			\
+			following-viewer.ui
 
 un_sexy_DATA =							\
 			tweet-list.ui.in.ui			\
-			friends-manager.ui.ui
+			friends-manager.in.ui			\
+			following-viewer.in.ui
 
 tweet-list.ui:
 	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! tweet-list.ui' 'tweet-list.in.ui';
 friends-manager.ui:
 	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! friends-manager.ui' 'friends-manager.in.ui';
+following-viewer.ui:
+	ex -n -s -E '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! following-viewer.ui' 'following-viewer.in.ui';
 sexy_DATA: $(un_sexy_DATA)
 
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
@@ -58,6 +62,16 @@ ifeq ($(gtk_update_icon_test),$(datadir)/icons/hicolor/scalable/apps/@PACKAGE_NA
 else
 	gtk_update_icon_cache=gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 endif
+
+
+clean-sexy-data: $(sexy_DATA)
+	@list='$(sexy_DATA)'; for p in $$list; do \
+		if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+		f=$(am__strip_dir) \
+		echo "rm '$$d$$p'"; \
+		rm "$$d$$p"; \
+	done
+clean: clean-sexy-data clean-am
 
 install-data-hook: update-icon-cache
 uninstall-hook: update-icon-cache

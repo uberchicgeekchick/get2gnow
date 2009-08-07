@@ -143,7 +143,7 @@ void network_get_image(OnlineService *service, TweetList *tweet_list, const gcha
 	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
 	NetworkTweetListImageDL *image=network_tweet_list_image_dl_new(tweet_list, image_filename, iter);
 	
-	online_service_request_uri(service, QUEUE, image_url, NULL, network_cb_on_image, image, NULL);
+	online_service_request_uri(service, QUEUE, image_url, 0, NULL, network_cb_on_image, image, NULL);
 }/*network_get_image*/
 
 
@@ -219,7 +219,11 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 		
 		statusbar_printf("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		statusbar_printf("http error: #%i: %s", xml->status_code, xml->reason_phrase);
-	}else{
+			if(xml->status_code==100 && !online_service_wrapper_get_attempt(service_wrapper)){
+				debug("Resubmitting Tweet/Status update to: [%s] per http response.", online_service_get_key(service));
+				online_service_wrapper_reattempt(service_wrapper);
+			}
+		}else{
 		debug("%s %s :-)", message, (direct_message?"succeeded":"updated"));
 		statusbar_printf("%s %s :-)", message, (direct_message?"sent":"updated"));
 	}
@@ -330,7 +334,7 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	debug("Resubmitting: %s to <%s>.", requested_uri, online_service_get_uri(service));
 	network_set_state_loading_timeline(requested_uri, Retry);
-	online_service_request_uri(service, QUEUE, requested_uri, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);
+	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/
 

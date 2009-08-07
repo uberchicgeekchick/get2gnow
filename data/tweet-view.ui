@@ -293,8 +293,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="tooltip_text" translatable="yes">Update your status/Send your Tweet (&lt;Alt&gt;+S)</property>
-                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
@@ -314,8 +314,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="tooltip_text" translatable="yes">Send your message as a direct message to this user (&lt;Alt&gt;+D).</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
@@ -346,8 +346,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="tooltip_text" translatable="yes">Clear the selected tweet &amp; start over (&lt;Ctrl&gt;+N).</property>
-                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="image1">
                             <property name="visible">True</property>
@@ -367,8 +367,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="tooltip_text" translatable="yes">Sends a DM to any of your followers by selecting them from a list, i.e. combo box. (Ctrl+D)</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="dm_form_active_image">
                             <property name="visible">True</property>
@@ -422,10 +422,8 @@
                             <property name="can_focus">True</property>
                             <property name="tooltip_text" translatable="yes">Friends you can send direct messages to.</property>
                             <property name="model">followers_list_store</property>
-                            <property name="active">0</property>
                             <property name="add_tearoffs">True</property>
                             <property name="tearoff_title">Send this message as a Direct Message to:</property>
-                            <property name="button_sensitivity">off</property>
                             <child>
                               <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
                               <attributes>

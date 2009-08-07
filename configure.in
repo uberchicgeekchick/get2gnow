@@ -118,6 +118,7 @@ Makefile
 get2gnow.spec
 data/Makefile
 data/get2gnow.desktop
+data/get2gnow.schemas
 help/Makefile
 src/Makefile
 po/Makefile

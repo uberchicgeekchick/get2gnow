@@ -56,10 +56,25 @@
 
 
 /********************************************************************************
- *      Project, system & library headers, eg #include <gdk/gdkkeysyms.h>       *
+ * Engine, event, ai, & graphics toolkit, & etc headers.                        *
+ *         e.g. #include <gtk/gtk.h>                                            *
  ********************************************************************************/
 #include <gtk/gtk.h>
+
+/*******************************************************************************
+ * keyboard & mouse event structs, enums, & defines.                           *
+ *          /usr/include/gtk-2.0/gdk/gdkevents.h                               *
+ *******************************************************************************/
+#include <gdk/gdk.h>
+#include <gdk/gdkevents.h>
+#include <gdk/gdkkeys.h>
+#include <gdk/gdktypes.h>
 #include <gdk/gdkkeysyms.h>
+
+/********************************************************************************
+ *      Project, system & library headers, e.g. #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
+
 #include <libsexy/sexy.h>
 
 #include "config.h"
@@ -130,6 +145,7 @@ struct _TweetListPrivate {
 	gchar			*timeline_menu_label;
 	
 	gint			index;
+	
 	guint			total;
 	gboolean		unread;
 	
@@ -231,7 +247,11 @@ static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, Twe
 static void tweet_list_clear(TweetList *tweet_list);
 
 static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event);
-static void tweet_list_goto_index(TweetList *tweet_list);
+
+static void tweet_list_index_validate(TweetList *tweet_list);
+static void tweet_list_index_select(TweetList *tweet_list);
+static void tweet_list_index_scroll_to(TweetList *tweet_list);
+
 static void tweet_list_scroll_to_top(TweetList *tweet_list);
 
 
@@ -784,7 +804,6 @@ static void tweet_list_setup(TweetList *tweet_list){
 								
 								"tweet_list_sexy_tree_view", "cursor-changed", tweet_list_changed_cb,
 								"tweet_list_sexy_tree_view", "size-allocate", tweet_list_size_cb,
-								//"tweet_list_sexy_tree_view", "row-activated", selected_update_reply,
 								"tweet_list_sexy_tree_view", "key-press-event", tweets_hotkey,
 							NULL
 	);
@@ -825,18 +844,21 @@ static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event){
 	
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
+			this->index=0;
+			tweet_list_index_select(tweet_list);
+			return;
 		case GDK_Home: case GDK_KP_Home:
 		case GDK_Begin: case GDK_Escape:
 			this->index=0;
+			break;
+		case GDK_End: case GDK_KP_End:
+			this->index=this->total-1;
 			break;
 		case GDK_Up: case GDK_KP_Up: case GDK_KP_Prior:
 			this->index--;
 			break;
 		case GDK_Down: case GDK_KP_Down: case GDK_KP_Next:
 			this->index++;
-			break;
-		case GDK_End: case GDK_KP_End:
-			this->index=this->total-1;
 			break;
 		case GDK_Page_Up:
 			this->index-=3; break;
@@ -846,10 +868,17 @@ static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event){
 			return;
 	}//switch
 	
-	tweet_list_goto_index(tweet_list);
-}/* tweet_list_move */
+	switch(event->state){
+		case GDK_CONTROL_MASK|GDK_MOD1_MASK:
+			tweet_list_index_select(tweet_list);
+			return;
+		default:
+			tweet_list_index_scroll_to(tweet_list);
+			return;
+	}
+}/* tweet_list_move( tweet_list, event ); */
 
-static void tweet_list_goto_index(TweetList *tweet_list){
+static void tweet_list_index_validate(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
@@ -860,19 +889,44 @@ static void tweet_list_goto_index(TweetList *tweet_list){
 		tweets_beep();
 		this->index=this->total-1;
 	}
+}/*tweet_list_index_validate(tweet_list);*/
+
+static void tweet_list_index_select(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	debug("Selecting tweet %d, maximum tweets are: %d.", this->index, this->total);
+	tweet_list_index_validate(tweet_list);
+	
+	debug("Selecting update %d, out of %d total updates.", this->index, this->total);
+	
 	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
-	gtk_tree_view_set_cursor(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE);
+	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)))
+		gtk_tree_view_set_cursor(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE);
+	
 	gtk_tree_path_free(path);
 	
 	tweet_view_sexy_select();
-}/*tweet_list_goto_index(tweet_list);*/
+}/*tweet_list_index_select(tweet_list);*/
+
+static void tweet_list_index_scroll_to(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	tweet_list_index_validate(tweet_list);
+	
+	debug("Scrolling to update %d, out of %d total updates.", this->index, this->total);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
+	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)))
+		gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
+	gtk_tree_path_free(path);
+	
+	tweet_view_sexy_select();
+}/*tweet_list_index_scroll_to(tweet_list);*/
 
 static void tweet_list_scroll_to_top(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-		
+	
 	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return;
 	
 	GtkTreePath *path=gtk_tree_path_new_from_indices(0, -1);

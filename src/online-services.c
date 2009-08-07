@@ -442,7 +442,7 @@ gssize online_services_get_length_of_longest_replacement(OnlineServices *service
 			service=(OnlineService *)a->data;
 			if(online_service_is_connected(service))
 				if( (replacement_length=strlen( (replace_with==1?online_service_get_user_nick(service):online_service_get_user_name(service)) )) > longest_replacement_length)
-					longest_replacement_length=replacement_length-1;
+					longest_replacement_length=replacement_length;
 		}
 	}
 	

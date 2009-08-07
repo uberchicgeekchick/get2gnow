@@ -95,76 +95,78 @@ struct _OnlineServiceWrapper {
 	gpointer						user_data;
 	gpointer						form_data;
 	gboolean						can_run;
+	guint							attempt;
 };
 
 
 static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceWrapperDataProcessor data_processor);
-static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
-static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
+static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *online_service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
+static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *online_service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
 
 
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, RequestMethod request, const gchar *request_uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, RequestMethod request, const gchar *request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(callback==NULL) return NULL;
 	
-	OnlineServiceWrapper *service_wrapper=g_new0(OnlineServiceWrapper, 1);
+	OnlineServiceWrapper *online_service_wrapper=g_new0(OnlineServiceWrapper, 1);
 	
-	service_wrapper->service=service;
-	service_wrapper->request_method=request;
-	service_wrapper->requested_uri=g_strdup(request_uri);
+	online_service_wrapper->service=service;
+	online_service_wrapper->request_method=request;
+	online_service_wrapper->requested_uri=g_strdup(request_uri);
+	online_service_wrapper->attempt=attempt;
 	
 	if(online_service_soup_session_callback_return_processor_func!=NULL)
-		service_wrapper->online_service_soup_session_callback_return_processor_func=online_service_soup_session_callback_return_processor_func;
+		online_service_wrapper->online_service_soup_session_callback_return_processor_func=online_service_soup_session_callback_return_processor_func;
 	else
-		service_wrapper->online_service_soup_session_callback_return_processor_func=online_service_soup_session_callback_return_processor_func_default;
+		online_service_wrapper->online_service_soup_session_callback_return_processor_func=online_service_soup_session_callback_return_processor_func_default;
 	
-	service_wrapper->callback=callback;
+	online_service_wrapper->callback=callback;
 	
-	service_wrapper->user_data=user_data;
-	service_wrapper->form_data=form_data;
+	online_service_wrapper->user_data=user_data;
+	online_service_wrapper->form_data=form_data;
 	
-	service_wrapper->can_run=TRUE;
+	online_service_wrapper->can_run=TRUE;
 	
-	online_service_wrapper_user_data_processor(service_wrapper, DataSet);
+	online_service_wrapper_user_data_processor(online_service_wrapper, DataSet);
 	
-	online_service_wrapper_form_data_processor(service_wrapper, DataSet);
+	online_service_wrapper_form_data_processor(online_service_wrapper, DataSet);
 	
-	return service_wrapper;
+	return online_service_wrapper;
 }/*online_service_wrapper_new(service, request_uri, callback, user_data, form_data);*/
 
-static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
+static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *online_service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(
-		service_wrapper->user_data!=NULL
+		online_service_wrapper->user_data!=NULL
 		&&
-		service_wrapper->callback!=online_service_callback
+		online_service_wrapper->callback!=online_service_callback
 		&&
-		service_wrapper->callback!=online_service_request_main_quit
+		online_service_wrapper->callback!=online_service_request_main_quit
 		&&
-		service_wrapper->callback!=network_cb_on_image
+		online_service_wrapper->callback!=network_cb_on_image
 		&&
-		service_wrapper->callback!=users_glist_process
+		online_service_wrapper->callback!=users_glist_process
 		&&
-		service_wrapper->callback!=network_display_timeline
+		online_service_wrapper->callback!=network_display_timeline
 	))
 		return;
 	
-	online_service_wrapper_data_processor(&service_wrapper->user_data, data_processor);
+	online_service_wrapper_data_processor(&online_service_wrapper->user_data, data_processor);
 	
-}/*online_service_wrapper_user_data_processor(service_wrapper, DataSet|DataFree);*/
+}/*online_service_wrapper_user_data_processor(online_service_wrapper, DataSet|DataFree);*/
 
-static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
+static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *online_service_wrapper, OnlineServiceWrapperDataProcessor data_processor){
 	if(!(
-		service_wrapper->form_data!=NULL
+		online_service_wrapper->form_data!=NULL
 		&&
-		service_wrapper->callback!=network_display_timeline
+		online_service_wrapper->callback!=network_display_timeline
 	))
 		return;
 	
-	online_service_wrapper_data_processor(&service_wrapper->form_data, data_processor);
-}/*online_service_wrapper_form_data_processor(service_wrapper, DataSet|DataFree);*/
+	online_service_wrapper_data_processor(&online_service_wrapper->form_data, data_processor);
+}/*online_service_wrapper_form_data_processor(online_service_wrapper, DataSet|DataFree);*/
 
 
 static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceWrapperDataProcessor data_processor){
@@ -182,73 +184,87 @@ static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceW
 	}
 }/*online_service_wrapper_data_processor(&data, DataSet|DataFree);*/
 
-void online_service_wrapper_retry(OnlineServiceWrapper *service_wrapper){
-	online_service_request(
-				service_wrapper->service,
-				service_wrapper->request_method,
-				service_wrapper->requested_uri,
-				service_wrapper->online_service_soup_session_callback_return_processor_func,
-				service_wrapper->callback,
-				service_wrapper->user_data,
-				service_wrapper->form_data
+void online_service_wrapper_retry(OnlineServiceWrapper *online_service_wrapper){
+	online_service_request_uri(
+				online_service_wrapper->service,
+				online_service_wrapper->request_method,
+				online_service_wrapper->requested_uri,
+				online_service_wrapper->attempt,
+				online_service_wrapper->online_service_soup_session_callback_return_processor_func,
+				online_service_wrapper->callback,
+				online_service_wrapper->user_data,
+				online_service_wrapper->form_data
 	);
-}/*void online_service_wrapper_retry(service_wrapper);*/
+}/*void online_service_wrapper_retry(online_service_wrapper);*/
 
-void online_service_wrapper_run(OnlineServiceWrapper *service_wrapper, SoupSession *session, SoupMessage *xml){
-	if(!(service_wrapper->callback && service_wrapper->can_run)) return;
-	service_wrapper->can_run=FALSE;
-	service_wrapper->online_service_soup_session_callback_return_processor_func( service_wrapper, (service_wrapper->callback(session, xml, service_wrapper)) );
+void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml){
+	if(!(online_service_wrapper->callback && online_service_wrapper->can_run)) return;
+	online_service_wrapper->can_run=FALSE;
+	online_service_wrapper->online_service_soup_session_callback_return_processor_func( online_service_wrapper, (online_service_wrapper->callback(session, xml, online_service_wrapper)) );
 }/*online_service_wrapper_run*/
 
-OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return NULL;
-	return service_wrapper->service;
-}/*online_service_wrapper_get_online_service(service_wrapper);*/
+OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return NULL;
+	return online_service_wrapper->service;
+}/*online_service_wrapper_get_online_service(online_service_wrapper);*/
 
-RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return QUEUE;
-	return service_wrapper->request_method;
-}/*RequestMethod online_service_wrapper_get_requested_method(service_wrapper);*/
+RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return QUEUE;
+	return online_service_wrapper->request_method;
+}/*RequestMethod online_service_wrapper_get_requested_method(online_service_wrapper);*/
 
-const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return NULL;
-	return service_wrapper->requested_uri;
-}/*online_service_wrapper_get_requested_uri(service_wrapper);*/
+const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return NULL;
+	return online_service_wrapper->requested_uri;
+}/*online_service_wrapper_get_requested_uri(online_service_wrapper);*/
 
-OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper && service_wrapper->can_run) return NULL;
-	return service_wrapper->online_service_soup_session_callback_return_processor_func;
-}/*online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(service_wrapper);*/
-
-
-OnlineServiceSoupSessionCallbackFunc online_service_wrapper_get_callback(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper && service_wrapper->can_run) return NULL;
-	return service_wrapper->callback;
-}/*online_service_wrapper_get_callback(service_wrapper);*/
-
-
-gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return NULL;
-	return service_wrapper->user_data;
-}/*online_service_wrapper_get_user_data(service_wrapper)*/
-
-gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return NULL;
-	return service_wrapper->form_data;
-}/*online_service_wrapper_get_form_data(service_wrapper);*/
-
-void online_service_wrapper_free(OnlineServiceWrapper *service_wrapper){
-	if(!service_wrapper) return;
+guint online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return ONLINE_SERVICE_MAX_REQUESTS;
 	
-	online_service_wrapper_user_data_processor(service_wrapper, DataFree);
+	if(online_service_wrapper->attempt)
+		online_service_request_uri(online_service_wrapper->service, online_service_wrapper->request_method, online_service_wrapper->requested_uri, (++online_service_wrapper->attempt), online_service_wrapper->online_service_soup_session_callback_return_processor_func, online_service_wrapper->callback, online_service_wrapper->user_data, online_service_wrapper->form_data );
 	
-	online_service_wrapper_form_data_processor(service_wrapper, DataFree);
+	return online_service_wrapper->attempt;
+}/*online_service_wrapper_reattempt(online_service_wrapper);*/
+
+guint online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return ONLINE_SERVICE_MAX_REQUESTS;
+	return online_service_wrapper->attempt;
+}/*online_service_wrapper_get_attempt(online_service_wrapper);*/
+
+OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper && online_service_wrapper->can_run) return NULL;
+	return online_service_wrapper->online_service_soup_session_callback_return_processor_func;
+}/*online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(online_service_wrapper);*/
+
+
+OnlineServiceSoupSessionCallbackFunc online_service_wrapper_get_callback(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper && online_service_wrapper->can_run) return NULL;
+	return online_service_wrapper->callback;
+}/*online_service_wrapper_get_callback(online_service_wrapper);*/
+
+gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return NULL;
+	return online_service_wrapper->user_data;
+}/*online_service_wrapper_get_user_data(online_service_wrapper)*/
+
+gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return NULL;
+	return online_service_wrapper->form_data;
+}/*online_service_wrapper_get_form_data(online_service_wrapper);*/
+
+void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return;
 	
-	service_wrapper->online_service_soup_session_callback_return_processor_func=NULL;
-	service_wrapper->callback=NULL;
-	service_wrapper->service=NULL;
+	online_service_wrapper_user_data_processor(online_service_wrapper, DataFree);
 	
-	uber_object_free(&service_wrapper->requested_uri, &service_wrapper, NULL);
+	online_service_wrapper_form_data_processor(online_service_wrapper, DataFree);
+	
+	online_service_wrapper->online_service_soup_session_callback_return_processor_func=NULL;
+	online_service_wrapper->callback=NULL;
+	online_service_wrapper->service=NULL;
+	
+	uber_object_free(&online_service_wrapper->requested_uri, &online_service_wrapper, NULL);
 }/*online_service_free_wrapper*/
 
 

@@ -112,11 +112,10 @@ static void friends_manager_refresh(GtkButton *button, FriendsManager *friends_m
 static void friends_manager_follow(GtkButton *button, FriendsManager *friends_manager);
 static void friends_manager_unfollow(GtkButton *button, FriendsManager *friends_manager);
 static void friends_manager_block(GtkButton *button, FriendsManager *friends_manager);
-static void friends_manager_free(void);
 static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_manager, gboolean is_sensitive);
 
 /* signal handlers */
-static void friends_manager_destroy(GtkDialog *dialog);
+static void friends_manager_destroy(GtkDialog *dialog, FriendsManager *friends_manager);
 static void friends_manager_response(GtkDialog *dialog, gint response, FriendsManager *friends_manager);
 static void friends_manager_list_clicked(GtkTreeView *tree_view, FriendsManager *friends_manager);
 static void friends_manager_view_profile(void);
@@ -124,21 +123,15 @@ static void friends_manager_view_timeline(GtkButton *button, FriendsManager *fri
 
 
 
-static void friends_manager_destroy(GtkDialog *dialog){
-	debug("Destroying friends manager");
-	friends_manager_free();
-}/*friends_manager_destroy*/
-
-
 static void friends_manager_response(GtkDialog *dialog, gint response, FriendsManager *friends_manager){
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 }/*friends_message_response*/
 
-
-static void friends_manager_free(void){
-	if(!(friends_manager)) return;
+static void friends_manager_destroy(GtkDialog *dialog, FriendsManager *friends_manager){
+	debug("Destroying friends manager");
+	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(friends_manager);
-}/*friends_manager_free*/
+}/*friends_manager_destroy*/
 
 static User *friends_manager_get_selected_user(GtkTreeIter **iter, FriendsManager *friends_manager){
 	User *user=NULL;

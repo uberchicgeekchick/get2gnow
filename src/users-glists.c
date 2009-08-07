@@ -75,6 +75,10 @@
 #include "network.h"
 #include "parser.h"
 
+#include "friends-manager.h"
+#include "following-viewer.h"
+#include "tweet-view.h"
+
 
 /********************************************************
  *          Variable definitions.                       *
@@ -95,10 +99,10 @@ gboolean getting_followers=FALSE;
 
 static guint which_pass=0;
 
-static UsersGListGetWhich users_glist_get_which_previous;
+/*static UsersGListGetWhich users_glist_get_which_previous;*/
 
 
-/********************************************************
+/*******************************************************
  *          Static method & function prototypes         *
  ********************************************************/
 static GList *users_glist_parse(OnlineService *service, SoupMessage *xml);
@@ -114,7 +118,6 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	
 	if(!fetching_users){
 		if(!which_pass){
-			users_glist_get_which_previous=users_glist_get_which;
 			on_load_func=func;
 			if(refresh && service && service==selected_service)
 				users_glists_free_lists(service);
@@ -122,8 +125,8 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 		}
 		
 		if( !refresh && service && service==selected_service ){
-			GList *users=online_service_users_glist_get(service, users_glist_get_which_previous);
-			switch(users_glist_get_which_previous){
+			GList *users=online_service_users_glist_get(service, users_glist_get_which);
+			switch(users_glist_get_which){
 				case GetFriends:
 					if(!users) break;
 					debug("Displaying & loading, %d pages, friends list for: [%s].", page, online_service_get_key(service));
@@ -138,9 +141,11 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 					if(!(online_service_users_glist_get(service, GetFriends) && online_service_users_glist_get(service, GetFollowers))) break;
 					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, online_service_get_key(service));
 					if(which_pass<2) break;
+					GList *friends=online_service_users_glist_get(service, GetFriends), *followers=online_service_users_glist_get(service, GetFollowers);
 					users=g_list_alloc();
-					users=g_list_concat(online_service_users_glist_get(service, GetFriends), online_service_users_glist_get(service, GetFollowers));
+					users=g_list_concat(friends, followers);
 					users=g_list_sort(users, (GCompareFunc)usrglistscasecmp);
+					online_service_users_glist_set(service, GetBoth, users);
 					break;
 			}
 			if(users){
@@ -164,12 +169,12 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 		getting_followers=FALSE;
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
 	}else{
-		which_pass=1;
 		if(users_glist_get_which==GetBoth && online_service_users_glist_get(service, GetFriends) && online_service_users_glist_get(service, GetFollowers) ){
-			which_pass=2;
 			fetching_users=FALSE;
+			which_pass=2;
 			return users_glist_get(users_glist_get_which, FALSE, NULL);
 		}
+		which_pass=1;
 		getting_followers=TRUE;
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
 	}
@@ -178,8 +183,8 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 		debug("**ERROR:** OnlineService is not set.  I'm unable to retreive page %d of users %s.", page, (which_pass?_("who are following you"):_("you're following")));
 		return NULL;
 	}else{
-		debug("Getting users page, uri:  %s.", uri );
-		online_service_request(service, QUEUE, uri, users_glist_save, users_glist_process, (gpointer)users_glist_get_which, NULL );
+		debug("Getting users page, uri:  %s.", uri);
+		online_service_request(service, QUEUE, uri, users_glist_save, users_glist_process, (gpointer)users_glist_get_which, NULL);
 	}
 	g_free(uri);
 	return NULL;
@@ -188,8 +193,9 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
-	const gchar *which_glist_str=(which_pass?_("followers") :_("friends") );
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
+	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
+	const gchar *which_glist_str=( (users_glist_get_which==GetFriends) ? _("friends") : ( (users_glist_get_which==GetFollowers) ? _("followers") :_("friends and followers" ) ) );
 	const gchar *service_key=online_service_get_key(service);
 	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service_key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
@@ -210,27 +216,31 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	/*cache_save_page(service, uri, xml->response_body);*/
 	
 	return new_users;
-}/*users_glist_parse(session, xml, service_wrapper);*/
+}/*users_glist_process(session, xml, service_wrapper);*/
 
 void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer){
 	GList *new_users=(GList *)soup_session_callback_return_gpointer;
+	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
 	
 	if(!(new_users)){
 		fetching_users=FALSE;
 		which_pass++;
-		users_glist_get(users_glist_get_which_previous, FALSE, NULL);
+		users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
 	}
 	
-	if(!which_pass)
+	if(!which_pass){
 		debug("Appending users to friends list.");
-	else
+		online_service_users_glist_set(service, GetFriends, new_users);
+	}else{
 		debug("Addending users to followers list.");
+		online_service_users_glist_set(service, GetFollowers, new_users);
+	}
 	
-	online_service_users_glist_set(service, users_glist_get_which_previous, new_users);
+	//online_service_users_glist_set(service, users_glist_get_which, new_users);
 	/*now we get the next page - or send the results where they belong.*/
 	debug("Retrieving the next page of %s.", (which_pass ?"followers" :"friends") );
-	users_glist_get(users_glist_get_which_previous, FALSE, NULL);
+	users_glist_get(users_glist_get_which, FALSE, NULL);
 }/*users_glist_save*/
 
 /**
@@ -238,20 +248,7 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_sessi
  *		than it returns 1 if a is a follower & b is not
  */
 int users_glists_sort_by_user_name(User *user1, User *user2){
-	int user_cmp_return_value=0;
-	gboolean user1_follows_me=getting_followers, user2_follows_me=getting_followers;
-	
-	if( (user_cmp_return_value=strcasecmp( user_get_user_name(user1), user_get_user_name(user2) )) )
-		return user_cmp_return_value;
-	
-	if( (user1_follows_me=user_is_follower(user1)) && (user2_follows_me=user_is_follower(user2)) )
-		user_cmp_return_value=0;
-	else if( user1_follows_me && !user2_follows_me )
-		user_cmp_return_value=1;
-	else if( !user1_follows_me && user2_follows_me )
-		user_cmp_return_value=-1;
-	
-	return user_cmp_return_value;
+	return strcasecmp( user_get_user_name(user1), user_get_user_name(user2) );
 }/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; } );*/
 
 

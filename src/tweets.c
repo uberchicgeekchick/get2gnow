@@ -55,9 +55,19 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
 #include <glib/gprintf.h>
+
+
+/*******************************************************************************
+ * keyboard & mouse event structs, enums, & defines.                           *
+ *          /usr/include/gtk-2.0/gdk/gdkevents.h                               *
+ *******************************************************************************/
+#include <gdk/gdk.h>
+#include <gdk/gdkevents.h>
+#include <gdk/gdkkeys.h>
+#include <gdk/gdktypes.h>
+#include <gdk/gdkkeysyms.h>
+
 
 
 #include "config.h"
@@ -90,6 +100,11 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
 }/*void tweets_hotkey(widget, event, user_date){*/
 
 static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
+	if(event->keyval==GDK_Escape){
+		tweet_view_hide_previous_tweets();
+		return;
+	}
+	
 	switch(event->state){
 		case GDK_MOD1_MASK:
 			switch(event->keyval){

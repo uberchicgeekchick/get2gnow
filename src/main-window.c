@@ -87,9 +87,11 @@
 #include "tweets.h"
 
 #include "friends-manager.h"
+#include "following-viewer.h"
+#include "tweet-view.h"
 
 #include "tweet-list.h"
-#include "tweet-view.h"
+
 
 #define	GET_PRIVATE( obj )	( G_TYPE_INSTANCE_GET_PRIVATE(( obj ), TYPE_MAIN_WINDOW, MainWindowPrivate ))
 
@@ -115,6 +117,7 @@ struct _MainWindowPrivate {
         GtkMenuItem		*menu_edit;
 	GtkMenuItem		*menu_online_service_request;
 	GtkImageMenuItem	*online_service_request_menu_friends_manager;
+	GtkImageMenuItem	*online_service_request_menu_following_viewer;
 	GtkImageMenuItem	*online_service_request_menu_follow;
 	GtkImageMenuItem	*online_service_request_menu_unfollow;
 	GtkImageMenuItem	*online_service_request_menu_block;
@@ -302,6 +305,7 @@ static void main_window_setup( void ){
 					
 					"online_service_request", &main_window->private->menu_online_service_request,
 					"online_service_request_menu_friends_manager", &main_window->private->online_service_request_menu_friends_manager,
+					"online_service_request_menu_following_viewer", &main_window->private->online_service_request_menu_following_viewer,
 					"online_service_request_menu_follow", &main_window->private->online_service_request_menu_follow,
 					"online_service_request_menu_unfollow", &main_window->private->online_service_request_menu_unfollow,
 					"online_service_request_menu_block", &main_window->private->online_service_request_menu_block,
@@ -376,6 +380,7 @@ static void main_window_setup( void ){
 					"view_favorites_timeline", "activate", tweet_lists_timeline_selected,
 					
 					"online_service_request_menu_friends_manager", "activate", online_service_request_menu_process,
+					"online_service_request_menu_following_viewer", "activate", online_service_request_menu_process,
 					"online_service_request_menu_follow", "activate", online_service_request_menu_process,
 					"online_service_request_menu_unfollow", "activate", online_service_request_menu_process,
 					"online_service_request_menu_block", "activate", online_service_request_menu_process,
@@ -729,7 +734,10 @@ static void tweet_lists_timeline_selected(GtkRadioMenuItem *item, MainWindow *ma
 
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
 	if(item == main_window->private->online_service_request_menu_friends_manager)
-		return friends_manager_show( GTK_WINDOW( main_window->private->window ));
+		return friends_manager_show( GTK_WINDOW( main_window->private->window ) );
+	
+	if(item == main_window->private->online_service_request_menu_following_viewer)
+		return following_viewer_show( GTK_WINDOW( main_window->private->window ) );
 	
 	if(item == main_window->private->online_service_request_menu_follow)
 		return online_service_request_popup_friend_follow();

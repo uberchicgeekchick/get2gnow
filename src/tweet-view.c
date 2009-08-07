@@ -426,7 +426,7 @@ static void tweet_view_selected_update_buttons_setup(GtkBuilder *ui){
 
 static void tweet_view_bind_hotkeys(GtkBuilder *ui){
 	const gchar *hotkey_widgets[]={
-	/* Connect the signals */
+		/* Connect the signals */
 		"tweet_view",
 		"tweet_view_embed",
 		"user_vbox",
@@ -533,7 +533,7 @@ static void tweet_view_sexy_init( void ){
 	gtk_container_remove( GTK_CONTAINER( tweet_view->sexy_entry_combo_box_entry ), gtk_bin_get_child( GTK_BIN( tweet_view->sexy_entry_combo_box_entry )));
 	gtk_container_add( GTK_CONTAINER( tweet_view->sexy_entry_combo_box_entry ), GTK_WIDGET( tweet_view->sexy_entry ));
 	gtk_widget_show( GTK_WIDGET( tweet_view->sexy_entry ));
-	
+		
 	g_signal_connect_after(tweet_view->sexy_entry, "key-press-event", G_CALLBACK( tweets_hotkey ), NULL);
 	g_signal_connect_after(tweet_view->sexy_entry, "key-release-event", G_CALLBACK( tweet_view_count_tweet_char ), tweet_view->char_count);
 	g_signal_connect(tweet_view->sexy_entry, "activate", G_CALLBACK( tweet_view_send ), NULL);
@@ -737,6 +737,10 @@ gint tweet_view_sexy_puts(const gchar *str, gint position_after){
 	return position_after;
 }/*tweet_view_sexy_puts*/
 
+void tweet_view_hide_previous_tweets( void ){
+	g_signal_emit_by_name(tweet_view->sexy_entry_combo_box_entry, "popup");
+}/*tweet_view_hide_previous_tweets();*/
+
 void tweet_view_show_previous_tweets( void ){
 	g_signal_emit_by_name(tweet_view->sexy_entry_combo_box_entry, "popup");
 }/*tweet_view_show_previous_tweets();*/
@@ -868,6 +872,7 @@ static void tweet_view_free_updates(TweetView *tweet_view){
 }/*tweet_view_free_updates( tweet_view );*/
 
 void tweet_view_new_dm( void ){
+	users_glist_get(GetFollowers, FALSE, tweet_view_dm_data_fill);
 	gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, !gtk_toggle_button_get_active( tweet_view->dm_form_active_togglebutton ));
 }/*tweet_view_new_dm*/
 
@@ -903,8 +908,6 @@ void tweet_view_dm_data_fill(GList *followers){
 	gchar		*null_friend=g_strdup( "" );
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 	
-	gchar *new_label=NULL;
-	
 	gtk_list_store_clear( tweet_view->followers_list_store );
 	
 	gtk_list_store_append(tweet_view->followers_list_store, iter);
@@ -920,13 +923,8 @@ void tweet_view_dm_data_fill(GList *followers){
 	for(list=followers; list; list=list->next) {
 		user=(User *)list->data;
 		if( !service ) service=user_get_online_service( user );
-		if( !new_label ){
-			new_label=g_markup_printf_escaped("<b>_DM one of your, &lt;%s&gt;, followers:</b>", online_service_get_key( service ));
-			gtk_label_set_markup(tweet_view->dm_frame_label, new_label);
-			gtk_label_set_use_underline(tweet_view->dm_frame_label, TRUE);
-			gtk_label_set_single_line_mode(tweet_view->dm_frame_label, TRUE);
-		}
-		gchar *user_label=g_strdup_printf("%s <%s>", user_get_user_name( user ), user_get_user_nick( user ));
+		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user_get_user_name( user ), user_get_user_nick( user ));
+		debug("Adding user: %s <%s> from <%s> to DM form", user_get_user_name( user ), user_get_user_nick( user ), online_service_get_guid( service ) );
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(tweet_view->followers_list_store, iter);
 		gtk_list_store_set(
@@ -939,6 +937,14 @@ void tweet_view_dm_data_fill(GList *followers){
 		g_free( user_label );
 		g_free( iter );
 		iter=NULL;
+	}
+	
+	gchar *new_label=NULL;
+	if( !new_label ){
+		new_label=g_markup_printf_escaped("<b>_DM one of your, &lt;%s&gt;, followers:</b>", online_service_get_key( service ));
+		gtk_label_set_markup(tweet_view->dm_frame_label, new_label);
+		gtk_label_set_use_underline(tweet_view->dm_frame_label, TRUE);
+		gtk_label_set_single_line_mode(tweet_view->dm_frame_label, TRUE);
 	}
 	if( new_label ) uber_free( new_label );
 }/*tweet_view_dm_data_fill*/

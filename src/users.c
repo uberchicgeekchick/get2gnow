@@ -282,7 +282,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, user_name);
 	SoupMessage *msg=online_service_request(service, GET, user_profile_uri, NULL, NULL, NULL, NULL);
 	
-	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, GET, user_profile_uri, NULL, NULL, NULL, NULL);
+	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, GET, user_profile_uri, 0, NULL, NULL, NULL, NULL);
 	uber_free(user_profile_uri);
 	if(!(user=user_parse_profile(online_service_get_session(service), msg, online_service_wrapper))){
 		online_service_wrapper_free(online_service_wrapper);
@@ -609,7 +609,7 @@ gboolean user_download_avatar(User *user){
 	
 	debug("Downloading Image: %s.  GET: %s", image_file, user->image_url);
 	
-	SoupMessage *msg=online_service_request_uri(user->service, GET, user->image_url, NULL, NULL, NULL, NULL);
+	SoupMessage *msg=online_service_request_uri(user->service, GET, user->image_url, 0, NULL, NULL, NULL, NULL);
 	
 	debug("Image response: %i", msg->status_code);
 	
