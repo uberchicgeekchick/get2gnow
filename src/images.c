@@ -63,6 +63,7 @@
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"
 #include "debug.h"
 
+
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
 static void images_validate_filename(gchar **image_filename);
@@ -88,6 +89,10 @@ GtkImage *images_get_maximized_image_from_filename( gchar *image_filename ){
 GtkImage *images_get_default_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesDefault, ImagesDefault );
 }//images_get_default_image_from_filename
+
+GtkImage *images_get_dialog_image_from_filename( gchar *image_filename ){
+	return images_get_scaled_image_from_filename( image_filename, ImagesDialog, ImagesDialog );
+}//images_get_dialog_image_from_filename
 
 GtkImage *images_get_minimized_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
@@ -128,6 +133,10 @@ GdkPixbuf *images_get_default_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDefault, ImagesDefault );
 }//images_get_default_pixbuf_from_filename
 
+GdkPixbuf *images_get_dialog_pixbuf_from_filename( gchar *image_filename ){
+	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesDialog, ImagesDialog );
+}//images_get_dialog_pixbuf_from_filename
+
 GdkPixbuf *images_get_minimized_pixbuf_from_filename( gchar *image_filename ){
 	return images_get_scaled_pixbuf_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
 }//images_get_minimize_pixbuf_from_filename
@@ -144,6 +153,10 @@ GdkPixbuf *images_expand_pixbuf( GdkPixbuf *pixbuf ){
 
 GdkPixbuf *images_normalize_pixbuf( GdkPixbuf *pixbuf ){
 	return images_scale_pixbuf( pixbuf, ImagesDefault, ImagesDefault );
+}//images_normalize_pixbuf
+
+GdkPixbuf *images_dialogize_pixbuf( GdkPixbuf *pixbuf ){
+	return images_scale_pixbuf( pixbuf, ImagesDialog, ImagesDialog );
 }//images_normalize_pixbuf
 
 GdkPixbuf *images_minimize_pixbuf( GdkPixbuf *pixbuf ){
@@ -206,8 +219,7 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( gchar *image_filename ){
 }//images_get_full_sized_pixbuf_from_file
 
 
-#ifdef gdk_pixbuf_new_from_file_at_scale
-/* GNOME 2.6 */
+/* GNOME 2.6
 GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
 	images_validate_filename(&image_filename);
 	
@@ -226,9 +238,7 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint w
 	debug("Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
-}/*images_get_scaled_pixbuf_from_file*/
-
-#else
+}images_get_scaled_pixbuf_from_file*/
 
 GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
 	return images_get_and_scale_pixbuf_from_filename( image_filename, width, height );
@@ -248,6 +258,4 @@ GdkPixbuf *images_get_and_scale_pixbuf_from_filename( gchar *image_filename, gin
 	g_object_unref( pixbuf );
 	return resized;
 }//images_get_and_scale_pixbuf_from_file
-
-#endif
 

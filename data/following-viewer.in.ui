@@ -15,8 +15,10 @@
   <object class="GtkDialog" id="following_viewer">
     <property name="visible">True</property>
     <property name="title" translatable="yes">Who you're following:</property>
-    <property name="default_width">330</property>
-    <property name="default_height">295</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="default_width">475</property>
+    <property name="default_height">425</property>
+    <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="viewer-vbox5">

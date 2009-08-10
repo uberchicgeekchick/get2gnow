@@ -71,10 +71,6 @@
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
-#ifndef view_profile
-#define view_profile(service, user_name, parent)	user_profile_viewer_show(service, user_name, parent);
-#endif
-
 typedef struct _User User;
 typedef struct _UserStatus UserStatus;
 
@@ -91,7 +87,7 @@ gboolean user_is_follower(User *user);
 User *user_fetch_profile(OnlineService *service, const gchar *user_name);
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
-gboolean user_download_avatar(User *user);
+gboolean user_download_avatar(OnlineService *service, User *user);
 void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
 
 User *user_parse_node(OnlineService *service, xmlNode *root_element);

@@ -162,6 +162,8 @@ struct _UserProfileViewer{
 	GtkImage		*image;
 	
 	GtkVBox			*title_vbox;
+	
+	Label			*service_label;
 	Label			*user_label;
 	
 	GtkVBox			*profile_vbox;
@@ -200,7 +202,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 static void user_status_format_dates(UserStatus *status);
 
 static void user_profile_viewer_response(GtkDialog *dialog, gint response, UserProfileViewer *user_profile_viewer);
-static void user_profile_viewer_destroy(GtkDialog *dialog);
+static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *user_profile_viewer);
 static void user_profile_viewer_setup(GtkWindow *parent);
 
 
@@ -290,6 +292,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	}
 	
 	online_service_wrapper_free(online_service_wrapper);
+	user->service=service;
 	return user;
 }/*user_fetch_profile*/
 
@@ -598,22 +601,23 @@ static void user_profile_viewer_setup(GtkWindow *parent){
 	
 	g_object_add_weak_pointer(G_OBJECT(user_profile_viewer->dialog), (gpointer)&user_profile_viewer);
 	gtk_window_set_transient_for(GTK_WINDOW(user_profile_viewer->dialog), parent);
+	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
 	gtk_widget_show( GTK_WIDGET( user_profile_viewer->loading_label ) );
 	gtk_window_present(GTK_WINDOW(user_profile_viewer->dialog));
 }/*user_profile_viewer_setup(parent);*/
 
-gboolean user_download_avatar(User *user){
+gboolean user_download_avatar(OnlineService *service, User *user){
 	gchar *image_file=NULL;
 	if(g_file_test(user->image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return TRUE;
 	
 	debug("Downloading Image: %s.  GET: %s", image_file, user->image_url);
 	
-	SoupMessage *msg=online_service_request_uri(user->service, GET, user->image_url, 0, NULL, NULL, NULL, NULL);
+	SoupMessage *msg=online_service_request_uri(service, GET, user->image_url, 0, NULL, NULL, NULL, NULL);
 	
 	debug("Image response: %i", msg->status_code);
 	
-	if(!( (network_check_http(user->service, msg)) && (g_file_set_contents(user->image_file, msg->response_body->data, msg->response_body->length, NULL)) ))
+	if(!( (network_check_http(service, msg)) && (g_file_set_contents(user->image_file, msg->response_body->data, msg->response_body->length, NULL)) ))
 		return FALSE;
 	
 	return TRUE;
@@ -628,15 +632,35 @@ void user_profile_viewer_show(OnlineService *service, const gchar *user_name, Gt
 	
 	user_profile_viewer->user=user_fetch_profile(service, user_name);
 	
-	user_download_avatar(user_profile_viewer->user);
-	
-	if(!(g_str_equal("unknown_image", user_profile_viewer->user->image_file))){
-		gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET(user_profile_viewer->image=images_get_maximized_image_from_filename( user_profile_viewer->user->image_file )) );
+	debug("Downloading user's avatar from: <%s> to [ file://%s ]", user_profile_viewer->user->image_url, user_profile_viewer->user->image_file);
+	if(user_download_avatar(service, user_profile_viewer->user)){
+		/*TODO: FIXME
+		 * user_download_avatar(user); or this section of code is currently causing a segfault w/o dumping any info.
+		 */
+		debug("Avatar: GtkImage created GtkImage for display in UserProfileViewer");
+		debug("Avatar: Downloaded from <%s>", user_profile_viewer->user->image_url);
+		debug("Avatar: saved to: [%s]", user_profile_viewer->user->image_file);
+		gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET( user_profile_viewer->image=images_get_maximized_image_from_filename(user_profile_viewer->user->image_file)) );
 	}
 	
 	profile_details=g_strdup_printf(
-					"\t<u><b>%s:</b> @%s on <a href=\"http%s://%s/\">%s</u>\n",
-					user_profile_viewer->user->user_nick, user_profile_viewer->user->user_name, (online_service_is_secure(user_profile_viewer->user->service)?"s":""), online_service_get_uri(user_profile_viewer->user->service), online_service_get_guid(user_profile_viewer->user->service)
+					"\t[<a href=\"http%s://%s/\">%s</a>]\n",
+					(online_service_is_secure(service)?"s":""), online_service_get_uri(service), online_service_get_guid(service)
+	);
+	
+	user_profile_viewer->service_label=label_new();
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->service_label));
+	gtk_box_pack_start(
+				GTK_BOX(user_profile_viewer->title_vbox),
+				GTK_WIDGET(user_profile_viewer->service_label),
+				TRUE, TRUE, 0
+	);
+	label_set_text(service, LABEL(user_profile_viewer->service_label), profile_details, TRUE, TRUE);
+	g_free( profile_details );
+
+	profile_details=g_strdup_printf(
+					"\t\t<u><b>%s:</b></u> @%s",
+					user_profile_viewer->user->user_nick, user_profile_viewer->user->user_name
 	);
 	
 	
@@ -708,7 +732,9 @@ static void user_profile_viewer_response(GtkDialog *dialog, gint response, UserP
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 }/*user_profile_viewer_response(dialog, response, user_profile_viewer);*/
 
-static void user_profile_viewer_destroy(GtkDialog *dialog){
+static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *user_profile_viewer){
+	debug("Destroying user profile viewer");
+	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(user_profile_viewer);
 }/*user_profile_viewer_response(dialog, user_profile_viewer);*/
 

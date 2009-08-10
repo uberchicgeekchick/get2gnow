@@ -317,7 +317,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	}
 
 	if(action==ViewProfile){
-		view_profile(service, user_data, parent);
+		user_profile_viewer_show(service, user_data, parent);
 		return;
 	}
 	

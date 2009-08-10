@@ -374,7 +374,7 @@ gchar *cache_images_get_unknown_image_filename(void){
 	
 	g_free(home_unknown_image_filename);
 	
-	return cache_images_get_unknown_image_filename();
+	return unknown_image_filename;
 }/*cache_images_get_unknown_image_filename*/
 
 gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar *user_name, const gchar *image_url){
