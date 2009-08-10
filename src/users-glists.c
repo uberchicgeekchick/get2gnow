@@ -210,6 +210,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	debug("Parsing user list");
 	if(!(new_users=users_glist_parse(service, xml)) ){
 		debug("No more %s where found, yippies we've got'em all.", which_glist_str);
+		//which_pass++;
 		return NULL;
 	}
 	
@@ -220,7 +221,8 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 
 void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer){
 	GList *new_users=(GList *)soup_session_callback_return_gpointer;
-	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
+	/*UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);*/
+	UsersGListGetWhich users_glist_get_which=(which_pass ?GetFollowers :GetFriends);
 	
 	if(!(new_users)){
 		fetching_users=FALSE;
@@ -229,15 +231,12 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_sessi
 		return;
 	}
 	
-	if(!which_pass){
+	if(!which_pass)
 		debug("Appending users to friends list.");
-		online_service_users_glist_set(service, GetFriends, new_users);
-	}else{
+	else
 		debug("Addending users to followers list.");
-		online_service_users_glist_set(service, GetFollowers, new_users);
-	}
 	
-	//online_service_users_glist_set(service, users_glist_get_which, new_users);
+	online_service_users_glist_set(service, users_glist_get_which, new_users);
 	/*now we get the next page - or send the results where they belong.*/
 	debug("Retrieving the next page of %s.", (which_pass ?"followers" :"friends") );
 	users_glist_get(users_glist_get_which, FALSE, NULL);
@@ -309,8 +308,8 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 void users_glists_free_lists(OnlineService *service){
 	if(online_service_users_glist_get(service, GetBoth)) return users_glists_free(service, GetBoth);
 	
-	users_glists_free(service, GetFriends);
-	users_glists_free(service, GetFollowers);
+	if(online_service_users_glist_get(service, GetFriends)) users_glists_free(service, GetFriends);
+	if(online_service_users_glist_get(service, GetFollowers)) users_glists_free(service, GetFollowers);
 }/*users_glists_free_lists(service);*/
 
 static void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which){
@@ -334,13 +333,17 @@ static void users_glists_free(OnlineService *service, UsersGListGetWhich users_g
 	g_list_foreach(glist_free, (GFunc)user_free, NULL);
 	
 	uber_list_free(glist_free);
-	if(users_glist_get_which!=GetBoth) return;
+	if(users_glist_get_which==GetBoth) return;
 	
-	glist_free=online_service_users_glist_get(service, GetFriends);
-	uber_list_free(glist_free);
+	if( ((users_glist_get_which!=GetFriends)) && (glist_free=online_service_users_glist_get(service, GetFriends)) ){
+		g_list_foreach(glist_free, (GFunc)user_free, NULL);
+		uber_list_free(glist_free);
+	}
 	
-	glist_free=online_service_users_glist_get(service, GetFollowers);
-	uber_list_free(glist_free);
+	if( ((users_glist_get_which!=GetFollowers)) && (glist_free=online_service_users_glist_get(service, GetFollowers)) ){
+		g_list_foreach(glist_free, (GFunc)user_free, NULL);
+		uber_list_free(glist_free);
+	}
 }/*users_glists_free(service, GetBoth);*/
 
 
