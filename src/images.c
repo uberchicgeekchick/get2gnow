@@ -219,7 +219,8 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( gchar *image_filename ){
 }//images_get_full_sized_pixbuf_from_file
 
 
-/* GNOME 2.6
+/* GNOME 2.6 - future prep. but GNOME 2.6 isn't in enough distros yet */
+/*
 GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
 	images_validate_filename(&image_filename);
 	
@@ -238,7 +239,7 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint w
 	debug("Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
-}images_get_scaled_pixbuf_from_file*/
+}*//*images_get_scaled_pixbuf_from_file(image_filename, width, height);*/
 
 GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
 	return images_get_and_scale_pixbuf_from_filename( image_filename, width, height );
