@@ -42,7 +42,6 @@ void tweets_hotkey(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
 void tweets_beep(void);
 
 void tweets_new_tweet(void);
-void tweets_new_dm(void);
 
 G_END_DECLS
 

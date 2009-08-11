@@ -296,6 +296,8 @@ static void following_viewer_setup(GtkWindow *parent){
 	
 	g_object_unref(ui);
 	
+	/*TODO: FIXME:*/
+	gtk_widget_hide(GTK_WIDGET(following_viewer->refresh));
 	/* Set the parent */
 	g_object_add_weak_pointer(G_OBJECT(following_viewer->viewer), (gpointer) &following_viewer);
 	gtk_window_set_transient_for(GTK_WINDOW(following_viewer->viewer), parent);

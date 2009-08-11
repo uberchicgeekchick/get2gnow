@@ -105,6 +105,7 @@ static guint which_pass=0;
 /*******************************************************
  *          Static method & function prototypes         *
  ********************************************************/
+const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_which);
 static GList *users_glist_parse(OnlineService *service, SoupMessage *xml);
 
 static void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which);
@@ -113,15 +114,29 @@ static void users_glists_free(OnlineService *service, UsersGListGetWhich users_g
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
+const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_which){
+	switch(users_glist_get_which){
+		case GetFriends: return "GetFriends";
+		case GetFollowers: return "GetFollowers";
+		case GetBoth: return "GetBoth";
+		default:
+			      debug("**ERROR:** Attempting to download unsupport list of user relationships.");
+			      return "**ERROR:** Unsupported [UsersGlistGetWhich type]";
+	}
+}/*users_glist_get_which_to_string(users_glist_get_which);*/
+
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListLoadFunc func){
 	if(!selected_service) return NULL;
 	
+	debug("Loading users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
 	if(!fetching_users){
+		page=0;
 		if(!which_pass){
 			on_load_func=func;
 			if(refresh && service && service==selected_service)
 				users_glists_free_lists(service);
 			service=selected_service;
+			page=0;
 		}
 		
 		if( !refresh && service && service==selected_service ){
@@ -138,7 +153,6 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 					users=g_list_sort(users, (GCompareFunc)usrglistscasecmp);
 					break;
 				case GetBoth:
-					if(!(online_service_users_glist_get(service, GetFriends) && online_service_users_glist_get(service, GetFollowers))) break;
 					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, online_service_get_key(service));
 					if(which_pass<2) break;
 					GList *friends=online_service_users_glist_get(service, GetFriends), *followers=online_service_users_glist_get(service, GetFollowers);
@@ -156,7 +170,6 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 				return users;
 			}
 		}
-		page=0;
 	}
 	
 	fetching_users=TRUE;
@@ -165,7 +178,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	main_window_statusbar_printf("Please wait while %s downloads page #%d of users %s.", GETTEXT_PACKAGE, page, ( (users_glist_get_which==GetFollowers||which_pass) ?"who are following you" :"you're following") );
 	
 	gchar *uri=NULL;
-	if( (users_glist_get_which==GetFriends || (users_glist_get_which==GetBoth && !which_pass && !online_service_users_glist_get(service, GetFriends) ) ) ){
+	if( (users_glist_get_which==GetFriends || ( users_glist_get_which==GetBoth && !which_pass ) ) ){
 		getting_followers=FALSE;
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
 	}else{
@@ -183,7 +196,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 		debug("**ERROR:** OnlineService is not set.  I'm unable to retreive page %d of users %s.", page, (which_pass?_("who are following you"):_("you're following")));
 		return NULL;
 	}else{
-		debug("Getting users page, uri:  %s.", uri);
+		debug("Getting users_glist; uri: %s; page: %d; pass: %d; users_glist_get_which type: %s", uri, page, which_pass, users_glist_get_which_to_string(users_glist_get_which) );
 		online_service_request(service, QUEUE, uri, users_glist_save, users_glist_process, (gpointer)users_glist_get_which, NULL);
 	}
 	g_free(uri);
@@ -198,11 +211,13 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	const gchar *which_glist_str=( (users_glist_get_which==GetFriends) ? _("friends") : ( (users_glist_get_which==GetFollowers) ? _("followers") :_("friends and followers" ) ) );
 	const gchar *service_key=online_service_get_key(service);
 	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
+	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
 	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service_key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
 	
 	if(!network_check_http(service, xml)){
 		debug("**ERROR:** No more %s could be downloaded the request was not successful./", which_glist_str);
 		debug("**ERROR:** <%s>'s %s should be refreshed.", service_key, which_glist_str);
+		which_pass++;
 		return NULL;
 	}
 	
@@ -210,7 +225,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	debug("Parsing user list");
 	if(!(new_users=users_glist_parse(service, xml)) ){
 		debug("No more %s where found, yippies we've got'em all.", which_glist_str);
-		//which_pass++;
+		which_pass++;
 		return NULL;
 	}
 	
@@ -221,12 +236,10 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 
 void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer){
 	GList *new_users=(GList *)soup_session_callback_return_gpointer;
-	/*UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);*/
-	UsersGListGetWhich users_glist_get_which=(which_pass ?GetFollowers :GetFriends);
+	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
 	
 	if(!(new_users)){
 		fetching_users=FALSE;
-		which_pass++;
 		users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
 	}
@@ -236,9 +249,11 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_sessi
 	else
 		debug("Addending users to followers list.");
 	
-	online_service_users_glist_set(service, users_glist_get_which, new_users);
+	online_service_users_glist_set(service, (users_glist_get_which==GetFriends ?GetFriends :GetFollowers), new_users);
+	
 	/*now we get the next page - or send the results where they belong.*/
 	debug("Retrieving the next page of %s.", (which_pass ?"followers" :"friends") );
+	debug("Saving users_glist; page %d - pass %d users_glist_get_which type: %s", page, which_pass, users_glist_get_which_to_string(users_glist_get_which) );
 	users_glist_get(users_glist_get_which, FALSE, NULL);
 }/*users_glist_save*/
 

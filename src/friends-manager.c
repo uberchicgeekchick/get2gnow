@@ -364,7 +364,9 @@ static void friends_manager_setup(GtkWindow *parent){
 	);
 
 	g_object_unref(ui);
-
+	
+	/*TODO: FIXME:*/
+	gtk_widget_hide(GTK_WIDGET(friends_manager->refresh));
 	g_object_add_weak_pointer(G_OBJECT(friends_manager->dialog), (gpointer) &friends_manager);
 	gtk_window_set_transient_for(GTK_WINDOW(friends_manager->dialog), parent);
 

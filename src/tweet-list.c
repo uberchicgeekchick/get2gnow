@@ -830,7 +830,7 @@ void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event){
 			selected_update_retweet();
 			return;
 		case GDK_SHIFT_MASK:
-			tweets_new_dm();
+			tweet_view_new_dm();
 			return;
 		default:
 			selected_update_reply();

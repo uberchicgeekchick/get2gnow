@@ -172,7 +172,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 		case GDK_SHIFT_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
-					tweets_new_dm();
+					tweet_view_new_dm();
 					return;
 				default: break;
 			}
@@ -214,7 +214,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					selected_update_retweet();
 					return;
 				case GDK_D:	case GDK_d:
-					tweets_new_dm();
+					tweet_view_new_dm();
 					return;
 				case GDK_W: case GDK_w:
 					tweet_lists_close_current_page();
@@ -240,7 +240,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					selected_update_reply();
 					return;
 				case GDK_asciitilde:
-					tweets_new_dm();
+					tweet_view_new_dm();
 					return;
 				default: break;
 			}
@@ -256,11 +256,6 @@ void tweets_new_tweet(void){
 	tweet_view_sexy_set((gchar *)"");
 	unset_selected_update();
 }/*tweets_new_tweet*/
-
-void tweets_new_dm(void){
-	tweet_view_new_dm();
-}/*tweets_new_dm*/
-
 
 /********************************************************
  *                       eof                            *

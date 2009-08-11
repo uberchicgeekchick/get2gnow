@@ -375,6 +375,8 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	
 	debug("Disabling & hiding tweet view's dm form since friends have not yet been loaded.");
 	tweet_view_dm_form_activate( FALSE );
+	/*TODO: FIXME:*/
+	gtk_widget_hide(GTK_WIDGET(tweet_view->dm_refresh));
 	
 	unset_selected_update();
 	
@@ -872,7 +874,6 @@ static void tweet_view_free_updates(TweetView *tweet_view){
 }/*tweet_view_free_updates( tweet_view );*/
 
 void tweet_view_new_dm( void ){
-	users_glist_get(GetFollowers, FALSE, tweet_view_dm_data_fill);
 	gtk_toggle_button_set_active(tweet_view->dm_form_active_togglebutton, !gtk_toggle_button_get_active( tweet_view->dm_form_active_togglebutton ));
 }/*tweet_view_new_dm*/
 
