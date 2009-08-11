@@ -346,8 +346,8 @@ TweetView *tweet_view_new(GtkWindow *parent){
 				"dm_refresh", "clicked", tweet_view_dm_refresh,
 				"followers_send_dm", "clicked", tweet_view_send,
 				
-				"reply_button", "clicked", selected_update_reply,
-				"retweet_button", "clicked", selected_update_retweet,
+				"reply_button", "clicked", online_service_request_selected_update_reply,
+				"retweet_button", "clicked", online_service_request_selected_update_retweet,
 				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
 			NULL
 	);
@@ -378,7 +378,7 @@ TweetView *tweet_view_new(GtkWindow *parent){
 	/*TODO: FIXME:*/
 	gtk_widget_hide(GTK_WIDGET(tweet_view->dm_refresh));
 	
-	unset_selected_update();
+	online_service_request_unset_selected_update();
 	
 	return tweet_view;
 }/*tweet_view_new*/
@@ -576,9 +576,9 @@ static void tweet_view_reorder( void ){
 
 void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if( !id )
-		unset_selected_update();
+		online_service_request_unset_selected_update();
 	else
-		set_selected_update(service, id, user_id, user_name, text_tweet);
+		online_service_request_set_selected_update(service, id, user_id, user_name, text_tweet);
 	
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
 	tweet_view_selected_update_buttons_show( (id ?TRUE :FALSE ) );
@@ -752,13 +752,13 @@ void tweet_view_send(GtkWidget *activated_widget){
 	
 	const gchar *text=GTK_ENTRY( tweet_view->sexy_entry )->text;
 	if( G_STR_EMPTY( text )){
-		gchar *reply_to_string=selected_update_reply_to_strdup( FALSE );
-		if( !selected_update_get_user_name( ))
+		gchar *reply_to_string=online_service_request_selected_update_reply_to_strdup( FALSE );
+		if( !online_service_request_selected_update_get_user_name())
 			tweet_view_beep();
 		else if(g_str_has_prefix(text, reply_to_string))
 			tweet_view_beep();
 		else
-			selected_update_reply();
+			online_service_request_selected_update_reply();
 		uber_free( reply_to_string );
 		return;
 	}
@@ -797,12 +797,12 @@ static void tweet_view_sexy_send(OnlineService *service, const gchar *user_name)
 	
 	tweet_view_sexy_append( GTK_ENTRY( tweet_view->sexy_entry )->text, tweet_view);
 	tweet_view_sexy_set((gchar *)"");
-}/*tweet_view_sexy_send( selected_update_get_service( ), selected_update_get_user_name() );*/
+}/*tweet_view_sexy_send( online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
 
 void tweet_view_sexy_send_dm( void ){
-	gchar *user_name;
-	if(!(( user_name=selected_update_get_user_name( )) && G_STR_N_EMPTY( user_name ) )) return tweet_view_beep();
-	tweet_view_sexy_send( selected_update_get_service( ), user_name);
+	const gchar *user_name;
+	if(!(( user_name=online_service_request_selected_update_get_user_name()) && G_STR_N_EMPTY(user_name) )) return tweet_view_beep();
+	tweet_view_sexy_send( online_service_request_selected_update_get_service(), user_name);
 }/*tweet_view_sexy_send_dm();*/
 
 

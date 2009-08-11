@@ -178,7 +178,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 static void online_service_request_free(OnlineServiceRequest *request);
 
 
-static void selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release);
+static void online_service_request_selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release);
 
 
 static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup);
@@ -422,9 +422,9 @@ static void online_service_request_free(OnlineServiceRequest *request){
 /********************************************************************************
  *               selected_update methods, handlers, callbacks, & etc.            *
  ********************************************************************************/
-void set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
+void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
 	/*	gint id=atoi(string);	*/
-	if(selected_update) unset_selected_update();
+	if(selected_update) online_service_request_unset_selected_update();
 	
 	debug("SelectedTweet created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
 	debug("SelectedTweet's update: %s.", tweet);
@@ -434,25 +434,25 @@ void set_selected_update(OnlineService *service, const gdouble id, const gdouble
 	selected_update->user_id=user_id;
 	selected_update->user_name=g_strdup(user_name);
 	selected_update->tweet=g_uri_unescape_string(tweet, NULL);
-}/*set_selected_update*/
+}/*online_service_request_set_selected_update*/
 
-OnlineService *selected_update_get_service(void){
+OnlineService *online_service_request_selected_update_get_service(void){
 	return ( (selected_update && selected_update->service) ?selected_update->service :NULL );
-}/*selected_update_get_service();*/
+}/*online_service_request_selected_update_get_service();*/
 
-gdouble selected_update_get_id(void){
+gdouble online_service_request_selected_update_get_id(void){
 	return ( (selected_update && selected_update->id) ?selected_update->id :0.0 );
-}/*selected_update_get_id();*/
+}/*online_service_request_selected_update_get_id();*/
 
-gchar *selected_update_get_user_name(void){
+const gchar *online_service_request_selected_update_get_user_name(void){
 	return ( (selected_update && selected_update->user_name) ?selected_update->user_name :NULL );
-}/*selected_update_get_user_name();*/
+}/*online_service_request_selected_update_get_user_name();*/
 
-gdouble selected_update_get_user_id(void){
+gdouble online_service_request_selected_update_get_user_id(void){
 	return ( (selected_update && selected_update->user_id) ?selected_update->user_id :0.0 );
-}/*selected_update_get_user_id();*/
+}/*online_service_request_selected_update_get_user_id();*/
 
-gchar *selected_update_reply_to_strdup(gboolean retweet){
+gchar *online_service_request_selected_update_reply_to_strdup(gboolean retweet){
 	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
 		return NULL;
 	
@@ -460,17 +460,17 @@ gchar *selected_update_reply_to_strdup(gboolean retweet){
 		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_update->user_name, online_service_get_uri(selected_update->service), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
 	
 	return g_strdup_printf("%s@%s %s", (retweet ?"RT " :""), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
-}/*selected_update_reply_to_strdup();*/
+}/*online_service_request_selected_update_reply_to_strdup();*/
 
-void selected_update_reply(void){
-	selected_update_include_and_begin_to_send(selected_update_reply_to_strdup(FALSE), TRUE, TRUE);
-}/*selected_update_reply();*/
+void online_service_request_selected_update_reply(void){
+	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(FALSE), TRUE, TRUE);
+}/*online_service_request_selected_update_reply();*/
 
-void selected_update_retweet(void){
-	selected_update_include_and_begin_to_send(selected_update_reply_to_strdup(TRUE), TRUE, TRUE);
-}/*selected_update_reply();*/
+void online_service_request_selected_update_retweet(void){
+	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(TRUE), TRUE, TRUE);
+}/*online_service_request_selected_update_reply();*/
 
-static void selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
+static void online_service_request_selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
 	if(!( ( tweet && G_STR_N_EMPTY(tweet) ) )){
 		tweet_view_beep();
 		if(tweet && release) uber_free(tweet);
@@ -489,15 +489,15 @@ static void selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_
 	if(!release) return;
 	
 	uber_free(tweet);
-}/*selected_update_include_and_begin_to_send*/
+}/*online_service_request_selected_update_include_and_begin_to_send*/
 
-void unset_selected_update(void){
+void online_service_request_unset_selected_update(void){
 	if(!selected_update) return;
 	debug("Destroying current selected_update object.");
 	selected_update->service=NULL;
 	
 	uber_object_free(&selected_update->user_name, &selected_update->tweet, &selected_update, NULL);
-}/*unset_selected_update*/
+}/*online_service_request_unset_selected_update*/
 
 void online_service_request_selected_update_view_tweets(void){
 	if(!(selected_update && selected_update->user_name)) return;

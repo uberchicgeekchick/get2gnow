@@ -208,10 +208,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					online_service_request_selected_update_destroy_fave();
 					return;
 				case GDK_R:	case GDK_r:
-					selected_update_reply();
+					online_service_request_selected_update_reply();
 					return;
 				case GDK_F:	case GDK_f:
-					selected_update_retweet();
+					online_service_request_selected_update_retweet();
 					return;
 				case GDK_D:	case GDK_d:
 					tweet_view_new_dm();
@@ -234,10 +234,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					help_show(main_window_get_window());
 					return;
 				case GDK_greater:
-					selected_update_retweet();
+					online_service_request_selected_update_retweet();
 					return;
 				case GDK_at:
-					selected_update_reply();
+					online_service_request_selected_update_reply();
 					return;
 				case GDK_asciitilde:
 					tweet_view_new_dm();
@@ -254,7 +254,7 @@ void tweets_new_tweet(void){
 	if(in_reply_to_service) in_reply_to_service=NULL;
 	tweet_view_show_tweet((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
 	tweet_view_sexy_set((gchar *)"");
-	unset_selected_update();
+	online_service_request_unset_selected_update();
 }/*tweets_new_tweet*/
 
 /********************************************************

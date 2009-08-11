@@ -291,7 +291,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	g_signal_connect(tweet_list, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
 	g_signal_connect(tweet_list, "grab-focus", G_CALLBACK(tweet_list_grab_focus_cb), tweet_list);
-	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(selected_update_reply), tweet_list);
+	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(online_service_request_selected_update_reply), tweet_list);
 	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), tweet_list);
 }/* tweet_list_init */
 
@@ -827,13 +827,13 @@ void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event){
 			tweet_view_sexy_insert_char('\n');
 			return;
 		case GDK_MOD1_MASK:
-			selected_update_retweet();
+			online_service_request_selected_update_retweet();
 			return;
 		case GDK_SHIFT_MASK:
 			tweet_view_new_dm();
 			return;
 		default:
-			selected_update_reply();
+			online_service_request_selected_update_reply();
 			return;
 	}//switch
 }/*tweet_list_key_pressed(widget, event);*/

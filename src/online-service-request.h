@@ -109,15 +109,15 @@ void online_service_request_selected_update_unblock(void);
 void online_service_request_selected_update_save_fave(void);
 void online_service_request_selected_update_destroy_fave(void);
 
-void set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
-OnlineService *selected_update_get_service(void);
-gdouble selected_update_get_id(void);
-gchar *selected_update_get_user_name(void);
-gdouble selected_update_get_user_id(void);
-gchar *selected_update_reply_to_strdup(gboolean retweet);
-void selected_update_reply(void);
-void selected_update_retweet(void);
-void unset_selected_update(void);
+void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
+OnlineService *online_service_request_selected_update_get_service(void);
+gdouble online_service_request_selected_update_get_id(void);
+const gchar *online_service_request_selected_update_get_user_name(void);
+gdouble online_service_request_selected_update_get_user_id(void);
+gchar *online_service_request_selected_update_reply_to_strdup(gboolean retweet);
+void online_service_request_selected_update_reply(void);
+void online_service_request_selected_update_retweet(void);
+void online_service_request_unset_selected_update(void);
 
 void online_service_request_popup_select_service(void);
 void online_service_request_popup_friend_profile(void);

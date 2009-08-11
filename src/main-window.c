@@ -256,7 +256,7 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window->private->widgets_connected=NULL;
 	main_window->private->widgets_disconnected=NULL;
 	main_window->private->tweet_list_glist=NULL;
-	unset_selected_update();
+	online_service_request_unset_selected_update();
 	main_window->private->tabs_to_right_align=g_strdup("\t");
 }
 
@@ -362,8 +362,8 @@ static void main_window_setup( void ){
 					
 					"tweets_new_tweet", "activate", tweets_new_tweet,
 					"tweets_new_dm", "activate", tweet_view_new_dm,
-					"selected_update_reply_image_menu_item", "activate", selected_update_reply,
-					"selected_update_retweet_image_menu_item", "activate", selected_update_retweet,
+					"selected_update_reply_image_menu_item", "activate", online_service_request_selected_update_reply,
+					"selected_update_retweet_image_menu_item", "activate", online_service_request_selected_update_retweet,
 					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_save_fave,
 					"selected_update_author_view_profile_image_menu_item", "activate", online_service_request_selected_update_view_profile,
 					"selected_update_author_view_updates_image_menu_item", "activate", online_service_request_selected_update_view_tweets,
@@ -621,7 +621,7 @@ GtkMenuItem *main_window_get_menu(const gchar *menu){
 }/*main_window_get_menu*/
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
-	unset_selected_update();
+	online_service_request_unset_selected_update();
 	/* Add any clean-up code above this function call */
 	gtk_widget_destroy( GTK_WIDGET( GET_PRIVATE( main_window )->window) );
 }
@@ -1028,7 +1028,7 @@ void main_window_state_on_connection(gboolean connected){
 	
 	GList         *l;
 	if( !connected ){
-		unset_selected_update();
+		online_service_request_unset_selected_update();
 		tweet_lists_stop();
 	}else
 		tweet_lists_refresh();
