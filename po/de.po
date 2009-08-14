@@ -201,7 +201,7 @@ msgstr "Dieses Programm ist freie Software, Sie können sie weitergeben und/oder
 "Dieses Programm wurde mit dem Ziel veröffentlicht, dass Sie es nützlich finden,\n"
 "jedoch OHNE JEDWEDE GARANTIE, sogar ohne eine implizite Garantie\n"
 "der VERKAUFBARKEIT oder der NUTZBARKEIT FÜR EINEN SPEZIELLEN ZWECK.\n"
-"Schauen Sie für weitere Informationen bitten in der GNU General Public License (GNU GPL) nach.\n"
+"Schauen Sie für weitere Informationen bitten in der GNU General Public License (RPL) nach.\n"
 "\n"
 "Mit diesem Programm sollten Sie außerdem eine Kopie der GNU General Public License erhalten\n"
 "haben. Wenn dem nicht so ist, so schreiben Sie bitte an die\n"

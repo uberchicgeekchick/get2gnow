@@ -129,6 +129,7 @@ enum _UpdateMonitor{
 	DMs,
 	Replies,
 	BestFriends,
+	Faves,
 	Tweets,
 	Searches,
 	Groups,

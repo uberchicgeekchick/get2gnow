@@ -298,7 +298,6 @@ void cache_get_uri_filename(const gchar *uri, gboolean set_subdir, gchar **subdi
 gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...){
 	gchar	*dir=NULL;
 	gchar	*directory=NULL;
-	gchar	*cache_subdir_or_file=NULL;
 	
 	gchar	*file=NULL;
 	gchar	*filename=NULL;
@@ -307,13 +306,11 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	
 	va_list cache_subdirs_and_file;
 	va_start(cache_subdirs_and_file, subdir1_or_file);
-	for(cache_subdir_or_file=(gchar *)subdir1_or_file; cache_subdir_or_file; cache_subdir_or_file=va_arg(cache_subdirs_and_file, gchar *)){
-		if(file){
-			g_free(dir);
-			dir=cache_path_create(dir, file, NULL);
-			g_free(file);
-		}
-		file=cache_path_create(dir, cache_subdir_or_file);
+	for(file=(gchar *)subdir1_or_file; file; file=va_arg(cache_subdirs_and_file, gchar *)){
+		if(filename) g_free(filename);
+		filename=cache_path_create(dir, file, NULL);
+		g_free(dir);
+		dir=cache_path_create(dir, filename);
 	}
 	va_end(cache_subdirs_and_file);
 	
@@ -333,9 +330,9 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 		return NULL;
 	}
 	
-	debug("Created <%s>'s cache file: %s.", online_service_get_key(service), file);
-	debug("Directory: [%s].", directory);
-	debug("Filename: [%s].", filename);
+	debug("Created <%s>'s cache file: [%s]", online_service_get_key(service), file);
+	debug("Directory: [%s]", directory);
+	debug("Filename: [%s]", filename);
 	
 	uber_free(dir);
 	uber_free(file);

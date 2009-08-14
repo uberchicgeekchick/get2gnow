@@ -208,7 +208,7 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE, prefs->disable_update_length_alert_check_button);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_TWEET_VIEW_DIALOG, FALSE, prefs->use_tweet_dialog);
-	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, TRUE, prefs->disable_system_bell);
+	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, FALSE, prefs->disable_system_bell);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);

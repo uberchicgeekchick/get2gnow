@@ -119,13 +119,12 @@ TimelineLabels TimelineLabelsList[]={
 	{Replies,	API_REPLIES,		N_("@ _Replies"),			N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),			N_("@ Mentions")},
 	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),			N_("My DMs Inbox")},
+	{Faves,		API_FAVORITES,		N_("My Star_'d Updates"),		N_("My Star'd Updates")},
 	{BestFriends,	NULL,			N_("My _Best Friends' Updates"),	N_("My _Best Friends' Updates")},
 	{Searches,	API_TIMELINE_SEARCH,	N_("_Search Results"),			N_("Search Results")},
 	{Groups,	API_TIMELINE_GROUP,	N_("_Group Discussions"),		N_("Group Discussions")},
 	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),			N_("Public Updates")},
 	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),		N_("%s's Recent Updates")},
-	{Archive,	API_FAVORITES,		N_("My Star_'d Updates"),		N_("My Star'd Updates")},
-	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),			N_("My Tweets")},
 	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),			N_("My Tweets")},
 	{None,		NULL,			N_("Unknow_n timeline"),		N_("Unknown timeline")}
 };
@@ -235,8 +234,9 @@ static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_
 
 static void tweet_list_set_adjustment(TweetList *tweet_list);
 
-static void tweet_list_update_age(TweetList *tweet_list, gulong delete_older_then);
+static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then);
 static void tweet_list_clean_up(TweetList *tweet_list);
+static void tweet_list_check_maximum_updates(TweetList *tweet_list);
 static void tweet_list_check_inbox(TweetList *tweet_list);
 
 static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list);
@@ -334,6 +334,7 @@ const gchar *monitoring_to_string(UpdateMonitor monitoring){
 		case None: return _("None");
 		case DMs: return _("DMs");
 		case Replies: return _("Replies");
+		case Faves: _("Faves");
 		case BestFriends: return _("BestFriends");
 		case Tweets: return _("Tweets");
 		case Searches: return _("Searches");
@@ -441,10 +442,9 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	if(this->minutes==minutes && this->has_loaded > 1 ) return 0.0;
 	this->minutes=minutes;
 	/* With multiple timeline support timeline reloading interval shouldn't be less than 5 minutes */
-	if(this->minutes < 5){
-		this->minutes=minutes=5;
-		gconfig_set_int(PREFS_TWEETS_RELOAD_TIMELINES, this->minutes);
-	}
+	if(this->minutes < 5)
+		gconfig_set_int(PREFS_TWEETS_RELOAD_TIMELINES, (this->minutes=minutes=5) );
+	
 	switch(this->monitoring){
 		case BestFriends:	case None:	default:
 			debug("TweetList(s) monitoring %s do not auto-reload.", monitoring_to_string(this->monitoring));
@@ -459,8 +459,12 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 		case DMs:
 			minutes+=3;
 			break;
-		case Searches: case Groups:
+		case Faves:
 			minutes+=5;
+			break;
+		case Searches: case Groups:
+			minutes+=7;
+			break;
 		case Tweets:
 			break;
 	}
@@ -491,7 +495,7 @@ static void tweet_list_set_adjustment(TweetList *tweet_list){
 	
 	gdouble updates=0.0, max_updates=gtk_adjustment_get_value(this->max_tweets_adjustment);
 	if(!max_updates)
-		if(this->monitoring==DMs || this->monitoring==Replies)
+		if(this->monitoring==DMs || this->monitoring==Replies || this->monitoring==Faves)
 			updates=this->maximum;
 		else
 			updates=this->minimum;
@@ -507,7 +511,7 @@ static void tweet_list_set_adjustment(TweetList *tweet_list){
 	
 	gtk_spin_button_set_value(this->max_tweets_spin_button, gtk_adjustment_get_value(this->max_tweets_adjustment));
 	
-	if(!(this->monitoring==DMs || this->monitoring==Replies))
+	if(!(this->monitoring==DMs || this->monitoring==Replies || this->monitoring==Faves))
 		return;
 	
 	gtk_widget_set_sensitive(GTK_WIDGET(this->max_tweets_spin_button), FALSE);
@@ -519,11 +523,27 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->total) return;
-	if(this->monitoring==DMs || this->monitoring==Replies){
-		return;
-		tweet_list_check_inbox(tweet_list);
+	switch(this->monitoring){
+		case	DMs:	case Replies:
+		case	Faves:	case BestFriends:
+			tweet_list_check_inbox(tweet_list);
+			break;
+		
+		case	Tweets:	case Timelines:
+		case	Searches:	case Groups:
+		case	Users:	case	Archive:
+			tweet_list_check_maximum_updates(tweet_list);
+		
+		case None: default:
+			return;
 	}
+}/*tweet_list_clean_up(tweet_list);*/
 	
+static void tweet_list_check_maximum_updates(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(!this->total) return;
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
 		max_updates=this->maximum;
@@ -554,36 +574,48 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-}/*static void tweet_list_clean_up(TweetList *tweet_list);*/
+}/*tweet_check_maximum_updates(tweet_list);*/
 
 static void tweet_list_check_inbox(TweetList *tweet_list){
+	/*TODO:FIXME: Finish making these preferences - oh yeah & just make 'em work.*/
+	return;
+	
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-	/*TODO Finish making these preferences.*/
+	
+	if(!this->total) return;
+	
 	gint update_expiration=0;
 	switch(this->monitoring){
 		case DMs:
 			/*By default Direct Messages from the last 4 weeks are loaded.*/
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_DMS, &update_expiration, 2419200);
 			break;
+		
 		case Replies:
 			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_REPLIES, &update_expiration, 604800);
 			break;
+		
+		case Faves:
+			/*By default "My Favorite/Started Updates" from the last 4 weeks are loaded.*/
+			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_FAVES, &update_expiration, 2419200);
+			break;
+		
 		case BestFriends:
 			/*By default "Best Friends' Updates" from the last 24 hrs are loaded.*/
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
 			break;
+		
 		case	None:	case	Tweets:	case	Searches:	case Groups:
 		case	Timelines: case	Users:	case	Archive:
 			return;
 	}
-
 	
 	tweet_list_update_age(tweet_list, update_expiration);
 }/*tweet_list_check_inbox(tweet_list);*/
 
-static void tweet_list_update_age(TweetList *tweet_list, gulong delete_older_then){
+static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 		

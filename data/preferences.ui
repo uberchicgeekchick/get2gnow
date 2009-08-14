@@ -109,7 +109,7 @@
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="titles_only_checkbutton">
-                                <property name="label" translatable="yes">When _titles are found hide its web address/URL.</property>
+				      <property name="label" translatable="yes">Display web page titles instead of _addresses/URLs when possible.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>

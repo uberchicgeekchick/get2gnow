@@ -303,6 +303,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			break;
 		case DMs:
 		case Replies:
+		case Faves:
 		case Tweets:
 		case Timelines:
 		case Users:
