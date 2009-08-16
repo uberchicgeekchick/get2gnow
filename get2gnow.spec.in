@@ -19,7 +19,7 @@ BuildRequires:	libgnomeui
 BuildRequires:	libopenssl-devel
 BuildRequires:	libsoup-devel >= @LIBSOUP_VERSION_REQUIRED@
 BuildRequires:	libxml2-devel >= @LIBXML_VERSION_REQUIRED@
-BuildRequires:	glib2-devel
+BuildRequires:	glib2-devel >= @GLIB_VERSION_REQUIRED@
 BuildRequires:	libgio-2_0-0 >= @LIBGIO_VERSION_REQUIRED@
 BuildRequires:	gtk2-devel >= @GTK_VERSION_REQUIRED@
 BuildRequires:	gconf2-devel >= @GCONF_VERSION_REQUIRED@
@@ -27,7 +27,7 @@ BuildRequires:	libcanberra-gtk >= @LIBCANBERRA_VERSION_REQUIRED@
 BuildRequires:	libnotify-devel
 BuildRequires:	gnome-vfs2-devel
 BuildRequires:	libgobject-2_0-0
-BuildRequires:	libgthread-2_0-0
+BuildRequires:	libgthread-2_0-0 >= @GTHREAD_VERSION_REQUIRED@
 BuildRequires:	libgnomeui-devel
 BuildRequires:	gnome-keyring-devel
 

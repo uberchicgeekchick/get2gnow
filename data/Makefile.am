@@ -56,13 +56,7 @@ DISTCLEANFILES =						\
 			$(schemas_DATA)
 
 
-gtk_update_icon_test=$(shell /bin/ls $(datadir)/icons/hicolor/scalable/apps/@PACKAGE_NAME@.svg)
-ifeq ($(gtk_update_icon_test),$(datadir)/icons/hicolor/scalable/apps/@PACKAGE_NAME@.svg)
-	gtk_update_icon_cache=echo "$(PACKAGE_NAME) icon already installed."
-else
-	gtk_update_icon_cache=gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
-endif
-
+gtk_update_icon_cache=gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 
 clean-sexy-data: $(sexy_DATA)
 	@list='$(sexy_DATA)'; for p in $$list; do \
@@ -79,7 +73,7 @@ uninstall-gconf-data:
 	gconftool-2 --recursive-unset /schemas/apps/@PACKAGE_NAME@
 	gconftool-2 --recursive-unset /apps/@PACKAGE_NAME@
 uninstall-data: uninstall-gconf-data uninstall-data-am
-install-data: gtk_update_icon_cache install-data-am
+install-data: install-data-am
 update-icon-cache:
 	@-if test -z "$(DESTDIR)"; then \
 		echo "Updating Gtk icon cache."; \
