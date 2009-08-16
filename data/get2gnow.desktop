@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=#00EEEDa07
+_Name=get2gnow
+_Comment=A GTK+ platform for micro-blogging &amp; online communication - taking talking to an entirely new level.
+Exec=get2gnow
+Icon=get2gnow
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=InternetChat;InternetMicroBlogging;NetworkSocial;NetworkCommunication
+

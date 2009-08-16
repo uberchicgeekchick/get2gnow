@@ -115,7 +115,7 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fri_ends' Updates"),		N_("My Friends' Updates")},
+	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,		N_("@ _Replies"),			N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),			N_("@ Mentions")},
 	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),			N_("My DMs Inbox")},
