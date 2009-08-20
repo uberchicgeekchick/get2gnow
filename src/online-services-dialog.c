@@ -64,7 +64,7 @@ typedef struct {
 	GtkToggleButton		*https_toggle_button;
 	
 	/*currently unused
-	GtkComboBox		*service_type_combobox;
+	GtkComboBox		*service_type_combo_box;
 	GtkListStore		*service_type_list_store;
 	GtkTreeModel		*service_type_model;
 	*/
@@ -130,9 +130,8 @@ static void online_services_dialog_new_service(GtkButton *online_service_new_but
 	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->password), "");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect), TRUE);
 	
-	if(!(online_services_dialog_get_active_service(online_services_dialog))) return;
-	
 	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( online_services_dialog->urls)->child), "");
+	gtk_widget_grab_focus( GTK_WIDGET( online_services_dialog->urls ));
 }/*online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);*/
 
 static void online_services_dialog_save_service(GtkButton *save_button, OnlineServicesDialog *online_services_dialog){

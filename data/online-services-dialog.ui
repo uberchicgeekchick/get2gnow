@@ -165,12 +165,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="service_type_combobox">
+              <object class="GtkComboBox" id="service_type_combo_box">
                 <property name="sensitive">False</property>
                 <property name="model">service_type_list_store</property>
                 <property name="active">0</property>
                 <child>
-                  <object class="GtkCellRendererText" id="service_type_cellrenderertext"/>
+                  <object class="GtkCellRendererText" id="service_type_cell_renderer_text"/>
                   <attributes>
                     <attribute name="text">0</attribute>
                   </attributes>

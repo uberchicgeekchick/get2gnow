@@ -130,8 +130,14 @@ OnlineServices *online_services_init(void){
 	
 	for( k=services->keys; k; k=k->next ){
 		account_key=(gchar *)k->data;
+		if(!g_strrstr(account_key, "@")){
+			debug("**ERROR:** Invalid OnlineService: <%s> - skipping.", account_key);
+			continue;
+		}
 		debug("Loading '%s' account.", account_key);
-		services->accounts=g_list_append(services->accounts, (online_service_open( (const gchar *)account_key )) );
+		if(!(service=online_service_open( (const gchar *)account_key ))) continue;
+		
+		services->accounts=g_list_append(services->accounts, service);
 		services->accounts=g_list_last(services->accounts);
 		service=(OnlineService *)services->accounts->data;
 		
@@ -217,8 +223,9 @@ static gint online_services_cmp_count(guint compare, guint count){
 }/*online_services_has_connected(services, >1);*/
 
 OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect){
-	if( G_STR_EMPTY(uri) || G_STR_EMPTY(user_name) )
+	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) )){
 		return FALSE;
+	}
 	
 	gchar *decoded_key=g_strdup_printf("%s@%s", user_name, uri);
 	if(service){

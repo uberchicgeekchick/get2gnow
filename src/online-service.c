@@ -151,6 +151,7 @@ struct _OnlineService{
 };
 
 static OnlineService *online_service_constructor(const gchar *uri, const gchar *user_name);
+static void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action);
 
 static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_blogging_service);
 static void online_service_set_micro_blogging_service(OnlineService **service);
@@ -179,6 +180,14 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 #define	ONLINE_SERVICE_HTTPS			ONLINE_SERVICE_PREFIX "/https"
 #define	ONLINE_SERVICE_ENABLED			ONLINE_SERVICE_PREFIX "/enabled"
 #define	ONLINE_SERVICE_LAST_REQUEST		ONLINE_SERVICE_PREFIX "/timestamps/last_request"
+
+
+#ifdef GNOME_ENABLE_DEBUG
+#define	DEBUG_DISPLAY_PASSWORDS	"TRUE"
+#else
+#define	DEBUG_DISPLAY_PASSWORDS NULL
+#endif
+
 
 #define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:OnlineService.c"
 #include "debug.h"
@@ -291,7 +300,7 @@ static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_
 	switch(micro_blogging_service){
 		case Unknown: default: return _("Unkown");
 		case Identica: return _("Identica");
-	case Twitter: return _("Twitter");
+		case Twitter: return _("Twitter");
 		case Laconica: return _("Laconica");
 		case Unsupported: return _("Unsupported");
 	}
@@ -384,21 +393,20 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 OnlineService *online_service_open(const gchar *account_key){
 	debug("Loading OnlineService instance for: '%s' account.", account_key);
 	
+	if(!g_strrstr(account_key, "@")){
+		debug("**ERROR:** Invalid OnlineService: <%s> - skipping.", account_key);
+		return NULL;
+	}
+	
 	gchar **account_data=g_strsplit(account_key, "@", 2);
 	OnlineService *service=online_service_constructor(account_data[1], account_data[0]);
 	g_strfreev(account_data);
 	
-	debug("Loading OnlineService settings for: '%s'" , service->guid);
 	gchar *prefs_auth_path=NULL;
-	
-	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PREFIX, service->key);
-	debug("Account's gconf path:\t\t [%s]", prefs_auth_path );
-	g_free(prefs_auth_path);
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_ENABLED, service->key);
 	service->enabled=gconfig_if_bool(prefs_auth_path, TRUE);
 	g_free(prefs_auth_path);
-	debug("%sabling [%s] OnlineService.", (service->enabled ?"En" :"Dis" ), service->guid);
 	
 #ifdef HAVE_GNOME_KEYRING
 	if(!(keyring_get_password(service, &service->password)))
@@ -417,7 +425,7 @@ OnlineService *online_service_open(const gchar *account_key){
 	service->auto_connect=gconfig_if_bool(prefs_auth_path, TRUE);
 	g_free(prefs_auth_path);
 	
-	debug("Existing OnlineService opened. account '%s(=%s)'\t\t\t[%sabled] %sservice uri: %s over https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", service->guid, service->key, (service->enabled?"en":"dis"), micro_blogging_service_to_string(service->micro_blogging_service), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->user_name, service->password, (service->auto_connect?"TRUE":"FALSE"));
+	online_service_display_debug_details(service, FALSE, "opened");
 	
 	return service;
 }/*online_service_open*/
@@ -431,7 +439,7 @@ OnlineService *online_service_new(const gchar *uri, const gchar *user_name, cons
 	service->password=g_strdup(password);
 	service->https=https;
 	
-	debug("New OnlineService created. account '%s(=%s)'\t\t\t[%sabled] %sservice uri: %s over https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", service->guid, service->key, (service->enabled?"en":"dis"), micro_blogging_service_to_string(service->micro_blogging_service), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->user_name, service->password, (service->auto_connect?"TRUE":"FALSE"));
+	online_service_display_debug_details(service, TRUE, "created");
 	
 	return service;
 }/*online_service_new*/
@@ -442,16 +450,14 @@ gboolean online_service_save(OnlineService *service, const gchar *password, gboo
 	service->password=g_strdup(password);
 	service->auto_connect=auto_connect;
 	
-	debug("Preparing to save OnlineService for '%s'.", service->guid);
+	debug("Preparing to save OnlineService.  GUID: <%s>; key: (%s).", service->guid, service->key);
 	
 	gchar *prefs_auth_path=NULL;
 	
-	debug("Saving '%s' 'enabled' status: %s.", service->guid, (service->enabled ?"TRUE" :"FALSE" ) );
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_ENABLED, service->key);
 	gconfig_set_bool(prefs_auth_path, service->enabled);
 	g_free(prefs_auth_path);
 	
-	debug("Saving '%s' password: '%s'.", service->guid, service->password );
 #ifdef HAVE_GNOME_KEYRING
 	keyring_set_password(service, service->password);
 #else
@@ -460,17 +466,15 @@ gboolean online_service_save(OnlineService *service, const gchar *password, gboo
 	g_free(prefs_auth_path);
 #endif
 	
-	debug("Saving whether to use https when connecting to '%s': %s.", service->guid, (service->https ?"TRUE" :"FALSE" ) );
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_HTTPS, service->key);
 	gconfig_set_bool(prefs_auth_path, service->https);
 	g_free(prefs_auth_path);
 	
-	debug("Saving '%s' 'auto_connect' status: %s.", service->guid, (service->auto_connect ?"TRUE" :"FALSE" ) );
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_AUTO_CONNECT, service->key);
 	gconfig_set_bool(prefs_auth_path, service->auto_connect);
 	g_free(prefs_auth_path);
 	
-	debug("OnlineService saved. account '%s(=%s)'\t\t\t[%sabled] %sservice uri: %s over https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", service->guid, service->key, (service->enabled?"en":"dis"), micro_blogging_service_to_string(service->micro_blogging_service), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->user_name, service->password, (service->auto_connect?"TRUE":"FALSE"));
+	online_service_display_debug_details(service, FALSE, "saved");
 	
 	debug("Attempting to connect to OnlineService for: '%s'.", service->guid);
 	online_service_reconnect(service);
@@ -479,8 +483,9 @@ gboolean online_service_save(OnlineService *service, const gchar *password, gboo
 }/*online_service_save*/
 
 gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf){
+	debug("Preparing to delete OnlineService.  GUID: <%s>; key: (%s).", service->guid, service->key);
+	
 	gchar *prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PREFIX, service->key);
-	debug("Account's gconf path:\t\t [%s]", prefs_auth_path );
 	if(!(gconfig_rm_rf(prefs_auth_path))){
 		debug("**ERROR:** Failed to delete '%s' gconf auth prefernces.  GConf key used: [%s].", service->guid, prefs_auth_path);
 		uber_free(prefs_auth_path);
@@ -500,10 +505,16 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	cache_dir_clean_up(cache_dir, TRUE);
 	uber_free(cache_dir);
 	
-	debug("Destroying OnlineService: [%s].", service->guid);
+	online_service_display_debug_details(service, FALSE, "deleted/closed");
 	online_service_free(service);
 	return TRUE;
 }/*online_service_delete*/
+
+static void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action){
+	gchar *prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PREFIX, service->key);
+	debug("OnlineService: %s %s service.  GCONF path:\t [%s]. OnlineService details: account guid:%s(key==%s)'\t\t\t[%sabled] %sservice uri: %s over https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", action, (new_service ?"created" :"existing"), prefs_auth_path, service->guid, service->key, (service->enabled?"en":"dis"), micro_blogging_service_to_string(service->micro_blogging_service), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->user_name, (DEBUG_DISPLAY_PASSWORDS=="TRUE" ?service->password :"[*passwords are hidden out side of debug mode*]"), (service->auto_connect ?_("TRUE") :_("FALSE") ) );
+	g_free(prefs_auth_path);
+}/*online_service_display_debug_details(service, "action");*/
 
 void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gdouble *id_newest_update, gdouble *id_oldest_update){
 	/* INFO:

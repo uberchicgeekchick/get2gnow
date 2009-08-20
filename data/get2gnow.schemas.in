@@ -1,8 +1,8 @@
 <gconfschemafile>
 	<schemalist>
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/accounts</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/accounts</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>list</type>
 			<list_type>string</list_type>
@@ -26,8 +26,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/enabled</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/enabled</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/enabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/enabled</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -38,8 +38,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/password</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/password</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/password</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/password</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>string</type>
 			<default></default>
@@ -50,8 +50,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/https</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/https</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/https</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/https</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -62,8 +62,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@identi.ca/auto_connect</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@identi.ca/auto_connect</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/auto_connect</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/auto_connect</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -74,8 +74,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/enabled</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/enabled</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/enabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/enabled</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -86,8 +86,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/password</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/password</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/password</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/password</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>string</type>
 			<default></default>
@@ -98,8 +98,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/https</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/https</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/https</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/https</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -110,8 +110,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/me@twitter.com/auto_connect</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/me@twitter.com/auto_connect</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/auto_connect</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/auto_connect</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
