@@ -1,0 +1,43 @@
+#!/bin/tcsh -f
+
+if ( ${?OSS_CANVAS} ) unsetenv OSS_CANVAS;
+printf "Setting up program build environment.\n";
+
+if ( ${?GREP_OPTIONS} ) unsetenv GREP_OPTIONS;
+if ( `alias grep` != "" ) unalias grep;
+
+alias	"configure"	"/projects/cli/devel/make/my:configure";
+alias	"autogen.sh"	"/projects/cli/devel/make/my:autogen.sh";
+
+#
+#C compiler linking flags
+#	libraries to pass to the linker.
+#		-l<library>, e.g. -lpango-1.0
+#	or shared objects directly:
+#		-L<library.path.so>, e.g. -L/usr/lib64/libpango-1.0.so
+#setenv	LDFLAGS		""
+#setenv	LIBS		""
+
+setenv	LD_LIBRARY_PATH		"/usr/include";
+setenv	LD_RUN_PATH		"/usr/include";
+
+
+#C compiler command
+setenv CC "/usr/bin/gcc";
+
+#C preprocessor
+setenv CPP "/usr/bin/cpp";
+
+#C/C++/Objective C preprocessor flags, e.g. -I<include dir> if
+#you have headers in a nonstandard directory <include dir>
+setenv MY_INCLUDE_FLAGS "-I${LD_LIBRARY_PATH} -I. -I..";
+
+setenv CPPFLAGS "${MY_INCLUDE_FLAGS}";
+
+#setenv MAKEFLAGS "-O3 -Wall -Wextra -Wformat=2";
+setenv MAKEFLAGS "-Wall -Wextra -Wformat=2";
+
+setenv CFLAGS "${CPPFLAGS} ${MY_INCLUDE_FLAGS}-std=gnu99";
+
+setenv CXXFLAGS "${CPPFLAGS} ${MY_INCLUDE_FLAGS} -std=gnu++0x";
+

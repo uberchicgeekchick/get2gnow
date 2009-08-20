@@ -24,6 +24,7 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
+#include <locale.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>

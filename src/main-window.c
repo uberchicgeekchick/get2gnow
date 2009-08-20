@@ -949,14 +949,14 @@ void tweet_lists_init( void ){
 	}
 	debug("Retrived default timeline: %s.  Loading timeline tabs.", timeline);
 	
-	if(gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE)){
+	if(gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE)){
 		debug("Preparing auto-monitor for My Friends' Tweets.");
 		tweet_lists_get_timeline( API_TIMELINE_FRIENDS );
 		if(open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
 			open_home_page=FALSE;
 	}
 	
-	if(gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE)){
+	if(gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE)){
 		debug("Preparing auto-monitor for Replies.");
 		tweet_lists_get_timeline( API_REPLIES );
 		if(open_home_page && g_str_equal(timeline, API_REPLIES))
@@ -969,7 +969,7 @@ void tweet_lists_init( void ){
 		if(open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
 			open_home_page=FALSE;
 	}
-
+	
 	if( open_home_page ){
 		debug("Retriving default timeline: %s", timeline);
 		tweet_lists_get_timeline( timeline );

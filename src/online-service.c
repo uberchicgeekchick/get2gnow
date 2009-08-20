@@ -577,7 +577,7 @@ gboolean online_service_connect(OnlineService *service){
 		return FALSE;
 	}
 	
-	if(G_STR_EMPTY(service->user_name) || G_STR_EMPTY(service->password)){
+	if(!(G_STR_N_EMPTY(service->user_name) && G_STR_N_EMPTY(service->password) )){
 		debug("%s account is missing its user_name (=%s) and/or password (=%s).", service->guid, service->user_name, service->password);
 		return FALSE;
 	}
