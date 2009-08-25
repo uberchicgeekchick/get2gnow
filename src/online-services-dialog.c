@@ -132,9 +132,7 @@ static void online_services_dialog_new_service(GtkButton *online_service_new_but
 	
 	gtk_widget_grab_focus( GTK_WIDGET( online_services_dialog->urls ));
 	
-	/*
 	if(!(online_services_dialog_get_active_service(online_services_dialog))) return;
-	*/
 	
 	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( online_services_dialog->urls)->child), "");
 }/*online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);*/
