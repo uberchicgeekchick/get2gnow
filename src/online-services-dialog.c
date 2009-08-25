@@ -130,8 +130,13 @@ static void online_services_dialog_new_service(GtkButton *online_service_new_but
 	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->password), "");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect), TRUE);
 	
-	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( online_services_dialog->urls)->child), "");
 	gtk_widget_grab_focus( GTK_WIDGET( online_services_dialog->urls ));
+	
+	/*
+	if(!(online_services_dialog_get_active_service(online_services_dialog))) return;
+	*/
+	
+	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( online_services_dialog->urls)->child), "");
 }/*online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);*/
 
 static void online_services_dialog_save_service(GtkButton *save_button, OnlineServicesDialog *online_services_dialog){
@@ -378,7 +383,6 @@ static void online_services_dialog_setup(GtkWindow *parent){
 	);
 	
 	debug("UI loaded... setting services tree view model.");
-	//online_services_dialog->urls_tree_model=gtk_combo_box_get_model(GTK_COMBO_BOX(online_services_dialog->urls));
 	online_services_dialog->urls_tree_model=(GtkTreeModel *)online_services_dialog->urls_list_store;
 	
 	/* Connect the signals */

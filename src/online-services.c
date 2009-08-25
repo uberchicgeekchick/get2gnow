@@ -92,7 +92,7 @@ struct _OnlineServices{
 	GList		*accounts;
 };
 
-#define	ONLINE_SERVICES_ACCOUNTS	GCONF_PATH "/online-services/services"
+#define	ONLINE_SERVICES_ACCOUNTS	GCONF_PATH "/online-services/accounts"
 
 
 /********************************************************************************

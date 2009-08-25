@@ -12,5 +12,5 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./data/get2gnow.schemas.in" "./data/online-services-dialog.ui" "./src/debug.c" "./src/keyring.c" "./src/online-service.c" "./src/online-services.c" "./src/online-services-dialog.c"
+${my_editor} "./src/online-service.c" "./src/online-services.c" "./src/online-services-dialog.c" "./src/tweet-view.c"
 

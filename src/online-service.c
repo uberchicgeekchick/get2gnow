@@ -602,7 +602,7 @@ gboolean online_service_connect(OnlineService *service){
 	if(!( (service->session=soup_session_sync_new_with_options(SOUP_SESSION_MAX_CONNS_PER_HOST, 8, SOUP_SESSION_TIMEOUT, 20, SOUP_SESSION_IDLE_TIMEOUT, 20, NULL)) )){
 		debug("**ERROR:** Failed to creating a new soup session for '%s'.", service->guid);
 		service->session=NULL;
-		return (service->connected=service->authenticated=FALSE);
+		return (service->connected=(service->authenticated=FALSE));
 	}
 	
 	debug("Adding authenticating callback for: '%s'. user_name: %s, password: %s", service->guid, service->user_name, service->password);
@@ -628,7 +628,7 @@ gboolean online_service_connect(OnlineService *service){
 	
 	online_service_cookie_jar_open(service);
 	
-	return (service->connected=service->authenticated=TRUE);
+	return (service->connected=(service->authenticated=TRUE));
 }/*online_service_connect*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
@@ -696,6 +696,7 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, Us
 		service->has_loaded=FALSE;
 		return;
 	}
+	service->connected=service->authenticated=TRUE;
 	service->has_loaded=TRUE;
 	service->user_nick=g_strdup(user_get_user_nick(user));
 	debug("Setting user_nick for: %s to %s.", service->key, service->user_nick);
@@ -754,7 +755,6 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri){
 	
 	if(!(service->enabled && service->auto_connect)) return FALSE;
 	
-	debug("Unable to load: %s.  You're not connected to %s.  Attempting to reconnect.", uri, service->key);
 	if(online_service_reconnect(service) && online_service_login(service, FALSE)){
 		debug("Reconnected to: %s.", service->key);
 		return TRUE;
@@ -765,6 +765,7 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri){
 	else
 		debug("Unable to log in to: %s%s.", service->key, service->status);
 	
+	debug("Unable to load: %s.  You're not connected to %s.  Attempting to reconnect.", uri, service->key);
 	main_window_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 	
 	return FALSE;

@@ -1,8 +1,8 @@
 <gconfschemafile>
 	<schemalist>
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/online-services/accounts</key>
+			<applyto>/apps/@PACKAGE_NAME@/online-services/accounts</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>list</type>
 			<list_type>string</list_type>
