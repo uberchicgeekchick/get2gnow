@@ -12,5 +12,5 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./src/online-service.c" "./src/online-services.c" "./src/online-services-dialog.c" "./src/tweet-view.c"
+${my_editor} "./data/get2gnow.schemas.in" "./src/main-window.c" "./src/online-services.c" "./src/parser.c" "./src/preferences.c" "./src/preferences.h" "./src/tweet-list.c" "./src/tweet-view.c"
 

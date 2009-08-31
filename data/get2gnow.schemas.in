@@ -1,19 +1,6 @@
 <gconfschemafile>
 	<schemalist>
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/accounts</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/accounts</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>list</type>
-			<list_type>string</list_type>
-			<default>[me@twitter.com,me@identi.ca]</default>
-			<locale name="C">
-				<short>A list of your services</short>
-				<long>All of your accounts formated as username@URL for all accounts &amp; services.  All services will be connected to using HTTPS.</long>
-			</locale>
-		</schema>
-		
-		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/auth/dont_confirm_delete</key>
 			<applyto>/apps/@PACKAGE_NAME@/auth/dont_confirm_delete</applyto>
 			<owner>@PACKAGE_NAME@</owner>
@@ -22,102 +9,6 @@
 			<locale name="C">
 				<short>Disable prompting before deleting accounts</short>
 				<long>Disable prompting before deleting accounts.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/enabled</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/enabled</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>false</default>
-			<locale name="C">
-				<short>Enable me@identi.ca account</short>
-				<long>Enable's your me@identi.ca accout.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/password</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/password</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>string</type>
-			<default></default>
-			<locale name="C">
-				<short>me@identi.ca password</short>
-				<long>User's me@identi.ca password.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/https</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/https</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>true</default>
-			<locale name="C">
-				<short>Whether to use https or not when connecting to me@identi.ca.</short>
-				<long>Whether to use https or not when connecting to me@identi.ca.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@identi.ca/auto_connect</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@identi.ca/auto_connect</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>true</default>
-			<locale name="C">
-				<short>Log in to me@identi.ca on start-up.</short>
-				<long>Log in to me@identi.ca start-up.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/enabled</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/enabled</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>false</default>
-			<locale name="C">
-				<short>Enable me@twitter.com account</short>
-				<long>Enable's your me@twitter.com accout.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/password</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/password</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>string</type>
-			<default></default>
-			<locale name="C">
-				<short>twitter password</short>
-				<long>User's twitter password.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/https</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/https</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>true</default>
-			<locale name="C">
-				<short>Whether to use https or not when connecting to me@identi.ca.</short>
-				<long>Whether to use https or not when connecting to me@identi.ca.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/online-services/me@twitter.com/auto_connect</key>
-			<applyto>/apps/@PACKAGE_NAME@/online-services/me@twitter.com/auto_connect</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>true</default>
-			<locale name="C">
-				<short>Log in to me@twitter.com start-up.</short>
-				<long>Log in to me@twitter.com start-up.</long>
 			</locale>
 		</schema>
 		
@@ -141,7 +32,63 @@
 			<default>5</default>
 			<locale name="C">
 				<short>Minutes between timeline retrievals</short>
-				<long>Minutes between timeline retrievals. Values supported are 3, 5, 15, 30, and 60</long>
+				<long>Minutes between timeline retrievals. Values supported are 5, 15, 30, and 60</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<long>
+					Rather or not to notify me of when I recieve these updates.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/dms</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/dms</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<long>
+					Rather or not to notify me of when I recieve these updates.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/replies</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/replies</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<long>
+					Rather or not to notify me of when I recieve these updates.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/following</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/following</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<long>
+					Rather or not to notify me of when I recieve these updates.
+				</long>
 			</locale>
 		</schema>
 		
@@ -215,8 +162,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweets/direct_reply_only</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/tweets/direct_reply_only</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/direct_reply_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/direct_reply_only</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -230,8 +177,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/tweets/no_link_in_replies</key>
-			<applyto>/apps/@PACKAGE_NAME@/tweets/no_link_in_replies</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/no_link_in_replies</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/no_link_in_replies</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>

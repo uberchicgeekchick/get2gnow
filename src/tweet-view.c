@@ -407,6 +407,7 @@ static void tweet_view_selected_update_buttons_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
 		"view_user_profile_button",
 		"view_user_tweets_button",
+		"best_friend_toggle_button",
 		
 		"user_follow_button",
 		"user_unfollow_button",
@@ -808,6 +809,7 @@ void tweet_view_sexy_send_dm( void ){
 
 static void tweet_view_sexy_append( const gchar *update, TweetView *tweet_view ){
 	if( G_STR_EMPTY( update )) return;
+	static gboolean first_update=TRUE;
 	const guint max_updates=50;
 	
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
@@ -820,6 +822,12 @@ static void tweet_view_sexy_append( const gchar *update, TweetView *tweet_view )
 				-1
 	);
 	uber_free( iter );
+	
+	if( first_update ){
+		gtk_combo_box_entry_set_text_column( tweet_view->sexy_entry_combo_box_entry, GSTRING_UPDATE );
+		first_update=FALSE;
+	}
+	
 	if( tweet_view->updates<=max_updates ){
 		tweet_view->updates++;
 		return;
@@ -903,6 +911,7 @@ static void tweet_view_dm_refresh( void ){
 
 void tweet_view_dm_data_fill(GList *followers){
 	if( !followers ) return;
+	static gboolean first_fill=TRUE;
 	
 	GList		*list;
 	User		*user;
@@ -948,6 +957,10 @@ void tweet_view_dm_data_fill(GList *followers){
 		gtk_label_set_single_line_mode(tweet_view->dm_frame_label, TRUE);
 	}
 	if( new_label ) uber_free( new_label );
+	
+	if( first_fill ){
+		first_fill=FALSE;
+	}
 }/*tweet_view_dm_data_fill*/
 
 /********************************************************

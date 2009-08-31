@@ -121,6 +121,7 @@ gint tweet_list_get_page(TweetList *tweet_list);
 void tweet_list_set_page(TweetList *tweet_list, gint page);
 
 UpdateMonitor tweet_list_get_monitoring(TweetList *tweet_list);
+const gchar *tweet_list_get_monitoring_string(TweetList *tweet_list);
 const gchar *monitoring_to_string(UpdateMonitor monitoring);
 
 gint tweet_list_get_total(TweetList *tweet_list);

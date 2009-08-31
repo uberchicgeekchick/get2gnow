@@ -65,11 +65,16 @@
 
 G_BEGIN_DECLS
 
-#define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
-#define PREFS_NOTIFY_FOLLOWING				GCONF_PATH "/notifications/following"
+#define PREFS_AUTOLOAD_BEST_FRIENDS			GCONF_PATH "/ui/start-up/tabs/best_friends"
+#define	PREFS_AUTOLOAD_DMS				GCONF_PATH "/ui/start-up/tabs/dms"
+#define	PREFS_AUTOLOAD_REPLIES				GCONF_PATH "/ui/start-up/tabs/replies"
+#define PREFS_AUTOLOAD_FOLLOWING			GCONF_PATH "/ui/start-up/tabs/following"
+
 #define PREFS_NOTIFY_BEST_FRIENDS			GCONF_PATH "/notifications/best_friends"
-#define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
 #define	PREFS_NOTIFY_DMS				GCONF_PATH "/notifications/dms"
+#define PREFS_NOTIFY_FOLLOWING				GCONF_PATH "/notifications/following"
+#define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
+#define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
 #define	PREFS_NOTIFY_BEEP				GCONF_PATH "/alerts/beep"
 
 #define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/tweet_view/url_expansion/disabled"
@@ -91,7 +96,7 @@ G_BEGIN_DECLS
 #define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/tweets/reload_timeline"
 
 #define PREFS_TWEETS_NO_PROFILE_LINK			GCONF_PATH "/tweets/no_link_in_replies"
-#define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/tweets/direct_reply_only"
+#define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
 
 
 void preferences_dialog_show (GtkWindow *parent);

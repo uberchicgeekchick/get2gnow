@@ -100,6 +100,11 @@ struct _PreferencesDialog{
 	GtkCheckButton	*disable_update_length_alert_check_button;
 	GtkComboBox	*replace_me_with_combo_box;
 	
+	GtkCheckButton	*autoload_best_friends_updates_check_button;
+	GtkCheckButton	*autoload_dms_check_button;
+	GtkCheckButton	*autoload_replies_check_button;
+	GtkCheckButton	*autoload_following_updates_check_button;
+	
 	GtkCheckButton	*notify_dms_check_button;
 	GtkCheckButton	*notify_at_mentions_check_button;
 	GtkCheckButton	*notify_following_updates_check_button;
@@ -198,6 +203,11 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
  ********************************************************************************/
 static void preferences_setup_widgets(PreferencesDialog *prefs){
 	debug("Binding widgets to preferences.");
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEST_FRIENDS, TRUE, prefs->autoload_best_friends_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_DMS, TRUE, prefs->autoload_dms_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_REPLIES, TRUE, prefs->autoload_replies_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_FOLLOWING, TRUE, prefs->autoload_following_updates_check_button);
+	
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_FOLLOWING, TRUE, prefs->notify_following_updates_check_button);
@@ -553,9 +563,14 @@ void preferences_dialog_show(GtkWindow *parent){
 					"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
 					"expand_users_checkbutton", &prefs->expand_users_checkbutton,
 					"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
-
+					
 					"combobox_timeline", &prefs->combo_default_timeline,
 					"combobox_reload", &prefs->combo_reload,
+					
+					"autoload_best_friends_updates_check_button", &prefs->autoload_best_friends_updates_check_button,
+					"autoload_dms_check_button", &prefs->autoload_dms_check_button,
+					"autoload_replies_check_button", &prefs->autoload_replies_check_button,
+					"autoload_following_updates_check_button", &prefs->autoload_following_updates_check_button,
 					
 					"notify_dms_check_button", &prefs->notify_dms_check_button,
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,

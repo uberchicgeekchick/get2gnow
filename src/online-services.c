@@ -90,9 +90,11 @@ struct _OnlineServices{
 	guint		connected;
 	GSList		*keys;
 	GList		*accounts;
+	GList		*best_friends;
 };
 
 #define	ONLINE_SERVICES_ACCOUNTS	GCONF_PATH "/online-services/accounts"
+#define	MY_BEST_FRIENDS			GCONF_PATH "/online-services/best_friends"
 
 
 /********************************************************************************
