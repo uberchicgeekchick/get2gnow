@@ -51,8 +51,8 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
-#ifndef __TWEET_VIEW_H__
-#define __TWEET_VIEW_H__
+#ifndef __CONTROL_VIEWER_H__
+#define __CONTROL_VIEWER_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -70,49 +70,50 @@
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
-/* My, Kaity G. B., new uber tweet viewer. */
+/* My, Kaity G. B., new uber control-panel. */
 G_BEGIN_DECLS
 
-typedef struct _TweetView TweetView;
+typedef struct _ControlPanel ControlPanel;
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
-TweetView *tweet_view_new(GtkWindow *parent);
-GtkWindow *tweet_view_get_window(void);
-GtkHBox *tweet_view_get_embed(void);
+ControlPanel *control_panel_new(GtkWindow *parent);
+GtkWindow *control_panel_get_window(void);
+GtkHBox *control_panel_get_embed(void);
 
-#define	tweets_beep	tweet_view_beep
-void tweet_view_beep(void);
+#define	tweets_beep	control_panel_beep
+void control_panel_beep(void);
 
-void tweet_view_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+void control_panel_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
 
-void tweet_view_dm_data_fill(GList *followers);
+void control_panel_dm_data_fill(GList *followers);
 
-void tweet_view_set_embed_toggle_and_image(void);
+void control_panel_compact_view_toggled( GtkToggleButton *compact_toggle_button );
+void control_panel_set_embed_toggle_and_image(void);
 
-void tweet_view_sexy_select(void);
+void control_panel_sexy_select(void);
 
-void tweet_view_sexy_prefix_char(const char c);
-void tweet_view_sexy_prefix_string(const gchar *str);
-void tweet_view_sexy_set(gchar *tweet);
-void tweet_view_sexy_insert_char(const char c);
-void tweet_view_sexy_insert_string(const gchar *str);
-void tweet_view_sexy_append_char(const char c);
-void tweet_view_sexy_append_string(const gchar *str);
-gint tweet_view_sexy_puts(const gchar *str, gint position);
+void control_panel_sexy_prefix_char(const char c);
+void control_panel_sexy_prefix_string(const gchar *str);
+void control_panel_sexy_set(gchar *tweet);
+void control_panel_sexy_insert_char(const char c);
+void control_panel_sexy_insert_string(const gchar *str);
+void control_panel_sexy_append_char(const char c);
+void control_panel_sexy_append_string(const gchar *str);
+gint control_panel_sexy_puts(const gchar *str, gint position);
 
-void tweet_view_new_dm(void);
-void tweet_view_reply(void);
+void control_panel_new_dm(void);
+void control_panel_reply(void);
 
-void tweet_view_hide_previous_tweets(void);
-void tweet_view_show_previous_tweets(void);
+void control_panel_hide_previous_tweets(void);
+void control_panel_show_previous_tweets(void);
 
-void tweet_view_send(GtkWidget *activated_widget);
-void tweet_view_sexy_send_dm(void);
+void control_panel_send(GtkWidget *activated_widget);
+void control_panel_sexy_send_dm(void);
 
 G_END_DECLS
-#endif /* __TWEET_VIEW_H__ */
+#endif /* __CONTROL_VIEWER_H__ */
 /********************************************************
  *                       eof                            *
  ********************************************************/

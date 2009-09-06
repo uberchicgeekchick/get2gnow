@@ -72,6 +72,7 @@
 #include "gtkbuilder.h"
 
 #include "main-window.h"
+#include "control-panel.h"
 #include "preferences.h"
 
 
@@ -100,6 +101,11 @@ struct _PreferencesDialog{
 	GtkCheckButton	*disable_update_length_alert_check_button;
 	GtkComboBox	*replace_me_with_combo_box;
 	
+	GtkCheckButton	*autoload_best_friends_updates_check_button;
+	GtkCheckButton	*autoload_dms_check_button;
+	GtkCheckButton	*autoload_replies_check_button;
+	GtkCheckButton	*autoload_following_updates_check_button;
+	
 	GtkCheckButton	*notify_dms_check_button;
 	GtkCheckButton	*notify_at_mentions_check_button;
 	GtkCheckButton	*notify_following_updates_check_button;
@@ -108,7 +114,8 @@ struct _PreferencesDialog{
 	GtkCheckButton	*notify_beep_updates_check_button;
 	
 	GtkCheckButton	*disable_system_bell;
-	GtkCheckButton	*use_tweet_dialog;
+	GtkCheckButton	*use_dialog_toggle_button;
+	GtkCheckButton	*compact_view_toggle_button;
 	
 	GtkCheckButton	*expand_urls_disabled_checkbutton;
 	GtkCheckButton	*expand_urls_selected_only_checkbutton;
@@ -198,6 +205,11 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
  ********************************************************************************/
 static void preferences_setup_widgets(PreferencesDialog *prefs){
 	debug("Binding widgets to preferences.");
+	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEST_FRIENDS, TRUE, prefs->autoload_best_friends_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_DMS, TRUE, prefs->autoload_dms_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_REPLIES, TRUE, prefs->autoload_replies_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_FOLLOWING, TRUE, prefs->autoload_following_updates_check_button);
+	
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_FOLLOWING, TRUE, prefs->notify_following_updates_check_button);
@@ -207,7 +219,9 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE, prefs->disable_update_length_alert_check_button);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_TWEET_VIEW_DIALOG, FALSE, prefs->use_tweet_dialog);
+	preferences_hookup_toggle_button(prefs, PREFS_CONTROL_PANEL_COMPACT, TRUE, prefs->compact_view_toggle_button);
+	preferences_hookup_toggle_button(prefs, PREFS_CONTROL_PANEL_DIALOG, FALSE, prefs->use_dialog_toggle_button);
+	
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, FALSE, prefs->disable_system_bell);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
@@ -546,16 +560,23 @@ void preferences_dialog_show(GtkWindow *parent){
 					"preferences_dialog", &prefs->dialog,
 					"preferences_notebook", &prefs->notebook,
 					
-					"use_tweet_dialog_checkbutton", &prefs->use_tweet_dialog,
+					"control_panel_use_dialog_toggle_button", &prefs->use_dialog_toggle_button,
+					"control_panel_compact_view_toggle_button", &prefs->compact_view_toggle_button,
+					
 					"general_look_and_feel_disable_system_bell_check_button", &prefs->disable_system_bell,
 					
 					"titles_only_checkbutton", &prefs->titles_only_checkbutton,
 					"expand_urls_selected_only_checkbutton", &prefs->expand_urls_selected_only_checkbutton,
 					"expand_users_checkbutton", &prefs->expand_users_checkbutton,
 					"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
-
+					
 					"combobox_timeline", &prefs->combo_default_timeline,
 					"combobox_reload", &prefs->combo_reload,
+					
+					"autoload_best_friends_updates_check_button", &prefs->autoload_best_friends_updates_check_button,
+					"autoload_dms_check_button", &prefs->autoload_dms_check_button,
+					"autoload_replies_check_button", &prefs->autoload_replies_check_button,
+					"autoload_following_updates_check_button", &prefs->autoload_following_updates_check_button,
 					
 					"notify_dms_check_button", &prefs->notify_dms_check_button,
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,
@@ -577,11 +598,13 @@ void preferences_dialog_show(GtkWindow *parent){
 				ui, prefs,
 					"preferences_dialog", "destroy", preferences_destroy_cb,
 					"preferences_dialog", "response", preferences_response_cb,
-					"use_tweet_dialog_checkbutton", "toggled", main_window_tweet_view_set_embed,
 					"post_reply_to_service_only_checkbutton", "toggled", preferences_direct_reply_toggled,
 				NULL
 	);
-
+	
+	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggle", (GCallback)control_panel_compact_view_toggled, NULL );
+	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggle", (GCallback)main_window_control_panel_set_embed, NULL );
+	
 	g_object_unref(ui);
 
 	g_object_add_weak_pointer(G_OBJECT (prefs->dialog), (gpointer) &prefs);

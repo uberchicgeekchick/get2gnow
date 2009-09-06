@@ -77,7 +77,7 @@
 
 #include "friends-manager.h"
 #include "following-viewer.h"
-#include "tweet-view.h"
+#include "control-panel.h"
 
 
 /********************************************************

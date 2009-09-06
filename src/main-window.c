@@ -88,7 +88,7 @@
 
 #include "friends-manager.h"
 #include "following-viewer.h"
-#include "tweet-view.h"
+#include "control-panel.h"
 
 #include "tweet-list.h"
 
@@ -108,7 +108,7 @@ struct _MainWindowPrivate {
 	/* Main widgets */
 	GtkWindow		*window;
 	GtkVBox			*main_vbox;
-	GtkWindow		*tweet_view_window;
+	GtkWindow		*control_panel_window;
 	
 	GtkMenuBar		*menubar;
         GtkMenuItem		*menu_file;
@@ -161,22 +161,22 @@ struct _MainWindowPrivate {
 	GtkTreeModel		*online_services_tree_model;
 	
 	/*These are the 3 default tabs & all other timlines.
-	 * Each page is an embed 'tweet-view'
-	 * See: 'data/tweet-view.ui', 'src/tweet-view.c', & 'src/tweet-view.h'.*/
+	 * Each page is an embed 'control-panel'
+	 * See: 'data/control-panel.ui', 'src/control-panel.c', & 'src/control-panel.h'.*/
 	GtkNotebook		*tweet_list_notebook;
 	GList			*tweet_list_glist;
 	
 	/* user, status, & update widgets.
-	 * Actually they're in the TweetView.
+	 * Actually they're in the ControlPanel.
 	 * The main-window's GtkVBox contains them.
 	 */
 	GtkVPaned		*tweet_vpaned;
 	GtkHBox			*expand_box;
-	GtkVBox			*tweet_view_vbox;
+	GtkVBox			*control_panel_vbox;
 	
-	/*These are or part of 'TweetView'.*/
-	TweetView		*tweet_view;
-	GtkHBox			*tweet_view_embed;
+	/*These are or part of 'ControlPanel'.*/
+	ControlPanel		*control_panel;
+	GtkHBox			*control_panel_embed;
 	
 	gchar			*tabs_to_right_align;
 	GtkStatusbar		*statusbar;
@@ -335,7 +335,7 @@ static void main_window_setup( void ){
 					
 					"tweet_vpaned", &main_window->private->tweet_vpaned,
 					"expand_box", &main_window->private->expand_box,
-					"tweet_view_vbox", &main_window->private->tweet_view_vbox,
+					"control_panel_vbox", &main_window->private->control_panel_vbox,
 					
 					"main_statusbar", &main_window->private->statusbar,
 				NULL
@@ -361,7 +361,7 @@ static void main_window_setup( void ){
 					"quit", "activate", main_window_exit,
 					
 					"tweets_new_tweet", "activate", tweets_new_tweet,
-					"tweets_new_dm", "activate", tweet_view_new_dm,
+					"tweets_new_dm", "activate", control_panel_new_dm,
 					"selected_update_reply_image_menu_item", "activate", online_service_request_selected_update_reply,
 					"selected_update_retweet_image_menu_item", "activate", online_service_request_selected_update_retweet,
 					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_save_fave,
@@ -410,18 +410,18 @@ static void main_window_setup( void ){
 	main_window_status_icon_create();
 	
 	/* Expand tweet area used to view & send tweets & dm.  */
-	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
-		main_window->private->tweet_view=tweet_view_new( NULL );
+	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
+		main_window->private->control_panel=control_panel_new( NULL );
 	else
-		main_window->private->tweet_view=tweet_view_new( main_window->private->window );
+		main_window->private->control_panel=control_panel_new( main_window->private->window );
 	
-	/*tweet_view stuff.*/
-	main_window->private->tweet_view_embed=tweet_view_get_embed();
-	main_window->private->tweet_view_window=tweet_view_get_window();
+	/*control_panel stuff.*/
+	main_window->private->control_panel_embed=control_panel_get_embed();
+	main_window->private->control_panel_window=control_panel_get_window();
 	
-	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)){
-		gtk_widget_reparent( GTK_WIDGET( main_window->private->tweet_view_embed ), GTK_WIDGET( main_window->private->tweet_view_vbox ));
-		gtk_widget_show( GTK_WIDGET( main_window->private->tweet_view_embed ));
+	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE)){
+		gtk_widget_reparent( GTK_WIDGET( main_window->private->control_panel_embed ), GTK_WIDGET( main_window->private->control_panel_vbox ));
+		gtk_widget_show( GTK_WIDGET( main_window->private->control_panel_embed ));
 	}else{
 		gtk_widget_hide( GTK_WIDGET( main_window->private->expand_box ));
 	}
@@ -565,39 +565,39 @@ void tweet_lists_destroy( void ){
 	g_list_free( main_window->private->tweet_list_glist );
 }/*tweet_lists_destroy();*/
 
-void main_window_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
-	gboolean use_tweet_view_dialog=gtk_toggle_button_get_active( toggle_button );
-	if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE)==use_tweet_view_dialog)
+void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
+	gboolean use_control_panel_dialog=gtk_toggle_button_get_active( toggle_button );
+	if(gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE)==use_control_panel_dialog)
 		return;
 	
-	debug("TweetView changed:\t[%s].",( use_tweet_view_dialog?_( "floating" ):_( "embed" )) );
+	debug("TweetView changed:\t[%s].",( use_control_panel_dialog?_( "floating" ):_( "embed" )) );
 	geometry_save();
-	gconfig_set_bool(PREFS_TWEET_VIEW_DIALOG, use_tweet_view_dialog);
+	gconfig_set_bool(PREFS_CONTROL_PANEL_DIALOG, use_control_panel_dialog);
 	
-	if( use_tweet_view_dialog ){
-		if( gtk_widget_get_parent( GTK_WIDGET( main_window->private->tweet_view_embed ))==GTK_WIDGET( main_window->private->tweet_view ))
+	if( use_control_panel_dialog ){
+		if( gtk_widget_get_parent( GTK_WIDGET( main_window->private->control_panel_embed ))==GTK_WIDGET( main_window->private->control_panel ))
 			return;
 		
 		debug("Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
-		gtk_widget_reparent( GTK_WIDGET( main_window->private->tweet_view_embed ), GTK_WIDGET( main_window->private->tweet_view ));
-		window_present( GTK_WINDOW( main_window->private->tweet_view_window ), TRUE);
-		g_object_add_weak_pointer( G_OBJECT( main_window->private->tweet_view_window ),( gpointer )&main_window->private->tweet_view_window);
-		gtk_window_set_transient_for( GTK_WINDOW( main_window->private->tweet_view_window ), main_window->private->window);
+		gtk_widget_reparent( GTK_WIDGET( main_window->private->control_panel_embed ), GTK_WIDGET( main_window->private->control_panel_window ));
+		window_present( GTK_WINDOW( main_window->private->control_panel_window ), TRUE);
+		g_object_add_weak_pointer( G_OBJECT( main_window->private->control_panel_window ),( gpointer )&main_window->private->control_panel_window);
+		gtk_window_set_transient_for( GTK_WINDOW( main_window->private->control_panel_window ), main_window->private->window);
 		gtk_widget_hide( GTK_WIDGET( main_window->private->expand_box ));
 	}else{
-		if( gtk_widget_get_parent( GTK_WIDGET( main_window->private->tweet_view_embed ))==GTK_WIDGET( main_window->private->tweet_view_vbox ))
+		if( gtk_widget_get_parent( GTK_WIDGET( main_window->private->control_panel_embed ))==GTK_WIDGET( main_window->private->control_panel_vbox ))
 			return;
 		
 		debug("Embeding TweetView's into %s main window.", PACKAGE_NAME);
-		gtk_widget_reparent( GTK_WIDGET( main_window->private->tweet_view_embed ), GTK_WIDGET( main_window->private->tweet_view_vbox ));
+		gtk_widget_reparent( GTK_WIDGET( main_window->private->control_panel_embed ), GTK_WIDGET( main_window->private->control_panel_vbox ));
 		gtk_widget_show( GTK_WIDGET( main_window->private->expand_box ));
-		gtk_widget_show( GTK_WIDGET( main_window->private->tweet_view_vbox ));
-		gtk_widget_show( GTK_WIDGET( main_window->private->tweet_view_embed ));
-		gtk_widget_hide( GTK_WIDGET( main_window->private->tweet_view_window ));
+		gtk_widget_show( GTK_WIDGET( main_window->private->control_panel_vbox ));
+		gtk_widget_show( GTK_WIDGET( main_window->private->control_panel_embed ));
+		gtk_widget_hide( GTK_WIDGET( main_window->private->control_panel_window ));
 	}
-	tweet_view_set_embed_toggle_and_image();
+	control_panel_set_embed_toggle_and_image();
 	geometry_load();
-}/*main_window_tweet_view_embed*/
+}/*main_window_control_panel_embed*/
 
 GtkWindow *main_window_get_window( void ){
 	return main_window->private->window;
@@ -666,8 +666,8 @@ static void main_window_toggle_visibility( void ){
 		geometry_load();
 		window_present( GTK_WINDOW( main_window->private->window ), TRUE);
 		
-		if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
-			window_present( GTK_WINDOW( main_window->private->tweet_view_window ), TRUE);
+		if(gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
+			window_present( GTK_WINDOW( main_window->private->control_panel_window ), TRUE);
 	}
 	/* Save the window visibility state */
 	gconfig_set_bool(PREFS_UI_HIDDEN, visible);
@@ -680,8 +680,8 @@ static void main_window_set_visibility(gboolean visible){
 		gtk_widget_hide( GTK_WIDGET( main_window->private->window ));
 	else{
 		window_present( GTK_WINDOW( main_window->private->window ), TRUE);
-		if(gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
-			window_present( GTK_WINDOW( main_window->private->tweet_view_window ), TRUE);
+		if(gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
+			window_present( GTK_WINDOW( main_window->private->control_panel_window ), TRUE);
 	}
 }
 
@@ -815,7 +815,7 @@ static void main_window_status_icon_create_menu( void ){
 	g_signal_connect( G_OBJECT( new_msg ), "activate", G_CALLBACK( tweets_new_tweet ), main_window);
 	
 	new_dm=gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-jump-to");
-	g_signal_connect( G_OBJECT( new_dm ), "activate", G_CALLBACK( tweet_view_new_dm ), main_window);
+	g_signal_connect( G_OBJECT( new_dm ), "activate", G_CALLBACK( control_panel_new_dm ), main_window);
 	
 	about=gtk_action_new("tray_about", _( "_About" ), NULL, "gtk-about");
 	g_signal_connect( G_OBJECT( new_dm ), "activate", G_CALLBACK( main_window_about_cb ), main_window);
@@ -949,21 +949,21 @@ void tweet_lists_init( void ){
 	}
 	debug("Retrived default timeline: %s.  Loading timeline tabs.", timeline);
 	
-	if(gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE)){
+	if(gconfig_if_bool(PREFS_AUTOLOAD_FOLLOWING, TRUE)){
 		debug("Preparing auto-monitor for My Friends' Tweets.");
 		tweet_lists_get_timeline( API_TIMELINE_FRIENDS );
 		if(open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
 			open_home_page=FALSE;
 	}
 	
-	if(gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE)){
+	if(gconfig_if_bool(PREFS_AUTOLOAD_REPLIES, TRUE)){
 		debug("Preparing auto-monitor for Replies.");
 		tweet_lists_get_timeline( API_REPLIES );
 		if(open_home_page && g_str_equal(timeline, API_REPLIES))
 			open_home_page=FALSE;
 	}
 	
-	if(gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE)){
+	if(gconfig_if_bool(PREFS_AUTOLOAD_DMS, TRUE)){
 		debug("Preparing auto-monitor for DMs.");
 		tweet_lists_get_timeline( API_DIRECT_MESSAGES );
 		if(open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
@@ -1041,7 +1041,7 @@ void main_window_state_on_connection(gboolean connected){
 		gtk_widget_set_sensitive( GTK_WIDGET( l->data ), !connected );
 	g_list_free(l);
 	
-	if( connected ) tweet_view_sexy_select();
+	if( connected ) control_panel_sexy_select();
 }
 
 void main_window_selected_update_image_menu_items_show(gboolean selected_update){
@@ -1051,7 +1051,7 @@ void main_window_selected_update_image_menu_items_show(gboolean selected_update)
 	for(selected_update_image_menu_items=main_window->private->selected_update_image_menu_items; selected_update_image_menu_items; selected_update_image_menu_items=selected_update_image_menu_items->next)
 		gtk_widget_set_sensitive( GTK_WIDGET( selected_update_image_menu_items->data ), selected_update);
 	g_list_free( selected_update_image_menu_items );
-	tweet_view_sexy_select();
+	control_panel_sexy_select();
 }/*main_window_selected_update_image_menu_items_show( TRUE|FALSE );*/
 
 void main_window_statusbar_printf(const gchar *msg, ...){

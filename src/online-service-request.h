@@ -109,6 +109,7 @@ void online_service_request_selected_update_unblock(void);
 void online_service_request_selected_update_save_fave(void);
 void online_service_request_selected_update_destroy_fave(void);
 
+gboolean online_service_request_is_update_selected(void);
 void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
 OnlineService *online_service_request_selected_update_get_service(void);
 gdouble online_service_request_selected_update_get_id(void);

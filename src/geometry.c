@@ -64,11 +64,12 @@
 
 #include "gconfig.h"
 
+#include "online-service-request.h"
 #include "preferences.h"
 #include "geometry.h"
 
 #include "main-window.h"
-#include "tweet-view.h"
+#include "control-panel.h"
 
 
 /********************************************************
@@ -77,7 +78,7 @@
 typedef enum{
 	Embed,
 	MainTweetList,
-	FloatingTweetView,
+	FloatingCotrolPanel,
 } ViewType;
 
 enum {
@@ -88,7 +89,7 @@ enum {
 	PreferencePositionY,
 	PreferenceTotal,
 };
-#define DEBUG_DOMAINS "FloatingTweetView:MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainTweetList:Geometry.c"
+#define DEBUG_DOMAINS "FloatingCotrolPanel:MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainTweetList:Geometry.c"
 #include"debug.h"
 
 /* Window height, width, & position gconf values. */
@@ -112,22 +113,23 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 void geometry_load(void){
-	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
+	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
 		return geometry_load_for_window(Embed);
 	
 	geometry_load_for_window(MainTweetList);
-	geometry_load_for_window(FloatingTweetView);
+	geometry_load_for_window(FloatingCotrolPanel);
 }/*geometry_load*/
 
 void geometry_save(void){
-	if(!gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE))
+	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
 		return geometry_save_for_window(Embed);
 	
 	geometry_save_for_window(MainTweetList);
-	geometry_save_for_window(FloatingTweetView);
+	geometry_save_for_window(FloatingCotrolPanel);
 }/*geometry_save();*/
 
 static void geometry_load_for_window(ViewType view){
+	if( !gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	gint		x=0, y=0, w=0, h=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
@@ -157,10 +159,11 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
-	geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);
+	geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
+	if( !gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	static guint	calls=0;
 	gint		x=0, y=0, w=0, h=0;
 	GtkWindow	*window=geometry_get_window(view);
@@ -194,8 +197,8 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) {
 		calls++;
-		geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);
-	}else if(calls==LOAD_COUNT) geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, TRUE);
+		geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);
+	}else if(calls==LOAD_COUNT) geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, TRUE);
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
@@ -206,8 +209,8 @@ static GtkWindow *geometry_get_window(ViewType view){
 			return main_window_get_window();
 		break;
 		
-		case FloatingTweetView:
-			return tweet_view_get_window();
+		case FloatingCotrolPanel:
+			return control_panel_get_window();
 		break;
 	}
 	return main_window_get_window();
@@ -230,8 +233,8 @@ static gchar **geometry_get_prefs_path(ViewType view){
 			prefs_path[PrefernceWindow]=g_strdup("main_window");
 		break;
 		
-		case FloatingTweetView:
-			prefs_path[PrefernceWindow]=g_strdup("tweet_view");
+		case FloatingCotrolPanel:
+			prefs_path[PrefernceWindow]=g_strdup("control_panel");
 		break;
 		
 		default:
@@ -278,7 +281,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	GtkWindow	*window=geometry_get_window(view);
 	gint		h=0, w=0;
 	gtk_window_get_size(window, &w, &h);
-	gint position=0, min_position=0, max_position=0, padding=(h/10)*3;
+	gint position=0, min_position=0, max_position=0, padding=(h/10)*5;
 	
 	gchar *paned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, (vpaned ?"vpanded" :"hpaned"), widget);
 	
@@ -293,14 +296,16 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	g_object_get(G_OBJECT(paned), "max-position", &max_position, "min-position", &min_position, NULL);
 	max_position-=padding;
 	
+	/*
 	if(position>max_position) position=max_position-min_position;
 	else if(position<min_position) position=min_position+padding;
+	*/
 	
 	debug("%s %s's vpaned position to: %d.", (save ?_("Saving") :_("Moving")), widget, position);
 	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
-}/*geometry_set_paned(main_window_get_tweet_paned(), "tweet_view", view, TRUE, FALSE);*/
+}/*geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);*/
 
 /********************************************************
  *                       eof                            *

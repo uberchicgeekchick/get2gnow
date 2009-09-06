@@ -109,8 +109,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -280,7 +280,7 @@
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Select someone you follow &amp; view their updates.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">friends_menu_update_viewer_image</property>
+                        <property name="image">friends_menu_control_panel_image</property>
                         <property name="use_stock">False</property>
                         <accelerator key="t" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -794,7 +794,7 @@
               <object class="GtkHBox" id="expand_box">
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkVBox" id="tweet_view_vbox">
+                  <object class="GtkVBox" id="control_panel_vbox">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
                     <child>
@@ -807,7 +807,7 @@
                 </child>
               </object>
               <packing>
-                <property name="resize">False</property>
+                <property name="resize">True</property>
                 <property name="shrink">True</property>
               </packing>
             </child>
@@ -841,7 +841,7 @@
     <property name="visible">True</property>
     <property name="stock">gtk-page-setup</property>
   </object>
-  <object class="GtkImage" id="friends_menu_update_viewer_image">
+  <object class="GtkImage" id="friends_menu_control_panel_image">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
   </object>

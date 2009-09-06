@@ -48,7 +48,7 @@ get2gnow_SOURCES = 			online-services-typedefs.h	\
 	ui-utils.c			ui-utils.h			\
 	following-viewer.c		following-viewer.h		\
 	friend-manager.c		friend-manager.h		\
-	tweet-view.c			tweet-view.h			\
+	control-panel.c			control-panel.h			\
 	tweets.c			tweets.h			\
 	users.c				users.h				\
 	images.c			images.h			\

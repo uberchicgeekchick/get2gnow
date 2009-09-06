@@ -115,7 +115,7 @@ void tweet_lists_destroy(void);
 
 
 
-void main_window_tweet_view_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
+void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *main_window_get_window(void);
 GtkPaned *main_window_get_tweet_paned(void);

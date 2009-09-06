@@ -97,7 +97,7 @@
 
 #include "parser.h"
 #include "tweets.h"
-#include "tweet-view.h"
+#include "control-panel.h"
 
 
 /********************************************************************************
@@ -134,6 +134,7 @@ struct _TweetListPrivate {
 	gint			page;
 	
 	UpdateMonitor		monitoring;
+	const gchar		*monitoring_string;
 	gint8			has_loaded;
 	
 	gint			minutes;
@@ -395,6 +396,11 @@ UpdateMonitor tweet_list_get_monitoring(TweetList *tweet_list){
 	return GET_PRIVATE(tweet_list)->monitoring;
 }/*tweet_list_get_monitoring(tweet_list);*/
 
+const gchar *tweet_list_get_monitoring_string(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
+	return GET_PRIVATE(tweet_list)->monitoring_string;
+}/*tweet_list_get_monitoring_string(TweetList *tweet_list);*/
+
 guint tweet_list_get_notify_delay(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return 1*10;
 	return (GET_PRIVATE(tweet_list)->page+1)*10;
@@ -447,7 +453,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	
 	switch(this->monitoring){
 		case BestFriends:	case None:	default:
-			debug("TweetList(s) monitoring %s do not auto-reload.", monitoring_to_string(this->monitoring));
+			debug("TweetList(s) monitoring %s do not auto-reload.", this->monitoring_string);
 			return 1.0;
 		case Archive:	case Users:	case Timelines:
 			if(minutes<15) minutes=15;
@@ -577,9 +583,6 @@ static void tweet_list_check_maximum_updates(TweetList *tweet_list){
 }/*tweet_check_maximum_updates(tweet_list);*/
 
 static void tweet_list_check_inbox(TweetList *tweet_list){
-	/*TODO:FIXME: Finish making these preferences - oh yeah & just make 'em work.*/
-	return;
-	
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
@@ -623,6 +626,7 @@ static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then)
 	
 	gint 		created_ago=0;
 	gchar		*created_at_str=NULL, *created_how_long_ago=NULL;
+	OnlineService	*service=NULL;
 	
 	for(gint i=0; i<=this->total; i++){
 		created_ago=0;
@@ -639,13 +643,15 @@ static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then)
 		gtk_tree_model_get(
 					this->tree_model, iter,
 						STRING_CREATED_AT, &created_at_str,
+						ONLINE_SERVICE, &service,
 					-1
 		);
 		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
-		if(delete_older_then && created_ago>delete_older_then)
+		if(delete_older_then > 0 && created_ago > 0 && created_ago > delete_older_then){
+			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%i] it was posted %i.", online_service_get_guid(service), this->monitoring_string, this->monitoring_string, delete_older_then, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
-		else
+		}else
 			gtk_list_store_set(
 					this->list_store, iter,
 						STRING_CREATED_AGO, created_how_long_ago,
@@ -658,6 +664,7 @@ static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then)
 		uber_free(created_at_str);
 		gtk_tree_path_free(path);
 		uber_free(iter);
+		service=NULL;
 	}
 }/*tweet_list_update_age(tweet_list, 0);*/
 
@@ -758,6 +765,8 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, TRUE);
 	else
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, FALSE);
+	
+	this->monitoring_string=monitoring_to_string(this->monitoring);
 }/*tweet_list_set_timeline_label(tweet_list, timeline);*/
 
 guint tweet_list_increment(TweetList *tweet_list){
@@ -856,13 +865,13 @@ void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event){
 	
 	switch(event->state){
 		case GDK_CONTROL_MASK:
-			tweet_view_sexy_insert_char('\n');
+			control_panel_sexy_insert_char('\n');
 			return;
 		case GDK_MOD1_MASK:
 			online_service_request_selected_update_retweet();
 			return;
 		case GDK_SHIFT_MASK:
-			tweet_view_new_dm();
+			control_panel_new_dm();
 			return;
 		default:
 			online_service_request_selected_update_reply();
@@ -937,7 +946,7 @@ static void tweet_list_index_select(TweetList *tweet_list){
 	
 	gtk_tree_path_free(path);
 	
-	tweet_view_sexy_select();
+	control_panel_sexy_select();
 }/*tweet_list_index_select(tweet_list);*/
 
 static void tweet_list_index_scroll_to(TweetList *tweet_list){
@@ -952,7 +961,7 @@ static void tweet_list_index_scroll_to(TweetList *tweet_list){
 		gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
 	gtk_tree_path_free(path);
 	
-	tweet_view_sexy_select();
+	control_panel_sexy_select();
 }/*tweet_list_index_scroll_to(tweet_list);*/
 
 static void tweet_list_scroll_to_top(TweetList *tweet_list){
@@ -1031,7 +1040,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(this->sexy_tree_view))) && gtk_tree_selection_get_selected(sel, &this->tree_model_sort, iter) )){
 		g_free(iter);
-		tweet_view_sexy_select();
+		control_panel_sexy_select();
 		return;
 	}
 	
@@ -1058,7 +1067,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	);
 	
 	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, online_service_get_guid(service));
-	tweet_view_show_tweet(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
+	control_panel_show_tweet(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	
 	g_free(user_name);
 	g_free(sexy_tweet);
@@ -1068,7 +1077,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	if(pixbuf) g_object_unref(pixbuf);
 	g_free(iter);
 	
-	tweet_view_sexy_select();
+	control_panel_sexy_select();
 }/*tweet_list_changed_cb(tweet_list_sexy_tree_view, tweet_list);*/
 
 static void tweet_list_size_cb(GtkWidget *widget, GtkAllocation *allocation, TweetList *tweet_list){
@@ -1089,7 +1098,7 @@ void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, Gt
 	if(!(pixbuf=images_get_pixbuf_from_filename((gchar *)image_filename)))
 		return;
 	
-	debug("Adding image: '%s' to tweet_view.", image_filename);
+	debug("Adding image: '%s' to control_panel.", image_filename);
 	gtk_list_store_set(this->list_store, iter, PIXBUF_AVATAR, pixbuf, -1);
 	g_object_unref(pixbuf);
 }/* tweet_list_set_image */

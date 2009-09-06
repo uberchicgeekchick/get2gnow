@@ -82,7 +82,7 @@
 #include "gtkbuilder.h"
 
 #include "main-window.h"
-#include "tweet-view.h"
+#include "control-panel.h"
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
@@ -111,10 +111,10 @@ OnlineService *selected_service=NULL;
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-typedef struct _SelectedTweet SelectedTweet;
+typedef struct _SelectedUpdate SelectedUpdate;
 typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
 
-struct _SelectedTweet{
+struct _SelectedUpdate{
 	OnlineService	*service;
 	gdouble		id;
 	gdouble		user_id;
@@ -164,7 +164,7 @@ struct  _OnlineServiceRequestPopup{
 	GtkButton		*cancel_button;
 };
 
-static SelectedTweet *selected_update=NULL;
+static SelectedUpdate *selected_update=NULL;
 
 static OnlineServiceRequestPopup *online_service_request_popup=NULL;
 static gint online_service_request_popup_dialog_response=0;
@@ -338,7 +338,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 			break;
 	}
 	
-	tweet_view_sexy_select();
+	control_panel_sexy_select();
 }/*online_service_request_main(service, parent, Follow|UnFollow|ViewProfile|ViewTweets|..., user_data);*/
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
@@ -422,13 +422,17 @@ static void online_service_request_free(OnlineServiceRequest *request){
 /********************************************************************************
  *               selected_update methods, handlers, callbacks, & etc.            *
  ********************************************************************************/
+gboolean online_service_request_is_update_selected(void){
+	return ( !selected_update ?FALSE :TRUE );
+}/*online_service_request_is_update_selected();*/
+
 void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
 	/*	gint id=atoi(string);	*/
 	if(selected_update) online_service_request_unset_selected_update();
 	
-	debug("SelectedTweet created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
-	debug("SelectedTweet's update: %s.", tweet);
-	selected_update=g_new0(SelectedTweet, 1);
+	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
+	debug("SelectedUpdate's update: %s.", tweet);
+	selected_update=g_new0(SelectedUpdate, 1);
 	selected_update->service=service;
 	selected_update->id=id;
 	selected_update->user_id=user_id;
@@ -472,7 +476,7 @@ void online_service_request_selected_update_retweet(void){
 
 static void online_service_request_selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
 	if(!( ( tweet && G_STR_N_EMPTY(tweet) ) )){
-		tweet_view_beep();
+		control_panel_beep();
 		if(tweet && release) uber_free(tweet);
 		return;
 	}
@@ -484,7 +488,7 @@ static void online_service_request_selected_update_include_and_begin_to_send(gch
 		in_reply_to_service=selected_update->service;
 	}
 	
-	tweet_view_sexy_prefix_string(tweet);
+	control_panel_sexy_prefix_string(tweet);
 	
 	if(!release) return;
 	
@@ -501,45 +505,45 @@ void online_service_request_unset_selected_update(void){
 
 void online_service_request_selected_update_view_tweets(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewTweets, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewTweets, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_view_tweets();*/
 
 void online_service_request_selected_update_view_profile(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_view_profile*/
 
 void online_service_request_selected_update_follow(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Follow, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, Follow, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_follow*/
 
 void online_service_request_selected_update_unfollow(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, UnFollow, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, UnFollow, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_unfollow*/
 
 void online_service_request_selected_update_block(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Block, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, Block, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_block*/
 
 void online_service_request_selected_update_unblock(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, UnBlock, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, UnBlock, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_unblock*/
 
 void online_service_request_selected_update_save_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
-	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
+	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), fave_tweet_id);
 	g_free(fave_tweet_id);
 }/*online_service_request_selected_update_save_fave*/
 
 void online_service_request_selected_update_destroy_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
-	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() ), fave_tweet_id);
+	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), fave_tweet_id);
 	g_free(fave_tweet_id);
 }/*online_service_request_selected_update_destroy_fave*/
 
@@ -647,7 +651,7 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *
 	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
 	if(G_STR_EMPTY(user_name)){
-		tweet_view_beep();
+		control_panel_beep();
 		return FALSE;
 	}
 	
@@ -818,7 +822,7 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 		online_service_request_popup_destroy_and_free();
 	}
 	
-	GtkWindow *parent=( gconfig_if_bool(PREFS_TWEET_VIEW_DIALOG, FALSE) ?tweet_view_get_window() :main_window_get_window() );
+	GtkWindow *parent=( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() );
 	
 	if(online_service_request_popup_dialog_response) online_service_request_popup_dialog_response=0;
 	

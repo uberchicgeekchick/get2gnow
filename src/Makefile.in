@@ -76,7 +76,7 @@ get2gnow_SOURCES =			online-services-typedefs.h	\
 	ui-utils.c			ui-utils.h			\
 	following-viewer.c		following-viewer.h		\
 	friend-manager.c		friend-manager.h		\
-	tweet-view.c			tweet-view.h			\
+	control-panel.c			control-panel.h			\
 	tweets.c			tweets.h			\
 	users.c				users.h				\
 	images.c			images.h			\
@@ -114,7 +114,7 @@ get2gnow_OBJECTS =					\
 	friends-manager.$(OBJEXT)			\
 	users.$(OBJEXT)					\
 	images.$(OBJEXT)				\
-	tweet-view.$(OBJEXT)				\
+	control-panel.$(OBJEXT)				\
 	tweets.$(OBJEXT)				\
 	tweet-list.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -421,7 +421,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-view.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/control-panel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-list.Po@am__quote@

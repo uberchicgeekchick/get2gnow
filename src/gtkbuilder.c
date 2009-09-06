@@ -93,7 +93,7 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	uber_free( gtkbuilder_ui_filename );
 	
 	return NULL;
-}/*gtkbuilder_get_path( "tweet-view" );*/
+}/*gtkbuilder_get_path( "control-panel" );*/
 
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);

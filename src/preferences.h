@@ -65,20 +65,26 @@
 
 G_BEGIN_DECLS
 
-#define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
-#define PREFS_NOTIFY_FOLLOWING				GCONF_PATH "/notifications/following"
+#define PREFS_AUTOLOAD_BEST_FRIENDS			GCONF_PATH "/ui/start-up/tabs/best_friends"
+#define	PREFS_AUTOLOAD_DMS				GCONF_PATH "/ui/start-up/tabs/dms"
+#define	PREFS_AUTOLOAD_REPLIES				GCONF_PATH "/ui/start-up/tabs/replies"
+#define PREFS_AUTOLOAD_FOLLOWING			GCONF_PATH "/ui/start-up/tabs/following"
+
 #define PREFS_NOTIFY_BEST_FRIENDS			GCONF_PATH "/notifications/best_friends"
-#define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
 #define	PREFS_NOTIFY_DMS				GCONF_PATH "/notifications/dms"
+#define PREFS_NOTIFY_FOLLOWING				GCONF_PATH "/notifications/following"
+#define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
+#define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
 #define	PREFS_NOTIFY_BEEP				GCONF_PATH "/alerts/beep"
 
-#define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/tweet_view/url_expansion/disabled"
-#define	PREFS_URLS_EXPANSION_SELECTED_ONLY		GCONF_PATH "/tweet_view/url_expansion/selected_only"
-#define PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES	GCONF_PATH "/tweet_view/url_expansion/replace_with_titles"
-#define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/tweet_view/url_expansion/user_profiles"
+#define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/control_panel/url_expansion/disabled"
+#define	PREFS_URLS_EXPANSION_SELECTED_ONLY		GCONF_PATH "/control_panel/url_expansion/selected_only"
+#define PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES	GCONF_PATH "/control_panel/url_expansion/replace_with_titles"
+#define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/control_panel/url_expansion/user_profiles"
 
 #define	PREFS_DISABLE_SYSTEM_BELL			GCONF_PATH "/alerts/disable_system_bell"
-#define PREFS_TWEET_VIEW_DIALOG				GCONF_PATH "/ui/tweet_view_dialog"
+#define PREFS_CONTROL_PANEL_DIALOG			GCONF_PATH "/ui/control_panel/use_dialog"
+#define PREFS_CONTROL_PANEL_COMPACT			GCONF_PATH "/ui/control_panel/compact_view"
 
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
@@ -87,11 +93,11 @@ G_BEGIN_DECLS
 #define	PREFS_TWEETS_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 #define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 
-#define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/tweets/home_timeline"
-#define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/tweets/reload_timeline"
+#define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/updates/home_timeline"
+#define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/updates/reload_timeline"
 
-#define PREFS_TWEETS_NO_PROFILE_LINK			GCONF_PATH "/tweets/no_link_in_replies"
-#define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/tweets/direct_reply_only"
+#define PREFS_TWEETS_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
+#define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
 
 
 void preferences_dialog_show (GtkWindow *parent);

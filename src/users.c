@@ -88,7 +88,6 @@
 #include "label.h"
 
 #include "ui-utils.h"
-#include "tweet-view.h"
 #include "tweet-list.h"
 
 

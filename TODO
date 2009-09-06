@@ -2,7 +2,3 @@
 - 'FINISH' cache_save_xml so it limits the users/statuses that are saved or it'll bloat the hard drive.
 - Add loading & parsing of cached user's friends & followers from cache.
 
-- Add support for a 'previous tweets' combo box entry to tweet-view.
-
-- Let it die...say good-bye & find the courage to follow my dreams.  w/o a "community" of control.
-
