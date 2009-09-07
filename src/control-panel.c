@@ -511,7 +511,16 @@ void control_panel_compact_view_toggled( GtkToggleButton *compact_view_toggle_bu
 	gboolean compact;
 	if( (compact=gtk_toggle_button_get_active( compact_view_toggle_button )) != gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE ) )
 		gconfig_set_bool( PREFS_CONTROL_PANEL_COMPACT, compact );
+	
 	control_panel_compact_view_display( compact );
+	
+	if(!compact){
+		gtk_widget_set_tooltip_markup( GTK_WIDGET( control_panel->compact_view_toggle_button ), "<span weight=\"bold\" variant=\"small-caps\">Enlarge control panel.</span>\n<span style=\"italic\" size=\"small\">Shows all control panel buttons &amp; items.</span>");
+		gtk_image_set_from_icon_name(control_panel->compact_view_image, "gtk-fullscreen", ImagesMinimum);
+	}else{
+		gtk_widget_set_tooltip_markup( GTK_WIDGET( control_panel->compact_view_toggle_button ), "<span weight=\"light\">Compact control panel.</span>\n<span style=\"italic\" size=\"small\">Shows only enabled control panel buttons &amp; items.</span>");
+		gtk_image_set_from_icon_name(control_panel->compact_view_image, "gtk-leave-fullscreen", ImagesMinimum);
+	}
 }/*control_panel_compact_view_toggled( control_panel->compact_view_toggle_button ); */
 
 static void control_panel_compact_view_display( gboolean compact ){
@@ -522,20 +531,13 @@ static void control_panel_compact_view_display( gboolean compact ){
 			gtk_widget_show( (GtkWidget *)l->data );
 		else
 			gtk_widget_hide( (GtkWidget *)l->data );
-	
-	if(!compact){
-		gtk_widget_set_tooltip_markup( GTK_WIDGET( control_panel->compact_view_toggle_button ), "<span weight=\"bold\" variant=\"small-caps\">Enlarge control panel.</span>\n<span style=\"italic\" size=\"small\">Shows all control panel buttons &amp; items.</span>");
-		gtk_image_set_from_icon_name(control_panel->compact_view_image, "gtk-fullscreen", ImagesMinimum);
-	}else{
-		gtk_widget_set_tooltip_markup( GTK_WIDGET( control_panel->compact_view_toggle_button ), "<span weight=\"light\">Compact control panel.</span>\n<span style=\"italic\" size=\"small\">Shows only enabled control panel buttons &amp; items.</span>");
-		gtk_image_set_from_icon_name(control_panel->compact_view_image, "gtk-leave-fullscreen", ImagesMinimum);
-	}
 	g_list_free(l);
+	
 	control_panel_scale( compact );
 	gtk_widget_set_sensitive( GTK_WIDGET( control_panel->update_composition_vbox ), TRUE );
 	gtk_widget_show( GTK_WIDGET( control_panel->update_composition_vbox ) );
 	control_panel_sexy_select();
-}/*control_panel_compact_view_toggled( TRUE ); */
+}/*control_panel_compact_view_display( TRUE ); */
 
 static void control_panel_scale( gboolean compact ){
 	gint h=0, w=0;
@@ -665,7 +667,7 @@ void control_panel_show_tweet(OnlineService *service, const gdouble id, const gd
 		online_service_request_set_selected_update(service, id, user_id, user_name, text_tweet);
 	
 	debug("%s the Control Panel.", (id ?_("Enlarging") :"") );
-	control_panel_compact_view_display( (id ?TRUE :gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE) ) );
+	control_panel_compact_view_display( (id ?FALSE :gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE) ) );
 	
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
 	control_panel_selected_update_buttons_show( (id ?TRUE :FALSE ) );
