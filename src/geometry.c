@@ -129,7 +129,7 @@ void geometry_save(void){
 }/*geometry_save();*/
 
 static void geometry_load_for_window(ViewType view){
-	if( !gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
+	if( gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	gint		x=0, y=0, w=0, h=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
@@ -163,7 +163,7 @@ static void geometry_load_for_window(ViewType view){
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
-	if( !gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
+	if( gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	static guint	calls=0;
 	gint		x=0, y=0, w=0, h=0;
 	GtkWindow	*window=geometry_get_window(view);
