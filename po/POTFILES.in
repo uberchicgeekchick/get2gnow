@@ -17,6 +17,7 @@ data/get2gnow.schemas.in
 
 src/about.c
 src/cache.c
+src/control-panel.c
 src/debug.c
 src/friend-manager.c
 src/gconfig.c
@@ -42,7 +43,6 @@ src/searches.c
 src/timer.c
 src/tweet-list.c
 src/tweets.c
-src/control-panel.c
 src/ui-utils.c
 src/users.c
 src/users-glists.c

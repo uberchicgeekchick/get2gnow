@@ -189,7 +189,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 #endif
 
 
-#define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:OnlineService.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:online-service.c"
 #include "debug.h"
 
 

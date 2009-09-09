@@ -943,8 +943,9 @@ static void tweet_list_index_select(TweetList *tweet_list){
 	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
 	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)))
 		gtk_tree_view_set_cursor(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE);
-	
 	gtk_tree_path_free(path);
+	
+	tweet_list_mark_as_read(tweet_list);
 	
 	control_panel_sexy_select();
 }/*tweet_list_index_select(tweet_list);*/
@@ -960,6 +961,8 @@ static void tweet_list_index_scroll_to(TweetList *tweet_list){
 	if(GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)))
 		gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
 	gtk_tree_path_free(path);
+	
+	tweet_list_mark_as_read(tweet_list);
 	
 	control_panel_sexy_select();
 }/*tweet_list_index_scroll_to(tweet_list);*/

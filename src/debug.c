@@ -246,7 +246,6 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 	
 	debug_domains_check(domains);
 	gchar **debug_domains=g_strsplit(domains, ":", -1);
-	const gchar *debug_source=debug_domains[ g_strv_length( debug_domains )-1 ];
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
 			if(!(debug_domains[x+1] && debug_environment[y+1]))
@@ -262,7 +261,7 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			}
 			
 			if(g_str_has_prefix(msg, "**ERROR:**")){
-				g_fprintf(stderr, "\n**%s %s(%s) %s**", _(GETTEXT_PACKAGE), debug_source, _(debug_domains[x]), _("error"));
+				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[x], _("error"));
 				va_list args;
 				va_start(args, msg);
 				g_vfprintf(stderr, msg, args);
@@ -273,7 +272,7 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			if(!( debug_last_domain && g_str_equal(debug_last_domain, debug_domains[x]) )){
 				if(debug_last_domain) g_free(debug_last_domain);
 				debug_last_domain=g_strdup(debug_domains[x]);
-				g_fprintf(debug_output_fp, "\n%s(%s):\n", debug_source, debug_domains[x]);
+				g_fprintf(debug_output_fp, "\n%s:\n", debug_domains[x]);
 			}
 			
 			va_list args;

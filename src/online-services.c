@@ -111,7 +111,7 @@ static gint longest_replacement_length=0;
 static OnlineServices *services=NULL;
 OnlineServices *online_services=NULL;
 
-#define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication"
+#define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication:online-services.c"
 #include "debug.h"
 
 #define MAX_LOGINS 5
@@ -460,6 +460,10 @@ gssize online_services_get_length_of_longest_replacement(OnlineServices *service
 
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+	/*if(!services->connected){
+		debug("**ERROR:** Zero accounts are connected.  Network requests cannot be processed.");
+		return;
+	}*/
 	GList		*a=NULL;
 	OnlineService	*service=NULL;
 	
