@@ -97,11 +97,12 @@ MainWindow *main_window_get(void);
 
 void tweet_lists_init( void );
 void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window);
-TweetList *tweet_lists_new(const gchar *timeline);
+TweetList *tweet_lists_new(const gchar *timeline, OnlineService *service);
+TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service);
+
 TweetList *tweet_lists_get_next(void);
 TweetList *tweet_lists_get_current(void);
 TweetList *tweet_lists_get_previous(void);
-TweetList *tweet_lists_get_timeline(const gchar *timeline);
 TweetList *tweet_lists_get_page(gint page, gboolean close);
 
 void tweet_lists_start(void);

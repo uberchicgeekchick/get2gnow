@@ -362,7 +362,9 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	control_panel_grab_widgets_compact_control_panel_hidden( ui );
 	
 	debug("ControlPanel's hotkey connected.  Connecting signal handlers.");
-	g_signal_connect_after( (GObject *)control_panel->best_friend_toggle_button, "toggled", (GCallback)control_panel_selected_update_author_best_friend_toggled, NULL );
+	g_signal_connect_after( control_panel->embed_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
+	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
+	g_signal_connect_after( control_panel->best_friend_toggle_button, "toggled", (GCallback)control_panel_selected_update_author_best_friend_toggled, NULL );
 	control_panel_bind_hotkeys( ui );
 	
 	gtkbuilder_connect( ui, control_panel,
@@ -391,9 +393,6 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
 			NULL
 	);
-	
-	g_signal_connect_after( control_panel->embed_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
-	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
 	
 	gchar *control_panel_title=g_strdup_printf("%s - Control Panel", _( GETTEXT_PACKAGE ));
 	gtk_window_set_title(control_panel->control_panel, control_panel_title);

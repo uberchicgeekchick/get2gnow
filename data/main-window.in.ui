@@ -80,12 +80,10 @@
                 <child type="submenu">
                   <object class="GtkMenu" id="tabs_menu">
                     <child>
-                      <object class="GtkRadioMenuItem" id="tabs_friends_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_friends_timeline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">My _Friends' Updates</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">tabs_public_timeline</property>
                       </object>
                     </child>
                     <child>
@@ -94,30 +92,17 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="tabs_direct_messages">
+                      <object class="GtkCheckMenuItem" id="tabs_direct_messages">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Direct Messages</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">tabs_public_timeline</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="tabs_replies">
+                      <object class="GtkCheckMenuItem" id="tabs_replies">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">@ _Replies</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">tabs_public_timeline</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_mentions">
-                        <property name="no_show_all">True</property>
-                        <property name="label" translatable="yes">@ _Mentions</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">tabs_public_timeline</property>
                       </object>
                     </child>
                     <child>
@@ -126,21 +111,10 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="tabs_favorites_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_favorites_timeline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">My _Favorites</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">tabs_public_timeline</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="tabs_my_timeline">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_My Updates</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">tabs_public_timeline</property>
                       </object>
                     </child>
                     <child>
@@ -149,11 +123,17 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="tabs_public_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_my_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_My Updates</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="tabs_public_timeline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Public Timeline</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
                       </object>
                     </child>
                   </object>

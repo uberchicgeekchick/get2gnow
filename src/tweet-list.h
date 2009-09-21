@@ -97,7 +97,7 @@ enum TweetListStoreColumns{		/**************************************************
 };
 
 GType tweet_list_get_type(void) G_GNUC_CONST;
-TweetList *tweet_list_new(const gchar *timeline);
+TweetList *tweet_list_new(const gchar *timeline, OnlineService *service);
 const gchar *tweet_list_get_timeline(TweetList *tweet_list);
 
 GtkVBox *tweet_list_get_child(TweetList *tweet_list);
@@ -115,7 +115,6 @@ void tweet_list_complete(TweetList *tweet_list);
 void tweet_list_toggle_toolbar(TweetList *tweet_list);
 
 void tweet_list_mark_as_read(TweetList *tweet_list);
-gint tweet_list_mark_is_unread(TweetList *tweet_list);
 void tweet_list_mark_as_unread(TweetList *tweet_list);
 
 gint8 tweet_list_has_loaded(TweetList *tweet_list);

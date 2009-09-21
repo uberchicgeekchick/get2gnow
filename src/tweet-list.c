@@ -115,7 +115,7 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),		N_("%s's Recent Updates")},
+	{Users,		API_TIMELINE_USER,	N_("%s's%s _Updates"),			N_("%s's%s Updates")},
 	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,		N_("@ _Replies"),			N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),			N_("@ Mentions")},
@@ -132,6 +132,7 @@ TimelineLabels TimelineLabelsList[]={
 struct _TweetListPrivate {
 	guint			timeout_id;
 	gint			page;
+	OnlineService		*service;
 	
 	UpdateMonitor		monitoring;
 	const gchar		*monitoring_string;
@@ -147,7 +148,7 @@ struct _TweetListPrivate {
 	gint			index;
 	
 	guint			total;
-	guint			unread;
+	gboolean		unread;
 	
 	guint			connected_online_services;
 	gdouble			maximum;
@@ -275,7 +276,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	this->has_loaded=-1;
-	this->unread=-1;
+	this->unread=TRUE;
 	
 	this->minutes=0;
 	this->reload=0;
@@ -296,7 +297,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), tweet_list);
 }/* tweet_list_init */
 
-TweetList *tweet_list_new(const gchar *timeline){
+TweetList *tweet_list_new(const gchar *timeline, OnlineService *service){
 	if(G_STR_EMPTY(timeline)) {
 		debug("**ERROR:** Cannot create tweet view for an empty timeline.");
 		return NULL;
@@ -304,6 +305,8 @@ TweetList *tweet_list_new(const gchar *timeline){
 	TweetList *tweet_list=g_object_new(TYPE_TWEET_LIST, NULL);
 	
 	debug("Creating new TweetView for timeline: %s.", timeline);
+	if(service && online_service_is_connected(service) )
+		GET_PRIVATE(tweet_list)->service=service;
 	
 	tweet_list_set_timeline_label(tweet_list, timeline);
 	tweet_list_stop_toggle_setup(tweet_list);
@@ -434,8 +437,13 @@ void tweet_list_start(TweetList *tweet_list){
 	tweet_list_clean_up(tweet_list);
 	tweet_list_update_age(tweet_list, 0);
 	tweet_list_set_adjustment(tweet_list);
-	if(this->minutes)
-		online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
+	if(this->minutes){
+		if(!this->service){
+			online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
+		}else{
+			online_service_request(this->service, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
+		}
+	}
 }/*tweet_list_start(TweetList *tweet_list);*/
 
 static float tweet_list_prepare_reload(TweetList *tweet_list){
@@ -756,8 +764,14 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 			gchar **user_info=g_strsplit_set(feed_info[3], "/", -1);
 			const gchar *user_name=user_info[0];
 			if(G_STR_N_EMPTY(user_name)){
-				this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user_name);
-				this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user_name);
+				gchar *service_uri=NULL;
+				if(!this->service)
+					service_uri=g_strdup("");
+				else
+					service_uri=g_strdup_printf(" %s", online_service_get_uri(this->service) );
+				this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user_name, service_uri );
+				this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user_name, service_uri );
+				uber_free(service_uri);
 			}
 			g_strfreev(feed_info);
 			g_strfreev(user_info);
@@ -1020,27 +1034,19 @@ void tweet_list_mark_as_read(TweetList *tweet_list){
 	
 	if(!this->unread)	return;
 	
-	this->unread=0;
+	this->unread=FALSE;
 	
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
 }/*tweet_list_mark_as_read(tweet_list);*/
 
-gint tweet_list_mark_is_unread(TweetList *tweet_list){
-	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
-	return GET_PRIVATE(tweet_list)->unread;
-}/*tweet_list_is_unread(tweet_list);*/
-
 void tweet_list_mark_as_unread(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	if(this->unread){
-		this->unread++;
-		return;
-	}
+	if(this->unread) return;
 	
-	this->unread=1;
+	this->unread=TRUE;
 	
 	tweets_beep();
 	

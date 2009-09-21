@@ -622,10 +622,10 @@ gboolean online_service_best_friends_remove( OnlineService *service, const gchar
 void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
 	const gchar *user_name=user_get_user_name(user);
-	if(!user || online_service_is_user_best_friend(service, user_name ) ){
+	if(!user){
 		if( online_service_best_friends_confirm_clean_up( service, user_name ) )
 			service->best_friends=g_slist_remove(service->best_friends, user_name);
-	}else{
+	}else if(! online_service_is_user_best_friend(service, user_name ) ){
 		service->best_friends=g_slist_append( service->best_friends, g_strdup(user_name) );
 		online_service_best_friends_list_store_append( service, user_name );
 	}

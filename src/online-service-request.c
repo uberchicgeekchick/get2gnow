@@ -245,13 +245,13 @@ gchar *online_service_request_action_to_string(RequestAction action){
 		case Confirmation:
 			return _("confirming action");
 		case ViewUpdates:
-			return _("displaying tweets");
+			return _("displaying recent updates");
 		case ViewProfile:
 			return _("viewing user profile");
 		case BestFriendAdd:
-			return _("add a best friend");
+			return _("added a best friend");
 		case BestFriendDrop:
-			return _("remove a best friend");
+			return _("removed a best friend");
 		case Follow:
 			return _("following");
 		case UnFollow:
@@ -261,9 +261,9 @@ gchar *online_service_request_action_to_string(RequestAction action){
 		case UnBlock:
 			return _("unblocked user");
 		case Fave:
-			return _("star'ing tweet");
+			return _("star'd an update");
 		case UnFave:
-			return _("un-star'ing tweet");
+			return _("un-star'd an update");
 		case SelectService:
 			return _("selecting default account");
 		default:
@@ -344,6 +344,12 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 		return;
 	}
 	
+	if(action==ViewUpdates){
+		gchar *timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
+		tweet_lists_get_timeline(timeline, service);
+		uber_free(timeline);
+	}
+	
 	OnlineServiceRequest *request=NULL;
 	if(!(request=online_service_request_new(action, parent, user_name)))
 		return;
@@ -384,7 +390,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 	switch(request->action){
 		case ViewUpdates:
 			timeline=g_strdup(request->uri);
-			request_wrapper=online_service_wrapper_new(service, QUEUE, timeline, online_service_wrapper_get_attempt(service_wrapper), NULL, network_display_timeline, tweet_lists_get_timeline(timeline), (gpointer)BestFriends);
+			request_wrapper=online_service_wrapper_new(service, QUEUE, timeline, online_service_wrapper_get_attempt(service_wrapper), NULL, network_display_timeline, tweet_lists_get_timeline(timeline, service), (gpointer)BestFriends);
 			network_display_timeline(session, msg, request_wrapper);
 			online_service_wrapper_free(request_wrapper);
 			uber_free(timeline);
