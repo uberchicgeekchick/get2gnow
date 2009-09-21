@@ -1,5 +1,6 @@
-C_STD_MODE=gnu99
+UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb
 AM_CFLAGS=									\
+		$(UBERCHICK_CFLAGS)						\
 		-I$(top_srcdir)                        			  	\
 		-I${top_builddir}						\
 		-DBUILDDIR=\""${abs_top_builddir}"\"				\
@@ -9,9 +10,9 @@ AM_CFLAGS=									\
 		-DLOCALEDIR=\""$(localedir)"\"					\
 		-DLIBDIR=\""$(libdir)"\"					\
 		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"	\
-		$(get2gnow_CFLAGS)						\
 		$(WARN_CFLAGS)							\
-		-std=$(C_STD_MODE)
+		$(debug_CFLAGS)							\
+		$(get2gnow_CFLAGS)
 
 bin_PROGRAMS = get2gnow
 

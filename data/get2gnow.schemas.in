@@ -1,14 +1,42 @@
 <gconfschemafile>
 	<schemalist>
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/auth/dont_confirm_delete</key>
-			<applyto>/apps/@PACKAGE_NAME@/auth/dont_confirm_delete</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/accounts</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/accounts</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
 				<short>Disable prompting before deleting accounts</short>
 				<long>Disable prompting before deleting accounts.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Disable prompting before deleting best friends</short>
+				<long>Disable prompting before deleting best friends.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/cleaning_up/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/cleaning_up/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Disable prompting before cleaning up best friends</short>
+				<long>
+					Disable prompting before cleaning up best friends.
+					Clean-up occures when a best friend's profile can no longer
+					be found on its associated service.
+				</long>
 			</locale>
 		</schema>
 		
@@ -138,14 +166,26 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/hidden</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/hidden</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/hide/main_window</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/hide/main_window</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Hide main window</short>
-				<long>Hide the main window.</long>
+				<short>Hide main window on start-up</short>
+				<long>Hide the main window on start-up.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/hide/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/hide/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Hide the best friends 'panel' on start-up</short>
+				<long>Hide the best friends 'panel' on start-up.</long>
 			</locale>
 		</schema>
 		
@@ -355,8 +395,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/tweets/compose/replace_me_w_nick</key>
-			<applyto>/apps/@PACKAGE_NAME@/tweets/compose/replace_me_w_nick</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/replace_me_w_nick</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/replace_me_w_nick</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>2</default>
@@ -373,8 +413,8 @@
 		</schema>
 
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/hints/close_main_window</key>
-			<applyto>/apps/@PACKAGE_NAME@/hints/close_main_window</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/closing/main_window</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/closing/main_window</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -391,8 +431,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/hints/hide_main_window</key>
-			<applyto>/apps/@PACKAGE_NAME@/hints/hide_main_window</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/hiding/main_window</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/hiding/main_window</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>

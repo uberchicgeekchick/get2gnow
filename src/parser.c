@@ -308,11 +308,13 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	gboolean	oldest_update_id_saved=FALSE;
 	gboolean	save_oldest_id=(tweet_list_has_loaded(tweet_list)?FALSE:TRUE);
+	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
 	guint		new_updates=0;
 	gdouble		status_id=0;
 	gdouble		id_newest_update=0, id_oldest_update=0;
-	gint		update_expiration=0;
+	gint		update_expiration=0, best_friends_expiration=0;
+	gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &best_friends_expiration, 86400);
 	
 	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
 	gchar		*timeline=g_strdup(uri_split[0]);
@@ -355,8 +357,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			break;
 		
 		case BestFriends:
+			/*Best Friends' updates are kept for 1 day, by default.*/
+			debug("Parsing best friends updates.");
+			notify=notify_best_friends;
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
-			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 			break;
 		
 		case Tweets:
@@ -373,6 +377,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			break;
 		
 		case None: default:
+			/* These cases are never reached - they're just here to make gcc happy. */
 			uber_free(timeline);
 			return 0;
 	}
@@ -424,10 +429,11 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
 		user_status_store(status, tweet_list);
+		online_services_is_user_best_friend( online_services, user_status_get_user_name(status) );
 		
-		if(!save_oldest_id && status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_user_name) ){
+		if(!save_oldest_id && status_id > last_notified_update && ( online_services_is_user_best_friend( online_services, user_status_get_user_name(status) ) && notify_best_friends ) && strcasecmp(user_status_get_user_name(status), service_user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
-			if(notify){
+			if(notify||notify_best_friends){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 				tweet_list_notify_delay+=tweet_display_interval;

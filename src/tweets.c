@@ -116,8 +116,11 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_S:	case GDK_s:
 					control_panel_send(NULL);
 					return;
-				case GDK_F:	case GDK_f:
-					g_signal_emit_by_name(main_window_get_menu("file"), "activate");
+				case GDK_N:	case GDK_n:
+					g_signal_emit_by_name(main_window_get_menu("network"), "activate");
+					return;
+				case GDK_B:	case GDK_b:
+					g_signal_emit_by_name(main_window_get_menu("tabs"), "activate");
 					return;
 				case GDK_E:	case GDK_e:
 					g_signal_emit_by_name(main_window_get_menu("edit"), "activate");
@@ -137,23 +140,28 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 				case GDK_R: case GDK_r:
 					tweet_list_refresh(tweet_lists_get_current()); 
 					return;
-				case GDK_P:	case GDK_p:
+				case GDK_I:	case GDK_i:
 				case GDK_question:
 					online_service_request_selected_update_view_profile();
 					return;
 				case GDK_U:	case GDK_u:
 				case GDK_asciitilde:	case GDK_ampersand:
-					online_service_request_selected_update_view_tweets();
+					online_service_request_selected_update_view_updates();
 					return;
-				case GDK_A:	case GDK_a:
+				case GDK_F:	case GDK_f:
 				case GDK_greater:	case GDK_plus:
 					online_service_request_selected_update_follow();
+					return;
+				case GDK_A:	case GDK_a:
+					return online_service_request_popup_best_friend_add();
+				case GDK_asterisk:
+					online_service_request_selected_update_best_friend_add();
 					return;
 				case GDK_Z:	case GDK_z:
 				case GDK_less:		case GDK_minus:
 					online_service_request_selected_update_unfollow();
 					return;
-				case GDK_B:	case GDK_b:
+				case GDK_L:	case GDK_l:
 				case GDK_numbersign:	case GDK_semicolon:
 					online_service_request_selected_update_block();
 					return;
@@ -251,12 +259,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 }/*tweets_hotkey_process(widget, event, user_date);*/
 
 void tweets_new_tweet(void){
-	if(in_reply_to_status_id) in_reply_to_status_id=0;
-	if(in_reply_to_service) in_reply_to_service=NULL;
-	control_panel_show_tweet((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
-	control_panel_sexy_set((gchar *)"");
-	online_service_request_unset_selected_update();
-	geometry_load();
+	control_panel_new_update();
 }/*tweets_new_tweet*/
 
 /********************************************************

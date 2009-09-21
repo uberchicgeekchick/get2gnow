@@ -309,12 +309,13 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	for(file=(gchar *)subdir1_or_file; file; file=va_arg(cache_subdirs_and_file, gchar *)){
 		if(filename) g_free(filename);
 		filename=cache_path_create(dir, file, NULL);
-		g_free(dir);
-		dir=cache_path_create(dir, filename);
+		if(directory) g_free(directory);
+		directory=cache_path_create(dir, filename);
+		dir=directory;
 	}
 	va_end(cache_subdirs_and_file);
 	
-	if(!( (directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(file)) )){
+	if(!( (directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(filename)) )){
 		debug("**ERROR:** Unable to create cache file.");
 		debug("**ERROR:** Cache prefix: [%s].", cache_prefix);
 		

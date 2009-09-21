@@ -51,123 +51,111 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __ONLINE_SERVICE_TYPEDEFS_H__
-#define __ONLINE_SERVICE_TYPEDEFS_H__
+#ifndef __PROGRAM_H__
+#define __PROGRAM_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
+
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
+
 #include <glib.h>
-#include <libsoup/soup.h>
-#include "timer.h"
+#include <glib/gi18n.h>
+
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 
-/**********************************************************************
- *  Macros, constants, objects, structures, and enum typedefs         *
- **********************************************************************/
+#include <libgnome/libgnome.h>
+#include <libgnomeui/libgnomeui.h>
+
+#include "config.h"
+#include "main.h"
+
 G_BEGIN_DECLS
-
-
-#ifndef	soup_message_headers_get_one
-#	define soup_message_headers_get_one	soup_message_headers_get
+/**********************************************************************
+ *        Objects, structures, and etc typedefs                       *
+ **********************************************************************/
+#ifndef GCONF_PATH
+#	if defined GNOME_ENABLE_DEBUG
+#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME "/debug"
+#	else
+#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME
+#	endif
 #endif
 
-#define API_LOGIN				"/account/verify_credentials.xml"
+#define STATUSBAR_DEFAULT "HotKeys: [Ctrl+N] start a new tweet; [Ctrl+D] or [Shift+Return] to DM; [Ctrl+R], [Return], or '@' to reply, [Ctrl+F] or '>' to re-tweet."
 
-#define API_DIRECT_MESSAGES			"/direct_messages.xml"
-#define API_REPLIES				"/statuses/replies.xml"
-#define API_MENTIONS				"/statuses/mentions.xml"
-#define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
-#define API_FAVORITES				"/favorites.xml"
+#ifndef uber_free
+#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
+#endif
 
+#ifndef g_str_n_equal
+#	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
+#endif
 
-#define API_USER_PROFILE			"/users/show/%s.xml"
-#define API_TIMELINE_MINE			"/statuses/user_timeline.xml"
-#define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
+#ifndef	gtk_widget_is_sensitive
+#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_sensitive(widget)
+#endif
 
-#define API_TIMELINE_GROUP			"/statuses/groups.xml"
-#define API_TIMELINE_SEARCH			"/statuses/search.atom"
-#define API_TIMELINE_PUBLIC			"/statuses/public_timeline.xml"
+#ifndef	gtk_widget_has_focus
+#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_focus(widget)
+#endif
 
-#define API_POST_STATUS				"/statuses/update.xml"
-#define API_SEND_MESSAGE			"/direct_messages/new.xml"
-
-
-/**********************************************************************
- *  Macros, constants, objects, structures, and enum typedefs         *
- **********************************************************************/
-typedef struct _OnlineServices OnlineServices;
-typedef struct _OnlineService OnlineService;
-typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
-
-typedef enum _UpdateMonitor UpdateMonitor;
-
-typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
-typedef enum _OnlineServicesBestFriends OnlineServicesBestFriends;
-
-typedef enum _ReloadState ReloadState;
-typedef enum _RequestMethod RequestMethod;
-
-typedef enum _UsersGListGetWhich UsersGListGetWhich;
+#ifndef	uber_g_str_equal
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define	uber_object_free(...)			program_uber_free(__VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define	uber_object_free(fmt...)		program_uber_free(fmt)
+#	else
+#		define	uber_object_free(x)			program_uber_free(x)
+#	endif
+#endif
 
 
-enum _RequestMethod{
-	POST,
-	GET,
-	QUEUE,
-};
+#ifndef	uber_g_str_equal
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define uber_str_equal(...)			program_uber_g_str_equal(__VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define uber_str_equal(fmt...)			program_uber_g_str_equal(fmt)
+#	else
+#		define uber_str_equal(x)			program_uber_g_str_equal(x)
+#	endif
+#endif
 
-enum _UpdateMonitor{
-	None,
-	DMs,
-	Replies,
-	BestFriends,
-	Faves,
-	Tweets,
-	Searches,
-	Groups,
-	Timelines,
-	Users,
-	Archive,
-};
+#ifndef uber_g_str_n_equal
+#	define		uber_str_n_equal			!uber_str_equal
+#endif
 
-enum _OnlineServicesListStoreColumns{
-	UrlString,
-	OnlineServicePointer,
-};
-
-enum{
-	BestFriendOnlineService,
-	BestFriendOnlineServiceGUID,
-	BestFriendUserName,
-} _OnlineServicesBestFriends;
-
-enum _ReloadState{
-	Load,
-	Reload,
-	Retry,
-};
-
-enum _UsersGListGetWhich{
-	GetFriends,
-	GetFollowers,
-	GetBoth,
-};
+#ifndef	gdouble_to_str
+#	define	gdouble_to_str					program_double_drop_precision
+#endif
 
 
 /**********************************************************************
- *                         Macros & methods.                          *
+ *          Global method  & function prototypes                      *
  **********************************************************************/
-typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
-typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-typedef void (*UsersGListLoadFunc) (GList *users);
+gboolean program_init(int argc, char **argv);
+
+const gchar *program_gtk_response_to_string(gint response);
+
+void program_uber_free(gpointer pointer1, ...);
+gchar *program_double_drop_precision(const gdouble gdouble_value);
+gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
+
+gboolean program_gtk_widget_get_sensitive(GtkWidget *widget);
+gboolean program_gtk_widget_get_focus(GtkWidget *widget);
+void program_timeout_remove(guint *id, const gchar *usage);
+
+void get2gnow_program_deinit(void);
+void program_deinit(void);
 
 
 G_END_DECLS
-#endif /* __ONLINE_SERVICE_TYPEDEFS_H__ */
+#endif /* __PROGRAM_H__ */
 /**********************************************************************
  *                               eof                                  *
  **********************************************************************/

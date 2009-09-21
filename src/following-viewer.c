@@ -199,7 +199,7 @@ static void following_viewer_view_timeline(GtkButton *button, FollowingViewer *f
 	GtkTreeIter *iter=NULL;
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	if(user)
-		online_service_request_view_tweets(user_get_online_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_view_updates(user_get_online_service(user), following_viewer->viewer, user_get_user_name(user));
 	if(iter) uber_free(iter);
 }/*following_view_timeline*/
 
@@ -208,7 +208,7 @@ static void following_viewer_list_activated_cb(GtkTreeView *tree_view, GtkTreePa
 	GtkTreeIter *iter=NULL;
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	if(user)
-		online_service_request_view_tweets(user_get_online_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_view_updates(user_get_online_service(user), following_viewer->viewer, user_get_user_name(user));
 	uber_free(iter);
 }/*following_viewer_list_activated_cb();*/
 

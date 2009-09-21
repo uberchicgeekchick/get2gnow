@@ -29,6 +29,8 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 
+#include <libgnomeui/libgnomeui.h>
+
 #include "config.h"
 #include "program.h"
 

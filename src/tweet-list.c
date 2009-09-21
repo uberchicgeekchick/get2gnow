@@ -115,17 +115,17 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
+	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),		N_("%s's Recent Updates")},
 	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,		N_("@ _Replies"),			N_("@ Replies")},
 	{Replies,	API_MENTIONS,		N_("@ _Mentions"),			N_("@ Mentions")},
 	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),			N_("My DMs Inbox")},
 	{Faves,		API_FAVORITES,		N_("My Star_'d Updates"),		N_("My Star'd Updates")},
-	{BestFriends,	NULL,			N_("My _Best Friends' Updates"),	N_("My _Best Friends' Updates")},
 	{Searches,	API_TIMELINE_SEARCH,	N_("_Search Results"),			N_("Search Results")},
 	{Groups,	API_TIMELINE_GROUP,	N_("_Group Discussions"),		N_("Group Discussions")},
 	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),			N_("Public Updates")},
-	{Users,		API_TIMELINE_USER,	N_("%s's Re_cent Updates"),		N_("%s's Recent Updates")},
 	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),			N_("My Tweets")},
+	{BestFriends,	NULL,			N_("My _Best Friends' Updates"),	N_("My _Best Friends' Updates")},
 	{None,		NULL,			N_("Unknow_n timeline"),		N_("Unknown timeline")}
 };
 
@@ -147,7 +147,7 @@ struct _TweetListPrivate {
 	gint			index;
 	
 	guint			total;
-	gboolean		unread;
+	guint			unread;
 	
 	guint			connected_online_services;
 	gdouble			maximum;
@@ -275,7 +275,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	this->has_loaded=-1;
-	this->unread=TRUE;
+	this->unread=0;
 	
 	this->minutes=0;
 	this->reload=0;
@@ -297,6 +297,10 @@ static void tweet_list_init(TweetList *tweet_list){
 }/* tweet_list_init */
 
 TweetList *tweet_list_new(const gchar *timeline){
+	if(G_STR_EMPTY(timeline)) {
+		debug("**ERROR:** Cannot create tweet view for an empty timeline.");
+		return NULL;
+	}
 	TweetList *tweet_list=g_object_new(TYPE_TWEET_LIST, NULL);
 	
 	debug("Creating new TweetView for timeline: %s.", timeline);
@@ -316,7 +320,8 @@ TweetList *tweet_list_new(const gchar *timeline){
 static void tweet_list_finalize(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
+	if(this->timeout_id && G_STR_N_EMPTY(this->timeline))
+		program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
 	
 	if(this->timeline) uber_free(this->timeline);
 	if(this->timeline_tab_label) uber_free(this->timeline_tab_label);
@@ -452,8 +457,8 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 		gconfig_set_int(PREFS_TWEETS_RELOAD_TIMELINES, (this->minutes=minutes=5) );
 	
 	switch(this->monitoring){
-		case BestFriends:	case None:	default:
-			debug("TweetList(s) monitoring %s do not auto-reload.", this->monitoring_string);
+		case None:	default:
+			debug("TweetList(s) monitoring %s does not auto-reload.", this->monitoring_string);
 			return 1.0;
 		case Archive:	case Users:	case Timelines:
 			if(minutes<15) minutes=15;
@@ -464,6 +469,9 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 			break;
 		case DMs:
 			minutes+=3;
+			break;
+		case BestFriends:
+			minutes+=12;
 			break;
 		case Faves:
 			minutes+=5;
@@ -555,14 +563,14 @@ static void tweet_list_check_maximum_updates(TweetList *tweet_list){
 		max_updates=this->maximum;
 	else if(max_updates < this->minimum)
 		max_updates=this->minimum;
-	if(this->total < max_updates)	return;
+	if(this->total <= max_updates)	return;
 	
 	debug("Cleaning up TweetList for %s.  TweetList's total updates: %d.  Maximum allowed updates: %f", this->timeline, this->total, max_updates);
 	if(!this->index){
 		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
 		tweet_list_scroll_to_top(tweet_list);
 	}
-	for(gint i=this->total; i>max_updates; i--){
+	for(gint i=this->total-1; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path)))
@@ -717,7 +725,8 @@ void tweet_list_stop(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
+	if(this->timeout_id && G_STR_N_EMPTY(this->timeline))
+		program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
 }/*tweet_list_stop(tweet_list);*/
 
 static void tweet_list_close(GtkToolButton *tweet_list_close_tool_button, TweetList *tweet_list){
@@ -740,23 +749,25 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 				this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
 				break;
 			}
-			gchar *user=NULL;
-			gchar *feed=g_strrstr(timeline, "/");
-			feed++;
-			g_strlcpy(user, feed, g_utf8_strlen(feed, -1)-4);
-			this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user);
-			this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user);
-			break;
-			gchar **feed_data=g_strsplit_set(timeline, "/.", -1);
-			this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, feed_data[2]);
-			this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, feed_data[2]);
-			g_strfreev(feed_data);
+		}
+		if(g_str_has_prefix(timeline, "/statuses/user_timeline/")){
+			this->monitoring=timeline_labels->monitoring;
+			this->timeline=g_strdup(timeline);
+			gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
+			gchar **user_info=g_strsplit_set(feed_info[3], "/", -1);
+			const gchar *user_name=user_info[0];
+			if(G_STR_N_EMPTY(user_name)){
+				this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user_name);
+				this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user_name);
+			}
+			g_strfreev(feed_info);
+			g_strfreev(user_info);
 			break;
 		}
 		timeline_labels++;
 	}
 	if(!this->timeline_menu_label){
-		debug("**ERROR: Unable to determine timeline label to use**");
+		debug("**ERROR:** Unable to determine timeline label to use.");
 		this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
 		this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
 	}
@@ -999,25 +1010,38 @@ static void tweet_list_grab_focus_cb(GtkWidget *widget, TweetList *tweet_list){
 	tweet_list_mark_as_read(tweet_list);
 }/*tweet_list_grab_focus_cb(widget, event, tweet_list);*/
 
+void tweet_list_toggle_toolbar(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	gtk_widget_toggle_visibility( GTK_WIDGET( GET_PRIVATE(tweet_list)->handlebox ) );
+}/*tweet_list_toggle_toolbar();*/
+
 void tweet_list_mark_as_read(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->unread)	return;
 	
-	this->unread=FALSE;
+	this->unread=0;
 	
 	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
 }/*tweet_list_mark_as_read(tweet_list);*/
 
+gint tweet_list_mark_is_unread(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0;
+	return GET_PRIVATE(tweet_list)->unread;
+}/*tweet_list_is_unread(tweet_list);*/
+
 void tweet_list_mark_as_unread(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	if(this->unread)	return;
+	if(this->unread){
+		this->unread++;
+		return;
+	}
 	
-	this->unread=TRUE;
+	this->unread=1;
 	
 	tweets_beep();
 	
@@ -1070,7 +1094,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	);
 	
 	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, online_service_get_guid(service));
-	control_panel_show_tweet(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
+	control_panel_view_selected_update(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	
 	g_free(user_name);
 	g_free(sexy_tweet);

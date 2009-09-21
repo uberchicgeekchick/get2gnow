@@ -281,7 +281,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	GtkWindow	*window=geometry_get_window(view);
 	gint		h=0, w=0;
 	gtk_window_get_size(window, &w, &h);
-	gint position=0, min_position=0, max_position=0, padding=(h/10)*5;
+	gint position=0, min_position=0, max_position=0, padding=0;/*(h/10)*5;*/
 	
 	gchar *paned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, (vpaned ?"vpanded" :"hpaned"), widget);
 	

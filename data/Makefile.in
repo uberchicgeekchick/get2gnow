@@ -260,11 +260,13 @@ gtkbuilder_DATA =	 					\
 			user-profile-viewer.ui
 
 sexy_DATA =							\
+			main-window.ui				\
 			tweet-list.ui				\
 			friends-manager.ui			\
 			following-viewer.ui
 
 un_sexy_DATA =							\
+			main-window.in.ui			\
 			tweet-list.in.ui			\
 			friends-manager.in.ui			\
 			following-viewer.in.ui
@@ -347,6 +349,7 @@ uninstall-desktopDATA:
 	done
 
 
+main-window.ui: sexy_DATA
 tweet-list.ui: sexy_DATA
 friends-manager.ui: sexy_DATA
 following-viewer.ui: sexy_DATA

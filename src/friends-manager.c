@@ -241,7 +241,7 @@ static void friends_manager_view_timeline(GtkButton *button, FriendsManager *fri
 	User *user=friends_manager_get_selected_user(&iter, friends_manager);
 	if(!user) return;
 	
-	online_service_request_view_tweets(user_get_online_service(user), GTK_WINDOW(friends_manager->dialog), user_get_user_name(user));
+	online_service_request_view_updates(user_get_online_service(user), GTK_WINDOW(friends_manager->dialog), user_get_user_name(user));
 	uber_free(iter);
 }/*friends_manager_view_timeline*/
 
@@ -343,7 +343,7 @@ static void friends_manager_setup(GtkWindow *parent){
 					"view_timeline", &friends_manager->view_timeline,
 				NULL
 	);
-	friends_manager->friends_and_followers_model=gtk_tree_view_get_model (friends_manager->friends_and_followers);
+	friends_manager->friends_and_followers_model=gtk_tree_view_get_model(friends_manager->friends_and_followers);
 
 	debug("FriendsManager created now connecting its signal handlers.");
 	gtkbuilder_connect(

@@ -106,6 +106,7 @@ struct _ControlPanel{
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkButton		*view_user_profile_button;
 	GtkButton		*view_user_tweets_button;
+	GtkToggleButton		*best_friend_toggle_button;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkVBox			*user_relationship_controls_hbox;
@@ -138,16 +139,21 @@ struct _ControlPanel{
 	
 	/* Stuff for actually writing your updates & DMs. */
 	GtkVBox			*update_composition_vbox;
-	GtkHBox			*char_count_hbox;
+	GtkHBox			*notification_labels_hbox;
+	GtkLabel		*best_friend_dm_notification_label;
 	GtkLabel		*char_count;
 	
 	GtkHBox			*update_composition_hbox;
 	
-	guint			updates;
+	gint			updates;
 	GtkComboBoxEntry	*sexy_entry_combo_box_entry;
 	GtkListStore		*previous_updates_list_store;
 	GtkTreeModel		*previous_updates_tree_model;
 	SexySpellEntry		*sexy_entry;
+	
+	/* For sending one of your best friends a dm. */
+	OnlineService		*best_friends_service;
+	const gchar		*best_friends_user_name;
 	
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm_button;
@@ -217,9 +223,11 @@ static gboolean control_panel_configure_event_timeout_cb(GtkWidget *widget);
 static void control_panel_sexy_init( void );
 static void control_panel_reorder( void );
 
+static void control_panel_selected_update_author_best_friend_toggled( GtkToggleButton *best_friend_toggle_button );
+
 static void control_panel_selected_update_buttons_setup(GtkBuilder *ui);
 static void control_panel_bind_hotkeys(GtkBuilder *ui);
-static void control_panel_selected_update_buttons_show(gboolean selected_update);
+static void control_panel_selected_update_buttons_show(gboolean selected_update, const gchar *user_name);
 
 static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *ui);
 static void control_panel_compact_view_display( gboolean compact );
@@ -291,8 +299,11 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					
 					"user_vbox", &control_panel->user_vbox,
 					"user_image", &control_panel->user_image,
+					
 					"view_user_profile_button", &control_panel->view_user_profile_button,
 					"view_user_tweets_button", &control_panel->view_user_tweets_button,
+					"best_friend_toggle_button", &control_panel->best_friend_toggle_button,
+					
 					"user_follow_button", &control_panel->user_follow_button,
 					"user_unfollow_button", &control_panel->user_unfollow_button,
 					"user_block_button", &control_panel->user_block_button,
@@ -303,7 +314,8 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					"tweet_datetime_label", &control_panel->tweet_datetime_label,
 					
 					"control_panel_update_composition_vbox", &control_panel->update_composition_vbox,
-					"char_count_hbox", &control_panel->char_count_hbox,
+					"notification_labels_hbox", &control_panel->notification_labels_hbox,
+					"best_friend_dm_notification_label", &control_panel->best_friend_dm_notification_label,
 					"char_count", &control_panel->char_count,
 					
 					"control_panel_update_composition_hbox", &control_panel->update_composition_hbox,
@@ -350,14 +362,16 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	control_panel_grab_widgets_compact_control_panel_hidden( ui );
 	
 	debug("ControlPanel's hotkey connected.  Connecting signal handlers.");
+	g_signal_connect_after( (GObject *)control_panel->best_friend_toggle_button, "toggled", (GCallback)control_panel_selected_update_author_best_friend_toggled, NULL );
 	control_panel_bind_hotkeys( ui );
+	
 	gtkbuilder_connect( ui, control_panel,
 				"control_panel", "destroy", control_panel_destroy_cb,
 				"control_panel", "delete_event", control_panel_delete_event_cb,
 				"control_panel", "configure_event", control_panel_configure_event_cb,
 
 				"view_user_profile_button", "clicked", online_service_request_selected_update_view_profile,
-				"view_user_tweets_button", "clicked", online_service_request_selected_update_view_tweets,
+				"view_user_tweets_button", "clicked", online_service_request_selected_update_view_updates,
 				
 				"user_follow_button", "clicked", online_service_request_selected_update_follow,
 				"user_unfollow_button", "clicked", online_service_request_selected_update_unfollow,
@@ -378,8 +392,8 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 			NULL
 	);
 	
-	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
 	g_signal_connect_after( control_panel->embed_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
+	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
 	
 	gchar *control_panel_title=g_strdup_printf("%s - Control Panel", _( GETTEXT_PACKAGE ));
 	gtk_window_set_title(control_panel->control_panel, control_panel_title);
@@ -398,11 +412,12 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	control_panel_set_embed_toggle_and_image();
 	
 	debug("Disabling 'selected widgets' since no tweet could be selected when we 1st start.");
-	control_panel_selected_update_buttons_show( FALSE );
+	control_panel_selected_update_buttons_show( FALSE, NULL );
 	
 	debug("Disabling & hiding ControlPanel's dm form since friends have not yet been loaded.");
 	control_panel_dm_form_activate( FALSE );
 	gtk_widget_hide(GTK_WIDGET(control_panel->dm_refresh));
+	gtk_widget_hide( (GtkWidget *)control_panel->best_friend_dm_notification_label );
 	
 	online_service_request_unset_selected_update();
 	
@@ -415,9 +430,27 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	return control_panel;
 }/*control_panel_new*/
 
+static void control_panel_selected_update_author_best_friend_toggled( GtkToggleButton *best_friend_toggle_button ){
+	OnlineService *service=online_service_request_selected_update_get_service();
+	const gchar *user_name=online_service_request_selected_update_get_user_name();
+	if(!( G_STR_N_EMPTY(user_name) && service )) return;
+	if(! online_service_is_user_best_friend( service, user_name ) )
+		online_service_request_selected_update_best_friend_add();
+	else
+		online_service_request_selected_update_best_friend_drop();
+}/*control_panel_selected_update_author_best_friend_toggled( best_friend_toggle_widget );*/
+
 GtkWindow *control_panel_get_window( void ){
 	return control_panel->control_panel;
 }/*control_panel_get_window*/
+
+void contol_panel_emulate_embed_toggle(void){
+	g_signal_emit_by_name( control_panel->embed_toggle_button, "toggled", NULL );
+}/*contol_panel_emulate_embed_toggle();*/
+
+void contol_panel_emulate_compact_view_toggle(void){
+	g_signal_emit_by_name( control_panel->compact_view_toggle_button, "toggled", NULL );
+}/*contol_panel_emulate_compact_view_toggle();*/
 
 void control_panel_set_embed_toggle_and_image( void ){
 	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE)){
@@ -484,7 +517,7 @@ static void control_panel_bind_hotkeys(GtkBuilder *ui){
 		"status_vbox",
 		"status_view_vbox",
 		"control_panel_update_composition_vbox",
-		"char_count_hbox",
+		"notification_labels_hbox",
 		"control_panel_update_composition_hbox",
 		"control_panel_sexy_entry_combo_box_entry",
 		"dm_frame",
@@ -546,12 +579,23 @@ static void control_panel_scale( gboolean compact ){
 	position++;
 }/* control_panel_scale( TRUE ); */ 
 
-static void control_panel_selected_update_buttons_show(gboolean selected_update){
+void control_panel_best_friends_start_dm( OnlineService *service, const gchar *user_name ){
+	control_panel->best_friends_service=service;
+	control_panel->best_friends_user_name=user_name;
+	gchar *best_friend_dm_markup_message=NULL;
+	gtk_label_set_markup( control_panel->best_friend_dm_notification_label, (best_friend_dm_markup_message=g_strdup_printf("<b>Direct Message %s:</b>", control_panel->best_friends_user_name)) );
+	uber_free( best_friend_dm_markup_message );
+	gtk_widget_show( (GtkWidget *)control_panel->best_friend_dm_notification_label );
+}/*void control_panel_best_friends_start_dm( service, user_name );*/
+
+static void control_panel_selected_update_buttons_show(gboolean selected_update, const gchar *user_name){
 	main_window_selected_update_image_menu_items_show( selected_update );
 	GList *l=NULL;
 	for(l=control_panel->selected_update_buttons; l; l=l->next)
 		gtk_widget_set_sensitive( GTK_WIDGET( l->data ), selected_update);
 	g_list_free(l);
+	if(selected_update && G_STR_N_EMPTY(user_name) )
+		gtk_toggle_button_set_active( control_panel->best_friend_toggle_button, (online_service_is_user_best_friend(online_service_request_selected_update_get_service(), user_name) ) );
 	control_panel_sexy_select();
 }/*control_panel_selected_widgets_show*/
 
@@ -660,7 +704,7 @@ static void control_panel_reorder( void ){
 }/*control_panel_reorder*/
 
 
-void control_panel_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
+void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if( !id )
 		online_service_request_unset_selected_update();
 	else
@@ -670,7 +714,7 @@ void control_panel_show_tweet(OnlineService *service, const gdouble id, const gd
 	control_panel_compact_view_display( (id ?FALSE :gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE) ) );
 	
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
-	control_panel_selected_update_buttons_show( (id ?TRUE :FALSE ) );
+	control_panel_selected_update_buttons_show( (id ?TRUE :FALSE ), (G_STR_EMPTY( user_name ) ?NULL :user_name ) );
 	
 	const gchar *service_uri=online_service_get_uri( service );
 	const gchar *service_user_name=online_service_get_user_name( service );
@@ -686,10 +730,10 @@ void control_panel_show_tweet(OnlineService *service, const gdouble id, const gd
 	label_set_text(service, control_panel->sexy_to, sexy_text, FALSE, TRUE);
 	g_free( sexy_text );
 	
-	
-	if(!( G_STR_EMPTY( user_nick ) && G_STR_EMPTY( user_name ) ))
+	if(!( G_STR_EMPTY( user_nick ) && G_STR_EMPTY( user_name ) )){
+		if(! G_STR_EMPTY(user_name) )
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, service_uri_scheme_suffix, service_uri, user_name, user_name, service_uri);
-	else
+	}else
 		sexy_text=g_strdup( "" );
 	debug("Setting 'sexy_from' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, control_panel->sexy_from, sexy_text, FALSE, TRUE);
@@ -728,7 +772,7 @@ void control_panel_show_tweet(OnlineService *service, const gdouble id, const gd
 	
 	debug("Selecting 'sexy_entry' for entering a new tweet.");
 	control_panel_sexy_select();
-}/*control_panel_show_tweet*/
+}/*control_panel_view_selected_update*/
 
 static gshort tweetlen(gchar *tweet){
 	gushort character_count=0;
@@ -868,10 +912,30 @@ void control_panel_send(GtkWidget *activated_widget){
 		);
 		control_panel_sexy_send( user_get_online_service( user ), user_get_user_name( user ));
 		g_free( iter );
+	}else if(control_panel->best_friends_service && control_panel->best_friends_user_name){
+		control_panel_sexy_send( control_panel->best_friends_service, control_panel->best_friends_user_name );
+		control_panel_new_update();
 	}else
 		control_panel_sexy_send(NULL, NULL);
 }/*control_panel_send*/
+
+void control_panel_new_update(void){
+	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
 	
+	if( control_panel->best_friends_user_name ) control_panel->best_friends_user_name="";
+	if( control_panel->best_friends_service ) control_panel->best_friends_service=NULL;
+	
+	if( in_reply_to_service ) in_reply_to_service=NULL;
+	if( in_reply_to_status_id ) in_reply_to_status_id=0;
+	
+	gtk_widget_hide( (GtkWidget *)control_panel->best_friend_dm_notification_label );
+	online_service_request_unset_selected_update();
+	control_panel_sexy_set((gchar *)"");
+	
+	geometry_load();
+	control_panel_sexy_select();
+}/*control_panel_new_update();*/
+
 static void control_panel_sexy_send(OnlineService *service, const gchar *user_name){
 	if(!(( GTK_ENTRY( control_panel->sexy_entry )->text) &&( tweetlen( GTK_ENTRY( control_panel->sexy_entry )->text) > -1) )){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
@@ -898,7 +962,7 @@ void control_panel_sexy_send_dm( void ){
 static void control_panel_sexy_append( const gchar *update, ControlPanel *control_panel ){
 	if( G_STR_EMPTY( update )) return;
 	static gboolean first_update=TRUE;
-	const guint max_updates=50;
+	const gint max_updates=50;
 	
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 	gtk_list_store_prepend(control_panel->previous_updates_list_store, iter);
@@ -921,7 +985,7 @@ static void control_panel_sexy_append( const gchar *update, ControlPanel *contro
 		return;
 	}
 	iter=g_new0(GtkTreeIter, 1);
-	GtkTreePath *path=gtk_tree_path_new_from_indices(max_updates-1, -1);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(max_updates, -1);
 	debug("Removing saved update #%d.  Total update saved: %d", max_updates, control_panel->updates);
 	if(!(gtk_tree_model_get_iter(control_panel->previous_updates_tree_model, iter, path)))
 		debug("Removing saved update #%d failed: it appears to be an invalid iter for the list store.", max_updates);

@@ -65,12 +65,10 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
+#include <libgnome/libgnome.h>
+
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-
-
-#include <libgnome/libgnome.h>
-#include <libgnomeui/libgnomeui.h>
 
 #include "config.h"
 #include "main.h"
@@ -97,12 +95,20 @@ G_BEGIN_DECLS
 #	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
 #endif
 
+#ifndef	gtk_widget_is_visible
+#	define	gtk_widget_is_visible(widget)			program_gtk_widget_get_gboolean_property_value( widget, "visible" )
+#endif
+
 #ifndef	gtk_widget_is_sensitive
-#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_sensitive(widget)
+#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_gboolean_property_value( widget, "sensitive" )
 #endif
 
 #ifndef	gtk_widget_has_focus
-#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_focus(widget)
+#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value( widget, "has-focus" )
+#endif
+
+#ifndef	gtk_widget_toggle_visibility
+#	define	gtk_widget_toggle_visibility(widget)		program_gtk_widget_toggle_visibility( widget )
 #endif
 
 #ifndef	uber_g_str_equal
@@ -146,8 +152,10 @@ void program_uber_free(gpointer pointer1, ...);
 gchar *program_double_drop_precision(const gdouble gdouble_value);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 
-gboolean program_gtk_widget_get_sensitive(GtkWidget *widget);
-gboolean program_gtk_widget_get_focus(GtkWidget *widget);
+gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property);
+gboolean program_gtk_widget_toggle_visibility( GtkWidget *widget );
+/*gboolean program_gtk_widget_get_sensitive(GtkWidget *widget);
+gboolean program_gtk_widget_get_focus(GtkWidget *widget);*/
 void program_timeout_remove(guint *id, const gchar *usage);
 
 void get2gnow_program_deinit(void);

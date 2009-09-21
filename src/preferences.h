@@ -96,6 +96,7 @@ G_BEGIN_DECLS
 #define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/updates/home_timeline"
 #define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/updates/reload_timeline"
 
+#define	PREFS_TWEET_REPLACE_ME_W_NICK			GCONF_PATH "/updates/replace_me_w_nick"
 #define PREFS_TWEETS_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
 #define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
 

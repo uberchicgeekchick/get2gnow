@@ -198,7 +198,7 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 		
 		debug("*NOTICE:* Setting default value for: %s to [%i].", key, default_int);
 		if(!(gconfig_set_int(key, default_int))){
-			debug("**ERROR:** failed to set '%s' to default value: '%i'.", key, default_int);
+			debug("**ERROR:** failed to set '%s' to default value: '%d'.", key, default_int);
 			return FALSE;
 		}
 		
@@ -211,11 +211,11 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 	}
 	
 	if(gconf_value->type!=GCONF_VALUE_INT){
-		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value.", key);
+		debug("**ERROR:** Requested gconf key: %s does not contain a int value.", key);
 		*value=default_int;
 	}else{
 		*value=gconf_value_get_int(gconf_value);
-		debug("Retrieved boolean value for %s [%i].", key, *value);
+		debug("Retrieved int value for %s [%d].", key, *value);
 	}
 	gconf_value_free(gconf_value);
 	

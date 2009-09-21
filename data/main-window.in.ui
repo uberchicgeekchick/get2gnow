@@ -2,19 +2,17 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="online_services_list_store">
+  <object class="GtkListStore" id="search_list_store"/>
+  <object class="GtkListStore" id="best_friends_list_store">
     <columns>
-      <!-- column-name enable -->
-      <column type="gboolean"/>
-      <!-- column-name key -->
-      <column type="gchararray"/>
-      <!-- column-name OnlineService -->
+      <!-- column-name BestFriendOnlineService -->
       <column type="gpointer"/>
-      <!-- column-name clickable -->
-      <column type="gboolean"/>
+      <!-- column-name BestFriendOnlineServiceGUID -->
+      <column type="gchararray"/>
+      <!-- column-name BestFriendUserName -->
+      <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="search_list_store"/>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="title" translatable="yes">get2gnow</property>
@@ -30,9 +28,9 @@
           <object class="GtkMenuBar" id="main_menubar">
             <property name="visible">True</property>
             <child>
-              <object class="GtkMenuItem" id="file">
+              <object class="GtkMenuItem" id="network">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_File</property>
+                <property name="label" translatable="yes">_Network</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="connections_menu">
@@ -67,6 +65,95 @@
                         <property name="image">accounts_menu_quit_image</property>
                         <property name="use_stock">False</property>
                         <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="tabs">
+                <property name="visible">True</property>
+                <property name="tooltip_text" translatable="yes">Select what tweets you want to see.</property>
+                <property name="label" translatable="yes">Ta_bs</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="tabs_menu">
+                    <child>
+                      <object class="GtkRadioMenuItem" id="tabs_friends_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My _Friends' Updates</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">tabs_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator7">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="tabs_direct_messages">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Direct Messages</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">tabs_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="tabs_replies">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">@ _Replies</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">tabs_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_mentions">
+                        <property name="no_show_all">True</property>
+                        <property name="label" translatable="yes">@ _Mentions</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">tabs_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem2">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="tabs_favorites_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My _Favorites</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">tabs_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="tabs_my_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_My Updates</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                        <property name="group">tabs_public_timeline</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separator8">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="tabs_public_timeline">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Public Timeline</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
                       </object>
                     </child>
                   </object>
@@ -164,86 +251,55 @@
             <child>
               <object class="GtkMenuItem" id="view">
                 <property name="visible">True</property>
-                <property name="tooltip_text" translatable="yes">Select what tweets you want to see.</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="timelines_menu">
+                  <object class="GtkMenu" id="view_menu">
+                    <property name="visible">True</property>
                     <child>
-                      <object class="GtkRadioMenuItem" id="view_friends_timeline">
+                      <object class="GtkCheckMenuItem" id="view_toolbar_main_check_menu_item">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">My _Friends' Updates</property>
+                        <property name="label" translatable="yes">_Main Toolbar</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">view_public_timeline</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="separator7">
+                      <object class="GtkCheckMenuItem" id="view_toolbar_tabs_check_menu_item">
                         <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_direct_messages">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Direct Messages</property>
+                        <property name="label" translatable="yes">_Tabs Toolbars</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">view_public_timeline</property>
+                        <property name="active">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="view_replies">
+                      <object class="GtkSeparatorMenuItem" id="view_menu_best_friends_vbar_separator">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">@ _Replies</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_best_friends_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My _Best Friends</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">view_public_timeline</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkRadioMenuItem" id="view_mentions">
+                      <object class="GtkSeparatorMenuItem" id="view_menu_control_panel_separator">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">@ _Mentions</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_control_panel_floating_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Floating Control Panel</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">view_public_timeline</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem2">
+                      <object class="GtkCheckMenuItem" id="view_control_panel_compact_view_check_menu_item">
                         <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_favorites_timeline">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">My _Favorites</property>
+                        <property name="label" translatable="yes">_Compact Control Panel</property>
                         <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">view_public_timeline</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_my_timeline">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_My Updates</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
-                        <property name="group">view_public_timeline</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="separator8">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_public_timeline">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Public Timeline</property>
-                        <property name="use_underline">True</property>
-                        <property name="draw_as_radio">True</property>
                       </object>
                     </child>
                   </object>
@@ -301,48 +357,6 @@
                           <object class="GtkMenu" id="selected_update_menu">
                             <property name="visible">True</property>
                             <child>
-                              <object class="GtkImageMenuItem" id="selected_update_reply_image_menu_item">
-                                <property name="label" translatable="yes">_Reply</property>
-                                <property name="visible">True</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">image5</property>
-                                <property name="use_stock">False</property>
-                                <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkImageMenuItem" id="selected_update_retweet_image_menu_item">
-                                <property name="label">Retweet / _Forward</property>
-                                <property name="visible">True</property>
-                                <property name="sensitive">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">compos_menu_retweet_image</property>
-                                <property name="use_stock">False</property>
-                                <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkSeparatorMenuItem" id="menuitem3">
-                                <property name="visible">True</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkImageMenuItem" id="selected_update_save_fave_image_menu_item">
-                                <property name="label" translatable="yes">Mark as _Star'd</property>
-                                <property name="visible">True</property>
-                                <property name="tooltip_text" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
-                                <property name="use_underline">True</property>
-                                <property name="image">help_menu_about_image</property>
-                                <property name="use_stock">False</property>
-                                <accelerator key="asterisk" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkSeparatorMenuItem" id="menuitem6">
-                                <property name="visible">True</property>
-                              </object>
-                            </child>
-                            <child>
                               <object class="GtkImageMenuItem" id="selected_update_author_image_menu_item">
                                 <property name="label" translatable="yes">Update's _Author</property>
                                 <property name="visible">True</property>
@@ -377,6 +391,18 @@
                                       </object>
                                     </child>
                                     <child>
+                                      <object class="GtkCheckMenuItem" id="selected_update_author_best_friend_image_menu_item">
+                                        <property name="visible">True</property>
+                                        <property name="label" translatable="yes">This Author's one of your _Best Friend</property>
+                                        <property name="use_underline">True</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSeparatorMenuItem" id="menuitem6">
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                    <child>
                                       <object class="GtkImageMenuItem" id="selected_update_author_follow_image_menu_item">
                                         <property name="label" translatable="yes">_Follow the Author</property>
                                         <property name="visible">True</property>
@@ -396,7 +422,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkImageMenuItem" id="selected_update_author_block_image_menu_item">
-                                        <property name="label" translatable="yes">_Block the Author</property>
+                                        <property name="label" translatable="yes">B_lock the Author</property>
                                         <property name="visible">True</property>
                                         <property name="use_underline">True</property>
                                         <property name="image">image9</property>
@@ -405,6 +431,43 @@
                                     </child>
                                   </object>
                                 </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkSeparatorMenuItem" id="menuitem3">
+                                <property name="visible">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_reply_image_menu_item">
+                                <property name="label" translatable="yes">_Reply</property>
+                                <property name="visible">True</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">image5</property>
+                                <property name="use_stock">False</property>
+                                <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_retweet_image_menu_item">
+                                <property name="label">Retweet / _Forward</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">compos_menu_retweet_image</property>
+                                <property name="use_stock">False</property>
+                                <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="selected_update_save_fave_image_menu_item">
+                                <property name="label" translatable="yes">Mark as _Star'd</property>
+                                <property name="visible">True</property>
+                                <property name="tooltip_text" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
+                                <property name="use_underline">True</property>
+                                <property name="image">help_menu_about_image</property>
+                                <property name="use_stock">False</property>
+                                <accelerator key="asterisk" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -452,7 +515,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_tweets">
+                      <object class="GtkImageMenuItem" id="online_service_request_menu_updates">
                         <property name="label" translatable="yes">View someone's _Tweets</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">View someone's recent Updates.</property>
@@ -486,6 +549,7 @@
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="help_menu">
+                    <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="help_contents">
                         <property name="label">_Help</property>
@@ -518,7 +582,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHandleBox" id="tool_bar_handle_box">
+          <object class="GtkHandleBox" id="main_window_handlebox">
             <property name="visible">True</property>
             <child>
               <object class="GtkToolbar" id="main_toolbar">
@@ -683,61 +747,310 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child>
-                  <object class="GtkFrame" id="online_service_frame">
-                    <property name="sensitive">False</property>
-                    <property name="no_show_all">True</property>
-                    <property name="label_xalign">0</property>
+                  <object class="GtkVBox" id="best_friends_vbox">
+                    <property name="visible">True</property>
+                    <property name="border_width">6</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkAlignment" id="online_service_alignment">
+                      <object class="GtkFrame" id="best_friends_frame">
                         <property name="visible">True</property>
-                        <property name="left_padding">12</property>
+                        <property name="label_xalign">0</property>
                         <child>
-                          <object class="GtkTreeView" id="online_services_tree_view">
+                          <object class="GtkAlignment" id="best_friends_alignment">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="model">online_services_list_store</property>
-                            <property name="headers_visible">False</property>
-                            <property name="headers_clickable">False</property>
-                            <property name="reorderable">True</property>
-                            <property name="search_column">1</property>
+                            <property name="left_padding">12</property>
                             <child>
-                              <object class="GtkTreeViewColumn" id="online_service_enabled_treeviewcolumn">
-                                <property name="title">_Use</property>
-                                <property name="clickable">True</property>
-                                <property name="reorderable">True</property>
+                              <object class="GtkTreeView" id="best_friends_sexy_tree_view">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">best_friends_list_store</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">2</property>
+                                <property name="level_indentation">1</property>
                                 <child>
-                                  <object class="GtkCellRendererToggle" id="online_service_active_cellrenderercombo"/>
-                                  <attributes>
-                                    <attribute name="sensitive">3</attribute>
-                                    <attribute name="visible">3</attribute>
-                                    <attribute name="activatable">3</attribute>
-                                    <attribute name="active">0</attribute>
-                                  </attributes>
+                                  <object class="GtkTreeViewColumn" id="best_friends_user_name_tree_view_column">
+                                    <property name="resizable">True</property>
+                                    <property name="sizing">autosize</property>
+                                    <property name="title">Best Friend:</property>
+                                    <property name="expand">True</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="best_friends_user_name_cell_renderer_text"/>
+                                      <attributes>
+                                        <attribute name="markup">2</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
                                 </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="online_service_key_treeviewcolumn">
-                                <property name="title">_Account</property>
                                 <child>
-                                  <object class="GtkCellRendererText" id="online_service_url_cellrenderertext"/>
-                                  <attributes>
-                                    <attribute name="text">1</attribute>
-                                  </attributes>
+                                  <object class="GtkTreeViewColumn" id="best_friends_online_service_tree_view_column">
+                                    <property name="title">Account:</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="best_friends_online_service_cell_renderer_text"/>
+                                      <attributes>
+                                        <attribute name="markup">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
                             </child>
                           </object>
                         </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="best_friends_label">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;_Best Friends&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                            <property name="use_underline">True</property>
+                          </object>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="acconts_label">
+                    <child>
+                      <object class="GtkHBox" id="best_friends_action_hbox">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;_Accounts&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkButton" id="best_friends_add_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_add_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-add</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_delete_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_delete_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-remove</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVSeparator" id="vseparator2">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_refresh_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_underline">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_refresh_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-refresh</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkHBox" id="hbox1">
+                        <property name="visible">True</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkHSeparator" id="hseparator1">
+                            <property name="visible">True</property>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkHBox" id="best_friends_hbox">
+                        <property name="visible">True</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkButton" id="best_friends_view_updates_new_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_view_new_updates_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-indent</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVSeparator" id="best_friends_left_vseparator">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_view_profile_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_view_profile_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-info</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_send_at_message_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_send_at_reply_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-undo</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_send_dm_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_send_dm_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-edit</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVSeparator" id="best_friends_right_vseparator">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_unfollow_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_unfollow_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-remove</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="position">6</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVSeparator" id="vseparator1">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">7</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="best_friends_view_updates_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_view_updates_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-home</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">8</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">3</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -908,11 +1221,11 @@
   </object>
   <object class="GtkImage" id="image5">
     <property name="visible">True</property>
-    <property name="stock">gtk-missing-image</property>
+    <property name="stock">gtk-undo</property>
   </object>
   <object class="GtkImage" id="compos_menu_retweet_image">
     <property name="visible">True</property>
-    <property name="stock">gtk-convert</property>
+    <property name="stock">gtk-media-next</property>
   </object>
   <object class="GtkImage" id="help_menu_about_image">
     <property name="visible">True</property>
@@ -920,7 +1233,7 @@
   </object>
   <object class="GtkImage" id="image7">
     <property name="visible">True</property>
-    <property name="stock">gtk-missing-image</property>
+    <property name="stock">gtk-orientation-portrait</property>
   </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>

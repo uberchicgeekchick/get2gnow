@@ -732,7 +732,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 # Identity of this package.
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#00EEEDa18"
+PACKAGE_VERSION="#00BF01a19"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
@@ -1589,6 +1589,7 @@ Optional Features:
                                Turn on compiler warnings.
 
   --enable-iso-cxx        Try to warn if code is not ISO C++
+  --enable-gdb            compile with gdb symools
   --enable-debug          turn on debugging
   --enable-gnome-keyring=[no/yes/auto]
                           compile with Gnome Keyring support
@@ -22744,6 +22745,20 @@ echo "${ECHO_T}$complCXXFLAGS" >&6; }
 
 
 
+# Check whether --enable-gdb was given.
+if test "${enable_gdb+set}" = set; then
+  enableval=$enable_gdb;
+else
+  enable_gdb=no
+fi
+
+
+if test x$enable_gdb = xyes ; then
+	debug_CFLAGS="-g -ggdb"
+fi
+
+
+
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then
   enableval=$enable_debug;
@@ -22895,8 +22910,8 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= \$LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= \$GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= \$GCONF_VERSION_REQUIRED
 	    \$gnome_keyring_pkgconfig
@@ -22912,8 +22927,8 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -22932,8 +22947,8 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -22959,8 +22974,8 @@ if test -n "$get2gnow_LIBS"; then
 	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= \$LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= \$GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= \$GCONF_VERSION_REQUIRED
 	    \$gnome_keyring_pkgconfig
@@ -22976,8 +22991,8 @@ if test -n "$get2gnow_LIBS"; then
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -22996,8 +23011,8 @@ if test -n "$get2gnow_LIBS"; then
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -23030,8 +23045,8 @@ fi
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -23048,8 +23063,8 @@ fi
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -23069,8 +23084,8 @@ fi
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -23096,8 +23111,8 @@ echo "$as_me: error: Package requirements (
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    gobject-2.0
 	    libgnomeui-2.0
+	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
 	    $gnome_keyring_pkgconfig
@@ -26240,10 +26255,6 @@ if test "$no_create" != yes; then
 fi
 
 
-echo
-echo "Prefix:        $prefix"
-echo "GNOME Keyring: $have_gnome_keyring"
-if test x$enable_debug = xyes ; then
-	printf "\nDebug Mode:	[enabled]\nDebug BUILDDIR:	$ac_pwd\n"
-fi
-echo
+printf "\nPrefix:\t\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$have_gnome_keyring";
+if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
+if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\nDebug BUILDDIR:\t$abs_pwd\n"; fi;

@@ -89,6 +89,8 @@
                     <property name="image">best_friend_image</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
@@ -238,7 +240,7 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="has_tooltip">True</property>
-			    <property name="tooltip_markup">
+                            <property name="tooltip_markup">
 				    Switch between enlarged &amp; compact control panel.
 				    Enlarged view: Shows all control panel buttons &amp; items.
 				    Compact view: Shows only enabled control panel buttons &amp; items.
@@ -320,8 +322,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <child>
                               <object class="GtkImage" id="sexy_send_image">
                                 <property name="visible">True</property>
@@ -340,8 +342,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="sexy_dm_image">
                                 <property name="visible">True</property>
@@ -371,8 +373,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="new_tweet_image">
                                 <property name="visible">True</property>
@@ -402,8 +404,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="dm_form_active_image">
                                 <property name="visible">True</property>
@@ -420,34 +422,57 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkHBox" id="char_count_hbox">
+                      <object class="GtkHBox" id="notification_labels_hbox">
                         <property name="visible">True</property>
                         <property name="spacing">15</property>
                         <child>
-                          <object class="GtkLabel" id="char_count_label">
+                          <object class="GtkLabel" id="best_friend_dm_notification_label">
                             <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="label" translatable="yes">&lt;small&gt;&lt;u&gt;Remaining Characters:&lt;/u&gt;&lt;/small&gt;</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Direct Message a Best Friend:&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
+                            <property name="use_underline">True</property>
                           </object>
                           <packing>
                             <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="char_count">
+                          <object class="GtkAlignment" id="char_count_alignment">
                             <property name="visible">True</property>
-                            <property name="yalign">0.89999997615814209</property>
-                            <property name="xpad">10</property>
-                            <property name="label" translatable="yes">&lt;small&gt;&lt;span color="green"&gt;140&lt;/span&gt;&lt;/small&gt;</property>
-                            <property name="use_markup">True</property>
-                            <property name="justify">right</property>
-                            <property name="single_line_mode">True</property>
+                            <child>
+                              <object class="GtkHBox" id="char_count_hbox">
+                                <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkLabel" id="char_count_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">&lt;small&gt;&lt;u&gt;Remaining Characters:&lt;/u&gt;&lt;/small&gt;</property>
+                                    <property name="use_markup">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="char_count">
+                                    <property name="visible">True</property>
+                                    <property name="yalign">0.89999997615814209</property>
+                                    <property name="xpad">10</property>
+                                    <property name="label" translatable="yes">&lt;small&gt;&lt;span color="green"&gt;140&lt;/span&gt;&lt;/small&gt;</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="justify">right</property>
+                                    <property name="single_line_mode">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="pack_type">end</property>
                             <property name="position">1</property>
                           </packing>
                         </child>

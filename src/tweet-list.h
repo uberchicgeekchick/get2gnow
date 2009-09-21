@@ -112,7 +112,10 @@ gboolean tweet_list_refresh(TweetList *tweet_list);
 void tweet_list_stop(TweetList *tweet_list);
 void tweet_list_complete(TweetList *tweet_list);
 
+void tweet_list_toggle_toolbar(TweetList *tweet_list);
+
 void tweet_list_mark_as_read(TweetList *tweet_list);
+gint tweet_list_mark_is_unread(TweetList *tweet_list);
 void tweet_list_mark_as_unread(TweetList *tweet_list);
 
 gint8 tweet_list_has_loaded(TweetList *tweet_list);

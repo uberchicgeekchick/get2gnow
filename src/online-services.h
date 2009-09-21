@@ -106,6 +106,13 @@ gint online_services_has_total(OnlineServices *services, guint count);
  */
 gint online_services_has_connected(OnlineServices *services, guint count);
 
+OnlineService *online_services_get_online_service_by_guid( OnlineServices *services, const gchar *online_service_guid );
+gint online_services_best_friends_list_store_fill( OnlineServices *services, GtkListStore *list_store );
+gint online_services_best_friends_list_store_validate( OnlineServices *services, GtkListStore *list_store );
+void online_services_best_friends_list_store_free( OnlineServices *services, GtkListStore *list_store );
+void online_services_best_friends_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name );
+gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name );
+
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 OnlineService *online_services_connected_get_last(OnlineServices *services);
 

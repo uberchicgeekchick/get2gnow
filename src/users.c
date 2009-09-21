@@ -195,8 +195,10 @@ static UserProfileViewer *user_profile_viewer=NULL;
  *                    prototypes for private method & function                  *
  ********************************************************************************/
 static User *user_new(OnlineService *service, gboolean a_follower);
+static void user_validate( User **user );
 
 static UserStatus *user_status_new(OnlineService *service, UpdateMonitor tweet_list);
+static void user_status_validate( UserStatus **status );
 static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status);
 static void user_status_format_dates(UserStatus *status);
 
@@ -224,6 +226,16 @@ static User *user_new(OnlineService *service, gboolean a_follower){
 	
 	return user;
 }/*user_new*/
+
+static void user_validate( User **user ){
+	if(! (*user)->user_name ) (*user)->user_name=g_strdup("");
+	if(! (*user)->user_nick ) (*user)->user_nick=g_strdup("");
+	if(! (*user)->location ) (*user)->location=g_strdup("");
+	if(! (*user)->bio ) (*user)->bio=g_strdup("");
+	if(! (*user)->url ) (*user)->url=g_strdup("");
+	if(! (*user)->image_url ) (*user)->image_url=g_strdup("");
+	if(! (*user)->image_file ) (*user)->image_file=g_strdup("");
+}/*user_validate( &user );*/ 
 
 gdouble user_get_id(User *user){
 	if(!user) return 0;
@@ -348,6 +360,8 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		
 	}
 	
+	user_validate( &user );
+	
 	if(user->status)
 		user_status_format_updates(service, user, user->status);
 	
@@ -385,6 +399,19 @@ static UserStatus *user_status_new(OnlineService *service, UpdateMonitor tweet_l
 	
 	return status;
 }/*user_status_new(service, Tweets|Replies|Dms);*/
+
+static void user_status_validate( UserStatus **status ){
+	if(! (*status)->text ) (*status)->text=g_strdup("");
+	if(! (*status)->id_str ) (*status)->id_str=g_strdup("");
+	if(! (*status)->from ) (*status)->from=g_strdup("");
+	if(! (*status)->rcpt ) (*status)->rcpt=g_strdup("");
+	if(! (*status)->tweet ) (*status)->tweet=g_strdup("");
+	if(! (*status)->source ) (*status)->source=g_strdup("");
+	if(! (*status)->sexy_tweet ) (*status)->sexy_tweet=g_strdup("");
+	if(! (*status)->notification ) (*status)->notification=g_strdup("");
+	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
+	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
+}/*user_status_validate(&status);*/ 
 
 gdouble user_status_get_id(UserStatus *status){
 	if(!status) return 0;
@@ -456,6 +483,8 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		xmlFree(content);
 		
 	}
+
+	user_status_validate( &status );
 	
 	if(status->user)
 		user_status_format_updates(service, status->user, status);

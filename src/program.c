@@ -198,19 +198,27 @@ gchar *program_double_drop_precision(const gdouble gdouble_value){
 	return gdouble_str;
 }/*program_float_drop_precision();*/
 
-gboolean program_gtk_widget_get_sensitive(GtkWidget *widget){
+gboolean program_gtk_widget_toggle_visibility( GtkWidget *widget ){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
-	gboolean is_sensitive=FALSE;
-	g_object_get(widget, "sensitive", &is_sensitive, NULL);
-	return is_sensitive;
-}/*MACRO:gtk_widget_is_sensitive(widget); == program_gtk_widget_get_sensitive(widget);*/
+	gboolean is_visible;
+	if(!( (is_visible=gtk_widget_is_visible( widget )) ))
+		gtk_widget_show( widget );
+	else
+		gtk_widget_hide( widget );
+	return !is_visible;
+}/*program_gtk_widget_toggle_visibility( widget );*/
 
-gboolean program_gtk_widget_get_focus(GtkWidget *widget){
+gboolean program_gtk_widget_get_gboolean_property_value( GtkWidget *widget, const gchar *property ){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
-	gboolean has_focus=FALSE;
-	g_object_get(widget, "has-focus", &has_focus, NULL);
-	return has_focus;
-}/*MACRO:gtk_widget_has_focus(widget); == program_gtk_widget_get_focus(widget);*/
+	gboolean value=FALSE;
+	g_object_get( widget, property, &value, NULL );
+	return value;
+}/*program_gtk_widget_get_property(GtkWidget *widget, "has-focus"|"visibility"|"sensitive");
+MACROS:
+	gtk_widget_is_visible(widget) == program_gtk_widget_get_gboolean_property_value( widget, "visibile" )
+	gtk_widget_is_sensitive(widget) == program_gtk_widget_get_gboolean_property_value( widget, "sensitive" )
+	gtk_widget_has_focus(widget) == program_gtk_widget_get_gboolean_property_value( widget, "has-focus" )
+*/
 
 /********************************************************
  *                       eof                            *

@@ -95,7 +95,6 @@ void main_window_create(void);
 MainWindow *main_window_get(void);
 
 
-
 void tweet_lists_init( void );
 void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window);
 TweetList *tweet_lists_new(const gchar *timeline);
@@ -113,13 +112,14 @@ void tweet_lists_close_current_page(void);
 void tweet_lists_close_page(gint page);
 void tweet_lists_destroy(void);
 
-
+void tweet_lists_toggle_toolbars( void );
 
 void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *main_window_get_window(void);
 GtkPaned *main_window_get_tweet_paned(void);
 GtkMenuItem *main_window_get_menu(const gchar *menu);
+GtkListStore *main_window_get_best_friends_list_store(void);
 
 void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
 void main_window_set_statusbar_msg(gchar *msg);

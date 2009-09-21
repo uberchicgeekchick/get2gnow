@@ -85,11 +85,15 @@ GtkHBox *control_panel_get_embed(void);
 #define	tweets_beep	control_panel_beep
 void control_panel_beep(void);
 
-void control_panel_show_tweet(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+
+void control_panel_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
 void control_panel_dm_data_fill(GList *followers);
 
-void control_panel_compact_view_toggled( GtkToggleButton *compact_toggle_button );
+void contol_panel_emulate_embed_toggle(void);
+void contol_panel_emulate_compact_view_toggle(void);
+void control_panel_compact_view_toggled(GtkToggleButton *compact_toggle_button);
 void control_panel_set_embed_toggle_and_image(void);
 
 void control_panel_sexy_select(void);
@@ -103,6 +107,7 @@ void control_panel_sexy_append_char(const char c);
 void control_panel_sexy_append_string(const gchar *str);
 gint control_panel_sexy_puts(const gchar *str, gint position);
 
+void control_panel_new_update(void);
 void control_panel_new_dm(void);
 void control_panel_reply(void);
 

@@ -48,7 +48,7 @@
 #define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Requests:Authentication:Preferences:Accounts:Settings:Setup:OnlineServicesDialog.c"
 #include "debug.h"
 
-#define PREFS_ACCOUNT_DELETE	GCONF_PATH "/auth/dont_confirm_delete"
+#define PREFS_ACCOUNT_DELETE	GCONF_PATH "/popup_confirmation_dialog/disabled_when/deleting/accounts"
 
 typedef struct {	
 	GtkDialog		*online_services_dialog;

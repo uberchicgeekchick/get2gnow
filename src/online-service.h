@@ -69,6 +69,7 @@
 
 #include "timer.h"
 #include "online-services-typedefs.h"
+#include "users.h"
 
 
 /*********************************************************************
@@ -108,6 +109,15 @@ const gchar *online_service_get_micro_blogging_client(OnlineService *service);
 gboolean online_service_uses_twitter(OnlineService *service);
 gboolean online_service_uses_laconica(OnlineService *service);
 
+gint online_service_best_friends_list_store_fill( OnlineService *service, GtkListStore *list_store );
+gint online_service_best_friends_list_store_validate( OnlineService *service, GtkListStore *list_store );
+void online_service_best_friends_mark_as_unread( OnlineService *service, const gchar *user_name );
+gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );
+gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
+gboolean online_service_best_friends_remove( OnlineService *service, const gchar *user_name );
+void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, User *user);
+void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store );
+
 GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich users_glist_get_which);
 void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich users_glist_get_which, GList *new_users);
 
@@ -117,8 +127,10 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_id, gdouble *oldest_id);
-void online_service_update_ids_set(OnlineService *service, const gchar *timeline, gdouble newest_id, gdouble oldest_id);
+void online_service_update_ids_get( OnlineService *service, const gchar *timeline, gdouble *newest_id, gdouble *oldest_id );
+void online_service_update_id_get( OnlineService *service, const gchar *timeline, const gchar *key, gdouble *update_id );
+void online_service_update_id_set( OnlineService *service, const gchar *timeline, const gchar *key, gdouble update_id );
+void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_id, gdouble oldest_id );
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 

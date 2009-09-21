@@ -125,7 +125,9 @@ struct _SelectedUpdate{
 enum _RequestAction{
 	SelectService,
 	ViewProfile,
-	ViewTweets,
+	ViewUpdates,
+	BestFriendAdd,
+	BestFriendDrop,
 	Follow,
 	UnFollow,
 	Block,
@@ -140,9 +142,10 @@ struct _OnlineServiceRequest{
 	RequestAction action;
 	RequestMethod method;
 	GtkWindow *parent;
-	gchar *user_data;
+	gchar *user_name;
 	gchar *message;
 	gchar *uri;
+	gpointer extra;
 };
 
 struct  _OnlineServiceRequestPopup{
@@ -173,8 +176,8 @@ static gint online_service_request_popup_dialog_response=0;
 /********************************************************************************
  *         online_service_request's methods, handlers, callbacks, & etc.        *
  ********************************************************************************/
-static OnlineServiceRequest *online_service_request_new(RequestAction action, GtkWindow *parent, const gchar *user_data);
-static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent, const gchar *user_data);
+static OnlineServiceRequest *online_service_request_new(RequestAction action, GtkWindow *parent, const gchar *user_name);
+static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent, const gchar *user_name);
 static void online_service_request_free(OnlineServiceRequest *request);
 
 
@@ -188,6 +191,7 @@ static void online_service_request_popup_dialog_process_confirmation(GtkWidget *
 static void online_service_request_popup_set_selected_service(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
 static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
 static void online_service_request_popup_destroy_cb(GtkWidget *widget, OnlineServiceRequestPopup *online_service_request_popup);
+static void online_service_request_popup_confirmation_dialog_add_gconfig_key( const gchar *gconfig_key, GFunc func, gpointer user_data );
 static gboolean online_service_request_popup_validate_usage(RequestAction action);
 static void online_service_request_popup_destroy_and_free(void);
 
@@ -196,43 +200,58 @@ static void online_service_request_popup_destroy_and_free(void);
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
-void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, ViewProfile, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, ViewProfile, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
 
-void online_service_request_view_tweets(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, ViewTweets, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_view_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, ViewUpdates, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
 
-void online_service_request_follow(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, Follow, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, BestFriendAdd, parent, user_name);
+}/*online_service_request_best_friend_add(service, parent, user_name);*/
 
-void online_service_request_unfollow(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, UnFollow, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_best_friend_drop(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, BestFriendDrop, parent, user_name);
+}/*online_service_request_best_friend_drop(service, parent, user_name);*/
 
-void online_service_request_block(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, Block, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_follow(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, Follow, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
 
-void online_service_request_unblock(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, UnBlock, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_unfollow(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, UnFollow, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
 
-void online_service_request_fave(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, Fave, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_block(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, Block, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
 
-void online_service_request_unfave(OnlineService *service, GtkWindow *parent, const gchar *user_data){
-	online_service_request_main(service, UnFave, parent, user_data);
-}/*online_service_request_view_profile(service, parent, user_data);*/
+void online_service_request_unblock(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, UnBlock, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
+
+void online_service_request_fave(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, Fave, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
+
+void online_service_request_unfave(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, UnFave, parent, user_name);
+}/*online_service_request_view_profile(service, parent, user_name);*/
 
 gchar *online_service_request_action_to_string(RequestAction action){
 	switch(action){
-		case Confirmation: _("confirming action");
-		case ViewTweets:
+		case Confirmation:
+			return _("confirming action");
+		case ViewUpdates:
 			return _("displaying tweets");
+		case ViewProfile:
+			return _("viewing user profile");
+		case BestFriendAdd:
+			return _("add a best friend");
+		case BestFriendDrop:
+			return _("remove a best friend");
 		case Follow:
 			return _("following");
 		case UnFollow:
@@ -245,8 +264,6 @@ gchar *online_service_request_action_to_string(RequestAction action){
 			return _("star'ing tweet");
 		case UnFave:
 			return _("un-star'ing tweet");
-		case ViewProfile:
-			return _("viewing user profile");
 		case SelectService:
 			return _("selecting default account");
 		default:
@@ -255,46 +272,52 @@ gchar *online_service_request_action_to_string(RequestAction action){
 	}//switch
 }/*online_service_request_action_to_string*/
 
-static OnlineServiceRequest *online_service_request_new(RequestAction action, GtkWindow *parent, const gchar *user_data){
-	if(action==SelectService || action==ViewProfile || action == Confirmation || G_STR_EMPTY(user_data)) return NULL;
+static OnlineServiceRequest *online_service_request_new(RequestAction action, GtkWindow *parent, const gchar *user_name){
+	if(action==SelectService || action==ViewProfile || action == Confirmation || G_STR_EMPTY(user_name)) return NULL;
 	
 	OnlineServiceRequest *request=g_new(OnlineServiceRequest, 1);
 	
 	request->parent=parent;
-	request->user_data=g_strdup(user_data);
+	request->extra=NULL;
+	request->user_name=g_strdup(user_name);
 	request->action=action;
 	request->method=QUEUE;
 	request->message=g_strdup(online_service_request_action_to_string(action));
 	
 	switch(request->action){
-		case ViewTweets:
+		case ViewUpdates:
 			request->method=QUEUE;
-			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_data);
+			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_name);
 			network_set_state_loading_timeline(request->uri, Load);
+			break;
+		case BestFriendAdd:
+		case BestFriendDrop:
+			request->method=QUEUE;
+			request->uri=g_strdup_printf(API_USER_PROFILE, request->user_name);
 			break;
 		case Follow:
 			request->method=POST;
-			request->uri=g_strdup_printf(API_USER_FOLLOW, request->user_data);
+			request->uri=g_strdup_printf(API_USER_FOLLOW, request->user_name);
 			break;
 		case UnFollow:
 			request->method=POST;
-			request->uri=g_strdup_printf(API_USER_UNFOLLOW, request->user_data);
+			request->uri=g_strdup_printf(API_USER_UNFOLLOW, request->user_name);
 			break;
 		case Block:
 			request->method=POST;
-			request->uri=g_strdup_printf(API_USER_BLOCK, request->user_data);
+			request->uri=g_strdup_printf(API_USER_BLOCK, request->user_name);
 			break;
 		case UnBlock:
 			request->method=POST;
-			request->uri=g_strdup_printf(API_USER_UNBLOCK, request->user_data);
+			request->uri=g_strdup_printf(API_USER_UNBLOCK, request->user_name);
 			break;
 		case Fave:
 			request->method=POST;
-			request->uri=g_strdup_printf(API_FAVE, request->user_data);
+			request->uri=g_strdup_printf(API_FAVE, request->user_name);
 			break;
 		case UnFave:
 			request->method=POST;
-			request->uri=g_strdup_printf(API_UNFAVE, request->user_data);
+			request->uri=g_strdup_printf(API_UNFAVE, request->user_name);
 			break;
 		case ViewProfile:
 		case SelectService:
@@ -307,25 +330,25 @@ static OnlineServiceRequest *online_service_request_new(RequestAction action, Gt
 	return request;
 }/*online_service_request_new*/
 
-static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent, const gchar *user_data){
+static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent, const gchar *user_name){
 	if(action==SelectService || action==Confirmation) return;
 
-	if(G_STR_EMPTY(user_data)){
+	if(G_STR_EMPTY(user_name)){
 		debug("Cannot %s required information is missing.", online_service_request_action_to_string(action));
 		main_window_statusbar_printf("Cannot %s required information is missing.", online_service_request_action_to_string(action));
 		return;
 	}
 
 	if(action==ViewProfile){
-		user_profile_viewer_show(service, user_data, parent);
+		user_profile_viewer_show(service, user_name, parent);
 		return;
 	}
 	
 	OnlineServiceRequest *request=NULL;
-	if(!(request=online_service_request_new(action, parent, user_data)))
+	if(!(request=online_service_request_new(action, parent, user_name)))
 		return;
 	
-	debug("Processing OnlineServiceRequest to %s %s on %s", request->message, request->user_data, online_service_get_key(service));
+	debug("Processing OnlineServiceRequest to %s %s on %s", request->message, request->user_name, online_service_get_guid(service));
 	
 	switch(request->method){
 		case POST:
@@ -339,45 +362,52 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	}
 	
 	control_panel_sexy_select();
-}/*online_service_request_main(service, parent, Follow|UnFollow|ViewProfile|ViewTweets|..., user_data);*/
+}/*online_service_request_main(service, parent, Follow|UnFollow|ViewProfile|ViewUpdates|..., user_name);*/
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
 	OnlineServiceRequest *request=(OnlineServiceRequest *)online_service_wrapper_get_user_data(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
-	const gchar *service_key=online_service_get_key(service);
+	const gchar *service_guid=online_service_get_guid(service);
 	if( msg->status_code!=403 && !network_check_http(service, msg) ){
-		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_data, service_key, msg->status_code);
+		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, msg->status_code);
 		
-		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_key, msg->reason_phrase, msg->status_code);
+		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_guid, msg->reason_phrase, msg->status_code);
 		online_service_request_free(request);
 		return NULL;
 	}
 	
 	User *user=NULL;
 	OnlineServiceWrapper *request_wrapper=NULL;
-	debug("OnlineServiceRequest to %s %s.  OnlineService: '%s':", request->message, request->user_data, service_key);
+	gchar *timeline=NULL;
+	debug("OnlineServiceRequest to %s %s.  OnlineService: <%s> Loading: <%s>:", request->message, request->user_name, service_guid, request->uri);
 	switch(request->action){
-		case ViewTweets:
-			request_wrapper=online_service_wrapper_new(service, QUEUE, online_service_wrapper_get_requested_uri(service_wrapper), (online_service_wrapper_get_attempt(service_wrapper)+1), NULL, network_display_timeline, tweet_lists_get_timeline(request->uri), (gpointer)Users);
+		case ViewUpdates:
+			timeline=g_strdup(request->uri);
+			request_wrapper=online_service_wrapper_new(service, QUEUE, timeline, online_service_wrapper_get_attempt(service_wrapper), NULL, network_display_timeline, tweet_lists_get_timeline(timeline), (gpointer)BestFriends);
 			network_display_timeline(session, msg, request_wrapper);
 			online_service_wrapper_free(request_wrapper);
+			uber_free(timeline);
 			break;
 		case UnFollow:
 		case Block:
 		case Follow:
+		case BestFriendAdd:
+		case BestFriendDrop:
 			if(!(user=user_parse_profile(online_service_get_session(service), msg, service_wrapper))){
 				if(msg->status_code!=403){
 					debug("\t\t[failed]");
-					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_data, service_key);
+					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_name, service_guid);
 				}else{
 					debug("\t\t[duplicate request]");
-					debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_data, service_key);
-					statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_data, service_key);
+					debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_name, service_guid);
+					statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_name, service_guid);
 				}
 			}else{
 				debug("\t\t[succeeded]");
-				if(request->action==Follow)
+				if(request->action==BestFriendAdd||request->action==BestFriendDrop)
+					online_service_best_friends_list_store_update_check( service_wrapper, user );
+				else if(request->action==Follow)
 					users_glists_append_friend(service, user);
 				else if(request->action==UnFollow)
 					users_glists_remove_friend(service, user);
@@ -385,7 +415,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 					users_glists_remove_friend(service, user);
 					users_glists_remove_follower(service, user);
 				}
-				main_window_statusbar_printf("Successfully %s %s on %s.", request->message, request->user_data, service_key);
+				main_window_statusbar_printf("Successfully %s %s on %s.", request->message, request->user_name, service_guid);
 				user_free(user);
 			}
 			
@@ -395,10 +425,10 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 		case UnBlock:
 			if(msg->status_code!=403){
 				debug("\t\t[succceed]");
-				main_window_statusbar_printf("Successfully %s on %s.", request->message, service_key);
+				main_window_statusbar_printf("Successfully %s on %s.", request->message, service_guid);
 			}else{
 				debug("\t\t[duplicate request]");
-				main_window_statusbar_printf("You've already %s on %s.", request->message, service_key);
+				main_window_statusbar_printf("You've already %s on %s.", request->message, service_guid);
 			}
 			break;
 		case SelectService:
@@ -415,7 +445,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 
 static void online_service_request_free(OnlineServiceRequest *request){
 	request->parent=NULL;
-	uber_object_free(&request->uri, &request->user_data, &request->message, &request, NULL);
+	request->extra=NULL;
+	uber_object_free(&request->uri, &request->user_name, &request->message, &request, NULL);
 }/*online_service_request_free*/
 
 
@@ -430,7 +461,7 @@ void online_service_request_set_selected_update(OnlineService *service, const gd
 	/*	gint id=atoi(string);	*/
 	if(selected_update) online_service_request_unset_selected_update();
 	
-	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_key(service), id, user_name, online_service_get_uri(service));
+	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_guid(service), id, user_name, online_service_get_uri(service));
 	debug("SelectedUpdate's update: %s.", tweet);
 	selected_update=g_new0(SelectedUpdate, 1);
 	selected_update->service=service;
@@ -503,15 +534,27 @@ void online_service_request_unset_selected_update(void){
 	uber_object_free(&selected_update->user_name, &selected_update->tweet, &selected_update, NULL);
 }/*online_service_request_unset_selected_update*/
 
-void online_service_request_selected_update_view_tweets(void){
+void online_service_request_selected_update_view_updates(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewTweets, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
-}/*online_service_request_view_tweets();*/
+	online_service_request_main(selected_update->service, ViewUpdates, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_view_updates();*/
 
 void online_service_request_selected_update_view_profile(void){
 	if(!(selected_update && selected_update->user_name)) return;
 	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_view_profile*/
+
+void online_service_request_selected_update_best_friend_add(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	if(!online_service_is_user_best_friend( selected_update->service, selected_update->user_name ))
+		online_service_request_main(selected_update->service, BestFriendAdd, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_best_friend_add();*/
+
+void online_service_request_selected_update_best_friend_drop(void){
+	if(!(selected_update && selected_update->user_name)) return;
+	if(online_service_is_user_best_friend( selected_update->service, selected_update->user_name ))
+		online_service_request_main(selected_update->service, BestFriendDrop, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+}/*online_service_request_selected_update_best_friend_drop();*/
 
 void online_service_request_selected_update_follow(void){
 	if(!(selected_update && selected_update->user_name)) return;
@@ -562,13 +605,21 @@ static void online_service_request_popup_set_title_and_label(RequestAction actio
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, label_markup);
 			g_free(label_markup);
 			break;
-		case ViewTweets:
+		case ViewUpdates:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Who's tweets do you want to see?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or user id, who's resent updates you would like to view:");
 			break;
 		case ViewProfile:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Who's profile do you want to see?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to view:");
+			break;
+		case BestFriendAdd:
+			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom that you're following, or who's following you, would you like to add to your best friends list?" );
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd you like to add to your best friends list:");
+			break;
+		case BestFriendDrop:
+			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom that you're following, or who's following you, would you like to remove from your best friends list?" );
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd you like to remove from your best friends list:");
 			break;
 		case Block:
 			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to block?" );
@@ -631,7 +682,9 @@ static void online_service_request_popup_response_cb(GtkWidget *widget, gint res
 		case UnFollow:
 		case Block:
 		case UnBlock:
-		case ViewTweets:
+		case ViewUpdates:
+		case BestFriendAdd:
+		case BestFriendDrop:
 			if(online_service_request_popup_dialog_process_requests(widget, response, online_service_request_popup))
 				gtk_widget_destroy(widget);
 			break;
@@ -672,18 +725,14 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *
 }/*online_service_request_popup_dialog_process_requests(widget, response, popup);*/
 
 static void online_service_request_popup_dialog_process_confirmation(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup){
-	GFunc        func;
-	gpointer     user_data;
-	const gchar *gconfig_path;
+	GFunc        func=g_object_get_data(G_OBJECT(widget), "func");
+	gpointer     user_data=g_object_get_data(G_OBJECT(widget), "user_data");
+	const gchar *gconfig_key=g_object_get_data(G_OBJECT(widget), "gconfig_key");
 	
-	gconfig_path=g_object_get_data(G_OBJECT(widget), "gconfig_path");
-	func=g_object_get_data(G_OBJECT(widget), "func");
-	user_data=g_object_get_data(G_OBJECT(widget), "user_data");
-	
-	gconfig_set_bool(gconfig_path, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button)));
+	gconfig_set_bool(gconfig_key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button)));
 	
 	if(func)
-		func( (gpointer)gconfig_path, user_data);
+		func( (gpointer)gconfig_key, user_data);
 }/*online_service_request_popup_dialog_process_confirmation(widget, response, popup);*/
 
 
@@ -710,35 +759,23 @@ static void online_service_request_popup_destroy_and_free(void){
 	uber_free(online_service_request_popup);
 }/*online_service_request_popup_destroy_and_free*/
 
-gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GFunc func, gpointer user_data){
-	if(gconfig_path && gconfig_if_bool(gconfig_path, FALSE))
+gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_key, const gchar *message1, const gchar *message2, GFunc func, gpointer user_data){
+	if(G_STR_N_EMPTY(gconfig_key) && gconfig_if_bool(gconfig_key, FALSE))
 		return TRUE;
 	
 	online_service_request_popup_dialog_show(Confirmation);
 	
-	gtk_message_dialog_set_markup( online_service_request_popup->dialog, message1);
-	gtk_message_dialog_format_secondary_text( online_service_request_popup->dialog, "%s", message2);
-	if(gconfig_path){
-		GtkVBox			*vbox;
-		
-		 online_service_request_popup->check_button=(GtkCheckButton *)gtk_check_button_new_with_label(_("Do not show this again"));
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button), FALSE);
-		
-		vbox=(GtkVBox *)gtk_vbox_new(FALSE, 6);
-		gtk_container_set_border_width(GTK_CONTAINER(vbox), 6);
-		
-		gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET( online_service_request_popup->check_button), FALSE, FALSE, 0);
-		gtk_box_pack_start(GTK_BOX(GTK_DIALOG( online_service_request_popup->dialog)->vbox), GTK_WIDGET(vbox), FALSE, FALSE, 0);
-		
-		g_object_set_data_full(G_OBJECT( online_service_request_popup->dialog), "gconfig_path", g_strdup(gconfig_path), g_free);
-		g_object_set_data(G_OBJECT( online_service_request_popup->dialog), "user_data", user_data);
-		g_object_set_data(G_OBJECT( online_service_request_popup->dialog), "func", func);
-	}
+	gtk_message_dialog_set_markup( online_service_request_popup->dialog, message1 );
+	if( G_STR_N_EMPTY( message2 ) )
+		gtk_message_dialog_format_secondary_text( online_service_request_popup->dialog, "%s", message2 );
 	
-	gtk_widget_show_all(GTK_WIDGET( online_service_request_popup->dialog));
+	if( G_STR_N_EMPTY( gconfig_key ) )
+		online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );
 	
-	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->user_name_frame));
-	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->online_services_frame));
+	gtk_widget_show_all( GTK_WIDGET( online_service_request_popup->dialog ) );
+	
+	gtk_widget_hide( GTK_WIDGET( online_service_request_popup->user_name_frame ) );
+	gtk_widget_hide( GTK_WIDGET( online_service_request_popup->online_services_frame ) );
 	
 	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
 	switch(online_service_request_popup_dialog_response){
@@ -749,11 +786,28 @@ gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_p
 	}
 }/*online_service_request_popup_confirm_dialog();*/
 
+static void online_service_request_popup_confirmation_dialog_add_gconfig_key( const gchar *gconfig_key, GFunc func, gpointer user_data ){
+	GtkVBox			*vbox;
+	
+	online_service_request_popup->check_button=(GtkCheckButton *)gtk_check_button_new_with_label(_("Do not show this again"));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button), FALSE);
+	
+	vbox=(GtkVBox *)gtk_vbox_new(FALSE, 6);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 6);
+	
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET( online_service_request_popup->check_button), FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG( online_service_request_popup->dialog)->vbox), GTK_WIDGET(vbox), FALSE, FALSE, 0);
+	
+	g_object_set_data_full(G_OBJECT( online_service_request_popup->dialog), "gconfig_key", g_strdup(gconfig_key), g_free);
+	g_object_set_data(G_OBJECT( online_service_request_popup->dialog), "user_data", user_data);
+	g_object_set_data(G_OBJECT( online_service_request_popup->dialog), "func", func);
+}/*online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );*/
+
 void online_service_request_popup_select_service(void){
 	if(!online_services_has_connected(online_services, 1)){
 		if(selected_service) return;
 		selected_service=online_services_connected_get_first(online_services);
-		debug("There is only one connected OnlineService, auto-selecting: %s.", online_service_get_key(selected_service));
+		debug("There is only one connected OnlineService, auto-selecting: %s.", online_service_get_guid(selected_service));
 		return;
 	}
 	
@@ -780,13 +834,21 @@ void online_service_request_popup_friend_unblock(void){
 	online_service_request_popup_dialog_show(UnBlock);
 }/*online_service_request_popup_friend_unblock*/
 
-void online_service_request_popup_friend_tweets(void){
-	online_service_request_popup_dialog_show(ViewTweets);
-}/*online_service_request_popup_friend_tweets*/
+void online_service_request_popup_friend_updates(void){
+	online_service_request_popup_dialog_show(ViewUpdates);
+}/*online_service_request_popup_friend_updates*/
 
 void online_service_request_popup_friend_profile(void){
 	online_service_request_popup_dialog_show(ViewProfile);
 }/*online_service_request_popup_friend_profile*/
+
+void online_service_request_popup_best_friend_add(void){
+	online_service_request_popup_dialog_show(BestFriendAdd);
+}/*online_service_request_popup_best_friend_add();*/
+
+void online_service_request_popup_best_friend_drop(void){
+	online_service_request_popup_dialog_show(BestFriendDrop);
+}/*online_service_request_popup_best_friend_drop();*/
 
 
 static gboolean online_service_request_popup_validate_usage(RequestAction action){
@@ -794,7 +856,9 @@ static gboolean online_service_request_popup_validate_usage(RequestAction action
 		case Confirmation:
 		case SelectService:
 		case ViewProfile:
-		case ViewTweets:
+		case ViewUpdates:
+		case BestFriendAdd:
+		case BestFriendDrop:
 		case Follow:
 		case UnFollow:
 		case Block:
