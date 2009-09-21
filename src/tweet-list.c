@@ -275,7 +275,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	this->has_loaded=-1;
-	this->unread=0;
+	this->unread=-1;
 	
 	this->minutes=0;
 	this->reload=0;
@@ -749,8 +749,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 				this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
 				break;
 			}
-		}
-		if(g_str_has_prefix(timeline, "/statuses/user_timeline/")){
+		}else if(g_str_has_prefix(timeline, "/statuses/user_timeline/")){
 			this->monitoring=timeline_labels->monitoring;
 			this->timeline=g_strdup(timeline);
 			gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
