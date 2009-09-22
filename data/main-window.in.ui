@@ -808,7 +808,6 @@
                     <child>
                       <object class="GtkHBox" id="best_friends_action_hbox">
                         <property name="visible">True</property>
-                        <property name="homogeneous">True</property>
                         <child>
                           <object class="GtkButton" id="best_friends_add_button">
                             <property name="visible">True</property>
@@ -851,7 +850,6 @@
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
@@ -884,7 +882,6 @@
                     <child>
                       <object class="GtkHBox" id="best_friends_hbox">
                         <property name="visible">True</property>
-                        <property name="homogeneous">True</property>
                         <child>
                           <object class="GtkButton" id="best_friends_view_updates_new_button">
                             <property name="visible">True</property>
@@ -909,8 +906,6 @@
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -969,12 +964,11 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkVSeparator" id="best_friends_right_vseparator">
+                          <object class="GtkVSeparator" id="best_friends_middle_vseparator">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
                             <property name="position">5</property>
                           </packing>
                         </child>
@@ -991,16 +985,17 @@
                             </child>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
                             <property name="position">6</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkVSeparator" id="vseparator1">
+                          <object class="GtkVSeparator" id="best_friends_right_vseparator">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
                             <property name="position">7</property>
                           </packing>
                         </child>
