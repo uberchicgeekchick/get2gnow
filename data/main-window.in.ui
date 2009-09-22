@@ -745,7 +745,11 @@
                                 <property name="can_focus">True</property>
                                 <property name="model">best_friends_list_store</property>
                                 <property name="headers_clickable">False</property>
+                                <property name="expander_column">best_friends_user_name_tree_view_column</property>
+                                <property name="reorderable">True</property>
+                                <property name="rules_hint">True</property>
                                 <property name="search_column">2</property>
+                                <property name="show_expanders">False</property>
                                 <property name="level_indentation">1</property>
                                 <child>
                                   <object class="GtkTreeViewColumn" id="best_friends_user_name_tree_view_column">

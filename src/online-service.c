@@ -1066,6 +1066,8 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri){
 		return TRUE;
 	}
 	
+	if(!service && service->key && service-status) return FALSE;
+	
 	if(!service->connected)
 		debug("Unable to reconnect to: %s%s.", service->key, service->status);
 	else
