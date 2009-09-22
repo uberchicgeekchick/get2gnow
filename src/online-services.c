@@ -78,6 +78,7 @@
 #include "online-service.h"
 
 #include "main-window.h"
+#include "control-panel.h"
 #include "preferences.h"
 #include "gconfig.h"
 #include "online-services-dialog.h"
@@ -584,6 +585,53 @@ void online_services_best_friends_mark_as_unread( OnlineServices *services, Onli
 			return;
 		}
 }/*online_services_best_friends_mark_as_unread( services, user_name )*/
+
+gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store ){
+	gboolean found=FALSE;
+	OnlineService *service_at_index=NULL;
+	gchar *user_name_at_index=NULL;
+	for(gint i=1; i<services->best_friends_total; i++){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, iter, path))){
+			debug("Marking best friend, at index: %d, as read has failed.  Unable to retrieve iter from path.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gtk_tree_model_get(
+				 (GtkTreeModel *)list_store, iter,
+				 	BestFriendOnlineService, &service_at_index,
+					BestFriendUserName, &user_name_at_index,
+				-1
+		);
+		if(!( service==service_at_index && !strcasecmp(user_name, user_name_at_index) && g_str_has_prefix( user_name_at_index, "<b>" ) )){
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		debug("Marking best friend: %s updates as having been read.  Best friend from iter at index: %d.", user_name_at_index, i);
+		/* TODO:
+		 * Yeah I need to use strlcpy but getting "best friends" robust is #1 for me.
+		 * tweak this later.
+		 */
+		gchar **user_name_part_one=g_strsplit(user_name_at_index, "<b>", 2);
+		gchar **user_name_part_two=g_strsplit(user_name_part_one[1], "</b>", 2);
+		gtk_list_store_set(list_store, iter, BestFriendUserName, user_name_part_two[0], -1);
+		g_strfreev(user_name_part_one);
+		g_strfreev(user_name_part_two);
+		
+		uber_free(user_name_at_index);
+		gtk_tree_path_free(path);
+		uber_free(iter);
+		found=TRUE;
+		break;
+	}
+	control_panel_sexy_select();
+	return found;
+}/*online_services_best_friends_tree_view_mark_as_read( services, service, user_name, tree_view, list_store, tree_model );*/
 
 gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name ){
 	if(G_STR_EMPTY(user_name)) return FALSE;

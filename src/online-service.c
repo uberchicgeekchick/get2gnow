@@ -675,50 +675,6 @@ static gboolean online_service_best_friends_confirm_clean_up( OnlineService *ser
 	return FALSE;
 }/*online_service_best_friends_confirm_clean_up( service, user_name );*/
 
-gboolean online_service_best_friends_list_store_mark_as_read( OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeModel *tree_model ){
-	gchar *user_name_at_index=NULL;
-	gboolean found=FALSE;
-	for(gint i=0; i<service->best_friends_total; i++){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(tree_model, iter, path))){
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		gtk_tree_model_get(
-				tree_model, iter,
-					BestFriendUserName, &user_name_at_index,
-				-1
-		);
-		if(strcasecmp(user_name, user_name_at_index) ){ /* || g_str_has_prefix( user_name_at_index, "<b>" )){ */
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		debug("Marking best friend: %s updates as having been read.  Best friend from iter at index: %d.", user_name_at_index, i);
-		/* TODO:
-		 * Yeah I need to use strlcpy but getting "best friends" robust is #1 for me.
-		 * tweak this later.
-		 */
-		gchar **user_name_part_one=g_strsplit(user_name_at_index, "<b>", -1);
-		gchar **user_name_part_two=g_strsplit(user_name_part_one[1], "</b>", -1);
-		gtk_list_store_set(list_store, iter, BestFriendUserName, user_name_part_two[0], -1);
-		g_strfreev(user_name_part_one);
-		g_strfreev(user_name_part_two);
-		
-		uber_free(user_name_at_index);
-		gtk_tree_path_free(path);
-		uber_free(iter);
-		found=TRUE;
-		break;
-	}
-	return found;
-}/*online_service_best_friends_list_store_mark_as_read( service, user_name, main_window->private->best_friends_list_store, main_window->private->best_friends_tree_model_sort );*/
-
 static gboolean online_service_best_friends_list_store_mark_as_unread( OnlineService *service, const gchar *user_name ){
 	static GtkListStore *list_store=NULL;
 	if(!list_store) list_store=main_window_get_best_friends_list_store();
@@ -1066,7 +1022,7 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri){
 		return TRUE;
 	}
 	
-	if(!service && service->key && service-status) return FALSE;
+	if(!service && service->key && service->status) return FALSE;
 	
 	if(!service->connected)
 		debug("Unable to reconnect to: %s%s.", service->key, service->status);

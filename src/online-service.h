@@ -112,7 +112,6 @@ gboolean online_service_uses_laconica(OnlineService *service);
 gint online_service_best_friends_list_store_fill( OnlineService *service, GtkListStore *list_store );
 gint online_service_best_friends_list_store_validate( OnlineService *service, GtkListStore *list_store );
 void online_service_best_friends_mark_as_unread( OnlineService *service, const gchar *user_name );
-gboolean online_service_best_friends_list_store_mark_as_read( OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeModel *tree_model );
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_remove( OnlineService *service, const gchar *user_name );

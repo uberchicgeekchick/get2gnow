@@ -365,6 +365,8 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	g_signal_connect_after( control_panel->embed_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
 	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
 	g_signal_connect_after( control_panel->best_friend_toggle_button, "toggled", (GCallback)control_panel_selected_update_author_best_friend_toggled, NULL );
+	g_signal_connect_after( control_panel->control_panel, "event-after", (GCallback)control_panel_sexy_select, NULL );
+	g_signal_connect_after( control_panel->control_panel_embed, "event-after", (GCallback)control_panel_sexy_select, NULL );
 	control_panel_bind_hotkeys( ui );
 	
 	gtkbuilder_connect( ui, control_panel,

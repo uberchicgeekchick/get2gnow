@@ -159,6 +159,7 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
+	geometry_set_paned(main_window_get_tweet_list_paned(), "tweet_list", view, FALSE, FALSE);
 	geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);
 }//geometry_load_for_window
 
@@ -197,8 +198,12 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) {
 		calls++;
+		geometry_set_paned(main_window_get_tweet_list_paned(), "tweet_list", view, FALSE, FALSE);
 		geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);
-	}else if(calls==LOAD_COUNT) geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, TRUE);
+	}else if(calls==LOAD_COUNT){
+		geometry_set_paned(main_window_get_tweet_list_paned(), "tweet_list", view, FALSE, TRUE);
+		geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, TRUE);
+	}
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
@@ -301,7 +306,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	else if(position<min_position) position=min_position+padding;
 	*/
 	
-	debug("%s %s's vpaned position to: %d.", (save ?_("Saving") :_("Moving")), widget, position);
+	debug("%s %s's paned position to: %d.", (save ?_("Saving") :_("Moving")), widget, position);
 	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
