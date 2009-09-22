@@ -594,21 +594,36 @@ static void main_window_best_friends_buttons_set_sensitive(void){
 	uber_free(iter);
 }/*main_window_best_friends_buttons_set_sensitive();*/
 
-static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, MainWindow *main_window){
+gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **user_name ){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	OnlineService *service=NULL;
-	const gchar *user_name=NULL;
+	gboolean found=FALSE;
+	OnlineService *selected_service=NULL;
+	gchar *selected_user_name=NULL;
 	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
 	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
 		gtk_tree_model_get(
 				main_window->private->best_friends_tree_model_sort, iter,
-					BestFriendOnlineService, &service,
-					BestFriendUserName, &user_name,
+					BestFriendOnlineService, &selected_service,
+					BestFriendUserName, &selected_user_name,
 				-1
 		);
+	if(( (selected_service) && (online_service_is_connected(selected_service)) && (G_STR_N_EMPTY(selected_user_name)) )){
+		found=TRUE;
+		*user_name=g_strdup(selected_user_name);
+		*service=selected_service;
+	}else{
+		*service=NULL;
+		*user_name=NULL;
+	}
 	
 	uber_free(iter);
-	if(!( service && G_STR_N_EMPTY(user_name) )){
+	return found;
+}/*main_window_best_friends_get_selected();*/
+
+static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, MainWindow *main_window){
+	OnlineService *service=NULL;
+	gchar *user_name=NULL;
+	if(!( (main_window_best_friends_get_selected( &service, &user_name )) && service && G_STR_N_EMPTY(user_name) )){
 		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
 		control_panel_sexy_select();
 		return;
@@ -619,20 +634,9 @@ static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_v
 }/*main_window_best_friends_tree_view_row_activated(tree_view, path, column, main_window);*/
 
 static void main_window_best_friends_button_clicked( GtkButton *button ){
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	OnlineService *service=NULL;
-	const gchar *user_name=NULL;
-	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
-	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
-		gtk_tree_model_get(
-				main_window->private->best_friends_tree_model_sort, iter,
-					BestFriendOnlineService, &service,
-					BestFriendUserName, &user_name,
-				-1
-		);
-	
-	uber_free(iter);
-	if(!( service && G_STR_N_EMPTY(user_name) )){
+	gchar *user_name=NULL;
+	if(!( (main_window_best_friends_get_selected( &service, &user_name )) && service && G_STR_N_EMPTY(user_name) )){
 		debug("Cannot load best friends request.  Invalid OnlineService or empty user_name.");
 		control_panel_sexy_select();
 		return;
@@ -641,24 +645,28 @@ static void main_window_best_friends_button_clicked( GtkButton *button ){
 	if( button==main_window->private->best_friends_delete_button ){
 		online_service_best_friends_remove( service, user_name );
 		control_panel_sexy_select();
+		uber_free(user_name);
 		return;
 	}
 	
 	if( button==main_window->private->best_friends_unfollow_button ){
 		online_service_request_unfollow( service, main_window->private->window, user_name );
 		control_panel_sexy_select();
+		uber_free(user_name);
 		return;
 	}
 	
 	if( button==main_window->private->best_friends_view_updates_new_button ){
 		online_service_request_view_updates( service, main_window->private->window, user_name );
 		control_panel_sexy_select();
+		uber_free(user_name);
 		return;
 	}
 	
 	if( button==main_window->private->best_friends_view_profile_button ){
 		online_service_request_view_profile( service, main_window->private->window, user_name );
 		control_panel_sexy_select();
+		uber_free(user_name);
 		return;
 	}
 	
@@ -670,20 +678,23 @@ static void main_window_best_friends_button_clicked( GtkButton *button ){
 			at_string=g_strdup_printf( "@%s ", user_name );
 		
 		control_panel_sexy_prefix_string( at_string );
-		uber_free(at_string);
 		control_panel_sexy_select();
+		uber_free(at_string);
+		uber_free(user_name);
 		return;
 	}
 	
 	if( button==main_window->private->best_friends_send_dm_button ){
 		control_panel_best_friends_start_dm( service, user_name );
 		control_panel_sexy_select();
+		uber_free(user_name);
 		return;
 	}
 	
 	if( button==main_window->private->best_friends_view_updates_button){
 		online_service_request_view_updates( service, main_window->private->window, user_name );
 		control_panel_sexy_select();
+		uber_free(user_name);
 		return;
 	}
 	
