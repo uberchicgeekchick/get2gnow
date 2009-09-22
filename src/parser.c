@@ -397,7 +397,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
 	const gchar *service_user_name=online_service_get_user_name(service);
-	gboolean free_status;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
@@ -425,14 +424,19 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		}
 		
 		new_updates++;
-		free_status=TRUE;
+		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
 		user_status_store(status, tweet_list);
-		online_services_is_user_best_friend( online_services, user_status_get_user_name(status) );
+		gboolean update_author_is_best_friend=FALSE;
+		const gchar *update_author=user_status_get_user_name(status);
+		if(online_services_is_user_best_friend( online_services, update_author ) )
+			update_author_is_best_friend=TRUE;
 		
-		if(!save_oldest_id && status_id > last_notified_update && ( online_services_is_user_best_friend( online_services, user_status_get_user_name(status) ) && notify_best_friends ) && strcasecmp(user_status_get_user_name(status), service_user_name) ){
+		if(!save_oldest_id && status_id > last_notified_update && ( update_author_is_best_friend  && notify_best_friends ) && strcasecmp(update_author, service_user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
+			if(update_author_is_best_friend)
+				online_services_best_friends_mark_as_unread( online_services, service, update_author );
 			if(notify||notify_best_friends){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);

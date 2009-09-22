@@ -541,16 +541,20 @@ static void main_window_best_friends_setup( GtkBuilder *ui ){
 }/*main_window_best_friends_setup(ui);*/
 
 static void main_window_best_friends_buttons_set_sensitive(void){
-	/*const gchar *user_name=main_window_best_friends_get_selected();*/
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	OnlineService *service=NULL;
 	const gchar *user_name=NULL;
 	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
 	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
 		gtk_tree_model_get(
 				(GtkTreeModel *)main_window->private->best_friends_tree_model_sort, iter,
+					BestFriendOnlineService, &service,
 					BestFriendUserName, &user_name,
 				-1
 		);
+	
+	if(G_STR_N_EMPTY(user_name) && g_str_has_prefix(user_name, "<b>"))
+		online_service_best_friends_list_store_mark_as_read( service, user_name, main_window->private->best_friends_list_store, main_window->private->best_friends_tree_model_sort );
 	
 	GList *buttons=NULL;
 	for(buttons=main_window->private->best_friends_buttons; buttons; buttons=buttons->next)
@@ -847,6 +851,10 @@ GtkMenuItem *main_window_get_menu(const gchar *menu){
 GtkListStore *main_window_get_best_friends_list_store(void){
 	return main_window->private->best_friends_list_store;
 }/*main_window_get_best_friends_list_store();*/
+
+GtkTreeModel *main_window_get_best_friends_tree_model(void){
+	return main_window->private->best_friends_tree_model_sort;
+}/*main_window_get_best_friends_tree_model();*/
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 	online_service_request_unset_selected_update();

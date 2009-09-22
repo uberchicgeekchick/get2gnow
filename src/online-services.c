@@ -576,6 +576,13 @@ void online_services_best_friends_list_store_free( OnlineServices *services, Gtk
 
 void online_services_best_friends_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name ){
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return;
+	
+	GList		*a=NULL;
+	for(a=services->accounts; a; a=a->next)
+		if( ( (OnlineService *)a->data) == service ){
+			online_service_best_friends_mark_as_unread( (OnlineService *)a->data, user_name );
+			return;
+		}
 }/*online_services_best_friends_mark_as_unread( services, user_name )*/
 
 gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name ){

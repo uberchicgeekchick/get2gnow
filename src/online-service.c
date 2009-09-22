@@ -172,6 +172,7 @@ static gboolean online_service_best_friends_load( OnlineService *service );
 static gboolean online_service_best_friends_save( OnlineService *service );
 static void online_service_best_friends_list_store_append( OnlineService *service, const gchar *user_name );
 static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name );
+static gboolean online_service_best_friends_list_store_mark_as_unread( OnlineService *service, const gchar *user_name );
 static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name );
 
 static void online_service_message_restarted(SoupMessage *xml, gpointer user_data);
@@ -574,6 +575,12 @@ gint online_service_best_friends_list_store_validate( OnlineService *service, Gt
 
 void online_service_best_friends_mark_as_unread( OnlineService *service, const gchar *user_name ){
 	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return;
+	GSList *best_friends=NULL;
+	for( best_friends=service->best_friends; best_friends; best_friends=best_friends->next )
+		if(!strcasecmp( user_name, (gchar *)best_friends->data )){
+			online_service_best_friends_list_store_mark_as_unread( service, (const gchar *)best_friends->data );
+			return;
+		}
 }/*online_service_best_friends_mark_as_unread( services, user_name )*/
 
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name ){
@@ -668,9 +675,55 @@ static gboolean online_service_best_friends_confirm_clean_up( OnlineService *ser
 	return FALSE;
 }/*online_service_best_friends_confirm_clean_up( service, user_name );*/
 
-static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name ){
+gboolean online_service_best_friends_list_store_mark_as_read( OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeModel *tree_model ){
+	gchar *user_name_at_index=NULL;
+	gboolean found=FALSE;
+	for(gint i=0; i<service->best_friends_total; i++){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter(tree_model, iter, path))){
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gtk_tree_model_get(
+				tree_model, iter,
+					BestFriendUserName, &user_name_at_index,
+				-1
+		);
+		if(strcasecmp(user_name, user_name_at_index) ){ /* || g_str_has_prefix( user_name_at_index, "<b>" )){ */
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		debug("Marking best friend: %s updates as having been read.  Best friend from iter at index: %d.", user_name_at_index, i);
+		/* TODO:
+		 * Yeah I need to use strlcpy but getting "best friends" robust is #1 for me.
+		 * tweak this later.
+		 */
+		gchar **user_name_part_one=g_strsplit(user_name_at_index, "<b>", -1);
+		gchar **user_name_part_two=g_strsplit(user_name_part_one[1], "</b>", -1);
+		gtk_list_store_set(list_store, iter, BestFriendUserName, user_name_part_two[0], -1);
+		g_strfreev(user_name_part_one);
+		g_strfreev(user_name_part_two);
+		
+		uber_free(user_name_at_index);
+		gtk_tree_path_free(path);
+		uber_free(iter);
+		found=TRUE;
+		break;
+	}
+	return found;
+}/*online_service_best_friends_list_store_mark_as_read( service, user_name, main_window->private->best_friends_list_store, main_window->private->best_friends_tree_model_sort );*/
+
+static gboolean online_service_best_friends_list_store_mark_as_unread( OnlineService *service, const gchar *user_name ){
 	static GtkListStore *list_store=NULL;
 	if(!list_store) list_store=main_window_get_best_friends_list_store();
+	static GtkTreeModel *tree_model=NULL;
+	if(!tree_model) tree_model=main_window_get_best_friends_tree_model();
 	
 	gchar *user_name_at_index=NULL;
 	gboolean found=FALSE;
@@ -689,6 +742,48 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 					BestFriendUserName, &user_name_at_index,
 				-1
 		);
+		if(strcasecmp(user_name, user_name_at_index) || g_str_has_prefix( user_name_at_index, "<b>") ){
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		debug("Marking best friend: %s as having unread messages from iter at index: %d.", user_name_at_index, i);
+		gtk_list_store_set(list_store, iter, BestFriendUserName, (user_name_at_index=g_strdup_printf("<b>%s</b>", user_name_at_index)), -1);
+		uber_free(user_name_at_index);
+		
+		gtk_tree_path_free(path);
+		uber_free(iter);
+		found=TRUE;
+		break;
+	}
+	return found;
+}/*online_service_best_friends_list_store_mark_as_unread( service, user_name );*/
+
+static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name ){
+	static GtkListStore *list_store=NULL;
+	if(!list_store) list_store=main_window_get_best_friends_list_store();
+	static GtkTreeModel *tree_model=NULL;
+	if(!tree_model) tree_model=main_window_get_best_friends_tree_model();
+	
+	gchar *user_name_at_index=NULL;
+	gboolean found=FALSE;
+	for(gint i=0; i<service->best_friends_total; i++){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter((GtkTreeModel *)list_store, iter, path))){
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gtk_tree_model_get(
+				tree_model, iter,
+					BestFriendUserName, &user_name_at_index,
+				-1
+		);
+		
 		if(strcasecmp(user_name, user_name_at_index)){
 			gtk_tree_path_free(path);
 			uber_free(iter);
@@ -697,11 +792,11 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 		
 		debug("Removing best friend: %s from iter at index: %d", user_name_at_index, i);
 		gtk_list_store_remove(list_store, iter);
-		i=(--service->best_friends_total);
 		
 		gtk_tree_path_free(path);
 		uber_free(iter);
 		found=TRUE;
+		break;
 	}
 	return found;
 }/*online_service_best_friends_list_store_remove( service, user_name );*/
@@ -844,6 +939,8 @@ gboolean online_service_connect(OnlineService *service){
 }/*online_service_connect*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
+	return;
+	/*
 	SoupCookieJar	*cookie_jar=NULL;
 	gchar		*cookie_jar_filename=NULL;
 	
@@ -859,6 +956,7 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	
 	g_free(cookie_jar_filename);
 	g_object_unref(cookie_jar);
+	*/
 }/*online_servce_open_cookie_jar*/
 
 /* Login to service. */

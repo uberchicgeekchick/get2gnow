@@ -121,6 +121,7 @@ GtkWindow *main_window_get_window(void);
 GtkPaned *main_window_get_tweet_paned(void);
 GtkMenuItem *main_window_get_menu(const gchar *menu);
 GtkListStore *main_window_get_best_friends_list_store(void);
+GtkTreeModel *main_window_get_best_friends_tree_model(void);
 
 void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
 void main_window_set_statusbar_msg(gchar *msg);

@@ -749,15 +749,15 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	
 	TimelineLabels *timeline_labels=TimelineLabelsList;
 	while(timeline_labels->monitoring){
-		if(g_str_has_prefix(timeline, timeline_labels->timeline )){
+		if( g_str_has_prefix(timeline, timeline_labels->timeline ) || g_str_equal( timeline, timeline_labels->timeline ) ){
 			this->monitoring=timeline_labels->monitoring;
 			this->timeline=g_strdup(timeline);
-			if(!g_str_has_prefix(timeline, "/statuses/user_timeline/")){
-				this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
-				this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
-				break;
-			}
-		}else if(g_str_has_prefix(timeline, "/statuses/user_timeline/")){
+			this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
+			this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
+			break;
+		}
+		
+		if(g_str_has_prefix(timeline, "/statuses/user_timeline/")){
 			this->monitoring=timeline_labels->monitoring;
 			this->timeline=g_strdup(timeline);
 			gchar **feed_info=g_strsplit_set(timeline, "/.", -1);

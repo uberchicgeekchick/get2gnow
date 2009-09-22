@@ -1,0 +1,242 @@
+System: Linux 2.6.27.29-0.1-default #1 SMP 2009-08-15 17:53:59 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Clearlooks
+Icon Theme: Lila
+GTK+ Modules: pk-gtk-module, gnomebreakpad
+
+Memory status: size: 395075584 vsize: 395075584 resident: 27066368 share: 14970880 rss: 27066368 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1253552114 rtime: 82 utime: 71 stime: 11 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/usr/bin/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+[New Thread 0x7fef39bfa950 (LWP 27327)]
+0x00007fef46bbd5af in waitpid () from /lib64/libpthread.so.0
+#0  0x00007fef46bbd5af in waitpid () from /lib64/libpthread.so.0
+#1  0x00007fef46e3cf29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fff33184ca8) at gspawn.c:382
+#2  0x00007fef46e3d238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fff33184ca8) at gspawn.c:694
+#3  0x00007fef429c3bf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+#6  <signal handler called>
+#7  0x00007fef468d5bbd in strcasecmp () from /lib64/libc.so.6
+#8  0x000000000040b94b in online_service_is_user_best_friend (
+    service=<value optimized out>, user_name=0x9328f0 "LoriMoreno")
+    at online-service.c:592
+#9  0x00000000004098ed in online_services_is_user_best_friend (
+    services=<value optimized out>, user_name=0x9328f0 "LoriMoreno")
+    at online-services.c:591
+#10 0x000000000041f092 in parse_timeline (service=0x6cef00, 
+    xml=<value optimized out>, 
+    uri=0x8a1b50 "https://twitter.com/statuses/replies.xml?since_id=3776451389", tweet_list=0x91fe70, monitoring=Replies) at parser.c:433
+#11 0x000000000041318b in network_display_timeline (
+    session=<value optimized out>, xml=0x88f6f0, service_wrapper=0x920340)
+    at network.c:312
+#12 0x000000000040df6f in online_service_wrapper_run (
+    online_service_wrapper=0x920340, session=0x0, xml=0x0)
+    at online-service-wrapper.c:203
+#13 0x000000000040b020 in online_service_callback (session=0x681c60, 
+    xml=0x88f6f0, service_wrapper=0x920340) at online-service.c:1332
+#14 0x00007fef4e901269 in queue_message_callback ()
+   from /usr/lib64/libsoup-2.4.so.1
+#15 0x00007fef46e055ea in g_main_dispatch (context=<value optimized out>)
+    at gmain.c:1824
+#16 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
+#17 0x00007fef46e08d58 in g_main_context_iterate (context=0x683810, block=1, 
+    dispatch=1, self=<value optimized out>) at gmain.c:2455
+#18 0x00007fef46e0924d in IA__g_main_loop_run (loop=0x946060) at gmain.c:2663
+#19 0x00007fef4afd4437 in IA__gtk_main () at gtkmain.c:1205
+#20 0x0000000000417911 in main (argc=1, argv=0x7fff33185678, 
+    envp=<value optimized out>) at main.c:72
+
+Thread 2 (Thread 0x7fef39bfa950 (LWP 27327)):
+#0  0x00007fef46920386 in poll () from /lib64/libc.so.6
+No symbol table info available.
+#1  0x00007fef46e08c29 in g_main_context_poll (n_fds=<value optimized out>, 
+    fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>)
+    at gmain.c:2768
+No locals.
+#2  g_main_context_iterate (n_fds=<value optimized out>, 
+    fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>)
+    at gmain.c:2450
+        max_priority = 2147483647
+        timeout = -1
+        some_ready = <value optimized out>
+        nfds = 5
+        allocated_nfds = 1
+        fds = 0x6b5870
+        __PRETTY_FUNCTION__ = "g_main_context_iterate"
+#3  0x00007fef46e0924d in IA__g_main_loop_run (loop=0x90f930) at gmain.c:2663
+        self = 0x9a3ba0
+        __PRETTY_FUNCTION__ = "IA__g_main_loop_run"
+#4  0x00007fef4b6f80d0 in link_io_thread_fn (data=<value optimized out>)
+    at linc.c:396
+No locals.
+#5  0x00007fef46e2ecd4 in g_thread_create_proxy (data=0x9a3ba0)
+    at gthread.c:635
+        __PRETTY_FUNCTION__ = "g_thread_create_proxy"
+#6  0x00007fef46bb6070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#7  0x00007fef4692910d in clone () from /lib64/libc.so.6
+No symbol table info available.
+
+Thread 1 (Thread 0x7fef4f4d97d0 (LWP 27312)):
+#0  0x00007fef46bbd5af in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007fef46e3cf29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fff33184ca8) at gspawn.c:382
+        outpipe = -1
+        errpipe = -1
+        pid = 27330
+        fds = {__fds_bits = {10141088, 8, 16, 16, 15469632, 0, 16, 0, 
+            15469672, 8583104, 15469632, 140734050618536, 5, 140665663133622, 
+            140734050618216, 140734050618328}}
+        ret = <value optimized out>
+        outstr = 0x0
+        errstr = 0x0
+        failed = 0
+        status = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_spawn_sync"
+#2  0x00007fef46e3d238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fff33184ca8) at gspawn.c:694
+        retval = 0
+        argv = 0xec0c40
+        __PRETTY_FUNCTION__ = "IA__g_spawn_command_line_sync"
+#3  0x00007fef429c3bf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+        res = <value optimized out>
+        warning_file = <value optimized out>
+        exec_str = 0x8f3540 "bug-buddy --appname=\"get2gnow\" --include=\"/tmp/bug-buddy-907S0U\" --unlink-tempfile --pid=27312"
+        args_str = <value optimized out>
+        error = 0x0
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+        mypath = <value optimized out>
+        gdb = 0xec12a0 "/usr/bin/gdb"
+        has_debug_symbols = <value optimized out>
+        appname = 0x64f960 "get2gnow"
+        pid = 27312
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+        in_segv = 1
+#6  <signal handler called>
+No symbol table info available.
+#7  0x00007fef468d5bbd in strcasecmp () from /lib64/libc.so.6
+No symbol table info available.
+#8  0x000000000040b94b in online_service_is_user_best_friend (
+    service=<value optimized out>, user_name=0x9328f0 "LoriMoreno")
+    at online-service.c:592
+        best_friends = 0x997750
+#9  0x00000000004098ed in online_services_is_user_best_friend (
+    services=<value optimized out>, user_name=0x9328f0 "LoriMoreno")
+    at online-services.c:591
+        a = 0x6cfd40
+#10 0x000000000041f092 in parse_timeline (service=0x6cef00, 
+    xml=<value optimized out>, 
+    uri=0x8a1b50 "https://twitter.com/statuses/replies.xml?since_id=3776451389", tweet_list=0x91fe70, monitoring=Replies) at parser.c:433
+        free_status = <value optimized out>
+        update_author = <value optimized out>
+        doc = 0xb8c4a0
+        root_element = <value optimized out>
+        current_node = 0xdaa430
+        status = 0xebf690
+        notify = <value optimized out>
+        save_oldest_id = 0
+        notify_best_friends = 1
+        new_updates = 2
+        status_id = 4149465722
+        id_newest_update = 4150068278
+        id_oldest_update = 3776451389
+        update_expiration = 604800
+        best_friends_expiration = 0
+        timeline = 0x9b5d60 "/replies.xml"
+        last_notified_update = 4149465722
+        tweet_list_notify_delay = 30
+        notify_priority = 0
+        service_user_name = 0x6b8010 "uberChick"
+#11 0x000000000041318b in network_display_timeline (
+    session=<value optimized out>, xml=0x88f6f0, service_wrapper=0x920340)
+    at network.c:312
+        service = 0x6cef00
+        monitoring = Replies
+        request_uri = 0x9098c0 "https://twitter.com"
+        timeline = <value optimized out>
+        new_updates = <value optimized out>
+#12 0x000000000040df6f in online_service_wrapper_run (
+    online_service_wrapper=0x920340, session=0x0, xml=0x0)
+    at online-service-wrapper.c:203
+No locals.
+#13 0x000000000040b020 in online_service_callback (session=0x681c60, 
+    xml=0x88f6f0, service_wrapper=0x920340) at online-service.c:1332
+        service = 0x6cef00
+        requested_uri = 0x8a1b50 "https://twitter.com/statuses/replies.xml?since_id=3776451389"
+        status = 0x430366 "[Success]"
+#14 0x00007fef4e901269 in queue_message_callback ()
+   from /usr/lib64/libsoup-2.4.so.1
+No locals.
+#15 0x00007fef46e055ea in g_main_dispatch (context=<value optimized out>)
+    at gmain.c:1824
+        __PRETTY_FUNCTION__ = "g_main_dispatch"
+#16 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
+No locals.
+#17 0x00007fef46e08d58 in g_main_context_iterate (context=0x683810, block=1, 
+    dispatch=1, self=<value optimized out>) at gmain.c:2455
+        max_priority = 2147483647
+        timeout = 739
+        some_ready = 1
+        nfds = 7
+        allocated_nfds = <value optimized out>
+        fds = 0x97aac0
+        __PRETTY_FUNCTION__ = "g_main_context_iterate"
+#18 0x00007fef46e0924d in IA__g_main_loop_run (loop=0x946060) at gmain.c:2663
+        self = 0x643430
+        __PRETTY_FUNCTION__ = "IA__g_main_loop_run"
+#19 0x00007fef4afd4437 in IA__gtk_main () at gtkmain.c:1205
+        tmp_list = 0x0
+        functions = 0x0
+        init = 0x6424d0
+        loop = <value optimized out>
+#20 0x0000000000417911 in main (argc=1, argv=0x7fff33185678, 
+    envp=<value optimized out>) at main.c:72
+        option_context = 0x6424d0
+        option_entries = {{long_name = 0x433833 "", short_name = 0 '\000', 
+            flags = 0, arg = G_OPTION_ARG_FILENAME_ARRAY, arg_data = 0x6411a0, 
+            description = 0x4345c8 "Special option that collects any remaining arguments for us", arg_description = 0x0}, {long_name = 0x0, 
+            short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_NONE, 
+            arg_data = 0x0, description = 0x0, arg_description = 0x0}}
+A debugging session is active.
+
+	Inferior 1 [process 27312] will be detached.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]
+
+
+---- Critical and fatal warnings logged during execution ----
+
+** GLib **: g_str_has_prefix: assertion `str != NULL' failed 
