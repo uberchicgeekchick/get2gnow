@@ -176,8 +176,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                                 <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                                <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -732,61 +732,68 @@
                     <property name="border_width">6</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkFrame" id="best_friends_frame">
+                      <object class="GtkScrolledWindow" id="best_friends_scrolled_window">
                         <property name="visible">True</property>
-                        <property name="label_xalign">0</property>
+                        <property name="can_focus">True</property>
+                        <property name="hscrollbar_policy">automatic</property>
+                        <property name="vscrollbar_policy">automatic</property>
+                        <property name="shadow_type">etched-in</property>
                         <child>
-                          <object class="GtkAlignment" id="best_friends_alignment">
+                          <object class="GtkFrame" id="best_friends_frame">
                             <property name="visible">True</property>
-                            <property name="left_padding">12</property>
+                            <property name="label_xalign">0</property>
                             <child>
-                              <object class="GtkTreeView" id="best_friends_sexy_tree_view">
+                              <object class="GtkAlignment" id="best_friends_alignment">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="model">best_friends_list_store</property>
-                                <property name="headers_clickable">False</property>
-                                <property name="expander_column">best_friends_user_name_tree_view_column</property>
-                                <property name="reorderable">True</property>
-                                <property name="rules_hint">True</property>
-                                <property name="search_column">2</property>
-                                <property name="fixed_height_mode">True</property>
-                                <property name="show_expanders">False</property>
-                                <property name="level_indentation">1</property>
+                                <property name="left_padding">12</property>
                                 <child>
-                                  <object class="GtkTreeViewColumn" id="best_friends_user_name_tree_view_column">
-                                    <property name="resizable">True</property>
-                                    <property name="sizing">autosize</property>
-                                    <property name="title">Best Friend:</property>
-                                    <property name="expand">True</property>
+                                  <object class="GtkTreeView" id="best_friends_sexy_tree_view">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="model">best_friends_list_store</property>
+                                    <property name="headers_clickable">False</property>
+                                    <property name="expander_column">best_friends_user_name_tree_view_column</property>
+                                    <property name="reorderable">True</property>
+                                    <property name="rules_hint">True</property>
+                                    <property name="search_column">2</property>
+                                    <property name="show_expanders">False</property>
+                                    <property name="level_indentation">1</property>
                                     <child>
-                                      <object class="GtkCellRendererText" id="best_friends_user_name_cell_renderer_text"/>
-                                      <attributes>
-                                        <attribute name="markup">2</attribute>
-                                      </attributes>
+                                      <object class="GtkTreeViewColumn" id="best_friends_user_name_tree_view_column">
+                                        <property name="sizing">autosize</property>
+                                        <property name="title">Best Friend:</property>
+                                        <property name="expand">True</property>
+                                        <child>
+                                          <object class="GtkCellRendererText" id="best_friends_user_name_cell_renderer_text"/>
+                                          <attributes>
+                                            <attribute name="markup">2</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
                                     </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkTreeViewColumn" id="best_friends_online_service_tree_view_column">
-                                    <property name="title">Account:</property>
                                     <child>
-                                      <object class="GtkCellRendererText" id="best_friends_online_service_cell_renderer_text"/>
-                                      <attributes>
-                                        <attribute name="markup">1</attribute>
-                                      </attributes>
+                                      <object class="GtkTreeViewColumn" id="best_friends_online_service_tree_view_column">
+                                        <property name="title">Account:</property>
+                                        <child>
+                                          <object class="GtkCellRendererText" id="best_friends_online_service_cell_renderer_text"/>
+                                          <attributes>
+                                            <attribute name="markup">1</attribute>
+                                          </attributes>
+                                        </child>
+                                      </object>
                                     </child>
                                   </object>
                                 </child>
                               </object>
                             </child>
-                          </object>
-                        </child>
-                        <child type="label">
-                          <object class="GtkLabel" id="best_friends_label">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">&lt;b&gt;_Best Friends&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
-                            <property name="use_underline">True</property>
+                            <child type="label">
+                              <object class="GtkLabel" id="best_friends_label">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">&lt;b&gt;_Best Friends&lt;/b&gt;</property>
+                                <property name="use_markup">True</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -1039,7 +1046,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">True</property>
+                    <property name="resize">False</property>
                     <property name="shrink">True</property>
                   </packing>
                 </child>
