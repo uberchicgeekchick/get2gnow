@@ -169,13 +169,22 @@ struct _MainWindowPrivate {
 	GtkHPaned		*tweet_list_hpaned;
 	GList			*best_friends_buttons;
 	GtkVBox			*best_friends_vbox;
+	GtkScrolledWindow	*best_friends_scrolled_window;
+	
 	SexyTreeView		*best_friends_sexy_tree_view;
+	GtkTreeViewColumn	*best_friends_user_name_tree_view_column;
+	GtkCellRendererText	*best_friends_user_name_cell_renderer_text;
+	GtkTreeViewColumn	*best_friends_online_service_tree_view_column;
+	GtkCellRendererText	*best_friends_online_service_cell_renderer_text;
+	
 	GtkListStore		*best_friends_list_store;
 	GtkTreeModel		*best_friends_tree_model;
 	GtkTreeModel		*best_friends_tree_model_sort;
+	
 	GtkButton		*best_friends_add_button;
 	GtkButton		*best_friends_delete_button;
 	GtkButton		*best_friends_refresh_button;
+	
 	GtkButton		*best_friends_view_updates_new_button;
 	GtkButton		*best_friends_view_profile_button;
 	GtkButton		*best_friends_send_at_message_button;
@@ -228,10 +237,11 @@ static void main_window_finalize(GObject *object);
 static gboolean main_window_statusbar_display(const gchar *message);
 
 static void main_window_setup( void );
+static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window);
 static void main_window_best_friends_setup( GtkBuilder *ui );
 static void main_window_best_friends_list_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window );
 static void main_window_best_friends_buttons_set_sensitive(void);
-const gchar *main_window_best_friends_get_selected(void);
+static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, MainWindow *main_window);
 static void main_window_best_friends_button_clicked( GtkButton *button );
 static void main_window_view_setup(void);
 
@@ -366,7 +376,14 @@ static void main_window_setup( void ){
 					
 					"tweet_list_hpaned", &main_window->private->tweet_list_hpaned,
 					"best_friends_vbox", &main_window->private->best_friends_vbox,
+					"best_friends_scrolled_window", &main_window->private->best_friends_scrolled_window,
+					
 					"best_friends_sexy_tree_view", &main_window->private->best_friends_sexy_tree_view,
+					"best_friends_user_name_tree_view_column", &main_window->private->best_friends_user_name_tree_view_column,
+					"best_friends_user_name_cell_renderer_text", &main_window->private->best_friends_user_name_cell_renderer_text,
+					"best_friends_online_service_tree_view_column", &main_window->private->best_friends_online_service_tree_view_column,
+					"best_friends_online_service_cell_renderer_text", &main_window->private->best_friends_online_service_cell_renderer_text,
+					
 					"best_friends_list_store", &main_window->private->best_friends_list_store,
 					"best_friends_add_button", &main_window->private->best_friends_add_button,
 					"best_friends_delete_button", &main_window->private->best_friends_delete_button,
@@ -439,9 +456,11 @@ static void main_window_setup( void ){
 					"preferences_tool_button", "clicked", main_window_preferences_cb,
 					"main_window_main_tool_bar_exit_tool_button", "clicked", main_window_exit,
 					
-					"tweet_list_notebook", "switch-page", tweet_lists_mark_as_read,
+					"best_friends_scrolled_window", "size-allocate", main_window_best_friends_resized,
 					
 					"best_friends_sexy_tree_view", "cursor-changed", main_window_best_friends_buttons_set_sensitive,
+					"best_friends_sexy_tree_view", "row-activated", main_window_best_friends_tree_view_row_activated,
+					
 					"best_friends_add_button", "clicked", online_service_request_popup_best_friend_add,
 					"best_friends_delete_button", "clicked", online_service_request_popup_best_friend_drop,
 					
@@ -453,6 +472,8 @@ static void main_window_setup( void ){
 					"best_friends_send_dm_button", "clicked", main_window_best_friends_button_clicked,
 					"best_friends_unfollow_button", "clicked", main_window_best_friends_button_clicked,
 					"best_friends_view_updates_button", "clicked", main_window_best_friends_button_clicked,
+					
+					"tweet_list_notebook", "switch-page", tweet_lists_mark_as_read,
 				NULL
 	);
 	
@@ -511,6 +532,12 @@ static void main_window_setup( void ){
 	main_window_login();
 }/*main_window_setup();*/
 
+static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window){
+	return;
+	g_object_set(main_window->private->best_friends_user_name_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(main_window->private->best_friends_user_name_tree_view_column))-10), NULL);
+	g_object_set(main_window->private->best_friends_online_service_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(main_window->private->best_friends_online_service_tree_view_column))-10), NULL);
+}/*main_window_best_friends_resized(widget, allocation, main_window);*/
+
 static void main_window_best_friends_list_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window ){
 	/* TODO: Add a confirmation dialog that warn of how long this may take. */
 	online_services_best_friends_list_store_validate( online_services, main_window->private->best_friends_list_store );
@@ -567,20 +594,29 @@ static void main_window_best_friends_buttons_set_sensitive(void){
 	uber_free(iter);
 }/*main_window_best_friends_buttons_set_sensitive();*/
 
-const gchar *main_window_best_friends_get_selected(void){
+static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, MainWindow *main_window){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	OnlineService *service=NULL;
 	const gchar *user_name=NULL;
 	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
 	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
 		gtk_tree_model_get(
-				(GtkTreeModel *)main_window->private->best_friends_tree_model_sort, iter,
+				main_window->private->best_friends_tree_model_sort, iter,
+					BestFriendOnlineService, &service,
 					BestFriendUserName, &user_name,
 				-1
 		);
 	
 	uber_free(iter);
-	return user_name;
-}/*main_window_best_friends_get_selected();*/
+	if(!( service && G_STR_N_EMPTY(user_name) )){
+		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
+		control_panel_sexy_select();
+		return;
+	}
+	
+	online_service_request_view_updates( service, main_window->private->window, user_name );
+	control_panel_sexy_select();
+}/*main_window_best_friends_tree_view_row_activated(tree_view, path, column, main_window);*/
 
 static void main_window_best_friends_button_clicked( GtkButton *button ){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);

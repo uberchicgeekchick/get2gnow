@@ -120,7 +120,9 @@ void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointe
 GtkWindow *main_window_get_window(void);
 GtkPaned *main_window_get_tweet_list_paned(void);
 GtkPaned *main_window_get_tweet_paned(void);
+
 GtkMenuItem *main_window_get_menu(const gchar *menu);
+
 GtkListStore *main_window_get_best_friends_list_store(void);
 GtkTreeModel *main_window_get_best_friends_tree_model(void);
 
