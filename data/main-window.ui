@@ -763,7 +763,7 @@
                         <property name="vscrollbar_policy">automatic</property>
                         <property name="shadow_type">etched-in</property>
                         <child>
-                          <object class="GtkTreeView" id="best_friends_sexy_tree_view">
+                          <object class="SexyTreeView" id="best_friends_sexy_tree_view">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="model">best_friends_list_store</property>
