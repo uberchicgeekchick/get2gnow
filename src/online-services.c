@@ -149,7 +149,6 @@ OnlineServices *online_services_init(void){
 		if(online_service_connect(service)) services->total++;
 	}
 	
-	g_slist_free(k);
 	services->accounts=g_list_first(services->accounts);
 	
 	online_services=services;
@@ -180,7 +179,6 @@ gboolean online_services_login(OnlineServices *services){
 		debug("Connected to %d OnlineServices.", services->connected);
 	
 	main_window_state_on_connection(login_okay);
-	g_list_free(a);
 	return login_okay;
 }/*online_services_login*/
 
@@ -198,7 +196,6 @@ gboolean online_services_relogin(OnlineServices *services){
 			if(!relogin_okay) relogin_okay=TRUE;
 	}
 	main_window_state_on_connection(relogin_okay);
-	g_list_free(a);
 	return relogin_okay;
 }/*online_services_relogin*/
 
@@ -212,7 +209,6 @@ void online_services_disconnect(OnlineServices *services){
 		online_service_disconnect(service, TRUE);
 	}
 	main_window_state_on_connection(FALSE);
-	g_list_free(a);
 }/*online_services_disconnect*/
 
 gint online_services_has_total(OnlineServices *services, guint count){
@@ -343,7 +339,6 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 	
 	debug("Updating OnlineServices' accounts.  Removing OnlineService: [%s].", service_key);
 	services->accounts=g_list_remove(services->accounts, service);
-	g_list_free(accounts);
 	
 	debug("Determining what level of the OnlineService's cache directory to delete.");
 	gboolean service_cache_rm_rf=TRUE;
@@ -365,7 +360,6 @@ void online_services_delete_service(OnlineServices *services, OnlineService *ser
 		online_services_dialog_show(main_window_get_window());
 	}
 	longest_replacement_length=0;
-	g_list_free(accounts);
 }/*online_services_delete(services, service);*/
 
 
@@ -420,7 +414,6 @@ gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *c
 		gtk_combo_box_set_active(combo_box, 0);
 	}
 	
-	g_list_free(a);
 	return (services_loaded ?TRUE :FALSE );
 }/*online_services_combo_box_fill*/
 
@@ -448,11 +441,9 @@ OnlineService *online_services_connected_get_first(OnlineServices *services){
 	OnlineService	*service=NULL;
 	
 	for(a=services->accounts; a; a=a->next)
-		if(online_service_is_connected( (service=(OnlineService *)a->data) )){
-			g_list_free(a);
+		if(online_service_is_connected( (service=(OnlineService *)a->data) ))
 			return service;
-		}
-	g_list_free(a);
+		
 	return NULL;
 }/*online_services_connected_get_first(online_services);*/
 
@@ -463,7 +454,6 @@ OnlineService *online_services_get_online_service_by_guid( OnlineServices *servi
 	for(a=services->accounts; a; a=a->next)
 		if(!strcasecmp( online_service_get_guid( (service=(OnlineService *)a->data) ), online_service_guid ) )
 			break;
-	g_list_free(a);
 	return (service ?service :NULL );
 }/*online_services_get_online_service_by_guid( Online_services, online_service_guid );*/
 
@@ -480,7 +470,6 @@ OnlineService *online_services_connected_get_last(OnlineServices *services){
 		if(online_service_is_connected( (OnlineService *)a->data ))
 			service=(OnlineService *)a->data;
 	
-	g_list_free(a);
 	return service;
 }/*online_services_connected_get_last(online_services);*/
 
@@ -514,7 +503,6 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 		debug("Requesting: %s from <%s>.", uri, service_key);
 		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
-	g_list_free(a);
 }/*online_services_request*/
 
 
@@ -540,7 +528,6 @@ gssize online_services_get_length_of_longest_replacement(OnlineServices *service
 		}
 	}
 	
-	g_list_free(a);
 	return longest_replacement_length;
 }/*online_services_get_length_of_longest_replacement(online_services);*/
 
@@ -552,7 +539,6 @@ gint online_services_best_friends_list_store_fill( OnlineServices *services, Gtk
 	services->best_friends_total=0;
 	for(a=services->accounts; a; a=a->next)
 		services->best_friends_total+=online_service_best_friends_list_store_fill( (OnlineService *)a->data, list_store );
-	g_list_free(a);
 	return services->best_friends_total;
 }/*online_services_best_friends_list_store_fill( online_services );*/
 
@@ -563,7 +549,6 @@ gint online_services_best_friends_list_store_validate( OnlineServices *services,
 	services->best_friends_total=0;
 	for(a=services->accounts; a; a=a->next)
 		services->best_friends_total+=online_service_best_friends_list_store_validate( (OnlineService *)a->data, list_store );
-	g_list_free(a);
 	return services->best_friends_total;
 }/*online_services_best_friends_list_store_fill( online_services );*/
 
@@ -572,7 +557,6 @@ void online_services_best_friends_list_store_free( OnlineServices *services, Gtk
 	GList		*a=NULL;
 	for(a=services->accounts; a; a=a->next)
 		online_service_best_friends_list_store_free( (OnlineService *)a->data, list_store );
-	g_list_free(a);
 }/*online_services_best_friends_list_store_free( online_services );*/
 
 void online_services_best_friends_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name ){
@@ -647,6 +631,7 @@ gboolean online_services_is_user_best_friend( OnlineServices *services, const gc
 void online_services_deinit(OnlineServices *services){
 	debug("**SHUTDOWN:** Closing & releasing %d accounts.", services->total);
 	g_list_foreach(services->accounts, (GFunc)online_service_free, NULL);
+	g_list_free(services->accounts);
 
 	debug("**SHUTDOWN:** freeing OnlineServices keys.");
 	g_slist_free(services->keys);

@@ -1099,6 +1099,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	);
 	
 	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, online_service_get_guid(service));
+	
 	control_panel_view_selected_update(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	
 	g_free(user_name);

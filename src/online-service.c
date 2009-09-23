@@ -559,7 +559,6 @@ gint online_service_best_friends_list_store_fill( OnlineService *service, GtkLis
 	for( best_friends=g_slist_nth( service->best_friends, 0 ); best_friends; best_friends=best_friends->next, service->best_friends_total++ )
 		online_service_best_friends_list_store_append( service, (const gchar *)best_friends->data );
 	
-	g_slist_free( best_friends );
 	return service->best_friends_total;
 }/*online_service_best_friends_list_store_fill( service );*/
 
@@ -569,7 +568,6 @@ gint online_service_best_friends_list_store_validate( OnlineService *service, Gt
 	for( best_friends=g_slist_nth( service->best_friends, 0 ); best_friends; best_friends=best_friends->next)
 		online_service_fetch_profile( service, (const gchar *)best_friends->data, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_best_friends_list_store_update_check );
 	
-	g_slist_free( best_friends );
 	return service->best_friends_total;
 }/*online_service_best_friends_list_store_validate( service, list_store );*/
 
@@ -783,7 +781,6 @@ void online_service_best_friends_list_store_free( OnlineService *service, GtkLis
 		uber_free(iter);
 	}
 	g_slist_foreach(service->best_friends, (GFunc)g_free, NULL);
-	g_slist_free(service->best_friends);
 }/*online_service_best_friends_list_store_free( service, list_store );*/
 
 static void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func ){

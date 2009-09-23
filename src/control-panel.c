@@ -151,6 +151,10 @@ struct _ControlPanel{
 	GtkTreeModel		*previous_updates_tree_model;
 	SexySpellEntry		*sexy_entry;
 	
+	/* Info on the update being viewed to avoid issues with the 'best friends' toggle button. */
+	OnlineService		*viewing_service;
+	gchar			*viewing_user;
+	
 	/* For sending one of your best friends a dm. */
 	OnlineService		*best_friends_service;
 	const gchar		*best_friends_user_name;
@@ -255,6 +259,9 @@ GtkHBox *control_panel_get_embed( void ){
 static void control_panel_destroy_cb(GtkWidget *window, ControlPanel *control_panel){
 	debug("Destroying ControlPanel & freeing resources");
 	control_panel_free_updates( control_panel );
+	
+	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
+	
 	gtk_widget_destroy( GTK_WIDGET( control_panel->control_panel ) );
 	g_free( control_panel );
 }/*control_panel_destroy_cb*/
@@ -434,7 +441,8 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 static void control_panel_selected_update_author_best_friend_toggled( GtkToggleButton *best_friend_toggle_button ){
 	OnlineService *service=online_service_request_selected_update_get_service();
 	const gchar *user_name=online_service_request_selected_update_get_user_name();
-	if(!( G_STR_N_EMPTY(user_name) && service )) return;
+	if(!( G_STR_N_EMPTY(user_name) && service && control_panel->viewing_service==service && g_str_equal( control_panel->viewing_user, user_name ) )) return;
+	
 	if(! online_service_is_user_best_friend( service, user_name ) )
 		online_service_request_selected_update_best_friend_add();
 	else
@@ -721,6 +729,10 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	const gchar *service_user_name=online_service_get_user_name( service );
 	const gchar *service_user_nick=online_service_get_user_nick( service );
 	const gchar *service_uri_scheme_suffix=( online_service_is_secure( service )?"s":"");
+	
+	control_panel->viewing_service=service;
+	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
+	control_panel->viewing_user=g_strdup( (G_STR_EMPTY( user_name ) ?"" :user_name ) );
 
 	gchar *sexy_text=NULL;
 	if( !id )
@@ -932,6 +944,9 @@ void control_panel_new_update(void){
 	gtk_widget_hide( (GtkWidget *)control_panel->best_friend_dm_notification_label );
 	online_service_request_unset_selected_update();
 	control_panel_sexy_set((gchar *)"");
+	
+	if(gtk_toggle_button_get_active(control_panel->best_friend_toggle_button) )
+		gtk_toggle_button_set_active( control_panel->best_friend_toggle_button, FALSE );
 	
 	geometry_load();
 	control_panel_sexy_select();
