@@ -707,16 +707,16 @@ static void main_window_best_friends_button_clicked( GtkButton *button ){
 
 static void main_window_view_setup(void){
 	/* Best Friends stuff. */
+	gtk_check_menu_item_set_active( main_window->private->view_best_friends_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, FALSE ) );
 	g_object_set_data_full( (GObject *)main_window->private->view_best_friends_check_menu_item, "gconfig_key", g_strdup(MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX), g_free);
 	g_object_set_data( (GObject *)main_window->private->view_best_friends_check_menu_item, "widget", (GtkWidget *)main_window->private->best_friends_vbox);
 	g_signal_connect_after( main_window->private->view_best_friends_check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
-	gtk_check_menu_item_set_active( main_window->private->view_best_friends_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, FALSE ) );
 	
 	/* Main Toolbar stuff. */
+	gtk_check_menu_item_set_active( main_window->private->view_toolbar_main_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_MAIN_TOOLBAR_HIDE, FALSE ) );
 	g_object_set_data_full( (GObject *)main_window->private->view_toolbar_main_check_menu_item, "gconfig_key", g_strdup(MAIN_WINDOW_MAIN_TOOLBAR_HIDE), g_free);
 	g_object_set_data( (GObject *)main_window->private->view_toolbar_main_check_menu_item, "widget", (GtkWidget *)main_window->private->main_window_handlebox);
 	g_signal_connect_after( main_window->private->view_toolbar_main_check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
-	gtk_check_menu_item_set_active( main_window->private->view_toolbar_main_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_MAIN_TOOLBAR_HIDE, FALSE ) );
 	
 	/* Tabs Toolbars stuff. */
 	g_object_set_data_full( (GObject *)main_window->private->view_toolbar_tabs_check_menu_item, "gconfig_key", g_strdup(MAIN_WINDOW_TABS_TOOLBARS_HIDE), g_free);
@@ -724,10 +724,10 @@ static void main_window_view_setup(void){
 	gtk_check_menu_item_set_active( main_window->private->view_toolbar_tabs_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_TABS_TOOLBARS_HIDE, FALSE ) );
 	
 	g_signal_connect_after( main_window->private->view_control_panel_floating_check_menu_item, "toggled", (GCallback)contol_panel_emulate_embed_toggle, NULL );
-	g_signal_connect_after( main_window->private->view_control_panel_compact_view_check_menu_item, "toggled", (GCallback)contol_panel_emulate_compact_view_toggle, NULL );
-	gtk_check_menu_item_set_active( main_window->private->view_control_panel_compact_view_check_menu_item, gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE ) );
-	
 	gtk_check_menu_item_set_active( main_window->private->view_control_panel_floating_check_menu_item, gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) );
+	
+	gtk_check_menu_item_set_active( main_window->private->view_control_panel_compact_view_check_menu_item, gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE ) );
+	g_signal_connect_after( main_window->private->view_control_panel_compact_view_check_menu_item, "toggled", (GCallback)contol_panel_emulate_compact_view_toggle, NULL );
 }/*main_window_view_setup();*/
 
 static void main_window_view_menu_option_toggled( GtkCheckMenuItem *check_menu_item ){
@@ -737,10 +737,16 @@ static void main_window_view_menu_option_toggled( GtkCheckMenuItem *check_menu_i
 	 * e.g. /ui/hide/best_friends & /ui/hide/main_window.
  .	 * 	This is handled by MainWindow's methods: 'main_window_toggle_visibility' & 'main_window_timeout'.
 	 */
-	gconfig_set_bool( ( (const gchar *)g_object_get_data( (GObject *)check_menu_item, "gconfig_key") ), !gtk_check_menu_item_get_active( check_menu_item ));
+	const gchar *gconfig_key=g_object_get_data( (GObject *)check_menu_item, "gconfig_key");
+	gboolean show=!gtk_check_menu_item_get_active( check_menu_item );
+	gconfig_set_bool( gconfig_key, !show );
 	GtkWidget *widget=NULL;
-	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) )
-		gtk_widget_toggle_visibility( widget );
+	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) ){
+		if(!show)
+			gtk_widget_hide( widget );
+		else
+			gtk_widget_show( widget );
+	}
 }/*main_window_view_menu_option_toggled( check_menu_item );*/
 
 void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window){

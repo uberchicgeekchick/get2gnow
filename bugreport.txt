@@ -1,0 +1,228 @@
+System: Linux 2.6.27.29-0.1-default #1 SMP 2009-08-15 17:53:59 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Clearlooks
+Icon Theme: Lila
+GTK+ Modules: pk-gtk-module, gnomebreakpad
+
+Memory status: size: 259780608 vsize: 259780608 resident: 16846848 share: 12353536 rss: 16846848 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1253876362 rtime: 20 utime: 16 stime: 4 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/usr/bin/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+0x00007f5a63cfa575 in waitpid () from /lib64/libpthread.so.0
+#0  0x00007f5a63cfa575 in waitpid () from /lib64/libpthread.so.0
+#1  0x00007f5a63f79f29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fff34c203a8) at gspawn.c:382
+#2  0x00007f5a63f7a238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fff34c203a8) at gspawn.c:694
+#3  0x00007f5a5fb00bf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+#6  <signal handler called>
+#7  0x000000000042562e in contol_panel_emulate_compact_view_toggle ()
+    at control-panel.c:456
+#8  0x00007f5a64a3b36d in IA__g_closure_invoke (closure=0x7083c0, 
+    return_value=0x0, n_param_values=1, param_values=0x7f4720, 
+    invocation_hint=0x7fff34c209d0) at gclosure.c:767
+#9  0x00007f5a64a5147c in signal_emit_unlocked_R (node=0x6ffe10, detail=0, 
+    instance=0x7090f0, emission_return=0x0, instance_and_params=0x7f4720)
+    at gsignal.c:3317
+#10 0x00007f5a64a524f2 in IA__g_signal_emit_valist (instance=0x7090f0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff34c20bb0)
+    at gsignal.c:2980
+#11 0x00007f5a64a52a13 in IA__g_signal_emit (instance=0x7090f0, 
+    signal_id=4401391, detail=0) at gsignal.c:3037
+#12 0x00007f5a68080abd in IA__gtk_check_menu_item_toggled (
+    check_menu_item=<value optimized out>) at gtkcheckmenuitem.c:299
+#13 gtk_check_menu_item_activate (check_menu_item=<value optimized out>)
+    at gtkcheckmenuitem.c:419
+#14 0x00007f5a64a3b36d in IA__g_closure_invoke (closure=0x6f4c50, 
+    return_value=0x0, n_param_values=1, param_values=0x7f6580, 
+    invocation_hint=0x7fff34c20de0) at gclosure.c:767
+#15 0x00007f5a64a507e3 in signal_emit_unlocked_R (node=0x6f4cf0, detail=0, 
+    instance=0x7090f0, emission_return=0x0, instance_and_params=0x7f6580)
+    at gsignal.c:3177
+#16 0x00007f5a64a524f2 in IA__g_signal_emit_valist (instance=0x7090f0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff34c20fc0)
+    at gsignal.c:2980
+#17 0x00007f5a64a52a13 in IA__g_signal_emit (instance=0x7090f0, 
+    signal_id=4401391, detail=0) at gsignal.c:3037
+#18 0x000000000041c1a6 in main_window_view_setup () at main-window.c:730
+#19 main_window_setup () at main-window.c:485
+#20 main_window_create () at main-window.c:1171
+#21 0x00000000004179c4 in program_init (argc=0, argv=0x0) at program.c:129
+#22 0x0000000000417b78 in main (argc=1, argv=0x7fff34c217b8, 
+    envp=<value optimized out>) at main.c:67
+
+Thread 1 (Thread 0x7f5a6c6157d0 (LWP 4885)):
+#0  0x00007f5a63cfa575 in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f5a63f79f29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fff34c203a8) at gspawn.c:382
+        outpipe = -1
+        errpipe = -1
+        pid = 4888
+        fds = {__fds_bits = {7379040, 8, 16, 16, 9034608, 0, 16, 0, 9034632, 
+            7393392, 9034608, 140734078518184, 3, 140026200844214, 
+            140734078517864, 140734078517976}}
+        ret = <value optimized out>
+        outstr = 0x0
+        errstr = 0x0
+        failed = 0
+        status = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_spawn_sync"
+#2  0x00007f5a63f7a238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fff34c203a8) at gspawn.c:694
+        retval = 0
+        argv = 0x89db70
+        __PRETTY_FUNCTION__ = "IA__g_spawn_command_line_sync"
+#3  0x00007f5a5fb00bf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+        res = <value optimized out>
+        warning_file = <value optimized out>
+        exec_str = 0x8a14a0 "bug-buddy --appname=\"get2gnow\" --pid=4885"
+        args_str = <value optimized out>
+        error = 0x0
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+        mypath = <value optimized out>
+        gdb = 0x89b180 "/usr/bin/gdb"
+        has_debug_symbols = <value optimized out>
+        appname = 0x650960 "get2gnow"
+        pid = 4885
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+        in_segv = 1
+#6  <signal handler called>
+No symbol table info available.
+#7  0x000000000042562e in contol_panel_emulate_compact_view_toggle ()
+    at control-panel.c:456
+No locals.
+#8  0x00007f5a64a3b36d in IA__g_closure_invoke (closure=0x7083c0, 
+    return_value=0x0, n_param_values=1, param_values=0x7f4720, 
+    invocation_hint=0x7fff34c209d0) at gclosure.c:767
+        marshal = 0x7f5a64a47e10 <IA__g_cclosure_marshal_VOID__VOID>
+        marshal_data = 0x0
+        __PRETTY_FUNCTION__ = "IA__g_closure_invoke"
+#9  0x00007f5a64a5147c in signal_emit_unlocked_R (node=0x6ffe10, detail=0, 
+    instance=0x7090f0, emission_return=0x0, instance_and_params=0x7f4720)
+    at gsignal.c:3317
+        tmp = <value optimized out>
+        handler = 0x7b58d0
+        accumulator = 0x0
+        emission = {next = 0x7fff34c20dd0, instance = 0x7090f0, ihint = {
+            signal_id = 134, detail = 0, run_type = G_SIGNAL_RUN_LAST}, 
+          state = EMISSION_RUN, chain_type = 4}
+        class_closure = 0x6ffb00
+        handler_list = 0x7b58d0
+        return_accu = 0x0
+        accu = {g_type = 0, data = {{v_int = 0, v_uint = 0, v_long = 0, 
+              v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        signal_id = 134
+        max_sequential_handler_number = 309
+        return_value_altered = 1
+#10 0x00007f5a64a524f2 in IA__g_signal_emit_valist (instance=0x7090f0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff34c20bb0)
+    at gsignal.c:2980
+        signal_return_type = 4
+        param_values = 0x7f4738
+        node = 0x6ffe10
+        i = 0
+        n_params = 0
+        __PRETTY_FUNCTION__ = "IA__g_signal_emit_valist"
+#11 0x00007f5a64a52a13 in IA__g_signal_emit (instance=0x7090f0, 
+    signal_id=4401391, detail=0) at gsignal.c:3037
+        var_args = {{gp_offset = 24, fp_offset = 48, 
+            overflow_arg_area = 0x7fff34c20c90, 
+            reg_save_area = 0x7fff34c20bd0}}
+#12 0x00007f5a68080abd in IA__gtk_check_menu_item_toggled (
+    check_menu_item=<value optimized out>) at gtkcheckmenuitem.c:299
+No locals.
+#13 gtk_check_menu_item_activate (check_menu_item=<value optimized out>)
+    at gtkcheckmenuitem.c:419
+No locals.
+#14 0x00007f5a64a3b36d in IA__g_closure_invoke (closure=0x6f4c50, 
+    return_value=0x0, n_param_values=1, param_values=0x7f6580, 
+    invocation_hint=0x7fff34c20de0) at gclosure.c:767
+        marshal = 0x7f5a64a39870 <g_type_class_meta_marshal>
+        marshal_data = 0x378
+        __PRETTY_FUNCTION__ = "IA__g_closure_invoke"
+#15 0x00007f5a64a507e3 in signal_emit_unlocked_R (node=0x6f4cf0, detail=0, 
+    instance=0x7090f0, emission_return=0x0, instance_and_params=0x7f6580)
+    at gsignal.c:3177
+        accumulator = 0x0
+        emission = {next = 0x0, instance = 0x7090f0, ihint = {signal_id = 126, 
+            detail = 0, run_type = G_SIGNAL_RUN_FIRST}, state = EMISSION_RUN, 
+          chain_type = 7339168}
+        class_closure = 0x6f4c50
+        handler_list = 0x0
+        return_accu = 0x0
+        accu = {g_type = 0, data = {{v_int = 0, v_uint = 0, v_long = 0, 
+              v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        signal_id = 126
+        max_sequential_handler_number = 309
+        return_value_altered = 0
+#16 0x00007f5a64a524f2 in IA__g_signal_emit_valist (instance=0x7090f0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff34c20fc0)
+    at gsignal.c:2980
+        signal_return_type = 4
+        param_values = 0x7f6598
+        node = 0x6f4cf0
+        i = 0
+        n_params = 0
+        __PRETTY_FUNCTION__ = "IA__g_signal_emit_valist"
+#17 0x00007f5a64a52a13 in IA__g_signal_emit (instance=0x7090f0, 
+    signal_id=4401391, detail=0) at gsignal.c:3037
+        var_args = {{gp_offset = 24, fp_offset = 48, 
+            overflow_arg_area = 0x7fff34c210a0, 
+            reg_save_area = 0x7fff34c20fe0}}
+#18 0x000000000041c1a6 in main_window_view_setup () at main-window.c:730
+No locals.
+#19 main_window_setup () at main-window.c:485
+        ui = 0x6d3de0
+#20 main_window_create () at main-window.c:1171
+No locals.
+#21 0x00000000004179c4 in program_init (argc=0, argv=0x0) at program.c:129
+No locals.
+#22 0x0000000000417b78 in main (argc=1, argv=0x7fff34c217b8, 
+    envp=<value optimized out>) at main.c:67
+        option_context = 0x6434d0
+        option_entries = {{long_name = 0x4340b3 "", short_name = 0 '\000', 
+            flags = 0, arg = G_OPTION_ARG_FILENAME_ARRAY, arg_data = 0x642190, 
+            description = 0x434e48 "Special option that collects any remaining arguments for us", arg_description = 0x0}, {long_name = 0x0, 
+            short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_NONE, 
+            arg_data = 0x0, description = 0x0, arg_description = 0x0}}
+A debugging session is active.
+
+	Inferior 1 [process 4885] will be detached.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]
