@@ -1,4 +1,5 @@
-* TODO
+* TODO:
+- Finish Implementing API_TIMELINE_BEST_FRIEND.  1st finish implementing its support in 'src/tweet-list.c'.  Than add formating of the the timeline's URI, in 'src/main-window.c', next add tracking of best friends 'id_ipdate_newest', in src/parser.c', lastly add support for 'updating' & refreshig the 'since_id', in 'src/online-service.c'.
 - 'FINISH' cache_save_xml so it limits the users/statuses that are saved or it'll bloat the hard drive.
 - Add loading & parsing of cached user's friends & followers from cache.
 

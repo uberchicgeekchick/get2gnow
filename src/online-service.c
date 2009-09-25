@@ -172,7 +172,6 @@ static gboolean online_service_best_friends_load( OnlineService *service );
 static gboolean online_service_best_friends_save( OnlineService *service );
 static void online_service_best_friends_list_store_append( OnlineService *service, const gchar *user_name );
 static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name );
-static gboolean online_service_best_friends_list_store_mark_as_unread( OnlineService *service, const gchar *user_name );
 static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name );
 
 static void online_service_message_restarted(SoupMessage *xml, gpointer user_data);
@@ -541,12 +540,14 @@ static void online_service_display_debug_details(OnlineService *service, gboolea
 static gboolean online_service_best_friends_load( OnlineService *service ){
 	gchar *gconf_prefs_path=g_strdup_printf( ONLINE_SERVICE_BEST_FRIENDS, service->key );
 	gboolean loaded=gconfig_get_list_string( gconf_prefs_path, &service->best_friends );
+	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
 	uber_free( gconf_prefs_path );
 	return loaded;
 }/*online_service_best_friends_load( service );*/
 
 static gboolean online_service_best_friends_save( OnlineService *service ){
 	gchar *gconf_prefs_path=g_strdup_printf( ONLINE_SERVICE_BEST_FRIENDS, service->key );
+	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
 	gboolean saved=gconfig_set_list_string( gconf_prefs_path, service->best_friends );
 	uber_free( gconf_prefs_path );
 	return saved;
@@ -571,23 +572,12 @@ gint online_service_best_friends_list_store_validate( OnlineService *service, Gt
 	return service->best_friends_total;
 }/*online_service_best_friends_list_store_validate( service, list_store );*/
 
-void online_service_best_friends_mark_as_unread( OnlineService *service, const gchar *user_name ){
-	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return;
-	GSList *best_friends=NULL;
-	for( best_friends=service->best_friends; best_friends; best_friends=best_friends->next )
-		if(!strcasecmp( user_name, (gchar *)best_friends->data )){
-			online_service_best_friends_list_store_mark_as_unread( service, (const gchar *)best_friends->data );
-			return;
-		}
-}/*online_service_best_friends_mark_as_unread( services, user_name )*/
-
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name ){
 	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return FALSE;
 	GSList *best_friends=NULL;
 	for( best_friends=service->best_friends; best_friends; best_friends=best_friends->next )
-		if(!strcasecmp( user_name, (gchar *)best_friends->data )){
+		if(!strcasecmp( user_name, (gchar *)best_friends->data ))
 			return TRUE;
-		}
 	
 	return FALSE;
 }/*online_service_is_user_best_friend( service, user_name );*/
@@ -635,6 +625,7 @@ void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *o
 		online_service_best_friends_list_store_append( service, user_name );
 	}
 	
+	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
 	online_service_best_friends_save( service );
 	service->best_friends=g_slist_nth( service->best_friends, 0 );
 }/*online_service_best_friends_list_store_update_check( online_service_wrapper, user_name );*/
@@ -648,11 +639,13 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 	gtk_list_store_set(
 				list_store, iter,
 					BestFriendOnlineService, service,
+					BestFriendUser, user_name,
 					BestFriendOnlineServiceGUID, service->guid,
 					BestFriendUserName, user_name,
 				-1
 	);
 	uber_free( iter );
+	online_services_best_friends_total_update( online_services, 1);
 }/*online_service_best_friends_list_store_append( service, user_name );*/
 
 static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name ){
@@ -673,56 +666,17 @@ static gboolean online_service_best_friends_confirm_clean_up( OnlineService *ser
 	return FALSE;
 }/*online_service_best_friends_confirm_clean_up( service, user_name );*/
 
-static gboolean online_service_best_friends_list_store_mark_as_unread( OnlineService *service, const gchar *user_name ){
-	static GtkListStore *list_store=NULL;
-	if(!list_store) list_store=main_window_get_best_friends_list_store();
-	static GtkTreeModel *tree_model=NULL;
-	if(!tree_model) tree_model=main_window_get_best_friends_tree_model();
-	
-	gchar *user_name_at_index=NULL;
-	gboolean found=FALSE;
-	for(gint i=0; i<service->best_friends_total; i++){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter((GtkTreeModel *)list_store, iter, path))){
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		gtk_tree_model_get(
-				(GtkTreeModel *)list_store, iter,
-					BestFriendUserName, &user_name_at_index,
-				-1
-		);
-		if(strcasecmp(user_name, user_name_at_index) || g_str_has_prefix( user_name_at_index, "<b>") ){
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		debug("Marking best friend: %s as having unread messages from iter at index: %d.", user_name_at_index, i);
-		gtk_list_store_set(list_store, iter, BestFriendUserName, (user_name_at_index=g_strdup_printf("<b>%s</b>", user_name_at_index)), -1);
-		uber_free(user_name_at_index);
-		
-		gtk_tree_path_free(path);
-		uber_free(iter);
-		found=TRUE;
-		break;
-	}
-	return found;
-}/*online_service_best_friends_list_store_mark_as_unread( service, user_name );*/
-
 static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name ){
 	static GtkListStore *list_store=NULL;
 	if(!list_store) list_store=main_window_get_best_friends_list_store();
 	static GtkTreeModel *tree_model=NULL;
 	if(!tree_model) tree_model=main_window_get_best_friends_tree_model();
 	
+	OnlineService *service_at_index=NULL;
 	gchar *user_name_at_index=NULL;
 	gboolean found=FALSE;
-	for(gint i=0; i<service->best_friends_total; i++){
+	gint best_friends_total=online_services_best_friends_total_update( online_services, 0 );
+	for(gint i=0; i<best_friends_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter((GtkTreeModel *)list_store, iter, path))){
@@ -734,17 +688,19 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 		
 		gtk_tree_model_get(
 				tree_model, iter,
+					BestFriendOnlineService, &service_at_index,
 					BestFriendUserName, &user_name_at_index,
 				-1
 		);
 		
-		if(strcasecmp(user_name, user_name_at_index)){
+		if(service==service_at_index && strcasecmp(user_name, user_name_at_index)){
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
 		}
 		
 		debug("Removing best friend: %s from iter at index: %d", user_name_at_index, i);
+		online_services_best_friends_total_update( online_services, -1);
 		gtk_list_store_remove(list_store, iter);
 		
 		gtk_tree_path_free(path);

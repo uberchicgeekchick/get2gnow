@@ -88,6 +88,7 @@ G_BEGIN_DECLS
 gchar *online_service_request_action_to_string(RequestAction action);
 
 void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_name);
+void online_service_request_view_best_friends_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_view_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_follow(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_unfollow(OnlineService *service, GtkWindow *parent, const gchar *user_name);
@@ -100,6 +101,7 @@ void online_service_request_unfave(OnlineService *service, GtkWindow *parent, co
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
+void online_service_request_selected_update_view_best_friends_updates(void);
 void online_service_request_selected_update_view_updates(void);
 void online_service_request_selected_update_view_profile(void);
 void online_service_request_selected_update_best_friend_add(void);
@@ -125,6 +127,7 @@ void online_service_request_unset_selected_update(void);
 
 void online_service_request_popup_select_service(void);
 void online_service_request_popup_friend_profile(void);
+void online_service_request_popup_friend_best_friends_updates(void);
 void online_service_request_popup_friend_updates(void);
 void online_service_request_popup_friend_follow(void);
 void online_service_request_popup_best_friend_add(void);

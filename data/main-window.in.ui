@@ -7,6 +7,8 @@
     <columns>
       <!-- column-name BestFriendOnlineService -->
       <column type="gpointer"/>
+      <!-- column-name BestFriendUser -->
+      <column type="gchararray"/>
       <!-- column-name BestFriendOnlineServiceGUID -->
       <column type="gchararray"/>
       <!-- column-name BestFriendUserName -->
@@ -176,8 +178,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -782,7 +784,7 @@
                                 <child>
                                   <object class="GtkCellRendererText" id="best_friends_user_name_cell_renderer_text"/>
                                   <attributes>
-                                    <attribute name="markup">2</attribute>
+                                    <attribute name="markup">3</attribute>
                                   </attributes>
                                 </child>
                               </object>
@@ -793,7 +795,7 @@
                                 <child>
                                   <object class="GtkCellRendererText" id="best_friends_online_service_cell_renderer_text"/>
                                   <attributes>
-                                    <attribute name="markup">1</attribute>
+                                    <attribute name="markup">2</attribute>
                                   </attributes>
                                 </child>
                               </object>

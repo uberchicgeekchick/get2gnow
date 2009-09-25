@@ -115,24 +115,25 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Users,		API_TIMELINE_USER,	N_("%s's%s _Updates"),			N_("%s's%s Updates")},
-	{Tweets,	API_TIMELINE_FRIENDS,	N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
-	{Replies,	API_REPLIES,		N_("@ _Replies"),			N_("@ Replies")},
-	{Replies,	API_MENTIONS,		N_("@ _Mentions"),			N_("@ Mentions")},
-	{DMs,		API_DIRECT_MESSAGES,	N_("My DMs _Inbox"),			N_("My DMs Inbox")},
-	{Faves,		API_FAVORITES,		N_("My Star_'d Updates"),		N_("My Star'd Updates")},
-	{Searches,	API_TIMELINE_SEARCH,	N_("_Search Results"),			N_("Search Results")},
-	{Groups,	API_TIMELINE_GROUP,	N_("_Group Discussions"),		N_("Group Discussions")},
-	{Timelines,	API_TIMELINE_PUBLIC,	N_("_Global Updates"),			N_("Public Updates")},
-	{Archive,	API_TIMELINE_MINE,	N_("_My Tweets"),			N_("My Tweets")},
-	{BestFriends,	NULL,			N_("My _Best Friends' Updates"),	N_("My _Best Friends' Updates")},
-	{None,		NULL,			N_("Unknow_n timeline"),		N_("Unknown timeline")}
+	{BestFriends,	API_TIMELINE_BEST_FRIEND,	N_("My Best Friend: _%s's%s Newest Updates"),	N_("My Best Friend: %s's%s Newest Updates")},
+	{Users,		API_TIMELINE_USER,		N_("%s's%s _Updates"),			N_("%s's%s Updates")},
+	{Tweets,	API_TIMELINE_FRIENDS,		N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
+	{Replies,	API_REPLIES,			N_("@ _Replies"),			N_("@ Replies")},
+	{Replies,	API_MENTIONS,			N_("@ _Mentions"),			N_("@ Mentions")},
+	{DMs,		API_DIRECT_MESSAGES,		N_("My DMs _Inbox"),			N_("My DMs Inbox")},
+	{Faves,		API_FAVORITES,			N_("My Star_'d Updates"),		N_("My Star'd Updates")},
+	{Searches,	API_TIMELINE_SEARCH,		N_("_Search Results"),			N_("Search Results")},
+	{Groups,	API_TIMELINE_GROUP,		N_("_Group Discussions"),		N_("Group Discussions")},
+	{Timelines,	API_TIMELINE_PUBLIC,		N_("_Global Updates"),			N_("Public Updates")},
+	{Archive,	API_TIMELINE_MINE,		N_("_My Tweets"),			N_("My Tweets")},
+	{None,		NULL,				N_("Unknow_n timeline"),		N_("Unknown timeline")}
 };
 
 struct _TweetListPrivate {
 	guint			timeout_id;
 	gint			page;
 	OnlineService		*service;
+	gchar			*user;
 	
 	UpdateMonitor		monitoring;
 	const gchar		*monitoring_string;
@@ -275,6 +276,9 @@ static void tweet_list_class_init(TweetListClass *klass){
 static void tweet_list_init(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
+	this->service=NULL;
+	this->user=NULL;
+	
 	this->has_loaded=-1;
 	this->unread=TRUE;
 	
@@ -326,6 +330,7 @@ static void tweet_list_finalize(TweetList *tweet_list){
 	if(this->timeout_id && G_STR_N_EMPTY(this->timeline))
 		program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
 	
+	if(this->user) uber_free(this->user);
 	if(this->timeline) uber_free(this->timeline);
 	if(this->timeline_tab_label) uber_free(this->timeline_tab_label);
 	if(this->timeline_menu_label) uber_free(this->timeline_menu_label);
@@ -744,37 +749,40 @@ static void tweet_list_close(GtkToolButton *tweet_list_close_tool_button, TweetL
 }/*tweet_list_close(tweet_list_close_tool_button, tweet_list);*/
 
 static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *timeline){
-	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) && G_STR_N_EMPTY(timeline) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	TimelineLabels *timeline_labels=TimelineLabelsList;
+	this->timeline=g_strdup(timeline);
 	while(timeline_labels->monitoring){
-		if( g_str_has_prefix(timeline, timeline_labels->timeline ) || g_str_equal( timeline, timeline_labels->timeline ) ){
+		if( g_str_has_prefix(this->timeline, timeline_labels->timeline ) || g_str_equal( this->timeline, timeline_labels->timeline ) ){
 			this->monitoring=timeline_labels->monitoring;
-			this->timeline=g_strdup(timeline);
 			this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
 			this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
 			break;
 		}
 		
-		if(g_str_has_prefix(timeline, "/statuses/user_timeline/")){
-			this->monitoring=timeline_labels->monitoring;
-			this->timeline=g_strdup(timeline);
+		if(g_str_has_prefix(this->timeline, "/statuses/user_timeline/")){
 			gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
-			gchar **user_info=g_strsplit_set(feed_info[3], "/", -1);
+			gchar **user_info=g_strsplit_set(feed_info[3], ".", -1);
 			const gchar *user_name=user_info[0];
 			if(G_STR_N_EMPTY(user_name)){
+				this->user=g_strdup(user_name);
+				if(timeline_labels->monitoring==BestFriends && !online_services_is_user_best_friend(online_services, this->user))
+					continue;
 				gchar *service_uri=NULL;
 				if(!this->service)
 					service_uri=g_strdup("");
 				else
 					service_uri=g_strdup_printf(" %s", online_service_get_uri(this->service) );
+				
 				this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user_name, service_uri );
 				this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user_name, service_uri );
 				uber_free(service_uri);
 			}
 			g_strfreev(feed_info);
 			g_strfreev(user_info);
+			this->monitoring=timeline_labels->monitoring;
 			break;
 		}
 		timeline_labels++;

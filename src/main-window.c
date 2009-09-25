@@ -240,6 +240,7 @@ static void main_window_setup( void );
 static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window);
 static void main_window_best_friends_setup( GtkBuilder *ui );
 static void main_window_best_friends_list_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window );
+static void main_window_best_friends_read_status_update(void);
 static void main_window_best_friends_buttons_set_sensitive(void);
 static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, MainWindow *main_window);
 static void main_window_best_friends_button_clicked( GtkButton *button );
@@ -506,16 +507,10 @@ static void main_window_setup( void ){
 	main_window->private->control_panel_window=control_panel_get_window();
 	
 	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE)){
-		gtk_check_menu_item_set_active( main_window->private->view_control_panel_floating_check_menu_item, FALSE );
 		gtk_widget_reparent( GTK_WIDGET( main_window->private->control_panel_embed ), GTK_WIDGET( main_window->private->control_panel_vbox ));
 		gtk_widget_show( GTK_WIDGET( main_window->private->control_panel_embed ));
-	}else{
-		gtk_check_menu_item_set_active( main_window->private->view_control_panel_floating_check_menu_item, TRUE );
+	}else
 		gtk_widget_hide( GTK_WIDGET( main_window->private->expand_box ));
-	}
-	
-	gtk_check_menu_item_set_active( main_window->private->view_control_panel_compact_view_check_menu_item, gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE ) );
-	
 	/* Set the main window geometry */
 	geometry_load();
 	
@@ -569,21 +564,30 @@ static void main_window_best_friends_setup( GtkBuilder *ui ){
 	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, BestFriendUserName);
 }/*main_window_best_friends_setup(ui);*/
 
-static void main_window_best_friends_buttons_set_sensitive(void){
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+static void main_window_best_friends_read_status_update(void){
 	OnlineService *service=NULL;
-	const gchar *user_name=NULL;
-	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
-	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
-		gtk_tree_model_get(
-				main_window->private->best_friends_tree_model_sort, iter,
-					BestFriendOnlineService, &service,
-					BestFriendUserName, &user_name,
-				-1
-		);
+	gchar *user_name=NULL;
+	if(!( (main_window_best_friends_get_selected( &service, &user_name )) && service && G_STR_N_EMPTY(user_name) )){
+		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
+		control_panel_sexy_select();
+		return;
+	}
 	
 	if(G_STR_N_EMPTY(user_name) && g_str_has_prefix(user_name, "<b>"))
 		online_services_best_friends_list_store_mark_as_read( online_services, service, user_name, main_window->private->best_friends_list_store );
+	if(user_name) uber_free( user_name );
+}/*main_window_best_friends_read_status_update();*/
+
+static void main_window_best_friends_buttons_set_sensitive(void){
+	main_window_best_friends_read_status_update();
+	
+	OnlineService *service=NULL;
+	gchar *user_name=NULL;
+	if(!( (main_window_best_friends_get_selected( &service, &user_name )) && service && G_STR_N_EMPTY(user_name) )){
+		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
+		control_panel_sexy_select();
+		return;
+	}
 	
 	GList *buttons=NULL;
 	for(buttons=main_window->private->best_friends_buttons; buttons; buttons=buttons->next)
@@ -591,7 +595,6 @@ static void main_window_best_friends_buttons_set_sensitive(void){
 	g_list_free(buttons);
 	
 	control_panel_sexy_select();
-	uber_free(iter);
 }/*main_window_best_friends_buttons_set_sensitive();*/
 
 gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **user_name ){
@@ -604,7 +607,7 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 		gtk_tree_model_get(
 				main_window->private->best_friends_tree_model_sort, iter,
 					BestFriendOnlineService, &selected_service,
-					BestFriendUserName, &selected_user_name,
+					BestFriendUser, &selected_user_name,
 				-1
 		);
 	if(( (selected_service) && (online_service_is_connected(selected_service)) && (G_STR_N_EMPTY(selected_user_name)) )){
@@ -621,6 +624,7 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 }/*main_window_best_friends_get_selected();*/
 
 static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, MainWindow *main_window){
+	main_window_best_friends_read_status_update();
 	OnlineService *service=NULL;
 	gchar *user_name=NULL;
 	if(!( (main_window_best_friends_get_selected( &service, &user_name )) && service && G_STR_N_EMPTY(user_name) )){
@@ -634,6 +638,7 @@ static void main_window_best_friends_tree_view_row_activated(GtkTreeView *tree_v
 }/*main_window_best_friends_tree_view_row_activated(tree_view, path, column, main_window);*/
 
 static void main_window_best_friends_button_clicked( GtkButton *button ){
+	main_window_best_friends_read_status_update();
 	OnlineService *service=NULL;
 	gchar *user_name=NULL;
 	if(!( (main_window_best_friends_get_selected( &service, &user_name )) && service && G_STR_N_EMPTY(user_name) )){
@@ -657,7 +662,7 @@ static void main_window_best_friends_button_clicked( GtkButton *button ){
 	}
 	
 	if( button==main_window->private->best_friends_view_updates_new_button ){
-		online_service_request_view_updates( service, main_window->private->window, user_name );
+		online_service_request_view_best_friends_updates( service, main_window->private->window, user_name );
 		control_panel_sexy_select();
 		uber_free(user_name);
 		return;
@@ -702,24 +707,27 @@ static void main_window_best_friends_button_clicked( GtkButton *button ){
 
 static void main_window_view_setup(void){
 	/* Best Friends stuff. */
-	gtk_check_menu_item_set_active( main_window->private->view_best_friends_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, FALSE ) );
 	g_object_set_data_full( (GObject *)main_window->private->view_best_friends_check_menu_item, "gconfig_key", g_strdup(MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX), g_free);
 	g_object_set_data( (GObject *)main_window->private->view_best_friends_check_menu_item, "widget", (GtkWidget *)main_window->private->best_friends_vbox);
 	g_signal_connect_after( main_window->private->view_best_friends_check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
+	gtk_check_menu_item_set_active( main_window->private->view_best_friends_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, FALSE ) );
 	
 	/* Main Toolbar stuff. */
-	gtk_check_menu_item_set_active( main_window->private->view_toolbar_main_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_MAIN_TOOLBAR_HIDE, FALSE ) );
 	g_object_set_data_full( (GObject *)main_window->private->view_toolbar_main_check_menu_item, "gconfig_key", g_strdup(MAIN_WINDOW_MAIN_TOOLBAR_HIDE), g_free);
 	g_object_set_data( (GObject *)main_window->private->view_toolbar_main_check_menu_item, "widget", (GtkWidget *)main_window->private->main_window_handlebox);
 	g_signal_connect_after( main_window->private->view_toolbar_main_check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
+	gtk_check_menu_item_set_active( main_window->private->view_toolbar_main_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_MAIN_TOOLBAR_HIDE, FALSE ) );
 	
 	/* Tabs Toolbars stuff. */
-	gtk_check_menu_item_set_active( main_window->private->view_toolbar_tabs_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_TABS_TOOLBARS_HIDE, FALSE ) );
 	g_object_set_data_full( (GObject *)main_window->private->view_toolbar_tabs_check_menu_item, "gconfig_key", g_strdup(MAIN_WINDOW_TABS_TOOLBARS_HIDE), g_free);
 	g_signal_connect_after( main_window->private->view_toolbar_tabs_check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
+	gtk_check_menu_item_set_active( main_window->private->view_toolbar_tabs_check_menu_item, !gconfig_if_bool( MAIN_WINDOW_TABS_TOOLBARS_HIDE, FALSE ) );
 	
 	g_signal_connect_after( main_window->private->view_control_panel_floating_check_menu_item, "toggled", (GCallback)contol_panel_emulate_embed_toggle, NULL );
 	g_signal_connect_after( main_window->private->view_control_panel_compact_view_check_menu_item, "toggled", (GCallback)contol_panel_emulate_compact_view_toggle, NULL );
+	gtk_check_menu_item_set_active( main_window->private->view_control_panel_compact_view_check_menu_item, gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE ) );
+	
+	gtk_check_menu_item_set_active( main_window->private->view_control_panel_floating_check_menu_item, gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) );
 }/*main_window_view_setup();*/
 
 static void main_window_view_menu_option_toggled( GtkCheckMenuItem *check_menu_item ){

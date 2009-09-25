@@ -292,7 +292,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	
 	guint new_updates=0;
 	switch(monitoring){
-		case None: case BestFriends:
+		case None:
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
@@ -308,6 +308,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Timelines:
 		case Users:
 		case Archive:
+		case BestFriends:
 		default:
 			new_updates=parse_timeline(service, xml, timeline, tweet_list, monitoring);
 			break;

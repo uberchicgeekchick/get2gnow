@@ -559,62 +559,105 @@ void online_services_best_friends_list_store_free( OnlineServices *services, Gtk
 		online_service_best_friends_list_store_free( (OnlineService *)a->data, list_store );
 }/*online_services_best_friends_list_store_free( online_services );*/
 
-void online_services_best_friends_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name ){
-	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return;
+static gboolean online_services_best_friends_list_store_get_user_iter( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeIter **iter){
+	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
 	
-	GList		*a=NULL;
-	for(a=services->accounts; a; a=a->next)
-		if( ( (OnlineService *)a->data) == service ){
-			online_service_best_friends_mark_as_unread( (OnlineService *)a->data, user_name );
-			return;
-		}
-}/*online_services_best_friends_mark_as_unread( services, user_name )*/
-
-gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store ){
-	gboolean found=FALSE;
 	OnlineService *service_at_index=NULL;
 	gchar *user_name_at_index=NULL;
 	for(gint i=1; i<services->best_friends_total; i++){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, iter, path))){
-			debug("Marking best friend, at index: %d, as read has failed.  Unable to retrieve iter from path.", i);
+		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, *iter, path))){
+			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path.", user_name, online_service_get_guid(service), i );
 			gtk_tree_path_free(path);
-			uber_free(iter);
+			uber_free( *iter );
 			continue;
 		}
 		
 		gtk_tree_model_get(
-				 (GtkTreeModel *)list_store, iter,
+				 (GtkTreeModel *)list_store, *iter,
 				 	BestFriendOnlineService, &service_at_index,
 					BestFriendUserName, &user_name_at_index,
 				-1
 		);
-		if(!( service==service_at_index && !strcasecmp(user_name, user_name_at_index) && g_str_has_prefix( user_name_at_index, "<b>" ) )){
+		if(!( service==service_at_index && !strcasecmp(user_name, user_name_at_index) )){
 			gtk_tree_path_free(path);
-			uber_free(iter);
+			uber_free( *iter );
 			continue;
 		}
 		
-		debug("Marking best friend: %s updates as having been read.  Best friend from iter at index: %d.", user_name_at_index, i);
+		debug("Found user: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
+		return TRUE;
+	}
+	if( *iter ) uber_free( *iter );
+	return FALSE;
+}/*online_services_best_friends_list_store_get_user_iter( services, service, user_name, list_store, &iter);*/
+
+gboolean online_services_best_friends_list_store_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store ){
+	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
+	
+	GtkTreeIter *iter=NULL;
+	if(!online_services_best_friends_list_store_get_user_iter( services, service, user_name, list_store, &iter)){
+		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, online_service_get_guid(service) );
+		return FALSE;
+	}
+	
+	gchar *user_at_index=NULL, *user_name_at_index=NULL;
+	gtk_tree_model_get(
+			 (GtkTreeModel *)list_store, iter,
+				BestFriendUser, &user_at_index,
+				BestFriendUserName, &user_name_at_index,
+			-1
+	);
+	
+	if( g_str_has_prefix( user_name_at_index, "<b>" ) )
+		debug("Best Friend: %s, on service: %s, is already marked as having unread updates.", user_name, online_service_get_guid(service) );
+	else{	
+		debug("Marking best friend: %s, on service <%s>, as having unread messages.", user_name_at_index, online_service_get_guid(service) );
+		uber_free(user_name_at_index);
+		user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
+		gtk_list_store_set(list_store, iter, BestFriendUserName, user_name_at_index, -1);
+	}
+	
+	uber_free(iter);
+	uber_free(user_at_index);
+	uber_free(user_name_at_index);
+	control_panel_sexy_select();
+	return TRUE;
+}/*online_services_best_friends_mark_list_store_as_unread( services, user_name )*/
+
+gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store ){
+	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
+	
+	GtkTreeIter *iter=NULL;
+	if(!online_services_best_friends_list_store_get_user_iter( services, service, user_name, list_store, &iter)){
+		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, online_service_get_guid(service) );
+		return FALSE;
+	}
+	
+	gchar *user_at_index=NULL, *user_name_at_index=NULL;
+	gtk_tree_model_get(
+			 (GtkTreeModel *)list_store, iter,
+				BestFriendUser, &user_at_index,
+				BestFriendUserName, &user_name_at_index,
+			-1
+	);
+	
+	if( !g_str_has_prefix( user_name_at_index, "<b>" ) )
+		debug("Best Friend: %s, on service: %s, is already marked as having all of their updates read.", user_name, online_service_get_guid(service)  );
+	else{
+		debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, online_service_get_guid(service) );
 		/* TODO:
 		 * Yeah I need to use strlcpy but getting "best friends" robust is #1 for me.
 		 * tweak this later.
 		 */
-		gchar **user_name_part_one=g_strsplit(user_name_at_index, "<b>", 2);
-		gchar **user_name_part_two=g_strsplit(user_name_part_one[1], "</b>", 2);
-		gtk_list_store_set(list_store, iter, BestFriendUserName, user_name_part_two[0], -1);
-		g_strfreev(user_name_part_one);
-		g_strfreev(user_name_part_two);
-		
-		uber_free(user_name_at_index);
-		gtk_tree_path_free(path);
-		uber_free(iter);
-		found=TRUE;
-		break;
+		gtk_list_store_set(list_store, iter, BestFriendUserName, user_at_index, -1);
 	}
+	uber_free(iter);
+	uber_free(user_at_index);
+	uber_free(user_name_at_index);
 	control_panel_sexy_select();
-	return found;
+	return TRUE;
 }/*online_services_best_friends_tree_view_mark_as_read( services, service, user_name, tree_view, list_store, tree_model );*/
 
 gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name ){
@@ -626,6 +669,10 @@ gboolean online_services_is_user_best_friend( OnlineServices *services, const gc
 		}
 	return FALSE;
 }/*online_services_is_user_best_friend( online_services, user_name );*/
+
+gint online_services_best_friends_total_update( OnlineServices *services, gint best_friends_to_add){
+	return (services->best_friends_total+=best_friends_to_add);
+}/*online_services_best_friends_total_update( Online_service, 1 || -1);*/
 
 
 void online_services_deinit(OnlineServices *services){

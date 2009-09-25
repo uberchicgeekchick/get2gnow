@@ -110,7 +110,8 @@ OnlineService *online_services_get_online_service_by_guid( OnlineServices *servi
 gint online_services_best_friends_list_store_fill( OnlineServices *services, GtkListStore *list_store );
 gint online_services_best_friends_list_store_validate( OnlineServices *services, GtkListStore *list_store );
 void online_services_best_friends_list_store_free( OnlineServices *services, GtkListStore *list_store );
-void online_services_best_friends_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name );
+gint online_services_best_friends_total_update( OnlineServices *services, gint best_friends_to_add);
+gboolean online_services_best_friends_list_store_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store );
 gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store );
 gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name );
 

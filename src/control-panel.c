@@ -369,11 +369,6 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	control_panel_grab_widgets_compact_control_panel_hidden( ui );
 	
 	debug("ControlPanel's hotkey connected.  Connecting signal handlers.");
-	g_signal_connect_after( control_panel->embed_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
-	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
-	g_signal_connect_after( control_panel->best_friend_toggle_button, "toggled", (GCallback)control_panel_selected_update_author_best_friend_toggled, NULL );
-	g_signal_connect_after( control_panel->control_panel, "event-after", (GCallback)control_panel_sexy_select, NULL );
-	g_signal_connect_after( control_panel->control_panel_embed, "event-after", (GCallback)control_panel_sexy_select, NULL );
 	control_panel_bind_hotkeys( ui );
 	
 	gtkbuilder_connect( ui, control_panel,
@@ -517,6 +512,12 @@ static void control_panel_selected_update_buttons_setup(GtkBuilder *ui){
 }/*control_panel_selected_widgets_setup*/
 
 static void control_panel_bind_hotkeys(GtkBuilder *ui){
+	g_signal_connect_after( control_panel->embed_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
+	g_signal_connect_after( control_panel->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
+	g_signal_connect_after( control_panel->best_friend_toggle_button, "toggled", (GCallback)control_panel_selected_update_author_best_friend_toggled, NULL );
+	g_signal_connect_after( control_panel->control_panel, "event-after", (GCallback)control_panel_sexy_select, NULL );
+	g_signal_connect_after( control_panel->control_panel_embed, "event-after", (GCallback)control_panel_sexy_select, NULL );
+	
 	const gchar *hotkey_widgets[]={
 		/* Connect the signals */
 		"control_panel",

@@ -311,8 +311,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
 	guint		new_updates=0;
-	gdouble		status_id=0;
-	gdouble		id_newest_update=0, id_oldest_update=0;
+	gdouble		status_id=0.0;
+	gdouble		id_newest_update=0.0, id_oldest_update=0.0;
 	gint		update_expiration=0, best_friends_expiration=0;
 	gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &best_friends_expiration, 86400);
 	
@@ -430,13 +430,20 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		user_status_store(status, tweet_list);
 		gboolean update_author_is_best_friend=FALSE;
 		const gchar *update_author=user_status_get_user_name(status);
-		if(online_services_is_user_best_friend( online_services, update_author ) )
+		if( monitoring!=BestFriends && online_service_is_user_best_friend( service, update_author ) ){
+			gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
 			update_author_is_best_friend=TRUE;
+			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, update_author );
+			online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
+			if( status_id > id_best_friend_newest_update )
+				online_service_update_ids_set( service, user_timeline, status_id, id_best_friend_oldest_update );
+			uber_free( user_timeline );
+		}
 		
 		if(!save_oldest_id && status_id > last_notified_update && ( update_author_is_best_friend  && notify_best_friends ) && strcasecmp(update_author, service_user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
 			if(update_author_is_best_friend)
-				online_services_best_friends_mark_as_unread( online_services, service, update_author );
+				online_services_best_friends_list_store_mark_as_unread( online_services, service, update_author, main_window_get_best_friends_list_store() );
 			if(notify||notify_best_friends){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
