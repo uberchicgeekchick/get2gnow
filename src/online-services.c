@@ -586,9 +586,10 @@ static gboolean online_services_best_friends_list_store_get_user_iter( OnlineSer
 			continue;
 		}
 		
-		debug("Found user: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
+		debug("Found best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
 		return TRUE;
 	}
+	debug("Unable to find best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
 	if( *iter ) uber_free( *iter );
 	return FALSE;
 }/*online_services_best_friends_list_store_get_user_iter( services, service, user_name, list_store, &iter);*/
