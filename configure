@@ -730,6 +730,7 @@ MAKEFLAGS=
 SHELL=${CONFIG_SHELL-/bin/sh}
 
 # Identity of this package.
+PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
 PACKAGE_VERSION="#00BF01a40"
@@ -785,6 +786,7 @@ ac_includes_default="\
 
 ac_subst_vars='SHELL
 PATH_SEPARATOR
+PACKAGE
 PACKAGE_NAME
 PACKAGE_TARNAME
 PACKAGE_VERSION
@@ -1920,6 +1922,11 @@ ac_signal=0
 rm -f -r conftest* confdefs.h
 
 # Predefined preprocessor variables.
+
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE "$PACKAGE"
+_ACEOF
+
 
 cat >>confdefs.h <<_ACEOF
 #define PACKAGE_NAME "$PACKAGE_NAME"
@@ -25401,6 +25408,7 @@ for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
 SHELL!$SHELL$ac_delim
 PATH_SEPARATOR!$PATH_SEPARATOR$ac_delim
+PACKAGE!$PACKAGE$ac_delim
 PACKAGE_NAME!$PACKAGE_NAME$ac_delim
 PACKAGE_TARNAME!$PACKAGE_TARNAME$ac_delim
 PACKAGE_VERSION!$PACKAGE_VERSION$ac_delim
@@ -25504,7 +25512,7 @@ CPP!$CPP$ac_delim
 CXX!$CXX$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 103; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 104; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -26255,6 +26263,7 @@ if test "$no_create" != yes; then
 fi
 
 
-printf "\nPrefix:\t\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$have_gnome_keyring";
+printf "\nPrefix:\t\t\t%s\nBUILDDIR:\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$ac_pwd" "$have_gnome_keyring";
 if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
-if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\nDebug BUILDDIR:\t$abs_pwd\n"; fi;
+if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\n"; fi;
+

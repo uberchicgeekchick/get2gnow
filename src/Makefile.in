@@ -315,6 +315,7 @@ AM_CFLAGS=									\
 		-DPREFIX="\"$(prefix)"\"					\
 		-DSYSCONFDIR=\""$(sysconfdir)"\"				\
 		-DDATADIR=\""$(datadir)"\"              			\
+		-DPKGDATADIR=\""$(pkgdatadir)"\"				\
 		-DLOCALEDIR=\""$(localedir)"\"					\
 		-DLIBDIR=\""$(libdir)"\"					\
 		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"	\

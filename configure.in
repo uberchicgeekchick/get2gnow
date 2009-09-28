@@ -2,6 +2,8 @@ AC_INIT([get2gnow], ["#00BF01a40"], [http://bugzilla.gnome.org/enter_bug.cgi?pro
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
+PACKAGE="get2gnow"
+
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
@@ -28,6 +30,12 @@ GNOME_COMPILE_WARNINGS([maximum])
 GNOME_CXX_WARNINGS
 GNOME_DEBUG_CHECK
 GNOME_MAINTAINER_MODE_DEFINES
+
+dnl /************************************************************
+dnl  * get2gnow's package, data, & install variables.           *
+dnl  ***********************************************************/
+AC_SUBST(PACKAGE)
+
 
 dnl /************************************************************
 dnl  *	Library Dependencies,					*
@@ -117,7 +125,7 @@ fi
 dnl -----------------------------------------------------------
 dnl Language Support
 dnl -----------------------------------------------------------
-GETTEXT_PACKAGE=get2gnow
+GETTEXT_PACKAGE=$PACKAGE
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[Gettext package name])
 
@@ -136,4 +144,4 @@ po/Makefile
 
 printf "\nPrefix:\t\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$have_gnome_keyring";
 if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
-if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\nDebug BUILDDIR:\t$abs_pwd\n"; fi;
+if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\nDebug BUILDDIR:\t$ac_pwd\n"; fi;

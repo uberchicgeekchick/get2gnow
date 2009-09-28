@@ -428,23 +428,26 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
 		user_status_store(status, tweet_list);
-		gboolean update_author_is_best_friend=FALSE;
 		const gchar *update_author=user_status_get_user_name(status);
 		if( monitoring!=BestFriends && online_service_is_user_best_friend( service, update_author ) ){
 			gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
-			update_author_is_best_friend=TRUE;
 			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, update_author );
 			online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
-			if( status_id > id_best_friend_newest_update )
+			if( id_best_friend_newest_update && status_id > id_best_friend_newest_update ){
+				if(notify_best_friends){
+					free_status=FALSE;
+					g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+					tweet_list_notify_delay+=tweet_display_interval;
+				}
 				online_service_update_ids_set( service, user_timeline, status_id, id_best_friend_oldest_update );
+				online_services_best_friends_list_store_mark_as_unread( online_services, service, update_author, main_window_get_best_friends_list_store() );
+			}
 			uber_free( user_timeline );
 		}
 		
-		if(!save_oldest_id && status_id > last_notified_update && ( update_author_is_best_friend  && notify_best_friends ) && strcasecmp(update_author, service_user_name) ){
+		if(!save_oldest_id && status_id > last_notified_update && strcasecmp(update_author, service_user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
-			if(update_author_is_best_friend)
-				online_services_best_friends_list_store_mark_as_unread( online_services, service, update_author, main_window_get_best_friends_list_store() );
-			if(notify||notify_best_friends){
+			if(notify){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 				tweet_list_notify_delay+=tweet_display_interval;

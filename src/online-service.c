@@ -575,7 +575,7 @@ gint online_service_best_friends_list_store_validate( OnlineService *service, Gt
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name ){
 	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return FALSE;
 	GSList *best_friends=NULL;
-	for( best_friends=service->best_friends; best_friends; best_friends=best_friends->next )
+	for( best_friends=g_slist_nth(service->best_friends, 0); best_friends; best_friends=best_friends->next )
 		if(!strcasecmp( user_name, (gchar *)best_friends->data ))
 			return TRUE;
 	
@@ -618,11 +618,16 @@ void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *o
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
 	const gchar *user_name=user_get_user_name(user);
 	if(!user){
+		debug( "User %s's profile could not be found, on %s.  Their user name has most likely changed.  Though unlikely its possible the netwok connection may have been lost.  Unlikely because prior 'status' checks would have kept this method from being called.", user_name, service->guid );
 		if( online_service_best_friends_confirm_clean_up( service, user_name ) )
 			service->best_friends=g_slist_remove(service->best_friends, user_name);
 	}else if(! online_service_is_user_best_friend(service, user_name ) ){
+		debug( "Adding best friend %s, on %s to the best friends list_store & GSList.", user_name, service->guid );
 		service->best_friends=g_slist_append( service->best_friends, g_strdup(user_name) );
 		online_service_best_friends_list_store_append( service, user_name );
+	}else{
+		debug( "Removing best friend %s, on %s from the best friends list_store & GSList.", user_name, service->guid );
+		online_service_best_friends_list_store_remove( service, user_name );
 	}
 	
 	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
@@ -669,14 +674,11 @@ static gboolean online_service_best_friends_confirm_clean_up( OnlineService *ser
 static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name ){
 	static GtkListStore *list_store=NULL;
 	if(!list_store) list_store=main_window_get_best_friends_list_store();
-	static GtkTreeModel *tree_model=NULL;
-	if(!tree_model) tree_model=main_window_get_best_friends_tree_model();
 	
 	OnlineService *service_at_index=NULL;
 	gchar *user_name_at_index=NULL;
-	gboolean found=FALSE;
 	gint best_friends_total=online_services_best_friends_total_update( online_services, 0 );
-	for(gint i=0; i<best_friends_total; i++){
+	for(gint i=0; i<=best_friends_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter((GtkTreeModel *)list_store, iter, path))){
@@ -687,9 +689,9 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 		}
 		
 		gtk_tree_model_get(
-				tree_model, iter,
+				(GtkTreeModel *)list_store, iter,
 					BestFriendOnlineService, &service_at_index,
-					BestFriendUserName, &user_name_at_index,
+					BestFriendUser, &user_name_at_index,
 				-1
 		);
 		
@@ -701,14 +703,15 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 		
 		debug("Removing best friend: %s from iter at index: %d", user_name_at_index, i);
 		online_services_best_friends_total_update( online_services, -1);
+		service->best_friends_total--;
 		gtk_list_store_remove(list_store, iter);
 		
 		gtk_tree_path_free(path);
 		uber_free(iter);
-		found=TRUE;
-		break;
+		return TRUE;
 	}
-	return found;
+	debug("Could not remove %s, on %s.  The user could not be found.", user_name, service->guid);
+	return FALSE;
 }/*online_service_best_friends_list_store_remove( service, user_name );*/
 
 void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store ){

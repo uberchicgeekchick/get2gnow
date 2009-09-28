@@ -157,7 +157,7 @@ struct _ControlPanel{
 	
 	/* For sending one of your best friends a dm. */
 	OnlineService		*best_friends_service;
-	const gchar		*best_friends_user_name;
+	gchar			*best_friends_user_name;
 	
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm_button;
@@ -261,9 +261,10 @@ static void control_panel_destroy_cb(GtkWidget *window, ControlPanel *control_pa
 	control_panel_free_updates( control_panel );
 	
 	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
+	if( control_panel->best_friends_user_name ) uber_free(control_panel->best_friends_user_name);
 	
 	gtk_widget_destroy( GTK_WIDGET( control_panel->control_panel ) );
-	g_free( control_panel );
+	uber_free( control_panel );
 }/*control_panel_destroy_cb*/
 
 static gboolean control_panel_delete_event_cb(GtkWidget *window, GdkEvent *event, ControlPanel *control_panel){
@@ -400,7 +401,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	
 	gchar *control_panel_title=g_strdup_printf("%s - Control Panel", _( GETTEXT_PACKAGE ));
 	gtk_window_set_title(control_panel->control_panel, control_panel_title);
-	g_free( control_panel_title );
+	uber_free( control_panel_title );
 	
 	if(!( parent && gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) )){
 		debug("ControlPanel's set to be embed, no further setup needed.");
@@ -467,7 +468,7 @@ void control_panel_set_embed_toggle_and_image( void ){
 		gtk_toggle_button_set_active(control_panel->embed_toggle_button, TRUE);
 		gchar *tooltip_markup=g_strdup_printf("<span weight=\"light\">Move ControlPanel back into %s's main window.</span>", PACKAGE_NAME);
 		gtk_widget_set_tooltip_markup( GTK_WIDGET( control_panel->embed_toggle_button ), tooltip_markup );
-		g_free( tooltip_markup );
+		uber_free( tooltip_markup );
 		gtk_image_set_from_icon_name(control_panel->embed_image, "gtk-go-down", ImagesMinimum);
 	}
 }/*control_panel_set_embed_toggle_and_image*/
@@ -591,7 +592,7 @@ static void control_panel_scale( gboolean compact ){
 
 void control_panel_best_friends_start_dm( OnlineService *service, const gchar *user_name ){
 	control_panel->best_friends_service=service;
-	control_panel->best_friends_user_name=user_name;
+	control_panel->best_friends_user_name=g_strdup(user_name);
 	gchar *best_friend_dm_markup_message=NULL;
 	gtk_label_set_markup( control_panel->best_friend_dm_notification_label, (best_friend_dm_markup_message=g_strdup_printf("<b>Direct Message %s:</b>", control_panel->best_friends_user_name)) );
 	uber_free( best_friend_dm_markup_message );
@@ -742,7 +743,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service_user_nick, service_uri_scheme_suffix, service_uri, service_user_name, service_user_name, service_uri);
 	debug("Setting 'sexy_to' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, control_panel->sexy_to, sexy_text, FALSE, TRUE);
-	g_free( sexy_text );
+	uber_free( sexy_text );
 	
 	if(!( G_STR_EMPTY( user_nick ) && G_STR_EMPTY( user_name ) )){
 		if(! G_STR_EMPTY(user_name) )
@@ -751,14 +752,14 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 		sexy_text=g_strdup( "" );
 	debug("Setting 'sexy_from' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, control_panel->sexy_from, sexy_text, FALSE, TRUE);
-	g_free( sexy_text );
+	uber_free( sexy_text );
 	
 	if( !( G_STR_EMPTY( date )))
 		sexy_text=g_markup_printf_escaped("<span style=\"italic\">[%s]</span>", date);
 	else
 		sexy_text=g_strdup( "" );
 	gtk_label_set_markup(control_panel->tweet_datetime_label, sexy_text);
-	g_free( sexy_text );
+	uber_free( sexy_text );
 	
 	
 	/*
@@ -813,22 +814,27 @@ static gshort tweetlen(gchar *tweet){
 }/*tweetlen( update );*/
 
 static void control_panel_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
-	gshort character_count=tweetlen( entry->text );
-	gchar *remaining_characters=NULL;
-	if(character_count < 0){
+	gshort remaining_character_count=tweetlen( entry->text );
+	gchar *remaining_characters_markup_label=NULL;
+	if(remaining_character_count < 0){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
 			control_panel_beep();
-		remaining_characters=g_strdup_printf("<span size=\"small\" foreground=\"red\">%i</span>", character_count);
+		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"red\">%d</span>", remaining_character_count);
 	}else{
-		if(TWEET_MAX_CHARS==character_count && in_reply_to_status_id){
+		if(TWEET_MAX_CHARS==remaining_character_count && ( control_panel->best_friends_service ||  in_reply_to_status_id ) ){
 			in_reply_to_status_id=0.0;
 			in_reply_to_service=NULL;
+			if( control_panel->best_friends_service || G_STR_N_EMPTY( control_panel->best_friends_user_name ) ){
+				control_panel->best_friends_service=NULL;
+				if( control_panel->best_friends_user_name ) uber_free(control_panel->best_friends_user_name);
+				gtk_widget_hide( (GtkWidget *)control_panel->best_friend_dm_notification_label );
+			}
 		}
-		remaining_characters=g_strdup_printf("<span size=\"small\" foreground=\"green\">%i</span>", character_count);
+		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"green\">%d</span>", remaining_character_count);
 	}
 	
-	gtk_label_set_markup(tweet_character_counter, remaining_characters);
-	g_free( remaining_characters );
+	gtk_label_set_markup(tweet_character_counter, remaining_characters_markup_label);
+	uber_free( remaining_characters_markup_label );
 }/*control_panel_count_tweet_char*/
 
 void control_panel_beep( void ){
@@ -845,7 +851,7 @@ void control_panel_sexy_select( void ){
 void control_panel_sexy_prefix_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
 	control_panel_sexy_prefix_string((const gchar *)str);
-	g_free( str );
+	uber_free( str );
 }/*control_panel_sexy_prefix_char*/
 
 void control_panel_sexy_prefix_string(const gchar *str){
@@ -860,7 +866,7 @@ void control_panel_sexy_set(gchar *tweet){
 void control_panel_sexy_insert_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
 	control_panel_sexy_insert_string((const gchar *)str);
-	g_free( str );
+	uber_free( str );
 }/*control_panel_sexy_insert_char*/
 
 void control_panel_sexy_insert_string(const gchar *str){
@@ -870,7 +876,7 @@ void control_panel_sexy_insert_string(const gchar *str){
 void control_panel_sexy_append_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
 	control_panel_sexy_append_string((const gchar *)str);
-	g_free( str );
+	uber_free( str );
 }/*control_panel_sexy_append_char*/
 
 void control_panel_sexy_append_string(const gchar *str){
@@ -910,10 +916,14 @@ void control_panel_send(GtkWidget *activated_widget){
 		return;
 	}
 	
-	if( activated_widget==GTK_WIDGET( control_panel->sexy_dm_button ) )
-		control_panel_sexy_send_dm();
+	if( activated_widget==GTK_WIDGET( control_panel->sexy_dm_button ) ){
+		const gchar *user_name;
+		if(!(( user_name=online_service_request_selected_update_get_user_name()) && G_STR_N_EMPTY(user_name) )) return control_panel_beep();
+		control_panel_sexy_send( online_service_request_selected_update_get_service(), user_name);
+		return;
+	}
 	
-	else if(( activated_widget==GTK_WIDGET( control_panel->followers_send_dm )) &&( GTK_WIDGET_IS_SENSITIVE( control_panel->followers_combo_box )) &&( user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box )) ){
+	if(( activated_widget==GTK_WIDGET( control_panel->followers_send_dm )) &&( GTK_WIDGET_IS_SENSITIVE( control_panel->followers_combo_box )) &&( user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box )) ){
 		uber_free( user_name );
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		User *user=NULL;
@@ -925,19 +935,21 @@ void control_panel_send(GtkWidget *activated_widget){
 					-1
 		);
 		control_panel_sexy_send( user_get_online_service( user ), user_get_user_name( user ));
-		g_free( iter );
-	}else if(control_panel->best_friends_service && control_panel->best_friends_user_name){
-		control_panel_sexy_send( control_panel->best_friends_service, control_panel->best_friends_user_name );
-		control_panel_new_update();
-	}else
-		control_panel_sexy_send(NULL, NULL);
+		uber_free( iter );
+		return;
+	}
+	
+	if(control_panel->best_friends_service && control_panel->best_friends_user_name)
+		return control_panel_sexy_send( control_panel->best_friends_service, control_panel->best_friends_user_name );
+	
+	control_panel_sexy_send(NULL, NULL);
 }/*control_panel_send*/
 
 void control_panel_new_update(void){
 	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
 	
-	if( control_panel->best_friends_user_name ) control_panel->best_friends_user_name="";
 	if( control_panel->best_friends_service ) control_panel->best_friends_service=NULL;
+	if( control_panel->best_friends_user_name ) uber_free(control_panel->best_friends_user_name);
 	
 	if( in_reply_to_service ) in_reply_to_service=NULL;
 	if( in_reply_to_status_id ) in_reply_to_status_id=0;
@@ -970,9 +982,6 @@ static void control_panel_sexy_send(OnlineService *service, const gchar *user_na
 }/*control_panel_sexy_send( online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
 
 void control_panel_sexy_send_dm( void ){
-	const gchar *user_name;
-	if(!(( user_name=online_service_request_selected_update_get_user_name()) && G_STR_N_EMPTY(user_name) )) return control_panel_beep();
-	control_panel_sexy_send( online_service_request_selected_update_get_service(), user_name);
 }/*control_panel_sexy_send_dm();*/
 
 
@@ -1096,7 +1105,7 @@ void control_panel_dm_data_fill(GList *followers){
 					USER_POINTER, NULL,
 				-1
 	);
-	g_free( iter );
+	uber_free( iter );
 	
 	OnlineService *service=NULL;
 	for(list=followers; list; list=list->next) {
@@ -1113,8 +1122,8 @@ void control_panel_dm_data_fill(GList *followers){
 					USER_POINTER, user,
 				-1
 		);
-		g_free( user_label );
-		g_free( iter );
+		uber_free( user_label );
+		uber_free( iter );
 		iter=NULL;
 	}
 	

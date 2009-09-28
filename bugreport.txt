@@ -1,0 +1,147 @@
+System: Linux 2.6.27.29-0.1-default #1 SMP 2009-08-15 17:53:59 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Clearlooks
+Icon Theme: Lila
+GTK+ Modules: pk-gtk-module, gnomebreakpad
+
+Memory status: size: 395640832 vsize: 395640832 resident: 33468416 share: 17911808 rss: 33468416 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1253912646 rtime: 992 utime: 895 stime: 97 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/usr/bin/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+0x00007f65540325af in waitpid () from /lib64/libpthread.so.0
+#0  0x00007f65540325af in waitpid () from /lib64/libpthread.so.0
+#1  0x00007f65542b1f29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fffd7508678) at gspawn.c:382
+#2  0x00007f65542b2238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fffd7508678) at gspawn.c:694
+#3  0x00007f654fe38bf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+#6  <signal handler called>
+#7  0x000000000041878f in main_window_notify_on_timeout (data=0x7f65442df7c0)
+    at main-window.c:1430
+#8  0x00007f655427ad1b in g_timeout_dispatch (source=0x7f65442e1dc0, 
+    callback=0x418770 <main_window_notify_on_timeout>, 
+    user_data=0x7f65442df7c0) at gmain.c:3260
+#9  0x00007f655427a5ea in g_main_dispatch (context=<value optimized out>)
+    at gmain.c:1824
+#10 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
+#11 0x00007f655427dd58 in g_main_context_iterate (context=0x6847c0, block=1, 
+    dispatch=1, self=<value optimized out>) at gmain.c:2455
+#12 0x00007f655427e24d in IA__g_main_loop_run (loop=0x7f654400bab0)
+    at gmain.c:2663
+#13 0x00007f6558449437 in IA__gtk_main () at gtkmain.c:1205
+#14 0x0000000000417c71 in main (argc=1, argv=0x7fffd7508ec8, 
+    envp=<value optimized out>) at main.c:72
+
+Thread 1 (Thread 0x7f655c94d7d0 (LWP 21345)):
+#0  0x00007f65540325af in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f65542b1f29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fffd7508678) at gspawn.c:382
+        outpipe = -1
+        errpipe = -1
+        pid = 21483
+        fds = {__fds_bits = {16134016, 8, 16, 16, 1141804560, 0, 16, 0, 
+            140072910229032, 140072910208096, 140072910229008, 
+            140736805766776, 3, 140073180424118, 140736805766456, 
+            140736805766568}}
+        ret = <value optimized out>
+        outstr = 0x0
+        errstr = 0x0
+        failed = 0
+        status = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_spawn_sync"
+#2  0x00007f65542b2238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fffd7508678) at gspawn.c:694
+        retval = 0
+        argv = 0x7f65440e8e10
+        __PRETTY_FUNCTION__ = "IA__g_spawn_command_line_sync"
+#3  0x00007f654fe38bf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+        res = <value optimized out>
+        warning_file = <value optimized out>
+        exec_str = 0x7f65442dae40 "bug-buddy --appname=\"get2gnow\" --pid=21345"
+        args_str = <value optimized out>
+        error = 0x0
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+        mypath = <value optimized out>
+        gdb = 0x7f65442da930 "/usr/bin/gdb"
+        has_debug_symbols = <value optimized out>
+        appname = 0x650960 "get2gnow"
+        pid = 21345
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+        in_segv = 1
+#6  <signal handler called>
+No symbol table info available.
+#7  0x000000000041878f in main_window_notify_on_timeout (data=0x7f65442df7c0)
+    at main-window.c:1430
+        notification = <value optimized out>
+        notify_notification = <value optimized out>
+        error = <value optimized out>
+#8  0x00007f655427ad1b in g_timeout_dispatch (source=0x7f65442e1dc0, 
+    callback=0x418770 <main_window_notify_on_timeout>, 
+    user_data=0x7f65442df7c0) at gmain.c:3260
+No locals.
+#9  0x00007f655427a5ea in g_main_dispatch (context=<value optimized out>)
+    at gmain.c:1824
+        __PRETTY_FUNCTION__ = "g_main_dispatch"
+#10 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
+No locals.
+#11 0x00007f655427dd58 in g_main_context_iterate (context=0x6847c0, block=1, 
+    dispatch=1, self=<value optimized out>) at gmain.c:2455
+        max_priority = 2147483647
+        timeout = 334
+        some_ready = 1
+        nfds = 10
+        allocated_nfds = <value optimized out>
+        fds = 0x7f65440256d0
+        __PRETTY_FUNCTION__ = "g_main_context_iterate"
+#12 0x00007f655427e24d in IA__g_main_loop_run (loop=0x7f654400bab0)
+    at gmain.c:2663
+        self = 0x644430
+        __PRETTY_FUNCTION__ = "IA__g_main_loop_run"
+#13 0x00007f6558449437 in IA__gtk_main () at gtkmain.c:1205
+        tmp_list = 0x0
+        functions = 0x0
+        init = 0x6434d0
+        loop = <value optimized out>
+#14 0x0000000000417c71 in main (argc=1, argv=0x7fffd7508ec8, 
+    envp=<value optimized out>) at main.c:72
+        option_context = 0x6434d0
+        option_entries = {{long_name = 0x4344cb "", short_name = 0 '\000', 
+            flags = 0, arg = G_OPTION_ARG_FILENAME_ARRAY, arg_data = 0x642188, 
+            description = 0x435260 "Special option that collects any remaining arguments for us", arg_description = 0x0}, {long_name = 0x0, 
+            short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_NONE, 
+            arg_data = 0x0, description = 0x0, arg_description = 0x0}}
+A debugging session is active.
+
+	Inferior 1 [process 21345] will be detached.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]

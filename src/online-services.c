@@ -564,7 +564,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter( OnlineSer
 	
 	OnlineService *service_at_index=NULL;
 	gchar *user_name_at_index=NULL;
-	for(gint i=1; i<services->best_friends_total; i++){
+	for(gint i=0; i<=services->best_friends_total; i++){
 		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, *iter, path))){
@@ -589,7 +589,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter( OnlineSer
 		debug("Found best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
 		return TRUE;
 	}
-	debug("Unable to find best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
+	debug("Unable to find best friend iter for best friend: %s, on service: <%s>.", user_name_at_index, online_service_get_guid(service_at_index) );
 	if( *iter ) uber_free( *iter );
 	return FALSE;
 }/*online_services_best_friends_list_store_get_user_iter( services, service, user_name, list_store, &iter);*/
