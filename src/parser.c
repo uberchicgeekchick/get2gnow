@@ -124,11 +124,18 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	g_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
+		debug("**ERROR:**: Failed to determine content-type for:  %s.", uri);
 		g_strfreev(content_v);
 		g_free(uri);
 		return NULL;
 	}
+	
+	if(!( g_strrstr(content_type, "text") || g_strrstr(content_type, "xml") )){
+		debug("**ERROR:** <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further.", uri, content_type );
+		uber_free( content_type );
+		return NULL;
+	}
+	
 	debug("Parsed Content-Type: [%s] for: %s", content_type, uri);
 	
 	gchar *charset=NULL;
