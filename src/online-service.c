@@ -103,7 +103,7 @@ enum _MicroBloggingService{
 	Unknown = 0,
 	Identica = 1,
 	Twitter = 2,
-	Laconica = 3,
+	StatusNet = 3,
 	Unsupported = 4,
 };
 
@@ -117,7 +117,7 @@ MicroBloggingServices MicroBloggingServicesList[]={
 	{Unknown,	NULL,			"get2gnow"},
 	{Identica,	"identi.ca",		"get2gnow"},
 	{Twitter,	"twitter.com",		"greettweetknow"},
-	{Laconica,	"*",			"get2gnow"},
+	{StatusNet,	"*",			"get2gnow"},
 	{Unsupported,	NULL,			NULL},
 };
 
@@ -309,7 +309,7 @@ static void online_service_set_micro_blogging_service(OnlineService **service){
 	}
 	
 	if(!( (*service)->micro_blogging_service ))
-		(*service)->micro_blogging_service=Laconica;
+		(*service)->micro_blogging_service=StatusNet;
 }/*online_service_set_micro_blogging_service(service);*/
 
 static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_blogging_service){
@@ -317,7 +317,7 @@ static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_
 		case Unknown: default: return _("Unkown");
 		case Identica: return _("Identica");
 		case Twitter: return _("Twitter");
-		case Laconica: return _("Laconica");
+		case StatusNet: return _("StatusNet");
 		case Unsupported: return _("Unsupported");
 	}
 }/*micro_blogging_service_to_string(MicroBloggingServices micro_blogging_service)*/
@@ -328,7 +328,7 @@ gboolean online_service_uses_twitter(OnlineService *service){
 }/*online_service_uses_twitter(service);*/
 
 gboolean online_service_uses_laconica(OnlineService *service){
-	if(service->micro_blogging_service==Identica||service->micro_blogging_service==Laconica) return TRUE;
+	if(service->micro_blogging_service==Identica||service->micro_blogging_service==StatusNet) return TRUE;
 	return FALSE;
 }/*online_service_uses_laconica(service);*/
 
