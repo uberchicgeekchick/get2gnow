@@ -53,38 +53,187 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include "program.h"
-#include "template.h"
-
-
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
+#include "program.h"
+#include "tweet-lists.h"
 
 
 /********************************************************************************
- *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
+typedef struct _TweetLists{
+	GList *tabs;
+	
+	/* These are the 3 default tabs & all other timlines.
+	 * Each page is an embed 'control-panel'
+	 * See: 'data/control-panel.ui', 'src/control-panel.c', & 'src/control-panel.h'.*/
+	GtkNotebook *notebook;
+} TweetLists;
+
+static TweetLists *tweet_lists;
 
 
 /********************************************************************************
  *                prototypes for private methods & functions                    *
  ********************************************************************************/
+static TweetList *tweet_lists_new_tab(const gchar *timeline, OnlineService *service);
 
 
 /********************************************************************************
  *               object methods, handlers, callbacks, & etc.                    *
  ********************************************************************************/
+static void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num);
 
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:tweet-lists.c"
+#include "debug.h"
 
 
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
+void tweet_lists_init( GtkNotebook *notebook ){
+	tweet_lists=g_new0( TweetLists, 1 );
+	
+	tweet_lists->notebook=notebook;
+	if( gtk_notebook_get_n_pages( tweet_lists->notebook ) )
+		gtk_notebook_remove_page(tweet_lists->notebook, 0);
+	
+	g_signal_connect( tweet_lists->notebook, "switch-page", (GCallback)tweet_lists_mark_as_read, NULL );
+	tweet_lists->tabs=NULL;
+}/* tweet_lists_init( main_window->private->tweet_lists_notebook ); */
+
+static TweetList *tweet_lists_new_tab(const gchar *timeline, OnlineService *service ){
+	TweetList *tweet_list=tweet_list_new( timeline, service );
+	
+	tweet_lists->tabs=g_list_append(tweet_lists->tabs, tweet_list);
+	tweet_lists->tabs=g_list_last( tweet_lists->tabs );
+	tweet_list=tweet_lists->tabs->data;
+	tweet_lists->tabs=g_list_first( tweet_lists->tabs );
+	
+	gint page=gtk_notebook_append_page_menu(tweet_lists->notebook, GTK_WIDGET( tweet_list_get_child( tweet_list )), GTK_WIDGET( tweet_list_get_tab( tweet_list )), GTK_WIDGET( tweet_list_get_menu( tweet_list )) );
+	tweet_list_set_page(tweet_list, page);
+	
+	return tweet_list;
+}/*tweet_lists_new_tab( "/replies.xml" );*/
+
+TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service){
+	if(G_STR_EMPTY(timeline)) return NULL;
+	GList *t=NULL;
+	TweetList *tweet_list=NULL;
+	for(t=tweet_lists->tabs; t; t=t->next)
+		if(g_str_equal(tweet_list_get_timeline((TweetList *)t->data), timeline)){
+			tweet_list=(TweetList *)t->data;
+			gtk_notebook_set_current_page(tweet_lists->notebook, tweet_list_get_page( tweet_list ));
+			return tweet_list;
+		}
+	return tweet_lists_new_tab( timeline, service );
+}/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
+
+static void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num){
+	tweet_list_mark_as_read(tweet_lists_get_page(page_num, FALSE));
+}/*tweet_lists_mark_as_read(tweet_lists->notebook, page, 0, main_window);*/
+
+TweetList *tweet_lists_get_next( void ){
+	if( gtk_notebook_get_n_pages( tweet_lists->notebook )==1) return tweet_lists_get_current();
+	TweetList *current=tweet_lists_get_current();
+	gtk_notebook_next_page( tweet_lists->notebook );
+	TweetList *next=tweet_lists_get_current();
+	if( current!=next ) return next;
+	gtk_notebook_set_current_page(tweet_lists->notebook, 0);
+	return tweet_lists_get_current();
+}/*tweet_lists_current()*/
+
+TweetList *tweet_lists_get_current( void ){
+	return tweet_lists_get_page( gtk_notebook_get_current_page( tweet_lists->notebook ), FALSE);
+}/*tweet_lists_current()*/
+
+TweetList *tweet_lists_get_previous( void ){
+	if( gtk_notebook_get_n_pages( tweet_lists->notebook )==1) return tweet_lists_get_current();
+	TweetList *current=tweet_lists_get_current();
+	gtk_notebook_prev_page( tweet_lists->notebook );
+	TweetList *previous=tweet_lists_get_current();
+	if( current!=previous ) return previous;
+	gtk_notebook_set_current_page(tweet_lists->notebook,( gtk_notebook_get_n_pages( tweet_lists->notebook )-1));
+	return tweet_lists_get_current();
+}/*tweet_lists_current()*/
+
+TweetList *tweet_lists_get_page(gint page, gboolean close){
+	GList *t=NULL;
+	gint tweet_list_page=0;
+	TweetList *tweet_list=NULL;
+	for(t=tweet_lists->tabs; t; t=t->next){
+		tweet_list_page=tweet_list_get_page((TweetList *)t->data);
+		if( tweet_list_page==page ){
+			tweet_list=(TweetList *)t->data;
+			if( !close ) return tweet_list;
+		}else if( tweet_list_page > page )
+			tweet_list_set_page( (TweetList *)t->data, page-1 );
+	}
+	return tweet_list;
+}/*tweet_lists_get_page(0, TRUE|FALSE);*/
+
+void tweet_lists_start( void ){
+	GList *tl=NULL;
+	for(tl=tweet_lists->tabs; tl; tl=tl->next)
+		tweet_list_start((TweetList *)tl->data);
+}/*tweet_lists_start();*/
+
+void tweet_lists_refresh( void ){
+	GList *tl=NULL;
+	for(tl=tweet_lists->tabs; tl; tl=tl->next)
+		tweet_list_refresh((TweetList *)tl->data);
+}/*tweet_lists_refresh();*/
+
+void tweet_lists_stop( void ){
+	GList *tl=NULL;
+	for(tl=tweet_lists->tabs; tl; tl=tl->next)
+		tweet_list_stop((TweetList *)tl->data);
+}/*tweet_lists_stop();*/
+
+void tweet_lists_close( void ){
+	GList *tl=NULL;
+	for(tl=tweet_lists->tabs; tl; tl=tl->next)
+		tweet_lists_close_page(tweet_list_get_page((TweetList *)tl->data));
+}/*tweet_lists_stop();*/
+
+void tweet_lists_close_current_page( void ){
+	tweet_lists_close_page( gtk_notebook_get_current_page( tweet_lists->notebook ));
+}/*tweet_lists_close_current_page();*/
+
+void tweet_lists_close_page(gint page){
+	TweetList *tweet_list=tweet_lists_get_page(page, TRUE);
+	gtk_notebook_remove_page(tweet_lists->notebook, page);
+	tweet_lists->tabs=g_list_remove(tweet_lists->tabs, tweet_list);
+	g_object_unref( tweet_list );
+}/*void tweet_lists_close_page(0);*/
+
+void tweet_lists_toggle_toolbars( void ){
+	GList *tl=NULL;
+	for(tl=tweet_lists->tabs; tl; tl=tl->next)
+		tweet_list_toggle_toolbar((TweetList *)tl->data);
+}/*tweet_lists_toggle_toolbars();*/
+
+void tweet_lists_destroy( void ){
+	TweetList *tweet_list=NULL;
+	GList *tl=NULL;
+	for(tl=tweet_lists->tabs; tl; tl=tl->next){
+		tweet_list=(TweetList *)tl->data;
+		tweet_list_stop( tweet_list );
+		gtk_notebook_remove_page(tweet_lists->notebook, tweet_list_get_page( tweet_list ));
+		g_object_unref( tweet_list );
+	}
+	g_list_free( tl );
+	g_list_free( tweet_lists->tabs );
+	
+	tweet_lists->notebook=NULL;
+	uber_free( tweet_lists );
+}/*tweet_lists_destroy();*/
 
 
 /********************************************************************************

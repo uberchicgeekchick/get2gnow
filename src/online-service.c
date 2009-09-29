@@ -715,8 +715,10 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 }/*online_service_best_friends_list_store_remove( service, user_name );*/
 
 void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store ){
+	gchar *user_at_index=NULL;
 	gchar *user_name_at_index=NULL;
-	for(gint i=service->best_friends_total-1; i>=0; i--){
+	gint best_friends_total=online_services_best_friends_total_update( online_services, 0 );
+	for(gint i=best_friends_total-1; i>=0; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, iter, path))){
@@ -728,6 +730,7 @@ void online_service_best_friends_list_store_free( OnlineService *service, GtkLis
 		
 		gtk_tree_model_get(
 				(GtkTreeModel *)list_store, iter,
+					BestFriendUser, &user_at_index,
 					BestFriendUserName, &user_name_at_index,
 				-1
 		);

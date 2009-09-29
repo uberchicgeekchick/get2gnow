@@ -113,7 +113,7 @@ void online_services_best_friends_list_store_free( OnlineServices *services, Gtk
 gint online_services_best_friends_total_update( OnlineServices *services, gint best_friends_to_add);
 gboolean online_services_best_friends_list_store_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store );
 gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store );
-gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name );
+gboolean online_services_is_user_best_friend( OnlineServices *services, OnlineService *service, const gchar *user_name );
 
 OnlineService *online_services_connected_get_first(OnlineServices *services);
 OnlineService *online_services_connected_get_last(OnlineServices *services);

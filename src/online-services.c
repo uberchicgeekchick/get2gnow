@@ -78,6 +78,7 @@
 #include "online-service.h"
 
 #include "main-window.h"
+#include "tweet-lists.h"
 #include "control-panel.h"
 #include "preferences.h"
 #include "gconfig.h"
@@ -297,7 +298,7 @@ OnlineService *online_services_save_service(OnlineServices *services, OnlineServ
 		if( services->total!=1 )
 			tweet_lists_refresh();
 		else{
-			tweet_lists_init();
+			main_window_tabs_init();
 			main_window_state_on_connection(TRUE);
 		}
 	}else
@@ -563,7 +564,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter( OnlineSer
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
 	
 	OnlineService *service_at_index=NULL;
-	gchar *user_name_at_index=NULL;
+	gchar *user_at_index=NULL;
 	for(gint i=0; i<=services->best_friends_total; i++){
 		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -577,19 +578,21 @@ static gboolean online_services_best_friends_list_store_get_user_iter( OnlineSer
 		gtk_tree_model_get(
 				 (GtkTreeModel *)list_store, *iter,
 				 	BestFriendOnlineService, &service_at_index,
-					BestFriendUserName, &user_name_at_index,
+					BestFriendUser, &user_at_index,
 				-1
 		);
-		if(!( service==service_at_index && !strcasecmp(user_name, user_name_at_index) )){
+		if(!( service==service_at_index && !strcasecmp(user_name, user_at_index) )){
 			gtk_tree_path_free(path);
+			uber_free(user_at_index);
 			uber_free( *iter );
 			continue;
 		}
 		
-		debug("Found best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_name_at_index, online_service_get_guid(service_at_index), i);
+		debug("Found best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_at_index, online_service_get_guid(service_at_index), i);
 		return TRUE;
 	}
-	debug("Unable to find best friend iter for best friend: %s, on service: <%s>.", user_name_at_index, online_service_get_guid(service_at_index) );
+	debug("Unable to find best friend iter for best friend: %s, on service: <%s>.", user_at_index, online_service_get_guid(service_at_index) );
+	uber_free(user_at_index);
 	if( *iter ) uber_free( *iter );
 	return FALSE;
 }/*online_services_best_friends_list_store_get_user_iter( services, service, user_name, list_store, &iter);*/
@@ -661,13 +664,14 @@ gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *s
 	return TRUE;
 }/*online_services_best_friends_tree_view_mark_as_read( services, service, user_name, tree_view, list_store, tree_model );*/
 
-gboolean online_services_is_user_best_friend( OnlineServices *services, const gchar *user_name ){
+gboolean online_services_is_user_best_friend( OnlineServices *services, OnlineService *service, const gchar *user_name ){
 	if(G_STR_EMPTY(user_name)) return FALSE;
 	GList		*a=NULL;
 	for(a=services->accounts; a; a=a->next)
-		if(online_service_is_user_best_friend( (OnlineService *)a->data, user_name )){
+		if( (service==(OnlineService *)a->data) && online_service_is_user_best_friend( (OnlineService *)a->data, user_name ))
 			return TRUE;
-		}
+		
+	
 	return FALSE;
 }/*online_services_is_user_best_friend( online_services, user_name );*/
 

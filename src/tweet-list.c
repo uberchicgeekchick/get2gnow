@@ -94,6 +94,7 @@
 
 #include "label.h"
 #include "main-window.h"
+#include "tweet-lists.h"
 
 #include "parser.h"
 #include "tweets.h"
@@ -150,6 +151,7 @@ struct _TweetListPrivate {
 	
 	guint			total;
 	gboolean		unread;
+	gboolean		loading;
 	
 	guint			connected_online_services;
 	gdouble			maximum;
@@ -233,7 +235,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list);
 
 static void tweet_list_stop_toggle_setup(TweetList *tweet_list);
-static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list);
+static void tweet_list_stop_toggle_tool_button_toggled(GtkToggleToolButton *stop_toggle_tool_button, TweetList *tweet_list);
 
 static void tweet_list_set_adjustment(TweetList *tweet_list);
 
@@ -281,6 +283,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	
 	this->has_loaded=-1;
 	this->unread=TRUE;
+	this->loading=FALSE;
 	
 	this->minutes=0;
 	this->reload=0;
@@ -442,7 +445,9 @@ void tweet_list_start(TweetList *tweet_list){
 	tweet_list_clean_up(tweet_list);
 	tweet_list_update_age(tweet_list, 0);
 	tweet_list_set_adjustment(tweet_list);
+	if(this->loading) return;
 	if(this->minutes){
+		this->loading=TRUE;
 		if(!this->service){
 			online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
 		}else{
@@ -473,7 +478,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 		case None:	default:
 			debug("TweetList(s) monitoring %s does not auto-reload.", this->monitoring_string);
 			return 1.0;
-		case Archive:	case Users:	case Timelines:
+		case Archive:	case Timelines:
 			if(minutes<15) minutes=15;
 			else minutes+=8;
 			break;
@@ -483,7 +488,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 		case DMs:
 			minutes+=3;
 			break;
-		case BestFriends:
+		case BestFriends:	case Users:
 			minutes+=12;
 			break;
 		case Faves:
@@ -553,12 +558,13 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 	switch(this->monitoring){
 		case	DMs:	case Replies:
 		case	Faves:	case BestFriends:
+		case Users:
 			tweet_list_check_inbox(tweet_list);
 			break;
 		
 		case	Tweets:	case Timelines:
 		case	Searches:	case Groups:
-		case	Users:	case	Archive:
+		case	Archive:
 			tweet_list_check_maximum_updates(tweet_list);
 		
 		case None: default:
@@ -631,8 +637,12 @@ static void tweet_list_check_inbox(TweetList *tweet_list){
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
 			break;
 		
-		case	None:	case	Tweets:	case	Searches:	case Groups:
-		case	Timelines: case	Users:	case	Archive:
+		case Users:
+			update_expiration=86400;
+		
+		case	None:	case	Tweets:
+		case	Searches:	case Groups:
+		case	Timelines:	case	Archive:
 			return;
 	}
 	
@@ -642,7 +652,7 @@ static void tweet_list_check_inbox(TweetList *tweet_list){
 static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-		
+	
 	if(!this->total) return;
 	
 	gint 		created_ago=0;
@@ -691,6 +701,9 @@ static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then)
 
 static void tweet_list_refresh_clicked(GtkButton *tweet_list_refresh_tool_button, TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(this->has_loaded < 2) this->has_loaded=2;
 	tweet_list_clear(tweet_list);
 	tweet_list_refresh(tweet_list);
 }/*tweet_list_refresh_clicked(tweet_list);*/
@@ -706,6 +719,7 @@ void tweet_list_complete(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
+	if(this->loading) this->loading=FALSE;
 	if(!this->connected_online_services)	return;
 	
 	tweet_list_scroll_to_top(tweet_list);
@@ -713,11 +727,12 @@ void tweet_list_complete(TweetList *tweet_list){
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*tweet_list_complete(tweet_list);*/
 
-static void tweet_list_stop_toggled(GtkToggleToolButton *tweet_list_stop_toggle_tool_button, TweetList *tweet_list){
+static void tweet_list_stop_toggle_tool_button_toggled(GtkToggleToolButton *stop_toggle_tool_button, TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	tweet_list_stop_toggle_setup(tweet_list);
-	tweet_list_refresh(tweet_list);
-}/*tweet_list_stop_toggled(tweet_list_stop_toggle_tool_button, tweet_list);*/
+	if(GET_PRIVATE(tweet_list)->has_loaded)
+		tweet_list_refresh(tweet_list);
+}/*tweet_list_stop_toggle_tool_button_toggled(stop_toggle_tool_button, tweet_list);*/
 
 static void tweet_list_stop_toggle_setup(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
@@ -754,7 +769,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	
 	TimelineLabels *timeline_labels=TimelineLabelsList;
 	this->timeline=g_strdup(timeline);
-	while(timeline_labels->monitoring){
+	while(timeline_labels->timeline){
 		if( g_str_has_prefix(this->timeline, timeline_labels->timeline ) || g_str_equal( this->timeline, timeline_labels->timeline ) ){
 			this->monitoring=timeline_labels->monitoring;
 			this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
@@ -762,20 +777,21 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 			break;
 		}
 		
+		if( timeline_labels->monitoring!=BestFriends && timeline_labels->monitoring!=Users  ){
+			timeline_labels++;
+			continue;
+		}
+		
 		if(g_str_has_prefix(this->timeline, "/statuses/user_timeline/")){
+			/* This checks for 'monitoring of 'BestFriends' updates 1st & than 'Users' updates but no others. */
 			gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
 			gchar **user_info=g_strsplit_set(feed_info[3], ".", -1);
 			const gchar *user_name=user_info[0];
 			if(G_STR_N_EMPTY(user_name)){
 				this->user=g_strdup(user_name);
-				if(timeline_labels->monitoring==BestFriends && !online_services_is_user_best_friend(online_services, this->user))
-					continue;
-				gchar *service_uri=NULL;
-				if(!this->service)
-					service_uri=g_strdup("");
-				else
-					service_uri=g_strdup_printf(" %s", online_service_get_uri(this->service) );
-				
+				if(!( this->service && online_services_is_user_best_friend( online_services, this->service, this->user ) ))
+					timeline_labels++;
+				gchar *service_uri=g_strdup_printf(" %s", online_service_get_uri(this->service) );
 				this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user_name, service_uri );
 				this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user_name, service_uri );
 				uber_free(service_uri);
@@ -793,7 +809,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 		this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
 	}
 	tweet_list_mark_as_read(tweet_list);
-	if( (this->monitoring==Archive) || (this->monitoring==Users) )
+	if( (this->monitoring==Archive) || (this->monitoring==Users) || (this->monitoring==Faves) )
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, TRUE);
 	else
 		gtk_toggle_tool_button_set_active(this->stop_toggle_tool_button, FALSE);
@@ -865,7 +881,7 @@ static void tweet_list_setup(TweetList *tweet_list){
 	
 	gtkbuilder_connect(gtk_builder_ui, tweet_list,
 								"tweet_list_refresh_tool_button", "clicked", tweet_list_refresh_clicked,
-								"tweet_list_stop_toggle_tool_button", "toggled", tweet_list_stop_toggled,
+								"tweet_list_stop_toggle_tool_button", "toggled", tweet_list_stop_toggle_tool_button_toggled,
 								"tweet_list_close_tool_button", "clicked", tweet_list_close,
 								
 								"tweet_list_scrolled_window", "grab-focus", tweet_list_grab_focus_cb,

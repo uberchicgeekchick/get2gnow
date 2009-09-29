@@ -81,6 +81,7 @@
 
 #include "gtkbuilder.h"
 
+#include "tweet-lists.h"
 #include "main-window.h"
 #include "control-panel.h"
 
@@ -371,18 +372,17 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	
 	if(action==ViewUpdatesNew||action==ViewUpdates){
 		gchar *timeline=NULL;
-		if(action==ViewUpdatesNew){
-			gdouble id_newest_update=0.0, id_oldest_update=0.0;
-			gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
-			online_service_update_ids_get(service, user_timeline, &id_newest_update, &id_oldest_update);
-			if(!id_newest_update)
-				timeline=user_timeline;
-			else{
-				uber_free( user_timeline );
-				timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, id_newest_update );
-			}
-		}else
-			timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
+		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
+		gdouble id_newest_update=0.0, id_oldest_update=0.0;
+		online_service_update_ids_get(service, user_timeline, &id_newest_update, &id_oldest_update);
+		if(action==ViewUpdatesNew && id_newest_update){
+			debug( "Loading %s's new updates, on <%s>, since their last read update: %f(ID).", user_name, online_service_get_guid(service), id_newest_update );
+			uber_free( user_timeline );
+			timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, id_newest_update );
+		}else{
+			debug( "Loading %s's updates, on <%s>.", user_name, online_service_get_guid(service) );
+			timeline=user_timeline;
+		}
 		
 		tweet_lists_get_timeline(timeline, service);
 		uber_free(timeline);

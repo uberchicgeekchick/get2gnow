@@ -85,12 +85,12 @@
 #include "preferences.h"
 
 #include "tweets.h"
+#include "tweet-lists.h"
+#include "tweet-list.h"
 
 #include "friends-manager.h"
 #include "following-viewer.h"
 #include "control-panel.h"
-
-#include "tweet-list.h"
 
 
 #define	GET_PRIVATE( obj )	( G_TYPE_INSTANCE_GET_PRIVATE(( obj ), TYPE_MAIN_WINDOW, MainWindowPrivate ))
@@ -192,12 +192,6 @@ struct _MainWindowPrivate {
 	GtkButton		*best_friends_unfollow_button;
 	GtkButton		*best_friends_view_updates_button;
 	
-	/*These are the 3 default tabs & all other timlines.
-	 * Each page is an embed 'control-panel'
-	 * See: 'data/control-panel.ui', 'src/control-panel.c', & 'src/control-panel.h'.*/
-	GtkNotebook		*tweet_list_notebook;
-	GList			*tweet_list_glist;
-	
 	/* user, status, & update widgets.
 	 * Actually they're in the ControlPanel.
 	 * The main-window's GtkVBox contains them.
@@ -224,7 +218,7 @@ struct _MainWindowPrivate {
 #define PREFS_HINTS_HIDE_MAIN_WINDOW		GCONF_PATH "/popup_confirmation_dialog/disabled_when/closing/main_window"
 #define PREFS_HINTS_CLOSE_MAIN_WINDOW		GCONF_PATH "/popup_confirmation_dialog/disabled_when/hiding/main_window"
 
-#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:MainWindow.c"
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:main-window.c"
 #include "debug.h"
 
 #define	GtkBuilderUI	"main-window"
@@ -258,15 +252,16 @@ static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_win
 static void main_window_status_icon_activate_cb(GtkStatusIcon *status_icon, MainWindow *main_window); 
 static void main_window_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, MainWindow *main_window);
 
+static void main_window_tabs_menu_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window);
+static void main_window_tabs_menu_set_active(MainWindow *main_window, gchar *timeline);
+static void main_window_tweet_lists_toggle_toolbars( void );
+
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window);
 
 static void main_window_connection_items_setup(GtkBuilder *ui);
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui);
 static void main_window_login( void );
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window);
-
-static void tweet_lists_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window);
-static void tweet_lists_set_active(MainWindow *main_window, gchar *timeline);
 
 static void main_window_status_icon_create_menu( void );
 static void main_window_status_icon_create( void );
@@ -295,7 +290,6 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window->private=GET_PRIVATE( main_window );
 	main_window->private->widgets_connected=NULL;
 	main_window->private->widgets_disconnected=NULL;
-	main_window->private->tweet_list_glist=NULL;
 	online_service_request_unset_selected_update();
 	main_window->private->tabs_to_right_align=g_strdup("\t");
 }/*main_window_init(main_window);*/
@@ -322,6 +316,7 @@ static void main_window_setup( void ){
 	GtkBuilder	*ui;
 	
 	debug("Starting %s...", PACKAGE_NAME);
+	GtkNotebook	*tweet_lists_notebook;
 	
 	
 	/* Set up interface */
@@ -396,7 +391,7 @@ static void main_window_setup( void ){
 					"best_friends_view_updates_button", &main_window->private->best_friends_view_updates_button,
 					
 					/*tweet_lists_notebook is used to contain get2gnow's timeline tabs.*/
-					"tweet_list_notebook", &main_window->private->tweet_list_notebook,
+					"tweet_lists_notebook", &tweet_lists_notebook,
 					
 					"tweet_vpaned", &main_window->private->tweet_vpaned,
 					"expand_box", &main_window->private->expand_box,
@@ -405,6 +400,8 @@ static void main_window_setup( void ){
 					"main_statusbar", &main_window->private->statusbar,
 				NULL
 	);
+	
+	tweet_lists_init( tweet_lists_notebook );
 	
 	/* Connect the signals */
 	gtkbuilder_connect( ui, main_window,
@@ -419,7 +416,7 @@ static void main_window_setup( void ){
 					"preferences", "activate", main_window_preferences_cb,
 					"quit", "activate", main_window_exit,
 					
-					"view_toolbar_tabs_check_menu_item", "toggled", tweet_lists_toggle_toolbars,
+					"view_toolbar_tabs_check_menu_item", "toggled", main_window_tweet_lists_toggle_toolbars,
 					
 					"tweets_new_tweet", "activate", tweets_new_tweet,
 					"tweets_new_dm", "activate", control_panel_new_dm,
@@ -433,12 +430,12 @@ static void main_window_setup( void ){
 					"selected_update_author_unfollow_image_menu_item", "activate", online_service_request_selected_update_unfollow,
 					"selected_update_author_block_image_menu_item", "activate", online_service_request_selected_update_block,
 					
-					"tabs_public_timeline", "activate", tweet_lists_timeline_selected,
-					"tabs_friends_timeline", "activate", tweet_lists_timeline_selected,
-					"tabs_my_timeline", "activate", tweet_lists_timeline_selected,
-					"tabs_direct_messages", "activate", tweet_lists_timeline_selected,
-					"tabs_replies", "activate", tweet_lists_timeline_selected,
-					"tabs_favorites_timeline", "activate", tweet_lists_timeline_selected,
+					"tabs_public_timeline", "activate", main_window_tabs_menu_timeline_selected,
+					"tabs_friends_timeline", "activate", main_window_tabs_menu_timeline_selected,
+					"tabs_my_timeline", "activate", main_window_tabs_menu_timeline_selected,
+					"tabs_direct_messages", "activate", main_window_tabs_menu_timeline_selected,
+					"tabs_replies", "activate", main_window_tabs_menu_timeline_selected,
+					"tabs_favorites_timeline", "activate", main_window_tabs_menu_timeline_selected,
 					
 					"online_service_request_menu_friends_manager", "activate", online_service_request_menu_process,
 					"online_service_request_menu_following_viewer", "activate", online_service_request_menu_process,
@@ -472,8 +469,6 @@ static void main_window_setup( void ){
 					"best_friends_send_dm_button", "clicked", main_window_best_friends_button_clicked,
 					"best_friends_unfollow_button", "clicked", main_window_best_friends_button_clicked,
 					"best_friends_view_updates_button", "clicked", main_window_best_friends_button_clicked,
-					
-					"tweet_list_notebook", "switch-page", tweet_lists_mark_as_read,
 				NULL
 	);
 	
@@ -482,8 +477,6 @@ static void main_window_setup( void ){
 	
 	main_window_best_friends_setup( ui );
 	main_window_view_setup();
-	
-	gtk_notebook_remove_page(main_window->private->tweet_list_notebook, 0);
 	
 	/* Set up connected related widgets */
 	main_window_connection_items_setup( ui );
@@ -603,7 +596,7 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 	}else{
 		found=TRUE;
 		if( g_str_has_prefix(selected_user_name, "<b>") )
-			online_services_best_friends_list_store_mark_as_read( online_services, selected_service, selected_user_name, main_window->private->best_friends_list_store );
+			online_services_best_friends_list_store_mark_as_read( online_services, selected_service, selected_user, main_window->private->best_friends_list_store );
 		*user=g_strdup(selected_user);
 		*user_name=g_strdup(selected_user_name);
 		*service=selected_service;
@@ -748,128 +741,10 @@ static void main_window_view_menu_option_toggled( GtkCheckMenuItem *check_menu_i
 	}
 }/*main_window_view_menu_option_toggled( check_menu_item );*/
 
-void tweet_lists_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, MainWindow *main_window){
-	tweet_list_mark_as_read(tweet_lists_get_page(page_num, FALSE));
-}/*tweet_lists_mark_as_read(main_window->private->tweet_list_notebook, page, 0, main_window);*/
-
-TweetList *tweet_lists_new(const gchar *timeline, OnlineService *service ){
-	TweetList *tweet_list=tweet_list_new( timeline, service );
-	
-	main_window->private->tweet_list_glist=g_list_append(main_window->private->tweet_list_glist, tweet_list);
-	main_window->private->tweet_list_glist=g_list_last( main_window->private->tweet_list_glist );
-	tweet_list=main_window->private->tweet_list_glist->data;
-	main_window->private->tweet_list_glist=g_list_first( main_window->private->tweet_list_glist );
-	
-	gint page=gtk_notebook_append_page_menu(main_window->private->tweet_list_notebook, GTK_WIDGET( tweet_list_get_child( tweet_list )), GTK_WIDGET( tweet_list_get_tab( tweet_list )), GTK_WIDGET( tweet_list_get_menu( tweet_list )) );
-	tweet_list_set_page(tweet_list, page);
-	
-	return tweet_list;
-}/*tweet_lists_new( "/replies.xml" );*/
-
-TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service){
-	GList *t=NULL;
-	TweetList *tweet_list=NULL;
-	for(t=main_window->private->tweet_list_glist; t; t=t->next)
-		if(g_str_equal(tweet_list_get_timeline((TweetList *)t->data), timeline)){
-			tweet_list=(TweetList *)t->data;
-			gtk_notebook_set_current_page(main_window->private->tweet_list_notebook, tweet_list_get_page( tweet_list ));
-			return tweet_list;
-		}
-	return tweet_lists_new( timeline, service );
-}/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
-
-TweetList *tweet_lists_get_next( void ){
-	if( gtk_notebook_get_n_pages( main_window->private->tweet_list_notebook )==1) return tweet_lists_get_current();
-	TweetList *current=tweet_lists_get_current();
-	gtk_notebook_next_page( main_window->private->tweet_list_notebook );
-	TweetList *next=tweet_lists_get_current();
-	if( current!=next ) return next;
-	gtk_notebook_set_current_page(main_window->private->tweet_list_notebook, 0);
-	return tweet_lists_get_current();
-}/*tweet_lists_current()*/
-
-TweetList *tweet_lists_get_current( void ){
-	return tweet_lists_get_page( gtk_notebook_get_current_page( main_window->private->tweet_list_notebook ), FALSE);
-}/*tweet_lists_current()*/
-
-TweetList *tweet_lists_get_previous( void ){
-	if( gtk_notebook_get_n_pages( main_window->private->tweet_list_notebook )==1) return tweet_lists_get_current();
-	TweetList *current=tweet_lists_get_current();
-	gtk_notebook_prev_page( main_window->private->tweet_list_notebook );
-	TweetList *previous=tweet_lists_get_current();
-	if( current!=previous ) return previous;
-	gtk_notebook_set_current_page(main_window->private->tweet_list_notebook,( gtk_notebook_get_n_pages( main_window->private->tweet_list_notebook )-1));
-	return tweet_lists_get_current();
-}/*tweet_lists_current()*/
-
-TweetList *tweet_lists_get_page(gint page, gboolean close){
-	GList *t=NULL;
-	gint tweet_list_page=0;
-	TweetList *tweet_list=NULL;
-	for(t=main_window->private->tweet_list_glist; t; t=t->next){
-		tweet_list_page=tweet_list_get_page((TweetList *)t->data);
-		if( tweet_list_page==page ){
-			tweet_list=(TweetList *)t->data;
-			if( !close ) return tweet_list;
-		}else if( tweet_list_page > page )
-			tweet_list_set_page( (TweetList *)t->data, page-1 );
-	}
-	return tweet_list;
-}/*tweet_lists_get_page(0, TRUE|FALSE);*/
-
-void tweet_lists_start( void ){
-	GList *tl=NULL;
-	for(tl=main_window->private->tweet_list_glist; tl; tl=tl->next)
-		tweet_list_start((TweetList *)tl->data);
-}/*tweet_lists_start();*/
-
-void tweet_lists_refresh( void ){
-	GList *tl=NULL;
-	for(tl=main_window->private->tweet_list_glist; tl; tl=tl->next)
-		tweet_list_refresh((TweetList *)tl->data);
-}/*tweet_lists_refresh();*/
-
-void tweet_lists_stop( void ){
-	GList *tl=NULL;
-	for(tl=main_window->private->tweet_list_glist; tl; tl=tl->next)
-		tweet_list_stop((TweetList *)tl->data);
-}/*tweet_lists_stop();*/
-
-void tweet_lists_close( void ){
-	GList *tl=NULL;
-	for(tl=main_window->private->tweet_list_glist; tl; tl=tl->next)
-		tweet_lists_close_page(tweet_list_get_page((TweetList *)tl->data));
-}/*tweet_lists_stop();*/
-
-void tweet_lists_close_current_page( void ){
-	tweet_lists_close_page( gtk_notebook_get_current_page( main_window->private->tweet_list_notebook ));
-}/*tweet_lists_close_current_page();*/
-
-void tweet_lists_close_page(gint page){
-	TweetList *tweet_list=tweet_lists_get_page(page, TRUE);
-	gtk_notebook_remove_page(main_window->private->tweet_list_notebook, page);
-	main_window->private->tweet_list_glist=g_list_remove(main_window->private->tweet_list_glist, tweet_list);
-	g_object_unref( tweet_list );
-}/*void tweet_lists_close_page(0);*/
-
-void tweet_lists_toggle_toolbars( void ){
-	GList *tl=NULL;
-	for(tl=main_window->private->tweet_list_glist; tl; tl=tl->next)
-		tweet_list_toggle_toolbar((TweetList *)tl->data);
+static void main_window_tweet_lists_toggle_toolbars( void ){
+	tweet_lists_toggle_toolbars();
 	main_window_view_menu_option_toggled( main_window->private->view_toolbar_tabs_check_menu_item );
-}/*tweet_lists_start();*/
-
-void tweet_lists_destroy( void ){
-	TweetList *tweet_list=NULL;
-	GList *tl=NULL;
-	for(tl=main_window->private->tweet_list_glist; tl; tl=tl->next){
-		tweet_list=(TweetList *)tl->data;
-		tweet_list_stop( tweet_list );
-		gtk_notebook_remove_page(main_window->private->tweet_list_notebook, tweet_list_get_page( tweet_list ));
-		g_object_unref( tweet_list );
-	}
-	g_list_free( main_window->private->tweet_list_glist );
-}/*tweet_lists_destroy();*/
+}/*tweet_lists_toggle_toolbars();*/ 
 
 void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
 	gboolean use_control_panel_dialog=gtk_toggle_button_get_active( toggle_button );
@@ -1010,7 +885,7 @@ static void main_window_exit(GtkWidget  *widget, MainWindow  *main_window){
 	gtk_main_quit();
 }
 
-static void tweet_lists_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window){
+static void main_window_tabs_menu_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window){
 	gboolean timeline_found=FALSE;
 	debug("Switching timelines. MenuItem selected: %s", gtk_menu_item_get_label( GTK_MENU_ITEM( item )) );
 	
@@ -1047,7 +922,7 @@ static void tweet_lists_timeline_selected(GtkRadioMenuItem *item, MainWindow *ma
 	/* just in case, fall back to friends timeline */
 	if(!timeline_found)
 		gtk_check_menu_item_set_active( main_window->private->timeline_friends,TRUE );
-}/*tweet_lists_timeline_selected(item, main_window);*/
+}/*main_window_tabs_menu_timeline_selected(item, main_window);*/
 
 
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
@@ -1204,14 +1079,14 @@ static void main_window_login( void ){
 		return;
 	}
 	
-	tweet_lists_init();
+	main_window_tabs_init();
 }/*main_window_login*/
 
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 	if( !( online_services_relogin( online_services )))
 		return;
 	
-	tweet_lists_init();
+	main_window_tabs_init();
 }/*main_window_reconnect*/
 
 void main_window_disconnect( void ){
@@ -1222,7 +1097,7 @@ void main_window_disconnect( void ){
  * Function to set the default
  * timeline in the menu.
  */
-static void tweet_lists_set_active(MainWindow *main_window, gchar *timeline){
+static void main_window_tabs_menu_set_active(MainWindow *main_window, gchar *timeline){
 	/* This shouldn't happen, but just in case */
 	if( G_STR_EMPTY( timeline )) {
 		debug("**ERROR:** Default timeline in not set.  Selecting 'timeline_friends' by default.");
@@ -1268,7 +1143,7 @@ static void tweet_lists_set_active(MainWindow *main_window, gchar *timeline){
 }
 
 /* Function to retrieve the users default timeline */
-void tweet_lists_init( void ){
+void main_window_tabs_init( void ){
 	gboolean open_home_page=TRUE;
 	gchar *timeline=NULL;
 	gconfig_get_string(PREFS_TWEETS_HOME_TIMELINE, &timeline);
@@ -1280,21 +1155,21 @@ void tweet_lists_init( void ){
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_FOLLOWING, TRUE)){
 		debug("Preparing auto-monitor for My Friends' Tweets.");
-		tweet_lists_set_active(main_window, API_TIMELINE_FRIENDS);
+		main_window_tabs_menu_set_active(main_window, API_TIMELINE_FRIENDS);
 		if(open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
 			open_home_page=FALSE;
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_REPLIES, TRUE)){
 		debug("Preparing auto-monitor for Replies.");
-		tweet_lists_set_active(main_window, API_REPLIES);
+		main_window_tabs_menu_set_active(main_window, API_REPLIES);
 		if(open_home_page && g_str_equal(timeline, API_REPLIES))
 			open_home_page=FALSE;
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_DMS, TRUE)){
 		debug("Preparing auto-monitor for DMs.");
-		tweet_lists_set_active(main_window, API_DIRECT_MESSAGES);
+		main_window_tabs_menu_set_active(main_window, API_DIRECT_MESSAGES);
 		if(open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
 			open_home_page=FALSE;
 	}
@@ -1303,9 +1178,9 @@ void tweet_lists_init( void ){
 		debug("Retriving default timeline: %s", timeline);
 		tweet_lists_get_timeline( timeline, NULL );
 	}
-	tweet_lists_set_active(main_window, timeline);
+	main_window_tabs_menu_set_active(main_window, timeline);
 	uber_free( timeline );
-}/*tweet_lists_init();*/
+}/*main_window_tabs_init();*/
 
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={

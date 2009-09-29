@@ -371,11 +371,10 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 }/*user_parse_node(service, root_node); || user_parse_node(service, current_node->children);*/
 
 void user_free(User *user){
-	if(!user) return;
-	if(user->status){
-		debug("Destroying user object for %s on <%s>.", user->user_name, online_service_get_key(user->service));
+	if(!(user && user->user_name)) return;
+	debug("Destroying user object for %s, on <%s>.", user->user_name, online_service_get_key(user->service));
+	if(user->status)
 		user_status_free(user->status);
-	}
 	
 	user->service=NULL;
 	
@@ -587,7 +586,9 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 }/*void user_status_store(status);*/
 
 void user_status_free(UserStatus *status){
-	if(!status) return;
+	if(!(status && status->id)) return;
+	debug("Destroying update, i.e. UserStatus, object.  Status ID: %f, on <%s>.", status->id, online_service_get_key(status->service) );
+	
 	if(status->user) user_free(status->user);
 			
 	status->service=NULL;

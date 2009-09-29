@@ -60,6 +60,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "online-service.h"
 
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
@@ -68,14 +69,32 @@
 
 G_BEGIN_DECLS
 /********************************************************************************
- *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
 
 
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
+void tweet_lists_init( GtkNotebook *notebook );
 
+TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service);
+
+TweetList *tweet_lists_get_next(void);
+TweetList *tweet_lists_get_current(void);
+TweetList *tweet_lists_get_previous(void);
+TweetList *tweet_lists_get_page(gint page, gboolean close);
+
+void tweet_lists_start(void);
+void tweet_lists_refresh(void);
+void tweet_lists_stop(void);
+void tweet_lists_close(void);
+void tweet_lists_close_current_page(void);
+void tweet_lists_close_page(gint page);
+
+void tweet_lists_toggle_toolbars( void );
+
+void tweet_lists_destroy(void);
 
 G_END_DECLS
 #endif /* __HEADER_H__*/

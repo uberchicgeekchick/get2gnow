@@ -271,7 +271,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
-
+	
 	if(!network_check_http(service, xml)){
 		if(xml->status_code==401){
 			debug("*WARNING:* Authentication failed for online service: %s.", online_service_get_key(service));

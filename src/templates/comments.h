@@ -68,7 +68,7 @@
 
 G_BEGIN_DECLS
 /********************************************************************************
- *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
 
 

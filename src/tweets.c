@@ -83,6 +83,7 @@
 
 #include "gconfig.h"
 #include "preferences.h"
+#include "tweet-lists.h"
 #include "tweet-list.h"
 #include "control-panel.h"
 #include "ui-utils.h"
