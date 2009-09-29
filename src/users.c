@@ -371,14 +371,23 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 }/*user_parse_node(service, root_node); || user_parse_node(service, current_node->children);*/
 
 void user_free(User *user){
-	if(!(user && user->user_name)) return;
+	if(!( user && user->id && user->service )) return;
 	debug("Destroying user object for %s, on <%s>.", user->user_name, online_service_get_key(user->service));
-	if(user->status)
-		user_status_free(user->status);
+	if(user->status) user_status_free(user->status);
 	
 	user->service=NULL;
 	
-	uber_object_free(&user->user_name, &user->user_nick, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL);
+	if( user->user_name ) uber_free( user->user_name );
+	if( user->user_nick ) uber_free( user->user_nick );
+	if( user->location ) uber_free( user->location );
+	if( user->bio ) uber_free( user->bio );
+	if( user->url ) uber_free( user->url );
+	if( user->image_url ) uber_free( user->image_url );
+	if( user->image_file ) uber_free( user->image_file );
+
+	uber_free( user );
+	
+	/* uber_object_free(&user->user_name, &user->user_nick, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL); */
 }/*user_free*/
 
 
@@ -586,14 +595,27 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 }/*void user_status_store(status);*/
 
 void user_status_free(UserStatus *status){
-	if(!(status && status->id)) return;
+	if(!( status && status->id && status->service )) return;
 	debug("Destroying update, i.e. UserStatus, object.  Status ID: %f, on <%s>.", status->id, online_service_get_key(status->service) );
 	
 	if(status->user) user_free(status->user);
 			
 	status->service=NULL;
 	
-	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);
+	if( status->text ) uber_free( status->text );
+	if( status->id_str ) uber_free( status->id_str );
+	if( status->from ) uber_free( status->from );
+	if( status->rcpt ) uber_free( status->rcpt );
+	if( status->tweet ) uber_free( status->tweet );
+	if( status->source ) uber_free( status->source );
+	if( status->sexy_tweet ) uber_free( status->sexy_tweet );
+	if( status->notification ) uber_free( status->notification );
+	if( status->created_at_str ) uber_free( status->created_at_str );
+	if( status->created_how_long_ago ) uber_free( status->created_how_long_ago );
+
+	uber_free(status);
+	
+	/* uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL); */
 }/*user_status_free*/
 
 
