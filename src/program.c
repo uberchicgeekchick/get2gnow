@@ -170,16 +170,16 @@ const gchar *program_gtk_response_to_string(gint response){
 	}
 }/*program_gtk_response_to_string(response);*/
 
-void program_uber_free(gpointer pointer1, ...){
+void program_uber_object_free(gpointer pointer1, ...){
 	gpointer *pointer;
 	va_list pointers;
 	va_start(pointers, pointer1);
 	for(pointer=pointer1; pointer; pointer=va_arg(pointers, gpointer)){
-		g_free(*pointer);
-		*pointer=NULL;
+		if(! *pointer ) continue;
+		uber_free(*pointer);
 	}
 	va_end(pointers);
-}/*void program_uber_free(pointer1, pointer2, NULL);*/
+}/*void program_uber_object_free(pointer1, pointer2, NULL);*/
 
 void program_timeout_remove(guint *id, const gchar *usage){
 	if(!( *id > 0 )) return;

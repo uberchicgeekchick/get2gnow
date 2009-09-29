@@ -111,22 +111,22 @@ typedef struct _TimelineLabels TimelineLabels;
 struct _TimelineLabels{
 	UpdateMonitor	monitoring;
 	const gchar	*timeline;
-	const gchar	*timeline_tab_label;
-	const gchar	*timeline_menu_label;
+	const gchar	*tab_label_string;
+	const gchar	*menu_label_string;
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{BestFriends,	API_TIMELINE_BEST_FRIEND,	N_("My Best Friend: _%s's%s Newest Updates"),	N_("My Best Friend: %s's%s Newest Updates")},
-	{Users,		API_TIMELINE_USER,		N_("%s's%s _Updates"),			N_("%s's%s Updates")},
+	{BestFriends,	API_TIMELINE_BEST_FRIEND,	N_("My Best Friend: _%s's %s Newest Updates"),	N_("My Best Friend: %s's %s Newest Updates")},
+	{Users,		API_TIMELINE_USER,		N_("%s's %s _Updates"),			N_("%s's %s Updates")},
 	{Tweets,	API_TIMELINE_FRIENDS,		N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,			N_("@ _Replies"),			N_("@ Replies")},
-	{Replies,	API_MENTIONS,			N_("@ _Mentions"),			N_("@ Mentions")},
+	/*{Replies,	API_MENTIONS,			N_("@ _Mentions"),			N_("@ Mentions")},*/
 	{DMs,		API_DIRECT_MESSAGES,		N_("My DMs _Inbox"),			N_("My DMs Inbox")},
 	{Faves,		API_FAVORITES,			N_("My Star_'d Updates"),		N_("My Star'd Updates")},
 	{Searches,	API_TIMELINE_SEARCH,		N_("_Search Results"),			N_("Search Results")},
 	{Groups,	API_TIMELINE_GROUP,		N_("_Group Discussions"),		N_("Group Discussions")},
 	{Timelines,	API_TIMELINE_PUBLIC,		N_("_Global Updates"),			N_("Public Updates")},
-	{Archive,	API_TIMELINE_MINE,		N_("_My Tweets"),			N_("My Tweets")},
+	{Archive,	API_TIMELINE_MINE,		N_("_My Updates"),			N_("My Updates")},
 	{None,		NULL,				N_("Unknow_n timeline"),		N_("Unknown timeline")}
 };
 
@@ -144,8 +144,8 @@ struct _TweetListPrivate {
 	gulong			reload;
 	
 	gchar			*timeline;
-	gchar			*timeline_tab_label;
-	gchar			*timeline_menu_label;
+	gchar			*tab_label_string;
+	gchar			*menu_label_string;
 	
 	gint			index;
 	
@@ -158,7 +158,6 @@ struct _TweetListPrivate {
 	gdouble			minimum;
 	
 	GtkLabel		*tab_label;
-	
 	GtkLabel		*menu_label;
 	
 	GtkVBox			*vbox;
@@ -290,7 +289,7 @@ static void tweet_list_init(TweetList *tweet_list){
 	
 	this->connected_online_services=this->timeout_id=this->index=this->total=0;
 	this->maximum=this->minimum=0.0;
-	this->timeline=this->timeline_tab_label=this->timeline_menu_label=NULL;
+	this->timeline=this->tab_label_string=this->menu_label_string=NULL;
 	this->tab_label=this->menu_label=NULL;
 	this->vbox=NULL;
 	this->tree_model_sort=NULL;
@@ -335,9 +334,9 @@ static void tweet_list_finalize(TweetList *tweet_list){
 	
 	if(this->user) uber_free(this->user);
 	if(this->timeline) uber_free(this->timeline);
-	if(this->timeline_tab_label) uber_free(this->timeline_tab_label);
-	if(this->timeline_menu_label) uber_free(this->timeline_menu_label);
-
+	if(this->tab_label_string) uber_free(this->tab_label_string);
+	if(this->menu_label_string) uber_free(this->menu_label_string);
+	
 	if(this->tab_label) gtk_widget_destroy(GTK_WIDGET(this->tab_label));
 	if(this->menu_label) gtk_widget_destroy(GTK_WIDGET(this->menu_label));
 	if(this->vbox) gtk_widget_destroy(GTK_WIDGET(this->vbox));
@@ -439,7 +438,7 @@ void tweet_list_start(TweetList *tweet_list){
 	gtk_progress_bar_set_fraction(this->progress_bar, tweet_list_prepare_reload(tweet_list) );
 	
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button)){
-		debug("Creating timeout to reload %s.", this->timeline_menu_label);
+		debug("Creating timeout to reload %s.", this->menu_label_string);
 		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)tweet_list_refresh, tweet_list);
 	}
 	tweet_list_clean_up(tweet_list);
@@ -767,20 +766,19 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) && G_STR_N_EMPTY(timeline) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	TimelineLabels *timeline_labels=TimelineLabelsList;
+	TimelineLabels *timeline_labels=NULL;
 	this->timeline=g_strdup(timeline);
-	while(timeline_labels->timeline){
+	for(timeline_labels=TimelineLabelsList; timeline_labels->timeline; timeline_labels++){
 		if( g_str_has_prefix(this->timeline, timeline_labels->timeline ) || g_str_equal( this->timeline, timeline_labels->timeline ) ){
 			this->monitoring=timeline_labels->monitoring;
-			this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
-			this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
+			this->tab_label_string=g_strdup(timeline_labels->tab_label_string);
+			this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 			break;
 		}
 		
-		if( timeline_labels->monitoring!=BestFriends && timeline_labels->monitoring!=Users  ){
-			timeline_labels++;
+		if( timeline_labels->monitoring!=BestFriends && timeline_labels->monitoring!=Users  )
 			continue;
-		}
+		
 		
 		if(g_str_has_prefix(this->timeline, "/statuses/user_timeline/")){
 			/* This checks for 'monitoring of 'BestFriends' updates 1st & than 'Users' updates but no others. */
@@ -791,22 +789,20 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 				this->user=g_strdup(user_name);
 				if(!( this->service && online_services_is_user_best_friend( online_services, this->service, this->user ) ))
 					timeline_labels++;
-				gchar *service_uri=g_strdup_printf(" %s", online_service_get_uri(this->service) );
-				this->timeline_tab_label=g_strdup_printf(timeline_labels->timeline_tab_label, user_name, service_uri );
-				this->timeline_menu_label=g_strdup_printf(timeline_labels->timeline_menu_label, user_name, service_uri );
-				uber_free(service_uri);
+				const gchar *service_uri=online_service_get_uri(this->service);
+				this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, user_name, service_uri );
+				this->menu_label_string=g_strdup_printf(timeline_labels->menu_label_string, user_name, service_uri );
 			}
 			g_strfreev(feed_info);
 			g_strfreev(user_info);
 			this->monitoring=timeline_labels->monitoring;
 			break;
 		}
-		timeline_labels++;
 	}
-	if(!this->timeline_menu_label){
+	if(!this->menu_label_string){
 		debug("**ERROR:** Unable to determine timeline label to use.");
-		this->timeline_tab_label=g_strdup(timeline_labels->timeline_tab_label);
-		this->timeline_menu_label=g_strdup(timeline_labels->timeline_menu_label);
+		this->tab_label_string=g_strdup(timeline_labels->tab_label_string);
+		this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 	}
 	tweet_list_mark_as_read(tweet_list);
 	if( (this->monitoring==Archive) || (this->monitoring==Users) || (this->monitoring==Faves) )
@@ -1060,8 +1056,8 @@ void tweet_list_mark_as_read(TweetList *tweet_list){
 	
 	this->unread=FALSE;
 	
-	gtk_label_set_markup_with_mnemonic(this->tab_label, this->timeline_tab_label);
-	gtk_label_set_markup_with_mnemonic(this->menu_label, this->timeline_menu_label);
+	gtk_label_set_markup_with_mnemonic(this->tab_label, this->tab_label_string);
+	gtk_label_set_markup_with_mnemonic(this->menu_label, this->menu_label_string);
 }/*tweet_list_mark_as_read(tweet_list);*/
 
 void tweet_list_mark_as_unread(TweetList *tweet_list){
@@ -1074,11 +1070,11 @@ void tweet_list_mark_as_unread(TweetList *tweet_list){
 	
 	tweets_beep();
 	
-	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_tab_label);
+	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->tab_label_string);
 	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
 	uber_free(label_markup);
 	
-	label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->timeline_menu_label);
+	label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->menu_label_string);
 	gtk_label_set_markup_with_mnemonic(this->menu_label, label_markup);
 	uber_free(label_markup);
 }/*tweet_list_mark_as_unread(tweet_list);*/

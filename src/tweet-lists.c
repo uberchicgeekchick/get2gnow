@@ -124,14 +124,15 @@ static TweetList *tweet_lists_new_tab(const gchar *timeline, OnlineService *serv
 
 TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service){
 	if(G_STR_EMPTY(timeline)) return NULL;
-	GList *t=NULL;
+	GList *tabs=NULL;
 	TweetList *tweet_list=NULL;
-	for(t=tweet_lists->tabs; t; t=t->next)
-		if(g_str_equal(tweet_list_get_timeline((TweetList *)t->data), timeline)){
-			tweet_list=(TweetList *)t->data;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
+		if(g_str_equal(tweet_list_get_timeline((TweetList *)tabs->data), timeline)){
+			tweet_list=(TweetList *)tabs->data;
 			gtk_notebook_set_current_page(tweet_lists->notebook, tweet_list_get_page( tweet_list ));
 			return tweet_list;
 		}
+	g_list_free(tabs);
 	return tweet_lists_new_tab( timeline, service );
 }/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
 
@@ -179,27 +180,31 @@ TweetList *tweet_lists_get_page(gint page, gboolean close){
 }/*tweet_lists_get_page(0, TRUE|FALSE);*/
 
 void tweet_lists_start( void ){
-	GList *tl=NULL;
-	for(tl=tweet_lists->tabs; tl; tl=tl->next)
-		tweet_list_start((TweetList *)tl->data);
+	GList *tabs=NULL;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
+		tweet_list_start((TweetList *)tabs->data);
+	g_list_free(tabs);
 }/*tweet_lists_start();*/
 
 void tweet_lists_refresh( void ){
-	GList *tl=NULL;
-	for(tl=tweet_lists->tabs; tl; tl=tl->next)
-		tweet_list_refresh((TweetList *)tl->data);
+	GList *tabs=NULL;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
+		tweet_list_refresh((TweetList *)tabs->data);
+	g_list_free(tabs);
 }/*tweet_lists_refresh();*/
 
 void tweet_lists_stop( void ){
-	GList *tl=NULL;
-	for(tl=tweet_lists->tabs; tl; tl=tl->next)
-		tweet_list_stop((TweetList *)tl->data);
+	GList *tabs=NULL;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
+		tweet_list_stop((TweetList *)tabs->data);
+	g_list_free(tabs);
 }/*tweet_lists_stop();*/
 
 void tweet_lists_close( void ){
-	GList *tl=NULL;
-	for(tl=tweet_lists->tabs; tl; tl=tl->next)
-		tweet_lists_close_page(tweet_list_get_page((TweetList *)tl->data));
+	GList *tabs=NULL;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
+		tweet_lists_close_page(tweet_list_get_page((TweetList *)tabs->data));
+	g_list_free(tabs);
 }/*tweet_lists_stop();*/
 
 void tweet_lists_close_current_page( void ){
@@ -214,21 +219,22 @@ void tweet_lists_close_page(gint page){
 }/*void tweet_lists_close_page(0);*/
 
 void tweet_lists_toggle_toolbars( void ){
-	GList *tl=NULL;
-	for(tl=tweet_lists->tabs; tl; tl=tl->next)
-		tweet_list_toggle_toolbar((TweetList *)tl->data);
+	GList *tabs=NULL;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
+		tweet_list_toggle_toolbar((TweetList *)tabs->data);
+	g_list_free(tabs);
 }/*tweet_lists_toggle_toolbars();*/
 
 void tweet_lists_destroy( void ){
 	TweetList *tweet_list=NULL;
-	GList *tl=NULL;
-	for(tl=tweet_lists->tabs; tl; tl=tl->next){
-		tweet_list=(TweetList *)tl->data;
+	GList *tabs=NULL;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next){
+		tweet_list=(TweetList *)tabs->data;
 		tweet_list_stop( tweet_list );
 		gtk_notebook_remove_page(tweet_lists->notebook, tweet_list_get_page( tweet_list ));
 		g_object_unref( tweet_list );
 	}
-	g_list_free( tl );
+	g_list_free( tabs );
 	g_list_free( tweet_lists->tabs );
 	
 	tweet_lists->notebook=NULL;

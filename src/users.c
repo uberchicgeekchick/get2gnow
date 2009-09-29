@@ -377,7 +377,7 @@ void user_free(User *user){
 	
 	user->service=NULL;
 	
-	if( user->user_name ) uber_free( user->user_name );
+	/*if( user->user_name ) uber_free( user->user_name );
 	if( user->user_nick ) uber_free( user->user_nick );
 	if( user->location ) uber_free( user->location );
 	if( user->bio ) uber_free( user->bio );
@@ -385,9 +385,9 @@ void user_free(User *user){
 	if( user->image_url ) uber_free( user->image_url );
 	if( user->image_file ) uber_free( user->image_file );
 
-	uber_free( user );
+	uber_free( user );*/
 	
-	/* uber_object_free(&user->user_name, &user->user_nick, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL); */
+	uber_object_free(&user->user_name, &user->user_nick, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL);
 }/*user_free*/
 
 
@@ -602,7 +602,7 @@ void user_status_free(UserStatus *status){
 			
 	status->service=NULL;
 	
-	if( status->text ) uber_free( status->text );
+	/*if( status->text ) uber_free( status->text );
 	if( status->id_str ) uber_free( status->id_str );
 	if( status->from ) uber_free( status->from );
 	if( status->rcpt ) uber_free( status->rcpt );
@@ -613,9 +613,9 @@ void user_status_free(UserStatus *status){
 	if( status->created_at_str ) uber_free( status->created_at_str );
 	if( status->created_how_long_ago ) uber_free( status->created_how_long_ago );
 
-	uber_free(status);
+	uber_free(status);*/
 	
-	/* uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL); */
+	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);
 }/*user_status_free*/
 
 

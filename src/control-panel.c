@@ -1126,6 +1126,7 @@ void control_panel_dm_data_fill(GList *followers){
 		uber_free( iter );
 		iter=NULL;
 	}
+	g_list_free(list);
 	
 	gchar *new_label=NULL;
 	if( !new_label ){

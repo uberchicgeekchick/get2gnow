@@ -113,11 +113,11 @@ G_BEGIN_DECLS
 
 #ifndef	uber_g_str_equal
 #	if defined(G_HAVE_ISO_VARARGS)
-#		define	uber_object_free(...)			program_uber_free(__VA_ARGS__)
+#		define	uber_object_free(...)			program_uber_object_free(__VA_ARGS__)
 #	elif defined(G_HAVE_GNUC_VARARGS)
-#		define	uber_object_free(fmt...)		program_uber_free(fmt)
+#		define	uber_object_free(fmt...)		program_uber_object_free(fmt)
 #	else
-#		define	uber_object_free(x)			program_uber_free(x)
+#		define	uber_object_free(x)			program_uber_object_free(x)
 #	endif
 #endif
 
@@ -148,14 +148,12 @@ gboolean program_init(int argc, char **argv);
 
 const gchar *program_gtk_response_to_string(gint response);
 
-void program_uber_free(gpointer pointer1, ...);
+void program_uber_object_free(gpointer pointer1, ...);
 gchar *program_double_drop_precision(const gdouble gdouble_value);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 
 gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property);
 gboolean program_gtk_widget_toggle_visibility( GtkWidget *widget );
-/*gboolean program_gtk_widget_get_sensitive(GtkWidget *widget);
-gboolean program_gtk_widget_get_focus(GtkWidget *widget);*/
 void program_timeout_remove(guint *id, const gchar *usage);
 
 void get2gnow_program_deinit(void);

@@ -164,12 +164,12 @@ OnlineServices *online_services_init(void){
 
 /* Login to services. */
 gboolean online_services_login(OnlineServices *services){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	gboolean	login_okay=FALSE;
 	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
 		if(online_service_login(service, FALSE)){
 			if(!login_okay) login_okay=TRUE;
 		}
@@ -180,36 +180,39 @@ gboolean online_services_login(OnlineServices *services){
 		debug("Connected to %d OnlineServices.", services->connected);
 	
 	main_window_state_on_connection(login_okay);
+	g_list_free(accounts);
 	return login_okay;
 }/*online_services_login*/
 
 /* Login to services. */
 gboolean online_services_relogin(OnlineServices *services){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
 	gboolean	relogin_okay=FALSE;
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
 		online_service_reconnect(service);
 		
 		if(online_service_login(service, FALSE))
 			if(!relogin_okay) relogin_okay=TRUE;
 	}
 	main_window_state_on_connection(relogin_okay);
+	g_list_free(accounts);
 	return relogin_okay;
 }/*online_services_relogin*/
 
 void online_services_disconnect(OnlineServices *services){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
 	selected_service=NULL;
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
 		online_service_disconnect(service, TRUE);
 	}
 	main_window_state_on_connection(FALSE);
+	g_list_free(accounts);
 }/*online_services_disconnect*/
 
 gint online_services_has_total(OnlineServices *services, guint count){
@@ -388,11 +391,11 @@ gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *c
 	}
 	
 	GtkTreeIter		*iter=NULL;
-	GList			*a=NULL;
+	GList			*accounts=NULL;
 	guint			services_loaded=0;
 	debug("Loading services into tree view. total services: '%d'.", online_services->total);
-	for(a=services->accounts; a; a=a->next){
-		OnlineService *service=(OnlineService *)a->data;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		OnlineService *service=(OnlineService *)accounts->data;
 		if( connected_only && !online_service_is_connected(service) ) continue;
 		
 		const gchar *service_uri=online_service_get_uri(service);
@@ -415,6 +418,7 @@ gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *c
 		gtk_combo_box_set_active(combo_box, 0);
 	}
 	
+	g_list_free(accounts);
 	return (services_loaded ?TRUE :FALSE );
 }/*online_services_combo_box_fill*/
 
@@ -438,24 +442,26 @@ void online_services_increment_connected(OnlineServices *services, const gchar *
 
 
 OnlineService *online_services_connected_get_first(OnlineServices *services){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	for(a=services->accounts; a; a=a->next)
-		if(online_service_is_connected( (service=(OnlineService *)a->data) ))
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		if(online_service_is_connected( (service=(OnlineService *)accounts->data) ))
 			return service;
 		
+	g_list_free(accounts);
 	return NULL;
 }/*online_services_connected_get_first(online_services);*/
 
 OnlineService *online_services_get_online_service_by_guid( OnlineServices *services, const gchar *online_service_guid ){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	for(a=services->accounts; a; a=a->next)
-		if(!strcasecmp( online_service_get_guid( (service=(OnlineService *)a->data) ), online_service_guid ) )
-			break;
-	return (service ?service :NULL );
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		if(!strcasecmp( online_service_get_guid( (service=(OnlineService *)accounts->data) ), online_service_guid ) )
+			return (OnlineService *)accounts->data;
+	g_list_free(accounts);
+	return NULL;
 }/*online_services_get_online_service_by_guid( Online_services, online_service_guid );*/
 
 void online_services_increment_total(OnlineServices *services, const gchar *service_guid){
@@ -464,12 +470,12 @@ void online_services_increment_total(OnlineServices *services, const gchar *serv
 }/*online_services_increment_total(online_services);*/
 
 OnlineService *online_services_connected_get_last(OnlineServices *services){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	for(a=services->accounts; a; a=a->next)
-		if(online_service_is_connected( (OnlineService *)a->data ))
-			service=(OnlineService *)a->data;
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		if(online_service_is_connected( (OnlineService *)accounts->data ))
+			service=(OnlineService *)accounts->data;
 	
 	return service;
 }/*online_services_connected_get_last(online_services);*/
@@ -490,11 +496,11 @@ void online_services_decrement_connected(OnlineServices *services, const gchar *
 
 void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(G_STR_EMPTY(uri)) return;
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	for(a=services->accounts; a; a=a->next){
-		service=(OnlineService *)a->data;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
 		const gchar *service_key=online_service_get_key(service);
 		if(!online_service_refresh(service, uri)){
 			debug("**ERROR:** Unable to load: %s refreshing: <%s> failed.", uri, service_key);
@@ -504,6 +510,7 @@ void online_services_request(OnlineServices *services, RequestMethod request, co
 		debug("Requesting: %s from <%s>.", uri, service_key);
 		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
+	g_list_free(accounts);
 }/*online_services_request*/
 
 
@@ -513,51 +520,56 @@ void online_services_reset_length_of_longest_replacement(OnlineServices *service
 }/*online_services_reset_length_of_longest_replacement(online_services);*/
 
 gssize online_services_get_length_of_longest_replacement(OnlineServices *services){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	gssize		replacement_length=0;
 	
-	if(!longest_replacement_length){
-		gint		replace_with=0;
-		gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace_with, 2);
-		
-		for(a=services->accounts; a; a=a->next){
-			service=(OnlineService *)a->data;
-			if(online_service_is_connected(service))
-				if( (replacement_length=strlen( (replace_with==1?online_service_get_user_nick(service):online_service_get_user_name(service)) )) > longest_replacement_length)
-					longest_replacement_length=replacement_length;
-		}
+	if(longest_replacement_length)
+		return longest_replacement_length;
+	
+	gint		replace_with=0;
+	gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace_with, 2);
+	
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
+		if(online_service_is_connected(service))
+			if( (replacement_length=strlen( (replace_with==1?online_service_get_user_nick(service):online_service_get_user_name(service)) )) > longest_replacement_length)
+				longest_replacement_length=replacement_length;
 	}
 	
+	g_list_free(accounts);
 	return longest_replacement_length;
 }/*online_services_get_length_of_longest_replacement(online_services);*/
 
 
 
 gint online_services_best_friends_list_store_fill( OnlineServices *services, GtkListStore *list_store ){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	gtk_list_store_clear( list_store );
 	services->best_friends_total=0;
-	for(a=services->accounts; a; a=a->next)
-		services->best_friends_total+=online_service_best_friends_list_store_fill( (OnlineService *)a->data, list_store );
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		services->best_friends_total+=online_service_best_friends_list_store_fill( (OnlineService *)accounts->data, list_store );
+	g_list_free(accounts);
 	return services->best_friends_total;
 }/*online_services_best_friends_list_store_fill( online_services );*/
 
 
 gint online_services_best_friends_list_store_validate( OnlineServices *services, GtkListStore *list_store ){
-	GList		*a=NULL;
+	GList		*accounts=NULL;
 	gtk_list_store_clear( list_store );
 	services->best_friends_total=0;
-	for(a=services->accounts; a; a=a->next)
-		services->best_friends_total+=online_service_best_friends_list_store_validate( (OnlineService *)a->data, list_store );
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		services->best_friends_total+=online_service_best_friends_list_store_validate( (OnlineService *)accounts->data, list_store );
+	g_list_free(accounts);
 	return services->best_friends_total;
 }/*online_services_best_friends_list_store_fill( online_services );*/
 
 
 void online_services_best_friends_list_store_free( OnlineServices *services, GtkListStore *list_store ){
-	GList		*a=NULL;
-	for(a=services->accounts; a; a=a->next)
-		online_service_best_friends_list_store_free( (OnlineService *)a->data, list_store );
+	GList		*accounts=NULL;
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		online_service_best_friends_list_store_free( (OnlineService *)accounts->data, list_store );
+	g_list_free(accounts);
 }/*online_services_best_friends_list_store_free( online_services );*/
 
 static gboolean online_services_best_friends_list_store_get_user_iter( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeIter **iter){
@@ -666,12 +678,15 @@ gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *s
 
 gboolean online_services_is_user_best_friend( OnlineServices *services, OnlineService *service, const gchar *user_name ){
 	if(G_STR_EMPTY(user_name)) return FALSE;
-	GList		*a=NULL;
-	for(a=services->accounts; a; a=a->next)
-		if( (service==(OnlineService *)a->data) && online_service_is_user_best_friend( (OnlineService *)a->data, user_name ))
+	GList		*accounts=NULL;
+	for(accounts=services->accounts; accounts; accounts=accounts->next)
+		if( (service==(OnlineService *)accounts->data) && online_service_is_user_best_friend( (OnlineService *)accounts->data, user_name )){
+			g_list_free(accounts);
 			return TRUE;
+		}
 		
 	
+	g_list_free(accounts);
 	return FALSE;
 }/*online_services_is_user_best_friend( online_services, user_name );*/
 

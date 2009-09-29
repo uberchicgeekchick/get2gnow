@@ -368,15 +368,13 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			debug("Parsing best friends updates.");
 			notify=notify_best_friends;
 			gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
+			if(!save_oldest_id) save_oldest_id=TRUE;
 			break;
 		
-		case Tweets:
+		case Tweets:	case Timelines: case Users:
 			debug("Parsing updates from someone I'm following.");
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
-			break;
-		
-		case Timelines: case Users:
-			debug("Parsing timeline.");
+			if(!save_oldest_id) save_oldest_id=TRUE;
 			break;
 			
 		case Archive:
@@ -388,7 +386,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			uber_free(timeline);
 			return 0;
 	}
-	if(notify && monitoring!=DMs && monitoring!=Replies && !save_oldest_id ) notify=FALSE;
+	if(!id_oldest_update && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
 	guint		tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
 	const gint	tweet_display_interval=10;
