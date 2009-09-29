@@ -45,6 +45,7 @@ src/proxy.c
 src/searches.c
 src/timer.c
 src/tweet-list.c
+src/tweet-lists.c
 src/tweets.c
 src/ui-utils.c
 src/users.c
