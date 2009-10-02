@@ -63,10 +63,11 @@
 #include "program.h"
 
 #include "cache.h"
+
 #include "users-glists.h"
+#include "users.h"
 
 #include "main-window.h"
-#include "users.h"
 
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
@@ -270,7 +271,7 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	
-	debug("Parsing users xml.");
+	debug("Parsing user's xml.");
 	if(!( (doc=parse_xml_doc(xml, &root_element)) && root_element )){
 		xmlCleanupParser();
 		return NULL;
@@ -278,7 +279,7 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 	
 	gboolean users_found=FALSE;
 	xmlNode *current_node=NULL;
-	debug("Parsed new users. Starting with: '%s' node.", root_element->name);
+	debug("Parsed new users XML.  beginning search for user nodes starting at: <%s>", root_element->name);
 	while(!users_found){
 		if(!current_node) current_node=root_element;
 		else if(!current_node->next) break;
@@ -294,29 +295,30 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 	}
 	
 	if(!users_found){
+		debug("No new users where found.");
 		xmlFreeDoc(doc);
 		xmlCleanupParser();
 		return NULL;
 	}
 	
-	User *new_user=NULL;
-	GList *new_users=NULL;
+	User *user=NULL;
+	GList *users=NULL;
 	for(; current_node; current_node=current_node->next){
 		if(!( (current_node->type==XML_ELEMENT_NODE) && g_str_equal(current_node->name, "user") ))
 			continue;
 		
-		if(!(new_user=user_parse_node(service, current_node->children)))
+		if(!(user=user_parse_node(service, current_node->children)))
 			continue;
 		
-		debug("Added user: [%s] to user list.", user_get_user_name(new_user));
-		new_users=g_list_append(new_users, new_user);
-		new_user=NULL;
+		debug("Added user: [%s] to user list.", user_get_user_name(user));
+		users=g_list_append(users, user);
+		user=NULL;
 	}
 	
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
-	return new_users;
+	return users;
 }/*users_glist_parse(service, xml)*/
 
 

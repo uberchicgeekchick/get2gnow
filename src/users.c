@@ -153,11 +153,9 @@ struct _UserStatus {
 };
 
 struct _UserProfileViewer{
-	User			*user;
 	GtkMessageDialog	*dialog;
 	
-	GtkLabel		*loading_label;
-	
+	GtkImage		*user_image;
 	GtkImage		*image;
 	
 	GtkVBox			*title_vbox;
@@ -202,9 +200,12 @@ static void user_status_validate( UserStatus **status );
 static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status);
 static void user_status_format_dates(UserStatus *status);
 
-static void user_profile_viewer_response(GtkDialog *dialog, gint response, UserProfileViewer *user_profile_viewer);
+static void user_profile_viewer_response(GtkDialog *dialog, gint response);
 static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *user_profile_viewer);
+static void user_profile_view_show_all(void);
+static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_service_wrapper, User *user);
 static void user_profile_viewer_setup(GtkWindow *parent);
+static void user_profile_viewer_clear_profile(GtkWindow *parent, OnlineService *service, const gchar *user_name);
 
 
 
@@ -252,7 +253,7 @@ const gchar *user_get_user_nick(User *user){
 	return user->user_nick;
 }/*user_get_user_nick(user);*/
 
-OnlineService *user_get_online_service(User *user){
+OnlineService *user_get_service(User *user){
 	if(!user) return NULL;
 	return user->service;
 }/*user_get_online_service(user);*/
@@ -433,7 +434,7 @@ const gchar *user_status_get_id_str(UserStatus *status){
 
 const gchar *user_status_get_user_name(UserStatus *status){
 	if(!(status && status->user)) return NULL;
-	return user_get_user_name(status->user);
+	return status->user->user_name;
 }/*user_status_get_user_name(status);*/
 
 const gchar *user_status_get_notification(UserStatus *status){
@@ -623,40 +624,6 @@ void user_status_free(UserStatus *status){
 /********************************************************************************
  *                       UserProfileViewer methods                              *
  ********************************************************************************/
-static void user_profile_viewer_setup(GtkWindow *parent){
-	user_profile_viewer=g_new( UserProfileViewer, 1 );
-	
-	GtkBuilder *ui=gtkbuilder_get_file(
-						GtkBuilderUI,
-							"profile_dialog", &user_profile_viewer->dialog,
-							
-							"loading_label", &user_profile_viewer->loading_label,
-							
-							"title_vbox", &user_profile_viewer->title_vbox,
-							
-							"profile_vbox", &user_profile_viewer->profile_vbox,
-							
-							"latest_update_hbox", &user_profile_viewer->latest_update_hbox,
-							"updated_when_label", &user_profile_viewer->updated_when_label,
-							
-							"latest_update_vbox", &user_profile_viewer->latest_update_vbox,
-						NULL
-	);
-	
-	gtkbuilder_connect(
-				ui, user_profile_viewer,
-					"profile_dialog", "destroy", user_profile_viewer_destroy,
-					"profile_dialog", "response", user_profile_viewer_response,
-				NULL
-	);
-	
-	g_object_add_weak_pointer(G_OBJECT(user_profile_viewer->dialog), (gpointer)&user_profile_viewer);
-	gtk_window_set_transient_for(GTK_WINDOW(user_profile_viewer->dialog), parent);
-	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
-	gtk_widget_show( GTK_WIDGET( user_profile_viewer->loading_label ) );
-	gtk_window_present(GTK_WINDOW(user_profile_viewer->dialog));
-}/*user_profile_viewer_setup(parent);*/
-
 gboolean user_download_avatar(OnlineService *service, User *user){
 	gchar *image_file=NULL;
 	if(g_file_test(user->image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
@@ -674,123 +641,209 @@ gboolean user_download_avatar(OnlineService *service, User *user){
 	return TRUE;
 }/*user_download_avatar(user);*/
 
+void user_profile_viewer_cleanup(void){
+	if(!user_profile_viewer) return;
+	if(user_profile_viewer->dialog)
+		gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->dialog));
+	if(user_profile_viewer)
+		uber_free(user_profile_viewer);
+}/*user_profile_viewer_cleanup();*/
+
+
 void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent){
-	if(!(user_profile_viewer)) user_profile_viewer_setup(parent);
-	gchar	*profile_details;
+	if(!user_profile_viewer)
+		user_profile_viewer_setup(parent);
 	
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->loading_label));
-	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
+	user_profile_viewer_clear_profile(parent, service, user_name);
 	
-	user_profile_viewer->user=user_fetch_profile(service, user_name);
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->dialog));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_image));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
+	g_object_add_weak_pointer(G_OBJECT(user_profile_viewer->dialog), (gpointer)&user_profile_viewer);
+	gtk_window_set_transient_for(GTK_WINDOW(user_profile_viewer->dialog), parent);
+	window_present(GTK_WINDOW(user_profile_viewer->dialog), TRUE);
 	
-	debug("Downloading user's avatar from: <%s> to [ file://%s ]", user_profile_viewer->user->image_url, user_profile_viewer->user->image_file);
-	if(user_download_avatar(service, user_profile_viewer->user)){
+	online_service_fetch_profile( service, user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)user_profile_viewer_display_profile );
+}/*user_profile_viewer_show( service, "uberChick", control_panel->control_panel );*/
+
+static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_service_wrapper, User *user){ 
+	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
+	
+	debug("Downloading user's avatar from: <%s> to [ file://%s ]", user->image_url, user->image_file);
+	if(user_download_avatar(service, user)){
 		/*TODO: FIXME
 		 * user_download_avatar(user); or this section of code is currently causing a segfault w/o dumping any info.
 		 */
 		debug("Avatar: GtkImage created GtkImage for display in UserProfileViewer");
-		debug("Avatar: Downloaded from <%s>", user_profile_viewer->user->image_url);
-		debug("Avatar: saved to: [%s]", user_profile_viewer->user->image_file);
-		gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET( user_profile_viewer->image=images_get_maximized_image_from_filename(user_profile_viewer->user->image_file)) );
+		debug("Avatar: Downloaded from <%s>", user->image_url);
+		debug("Avatar: saved to: [%s]", user->image_file);
+		gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET( user_profile_viewer->image=images_get_maximized_image_from_filename(user->image_file)) );
 	}
 	
-	profile_details=g_strdup_printf(
+	gchar *profile_details=g_strdup_printf(
 					"\t[<a href=\"http%s://%s/\">%s</a>]\n",
 					(online_service_is_secure(service)?"s":""), online_service_get_uri(service), online_service_get_guid(service)
 	);
 	
-	user_profile_viewer->service_label=label_new();
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->service_label));
-	gtk_box_pack_start(
-				GTK_BOX(user_profile_viewer->title_vbox),
-				GTK_WIDGET(user_profile_viewer->service_label),
-				TRUE, TRUE, 0
-	);
 	label_set_text(service, LABEL(user_profile_viewer->service_label), profile_details, TRUE, TRUE);
-	g_free( profile_details );
-
+	uber_free( profile_details );
+	
+	
+	
 	profile_details=g_strdup_printf(
 					"\t\t<u><b>%s:</b></u> @%s",
-					user_profile_viewer->user->user_nick, user_profile_viewer->user->user_name
-	);
-	
-	
-	user_profile_viewer->user_label=label_new();
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_label));
-	gtk_box_pack_start(
-				GTK_BOX(user_profile_viewer->title_vbox),
-				GTK_WIDGET(user_profile_viewer->user_label),
-				TRUE, TRUE, 0
+					user->user_nick, user->user_name
 	);
 	label_set_text(service, LABEL(user_profile_viewer->user_label), profile_details, TRUE, TRUE);
-	g_free( profile_details );
+	uber_free( profile_details );
+	
+	
 	
 	profile_details=g_strdup_printf(
 					"\t<b>Tweets:</b> %lu\n\t<b>Following:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n",
-					user_profile_viewer->user->tweets,
-					user_profile_viewer->user->following,
-					user_profile_viewer->user->followers,
-					user_profile_viewer->user->location
+					user->tweets,
+					user->following,
+					user->followers,
+					user->location
 	);
 	gtk_message_dialog_set_markup( user_profile_viewer->dialog, profile_details );
-	g_free(profile_details);
+	uber_free(profile_details);
 	
-	profile_details=g_strdup_printf( "\t<b>URL:</b>\t<a href=\"%s\">%s</a>\n", user_profile_viewer->user->url, user_profile_viewer->user->url );
-	user_profile_viewer->url_hyperlink=label_new();
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->url_hyperlink));
-	gtk_box_pack_start(
-				GTK_BOX(user_profile_viewer->profile_vbox),
-				GTK_WIDGET(user_profile_viewer->url_hyperlink),
-				TRUE, TRUE, 0
-	);
+	profile_details=g_strdup_printf( "\t<b>URL:</b>\t<a href=\"%s\">%s</a>\n", user->url, user->url );
 	label_set_text(service, user_profile_viewer->url_hyperlink, profile_details, TRUE, TRUE);
-	g_free(profile_details);
+	uber_free(profile_details);
 	
-	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", user_profile_viewer->user->bio );
-	user_profile_viewer->bio_html=label_new();
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
-	gtk_box_pack_end(
-				GTK_BOX(user_profile_viewer->profile_vbox),
-				GTK_WIDGET(user_profile_viewer->bio_html),
-				TRUE, TRUE, 0
-	);
+	g_object_set( GTK_LABEL( user_profile_viewer->bio_html ), "single-line-mode", FALSE, NULL );
+	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", user->bio );
 	label_set_text(service, user_profile_viewer->bio_html, profile_details, TRUE, TRUE);
-	g_free( profile_details );
+	uber_free( profile_details );
 	
-	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", user_profile_viewer->user->status->created_how_long_ago);
+	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", user->status->created_how_long_ago);
 	gtk_label_set_markup(user_profile_viewer->updated_when_label, profile_details);
 	uber_free(profile_details);
 	
-	user_profile_viewer->latest_tweet=label_new();
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->latest_tweet));
-	gtk_box_pack_end(
-			GTK_BOX(user_profile_viewer->latest_update_vbox),
-			GTK_WIDGET(user_profile_viewer->latest_tweet),
-			TRUE, TRUE, 0
-	);
-	label_set_text(service, user_profile_viewer->latest_tweet, user_profile_viewer->user->status->sexy_tweet, TRUE, TRUE);
+	label_set_text(service, user_profile_viewer->latest_tweet, user->status->sexy_tweet, TRUE, TRUE);
 	
+	user_profile_view_show_all();
 	
-	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
-	
-	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->loading_label));
-	
-	user_free( user_profile_viewer->user );
-	
-}/*user_popup_profile*/
+	user_free( user );
+}/*static void user_profile_viewer_display_profile(online_service_wrapper, user);*/
 
-static void user_profile_viewer_response(GtkDialog *dialog, gint response, UserProfileViewer *user_profile_viewer){
-	gtk_widget_destroy(GTK_WIDGET(dialog));
+static void user_profile_viewer_response(GtkDialog *dialog, gint response){
+	gtk_widget_hide(GTK_WIDGET(dialog));
 }/*user_profile_viewer_response(dialog, response, user_profile_viewer);*/
 
 static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *user_profile_viewer){
 	debug("Destroying user profile viewer");
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(user_profile_viewer);
-}/*user_profile_viewer_response(dialog, user_profile_viewer);*/
+}/*user_profile_viewer_destroy(dialog, user_profile_viewer);*/
 
 
+static void user_profile_viewer_setup(GtkWindow *parent){
+	user_profile_viewer=g_new( UserProfileViewer, 1 );
+	
+	GtkBuilder *ui=gtkbuilder_get_file(
+						GtkBuilderUI,
+							"profile_dialog", &user_profile_viewer->dialog,
+							
+							"title_vbox", &user_profile_viewer->title_vbox,
+							
+							"profile_vbox", &user_profile_viewer->profile_vbox,
+							"user_image", &user_profile_viewer->user_image,
+							
+							"latest_update_hbox", &user_profile_viewer->latest_update_hbox,
+							"updated_when_label", &user_profile_viewer->updated_when_label,
+							
+							"latest_update_vbox", &user_profile_viewer->latest_update_vbox,
+						NULL
+	);
+	
+	
+	gtkbuilder_connect(
+				ui, user_profile_viewer,
+					"profile_dialog", "destroy", user_profile_viewer_destroy,
+					"profile_dialog", "response", user_profile_viewer_response,
+				NULL
+	);
+	
+	user_profile_viewer->service_label=label_new();
+	gtk_box_pack_start(
+				GTK_BOX(user_profile_viewer->title_vbox),
+				GTK_WIDGET(user_profile_viewer->service_label),
+				TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->user_label=label_new();
+	gtk_box_pack_start(
+				GTK_BOX(user_profile_viewer->title_vbox),
+				GTK_WIDGET(user_profile_viewer->user_label),
+				TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->bio_html=label_new();
+	gtk_box_pack_end(
+				GTK_BOX(user_profile_viewer->profile_vbox),
+				GTK_WIDGET(user_profile_viewer->bio_html),
+				TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->latest_tweet=label_new();
+	gtk_box_pack_end(
+			GTK_BOX(user_profile_viewer->latest_update_vbox),
+			GTK_WIDGET(user_profile_viewer->latest_tweet),
+			TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->url_hyperlink=label_new();
+	gtk_box_pack_start(
+				GTK_BOX(user_profile_viewer->profile_vbox),
+				GTK_WIDGET(user_profile_viewer->url_hyperlink),
+				TRUE, TRUE, 0
+	);
+	
+	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
+}/*user_profile_viewer_setup(parent);*/
+
+static void user_profile_view_show_all(void){
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->dialog));
+	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
+	
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->user_image));
+	
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->updated_when_label));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->service_label));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_label));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->url_hyperlink));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->latest_tweet));
+	
+	window_present(GTK_WINDOW(user_profile_viewer->dialog), TRUE);
+}/*user_profile_view_show_all();*/
+
+static void user_profile_viewer_clear_profile(GtkWindow *parent, OnlineService *service, const gchar *user_name){
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_image));
+	gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET( images_get_dialog_image_from_stock( "gtk-dialog-info" ) ) );
+	gtk_image_set_from_stock(user_profile_viewer->user_image, "gtk-dialog-info", ImagesDialog );
+	gtk_message_dialog_set_markup( user_profile_viewer->dialog, "" );
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->updated_when_label));
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->service_label));
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->user_label));
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->url_hyperlink));
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->latest_tweet));
+	
+	g_object_set( GTK_LABEL( user_profile_viewer->bio_html ), "single-line-mode", TRUE, NULL );
+	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_name, (online_service_is_secure(service)?"s":""), online_service_get_uri(service), online_service_get_uri(service) );
+	label_set_text(service, user_profile_viewer->bio_html, profile_details, FALSE, TRUE);
+	uber_free( profile_details );
+	
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->dialog));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_image));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
+	g_object_add_weak_pointer(G_OBJECT(user_profile_viewer->dialog), (gpointer)&user_profile_viewer);
+	gtk_window_set_transient_for(GTK_WINDOW(user_profile_viewer->dialog), parent);
+	window_present(GTK_WINDOW(user_profile_viewer->dialog), TRUE);
+}/*user_profile_viewer_clear_profile( window, service, "uberChick" );*/
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-

@@ -81,7 +81,7 @@ gdouble user_get_id(User *user);
 const gchar *user_status_get_id_str(UserStatus *status);
 const gchar *user_get_user_name(User *user);
 const gchar *user_get_user_nick(User *user);
-OnlineService *user_get_online_service(User *user);
+OnlineService *user_get_service(User *user);
 gboolean user_is_follower(User *user);
 
 User *user_fetch_profile(OnlineService *service, const gchar *user_name);
@@ -89,6 +89,7 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 
 gboolean user_download_avatar(OnlineService *service, User *user);
 void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
+void user_profile_viewer_cleanup(void);
 
 User *user_parse_node(OnlineService *service, xmlNode *root_element);
 

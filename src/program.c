@@ -146,9 +146,9 @@ void program_deinit(void){
 	online_services_deinit(online_services);
 	proxy_deinit();
 	
-#ifndef GNOME_ENABLE_DEBUG
 	ipc_deinit();
-#endif
+	
+	user_profile_viewer_cleanup();
 	
 	debug_deinit();
 }/*program_deinit();*/

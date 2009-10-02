@@ -87,39 +87,39 @@ get2gnow_SOURCES = 							\
 
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 get2gnow_OBJECTS =					\
-	online-services.$(OBJEXT)			\
-	online-service.$(OBJEXT)			\
-	online-service-wrapper.$(OBJEXT)		\
-	online-service-request.$(OBJEXT)		\
-	online-services-dialog.$(OBJEXT)		\
-	users-glists.$(OBJEXT)				\
-	network.$(OBJEXT)				\
-	gconfig.$(OBJEXT)				\
-	timer.$(OBJEXT)					\
-	proxy.$(OBJEXT)					\
-	debug.$(OBJEXT)					\
-	cache.$(OBJEXT)					\
-	gtkbuilder.$(OBJEXT)				\
-	$(am__objects_1)				\
-	program.$(OBJEXT)				\
-	main.$(OBJEXT)					\
 	about.$(OBJEXT)					\
-	ipc.$(OBJEXT)					\
-	main-window.$(OBJEXT)				\
-	geometry.$(OBJEXT)				\
-	label.$(OBJEXT)					\
-	parser.$(OBJEXT)				\
-	groups.$(OBJEXT)				\
-	searches.$(OBJEXT)				\
-	preferences.$(OBJEXT)				\
-	ui-utils.$(OBJEXT)				\
+	cache.$(OBJEXT)					\
+	control-panel.$(OBJEXT)				\
+	debug.$(OBJEXT)					\
 	following-viewer.$(OBJEXT)			\
 	friends-manager.$(OBJEXT)			\
+	gconfig.$(OBJEXT)				\
+	geometry.$(OBJEXT)				\
+	groups.$(OBJEXT)				\
+	gtkbuilder.$(OBJEXT)				\
 	images.$(OBJEXT)				\
-	control-panel.$(OBJEXT)				\
-	tweets.$(OBJEXT)				\
+	ipc.$(OBJEXT)					\
+	$(am__objects_1)				\
+	label.$(OBJEXT)					\
+	main.$(OBJEXT)					\
+	main-window.$(OBJEXT)				\
+	network.$(OBJEXT)				\
+	online-service.$(OBJEXT)			\
+	online-service-request.$(OBJEXT)		\
+	online-services-dialog.$(OBJEXT)		\
+	online-services.$(OBJEXT)			\
+	online-service-wrapper.$(OBJEXT)		\
+	parser.$(OBJEXT)				\
+	preferences.$(OBJEXT)				\
+	program.$(OBJEXT)				\
+	proxy.$(OBJEXT)					\
+	searches.$(OBJEXT)				\
+	timer.$(OBJEXT)					\
 	tweet-list.$(OBJEXT)				\
 	tweet-lists.$(OBJEXT)				\
+	tweets.$(OBJEXT)				\
+	ui-utils.$(OBJEXT)				\
+	users-glists.$(OBJEXT)				\
 	users.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -402,36 +402,38 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-wrapper.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-request.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services-dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/control-panel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gconfig.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/groups.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-window.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services-dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-wrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/groups.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/control-panel.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-lists.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
 
 .c.o:

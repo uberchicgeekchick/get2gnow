@@ -118,7 +118,7 @@ struct _TimelineLabels{
 TimelineLabels TimelineLabelsList[]={
 	{BestFriends,	API_TIMELINE_BEST_FRIEND,	N_("My Best Friend: _%s's %s Newest Updates"),	N_("My Best Friend: %s's %s Newest Updates")},
 	{Users,		API_TIMELINE_USER,		N_("%s's %s _Updates"),			N_("%s's %s Updates")},
-	{Tweets,	API_TIMELINE_FRIENDS,		N_("My Fr_iends' Updates"),		N_("My Friends' Updates")},
+	{Tweets,	API_TIMELINE_FRIENDS,		N_("My _Friends' Updates"),		N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,			N_("@ _Replies"),			N_("@ Replies")},
 	/*{Replies,	API_MENTIONS,			N_("@ _Mentions"),			N_("@ Mentions")},*/
 	{DMs,		API_DIRECT_MESSAGES,		N_("My DMs _Inbox"),			N_("My DMs Inbox")},
@@ -322,6 +322,9 @@ TweetList *tweet_list_new(const gchar *timeline, OnlineService *service){
 	gtk_widget_show_all(GTK_WIDGET(GET_PRIVATE(tweet_list)->vbox));
 	
 	tweet_list=g_object_ref_sink(tweet_list);
+	
+	if(gconfig_if_bool( UPDATE_VEWER_TOOLBAR_VISIBILITY, FALSE) )
+		tweet_list_toggle_toolbar(tweet_list);
 	
 	return tweet_list;
 }/*tweet_list_new(timeline);*/
@@ -769,14 +772,14 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	TimelineLabels *timeline_labels=NULL;
 	this->timeline=g_strdup(timeline);
 	for(timeline_labels=TimelineLabelsList; timeline_labels->timeline; timeline_labels++){
-		if( g_str_has_prefix(this->timeline, timeline_labels->timeline ) || g_str_equal( this->timeline, timeline_labels->timeline ) ){
+		if(g_str_has_prefix(this->timeline, timeline_labels->timeline) || g_str_equal(this->timeline, timeline_labels->timeline) ){
 			this->monitoring=timeline_labels->monitoring;
 			this->tab_label_string=g_strdup(timeline_labels->tab_label_string);
 			this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 			break;
 		}
 		
-		if( timeline_labels->monitoring!=BestFriends && timeline_labels->monitoring!=Users  )
+		if(timeline_labels->monitoring!=BestFriends && timeline_labels->monitoring!=Users )
 			continue;
 		
 		
@@ -787,7 +790,7 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 			const gchar *user_name=user_info[0];
 			if(G_STR_N_EMPTY(user_name)){
 				this->user=g_strdup(user_name);
-				if(!( this->service && online_services_is_user_best_friend( online_services, this->service, this->user ) ))
+				if(!(this->service && online_services_is_user_best_friend( online_services, this->service, this->user) ))
 					timeline_labels++;
 				const gchar *service_uri=online_service_get_uri(this->service);
 				this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, user_name, service_uri );
@@ -961,7 +964,7 @@ static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event){
 			tweet_list_index_scroll_to(tweet_list);
 			return;
 	}
-}/* tweet_list_move( tweet_list, event ); */
+}/* tweet_list_move(tweet_list, event); */
 
 static void tweet_list_index_validate(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;

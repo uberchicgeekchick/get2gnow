@@ -94,9 +94,25 @@ GtkImage *images_get_dialog_image_from_filename( gchar *image_filename ){
 	return images_get_scaled_image_from_filename( image_filename, ImagesDialog, ImagesDialog );
 }//images_get_dialog_image_from_filename
 
-GtkImage *images_get_minimized_image_from_filename( gchar *image_filename ){
-	return images_get_scaled_image_from_filename( image_filename, ImagesMinimum, ImagesMinimum );
-}//images_get_minimize_image_from_filename
+GtkImage *images_get_expanded_image_from_stock( const gchar *stock_image_name ){
+	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesExpanded );
+}//images_get_expanded_image_from_stock
+
+GtkImage *images_get_maximized_image_from_stock( const gchar *stock_image_name ){
+	return GTK_IMAGE( gtk_image_new_from_stock( stock_image_name, ImagesMaximum ) );
+}/*images_get_maximized_image_from_stock( "gtk-dialog-info" );*/
+
+GtkImage *images_get_default_image_from_stock( const gchar *stock_image_name ){
+	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesDefault );
+}//images_get_default_image_from_stock
+
+GtkImage *images_get_dialog_image_from_stock( const gchar *stock_image_name ){
+	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesDialog );
+}/*images_get_dialog_image_from_stock( "gtk-dialog-info" );*/
+
+GtkImage *images_get_minimized_image_from_stock( const gchar *stock_image_name ){
+	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesMinimum );
+}//images_get_minimize_image_from_stock
 
 GtkImage *images_get_image_from_filename( gchar *image_filename ){
 	images_validate_filename(&image_filename);

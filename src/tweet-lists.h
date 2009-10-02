@@ -51,23 +51,29 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__HEADER_H__
-#define	__HEADER_H__
+#ifndef	__TWEET_LISTS_H__
+#define	__TWEET_LISTS_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#include <glib.h>
-#include <gtk/gtk.h>
-
-#include "online-service.h"
-
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
+#include <glib.h>
+#include <gtk/gtk.h>
+
+#include "program.h"
+#include "online-service.h"
 
 
 G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
+#define UPDATE_VEWER_TOOLBAR_VISIBILITY		GCONF_PATH "/ui/hide/tabs_toolbars"
+
+
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
@@ -76,7 +82,7 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void tweet_lists_init( GtkNotebook *notebook );
+void tweet_lists_init(GtkNotebook *notebook);
 
 TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service);
 
@@ -92,13 +98,12 @@ void tweet_lists_close(void);
 void tweet_lists_close_current_page(void);
 void tweet_lists_close_page(gint page);
 
-void tweet_lists_toggle_toolbars( void );
+void tweet_lists_toggle_toolbars(void);
 
 void tweet_lists_destroy(void);
 
 G_END_DECLS
-#endif /* __HEADER_H__*/
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-
+#endif /* __TWEET_LISTS_H__*/

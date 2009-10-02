@@ -77,6 +77,7 @@
 #include "online-service-wrapper.h"
 
 #include "users-glists.h"
+#include "users.h"
 #include "network.h"
 
 #include "preferences.h"
@@ -165,7 +166,6 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 static void *online_service_login_check(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
 static void online_service_get_profile(OnlineService *service);
-static void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func );
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, User *user);
 
 static gboolean online_service_best_friends_load( OnlineService *service );
@@ -334,14 +334,23 @@ gboolean online_service_uses_laconica(OnlineService *service){
 
 GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich users_glist_get_which){
 	if(!service) return NULL;
+	GList *users=NULL;
 	switch(users_glist_get_which){
-		case GetFriends: return service->friends;
-		case GetFollowers: return service->followers;
+		case GetFriends:
+			users=service->friends;
+			break;
+		case GetFollowers:
+			users=service->followers;
+			break;
 		case GetBoth: default:
 			if(!(service->friends && service->followers))
 				return NULL;
-			return service->friends_and_followers;
+			if(!service->friends_and_followers)
+				 service->friends_and_followers=g_list_concat(service->friends, service->followers);
+			users=service->friends_and_followers;
+			break;
 	}
+	return g_list_first(users);
 }/*online_service_users_glist_get(service, GetFriends|GetFollowers|GetBoth);*/
 
 void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich users_glist_get_which, GList *new_users){
@@ -745,7 +754,7 @@ void online_service_best_friends_list_store_free( OnlineService *service, GtkLis
 	g_slist_foreach(service->best_friends, (GFunc)g_free, NULL);
 }/*online_service_best_friends_list_store_free( service, list_store );*/
 
-static void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func ){
+void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func ){
 	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, user_name);
 	online_service_request( service, QUEUE, user_profile_uri, online_service_user_parser_func, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL );
 	uber_free(user_profile_uri);

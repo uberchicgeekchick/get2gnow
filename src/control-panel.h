@@ -89,7 +89,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 
 void control_panel_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
-void control_panel_dm_data_fill(GList *followers);
+void control_panel_dm_data_fill(GList *my_followers);
 
 void contol_panel_emulate_embed_toggle(void);
 void contol_panel_emulate_compact_view_toggle(void);

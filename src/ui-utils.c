@@ -59,10 +59,7 @@ window_get_is_visible (GtkWindow *window)
 }
 
 /* Takes care of moving the window to the current workspace. */
-void
-window_present (GtkWindow *window,
-					   gboolean   steal_focus)
-{
+void window_present(GtkWindow *window, gboolean steal_focus){
 	gboolean visible;
 	gboolean on_current;
 	guint32  timestamp;

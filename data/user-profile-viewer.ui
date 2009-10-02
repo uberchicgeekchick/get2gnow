@@ -4,8 +4,8 @@
   <!-- interface-naming-policy project-wide -->
   <object class="GtkMessageDialog" id="profile_dialog">
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Twitter profile viewer</property>
-    <property name="destroy_with_parent">True</property>
+    <property name="title" translatable="yes">User Profile Viewer</property>
+    <property name="destroy_with_parent">False</property>
     <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
@@ -16,15 +16,6 @@
         <property name="visible">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
-        <child>
-          <object class="GtkLabel" id="loading_label">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Please wait while the user's profile is loading...</property>
-          </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkVBox" id="title_vbox">
             <property name="orientation">vertical</property>
@@ -43,6 +34,19 @@
             <child>
               <placeholder/>
             </child>
+            <child>
+              <object class="GtkImage" id="user_image">
+                <property name="width_request">78</property>
+                <property name="height_request">78</property>
+                <property name="visible">True</property>
+                <property name="xpad">3</property>
+                <property name="ypad">3</property>
+                <property name="pixel_size">70</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="padding">3</property>
@@ -55,6 +59,7 @@
             <child>
               <object class="GtkLabel" id="updated_when_label">
                 <property name="xalign">1</property>
+                <property name="visible">False</property>
                 <property name="label" translatable="yes">&lt;b&gt;Last Update:&lt;/b&gt; &lt;i&gt;[%d (seconds|minutes|hours|days|weeks) ago.]&lt;/i&gt;</property>
                 <property name="use_markup">True</property>
               </object>

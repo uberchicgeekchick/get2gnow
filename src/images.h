@@ -80,6 +80,12 @@ GtkImage *images_get_default_image_from_filename(gchar *image_filename);
 GtkImage *images_get_dialog_image_from_filename( gchar *image_filename );
 GtkImage *images_get_minimized_image_from_filename(gchar *image_filename);
 
+GtkImage *images_get_expanded_image_from_stock(const gchar *stock_image_name);
+GtkImage *images_get_maximized_image_from_stock(const gchar *stock_image_name);
+GtkImage *images_get_default_image_from_stock(const gchar *stock_image_name);
+GtkImage *images_get_dialog_image_from_stock( const gchar *stock_image_name );
+GtkImage *images_get_minimized_image_from_stock(const gchar *stock_image_name);
+
 GdkPixbuf *images_get_expanded_pixbuf_from_filename(gchar *image_filename);
 GdkPixbuf *images_get_maximized_pixbuf_from_filename(gchar *image_filename);
 GdkPixbuf *images_get_default_pixbuf_from_filename(gchar *image_filename);

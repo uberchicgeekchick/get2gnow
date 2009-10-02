@@ -133,6 +133,8 @@ void online_service_update_ids_set( OnlineService *service, const gchar *timelin
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 
+void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func );
+
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
