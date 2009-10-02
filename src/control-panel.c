@@ -988,10 +988,10 @@ static void control_panel_sexy_send(OnlineService *service, const gchar *user_na
 void control_panel_sexy_send_dm(void){
 	OnlineService *service=NULL;
 	const gchar *user_name=NULL;
-	if(!( (service=control_panel->best_friends_service) && G_STR_N_EMPTY( (user_name=control_panel->best_friends_user_name) ) ))
+	if( (service=control_panel->best_friends_service) && G_STR_N_EMPTY( (user_name=control_panel->best_friends_user_name) ) )
 		return control_panel_sexy_send(service, user_name );
 	
-	if(!( (service=online_service_request_selected_update_get_service()) && G_STR_N_EMPTY( (user_name=online_service_request_selected_update_get_user_name()) ) ))
+	if( (service=online_service_request_selected_update_get_service()) && G_STR_N_EMPTY( (user_name=online_service_request_selected_update_get_user_name()) ) )
 		return control_panel_sexy_send(service, user_name);
 	
 	if( (GTK_WIDGET_IS_SENSITIVE( control_panel->followers_combo_box)) && G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) )  )
