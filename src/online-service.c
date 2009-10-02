@@ -1,4 +1,3 @@
-/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
  * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
@@ -76,6 +75,7 @@
 #include "online-services.h"
 #include "online-service-wrapper.h"
 
+#include "users.types.h"
 #include "users-glists.h"
 #include "users.h"
 #include "network.h"
@@ -607,13 +607,14 @@ gboolean online_service_best_friends_add( OnlineService *service, const gchar *u
 	return !found;
 }/*online_service_best_friends_add( OnlineService *service, const gchar *user_name );*/
 
-gboolean online_service_best_friends_remove( OnlineService *service, const gchar *user_name ){
+gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name ){
 	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return FALSE;
 	gboolean found=online_service_is_user_best_friend( service, user_name );
 	
 	if(!found){
 		debug( "Cannot remove: %s from <%s>'s best_friends.  %s was not found in <%s>'s best friends list.", user_name, service->guid, user_name, service->guid );
 		statusbar_printf( "%s is not one of your, <%s>'s, best friends.", user_name, service->guid );
+		online_service_request_best_friend_drop(service, parent, user_name);
 	}else{
 		debug( "Attempting to load: %s's profile to remove them from <%s>'s best_friends.", user_name, service->guid );
 		statusbar_printf( "Removing %s's from your, <%s>, best friends.", user_name, service->guid );
@@ -621,11 +622,11 @@ gboolean online_service_best_friends_remove( OnlineService *service, const gchar
 	}
 	
 	return found;
-}/*online_service_best_friends_remove( service, user_name );*/
+}/*online_service_best_friends_drop( service, user_name );*/
 
 void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
-	const gchar *user_name=user_get_user_name(user);
+	const gchar *user_name=user->user_name;
 	if(!user){
 		debug( "User %s's profile could not be found, on %s.  Their user name has most likely changed.  Though unlikely its possible the netwok connection may have been lost.  Unlikely because prior 'status' checks would have kept this method from being called.", user_name, service->guid );
 		if( online_service_best_friends_confirm_clean_up( service, user_name ) )
@@ -928,7 +929,7 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, Us
 	}
 	service->connected=service->authenticated=TRUE;
 	service->has_loaded=TRUE;
-	service->user_nick=g_strdup(user_get_user_nick(user));
+	service->user_nick=g_strdup(user->user_nick);
 	debug("Setting user_nick for: %s to %s.", service->key, service->user_nick);
 	user_free(user);
 }/*online_service_set_profile(user);*/

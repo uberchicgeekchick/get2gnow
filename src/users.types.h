@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,64 +48,100 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/**********************************************************************
- *          My art, code, & programming.                              *
- **********************************************************************/
-#ifndef __USERS_H__
-#define __USERS_H__
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__USERS_TYPES_H__
+#define	__USERS_TYPES_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
 
-/**********************************************************************
- *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
- **********************************************************************/
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
+#include <glib.h>
 #include <gtk/gtk.h>
-#include <libxml/parser.h>
-#include <libsoup/soup.h>
+
 #include "online-services-typedefs.h"
-#include "tweet-list.h"
 
 
-/**********************************************************************
- *        Objects, structures, and etc typedefs                       *
- **********************************************************************/
-typedef struct _User User;
-typedef struct _UserStatus UserStatus;
-
-/**********************************************************************
- *          Global method & function prototypes                      *
- **********************************************************************/
-const gchar *user_status_get_id_str(UserStatus *status);
-
-User *user_fetch_profile(OnlineService *service, const gchar *user_name);
-User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-
-gboolean user_download_avatar(OnlineService *service, User *user);
-void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
-void user_profile_viewer_cleanup(void);
-
-User *user_parse_node(OnlineService *service, xmlNode *root_element);
-
-void user_free(User *user);
-
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list);
-void user_status_store(UserStatus *status, TweetList *tweet_list);
-
-OnlineService *user_status_get_online_service(UserStatus *status);
-
-gdouble user_status_get_id(UserStatus *status);
-const gchar *user_status_get_id_str(UserStatus *status);
-const gchar *user_status_get_user_name(UserStatus *status);
-const gchar *user_status_get_notification(UserStatus *status);
-gint user_status_get_created_seconds_ago(UserStatus *status);
-
-void user_status_free(UserStatus *status);
+G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
 
 
-#endif /*__USERS_H__*/
-/**********************************************************************
- *                               eof                                  *
- **********************************************************************/
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
+struct _User {
+	OnlineService		*service;
+	
+	gdouble			id;
+	gchar			*id_str;
+	
+	gchar			*user_name;
+	gchar			*user_nick;
+	
+	UserStatus		*status;
+	
+	gchar			*location;
+	gchar			*bio;
+	gchar			*url;
+	
+	gchar			*image_url;
+	gchar			*image_file;
+	
+	gulong			tweets;
+	gulong			following;
+	gulong			followers;
+	
+	gboolean		follower;
+};
+
+struct _UserStatus {
+	OnlineService	*service;
+	
+	User		*user;
+	
+	UpdateMonitor	type;
+	
+	gdouble		id;
+	gchar		*id_str;
+	
+	gdouble		in_reply_to_status_id;
+	
+	guint		notification_timeout_id;
+	
+	gchar		*from;
+	gchar		*rcpt;
+	
+	gchar		*text;
+	gchar		*tweet;
+	gchar		*notification;
+	gchar		*sexy_tweet;
+	
+	gchar		*source;
+	
+	gchar		*created_at_str;
+	gchar		*created_how_long_ago;
+	
+	gulong		created_at;
+	gint		created_seconds_ago;
+};
+
+
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+
+
+G_END_DECLS
+#endif /* __USERS_TYPES_H__*/
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+
 

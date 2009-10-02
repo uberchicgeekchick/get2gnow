@@ -73,6 +73,7 @@
 #include "online-service-request.h"
 
 #include "network.h"
+#include "users.types.h"
 #include "users.h"
 #include "users-glists.h"
 #include "gtkbuilder.h"
@@ -935,7 +936,7 @@ void control_panel_send(GtkWidget *activated_widget){
 						USER_POINTER, &user,
 					-1
 		);
-		control_panel_sexy_send(user_get_service(user), user_get_user_name(user));
+		control_panel_sexy_send(user->service, user->user_name);
 		uber_free(iter);
 		return;
 	}
@@ -1122,9 +1123,9 @@ void control_panel_dm_data_fill(GList *followers){
 	OnlineService *service=NULL;
 	for(followers=g_list_first(followers); followers; followers=followers->next) {
 		user=(User *)followers->data;
-		if(!service) service=user_get_service(user);
-		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user_get_user_name(user), user_get_user_nick(user));
-		debug("Adding user: %s <%s> from <%s> to DM form", user_get_user_name(user), user_get_user_nick(user), online_service_get_guid(service) );
+		if(!service) service=user->service;
+		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user->user_name, user->user_nick);
+		debug("Adding user: %s <%s> from <%s> to DM form", user->user_name, user->user_nick, online_service_get_guid(service) );
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(control_panel->followers_list_store, iter);
 		gtk_list_store_set(

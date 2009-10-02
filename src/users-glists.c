@@ -64,6 +64,7 @@
 
 #include "cache.h"
 
+#include "users.types.h"
 #include "users-glists.h"
 #include "users.h"
 
@@ -263,7 +264,7 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, gpointer soup_sessi
  *		than it returns 1 if a is a follower & b is not
  */
 int users_glists_sort_by_user_name(User *user1, User *user2){
-	return strcasecmp( user_get_user_name(user1), user_get_user_name(user2) );
+	return strcasecmp( user1->user_name, user2->user_name );
 }/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; } );*/
 
 
@@ -310,7 +311,7 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 		if(!(user=user_parse_node(service, current_node->children)))
 			continue;
 		
-		debug("Added user: [%s] to user list.", user_get_user_name(user));
+		debug("Added user: [%s] to user list.", user->user_name);
 		users=g_list_append(users, user);
 		user=NULL;
 	}
@@ -369,7 +370,7 @@ void users_glists_append_friend(OnlineService *service, User *user){
 	if(!(users=online_service_users_glist_get(service, GetFriends))) return;
 	
 	users=g_list_append(users, user);
-	main_window_statusbar_printf("%s's %s %s %s %s.", online_service_get_key(service), _("is"), _("now"), _("following"), user_get_user_name(user));
+	main_window_statusbar_printf("%s's %s %s %s %s.", online_service_get_key(service), _("is"), _("now"), _("following"), user->user_name);
 }/*users_glists_append_friend*/
 
 void users_glists_remove_friend(OnlineService *service, User *user){
@@ -377,7 +378,7 @@ void users_glists_remove_friend(OnlineService *service, User *user){
 	if(!(users=online_service_users_glist_get(service, GetFriends))) return;
 	
 	users=g_list_remove(users, user);
-	main_window_statusbar_printf("%s's %s %s %s %s.", online_service_get_key(service), _("is"), _("now"), _("following"), user_get_user_name(user));
+	main_window_statusbar_printf("%s's %s %s %s %s.", online_service_get_key(service), _("is"), _("now"), _("following"), user->user_name);
 }/*users_glists_remove_friend*/
 
 void users_glists_remove_follower(OnlineService *service, User *user){
@@ -385,7 +386,7 @@ void users_glists_remove_follower(OnlineService *service, User *user){
 	if(!(users=online_service_users_glist_get(service, GetFollowers))) return;
 	
 	users=g_list_append(users, user);
-	main_window_statusbar_printf("%s's %s %s %s %s %s.", online_service_get_key(service), _("is"), _("no"), _("longer"), _("following"), user_get_user_name(user));
+	main_window_statusbar_printf("%s's %s %s %s %s %s.", online_service_get_key(service), _("is"), _("no"), _("longer"), _("following"), user->user_name);
 }/*users_glists_remove_friend*/
 
 

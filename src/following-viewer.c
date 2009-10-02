@@ -73,6 +73,7 @@
 #include "following-viewer.h"
 
 #include "network.h"
+#include "users.types.h"
 #include "users.h"
 
 
@@ -171,7 +172,7 @@ static void following_viewer_rem_response_cb(GtkButton *button, FollowingViewer 
 	if(user){
 		gtk_list_store_remove(following_viewer->following_list_store, iter);
 		following_viewer_set_buttons_sensitivity(following_viewer, FALSE);
-		online_service_request_unfollow(user_get_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_unfollow(user->service, following_viewer->viewer, user->user_name);
 	}	
 	uber_free(iter);
 }
@@ -183,7 +184,7 @@ static void following_viewer_block_response_cb( GtkButton *button, FollowingView
 	if(user){
 		gtk_list_store_remove(following_viewer->following_list_store, iter);
 		following_viewer_set_buttons_sensitivity(following_viewer, FALSE);
-		online_service_request_block(user_get_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_block(user->service, following_viewer->viewer, user->user_name);
 	}
 	uber_free(iter);
 }
@@ -193,7 +194,7 @@ static void following_viewer_view_profile(GtkButton *button, FollowingViewer *fo
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	
 	if(user)
-		online_service_request_view_profile(user_get_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_view_profile(user->service, following_viewer->viewer, user->user_name);
 	uber_free(iter);
 }/*following_view_profile*/
 
@@ -201,7 +202,7 @@ static void following_viewer_view_timeline(GtkButton *button, FollowingViewer *f
 	GtkTreeIter *iter=NULL;
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	if(user)
-		online_service_request_view_updates(user_get_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_view_updates(user->service, following_viewer->viewer, user->user_name);
 	if(iter) uber_free(iter);
 }/*following_view_timeline*/
 
@@ -210,7 +211,7 @@ static void following_viewer_list_activated_cb(GtkTreeView *tree_view, GtkTreePa
 	GtkTreeIter *iter=NULL;
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	if(user)
-		online_service_request_view_updates(user_get_service(user), following_viewer->viewer, user_get_user_name(user));
+		online_service_request_view_updates(user->service, following_viewer->viewer, user->user_name);
 	uber_free(iter);
 }/*following_viewer_list_activated_cb();*/
 
@@ -238,8 +239,8 @@ void following_viewer_load_lists(GList *followers){
 
 		gtk_list_store_set(
 				following_viewer->following_list_store, iter,
-					FOLLOWER_USER, user_get_user_name(user),
-					FOLLOWER_NAME, user_get_user_nick(user),
+					FOLLOWER_USER, user->user_name,
+					FOLLOWER_NAME, user->user_nick,
 					USER_POINTER, user,
 				-1
 		);

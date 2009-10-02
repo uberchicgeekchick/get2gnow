@@ -182,7 +182,7 @@ struct _MainWindowPrivate {
 	GtkTreeModel		*best_friends_tree_model_sort;
 	
 	GtkButton		*best_friends_add_button;
-	GtkButton		*best_friends_delete_button;
+	GtkButton		*best_friends_drop_button;
 	GtkButton		*best_friends_refresh_button;
 	
 	GtkButton		*best_friends_view_updates_new_button;
@@ -380,7 +380,7 @@ static void main_window_setup(void){
 					
 					"best_friends_list_store", &main_window->private->best_friends_list_store,
 					"best_friends_add_button", &main_window->private->best_friends_add_button,
-					"best_friends_delete_button", &main_window->private->best_friends_delete_button,
+					"best_friends_drop_button", &main_window->private->best_friends_drop_button,
 					"best_friends_refresh_button", &main_window->private->best_friends_refresh_button,
 					"best_friends_view_updates_new_button", &main_window->private->best_friends_view_updates_new_button,
 					"best_friends_view_profile_button", &main_window->private->best_friends_view_profile_button,
@@ -457,7 +457,7 @@ static void main_window_setup(void){
 					"best_friends_sexy_tree_view", "row-activated", main_window_best_friends_tree_view_row_activated,
 					
 					"best_friends_add_button", "clicked", online_service_request_popup_best_friend_add,
-					"best_friends_delete_button", "clicked", online_service_request_popup_best_friend_drop,
+					"best_friends_drop_button", "clicked", main_window_best_friends_button_clicked,
 					
 					"best_friends_refresh_button", "clicked", main_window_best_friends_list_store_validate,
 					
@@ -530,7 +530,6 @@ static void main_window_best_friends_list_store_validate(GtkButton *best_friends
 
 static void main_window_best_friends_setup(GtkBuilder *ui){
 	const gchar *best_friends_buttons[]={
-		"best_friends_delete_button",
 		"best_friends_view_updates_new_button",
 		"best_friends_view_profile_button",
 		"best_friends_send_at_message_button",
@@ -630,8 +629,8 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 		return;
 	}
 	
-	if(button==main_window->private->best_friends_delete_button){
-		online_service_best_friends_remove(service, user);
+	if(button==main_window->private->best_friends_drop_button){
+		online_service_best_friends_drop(service, main_window->private->window, user);
 		control_panel_sexy_select();
 		uber_free(user_name);
 		uber_free(user);

@@ -56,7 +56,7 @@ get2gnow_SOURCES = 							\
 	tweets.c			tweets.h			\
 	ui-utils.c			ui-utils.h			\
 	users-glists.c			users-glists.h			\
-	users.c				users.h
+	users.c		users.types.h		users.h
 
 
 get2gnow_LDADD=								\

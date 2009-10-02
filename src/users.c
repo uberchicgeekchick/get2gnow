@@ -76,6 +76,7 @@
 #include "online-service-wrapper.h"
 #include "network.h"
 
+#include "users.types.h"
 #include "users-glists.h"
 #include "users.h"
 #include "cache.h"
@@ -95,62 +96,6 @@
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
 typedef struct  _UserProfileViewer UserProfileViewer;
-
-struct _User {
-	OnlineService		*service;
-	
-	gdouble			id;
-	gchar			*id_str;
-	
-	gchar			*user_name;
-	gchar			*user_nick;
-	
-	UserStatus		*status;
-	
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	
-	gchar			*image_url;
-	gchar			*image_file;
-	
-	gulong			tweets;
-	gulong			following;
-	gulong			followers;
-	
-	gboolean		follower;
-};
-
-struct _UserStatus {
-	OnlineService	*service;
-	
-	User		*user;
-	
-	UpdateMonitor	type;
-	
-	gdouble		id;
-	gchar		*id_str;
-	
-	gdouble		in_reply_to_status_id;
-	
-	guint		notification_timeout_id;
-	
-	gchar		*from;
-	gchar		*rcpt;
-	
-	gchar		*text;
-	gchar		*tweet;
-	gchar		*notification;
-	gchar		*sexy_tweet;
-	
-	gchar		*source;
-	
-	gchar		*created_at_str;
-	gchar		*created_how_long_ago;
-	
-	gulong		created_at;
-	gint		created_seconds_ago;
-};
 
 struct _UserProfileViewer{
 	GtkMessageDialog	*dialog;
@@ -237,31 +182,6 @@ static void user_validate( User **user ){
 	if(! (*user)->image_url ) (*user)->image_url=g_strdup("");
 	if(! (*user)->image_file ) (*user)->image_file=g_strdup("");
 }/*user_validate( &user );*/ 
-
-gdouble user_get_id(User *user){
-	if(!user) return 0;
-	return user->id;
-}/*user_get_id(user);*/
-
-const gchar *user_get_user_name(User *user){
-	if(!user) return NULL;
-	return user->user_name;
-}/*user_get_user_name(user);*/
-
-const gchar *user_get_user_nick(User *user){
-	if(!user) return NULL;
-	return user->user_nick;
-}/*user_get_user_nick(user);*/
-
-OnlineService *user_get_service(User *user){
-	if(!user) return NULL;
-	return user->service;
-}/*user_get_online_service(user);*/
-
-gboolean user_is_follower(User *user){
-	if(!user) return FALSE;
-	return user->follower;
-}/*user_is_follower(user);*/
 
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);

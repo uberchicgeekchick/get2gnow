@@ -113,7 +113,7 @@ gint online_service_best_friends_list_store_fill( OnlineService *service, GtkLis
 gint online_service_best_friends_list_store_validate( OnlineService *service, GtkListStore *list_store );
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
-gboolean online_service_best_friends_remove( OnlineService *service, const gchar *user_name );
+gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name );
 void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, User *user);
 void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store );
 
