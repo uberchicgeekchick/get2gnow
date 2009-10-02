@@ -470,6 +470,9 @@ static void main_window_setup(void){
 				NULL
 	);
 	
+	/* TODO: fix online_service_best_friends_list_store_validate(); */
+	gtk_widget_hide( GTK_WIDGET( main_window->private->best_friends_refresh_button ) );
+	
 	/*main_window->private->search_tree_model=gtk_combo_box_get_model( (GtkComboBox *)main_window->private->search_combo_box_entry ));*/
 	g_signal_connect_after( main_window->private->window, "event-after", (GCallback)control_panel_sexy_select, NULL );
 	
@@ -557,15 +560,20 @@ static void main_window_best_friends_buttons_set_sensitive(void){
 	OnlineService *service=NULL;
 	gchar *user=NULL;
 	gchar *user_name=NULL;
+	gboolean sensitive;
 	if(!((main_window_best_friends_get_selected( &service, &user, &user_name)) && service && G_STR_N_EMPTY(user) && G_STR_N_EMPTY(user_name) )){
-		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
-		control_panel_sexy_select();
-		return;
+		sensitive=FALSE;
+		debug("No best friend is selected.  Best Friend buttons will be disabled.");
+	}else{
+		sensitive=TRUE;
+		debug("Selected best friend: %s, on <%s>.  Enabling best friend controls.", user, online_service_get_guid(service) );
+		uber_free(user);
+		uber_free(user_name);
 	}
 	
 	GList *buttons=NULL;
 	for(buttons=main_window->private->best_friends_buttons; buttons; buttons=buttons->next)
-		gtk_widget_set_sensitive( (GtkWidget *)buttons->data, G_STR_N_EMPTY(user_name) );
+		gtk_widget_set_sensitive( (GtkWidget *)buttons->data, sensitive );
 	g_list_free(buttons);
 	
 	control_panel_sexy_select();
@@ -624,6 +632,10 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 	gchar *user=NULL;
 	gchar *user_name=NULL;
 	if(!((main_window_best_friends_get_selected( &service, &user, &user_name)) && service && G_STR_N_EMPTY(user) && G_STR_N_EMPTY(user_name) )){
+		if(button==main_window->private->best_friends_drop_button){
+			online_service_request_popup_best_friend_drop();
+			return;
+		}
 		debug("Cannot load best friends request.  Invalid OnlineService or empty user_name.");
 		control_panel_sexy_select();
 		return;

@@ -100,7 +100,7 @@ struct _ControlPanel{
 	GList			*selected_update_buttons;
 	
 	/* GtkWidgets for viewing user details & for controlling one's relationship to them. */
-	GtkHBox			*user_hbox;
+	GtkHBox			*user_vbox;
 	
 	GtkVBox			*user_updates_control_hbox;
 	GtkImage		*user_image;
@@ -307,7 +307,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					"control_panel", &control_panel->control_panel,
 					"control_panel_embed", &control_panel->control_panel_embed,
 					
-					"user_hbox", &control_panel->user_hbox,
+					"user_vbox", &control_panel->user_vbox,
 					"user_image", &control_panel->user_image,
 					
 					"view_user_profile_button", &control_panel->view_user_profile_button,
@@ -477,7 +477,7 @@ void control_panel_set_embed_toggle_and_image(void){
 
 static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *ui){
 	const gchar *update_view_containers[]={
-		"user_hbox",
+		"user_vbox",
 		"control_panel_left_vseparator",
 		"status_view_vbox",
 		"control_panel_right_vseparator",
@@ -525,7 +525,7 @@ static void control_panel_bind_hotkeys(GtkBuilder *ui){
 		/* Connect the signals */
 		"control_panel",
 		"control_panel_embed",
-		"user_hbox",
+		"user_vbox",
 		
 		"status_vbox",
 		"status_view_vbox",

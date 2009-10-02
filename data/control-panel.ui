@@ -8,30 +8,47 @@
         <property name="visible">True</property>
         <property name="spacing">1</property>
         <child>
-          <object class="GtkHBox" id="user_hbox">
+          <object class="GtkVBox" id="user_vbox">
             <property name="visible">True</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkAspectFrame" id="selected_update_author_aspect_frame">
+              <object class="GtkImage" id="user_image">
+                <property name="width_request">78</property>
+                <property name="height_request">78</property>
+                <property name="visible">True</property>
+                <property name="xpad">3</property>
+                <property name="ypad">6</property>
+                <property name="pixel_size">70</property>
+                <property name="icon_name">get2gnow</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHSeparator" id="selected_updated_author_info_controls_hseparator2">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame" id="selected_updated_author_info_controls_aspect_frame">
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
-                <property name="yalign">1</property>
+                <property name="yalign">0</property>
                 <child>
-                  <object class="GtkVBox" id="selected_update_author_vbox">
+                  <object class="GtkHBox" id="selected_author_info_controls_hbox">
                     <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkButton" id="view_user_profile_button">
+                      <object class="GtkToggleButton" id="best_friend_toggle_button">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="question" signal="clicked" modifiers="GDK_MOD1_MASK"/>
-                        <child>
-                          <object class="GtkImage" id="view_user_profile_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-info</property>
-                          </object>
-                        </child>
+                        <property name="image">best_friend_image</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -59,11 +76,17 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToggleButton" id="best_friend_toggle_button">
+                      <object class="GtkButton" id="view_user_profile_button">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="image">best_friend_image</property>
+                        <accelerator key="question" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <child>
+                          <object class="GtkImage" id="view_user_profile_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-info</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -71,15 +94,33 @@
                         <property name="position">2</property>
                       </packing>
                     </child>
-                    <child>
-                      <object class="GtkHSeparator" id="hseparator1">
-                        <property name="visible">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHSeparator" id="selected_updated_author_relationship_controls_hseparator">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame" id="selected_update_author_aspect_frame">
+                <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <property name="yalign">0</property>
+                <child>
+                  <object class="GtkHBox" id="selected_update_author_hbox">
+                    <property name="visible">True</property>
                     <child>
                       <object class="GtkButton" id="user_follow_button">
                         <property name="visible">True</property>
@@ -95,7 +136,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -113,7 +154,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">5</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -131,52 +172,32 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">6</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
                 </child>
               </object>
               <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkVSeparator" id="vseparator2">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-              </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkImage" id="user_image">
-                <property name="width_request">78</property>
-                <property name="height_request">78</property>
-                <property name="visible">True</property>
-                <property name="xpad">3</property>
-                <property name="ypad">3</property>
-                <property name="pixel_size">70</property>
-                <property name="icon_name">get2gnow</property>
-              </object>
-              <packing>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkVSeparator" id="vseparator3">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-              </object>
-              <packing>
-                <property name="position">3</property>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkVSeparator" id="control_panel_left_vseparator">
+            <property name="visible">True</property>
+            <property name="orientation">vertical</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -238,14 +259,15 @@
                       <object class="GtkHBox" id="control_panel_view_controls_hbox">
                         <property name="visible">True</property>
                         <child>
-                          <object class="GtkToggleButton" id="control_panel_compact_view_toggle_button">
+                          <object class="GtkButton" id="reply_button">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
-                              <object class="GtkImage" id="control_panel_compact_view_image">
+                              <object class="GtkImage" id="reply_button_image">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-leave-fullscreen</property>
+                                <property name="stock">gtk-undo</property>
                               </object>
                             </child>
                           </object>
@@ -256,16 +278,52 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkToggleButton" id="control_panel_embed_toggle_button">
+                          <object class="GtkButton" id="retweet_button">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="image">control_panel_embed_image</property>
+                            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <child>
+                              <object class="GtkImage" id="retweet_button_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-media-next</property>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
                             <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVSeparator" id="vseparator1">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="make_fave_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <child>
+                              <object class="GtkImage" id="make_fave_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-about</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                       </object>
@@ -328,8 +386,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <child>
                               <object class="GtkImage" id="sexy_send_image">
                                 <property name="visible">True</property>
@@ -348,8 +406,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="sexy_dm_image">
                                 <property name="visible">True</property>
@@ -379,8 +437,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="new_tweet_image">
                                 <property name="visible">True</property>
@@ -410,8 +468,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="dm_form_active_image">
                                 <property name="visible">True</property>
@@ -584,16 +642,6 @@
             </child>
           </object>
           <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkVSeparator" id="control_panel_left_vseparator">
-            <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
             <property name="position">3</property>
           </packing>
         </child>
@@ -612,50 +660,33 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <object class="GtkHSeparator" id="hseparator2">
-                <property name="visible">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="pack_type">end</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkLabel" id="status_control_label">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">_Controls</property>
+                <property name="label" translatable="yes">View
+_Controls</property>
                 <property name="use_markup">True</property>
                 <property name="use_underline">True</property>
                 <property name="justify">center</property>
-                <property name="mnemonic_widget">reply_button</property>
                 <property name="ellipsize">end</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="pack_type">end</property>
-                <property name="position">2</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkHBox" id="status_control_hbox">
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkButton" id="reply_button">
+                  <object class="GtkToggleButton" id="control_panel_compact_view_toggle_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Reply to this user's tweet/update.</property>
-                    <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                     <child>
-                      <object class="GtkImage" id="reply_button_image">
+                      <object class="GtkImage" id="control_panel_compact_view_image">
                         <property name="visible">True</property>
-                        <property name="stock">gtk-undo</property>
+                        <property name="stock">gtk-leave-fullscreen</property>
                       </object>
                     </child>
                   </object>
@@ -666,18 +697,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="retweet_button">
+                  <object class="GtkToggleButton" id="control_panel_embed_toggle_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Re-Tweet this user's tweet.</property>
-                    <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                    <child>
-                      <object class="GtkImage" id="retweet_button_image">
-                        <property name="visible">True</property>
-                        <property name="stock">gtk-media-next</property>
-                      </object>
-                    </child>
+                    <property name="image">control_panel_embed_image</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -685,43 +709,21 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkVSeparator" id="vseparator1">
-                    <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="make_fave_button">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Mark this Tweet/Update as one of your favorites.</property>
-                    <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                    <child>
-                      <object class="GtkImage" id="make_fave_image">
-                        <property name="visible">True</property>
-                        <property name="stock">gtk-about</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="pack_type">end</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHSeparator" id="hseparator2">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -759,12 +761,12 @@
       <column type="gdouble"/>
     </columns>
   </object>
-  <object class="GtkImage" id="control_panel_embed_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-goto-top</property>
-  </object>
   <object class="GtkImage" id="best_friend_image">
     <property name="visible">True</property>
     <property name="stock">gnome-stock-about</property>
+  </object>
+  <object class="GtkImage" id="control_panel_embed_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-goto-top</property>
   </object>
 </interface>

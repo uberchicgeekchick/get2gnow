@@ -847,9 +847,8 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkVSeparator" id="vseparator2">
+                          <object class="GtkHSeparator" id="bast_friends_tree_view_hseparator">
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
                           </object>
                           <packing>
                             <property name="position">2</property>
