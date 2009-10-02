@@ -68,12 +68,20 @@
 #include "config.h"
 #include "program.h"
 
-#include "online-services-typedefs.h"
+#include "online-services.h"
+#include "online-service.types.h"
 #include "online-service.h"
+#include "network.h"
+
+#include "users.types.h"
+#include "users.h"
 
 #include "main-window.h"
-#include "gconfig.h"
+#include "tweet-list.h"
 #include "preferences.h"
+#include "images.h"
+#include "label.h"
+#include "gconfig.h"
 
 #include "parser.h"
 #include "searches.h"
@@ -95,7 +103,6 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	/* Count new tweets */
 	guint		new_updates=0;
-	gdouble		status_id=0;
 	gdouble		id_newest_update=0, id_oldest_update=0;
 	
 	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
@@ -123,7 +130,6 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
-	const gchar *service_user_name=online_service_get_user_name(service);
 	gboolean free_status;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
@@ -146,17 +152,17 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		
 		status=NULL;
 		debug("Creating tweet's Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && (status_id=user_status_get_id(status)) )){
+		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
 		
 		new_updates++;
 		free_status=TRUE;
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
+		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", status->user->user_name, status->id, service->key);
 		user_status_store(status, tweet_list);
 		
-		if(!save_oldest_id && status_id > last_notified_update && strcasecmp(user_status_get_user_name(status), service_user_name) ){
+		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
 			if(notify){
 				free_status=FALSE;
@@ -165,10 +171,10 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 			}
 		}
 		
-		if(!id_newest_update) id_newest_update=status_id;
+		if(!id_newest_update) id_newest_update=status->id;
 		
 		if(save_oldest_id)
-			id_oldest_update=status_id;
+			id_oldest_update=status->id;
 		
 		if(free_status) user_status_free(status);
 	}
@@ -177,7 +183,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		/*TODO implement this only once it won't ending up causing bloating.
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
-		const gchar *online_service_guid=online_service_get_guid(service);
+		const gchar *online_service_guid=service->guid;
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
 		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);
 		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);

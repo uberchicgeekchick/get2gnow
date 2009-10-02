@@ -70,6 +70,7 @@
 
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
 #include "network.h"
@@ -210,9 +211,9 @@ void online_service_request_view_profile(OnlineService *service, GtkWindow *pare
 	online_service_request_main(service, ViewProfile, parent, user_name);
 }/*online_service_request_view_profile(service, parent, user_name);*/
 
-void online_service_request_view_best_friends_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+void online_service_request_view_updates_new(OnlineService *service, GtkWindow *parent, const gchar *user_name){
 	online_service_request_main(service, ViewUpdatesNew, parent, user_name);
-}/*online_service_request_view_best_friends_updates(service, parent, user_name);*/
+}/*online_service_request_view_updates_new(service, parent, user_name);*/
 
 void online_service_request_view_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name){
 	online_service_request_main(service, ViewUpdates, parent, user_name);
@@ -299,22 +300,7 @@ static OnlineServiceRequest *online_service_request_new( OnlineService *service,
 	
 	switch(request->action){
 		case ViewUpdatesNew:
-			request->method=QUEUE;
-			gdouble id_newest_update=0.0, id_oldest_update=0.0;
-			gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
-			online_service_update_ids_get(service, user_timeline, &id_newest_update, &id_oldest_update);
-			if(!id_newest_update)
-				request->uri=user_timeline;
-			else{
-				uber_free( user_timeline );
-				request->uri=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, id_newest_update );
-			}
-			network_set_state_loading_timeline(request->uri, Load);
-			break;
 		case ViewUpdates:
-			request->method=QUEUE;
-			request->uri=g_strdup_printf(API_TIMELINE_USER, request->user_name);
-			network_set_state_loading_timeline(request->uri, Load);
 			break;
 		case BestFriendAdd:
 		case BestFriendDrop:
@@ -373,14 +359,19 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	if(action==ViewUpdatesNew||action==ViewUpdates){
 		gchar *timeline=NULL;
 		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
-		gdouble id_newest_update=0.0, id_oldest_update=0.0;
-		online_service_update_ids_get(service, user_timeline, &id_newest_update, &id_oldest_update);
-		if(action==ViewUpdatesNew && id_newest_update){
-			debug( "Loading %s's new updates, on <%s>, since their last read update: %f(ID).", user_name, online_service_get_guid(service), id_newest_update );
-			uber_free( user_timeline );
-			timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, id_newest_update );
+		if(action==ViewUpdatesNew){
+			gdouble id_newest_update=0.0, id_oldest_update=0.0;
+			online_service_update_ids_get(service, user_timeline, &id_newest_update, &id_oldest_update);
+			if(!id_newest_update){
+				debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", user_name, service->guid );
+				timeline=user_timeline;
+			}else{
+				debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", user_name, service->guid, id_newest_update );
+				uber_free( user_timeline );
+				timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, id_newest_update );
+			}
 		}else{
-			debug( "Loading %s's updates, on <%s>.", user_name, online_service_get_guid(service) );
+			debug( "Loading %s's updates, on <%s>.  Displaying all updates.", user_name, service->guid );
 			timeline=user_timeline;
 		}
 		
@@ -393,7 +384,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	if(!(request=online_service_request_new(service, action, parent, user_name)))
 		return;
 	
-	debug("Processing OnlineServiceRequest to %s %s on %s", request->message, request->user_name, online_service_get_guid(service));
+	debug("Processing OnlineServiceRequest to %s %s on %s", request->message, request->user_name, service->guid);
 	
 	switch(request->method){
 		case POST:
@@ -413,7 +404,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 	OnlineServiceRequest *request=(OnlineServiceRequest *)online_service_wrapper_get_user_data(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
-	const gchar *service_guid=online_service_get_guid(service);
+	const gchar *service_guid=service->guid;
 	if( msg->status_code!=403 && !network_check_http(service, msg) ){
 		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, msg->status_code);
 		
@@ -430,7 +421,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 		case Follow:
 		case BestFriendAdd:
 		case BestFriendDrop:
-			if(!(user=user_parse_profile(online_service_get_session(service), msg, service_wrapper))){
+			if(!(user=user_parse_profile(service->session, msg, service_wrapper))){
 				if(msg->status_code!=403){
 					debug("\t\t[failed]");
 					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_name, service_guid);
@@ -501,7 +492,7 @@ void online_service_request_set_selected_update(OnlineService *service, const gd
 	/*	gint id=atoi(string);	*/
 	if(selected_update) online_service_request_unset_selected_update();
 	
-	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", online_service_get_guid(service), id, user_name, online_service_get_uri(service));
+	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", service->guid, id, user_name, service->uri);
 	debug("SelectedUpdate's update: %s.", tweet);
 	selected_update=g_new0(SelectedUpdate, 1);
 	selected_update->service=service;
@@ -531,8 +522,8 @@ gchar *online_service_request_selected_update_reply_to_strdup(gboolean retweet){
 	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
 		return NULL;
 	
-	if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(online_services, 1) ))
-		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_update->user_name, online_service_get_uri(selected_update->service), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
+	if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(1) ))
+		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (retweet ?selected_update->tweet :"" ));
 	
 	return g_strdup_printf("%s@%s %s", (retweet ?"RT " :""), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
 }/*online_service_request_selected_update_reply_to_strdup();*/
@@ -574,10 +565,10 @@ void online_service_request_unset_selected_update(void){
 	uber_object_free(&selected_update->user_name, &selected_update->tweet, &selected_update, NULL);
 }/*online_service_request_unset_selected_update*/
 
-void online_service_request_selected_update_view_best_friends_updates(void){
+void online_service_request_selected_update_view_updates_new(void){
 	if(!(selected_update && selected_update->user_name)) return;
 	online_service_request_main(selected_update->service, ViewUpdatesNew, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
-}/*online_service_request_selected_update_view_best_friends_updates();*/
+}/*online_service_request_selected_update_view_updates_new();*/
 
 void online_service_request_selected_update_view_updates(void){
 	if(!(selected_update && selected_update->user_name)) return;
@@ -851,10 +842,10 @@ static void online_service_request_popup_confirmation_dialog_add_gconfig_key( co
 }/*online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );*/
 
 void online_service_request_popup_select_service(void){
-	if(!online_services_has_connected(online_services, 1)){
+	if(!online_services_has_connected(1)){
 		if(selected_service) return;
-		selected_service=online_services_connected_get_first(online_services);
-		debug("There is only one connected OnlineService, auto-selecting: %s.", online_service_get_guid(selected_service));
+		selected_service=online_services_connected_get_first();
+		debug("There is only one connected OnlineService, auto-selecting: %s.", selected_service->guid);
 		return;
 	}
 	
@@ -881,7 +872,7 @@ void online_service_request_popup_friend_unblock(void){
 	online_service_request_popup_dialog_show(UnBlock);
 }/*online_service_request_popup_friend_unblock*/
 
-void online_service_request_popup_friend_best_friends_updates(void){
+void online_service_request_popup_friend_updates_new(void){
 	online_service_request_popup_dialog_show(ViewUpdatesNew);
 }/*online_service_request_popup_friend_updates*/
 
@@ -977,12 +968,12 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	g_object_unref(ui);
 	
 	debug("Signal handlers set... loading accounts.");
-	if(!( online_services_combo_box_fill(online_services,  online_service_request_popup->online_services_combo_box,  online_service_request_popup->online_services_list_store, TRUE) ))
+	if(!( online_services_combo_box_fill( online_service_request_popup->online_services_combo_box,  online_service_request_popup->online_services_list_store, TRUE) ))
 		debug("No services found to load, new accounts need to be setup.");
 	else
 		debug("OnlineServices found & loaded.  Selecting active service.");
 	
-	if(!(online_services_has_connected(online_services, 1) && online_services_has_total(online_services, 1))){
+	if(!(online_services_has_connected(1) && online_services_has_total(1))){
 		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
 		gtk_widget_hide(GTK_WIDGET( online_service_request_popup->online_services_frame));
 	}

@@ -143,7 +143,7 @@ void program_deinit(void){
 	cache_deinit();
 	
 	online_service_request_unset_selected_update();
-	online_services_deinit(online_services);
+	online_services_deinit();
 	proxy_deinit();
 	
 	ipc_deinit();

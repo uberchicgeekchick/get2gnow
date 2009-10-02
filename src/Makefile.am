@@ -21,42 +21,42 @@ if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 
-get2gnow_SOURCES = 							\
-	about.c				about.h				\
-	control-panel.c			control-panel.h			\
-	cache.c				cache.h				\
-	debug.c				debug.h				\
-	following-viewer.c		following-viewer.h		\
-	friend-manager.c		friend-manager.h		\
-	gconfig.c			gconfig.h			\
-	geometry.c			geometry.h			\
-	groups.c			groups.h			\
-	gtkbuilder.c			gtkbuilder.h			\
-	images.c			images.h			\
-	ipc.c				ipc.h				\
-	$(keyring_sources)						\
-	label.c				label.h				\
-	main.c				main.h				\
-	main-window.c			main-window.h			\
-	network.c			network.h			\
-	online-service.c		online-service.h		\
-	online-service-request.c	online-service-request.h	\
-	online-services.c		online-services.h		\
-	online-services-dialog.c	online-services-dialog.h	\
-	online-services-typedefs.h					\
-	online-service-wrapper.c	online-service-wrapper.h	\
-	parser.c			parser.h			\
-	preferences.c			preferences.h			\
-	program.c			program.h			\
-	proxy.c				proxy.h				\
-	searches.c			searches.h			\
-	timer.c				timer.h				\
-	tweet-list.c			tweet-list.h			\
-	tweet-lists.c			tweet-lists.h			\
-	tweets.c			tweets.h			\
-	ui-utils.c			ui-utils.h			\
-	users-glists.c			users-glists.h			\
-	users.c		users.types.h		users.h
+get2gnow_SOURCES = 								\
+	about.c						about.h					\
+	control-panel.c					control-panel.h				\
+	cache.c						cache.h					\
+	debug.c						debug.h					\
+	following-viewer.c				following-viewer.h			\
+	friend-manager.c				friend-manager.h			\
+	gconfig.c					gconfig.h				\
+	geometry.c					geometry.h				\
+	groups.c					groups.h				\
+	gtkbuilder.c					gtkbuilder.h				\
+	images.c					images.h				\
+	ipc.c						ipc.h					\
+	$(keyring_sources)									\
+	label.c						label.h					\
+	main.c						main.h					\
+	main-window.c					main-window.h				\
+	network.c					network.h				\
+	online-service.c				online-service.types.h		online-service.h		\
+	online-service-request.c			online-service-request.h		\
+	online-services.c				online-services.h			\
+	online-services-dialog.c			online-services-dialog.h		\
+	online-services-typedefs.h								\
+	online-service-wrapper.c			online-service-wrapper.h		\
+	parser.c					parser.h				\
+	preferences.c					preferences.h				\
+	program.c					program.h				\
+	proxy.c						proxy.h					\
+	searches.c					searches.h				\
+	timer.c						timer.h					\
+	tweet-list.c					tweet-list.h				\
+	tweet-lists.c					tweet-lists.h				\
+	tweets.c					tweets.h				\
+	ui-utils.c					ui-utils.h				\
+	users-glists.c							users-glists.h		\
+	users.c				users.types.h			users.h
 
 
 get2gnow_LDADD=								\

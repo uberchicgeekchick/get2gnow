@@ -65,6 +65,9 @@
 #include "config.h"
 #include "program.h"
 
+#include "online-service.types.h"
+#include "online-service.h"
+
 #include "cache.h"
 
 /********************************************************
@@ -302,7 +305,7 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	gchar	*file=NULL;
 	gchar	*filename=NULL;
 	
-	dir=cache_path_create("services", online_service_get_uri(service), online_service_get_user_name(service), NULL);
+	dir=cache_path_create("services", service->uri, service->user_name, NULL);
 	
 	va_list cache_subdirs_and_file;
 	va_start(cache_subdirs_and_file, subdir1_or_file);
@@ -331,7 +334,7 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 		return NULL;
 	}
 	
-	debug("Created <%s>'s cache file: [%s]", online_service_get_key(service), file);
+	debug("Created <%s>'s cache file: [%s]", service->key, file);
 	debug("Directory: [%s]", directory);
 	debug("Filename: [%s]", filename);
 	
@@ -381,7 +384,7 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 		return cache_images_get_unknown_image_filename();
 	}
 	
-	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, online_service_get_uri(service), image_url);
+	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, service->uri, image_url);
 	
 	gchar *image_file;
 	cache_get_uri_filename(image_url, FALSE, NULL, TRUE, &image_file, FALSE, NULL);
@@ -391,7 +394,7 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 		return cache_images_get_unknown_image_filename();
 	}
 	
-	gchar *avatar_dir=cache_path_create("services", online_service_get_uri(service), "avatars", user_name, NULL);
+	gchar *avatar_dir=cache_path_create("services", service->uri, "avatars", user_name, NULL);
 	gchar *image_filename=NULL;
 	gchar *avatar_path=NULL;
 	if(!( (avatar_path=cache_dir_test(avatar_dir, TRUE)) && (image_filename=cache_path_create(avatar_path, image_file, NULL)) ))

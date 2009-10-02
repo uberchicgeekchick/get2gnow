@@ -70,8 +70,10 @@
 
 #include "main-window.h"
 
+#include "online-services-typedefs.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
+#include "online-service.types.h"
 #include "online-service.h"
 
 #include "network.h"
@@ -110,8 +112,6 @@ static guint which_pass=0;
 const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_which);
 static GList *users_glist_parse(OnlineService *service, SoupMessage *xml);
 
-static void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which);
-
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
@@ -146,16 +146,16 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 			switch(users_glist_get_which){
 				case GetFriends:
 					if(!users) break;
-					debug("Displaying & loading, %d pages, friends list for: [%s].", page, online_service_get_key(service));
+					debug("Displaying & loading, %d pages, friends list for: [%s].", page, service->key);
 					users=g_list_sort(users, (GCompareFunc)usrglistscasecmp);
 					break;
 				case GetFollowers:
 					if(!users) break;
-					debug("Displaying & loading, %d pages, followers list for: [%s].", page, online_service_get_key(service));
+					debug("Displaying & loading, %d pages, followers list for: [%s].", page, service->key);
 					users=g_list_sort(users, (GCompareFunc)usrglistscasecmp);
 					break;
 				case GetBoth:
-					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, online_service_get_key(service));
+					debug("Displaying & loading, %d pages, friends and followers list for: [%s].", page, service->key);
 					if(which_pass<2) break;
 					GList *friends=online_service_users_glist_get(service, GetFriends), *followers=online_service_users_glist_get(service, GetFollowers);
 					users=g_list_alloc();
@@ -211,7 +211,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
 	const gchar *which_glist_str=( (users_glist_get_which==GetFriends) ? _("friends") : ( (users_glist_get_which==GetFollowers) ? _("followers") :_("friends and followers" ) ) );
-	const gchar *service_key=online_service_get_key(service);
+	const gchar *service_key=service->key;
 	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
 	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service_key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
@@ -330,21 +330,21 @@ void users_glists_free_lists(OnlineService *service){
 	if(online_service_users_glist_get(service, GetFollowers)) users_glists_free(service, GetFollowers);
 }/*users_glists_free_lists(service);*/
 
-static void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which){
+void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which){
 	GList *glist_free=NULL;
 	if(!( glist_free=online_service_users_glist_get(service, users_glist_get_which) )) return;
 	
 	switch(users_glist_get_which){
 		case GetBoth:
-			debug("%s %s %s %s %s, %s %s %s %s %s %s %s %s.", _("friends"), _("of"), online_service_get_key(service), _("i.e."), _("who"), _("is"), _("following"), _("you"), _("and"), _("who"), _("is"), _("following"), online_service_get_key(service));
+			debug("%s %s %s %s %s, %s %s %s %s %s %s %s %s.", _("friends"), _("of"), service->key, _("i.e."), _("who"), _("is"), _("following"), _("you"), _("and"), _("who"), _("is"), _("following"), service->key);
 			break;
 			
 		case GetFriends:
-			debug("%s %s %s %s, %s %s %s %s.", _("friends"), _("of"), online_service_get_key(service), _("i.e."), _("who"), _("is"), _("following"), online_service_get_key(service));
+			debug("%s %s %s %s, %s %s %s %s.", _("friends"), _("of"), service->key, _("i.e."), _("who"), _("is"), _("following"), service->key);
 			break;
 			
 		case GetFollowers:
-			debug("%s %s %s %s.", _("who"), _("is"), _("following"), online_service_get_key(service));
+			debug("%s %s %s %s.", _("who"), _("is"), _("following"), service->key);
 			break;
 	}
 	
@@ -370,7 +370,7 @@ void users_glists_append_friend(OnlineService *service, User *user){
 	if(!(users=online_service_users_glist_get(service, GetFriends))) return;
 	
 	users=g_list_append(users, user);
-	main_window_statusbar_printf("%s's %s %s %s %s.", online_service_get_key(service), _("is"), _("now"), _("following"), user->user_name);
+	main_window_statusbar_printf("%s's %s %s %s %s.", service->key, _("is"), _("now"), _("following"), user->user_name);
 }/*users_glists_append_friend*/
 
 void users_glists_remove_friend(OnlineService *service, User *user){
@@ -378,7 +378,7 @@ void users_glists_remove_friend(OnlineService *service, User *user){
 	if(!(users=online_service_users_glist_get(service, GetFriends))) return;
 	
 	users=g_list_remove(users, user);
-	main_window_statusbar_printf("%s's %s %s %s %s.", online_service_get_key(service), _("is"), _("now"), _("following"), user->user_name);
+	main_window_statusbar_printf("%s's %s %s %s %s.", service->key, _("is"), _("now"), _("following"), user->user_name);
 }/*users_glists_remove_friend*/
 
 void users_glists_remove_follower(OnlineService *service, User *user){
@@ -386,7 +386,7 @@ void users_glists_remove_follower(OnlineService *service, User *user){
 	if(!(users=online_service_users_glist_get(service, GetFollowers))) return;
 	
 	users=g_list_append(users, user);
-	main_window_statusbar_printf("%s's %s %s %s %s %s.", online_service_get_key(service), _("is"), _("no"), _("longer"), _("following"), user->user_name);
+	main_window_statusbar_printf("%s's %s %s %s %s %s.", service->key, _("is"), _("no"), _("longer"), _("following"), user->user_name);
 }/*users_glists_remove_friend*/
 
 

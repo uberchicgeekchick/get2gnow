@@ -69,6 +69,8 @@
 
 #include "online-services-typedefs.h"
 #include "online-services.h"
+
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
 
@@ -441,7 +443,7 @@ static void control_panel_selected_update_author_best_friend_toggled(GtkToggleBu
 	const gchar *user_name=online_service_request_selected_update_get_user_name();
 	if(!( G_STR_N_EMPTY(user_name) && service && control_panel->viewing_service==service && g_str_equal(control_panel->viewing_user, user_name) )) return;
 	
-	if(! online_service_is_user_best_friend(service, user_name) )
+	if(! online_service_is_user_best_friend( service, user_name) )
 		online_service_request_selected_update_best_friend_add();
 	else
 		online_service_request_selected_update_best_friend_drop();
@@ -608,7 +610,7 @@ static void control_panel_selected_update_buttons_show(gboolean selected_update,
 		gtk_widget_set_sensitive(GTK_WIDGET( l->data), selected_update);
 	g_list_free(l);
 	if(selected_update && G_STR_N_EMPTY(user_name) )
-		gtk_toggle_button_set_active( control_panel->best_friend_toggle_button, (online_service_is_user_best_friend(online_service_request_selected_update_get_service(), user_name) ) );
+		gtk_toggle_button_set_active( control_panel->best_friend_toggle_button, (online_service_is_user_best_friend(online_service_request_selected_update_get_service(), user_name)) );
 	control_panel_sexy_select();
 }/*control_panel_selected_widgets_show*/
 
@@ -729,10 +731,10 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
 	control_panel_selected_update_buttons_show((id ?TRUE :FALSE), (G_STR_EMPTY(user_name) ?NULL :user_name ) );
 	
-	const gchar *service_uri=online_service_get_uri(service);
-	const gchar *service_user_name=online_service_get_user_name(service);
-	const gchar *service_user_nick=online_service_get_user_nick(service);
-	const gchar *service_uri_scheme_suffix=(online_service_is_secure( service)?"s":"");
+	const gchar *service_uri=service->uri;
+	const gchar *service_user_name=service->user_name;
+	const gchar *service_user_nick=service->user_nick;
+	const gchar *service_uri_scheme_suffix=(service->https?"s":"");
 	
 	control_panel->viewing_service=service;
 	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
@@ -805,7 +807,7 @@ static gshort tweetlen(gchar *tweet){
 		else if(l=='m' && me_match==1)
 			me_match=2;
 		else if(l=='e' && me_match==2)
-			character_count+=online_services_get_length_of_longest_replacement(online_services);
+			character_count+=online_services_get_length_of_longest_replacement();
 		else if(me_match)
 			me_match=0;
 		
@@ -948,7 +950,7 @@ void control_panel_send(GtkWidget *activated_widget){
 }/*control_panel_send*/
 
 void control_panel_new_update(void){
-	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first(online_services)), 0, 0, "", "", "", "", "", NULL);
+	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, "", "", "", "", "", NULL);
 	
 	if(control_panel->best_friends_service) control_panel->best_friends_service=NULL;
 	if(control_panel->best_friends_user_name) uber_free(control_panel->best_friends_user_name);
@@ -1125,7 +1127,7 @@ void control_panel_dm_data_fill(GList *followers){
 		user=(User *)followers->data;
 		if(!service) service=user->service;
 		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user->user_name, user->user_nick);
-		debug("Adding user: %s <%s> from <%s> to DM form", user->user_name, user->user_nick, online_service_get_guid(service) );
+		debug("Adding user: %s <%s> from <%s> to DM form", user->user_name, user->user_nick, service->guid );
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(control_panel->followers_list_store, iter);
 		gtk_list_store_set(
@@ -1141,7 +1143,7 @@ void control_panel_dm_data_fill(GList *followers){
 	}
 	followers=g_list_first(followers);
 	
-	gchar *new_label=g_markup_printf_escaped("<b>_DM one of your, &lt;%s&gt;, followers:</b>", online_service_get_key(service));
+	gchar *new_label=g_markup_printf_escaped("<b>_DM one of your, &lt;%s&gt;, followers:</b>", service->key);
 	gtk_label_set_markup(control_panel->dm_frame_label, new_label);
 	gtk_label_set_use_underline(control_panel->dm_frame_label, TRUE);
 	gtk_label_set_single_line_mode(control_panel->dm_frame_label, TRUE);

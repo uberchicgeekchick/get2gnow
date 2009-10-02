@@ -89,23 +89,6 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 
 gboolean online_service_validate_key(OnlineService *service, const gchar *guid);
 
-const gchar *online_service_get_guid(OnlineService *service);
-const gchar *online_service_get_key(OnlineService *service);
-const gchar *online_service_get_uri(OnlineService *service);
-const gchar *online_service_get_user_name(OnlineService *service);
-const gchar *online_service_get_user_nick(OnlineService *service);
-const gchar *online_service_get_password(OnlineService *service);
-
-gboolean online_service_is_enabled(OnlineService *service);
-gboolean online_service_is_secure(OnlineService *service);
-gboolean online_service_is_auto_connected(OnlineService *service);
-
-gboolean online_service_is_connected(OnlineService *service);
-gboolean online_service_has_loaded(OnlineService *service);
-
-SoupSession *online_service_get_session(OnlineService *service);
-
-const gchar *online_service_get_micro_blogging_client(OnlineService *service);
 gboolean online_service_uses_twitter(OnlineService *service);
 gboolean online_service_uses_laconica(OnlineService *service);
 

@@ -74,6 +74,8 @@
 #include "online-services-typedefs.h"
 #include "online-services.h"
 #include "online-service-wrapper.h"
+#include "online-service.types.h"
+#include "online-service.h"
 
 #include "users.types.h"
 #include "users-glists.h"
@@ -97,65 +99,6 @@
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-typedef struct _MicroBloggingServices MicroBloggingServices;
-typedef enum _MicroBloggingService MicroBloggingService;
-
-enum _MicroBloggingService{
-	Unknown = 0,
-	Identica = 1,
-	Twitter = 2,
-	StatusNet = 3,
-	Unsupported = 4,
-};
-
-struct _MicroBloggingServices{
-	MicroBloggingService		micro_blogging_service;
-	const gchar			*server;
-	const gchar			*client;
-};
-
-MicroBloggingServices MicroBloggingServicesList[]={
-	{Unknown,	NULL,			"get2gnow"},
-	{Identica,	"identi.ca",		"get2gnow"},
-	{Twitter,	"twitter.com",		"greettweetknow"},
-	{StatusNet,	"*",			"get2gnow"},
-	{Unsupported,	NULL,			NULL},
-};
-
-struct _OnlineService{
-	SoupSession			*session;
-	RateLimitTimer			*timer;
-	
-	gboolean			authenticated;
-	gboolean			connected;
-	gboolean			has_loaded;
-	guint				logins;
-	
-	gboolean			enabled;
-	gboolean			auto_connect;
-	
-	gchar				*key;
-	gchar				*guid;
-	MicroBloggingService		micro_blogging_service;
-	
-	gboolean			https;
-	gchar				*uri;
-	gchar				*server;
-	gchar				*path;
-	gchar				*user_name;
-	gchar				*user_nick;
-	gchar				*password;
-	
-	GSList				*best_friends;
-	gint				best_friends_total;
-	
-	GList				*friends;
-	GList				*followers;
-	GList				*friends_and_followers;
-	
-	gchar				*status;
-};
-
 static OnlineService *online_service_constructor(const gchar *uri, const gchar *user_name);
 static void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action);
 
@@ -165,7 +108,6 @@ static void online_service_set_micro_blogging_service(OnlineService **service);
 static void online_service_http_authenticate(SoupSession *session, SoupMessage *xml, SoupAuth *auth, gboolean retrying, gpointer user_data);
 static void *online_service_login_check(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
-static void online_service_get_profile(OnlineService *service);
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, User *user);
 
 static gboolean online_service_best_friends_load( OnlineService *service );
@@ -184,6 +126,21 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
+typedef struct _MicroBloggingServices MicroBloggingServices;
+struct _MicroBloggingServices{
+	MicroBloggingService		micro_blogging_service;
+	const gchar			*server;
+	const gchar			*client;
+};
+
+MicroBloggingServices MicroBloggingServicesList[]={
+	{Unknown,	NULL,			"get2gnow"},
+	{Identica,	"identi.ca",		"get2gnow"},
+	{Twitter,	"twitter.com",		"greettweetknow"},
+	{StatusNet,	"*",			"get2gnow"},
+	{Unsupported,	NULL,			NULL},
+};
+
 #define ONLINE_SERVICE_PREFIX				GCONF_PATH "/online-services/%s"
 #define ONLINE_SERVICE_IDS_TWEETS			GCONF_PATH "/online-services/xml-cache/archive/since-ids/%s%s/%s"
 
@@ -217,91 +174,15 @@ gboolean online_service_validate_key(OnlineService *service, const gchar *guid){
 	return TRUE;
 }/*online_service_validate_key(service, guid);*/
 
-const gchar *online_service_get_guid(OnlineService *service){
-	if(!service) return NULL;
-	return service->guid;
-}/*online_service_get_guid(service);*/
-
-const gchar *online_service_get_key(OnlineService *service){
-	if(!service) return NULL;
-	return service->key;
-}/*online_service_get_key(service);*/
-
-const gchar *online_service_get_uri(OnlineService *service){
-	if(!service) return NULL;
-	return service->uri;
-}/*online_service_get_uri(service);*/
-
-const gchar *online_service_get_user_name(OnlineService *service){
-	if(!service) return NULL;
-	return service->user_name;
-}/*online_service_get_user_name(service);*/
-
-const gchar *online_service_get_user_nick(OnlineService *service){
-	if(!service) return NULL;
-	return service->user_nick;
-}/*online_service_get_user_name(service);*/
-
-const gchar *online_service_get_password(OnlineService *service){
-	if(!service) return NULL;
-	return service->password;
-}/*online_service_get_password(service);*/
-
-
-gboolean online_service_is_enabled(OnlineService *service){
-	if(!service) return FALSE;
-	return service->enabled;
-}/*online_service_is_enabled(service);*/
-
-gboolean online_service_is_secure(OnlineService *service){
-	if(!service) return FALSE;
-	return service->https;
-}/*online_service_is_secure(service);*/
-
-gboolean online_service_is_auto_connected(OnlineService *service){
-	if(!service) return FALSE;
-	return service->auto_connect;
-}/*online_service_is_auto_connected(service);*/
-
-
-gboolean online_service_is_connected(OnlineService *service){
-	if(!service) return FALSE;
-	return service->connected;
-}/*online_service_is_connected(service);*/
-
-
-gboolean online_service_has_loaded(OnlineService *service){
-	if(!service) return FALSE;
-	return service->has_loaded;
-}/*online_service_has_loaded(service);*/
-
-
-SoupSession *online_service_get_session(OnlineService *service){
-	if(!service) return NULL;
-	return service->session;
-}/**online_service_get_session(service);*/
-
-
-const gchar *online_service_get_micro_blogging_client(OnlineService *service){
-	if(!service) return NULL;
-	MicroBloggingServices *micro_blogging_services=MicroBloggingServicesList;
-	while(micro_blogging_services->client){
-		if(service->micro_blogging_service==micro_blogging_services->micro_blogging_service)
-			return micro_blogging_services->client;
-		
-		micro_blogging_services++;
-	}
-	return NULL;
-}/*online_service_get_micro_blogging_client(service);*/
-
 static void online_service_set_micro_blogging_service(OnlineService **service){
 	if(!(*service)) return;
 	if((*service)->server) (*service)->micro_blogging_service=Unknown;
 	
 	MicroBloggingServices *micro_blogging_services=MicroBloggingServicesList;
 	while(micro_blogging_services->client){
-		if( G_STR_N_EMPTY(micro_blogging_services->server) && (g_str_equal((*service)->server, micro_blogging_services->server) || g_str_equal(micro_blogging_services->server, "*")) ){
+		if( G_STR_N_EMPTY(micro_blogging_services->server) && (g_str_has_prefix((*service)->server, micro_blogging_services->server) || g_str_equal((*service)->server, micro_blogging_services->server) || g_str_equal(micro_blogging_services->server, "*")) ){
 			(*service)->micro_blogging_service=micro_blogging_services->micro_blogging_service;
+			(*service)->micro_blogging_client=g_strdup(micro_blogging_services->client);
 			return;
 		}
 		
@@ -337,10 +218,12 @@ GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich
 	GList *users=NULL;
 	switch(users_glist_get_which){
 		case GetFriends:
-			users=service->friends;
+			if(service->friends)
+				users=service->friends;
 			break;
 		case GetFollowers:
-			users=service->followers;
+			if(service->followers)
+				users=service->followers;
 			break;
 		case GetBoth: default:
 			if(!(service->friends && service->followers))
@@ -402,8 +285,8 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	gchar *encoded_user_name=g_uri_escape_string(service->user_name, NULL, TRUE);
 	gchar *encoded_uri=g_uri_escape_string(service->uri, NULL, TRUE);
 	service->key=g_strdup_printf("%s@%s", encoded_user_name, encoded_uri );
-	g_free(encoded_user_name);
-	g_free(encoded_uri);
+	uber_free(encoded_user_name);
+	uber_free(encoded_uri);
 	
 	gchar **parsed_uri=g_strsplit(service->uri, "/", 2);
 	service->server=g_strdup(parsed_uri[0]);
@@ -434,24 +317,23 @@ OnlineService *online_service_open(const gchar *account_key){
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_ENABLED, service->key);
 	service->enabled=gconfig_if_bool(prefs_auth_path, TRUE);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 	
 #ifdef HAVE_GNOME_KEYRING
-	if(!(keyring_get_password(service, &service->password)))
-		service->password=NULL;
+	if(!(keyring_get_password(&service))) service->password=NULL;
 #else
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PASSWORD, service->key);
 	gconfig_get_string(prefs_auth_path, &service->password);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 #endif
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_HTTPS, service->key);
 	service->https=gconfig_if_bool(prefs_auth_path, TRUE);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_AUTO_CONNECT, service->key);
 	service->auto_connect=gconfig_if_bool(prefs_auth_path, TRUE);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 	
 	online_service_display_debug_details(service, FALSE, "opened");
 	
@@ -486,23 +368,23 @@ gboolean online_service_save(OnlineService *service, const gchar *password, gboo
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_ENABLED, service->key);
 	gconfig_set_bool(prefs_auth_path, service->enabled);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 	
 #ifdef HAVE_GNOME_KEYRING
-	keyring_set_password(service, service->password);
+	keyring_set_password(service);
 #else
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PASSWORD, service->key);
 	gconfig_set_string(prefs_auth_path, service->password);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 #endif
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_HTTPS, service->key);
 	gconfig_set_bool(prefs_auth_path, service->https);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 	
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_AUTO_CONNECT, service->key);
 	gconfig_set_bool(prefs_auth_path, service->auto_connect);
-	g_free(prefs_auth_path);
+	uber_free(prefs_auth_path);
 	
 	online_service_display_debug_details(service, FALSE, "saved");
 	
@@ -660,7 +542,7 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 				-1
 	);
 	uber_free( iter );
-	online_services_best_friends_total_update( online_services, 1);
+	online_services_best_friends_total_update(1);
 }/*online_service_best_friends_list_store_append( service, user_name );*/
 
 static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name ){
@@ -687,7 +569,7 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 	
 	OnlineService *service_at_index=NULL;
 	gchar *user_name_at_index=NULL;
-	gint best_friends_total=online_services_best_friends_total_update( online_services, 0 );
+	gint best_friends_total=online_services_best_friends_total_update(0 );
 	for(gint i=0; i<=best_friends_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -712,7 +594,7 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 		}
 		
 		debug("Removing best friend: %s from iter at index: %d", user_name_at_index, i);
-		online_services_best_friends_total_update( online_services, -1);
+		online_services_best_friends_total_update(-1);
 		service->best_friends_total--;
 		gtk_list_store_remove(list_store, iter);
 		
@@ -727,7 +609,7 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store ){
 	gchar *user_at_index=NULL;
 	gchar *user_name_at_index=NULL;
-	gint best_friends_total=online_services_best_friends_total_update( online_services, 0 );
+	gint best_friends_total=online_services_best_friends_total_update(0 );
 	for(gint i=best_friends_total-1; i>=0; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -905,18 +787,12 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	online_service_request(service, QUEUE, API_LOGIN, NULL, online_service_login_check, API_LOGIN, NULL);
 	
-	if(!temporary_connection) online_services_increment_connected(online_services, service->guid);
+	if(!temporary_connection) online_services_increment_connected(service->guid);
 	
-	online_service_get_profile(service);
+	/*online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );*/
 	
 	return TRUE;
 }/*online_service_login*/
-
-static void online_service_get_profile(OnlineService *service){
-	if(service->has_loaded) return;
-	
-	online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
-}/*online_service_get_profile(service);*/
 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
@@ -974,11 +850,11 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 		soup_auth_update(auth, xml, "WWW-Authenticate");
 		soup_auth_authenticate(auth, service->user_name, service->password);
 		service->authenticated=TRUE;
+		online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
 	}else{
 		debug("**ERROR**: Authentication attempts %d exceeded maximum attempts: %d.", service->logins, ONLINE_SERVICE_MAX_REQUESTS);
 		service->authenticated=FALSE;
 	}
-	online_service_get_profile(service);
 }/*online_service_http_authenticate(service);*/
 
 gboolean online_service_refresh(OnlineService *service, const gchar *uri){
@@ -1018,7 +894,7 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 	service->has_loaded=service->connected=service->authenticated=FALSE;
 	service->logins=0;
 	debug("Disconnected from OnlineService [%s].", service->guid);
-	online_services_decrement_connected(online_services, service->guid, no_state_change);
+	online_services_decrement_connected(service->guid, no_state_change);
 }/*online_service_disconnect*/
 
 gboolean online_service_reconnect(OnlineService *service){
@@ -1183,7 +1059,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
-	if(has_loaded && tweet_list_get_total(tweet_list)){
+	if( (has_loaded && tweet_list_get_total(tweet_list) ) || (monitoring==BestFriends) ){
 		requesting=_("new");
 		since_id=id_newest_update;
 	}else if(monitoring==DMs || monitoring==Replies){
@@ -1244,14 +1120,14 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	debug("Posting update to: [%s].", service->key);
 	if(!g_str_equal((gchar *)(*user_data), "post->update")){
 		debug("Sending direct message to: <%s@%s> from: <%s>", (gchar *)(*user_data), service->uri, service->key);
-		reply_form_data=g_strdup_printf("source=%s&user=%s&text=%s", online_service_get_micro_blogging_client(service), (gchar *)(*user_data), (gchar *)(*form_data));
+		reply_form_data=g_strdup_printf("source=%s&user=%s&text=%s", service->micro_blogging_client, (gchar *)(*user_data), (gchar *)(*form_data));
 	}else if(!(in_reply_to_status_id && in_reply_to_service==service)){
 		debug("Posting update to: <%s>", service->key);
-		reply_form_data=g_strdup_printf("source=%s&status=%s", online_service_get_micro_blogging_client(service), (gchar *)(*form_data));
+		reply_form_data=g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data));
 	}else{
 		gchar *in_reply_to_status_id_str=gdouble_to_str(in_reply_to_status_id);
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
-		reply_form_data=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", online_service_get_micro_blogging_client(service), in_reply_to_status_id_str, (gchar *)(*form_data));
+		reply_form_data=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data));
 		uber_free(in_reply_to_status_id_str);
 	}
 	
@@ -1360,7 +1236,7 @@ void online_service_free(OnlineService *service){
 	users_glists_free_lists(service);
 	
 	debug("Destroying OnlineService <%s> object.", service->guid );
-	uber_object_free(&service->key, &service->uri, &service->user_name, &service->user_nick, &service->password, &service->status, &service->guid, &service, NULL);
+	uber_object_free(&service->key, &service->uri, &service->user_name, &service->user_nick, &service->password, &service->status, &service->guid, &service->micro_blogging_client, &service, NULL);
 }/*online_service_free*/
 
 /********************************************************

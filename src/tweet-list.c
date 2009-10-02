@@ -86,6 +86,8 @@
 
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
+#include "online-service.types.h"
+#include "online-service.h"
 #include "network.h"
 
 #include "gtkbuilder.h"
@@ -116,18 +118,18 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{BestFriends,	API_TIMELINE_BEST_FRIEND,	N_("My Best Friend: _%s's %s Newest Updates"),	N_("My Best Friend: %s's %s Newest Updates")},
-	{Users,		API_TIMELINE_USER,		N_("%s's %s _Updates"),			N_("%s's %s Updates")},
-	{Tweets,	API_TIMELINE_FRIENDS,		N_("My _Friends' Updates"),		N_("My Friends' Updates")},
-	{Replies,	API_REPLIES,			N_("@ _Replies"),			N_("@ Replies")},
-	/*{Replies,	API_MENTIONS,			N_("@ _Mentions"),			N_("@ Mentions")},*/
-	{DMs,		API_DIRECT_MESSAGES,		N_("My DMs _Inbox"),			N_("My DMs Inbox")},
-	{Faves,		API_FAVORITES,			N_("My Star_'d Updates"),		N_("My Star'd Updates")},
-	{Searches,	API_TIMELINE_SEARCH,		N_("_Search Results"),			N_("Search Results")},
-	{Groups,	API_TIMELINE_GROUP,		N_("_Group Discussions"),		N_("Group Discussions")},
-	{Timelines,	API_TIMELINE_PUBLIC,		N_("_Global Updates"),			N_("Public Updates")},
-	{Archive,	API_TIMELINE_MINE,		N_("_My Updates"),			N_("My Updates")},
-	{None,		NULL,				N_("Unknow_n timeline"),		N_("Unknown timeline")}
+	{BestFriends,	API_TIMELINE_USER,		N_("%s_%s's %s%s Updates"),	N_("%s%s's %s%s Updates")},
+	{Users,		API_TIMELINE_USER,		N_("%s_%s's %s%s Updates"),	N_("%s%s's %s%s Updates")},
+	{Tweets,	API_TIMELINE_FRIENDS,		N_("My _Friends' Updates"),	N_("My Friends' Updates")},
+	{Replies,	API_REPLIES,			N_("@ _Replies"),		N_("@ Replies")},
+	/*{Replies,	API_MENTIONS,			N_("@ _Mentions"),		N_("@ Mentions")},*/
+	{DMs,		API_DIRECT_MESSAGES,		N_("My DMs _Inbox"),		N_("My DMs Inbox")},
+	{Faves,		API_FAVORITES,			N_("My Star_'d Updates"),	N_("My Star'd Updates")},
+	{Searches,	API_TIMELINE_SEARCH,		N_("_Search Results"),		N_("Search Results")},
+	{Groups,	API_TIMELINE_GROUP,		N_("_Group Discussions"),	N_("Group Discussions")},
+	{Timelines,	API_TIMELINE_PUBLIC,		N_("_Global Updates"),		N_("Public Updates")},
+	{Archive,	API_TIMELINE_MINE,		N_("_My Updates"),		N_("My Updates")},
+	{None,		NULL,				N_("Unknow_n timeline"),	N_("Unknown timeline")}
 };
 
 struct _TweetListPrivate {
@@ -311,7 +313,7 @@ TweetList *tweet_list_new(const gchar *timeline, OnlineService *service){
 	TweetList *tweet_list=g_object_new(TYPE_TWEET_LIST, NULL);
 	
 	debug("Creating new TweetView for timeline: %s.", timeline);
-	if(service && online_service_is_connected(service) )
+	if(service && service->connected )
 		GET_PRIVATE(tweet_list)->service=service;
 	
 	tweet_list_set_timeline_label(tweet_list, timeline);
@@ -451,7 +453,7 @@ void tweet_list_start(TweetList *tweet_list){
 	if(this->minutes){
 		this->loading=TRUE;
 		if(!this->service){
-			online_services_request(online_services, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
+			online_services_request(QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
 		}else{
 			online_service_request(this->service, QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
 		}
@@ -514,7 +516,7 @@ static void tweet_list_set_adjustment(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	guint connected_online_services=online_services_has_connected(online_services, 0);
+	guint connected_online_services=online_services_has_connected(0);
 	if(connected_online_services==this->connected_online_services)	return;
 	
 	this->connected_online_services=connected_online_services;
@@ -682,7 +684,7 @@ static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then)
 		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
 		if(delete_older_then > 0 && created_ago > 0 && created_ago > delete_older_then){
-			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%i] it was posted %i.", online_service_get_guid(service), this->monitoring_string, this->monitoring_string, delete_older_then, created_ago );
+			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%i] it was posted %i.", service->guid, this->monitoring_string, this->monitoring_string, delete_older_then, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
 		}else
 			gtk_list_store_set(
@@ -783,24 +785,34 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 			continue;
 		
 		
-		if(g_str_has_prefix(this->timeline, "/statuses/user_timeline/")){
-			/* This checks for 'monitoring of 'BestFriends' updates 1st & than 'Users' updates but no others. */
-			gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
-			gchar **user_info=g_strsplit_set(feed_info[3], ".", -1);
-			const gchar *user_name=user_info[0];
-			if(G_STR_N_EMPTY(user_name)){
-				this->user=g_strdup(user_name);
-				if(!(this->service && online_services_is_user_best_friend( online_services, this->service, this->user) ))
-					timeline_labels++;
-				const gchar *service_uri=online_service_get_uri(this->service);
-				this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, user_name, service_uri );
-				this->menu_label_string=g_strdup_printf(timeline_labels->menu_label_string, user_name, service_uri );
-			}
+		if(!g_str_has_prefix(this->timeline, "/statuses/user_timeline/"))
+			continue;
+		
+		/* This checks for 'monitoring of 'BestFriends' updates 1st & than 'Users' updates but no others. */
+		gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
+		gchar **user_info=g_strsplit_set(feed_info[3], ".", -1);
+		const gchar *user_name=user_info[0];
+		if(G_STR_EMPTY(user_name)){
 			g_strfreev(feed_info);
 			g_strfreev(user_info);
-			this->monitoring=timeline_labels->monitoring;
-			break;
+			continue;
 		}
+		
+		this->user=g_strdup(user_name);
+		gboolean user_is_best_friend=online_services_is_user_best_friend(this->service, this->user);
+		gboolean viewing_newest_updates=TRUE;
+		if(!g_strrstr(this->timeline, "?since_id="))
+			viewing_newest_updates=FALSE;
+		if(!(this->service && viewing_newest_updates && user_is_best_friend ))
+			timeline_labels++;
+		
+		this->timeline=g_strdup_printf(timeline_labels->timeline, this->user);
+		this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
+		this->menu_label_string=g_strdup_printf(timeline_labels->menu_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
+		this->monitoring=timeline_labels->monitoring;
+		g_strfreev(feed_info);
+		g_strfreev(user_info);
+		break;
 	}
 	if(!this->menu_label_string){
 		debug("**ERROR:** Unable to determine timeline label to use.");
@@ -1121,7 +1133,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 				-1
 	);
 	
-	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, online_service_get_guid(service));
+	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, service->guid);
 	
 	control_panel_view_selected_update(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
 	

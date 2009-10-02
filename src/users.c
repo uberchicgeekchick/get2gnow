@@ -71,6 +71,7 @@
 #include "main-window.h"
 
 #include "online-services-typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-services.h"
 #include "online-service-wrapper.h"
@@ -218,7 +219,7 @@ User *user_fetch_profile(OnlineService *service, const gchar *user_name){
 	
 	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, GET, user_profile_uri, 0, NULL, NULL, NULL, NULL);
 	uber_free(user_profile_uri);
-	if(!(user=user_parse_profile(online_service_get_session(service), msg, online_service_wrapper))){
+	if(!(user=user_parse_profile(service->session, msg, online_service_wrapper))){
 		online_service_wrapper_free(online_service_wrapper);
 		return NULL;
 	}
@@ -293,12 +294,11 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 
 void user_free(User *user){
 	if(!( user && user->id && user->service )) return;
-	debug("Destroying user object for %s, on <%s>.", user->user_name, online_service_get_key(user->service));
 	if(user->status) user_status_free(user->status);
 	
 	user->service=NULL;
 	
-	/*if( user->user_name ) uber_free( user->user_name );
+	if( user->user_name ) uber_free( user->user_name );
 	if( user->user_nick ) uber_free( user->user_nick );
 	if( user->location ) uber_free( user->location );
 	if( user->bio ) uber_free( user->bio );
@@ -306,9 +306,9 @@ void user_free(User *user){
 	if( user->image_url ) uber_free( user->image_url );
 	if( user->image_file ) uber_free( user->image_file );
 
-	uber_free( user );*/
+	uber_free( user );
 	
-	uber_object_free(&user->user_name, &user->user_nick, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL);
+	/*uber_object_free(&user->user_name, &user->user_nick, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL);*/
 }/*user_free*/
 
 
@@ -341,36 +341,6 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
 }/*user_status_validate(&status);*/ 
-
-gdouble user_status_get_id(UserStatus *status){
-	if(!status) return 0;
-	return status->id;
-}/*user_status_get_id(status);*/
-
-const gchar *user_status_get_id_str(UserStatus *status){
-	if(!(status && status->id_str)) return NULL;
-	return status->id_str;
-}/*user_status_get_id_str(status);*/
-
-const gchar *user_status_get_user_name(UserStatus *status){
-	if(!(status && status->user)) return NULL;
-	return status->user->user_name;
-}/*user_status_get_user_name(status);*/
-
-const gchar *user_status_get_notification(UserStatus *status){
-	if(!(status && status->notification)) return NULL;
-	return status->notification;
-}/*user_status_get_notification(status);*/
-
-gint user_status_get_created_seconds_ago(UserStatus *status){
-	if(!(status && status->created_seconds_ago )) return -1;
-	return status->created_seconds_ago;
-}/*user_status_get_created_seconds_ago(status);*/
-
-OnlineService *user_status_get_online_service(UserStatus *status){
-	if(!status) return NULL;
-	return status->service;
-}/*user_status_get_online_service(status);*/
 
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list){
 	xmlNode		*current_node = NULL;
@@ -439,7 +409,7 @@ static void user_status_format_dates(UserStatus *status){
 
 
 static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status){
-	if(!(online_service_is_connected(service) && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->user_nick))) return;
+	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->user_nick))) return;
 	debug("Formatting status text for display.");
 	
 	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
@@ -452,9 +422,9 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	}
 	uber_free(sexy_status_swap);
 
-	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>", user->user_nick, user->user_name, online_service_get_uri(service));
+	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>", user->user_nick, user->user_name, service->uri);
 	
-	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", online_service_get_user_nick(service), online_service_get_key(service));
+	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", service->user_nick, service->key);
 	
 	status->tweet=g_strdup_printf("%s%s%s%s",
 					( (status->type==DMs)
@@ -470,8 +440,8 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 						"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n<i><u>To:</u></i> <i>&lt;%s&gt;</i>\n<b>\t%s%s%s</b>",
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
-						user->user_nick, user->user_name, online_service_get_uri(service),
-						online_service_get_key(service),
+						user->user_nick, user->user_name, service->uri,
+						service->key,
 						((status->type==DMs) ?"<b><i>[" :((status->type==Replies) ?"<i>[" :"")), sexy_status_text, ((status->type==DMs) ?"]</i></b>" :((status->type==Replies) ?"]</i>" :""))
 	);
 	
@@ -484,7 +454,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
 	guint tweet_list_total=tweet_list_increment(tweet_list);
-	debug("Appending tweet to TweetList <%s>'s; update ID for [%s].  %f - status ID.  Total updates: %u", online_service_get_guid(status->service), tweet_list_get_timeline(tweet_list), status->id, tweet_list_total);
+	debug("Appending tweet to TweetList <%s>'s; update ID for [%s].  %s - status ID.  Total updates: %u", status->service->guid, tweet_list_get_timeline(tweet_list), status->id_str, tweet_list_total);
 	
 	gtk_list_store_prepend(tweet_list_store, iter);
 	gtk_list_store_set(
@@ -517,13 +487,11 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 
 void user_status_free(UserStatus *status){
 	if(!( status && status->id && status->service )) return;
-	debug("Destroying update, i.e. UserStatus, object.  Status ID: %f, on <%s>.", status->id, online_service_get_key(status->service) );
-	
 	if(status->user) user_free(status->user);
 			
 	status->service=NULL;
 	
-	/*if( status->text ) uber_free( status->text );
+	if( status->text ) uber_free( status->text );
 	if( status->id_str ) uber_free( status->id_str );
 	if( status->from ) uber_free( status->from );
 	if( status->rcpt ) uber_free( status->rcpt );
@@ -534,9 +502,9 @@ void user_status_free(UserStatus *status){
 	if( status->created_at_str ) uber_free( status->created_at_str );
 	if( status->created_how_long_ago ) uber_free( status->created_how_long_ago );
 
-	uber_free(status);*/
+	uber_free(status);
 	
-	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);
+	/*uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);*/
 }/*user_status_free*/
 
 
@@ -602,7 +570,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	
 	gchar *profile_details=g_strdup_printf(
 					"\t[<a href=\"http%s://%s/\">%s</a>]\n",
-					(online_service_is_secure(service)?"s":""), online_service_get_uri(service), online_service_get_guid(service)
+					(service->https?"s":""), service->uri, service->guid
 	);
 	
 	label_set_text(service, LABEL(user_profile_viewer->service_label), profile_details, TRUE, TRUE);
@@ -753,7 +721,7 @@ static void user_profile_viewer_clear_profile(GtkWindow *parent, OnlineService *
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->latest_tweet));
 	
 	g_object_set( GTK_LABEL( user_profile_viewer->bio_html ), "single-line-mode", TRUE, NULL );
-	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_name, (online_service_is_secure(service)?"s":""), online_service_get_uri(service), online_service_get_uri(service) );
+	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_name, (service->https?"s":""), service->uri, service->uri );
 	label_set_text(service, user_profile_viewer->bio_html, profile_details, FALSE, TRUE);
 	uber_free( profile_details );
 	

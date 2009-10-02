@@ -511,22 +511,23 @@ static void preferences_string_combo_changed_cb (GtkComboBox *combo_box, Prefere
 static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, PreferencesDialog *prefs){
 	GtkTreeModel *model;
 	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
-	gint          minutes;
+	gint          preference_value;
 
 	const gchar *key=g_object_get_data (G_OBJECT (combo_box), "key");
 	if(combo_box==prefs->replace_me_with_combo_box)
-		online_services_reset_length_of_longest_replacement(online_services);
+		online_services_reset_length_of_longest_replacement();
 	
 	if(gtk_combo_box_get_active_iter(combo_box, iter)) {
 		model = gtk_combo_box_get_model(combo_box);
-		gtk_tree_model_get(model, iter, COL_COMBO_NAME, &minutes, -1);
+		gtk_tree_model_get(model, iter, COL_COMBO_NAME, &preference_value, -1);
 
-		gconfig_set_int(key, minutes);
+		gconfig_set_int(key, preference_value);
 	}
 }
 
 static void preferences_response_cb(GtkDialog *dialog, gint response, PreferencesDialog *prefs){
 	gtk_widget_destroy(GTK_WIDGET(dialog));
+	uber_free(prefs);
 }
 
 static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs){

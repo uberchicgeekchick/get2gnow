@@ -74,6 +74,7 @@
 
 #include "online-services-typedefs.h"
 #include "online-services.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
@@ -192,7 +193,7 @@ void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
 	
 	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE)))
-		online_services_request(online_services, POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
+		online_services_request(POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
 	else
 		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
 }/*network_post_status(tweet);*/
@@ -210,8 +211,8 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 	if(!g_str_equal("post->update", user_data)) direct_message=TRUE;
 	
 	gchar *message=NULL;
-	if(!direct_message) message=g_strdup_printf("<%s>'s status", online_service_get_guid(service));
-	else message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, online_service_get_uri(service), online_service_get_guid(service));
+	if(!direct_message) message=g_strdup_printf("<%s>'s status", service->guid);
+	else message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, service->uri, service->guid);
 	
 	if(!network_check_http(service, xml)){
 		debug("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
@@ -220,7 +221,7 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 		statusbar_printf("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		statusbar_printf("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 			if(xml->status_code==100 && !online_service_wrapper_get_attempt(service_wrapper)){
-				debug("Resubmitting Tweet/Status update to: [%s] per http response.", online_service_get_key(service));
+				debug("Resubmitting Tweet/Status update to: [%s] per http response.", service->key);
 				online_service_wrapper_reattempt(service_wrapper);
 			}
 		}else{
@@ -235,7 +236,7 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 		in_reply_to_service=NULL;
 		in_reply_to_status_id=0;
 		if(xml->status_code==404){
-			debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", online_service_get_key(service));
+			debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", service->key);
 			online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_tweet_cb, user_data, online_service_wrapper_get_form_data(service_wrapper));
 		}
 	}
@@ -274,7 +275,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	
 	if(!network_check_http(service, xml)){
 		if(xml->status_code==401){
-			debug("*WARNING:* Authentication failed for online service: %s.", online_service_get_key(service));
+			debug("*WARNING:* Authentication failed for online service: %s.", service->key);
 			return NULL;
 		}
 		
@@ -334,7 +335,7 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
-	debug("Resubmitting: %s to <%s>.", requested_uri, online_service_get_uri(service));
+	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
 	network_set_state_loading_timeline(requested_uri, Retry);
 	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);
 	return NULL;

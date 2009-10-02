@@ -71,7 +71,11 @@
 #include "program.h"
 
 #include "online-services.h"
+#include "online-service.types.h"
+#include "online-service.h"
 #include "network.h"
+
+#include "users.types.h"
 #include "users.h"
 
 #include "main-window.h"
@@ -318,7 +322,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
 	guint		new_updates=0;
-	gdouble		status_id=0.0;
 	gdouble		id_newest_update=0.0, id_oldest_update=0.0;
 	gint		update_expiration=0, best_friends_expiration=0;
 	gconfig_get_int_or_default(PREFS_TWEETS_ARCHIVE_BEST_FRIENDS, &best_friends_expiration, 86400);
@@ -401,7 +404,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
-	const gchar *service_user_name=online_service_get_user_name(service);
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
@@ -423,7 +425,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		
 		status=NULL;
 		debug("Creating tweet's Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, monitoring ))) && (status_id=user_status_get_id(status)) )){
+		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
@@ -431,26 +433,26 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		new_updates++;
 		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", user_status_get_user_name(status), status_id, online_service_get_key(service));
+		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", status->user->user_name, status->id, service->key);
 		user_status_store(status, tweet_list);
-		const gchar *update_author=user_status_get_user_name(status);
-		if( monitoring!=BestFriends && online_service_is_user_best_friend( service, update_author ) ){
+		if( ( monitoring !=BestFriends && monitoring != DMs ) && online_service_is_user_best_friend( service, status->user->user_name ) ){
 			gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
-			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, update_author );
+			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, status->user->user_name );
 			online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
-			if( id_best_friend_newest_update && status_id > id_best_friend_newest_update ){
+			if( id_best_friend_newest_update && status->id > id_best_friend_newest_update ){
 				if(notify_best_friends){
 					free_status=FALSE;
 					g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 					tweet_list_notify_delay+=tweet_display_interval;
 				}
-				online_service_update_ids_set( service, user_timeline, status_id, id_best_friend_oldest_update );
-				online_services_best_friends_list_store_mark_as_unread( online_services, service, update_author, main_window_get_best_friends_list_store() );
+				online_services_best_friends_list_store_mark_as_unread(service, status->user->user_name, main_window_get_best_friends_list_store() );
 			}
+			if(!id_best_friend_oldest_update && status->id )
+				online_service_update_ids_set(service, timeline, status->id, status->id);
 			uber_free( user_timeline );
 		}
 		
-		if(!save_oldest_id && status_id > last_notified_update && strcasecmp(update_author, service_user_name) ){
+		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
 			if(notify){
 				free_status=FALSE;
@@ -459,11 +461,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			}
 		}
 		
-		if(!id_newest_update) id_newest_update=status_id;
-		/*if(!oldest_update_id_saved && update_expiration && user_status_get_created_seconds_ago(status) > update_expiration) save_oldest_id=TRUE;*/
-		if(save_oldest_id){
+		if(!id_newest_update) id_newest_update=status->id;
+		if(save_oldest_id && status->id){
 			oldest_update_id_saved=TRUE;
-			id_oldest_update=status_id;
+			id_oldest_update=status->id;
 		}
 		
 		if(free_status) user_status_free(status);
@@ -473,7 +474,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		/*TODO implement this only once it won't ending up causing bloating.
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
-		const gchar *online_service_guid=online_service_get_guid(service);
+		const gchar *online_service_guid=service->guid;
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
 		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);
 		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);

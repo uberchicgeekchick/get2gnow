@@ -71,6 +71,8 @@
 #include "network.h"
 #include "parser.h"
 #include "gconfig.h"
+#include "online-service.types.h"
+#include "online-service.h"
 #include "online-services.h"
 #include "preferences.h"
 
@@ -185,14 +187,14 @@ static gssize find_first_non_user_name(const gchar *str){
 gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(G_STR_EMPTY(message)) return g_strdup("");
 	
-	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http%s://%s", (online_service_is_secure(service) ?"s" :""), online_service_get_uri(service) );
+	gchar **tokens=NULL, *result=NULL, *temp=NULL, *at_url_prefix=g_strdup_printf("http%s://%s", (service->https?"s" :""), service->uri );
 	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE), expand_profiles=gconfig_if_bool(PREFS_URLS_EXPANSION_USER_PROFILES, TRUE);
 	
 	tokens=g_strsplit_set(message, " \t\n", 0);
 	for(gint i=0; tokens[i]; i++) {
 		if(url_check_word(tokens[i], strlen(tokens[i]))) {
 			if(tokens[i][0]=='@') {
-				debug("Rendering user @ link for user: '%s' on '%s'", tokens[i], online_service_get_uri(service));
+				debug("Rendering user @ link for user: '%s' on '%s'", tokens[i], service->uri);
 				temp=label_format_user_at_link(service, at_url_prefix, tokens[i], expand_profiles, expand_hyperlinks, make_hyperlinks, titles_strip_uris);
 				debug("Rendered user @ link.  %s will be replaced with %s.", tokens[i], temp);
 			} else {

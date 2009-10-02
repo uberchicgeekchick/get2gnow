@@ -71,10 +71,14 @@
 #include "about.h"
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-services.h"
 #include "online-services-dialog.h"
 #include "main-window.h"
+
+#include "users.types.h"
+#include "users.h"
 
 #include "images.h"
 #include "preferences.h"
@@ -528,7 +532,7 @@ static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scr
 
 static void main_window_best_friends_list_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window ){
 	/* TODO: Add a confirmation dialog that warn of how long this may take. */
-	online_services_best_friends_list_store_validate(online_services, main_window->private->best_friends_list_store);
+	online_services_best_friends_list_store_validate(main_window->private->best_friends_list_store);
 }/*main_window_best_friends_list_store_validate(button, main_window);*/
 
 static void main_window_best_friends_setup(GtkBuilder *ui){
@@ -550,7 +554,7 @@ static void main_window_best_friends_setup(GtkBuilder *ui){
 	main_window->private->best_friends_tree_model_sort=gtk_tree_model_sort_new_with_model(main_window->private->best_friends_tree_model);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_model_sort), BestFriendOnlineServiceGUID, GTK_SORT_DESCENDING);
 	
-	online_services_best_friends_list_store_fill(online_services, main_window->private->best_friends_list_store);
+	online_services_best_friends_list_store_fill(main_window->private->best_friends_list_store);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(main_window->private->best_friends_sexy_tree_view), main_window->private->best_friends_tree_model_sort);
 	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, BestFriendUserName);
@@ -566,7 +570,7 @@ static void main_window_best_friends_buttons_set_sensitive(void){
 		debug("No best friend is selected.  Best Friend buttons will be disabled.");
 	}else{
 		sensitive=TRUE;
-		debug("Selected best friend: %s, on <%s>.  Enabling best friend controls.", user, online_service_get_guid(service) );
+		debug("Selected best friend: %s, on <%s>.  Enabling best friend controls.", user, service->guid );
 		uber_free(user);
 		uber_free(user_name);
 	}
@@ -594,14 +598,14 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 					BestFriendUserName, &selected_user_name,
 				-1
 		);
-	if(!( selected_service && online_service_is_connected(selected_service) && G_STR_N_EMPTY(selected_user) && G_STR_N_EMPTY(selected_user_name) )){
+	if(!( selected_service && selected_service->connected && G_STR_N_EMPTY(selected_user) && G_STR_N_EMPTY(selected_user_name) )){
 		*service=NULL;
 		*user=NULL;
 		*user_name=NULL;
 	}else{
 		found=TRUE;
 		if( g_str_has_prefix(selected_user_name, "<b>") )
-			online_services_best_friends_list_store_mark_as_read(online_services, selected_service, selected_user, main_window->private->best_friends_list_store);
+			online_services_best_friends_list_store_mark_as_read(selected_service, selected_user, main_window->private->best_friends_list_store);
 		*user=g_strdup(selected_user);
 		*user_name=g_strdup(selected_user_name);
 		*service=selected_service;
@@ -621,7 +625,10 @@ static void main_window_best_friends_tree_view_row_activated(GtkTreeView *best_f
 		return;
 	}
 	
-	online_service_request_view_updates(service, main_window->private->window, user);
+	if(!g_str_has_prefix(user_name, "<b>"))
+		online_service_request_view_updates(service, main_window->private->window, user);
+	else
+		online_service_request_view_updates_new(service, main_window->private->window, user);
 	uber_free(user);
 	uber_free(user_name);
 	control_panel_sexy_select();
@@ -641,6 +648,14 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 		return;
 	}
 	
+	if(button==main_window->private->best_friends_view_updates_new_button){
+		online_service_request_view_updates_new(service, main_window->private->window, user);
+		control_panel_sexy_select();
+		uber_free(user_name);
+		uber_free(user);
+		return;
+	}
+	
 	if(button==main_window->private->best_friends_drop_button){
 		online_service_best_friends_drop(service, main_window->private->window, user);
 		control_panel_sexy_select();
@@ -657,14 +672,6 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 		return;
 	}
 	
-	if(button==main_window->private->best_friends_view_updates_new_button){
-		online_service_request_view_best_friends_updates(service, main_window->private->window, user);
-		control_panel_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
 	if(button==main_window->private->best_friends_view_profile_button){
 		online_service_request_view_profile(service, main_window->private->window, user);
 		control_panel_sexy_select();
@@ -675,8 +682,8 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 	
 	if(button==main_window->private->best_friends_send_at_message_button){
 		gchar *at_string=NULL;
-		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(online_services, 1) ))
-			at_string=g_strdup_printf("@%s (http://%s/%s) ", user, online_service_get_uri(service), user );
+		if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(1) ))
+			at_string=g_strdup_printf("@%s (http://%s/%s) ", user, service->uri, user );
 		else
 			at_string=g_strdup_printf("@%s ", user);
 		
@@ -829,7 +836,7 @@ GtkTreeModel *main_window_get_best_friends_tree_model(void){
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 	online_service_request_unset_selected_update();
 	/* Add any clean-up code above this function call */
-	online_services_best_friends_list_store_free(online_services, main_window->private->best_friends_list_store);
+	online_services_best_friends_list_store_free(main_window->private->best_friends_list_store);
 	gtk_widget_destroy(GTK_WIDGET( GET_PRIVATE( main_window)->window) );
 }
 
@@ -1085,7 +1092,7 @@ static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEven
 
 static void main_window_login(void){
 	debug("Logging into online services.");
-	if(!online_services_login( online_services)){
+	if(!online_services_login()){
 		online_services_dialog_show(main_window->private->window);
 		return;
 	}
@@ -1094,14 +1101,14 @@ static void main_window_login(void){
 }/*main_window_login*/
 
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
-	if(!( online_services_relogin( online_services)))
+	if(!( online_services_relogin()))
 		return;
 	
 	main_window_tabs_init();
 }/*main_window_reconnect*/
 
 void main_window_disconnect(void){
-	online_services_disconnect(online_services);
+	online_services_disconnect();
 }/*main_window_disconnect*/
 
 /*
@@ -1312,8 +1319,7 @@ static gboolean main_window_statusbar_display(const gchar *message){
 
 gboolean main_window_notify_on_timeout(gpointer data){
 	UserStatus *status=(UserStatus *)data;
-	const gchar *notification=NULL;
-	if(!(status && G_STR_N_EMPTY(( notification=user_status_get_notification( status)) ) )){
+	if(!(status && G_STR_N_EMPTY(status->notification) )){
 		return FALSE;
 	}
 	
@@ -1321,9 +1327,9 @@ gboolean main_window_notify_on_timeout(gpointer data){
 	GError             *error=NULL;
 	
 	if(!gtk_status_icon_is_embedded( main_window->private->status_icon))
-		notify_notification=notify_notification_new(PACKAGE_TARNAME, notification, PACKAGE_TARNAME, NULL);
+		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
 	else
-		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, notification, PACKAGE_TARNAME, main_window->private->status_icon);
+		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window->private->status_icon);
 	
 	notify_notification_set_timeout(notify_notification, 10000);
 	
@@ -1335,7 +1341,7 @@ gboolean main_window_notify_on_timeout(gpointer data){
 	g_object_unref(G_OBJECT( notify_notification));
 	
 	if(error){
-		debug("Error displaying notification: %s.", error->message);
+		debug("Error displaying status->notification: %s.", error->message);
 		g_error_free(error);
 	}
 	return FALSE;

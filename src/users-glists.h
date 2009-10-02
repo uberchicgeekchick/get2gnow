@@ -93,6 +93,7 @@ void users_glists_remove_friend(OnlineService *service, User *user);
 void users_glists_remove_follower(OnlineService *service, User *user);
 
 void users_glists_free_lists(OnlineService *service);
+void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which);
 
 
 G_END_DECLS

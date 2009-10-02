@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,54 +48,88 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/**********************************************************************
- *          My art, code, & programming.                              *
- **********************************************************************/
-#ifndef __USERS_H__
-#define __USERS_H__
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__ONLINE_SERVICE_TYPEDEF_H__
+#define	__ONLINE_SERVICE_TYPEDEF_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
 
-/**********************************************************************
- *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
- **********************************************************************/
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
+#include <glib.h>
 #include <gtk/gtk.h>
-#include <libxml/parser.h>
-#include <libsoup/soup.h>
-#include "online-services-typedefs.h"
-#include "tweet-list.h"
+
+#include "timer.h"
+
+G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
 
 
-/**********************************************************************
- *        Objects, structures, and etc typedefs                       *
- **********************************************************************/
-typedef struct _User User;
-typedef struct _UserStatus UserStatus;
-
-/**********************************************************************
- *          Global method & function prototypes                      *
- **********************************************************************/
-User *user_fetch_profile(OnlineService *service, const gchar *user_name);
-User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-
-gboolean user_download_avatar(OnlineService *service, User *user);
-void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
-void user_profile_viewer_cleanup(void);
-
-User *user_parse_node(OnlineService *service, xmlNode *root_element);
-
-void user_free(User *user);
-
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list);
-void user_status_store(UserStatus *status, TweetList *tweet_list);
-
-void user_status_free(UserStatus *status);
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
+typedef enum _MicroBloggingService MicroBloggingService;
 
 
-#endif /*__USERS_H__*/
-/**********************************************************************
- *                               eof                                  *
- **********************************************************************/
+enum _MicroBloggingService{
+	Unknown = 0,
+	Identica = 1,
+	Twitter = 2,
+	StatusNet = 3,
+	Unsupported = 4,
+};
 
+struct _OnlineService{
+	SoupSession			*session;
+	RateLimitTimer			*timer;
+	
+	gboolean			authenticated;
+	gboolean			connected;
+	gboolean			has_loaded;
+	guint				logins;
+	
+	gboolean			enabled;
+	gboolean			auto_connect;
+	
+	gchar				*key;
+	gchar				*guid;
+	
+	MicroBloggingService		micro_blogging_service;
+	gchar				*micro_blogging_client;
+	
+	gboolean			https;
+	gchar				*uri;
+	gchar				*server;
+	gchar				*path;
+	gchar				*user_name;
+	gchar				*user_nick;
+	gchar				*password;
+	
+	GSList				*best_friends;
+	gint				best_friends_total;
+	
+	GList				*friends;
+	GList				*followers;
+	GList				*friends_and_followers;
+	
+	gchar				*status;
+};
+
+
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+
+
+G_END_DECLS
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+#endif /* __ONLINE_SERVICE_TYPEDEF_H__*/

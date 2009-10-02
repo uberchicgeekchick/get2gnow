@@ -64,6 +64,7 @@
 
 #include "main-window.h"
 
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
 #include "users.types.h"
@@ -386,5 +387,7 @@ static void friends_manager_setup(GtkWindow *parent){
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->close_button), TRUE);
 	
 	/* Load friends_manager */
+	if(selected_service && selected_service->friends_and_followers)
+		users_glists_free(selected_service, GetBoth);
 	users_glist_get(GetBoth, FALSE, friends_manager_display_following_and_followers);
 }/*friends_manager_setup*/

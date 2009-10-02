@@ -76,27 +76,25 @@
  *********************************************************************/
 G_BEGIN_DECLS
 
-extern OnlineServices *online_services;
-
 
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
 OnlineServices *online_services_init(void);
 
-gboolean online_services_login(OnlineServices *services);
-gboolean online_services_relogin(OnlineServices *services);
-void online_services_disconnect(OnlineServices *services);
+gboolean online_services_login(void);
+gboolean online_services_relogin(void);
+void online_services_disconnect(void);
 
-OnlineService *online_services_save_service(OnlineServices *services, OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
-void online_services_delete_service(OnlineServices *services, OnlineService *service);
+OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
+void online_services_delete_service(OnlineService *service);
 
 /**
  * @returns:	-2 if services->total equals 0
  *		services->total if count equals 0
  * 		-1, 0, 1, if services->total is greater than, equal to, or less than count.
  */
-gint online_services_has_total(OnlineServices *services, guint count);
+gint online_services_has_total(guint count);
 
 
 /**
@@ -104,34 +102,34 @@ gint online_services_has_total(OnlineServices *services, guint count);
  *		services->connected if count equals 0
  * 		-1, 0, 1, if services->connected is greater than, equal to, or less than count.
  */
-gint online_services_has_connected(OnlineServices *services, guint count);
+gint online_services_has_connected(guint count);
 
-OnlineService *online_services_get_online_service_by_guid( OnlineServices *services, const gchar *online_service_guid );
-gint online_services_best_friends_list_store_fill( OnlineServices *services, GtkListStore *list_store );
-gint online_services_best_friends_list_store_validate( OnlineServices *services, GtkListStore *list_store );
-void online_services_best_friends_list_store_free( OnlineServices *services, GtkListStore *list_store );
-gint online_services_best_friends_total_update( OnlineServices *services, gint best_friends_to_add);
-gboolean online_services_best_friends_list_store_mark_as_unread( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store );
-gboolean online_services_best_friends_list_store_mark_as_read( OnlineServices *services, OnlineService *service, const gchar *user_name, GtkListStore *list_store );
-gboolean online_services_is_user_best_friend( OnlineServices *services, OnlineService *service, const gchar *user_name );
+OnlineService *online_services_get_online_service_by_guid(const gchar *online_service_guid );
+gint online_services_best_friends_list_store_fill(GtkListStore *list_store );
+gint online_services_best_friends_list_store_validate(GtkListStore *list_store );
+void online_services_best_friends_list_store_free(GtkListStore *list_store );
+gint online_services_best_friends_total_update(gint best_friends_to_add);
+gboolean online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, GtkListStore *list_store );
+gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, GtkListStore *list_store );
+gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name );
 
-OnlineService *online_services_connected_get_first(OnlineServices *services);
-OnlineService *online_services_connected_get_last(OnlineServices *services);
+OnlineService *online_services_connected_get_first(void);
+OnlineService *online_services_connected_get_last(void);
 
-void online_services_reset_length_of_longest_replacement(OnlineServices *services);
-gssize online_services_get_length_of_longest_replacement(OnlineServices *services);
+void online_services_reset_length_of_longest_replacement(void);
+gssize online_services_get_length_of_longest_replacement(void);
 
-void online_services_request(OnlineServices *services, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+void online_services_request(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
-void online_services_increment_total(OnlineServices *services, const gchar *service_guid);
-void online_services_decrement_total(OnlineServices *services, const gchar *service_guid);
+void online_services_increment_total(const gchar *service_guid);
+void online_services_decrement_total(const gchar *service_guid);
 
-void online_services_increment_connected(OnlineServices *services, const gchar *service_guid);
-void online_services_decrement_connected(OnlineServices *services, const gchar *service_guid, gboolean no_state_change);
+void online_services_increment_connected(const gchar *service_guid);
+void online_services_decrement_connected(const gchar *service_guid, gboolean no_state_change);
 
-gboolean online_services_combo_box_fill(OnlineServices *services, GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only);
+gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only);
 
-void online_services_deinit(OnlineServices *services);
+void online_services_deinit(void);
 
 G_END_DECLS
 #endif /* __ONLINE_SERVICES_H__ */
