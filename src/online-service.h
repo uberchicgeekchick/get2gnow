@@ -89,9 +89,6 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 
 gboolean online_service_validate_key(OnlineService *service, const gchar *guid);
 
-gboolean online_service_uses_twitter(OnlineService *service);
-gboolean online_service_uses_laconica(OnlineService *service);
-
 gint online_service_best_friends_list_store_fill( OnlineService *service, GtkListStore *list_store );
 gint online_service_best_friends_list_store_validate( OnlineService *service, GtkListStore *list_store );
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );

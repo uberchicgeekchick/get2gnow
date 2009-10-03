@@ -141,10 +141,11 @@ enum _OnlineServicesListStoreColumns{
 };
 
 enum{
-	BestFriendOnlineService,
-	BestFriendUser,
-	BestFriendOnlineServiceGUID,
-	BestFriendUserName,
+	ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE,
+	STRING_BEST_FRIEND_USER,
+	STRING_BEST_FRIEND_ONlINE_SERVICE_GUID,
+	STRING_BEST_FRIEND_USER_NAME,
+	GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID,
 } _OnlineServicesBestFriends;
 
 enum _ReloadState{

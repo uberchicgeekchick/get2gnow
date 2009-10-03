@@ -5,14 +5,16 @@
   <object class="GtkListStore" id="search_list_store"/>
   <object class="GtkListStore" id="best_friends_list_store">
     <columns>
-      <!-- column-name BestFriendOnlineService -->
+      <!-- column-name ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE -->
       <column type="gpointer"/>
-      <!-- column-name BestFriendUser -->
+      <!-- column-name STRING_BEST_FRIEND_USER -->
       <column type="gchararray"/>
-      <!-- column-name BestFriendOnlineServiceGUID -->
+      <!-- column-name STRING_BEST_FRIEND_ONlINE_SERVICE_GUID -->
       <column type="gchararray"/>
-      <!-- column-name BestFriendUserName -->
+      <!-- column-name STRING_BEST_FRIEND_USER_NAME -->
       <column type="gchararray"/>
+      <!-- column-name GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID -->
+      <column type="gdouble"/>
     </columns>
   </object>
   <object class="GtkWindow" id="main_window">

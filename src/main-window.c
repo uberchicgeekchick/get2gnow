@@ -552,12 +552,12 @@ static void main_window_best_friends_setup(GtkBuilder *ui){
 	
 	main_window->private->best_friends_tree_model=gtk_tree_view_get_model( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
 	main_window->private->best_friends_tree_model_sort=gtk_tree_model_sort_new_with_model(main_window->private->best_friends_tree_model);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_model_sort), BestFriendOnlineServiceGUID, GTK_SORT_DESCENDING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_model_sort), STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, GTK_SORT_DESCENDING);
 	
 	online_services_best_friends_list_store_fill(main_window->private->best_friends_list_store);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(main_window->private->best_friends_sexy_tree_view), main_window->private->best_friends_tree_model_sort);
-	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, BestFriendUserName);
+	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, STRING_BEST_FRIEND_USER_NAME);
 }/*main_window_best_friends_setup(ui);*/
 
 static void main_window_best_friends_buttons_set_sensitive(void){
@@ -593,9 +593,9 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
 		gtk_tree_model_get(
 				main_window->private->best_friends_tree_model_sort, iter,
-					BestFriendOnlineService, &selected_service,
-					BestFriendUser, &selected_user,
-					BestFriendUserName, &selected_user_name,
+					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &selected_service,
+					STRING_BEST_FRIEND_USER, &selected_user,
+					STRING_BEST_FRIEND_USER_NAME, &selected_user_name,
 				-1
 		);
 	if(!( selected_service && selected_service->connected && G_STR_N_EMPTY(selected_user) && G_STR_N_EMPTY(selected_user_name) )){

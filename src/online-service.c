@@ -203,16 +203,6 @@ static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_
 	}
 }/*micro_blogging_service_to_string(MicroBloggingServices micro_blogging_service)*/
 
-gboolean online_service_uses_twitter(OnlineService *service){
-	if(service->micro_blogging_service==Twitter) return TRUE;
-	return FALSE;
-}/*online_service_uses_twitter(service);*/
-
-gboolean online_service_uses_laconica(OnlineService *service){
-	if(service->micro_blogging_service==Identica||service->micro_blogging_service==StatusNet) return TRUE;
-	return FALSE;
-}/*online_service_uses_laconica(service);*/
-
 GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich users_glist_get_which){
 	if(!service) return NULL;
 	GList *users=NULL;
@@ -535,10 +525,10 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 	gtk_list_store_append( list_store, iter );
 	gtk_list_store_set(
 				list_store, iter,
-					BestFriendOnlineService, service,
-					BestFriendUser, user_name,
-					BestFriendOnlineServiceGUID, service->guid,
-					BestFriendUserName, user_name,
+					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, service,
+					STRING_BEST_FRIEND_USER, user_name,
+					STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, service->guid,
+					STRING_BEST_FRIEND_USER_NAME, user_name,
 				-1
 	);
 	uber_free( iter );
@@ -582,8 +572,8 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 		
 		gtk_tree_model_get(
 				(GtkTreeModel *)list_store, iter,
-					BestFriendOnlineService, &service_at_index,
-					BestFriendUser, &user_name_at_index,
+					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &service_at_index,
+					STRING_BEST_FRIEND_USER, &user_name_at_index,
 				-1
 		);
 		
@@ -622,8 +612,8 @@ void online_service_best_friends_list_store_free( OnlineService *service, GtkLis
 		
 		gtk_tree_model_get(
 				(GtkTreeModel *)list_store, iter,
-					BestFriendUser, &user_at_index,
-					BestFriendUserName, &user_name_at_index,
+					STRING_BEST_FRIEND_USER, &user_at_index,
+					STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
 				-1
 		);
 		

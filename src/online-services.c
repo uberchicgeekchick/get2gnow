@@ -591,8 +591,8 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 		
 		gtk_tree_model_get(
 				 (GtkTreeModel *)list_store, *iter,
-				 	BestFriendOnlineService, &service_at_index,
-					BestFriendUser, &user_at_index,
+				 	ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &service_at_index,
+					STRING_BEST_FRIEND_USER, &user_at_index,
 				-1
 		);
 		if(!( service==service_at_index && !strcasecmp(user_name, user_at_index) )){
@@ -623,8 +623,8 @@ gboolean online_services_best_friends_list_store_mark_as_unread(OnlineService *s
 	gchar *user_at_index=NULL, *user_name_at_index=NULL;
 	gtk_tree_model_get(
 			 (GtkTreeModel *)list_store, iter,
-				BestFriendUser, &user_at_index,
-				BestFriendUserName, &user_name_at_index,
+				STRING_BEST_FRIEND_USER, &user_at_index,
+				STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
 			-1
 	);
 	
@@ -634,7 +634,7 @@ gboolean online_services_best_friends_list_store_mark_as_unread(OnlineService *s
 		debug("Marking best friend: %s, on service <%s>, as having unread messages.", user_name_at_index, service->guid );
 		uber_free(user_name_at_index);
 		user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
-		gtk_list_store_set(list_store, iter, BestFriendUserName, user_name_at_index, -1);
+		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, -1);
 	}
 	
 	uber_free(iter);
@@ -656,8 +656,8 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	gchar *user_at_index=NULL, *user_name_at_index=NULL;
 	gtk_tree_model_get(
 			 (GtkTreeModel *)list_store, iter,
-				BestFriendUser, &user_at_index,
-				BestFriendUserName, &user_name_at_index,
+				STRING_BEST_FRIEND_USER, &user_at_index,
+				STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
 			-1
 	);
 	
@@ -669,7 +669,7 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 		 * Yeah I need to use strlcpy but getting "best friends" robust is #1 for me.
 		 * tweak this later.
 		 */
-		gtk_list_store_set(list_store, iter, BestFriendUserName, user_at_index, -1);
+		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_at_index, -1);
 	}
 	uber_free(iter);
 	uber_free(user_at_index);
