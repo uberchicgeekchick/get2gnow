@@ -731,27 +731,30 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
 	control_panel_selected_update_buttons_show((id ?TRUE :FALSE), (G_STR_EMPTY(user_name) ?NULL :user_name ) );
 	
-	const gchar *service_uri=service->uri;
-	const gchar *service_user_name=service->user_name;
-	const gchar *service_user_nick=service->user_nick;
-	const gchar *service_uri_scheme_suffix=(service->https?"s":"");
+	const gchar *uri_scheme_suffix=(service->https?"s":"");
 	
 	control_panel->viewing_service=service;
 	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
 	control_panel->viewing_user=g_strdup((G_STR_EMPTY( user_name) ?"" :user_name ) );
+	
+	if(!id)
+		main_window_set_statusbar_msg(NULL);
+	else
+		statusbar_printf("Displaying @%s's, on <%s>, update.  ID: %s.", user_name, service->uri, gdouble_to_str(id) );
+			
 
 	gchar *sexy_text=NULL;
 	if(!id)
 		sexy_text=g_strdup("");
 	else
-		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service_user_nick, service_uri_scheme_suffix, service_uri, service_user_name, service_user_name, service_uri);
+		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service->user_nick, uri_scheme_suffix, service->uri, service->user_name, service->user_name, service->uri);
 	debug("Setting 'sexy_to' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, control_panel->sexy_to, sexy_text, FALSE, TRUE);
 	uber_free(sexy_text);
 	
 	if(!(G_STR_EMPTY( user_nick) && G_STR_EMPTY(user_name) )){
 		if(! G_STR_EMPTY(user_name) )
-		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, service_uri_scheme_suffix, service_uri, user_name, user_name, service_uri);
+		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, uri_scheme_suffix, service->uri, user_name, user_name, service->uri);
 	}else
 		sexy_text=g_strdup("");
 	debug("Setting 'sexy_from' for 'selected_update':\n\t\t%s.", sexy_text);

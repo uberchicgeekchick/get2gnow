@@ -64,6 +64,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-services.h"
 

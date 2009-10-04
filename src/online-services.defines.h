@@ -51,83 +51,35 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__USERS_TYPES_H__
-#define	__USERS_TYPES_H__
-
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
-
-/********************************************************************************
- *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
- ********************************************************************************/
-#include <glib.h>
-#include <gtk/gtk.h>
-
-#include "online-services-typedefs.h"
-
+#ifndef	__ONLINE_SERVICE_DEFINES_H__
+#define	__ONLINE_SERVICE_DEFINES_H__
 
 G_BEGIN_DECLS
 /********************************************************************************
- *                        objects, structs, and enum typedefs                   *
+ *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
-struct _User {
-	OnlineService		*service;
-	
-	gdouble			id;
-	gchar			*id_str;
-	
-	gchar			*user_name;
-	gchar			*user_nick;
-	
-	UserStatus		*status;
-	
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	
-	gchar			*image_url;
-	gchar			*image_file;
-	
-	gulong			tweets;
-	gulong			following;
-	gulong			followers;
-	
-	gboolean		follower;
-};
+#define API_LOGIN				"/account/verify_credentials.xml"
 
-struct _UserStatus {
-	OnlineService	*service;
-	
-	User		*user;
-	
-	UpdateMonitor	type;
-	
-	gdouble		id;
-	gchar		*id_str;
-	
-	gdouble		in_reply_to_status_id;
-	
-	guint		notification_timeout_id;
-	
-	gchar		*from;
-	gchar		*rcpt;
-	
-	gchar		*text;
-	gchar		*tweet;
-	gchar		*notification;
-	gchar		*sexy_tweet;
-	
-	gchar		*source;
-	
-	gchar		*created_at_str;
-	gchar		*created_how_long_ago;
-	
-	gulong		created_at;
-	gint		created_seconds_ago;
-};
+#define API_DIRECT_MESSAGES			"/direct_messages.xml"
+#define API_REPLIES				"/statuses/replies.xml"
+#define API_MENTIONS				"/statuses/mentions.xml"
+#define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
+#define API_FAVORITES				"/favorites.xml"
+
+
+#define API_USER_PROFILE			"/users/show/%s.xml"
+#define API_TIMELINE_MINE			"/statuses/user_timeline.xml"
+#define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
+#define API_TIMELINE_BEST_FRIEND		API_TIMELINE_USER "?since_id=%f"
+
+#define API_TIMELINE_GROUP			"/statuses/groups.xml"
+#define API_TIMELINE_SEARCH			"/statuses/search.atom"
+#define API_TIMELINE_PUBLIC			"/statuses/public_timeline.xml"
+
+#define API_POST_STATUS				"/statuses/update.xml"
+#define API_SEND_MESSAGE			"/direct_messages/new.xml"
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /* __USERS_TYPES_H__*/
+#endif /*__ONLINE_SERVICE_DEFINES_H__*/

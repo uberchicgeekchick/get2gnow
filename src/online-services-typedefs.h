@@ -57,64 +57,18 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-/**********************************************************************
- *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
- **********************************************************************/
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
 #include <glib.h>
-#include <libsoup/soup.h>
-#include "timer.h"
+#include <libsoup/soup-message.h>
 
+#include "online-services.types.h"
 
-/**********************************************************************
- *  Macros, constants, objects, structures, and enum typedefs         *
- **********************************************************************/
 G_BEGIN_DECLS
-
-
-#ifndef	soup_message_headers_get_one
-#	define soup_message_headers_get_one	soup_message_headers_get
-#endif
-
-#define API_LOGIN				"/account/verify_credentials.xml"
-
-#define API_DIRECT_MESSAGES			"/direct_messages.xml"
-#define API_REPLIES				"/statuses/replies.xml"
-#define API_MENTIONS				"/statuses/mentions.xml"
-#define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
-#define API_FAVORITES				"/favorites.xml"
-
-
-#define API_USER_PROFILE			"/users/show/%s.xml"
-#define API_TIMELINE_MINE			"/statuses/user_timeline.xml"
-#define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
-#define API_TIMELINE_BEST_FRIEND		API_TIMELINE_USER "?since_id=%f"
-
-#define API_TIMELINE_GROUP			"/statuses/groups.xml"
-#define API_TIMELINE_SEARCH			"/statuses/search.atom"
-#define API_TIMELINE_PUBLIC			"/statuses/public_timeline.xml"
-
-#define API_POST_STATUS				"/statuses/update.xml"
-#define API_SEND_MESSAGE			"/direct_messages/new.xml"
-
-
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
-typedef struct _OnlineServices OnlineServices;
-typedef struct _OnlineService OnlineService;
-typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
-
-typedef enum _UpdateMonitor UpdateMonitor;
-
-typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
-typedef enum _OnlineServicesBestFriends OnlineServicesBestFriends;
-
-typedef enum _ReloadState ReloadState;
-typedef enum _RequestMethod RequestMethod;
-
-typedef enum _UsersGListGetWhich UsersGListGetWhich;
-
-
 enum _RequestMethod{
 	POST,
 	GET,
@@ -145,6 +99,7 @@ enum{
 	STRING_BEST_FRIEND_USER,
 	STRING_BEST_FRIEND_ONlINE_SERVICE_GUID,
 	STRING_BEST_FRIEND_USER_NAME,
+	GUINT_BEST_FRIENDS_UNREAD_UPDATES,
 	GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID,
 } _OnlineServicesBestFriends;
 

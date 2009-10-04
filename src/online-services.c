@@ -611,7 +611,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 	return FALSE;
 }/*online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter);*/
 
-gboolean online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, GtkListStore *list_store ){
+gboolean online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store ){
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
 	
 	GtkTreeIter *iter=NULL;
@@ -620,21 +620,27 @@ gboolean online_services_best_friends_list_store_mark_as_unread(OnlineService *s
 		return FALSE;
 	}
 	
+	guint unread_updates=0;
+	gdouble newest_update_id=0.0;
 	gchar *user_at_index=NULL, *user_name_at_index=NULL;
 	gtk_tree_model_get(
 			 (GtkTreeModel *)list_store, iter,
+				GUINT_BEST_FRIENDS_UNREAD_UPDATES, &unread_updates,
 				STRING_BEST_FRIEND_USER, &user_at_index,
 				STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
+				GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, &newest_update_id,
+					
 			-1
 	);
 	
-	if( g_str_has_prefix( user_name_at_index, "<b>" ) )
+	if( g_str_has_prefix( user_name_at_index, "<b>" ) ){
 		debug("Best Friend: %s, on service: %s, is already marked as having unread updates.", user_name, service->guid );
-	else{	
+		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0, -1);
+	}else{
 		debug("Marking best friend: %s, on service <%s>, as having unread messages.", user_name_at_index, service->guid );
 		uber_free(user_name_at_index);
 		user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
-		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, -1);
+		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0, -1);
 	}
 	
 	uber_free(iter);

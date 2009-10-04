@@ -87,12 +87,13 @@ enum TweetListStoreColumns{		/**************************************************
 	STRING_SEXY_TWEET,		/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
 	STRING_CREATED_AGO,		/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,		/*	Date string.								*/
-	UINT_CREATED_AGO,		/*	How old the post is, in seconds, for sorting.				*/
+	GINT_CREATED_AGO,		/*	How old the post is, in seconds, for sorting.				*/
 	ULONG_CREATED_AT,		/*	Unix seconds since epoc of how old the tweet's is.			*/
 	PIXBUF_AVATAR,			/*	Avatar pixbuf.								*/
 	ONLINE_SERVICE,			/*	OnlineService pointer.							*/
 	STRING_FROM,			/*	<status's auther @ OnlineService URI>					*/
 	STRING_RCPT,			/* 	OnlineService key To: <user@service>					*/
+	GUINT_SELECTED_INDEX,		/*	The associated order/place this item appears in the acciated tree view. */
 					/********************************************************************************/
 };
 

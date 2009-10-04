@@ -71,6 +71,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-services.h"
 #include "online-service-wrapper.h"
@@ -522,6 +523,9 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 	if(!list_store) list_store=main_window_get_best_friends_list_store();
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
+	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user_name );
+	online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
 	gtk_list_store_append( list_store, iter );
 	gtk_list_store_set(
 				list_store, iter,
@@ -529,9 +533,12 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 					STRING_BEST_FRIEND_USER, user_name,
 					STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, service->guid,
 					STRING_BEST_FRIEND_USER_NAME, user_name,
+					GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0,
+					GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, id_best_friend_newest_update,
 				-1
 	);
 	uber_free( iter );
+	uber_free( user_timeline );
 	online_services_best_friends_total_update(1);
 }/*online_service_best_friends_list_store_append( service, user_name );*/
 

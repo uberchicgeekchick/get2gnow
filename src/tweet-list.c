@@ -84,6 +84,7 @@
 
 #include "images.h"
 
+#include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
 #include "online-service.types.h"
@@ -242,6 +243,7 @@ static void tweet_list_set_adjustment(TweetList *tweet_list);
 
 static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then);
 static void tweet_list_clean_up(TweetList *tweet_list);
+static void tweet_list_set_selected_index(TweetList *tweet_list);
 static void tweet_list_check_maximum_updates(TweetList *tweet_list);
 static void tweet_list_check_inbox(TweetList *tweet_list);
 
@@ -297,11 +299,13 @@ static void tweet_list_init(TweetList *tweet_list){
 	this->tree_model_sort=NULL;
 	tweet_list_setup(tweet_list);
 	
+	/*
 	g_object_set(tweet_list, "rules-hint", TRUE, "reorderable", TRUE, "headers-visible", FALSE, NULL);
 	g_signal_connect(tweet_list, "size-allocate", G_CALLBACK(tweet_list_size_cb), tweet_list);
 	g_signal_connect(tweet_list, "cursor-changed", G_CALLBACK(tweet_list_changed_cb), tweet_list);
-	g_signal_connect(tweet_list, "grab-focus", G_CALLBACK(tweet_list_grab_focus_cb), tweet_list);
 	g_signal_connect(tweet_list, "row-activated", G_CALLBACK(online_service_request_selected_update_reply), tweet_list);
+	*/
+	g_signal_connect(tweet_list, "grab-focus", G_CALLBACK(tweet_list_grab_focus_cb), tweet_list);
 	g_signal_connect(tweet_list, "key-press-event", G_CALLBACK(tweets_hotkey), tweet_list);
 }/* tweet_list_init */
 
@@ -575,7 +579,7 @@ static void tweet_list_clean_up(TweetList *tweet_list){
 			return;
 	}
 }/*tweet_list_clean_up(tweet_list);*/
-	
+
 static void tweet_list_check_maximum_updates(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
@@ -612,6 +616,31 @@ static void tweet_list_check_maximum_updates(TweetList *tweet_list){
 		uber_free(iter);
 	}
 }/*tweet_check_maximum_updates(tweet_list);*/
+
+static void tweet_list_set_selected_index(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(!this->total) return;
+	
+	debug("Updating Selected Index for updates appearing in the TweetList for %s.  TweetList's total updates: %d.", this->timeline, this->total);
+	if(!this->index){
+		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
+		tweet_list_scroll_to_top(tweet_list);
+	}
+	for(guint i=0; i<=this->total; i--){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter, path)))
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+		else{
+			debug("Removing iter at index: %d", i);
+			gtk_list_store_set(this->list_store, iter, GUINT_SELECTED_INDEX, i, -1);
+		}
+		gtk_tree_path_free(path);
+		uber_free(iter);
+	}
+}/*tweet_list_set_selected_index(tweet_list);*/
 
 static void tweet_list_check_inbox(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
@@ -691,7 +720,7 @@ static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then)
 					this->list_store, iter,
 						STRING_CREATED_AGO, created_how_long_ago,
 							/*(seconds|minutes|hours|day) ago.*/
-						UINT_CREATED_AGO, created_ago,
+						GINT_CREATED_AGO, created_ago,
 							/*How old the post is, in seconds, for sorting.*/
 					-1
 			);
@@ -726,7 +755,9 @@ void tweet_list_complete(TweetList *tweet_list){
 	if(this->loading) this->loading=FALSE;
 	if(!this->connected_online_services)	return;
 	
-	tweet_list_scroll_to_top(tweet_list);
+	tweet_list_set_selected_index(tweet_list);	
+	if(gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ))
+		tweet_list_scroll_to_top(tweet_list);
 	
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*tweet_list_complete(tweet_list);*/
@@ -910,7 +941,7 @@ static void tweet_list_setup(TweetList *tweet_list){
 	
 	this->tree_model=GTK_TREE_MODEL(this->list_store);
 	this->tree_model_sort=gtk_tree_model_sort_new_with_model(this->tree_model);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), UINT_CREATED_AGO, GTK_SORT_ASCENDING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), GINT_CREATED_AGO, GTK_SORT_ASCENDING);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(this->sexy_tree_view), this->tree_model_sort);
 	sexy_tree_view_set_tooltip_label_column(this->sexy_tree_view, STRING_SEXY_TWEET);
@@ -983,10 +1014,10 @@ static void tweet_list_index_validate(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(this->index<0) {
-		tweets_beep();
+		control_panel_beep();
 		this->index=0;
 	}else if(this->index>=this->total){
-		tweets_beep();
+		control_panel_beep();
 		this->index=this->total-1;
 	}
 }/*tweet_list_index_validate(tweet_list);*/
@@ -1083,7 +1114,7 @@ void tweet_list_mark_as_unread(TweetList *tweet_list){
 	
 	this->unread=TRUE;
 	
-	tweets_beep();
+	control_panel_beep();
 	
 	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s*</span>", this->tab_label_string);
 	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
@@ -1112,13 +1143,11 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	}
 	
 	
-	main_window_set_statusbar_msg(NULL);
-	
 	gdouble		tweet_id, user_id;
 	OnlineService	*service=NULL;
 	GdkPixbuf	*pixbuf;
 	gchar		*user_name, *user_nick, *date, *sexy_tweet, *text_tweet;
-
+	
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(this->tree_model_sort), iter,
 					GDOUBLE_TWEET_ID, &tweet_id,
@@ -1130,6 +1159,7 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 					STRING_USER, &user_name,
 					PIXBUF_AVATAR, &pixbuf,
 					ONLINE_SERVICE, &service,
+					GUINT_SELECTED_INDEX, &this->index,
 				-1
 	);
 	

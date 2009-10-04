@@ -63,13 +63,12 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
 
+#include "online-services-typedefs.h"
+
 /********************************************************
  *        Objects, structures, and etc typedefs         *
  ********************************************************/
 G_BEGIN_DECLS
-
-typedef struct _RateLimitTimer RateLimitTimer;
-
 
 /********************************************************
  *          Global method  & function prototypes        *

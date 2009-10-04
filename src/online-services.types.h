@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__USERS_TYPES_H__
-#define	__USERS_TYPES_H__
+#ifndef __ONLINE_SERVICE_TYPES_H__
+#define __ONLINE_SERVICE_TYPES_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -62,72 +62,27 @@
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <glib.h>
-#include <gtk/gtk.h>
-
-#include "online-services-typedefs.h"
-
 
 G_BEGIN_DECLS
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-struct _User {
-	OnlineService		*service;
-	
-	gdouble			id;
-	gchar			*id_str;
-	
-	gchar			*user_name;
-	gchar			*user_nick;
-	
-	UserStatus		*status;
-	
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	
-	gchar			*image_url;
-	gchar			*image_file;
-	
-	gulong			tweets;
-	gulong			following;
-	gulong			followers;
-	
-	gboolean		follower;
-};
+typedef struct _OnlineServices OnlineServices;
+typedef struct _OnlineService OnlineService;
+typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
 
-struct _UserStatus {
-	OnlineService	*service;
-	
-	User		*user;
-	
-	UpdateMonitor	type;
-	
-	gdouble		id;
-	gchar		*id_str;
-	
-	gdouble		in_reply_to_status_id;
-	
-	guint		notification_timeout_id;
-	
-	gchar		*from;
-	gchar		*rcpt;
-	
-	gchar		*text;
-	gchar		*tweet;
-	gchar		*notification;
-	gchar		*sexy_tweet;
-	
-	gchar		*source;
-	
-	gchar		*created_at_str;
-	gchar		*created_how_long_ago;
-	
-	gulong		created_at;
-	gint		created_seconds_ago;
-};
+typedef struct _RateLimitTimer RateLimitTimer;
+typedef enum _UpdateMonitor UpdateMonitor;
+
+typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
+typedef enum _OnlineServicesBestFriends OnlineServicesBestFriends;
+
+typedef enum _ReloadState ReloadState;
+typedef enum _RequestMethod RequestMethod;
+
+typedef enum _UsersGListGetWhich UsersGListGetWhich;
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /* __USERS_TYPES_H__*/
+#endif /* __ONLINE_SERVICE_TYPES_H__ */

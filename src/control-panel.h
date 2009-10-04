@@ -82,7 +82,6 @@ ControlPanel *control_panel_new(GtkWindow *parent);
 GtkWindow *control_panel_get_window(void);
 GtkHBox *control_panel_get_embed(void);
 
-#define	tweets_beep	control_panel_beep
 void control_panel_beep(void);
 
 void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );

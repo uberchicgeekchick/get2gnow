@@ -70,6 +70,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "online-services.defines.h"
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -442,10 +443,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			if( id_best_friend_newest_update && status->id > id_best_friend_newest_update ){
 				if(notify_best_friends){
 					free_status=FALSE;
-					g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+					g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 					tweet_list_notify_delay+=tweet_display_interval;
 				}
-				online_services_best_friends_list_store_mark_as_unread(service, status->user->user_name, main_window_get_best_friends_list_store() );
+				online_services_best_friends_list_store_mark_as_unread(service, status->user->user_name, status->id, main_window_get_best_friends_list_store() );
 			}
 			if(!id_best_friend_oldest_update && status->id )
 				online_service_update_ids_set(service, timeline, status->id, status->id);
@@ -454,9 +455,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		
 		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			tweet_list_mark_as_unread(tweet_list);
-			if(notify){
+			if(notify && free_status){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 				tweet_list_notify_delay+=tweet_display_interval;
 			}
 		}

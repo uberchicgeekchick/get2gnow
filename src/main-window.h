@@ -110,11 +110,11 @@ gboolean main_window_best_friends_get_selected( OnlineService **service, gchar *
 void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
 void main_window_set_statusbar_msg(gchar *msg);
 
-gboolean main_window_notify_on_timeout(gpointer data);
-const gchar *main_window_tabs_to_right_align(void);
-
 void main_window_state_on_connection(gboolean connected);
 void main_window_selected_update_image_menu_items_show(gboolean selected_update);
+
+GtkStatusIcon *main_window_status_icon_get(void);
+gboolean main_window_status_icon_is_embedded(void);
 
 G_END_DECLS
 

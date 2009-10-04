@@ -47,87 +47,83 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__USERS_TYPES_H__
-#define	__USERS_TYPES_H__
-
 #define _GNU_SOURCE
 #define _THREAD_SAFE
+
+#include "program.h"
+#include "template.h"
 
 
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
-#include <glib.h>
-#include <gtk/gtk.h>
-
-#include "online-services-typedefs.h"
 
 
-G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
+
+
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-struct _User {
-	OnlineService		*service;
-	
-	gdouble			id;
-	gchar			*id_str;
-	
-	gchar			*user_name;
-	gchar			*user_nick;
-	
-	UserStatus		*status;
-	
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	
-	gchar			*image_url;
-	gchar			*image_file;
-	
-	gulong			tweets;
-	gulong			following;
-	gulong			followers;
-	
-	gboolean		follower;
-};
 
-struct _UserStatus {
-	OnlineService	*service;
+
+/********************************************************************************
+ *                prototypes for private methods & functions                    *
+ ********************************************************************************/
+
+
+/********************************************************************************
+ *               object methods, handlers, callbacks, & etc.                    *
+ ********************************************************************************/
+
+
+/********************************************************************************
+ *              Debugging information static objects, and local defines         *
+ ********************************************************************************/
+
+
+/********************************************************************************
+ *              creativity...art, beauty, fun, & magic...programming            *
+ ********************************************************************************/
+
+
+gboolean update_notify_on_timeout(gpointer data){
+	UserStatus *status=(UserStatus *)data;
+	if(!(status && G_STR_N_EMPTY(status->notification) )){
+		return FALSE;
+	}
 	
-	User		*user;
+	NotifyNotification *notify_notification;
+	GError             *error=NULL;
 	
-	UpdateMonitor	type;
+	if(!gtk_status_icon_is_embedded( main_window->private->status_icon))
+		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
+	else
+		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window->private->status_icon);
 	
-	gdouble		id;
-	gchar		*id_str;
+	notify_notification_set_timeout(notify_notification, 10000);
 	
-	gdouble		in_reply_to_status_id;
+	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
+		control_panel_beep();
 	
-	guint		notification_timeout_id;
+	notify_notification_show(notify_notification, &error);
 	
-	gchar		*from;
-	gchar		*rcpt;
+	g_object_unref(G_OBJECT( notify_notification));
 	
-	gchar		*text;
-	gchar		*tweet;
-	gchar		*notification;
-	gchar		*sexy_tweet;
-	
-	gchar		*source;
-	
-	gchar		*created_at_str;
-	gchar		*created_how_long_ago;
-	
-	gulong		created_at;
-	gint		created_seconds_ago;
-};
+	if(error){
+		debug("Error displaying status->notification: %s.", error->message);
+		g_error_free(error);
+	}
+	return FALSE;
+}/*main_window_notify_on_timeout - only used as a callback to g_timer_add_seconds_full - see 'src/parser.c'. */
+
+
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-G_END_DECLS
-#endif /* __USERS_TYPES_H__*/
+

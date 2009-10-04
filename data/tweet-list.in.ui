@@ -42,7 +42,7 @@
       <column type="gchararray"/>
       <!-- column-name STRING_CREATED_AT -->
       <column type="gchararray"/>
-      <!-- column-name UINT_CREATED_AGO -->
+      <!-- column-name GINT_CREATED_AGO -->
       <column type="gint"/>
       <!-- column-name ULONG_CREATED_AT -->
       <column type="gulong"/>
@@ -54,6 +54,8 @@
       <column type="gchararray"/>
       <!-- column-name STRING_RCPT -->
       <column type="gchararray"/>
+      <!-- column-name GUINT_SELECTED_INDEX -->
+      <column type="guint"/>
     </columns>
   </object>
   <object class="GtkAdjustment" id="tweet_list_progress_bar_adjustment">

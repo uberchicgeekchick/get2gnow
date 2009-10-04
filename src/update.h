@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__USERS_TYPES_H__
-#define	__USERS_TYPES_H__
+#ifndef	__HEADER_H__
+#define	__HEADER_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -62,72 +62,27 @@
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <glib.h>
-#include <gtk/gtk.h>
-
-#include "online-services-typedefs.h"
-
 
 G_BEGIN_DECLS
 /********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
+
+
+/********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-struct _User {
-	OnlineService		*service;
-	
-	gdouble			id;
-	gchar			*id_str;
-	
-	gchar			*user_name;
-	gchar			*user_nick;
-	
-	UserStatus		*status;
-	
-	gchar			*location;
-	gchar			*bio;
-	gchar			*url;
-	
-	gchar			*image_url;
-	gchar			*image_file;
-	
-	gulong			tweets;
-	gulong			following;
-	gulong			followers;
-	
-	gboolean		follower;
-};
 
-struct _UserStatus {
-	OnlineService	*service;
-	
-	User		*user;
-	
-	UpdateMonitor	type;
-	
-	gdouble		id;
-	gchar		*id_str;
-	
-	gdouble		in_reply_to_status_id;
-	
-	guint		notification_timeout_id;
-	
-	gchar		*from;
-	gchar		*rcpt;
-	
-	gchar		*text;
-	gchar		*tweet;
-	gchar		*notification;
-	gchar		*sexy_tweet;
-	
-	gchar		*source;
-	
-	gchar		*created_at_str;
-	gchar		*created_how_long_ago;
-	
-	gulong		created_at;
-	gint		created_seconds_ago;
-};
+
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+gboolean update_notify_on_timeout(Update *update);
+
+
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /* __USERS_TYPES_H__*/
+#endif /*__HEADER_H__*/
+

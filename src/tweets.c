@@ -61,6 +61,8 @@
 /*******************************************************************************
  * keyboard & mouse event structs, enums, & defines.                           *
  *          /usr/include/gtk-2.0/gdk/gdkevents.h                               *
+ * keyboard enum mappings are found in:                                        *
+ *          /usr/include/gtk-2.0/gdk/gdkkeysyms.h                              *
  *******************************************************************************/
 #include <gdk/gdk.h>
 #include <gdk/gdkevents.h>
@@ -154,8 +156,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					online_service_request_selected_update_follow();
 					return;
 				case GDK_A:	case GDK_a:
-					return online_service_request_popup_best_friend_add();
+					online_service_request_popup_best_friend_add();
+					return;
 				case GDK_asterisk:
+				case GDK_colon:	case GDK_exclam:
 					online_service_request_selected_update_best_friend_add();
 					return;
 				case GDK_Z:	case GDK_z:
@@ -167,7 +171,6 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					online_service_request_selected_update_block();
 					return;
 				case GDK_O:	case GDK_o:
-				case GDK_colon:	case GDK_exclam:
 					online_service_request_selected_update_unblock();
 					return;
 				case GDK_Page_Up:

@@ -65,6 +65,7 @@
 #include <libsoup/soup.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <libnotify/notify.h>
 
 #include "config.h"
 #include "program.h"
@@ -90,6 +91,7 @@
 #include "label.h"
 
 #include "ui-utils.h"
+#include "control-panel.h"
 #include "tweet-list.h"
 
 
@@ -295,6 +297,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 void user_free(User *user){
 	if(!( user && user->id && user->service )) return;
 	if(user->status) user_status_free(user->status);
+	user_validate(&user);
 	
 	user->service=NULL;
 	
@@ -469,7 +472,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 					STRING_SEXY_TWEET, status->sexy_tweet,			/*SexyTreeView's tooltip.*/
 					STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
 					STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
-					UINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
+					GINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
 					ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
 					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
@@ -485,10 +488,40 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	uber_free(iter);
 }/*void user_status_store(status);*/
 
+gboolean user_status_notify_on_timeout(UserStatus *status){
+	if(!(status && G_STR_N_EMPTY(status->notification) )){
+		return FALSE;
+	}
+	
+	NotifyNotification *notify_notification;
+	GError             *error=NULL;
+	
+	if(!main_window_status_icon_is_embedded())
+		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
+	else
+		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window_status_icon_get());
+	
+	notify_notification_set_timeout(notify_notification, 10000);
+	
+	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
+		control_panel_beep();
+	
+	notify_notification_show(notify_notification, &error);
+	
+	g_object_unref(G_OBJECT( notify_notification));
+	
+	if(error){
+		debug("Error displaying status->notification: %s.", error->message);
+		g_error_free(error);
+		return FALSE;
+	}
+	return FALSE;
+}/*user_status_notify_on_timeout*/
+
 void user_status_free(UserStatus *status){
 	if(!( status && status->id && status->service )) return;
 	if(status->user) user_free(status->user);
-			
+	user_status_validate( &status );
 	status->service=NULL;
 	
 	if( status->text ) uber_free( status->text );

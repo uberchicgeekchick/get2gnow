@@ -68,6 +68,7 @@
 #include "gconfig.h"
 #include "program.h"
 
+#include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
 #include "online-service.types.h"

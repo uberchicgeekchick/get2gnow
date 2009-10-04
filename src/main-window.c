@@ -57,7 +57,6 @@
 #include <canberra-gtk.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-#include <libnotify/notify.h>
 #include <gdk/gdkkeysyms.h>
 #include <libsexy/sexy.h>
 
@@ -70,6 +69,7 @@
 
 #include "about.h"
 #include "online-services-typedefs.h"
+#include "online-services.defines.h"
 #include "online-service-request.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -208,7 +208,6 @@ struct _MainWindowPrivate {
 	ControlPanel		*control_panel;
 	GtkHBox			*control_panel_embed;
 	
-	gchar			*tabs_to_right_align;
 	GtkStatusbar		*statusbar;
 };
 
@@ -253,8 +252,6 @@ static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_windo
 
 static void main_window_about_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_window); 
-static void main_window_status_icon_activate_cb(GtkStatusIcon *status_icon, MainWindow *main_window); 
-static void main_window_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, MainWindow *main_window);
 
 static void main_window_tabs_menu_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window);
 static void main_window_tabs_menu_set_active(MainWindow *main_window, gchar *timeline);
@@ -266,8 +263,10 @@ static void main_window_selected_update_widgets_setup(GtkBuilder *ui);
 static void main_window_login(void);
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window);
 
-static void main_window_status_icon_create_menu(void);
 static void main_window_status_icon_create(void);
+static void main_window_status_icon_create_menu(void);
+static void main_window_status_icon_activate_cb(GtkStatusIcon *status_icon, MainWindow *main_window); 
+static void main_window_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, MainWindow *main_window);
 
 static void main_window_set_visibility(gboolean visible);
 static void main_window_toggle_visibility(void);
@@ -294,7 +293,6 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window->private->widgets_connected=NULL;
 	main_window->private->widgets_disconnected=NULL;
 	online_service_request_unset_selected_update();
-	main_window->private->tabs_to_right_align=g_strdup("\t");
 }/*main_window_init(main_window);*/
 
 static void main_window_finalize(GObject *object){
@@ -841,7 +839,7 @@ static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 }
 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window){
-	if(gtk_status_icon_is_embedded( main_window->private->status_icon)) {
+	if(main_window_status_icon_is_embedded()) {
 		online_service_request_popup_confirmation_dialog(PREFS_HINTS_HIDE_MAIN_WINDOW,
 						_("get2gnow is still running, it is just hidden."),
 						_("Click on the notification area icon to show get2gnow."),
@@ -870,7 +868,7 @@ static void main_window_toggle_visibility(void){
 	
 	visible=window_get_is_visible(GTK_WINDOW( main_window->private->window));
 	
-	if(visible && gtk_status_icon_is_embedded(main_window->private->status_icon)) {
+	if(visible && main_window_status_icon_is_embedded() ) {
 		geometry_save();
 		
 		gtk_widget_hide(GTK_WIDGET( main_window->private->window));
@@ -993,6 +991,18 @@ static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_win
 static void main_window_show_hide_cb(GtkWidget *widget, MainWindow *main_window){
 	main_window_toggle_visibility();
 }
+
+GtkStatusIcon *main_window_status_icon_get(void){
+	if(!main_window->private->status_icon){
+		main_window_status_icon_create_menu();
+		main_window_status_icon_create();
+	}
+	return main_window->private->status_icon;
+}/*main_window_status_icon_get();*/
+
+gboolean main_window_status_icon_is_embedded(void){
+	return gtk_status_icon_is_embedded(main_window->private->status_icon);
+}/*main_window_status_icon_is_embedded();*/
 
 static void main_window_status_icon_activate_cb(GtkStatusIcon *status_icon, MainWindow *main_window){
 	main_window_toggle_visibility();
@@ -1315,60 +1325,3 @@ static gboolean main_window_statusbar_display(const gchar *message){
 	
 	return FALSE;
 }/*main_window_set_statusbar_display(gpointer);*/
-
-
-gboolean main_window_notify_on_timeout(gpointer data){
-	UserStatus *status=(UserStatus *)data;
-	if(!(status && G_STR_N_EMPTY(status->notification) )){
-		return FALSE;
-	}
-	
-	NotifyNotification *notify_notification;
-	GError             *error=NULL;
-	
-	if(!gtk_status_icon_is_embedded( main_window->private->status_icon))
-		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
-	else
-		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window->private->status_icon);
-	
-	notify_notification_set_timeout(notify_notification, 10000);
-	
-	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
-		tweets_beep();
-	
-	notify_notification_show(notify_notification, &error);
-	
-	g_object_unref(G_OBJECT( notify_notification));
-	
-	if(error){
-		debug("Error displaying status->notification: %s.", error->message);
-		g_error_free(error);
-	}
-	return FALSE;
-}/*main_window_notify_on_timeout - only used as a callback to g_timer_add_seconds*/
-
-const gchar *main_window_tabs_to_right_align(void){
-	static int tab_count=0;
-	gint w=0, h=0, test_tab_count=0;
-	gtk_window_get_size(main_window->private->window, &w, &h);
-	if(!((( w>0 && h>0)) && ((test_tab_count=w/100) >1) )) return main_window->private->tabs_to_right_align;
-	if(tab_count==test_tab_count && G_STR_N_EMPTY(main_window->private->tabs_to_right_align) ) return main_window->private->tabs_to_right_align;
-	
-	tab_count=test_tab_count;
-	gchar *tabs_to_right_align=NULL, *tabs_to_right_align_swap=NULL;
-	if(main_window->private->tabs_to_right_align) uber_free(main_window->private->tabs_to_right_align);
-	
-	for(int i=0; i<=tab_count; i++){
-		if(tabs_to_right_align){
-			if(tabs_to_right_align_swap) uber_free(tabs_to_right_align_swap);
-			tabs_to_right_align_swap=tabs_to_right_align;
-		}
-		tabs_to_right_align=g_strdup_printf("%s\t", (tabs_to_right_align_swap ?tabs_to_right_align_swap :"") );
-	}
-	
-	if(tabs_to_right_align_swap) uber_free(tabs_to_right_align_swap);
-	main_window->private->tabs_to_right_align=tabs_to_right_align;
-	
-	return main_window->private->tabs_to_right_align;
-}/*main_window_tabs_to_right_align();*/
-

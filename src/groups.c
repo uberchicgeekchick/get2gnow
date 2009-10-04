@@ -166,7 +166,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 			tweet_list_mark_as_unread(tweet_list);
 			if(notify){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, main_window_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 				tweet_list_notify_delay+=tweet_display_interval;
 			}
 		}

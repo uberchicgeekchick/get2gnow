@@ -86,11 +86,15 @@ G_BEGIN_DECLS
 #define PREFS_CONTROL_PANEL_DIALOG			GCONF_PATH "/ui/control_panel/use_dialog"
 #define PREFS_CONTROL_PANEL_COMPACT			GCONF_PATH "/ui/control_panel/compact_view"
 
+#define SCROLL_TO_TOP_WITH_NEW_UPDATES			GCONF_PATH "/ui/update_viewer/scroll_to_top_with_new_updates"
+#define SELECT_UPDATE_BY_DEFAULT			GCONF_PATH "/ui/update_viewer/select_update_by_default"
+
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
+#define	PREFS_TWEETS_ARCHIVE_ALL			GCONF_PATH "/online-services/xml-cache/archive/expiration/default"
 #define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/online-services/xml-cache/archive/expiration/dms"
 #define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/online-services/xml-cache/archive/expiration/replies"
-#define	PREFS_TWEETS_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
+#define	PREFS_TWEETS_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/faves"
 #define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 
 #define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/updates/home_timeline"

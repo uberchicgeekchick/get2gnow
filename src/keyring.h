@@ -28,7 +28,7 @@
 #define _THREAD_SAFE
 
 #include <glib.h>
-#include "online-services.h"
+#include "online-services-typedefs.h"
 
 
 G_BEGIN_DECLS

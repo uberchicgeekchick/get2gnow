@@ -90,6 +90,7 @@ void user_free(User *user);
 
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list);
 void user_status_store(UserStatus *status, TweetList *tweet_list);
+gboolean user_status_notify_on_timeout(UserStatus *status);
 
 void user_status_free(UserStatus *status);
 
