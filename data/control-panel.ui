@@ -49,8 +49,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">best_friend_image</property>
-                        <accelerator key="exclam" signal="toggled" modifiers="GDK_MOD1_MASK"/>
-                        <accelerator key="asterisk" signal="toggled" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>

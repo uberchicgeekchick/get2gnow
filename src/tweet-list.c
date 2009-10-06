@@ -628,10 +628,10 @@ static void tweet_list_set_selected_index(TweetList *tweet_list){
 		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
 		tweet_list_scroll_to_top(tweet_list);
 	}
-	for(guint i=0; i<=this->total; i--){
+	for(guint i=0; i<=this->total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter, path)))
+		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path)))
 			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
 		else{
 			debug("Removing iter at index: %d", i);

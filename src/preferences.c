@@ -328,7 +328,7 @@ static void preferences_replace_with_setup(PreferencesDialog *prefs){
 		uber_free(iter);
 	}
 	
-	g_object_unref(list_store);
+	/*g_object_unref(list_store);*/
 }/*static void preferences_replace_with_setup(prefs);*/
 
 static void preferences_reload_setup(PreferencesDialog *prefs){

@@ -685,7 +685,7 @@ void online_service_update_id_set( OnlineService *service, const gchar *timeline
 	gboolean success;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, key);
-	swap_id_str=g_strdup_printf("%f", update_id);
+	swap_id_str=gdouble_to_str(update_id);
 	success=gconfig_set_string(prefs_path, swap_id_str);
 	uber_free(prefs_path);
 	debug("Saved <%s>'s; [%s] %s ID: %f (using string: %s).", service->uri, timeline, key, update_id, swap_id_str);
@@ -1056,7 +1056,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
-	if( (has_loaded && tweet_list_get_total(tweet_list) ) || (monitoring==BestFriends) ){
+	if( (has_loaded && tweet_list_get_total(tweet_list)) || (monitoring==BestFriends) ){
 		requesting=_("new");
 		since_id=id_newest_update;
 	}else if(monitoring==DMs || monitoring==Replies){

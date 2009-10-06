@@ -436,21 +436,22 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", status->user->user_name, status->id, service->key);
 		user_status_store(status, tweet_list);
-		if( ( monitoring !=BestFriends && monitoring != DMs ) && online_service_is_user_best_friend( service, status->user->user_name ) ){
+		if( ( monitoring!=BestFriends && monitoring!=DMs ) && online_service_is_user_best_friend(service, status->user->user_name) ){
 			gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
 			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, status->user->user_name );
 			online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
-			if( id_best_friend_newest_update && status->id > id_best_friend_newest_update ){
+			id_best_friend_oldest_update=online_services_best_friends_list_store_mark_as_unread(service, status->user->user_name, status->id, main_window_get_best_friends_list_store() );
+			if( id_best_friend_oldest_update > id_best_friend_newest_update )
+				online_service_update_ids_set(service, user_timeline, id_best_friend_oldest_update, status->id);
+			uber_free( user_timeline );
+			
+			if( status->id > id_best_friend_newest_update ){
 				if(notify_best_friends){
 					free_status=FALSE;
 					g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 					tweet_list_notify_delay+=tweet_display_interval;
 				}
-				online_services_best_friends_list_store_mark_as_unread(service, status->user->user_name, status->id, main_window_get_best_friends_list_store() );
 			}
-			if(!id_best_friend_oldest_update && status->id )
-				online_service_update_ids_set(service, timeline, status->id, status->id);
-			uber_free( user_timeline );
 		}
 		
 		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
