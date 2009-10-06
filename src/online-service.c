@@ -507,6 +507,9 @@ void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *o
 	}else if(! online_service_is_user_best_friend(service, user_name ) ){
 		debug( "Adding best friend %s, on %s to the best friends list_store & GSList.", user_name, service->guid );
 		service->best_friends=g_slist_append( service->best_friends, g_strdup(user_name) );
+		gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user->user_name );
+		online_service_update_ids_set( service, user_timeline, user->status->id, user->status->id );
+		uber_free( user_timeline );
 		online_service_best_friends_list_store_append( service, user_name );
 	}else{
 		debug( "Removing best friend %s, on %s from the best friends list_store & GSList.", user_name, service->guid );
@@ -526,6 +529,7 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 	gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
 	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user_name );
 	online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
+	uber_free( user_timeline );
 	gtk_list_store_append( list_store, iter );
 	gtk_list_store_set(
 				list_store, iter,
@@ -538,7 +542,6 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 				-1
 	);
 	uber_free( iter );
-	uber_free( user_timeline );
 	online_services_best_friends_total_update(1);
 }/*online_service_best_friends_list_store_append( service, user_name );*/
 
