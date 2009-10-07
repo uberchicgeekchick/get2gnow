@@ -328,12 +328,14 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 }/*network_display_timeline(session, xml, service_wrapper);*/
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper){
+	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
-	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
+	/*TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
+	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);*/
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
 	network_set_state_loading_timeline(requested_uri, Retry);
 	online_service_wrapper_reattempt(service_wrapper);
+	/*online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);*/
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/
 
