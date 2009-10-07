@@ -83,7 +83,7 @@ G_BEGIN_DECLS
 OnlineServices *online_services_init(void);
 
 gboolean online_services_login(void);
-gboolean online_services_relogin(void);
+gboolean online_services_reconnect(void);
 void online_services_disconnect(void);
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);

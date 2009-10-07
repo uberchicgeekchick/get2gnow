@@ -76,13 +76,6 @@
 #include "ipc.h"
 
 
-#ifndef GNOME_ENABLE_DEBUG
-#	define	PIPE_PREFIX		"%s-%s-"
-#else
-#	define	PIPE_PREFIX		"%s-debug-%s-"
-#endif
-
-#define	PIPE_PREFIX_FULL	"%s/" PIPE_PREFIX "%d"
 #define	MAX_BUFFER_SIZE		4096
 
 typedef struct _Input Input;
@@ -122,7 +115,7 @@ gboolean ipc_init_check(int argc, char **argv){
 	g_return_val_if_fail(dir != NULL, FALSE);
 	
 	user_name=g_get_user_name();
-	prefix=g_strdup_printf(PIPE_PREFIX, user_name, GETTEXT_PACKAGE);
+	prefix=g_strdup_printf(IPC_PIPE_PREFIX, user_name, GETTEXT_PACKAGE);
 	prefix_len=strlen(prefix);
 
 	cur_dir_tmp=g_get_current_dir();
@@ -291,7 +284,7 @@ static void ipc_main(void){
 	input->buffer=g_byte_array_new();
 	
 	input->pipe_name=g_strdup_printf(
-					PIPE_PREFIX_FULL,
+					IPC_PIPE_PREFIX_FULL,
 					g_get_tmp_dir(),
 					g_get_user_name(),
 					PACKAGE_TARNAME,

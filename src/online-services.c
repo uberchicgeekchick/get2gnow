@@ -184,7 +184,7 @@ gboolean online_services_login(void){
 }/*online_services_login*/
 
 /* Login to services. */
-gboolean online_services_relogin(void){
+gboolean online_services_reconnect(void){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
@@ -199,7 +199,7 @@ gboolean online_services_relogin(void){
 	main_window_state_on_connection(relogin_okay);
 	g_list_free(accounts);
 	return relogin_okay;
-}/*online_services_relogin*/
+}/*online_services_reconnect*/
 
 void online_services_disconnect(void){
 	GList		*accounts=NULL;
@@ -232,15 +232,18 @@ static gint online_services_cmp_count(guint compare, guint count){
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect){
 	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) )){
-		return FALSE;
+		return NULL;
 	}
 	
+	gboolean recreating=FALSE;
 	gchar *decoded_key=g_strdup_printf("%s@%s", user_name, uri);
 	if(service){
-		if(!(online_service_validate_key(service, decoded_key)))
+		if(!(online_service_validate_guid(service, user_name, uri))){
 			online_services_delete_service(service);
-		else{
+			recreating=TRUE;
+		}else{
 			debug("Saving existing service: '%s'.", decoded_key);
+			online_service_disconnect(service, FALSE);
 			if( (online_service_save(service, password, enabled, https, auto_connect)) )
 				if(online_service_reconnect(service))
 					return service;
@@ -293,18 +296,23 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	}
 
 	debug("Saving accounts & services successful.");
-	if(online_service_connect(service)){
-		debug("\t\tConnecting to: '%s'\t[succeeded]", decoded_key);
-
-		online_service_login(service, FALSE);
-		if( services->total!=1 )
-			tweet_lists_refresh();
-		else{
-			main_window_tabs_init();
-			main_window_state_on_connection(TRUE);
-		}
-	}else
+	if(!online_service_connect(service))
 		debug("\t\tConnecting to: '%s'\t[failed]", decoded_key);
+	else{
+		debug("\t\tConnecting to: '%s'\t[succeeded]", decoded_key);
+		
+		if(!online_service_login(service, FALSE)){
+			online_service_display_debug_details( service, TRUE, "re-connect");
+			return NULL;
+		}
+		
+		if( services->total==1 && !recreating ){
+			main_window_state_on_connection(TRUE);
+			main_window_tabs_init();
+		}else
+			tweet_lists_refresh();
+		
+	}
 	
 	debug("Saving '%s' service complete.  Total services: %d; Total connected: %d", decoded_key, services->total, services->connected);
 	
@@ -633,6 +641,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 			-1
 	);
 	
+	update_id--;
 	if( g_str_has_prefix( user_name_at_index, "<b>" ) ){
 		debug("Best Friend: %s, on service: %s, is already marked as having unread updates.", user_name, service->guid );
 		gtk_list_store_set(list_store, iter, GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, (unread_updates+1), -1);
@@ -643,7 +652,6 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 1, -1);
 	}
 	
-	update_id--;
 	uber_free(iter);
 	uber_free(user_at_index);
 	uber_free(user_name_at_index);
@@ -651,7 +659,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	if(!(newest_update_id && update_id && newest_update_id > update_id))
 		return update_id;
 	else
-		return (newest_update_id-1);
+		return newest_update_id;
 }/*online_services_best_friends_mark_list_store_as_unread(user_name )*/
 
 gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, GtkListStore *list_store ){

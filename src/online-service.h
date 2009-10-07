@@ -84,10 +84,11 @@ G_BEGIN_DECLS
  ********************************************************/
 OnlineService *online_service_open(const gchar *guid);
 OnlineService *online_service_new(const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
+void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action);
 gboolean online_service_save(OnlineService *service, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
 gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf);
 
-gboolean online_service_validate_key(OnlineService *service, const gchar *guid);
+gboolean online_service_validate_guid(OnlineService *service, const gchar *user_name, const gchar *uri);
 
 gint online_service_best_friends_list_store_fill( OnlineService *service, GtkListStore *list_store );
 gint online_service_best_friends_list_store_validate( OnlineService *service, GtkListStore *list_store );

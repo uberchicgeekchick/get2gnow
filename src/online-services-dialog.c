@@ -172,19 +172,16 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect))
 	)) )){
 		debug("**ERROR:** Failed to save online service for '%s@%s' please see above for further details.", user_name, uri);
-		g_free(uri);
 		return;
 	}
 	
 	if(!new_service){
 		exit_okay=TRUE;
-		g_free(uri);
 		return;
 	}
 	
 	if(!( service && service->key && service->uri && service->user_name )){
 		debug("**ERROR:** OnlineServices saved resulting OnlineService is invalid.");
-		g_free(uri);
 		return;
 	}
 	
@@ -197,8 +194,6 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 					OnlineServicePointer, service,
 				-1
 	);
-	
-	g_free(uri);
 	
 	debug("New service stored, selecting it new loction in the dialog.");
 	exit_okay=TRUE;
@@ -266,7 +261,7 @@ static void online_services_dialog_delete_service(GtkButton *online_service_dele
 
 static void online_services_dialog_destroy(GtkDialog *dialog){
 	uber_free(online_services_dialog);
-}/*online_services_dialog_destroy*/
+}/*online_services_dialog_destroy(dialog);*/
 
 static void online_services_dialog_show_password(GtkCheckButton *show_password, OnlineServicesDialog *online_services_dialog){
 	gboolean visible;
@@ -292,7 +287,7 @@ static OnlineService *online_services_dialog_get_active_service(OnlineServicesDi
 		return NULL;
 	
 	return service;
-}/*online_services_dialog_get_active_service*/
+}/*online_services_dialog_get_active_service(online_services_dialog);*/
 
 static void online_services_dialog_check(GtkEntry *entry, GdkEventKey *event, OnlineServicesDialog *online_services_dialog){
 	online_services_dialog_check_service(online_services_dialog);
@@ -307,7 +302,7 @@ static void online_services_dialog_check_service(OnlineServicesDialog *online_se
 	const gchar *password=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->password));
 	
 	if(service){
-		debug("Service dialog is editing an existing service: <%s>.", service->uri);
+		debug("Service dialog is editing an existing service.");
 		service_exists=TRUE;
 	}
 	
@@ -315,7 +310,7 @@ static void online_services_dialog_check_service(OnlineServicesDialog *online_se
 		debug("Services is up to date, no changes need saved.");
 		service_is_saved=TRUE;
 		service_okay_to_save=FALSE;
-	}else if( service && G_STR_N_EMPTY(uri) && !g_str_equal(service->uri, uri) && G_STR_N_EMPTY(user_name) && !g_str_equal(service->user_name, user_name) && !G_STR_N_EMPTY(password) && !g_str_equal(service->password, password) ){
+	}else if( service && ( ( G_STR_N_EMPTY(uri) && !g_str_equal(service->uri, uri) ) || ( G_STR_N_EMPTY(user_name) && !g_str_equal(service->user_name, user_name) ) || ( G_STR_N_EMPTY(password) && !g_str_equal(service->password, password) ) ) ){
 		debug("Existing service has changes that need to be saved.");
 		service_okay_to_save=TRUE;
 	}else if(!service && (G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(password)) ){

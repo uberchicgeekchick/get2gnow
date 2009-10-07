@@ -95,11 +95,7 @@ static void cache_file_clean_up(const gchar *cache_file);
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 void cache_init(void){
-#ifndef GNOME_ENABLE_DEBUG
-	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, NULL);
-#else
-	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", PACKAGE_TARNAME, "debug", NULL);
-#endif
+	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", GET2GNOW_GNOME_SUBDIR, NULL);
 	
 	gchar *cache_path_test=NULL;
 	if(!(cache_path_test=cache_dir_test("services", TRUE) ))

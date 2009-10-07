@@ -102,7 +102,7 @@
 struct _MainWindowPrivate {
 	/* Misc */
 	guint			size_timeout_id;
-	guint			timeout_id_status_bar;
+	guint			timeout_id_status_bar_message_default;
 	
 	/* Status Icon Stuff. */
 	GtkStatusIcon		*status_icon;
@@ -225,6 +225,8 @@ struct _MainWindowPrivate {
 
 #define	GtkBuilderUI	"main-window"
 
+#define STATUSBAR_DEFAULT "HotKeys: [Ctrl+N] start a new tweet; [Ctrl+D] or [Shift+Return] to DM; [Ctrl+R], [Return], or '@' to reply, [Ctrl+F] or '>' to re-tweet."
+
 
 static void main_window_class_init(MainWindowClass *klass);
 static void main_window_init(MainWindow *main_window);
@@ -302,7 +304,7 @@ static void main_window_finalize(GObject *object){
 	main_window->private=GET_PRIVATE(main_window);
 	
 	program_timeout_remove(&main_window->private->size_timeout_id, _("main window configuration"));
-	program_timeout_remove(&main_window->private->timeout_id_status_bar, _("status bar message"));
+	program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar message"));
 	
 	g_list_free(main_window->private->widgets_connected);
 	g_list_free(main_window->private->widgets_disconnected);
@@ -1111,7 +1113,7 @@ static void main_window_login(void){
 }/*main_window_login*/
 
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
-	if(!( online_services_relogin()))
+	if(!( online_services_reconnect()))
 		return;
 	
 	main_window_tabs_init();
@@ -1259,13 +1261,13 @@ void main_window_state_on_connection(gboolean connected){
 	if(!(main_window->private && main_window->private->widgets_connected && main_window->private->widgets_disconnected))
 		return;
 	
-	GList         *l;
 	if(!connected){
 		online_service_request_unset_selected_update();
 		tweet_lists_stop();
 	} else
 		tweet_lists_refresh();
 	
+	GList         *l;
 	for(l=main_window->private->widgets_connected; l; l=l->next)
 		gtk_widget_set_sensitive(GTK_WIDGET( l->data), connected );
 	g_list_free(l);
@@ -1313,13 +1315,13 @@ void main_window_set_statusbar_msg(gchar *message){
 		g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages,(GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free);
 	}
 	
-	program_timeout_remove(&main_window->private->timeout_id_status_bar, _("status bar message"));
-	main_window->private->timeout_id_status_bar=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(statusbar_messages>=5?statusbar_messages:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
+	program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar message"));
+	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(statusbar_messages>=5?statusbar_messages:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
 }/*main_window_set_statusbar_msg("Message...");*/
 
 static gboolean main_window_statusbar_display(const gchar *message){
-	gtk_statusbar_pop(GTK_STATUSBAR( main_window->private->statusbar), 1);
-	gtk_statusbar_push(GTK_STATUSBAR( main_window->private->statusbar), 1,(G_STR_N_EMPTY( message) ?message :STATUSBAR_DEFAULT ) );
+	gtk_statusbar_pop( GTK_STATUSBAR( main_window->private->statusbar), 1 );
+	gtk_statusbar_push( GTK_STATUSBAR(main_window->private->statusbar), 1, ( G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
 	
 	if(statusbar_messages) statusbar_messages--;
 	

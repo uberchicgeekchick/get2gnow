@@ -101,7 +101,6 @@
  *          Static method & function prototypes         *
  ********************************************************/
 static OnlineService *online_service_constructor(const gchar *uri, const gchar *user_name);
-static void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action);
 
 static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_blogging_service);
 static void online_service_set_micro_blogging_service(OnlineService **service);
@@ -170,10 +169,15 @@ MicroBloggingServices MicroBloggingServicesList[]={
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-gboolean online_service_validate_key(OnlineService *service, const gchar *guid){
-	if(!( service && g_str_equal(service->guid, guid) )) return FALSE;
+gboolean online_service_validate_guid(OnlineService *service, const gchar *user_name, const gchar *uri){
+	gchar *guid=g_strdup_printf("%s@%s", user_name, uri);
+	if(!( service && g_str_equal(service->guid, guid) && g_str_equal(service->user_name, user_name) && g_str_equal(service->uri, uri) )){
+		uber_free(guid);
+		return FALSE;
+	}
+	uber_free(guid);
 	return TRUE;
-}/*online_service_validate_key(service, guid);*/
+}/*online_service_validate_guid(service, "user_name", "uri");*/
 
 static void online_service_set_micro_blogging_service(OnlineService **service){
 	if(!(*service)) return;
@@ -380,7 +384,7 @@ gboolean online_service_save(OnlineService *service, const gchar *password, gboo
 	online_service_display_debug_details(service, FALSE, "saved");
 	
 	debug("Attempting to connect to OnlineService for: '%s'.", service->guid);
-	online_service_reconnect(service);
+	/*online_service_reconnect(service);*/
 	
 	return TRUE;
 }/*online_service_save*/
@@ -413,7 +417,7 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	return TRUE;
 }/*online_service_delete*/
 
-static void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action){
+void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action){
 	gchar *prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PREFIX, service->key);
 	debug("OnlineService: %s %s service.  GCONF path:\t [%s]. OnlineService details: account guid:%s(key==%s)'\t\t\t[%sabled] %sservice uri: %s over https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", action, (new_service ?"created" :"existing"), prefs_auth_path, service->guid, service->key, (service->enabled?"en":"dis"), micro_blogging_service_to_string(service->micro_blogging_service), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->user_name, (DEBUG_DISPLAY_PASSWORDS ?service->password :"[*passwords are hidden out side of debug mode*]"), (service->auto_connect ?_("TRUE") :_("FALSE") ) );
 	g_free(prefs_auth_path);
@@ -789,10 +793,8 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	if(!temporary_connection) online_services_increment_connected(service->guid);
 	
-	/*online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );*/
-	
 	return TRUE;
-}/*online_service_login*/
+}/*online_service_login(service, TRUE|FALSE);*/
 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
@@ -881,7 +883,7 @@ gboolean online_service_refresh(OnlineService *service, const gchar *uri){
 }/*online_service_refresh(service);*/
 
 void online_service_disconnect(OnlineService *service, gboolean no_state_change){
-	if(!service->connected) return;
+	if(!service->session) return;
 
 	debug("Closing %s's connection to: %s", service->guid, service->uri);
 	if(service->session){
@@ -1059,12 +1061,15 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
-	if( (has_loaded && tweet_list_get_total(tweet_list)) || (monitoring==BestFriends) ){
+	if( has_loaded && tweet_list_get_total(tweet_list) ){
 		requesting=_("new");
 		since_id=id_newest_update;
 	}else if(monitoring==DMs || monitoring==Replies){
 		requesting=_("total");
 		since_id=id_oldest_update;
+	}else if(monitoring==BestFriends){
+		requesting=_("best friend's newest");
+		since_id=id_newest_update;
 	}else return;
 	
 	if(!since_id) return;

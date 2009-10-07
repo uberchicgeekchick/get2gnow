@@ -953,7 +953,7 @@ void control_panel_send(GtkWidget *activated_widget){
 }/*control_panel_send*/
 
 void control_panel_new_update(void){
-	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, "", "", "", "", "", NULL);
+	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
 	
 	if(control_panel->best_friends_service) control_panel->best_friends_service=NULL;
 	if(control_panel->best_friends_user_name) uber_free(control_panel->best_friends_user_name);

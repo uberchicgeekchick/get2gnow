@@ -840,7 +840,10 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 		this->timeline=g_strdup_printf(timeline_labels->timeline, this->user);
 		this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
 		this->menu_label_string=g_strdup_printf(timeline_labels->menu_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
-		this->monitoring=timeline_labels->monitoring;
+		if(user_is_best_friend && viewing_newest_updates)
+			this->monitoring=BestFriends;
+		else
+			this->monitoring=timeline_labels->monitoring;
 		g_strfreev(feed_info);
 		g_strfreev(user_info);
 		break;

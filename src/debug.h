@@ -40,24 +40,24 @@ G_BEGIN_DECLS
 #endif
 
 
-#ifdef DISABLE_DEBUG
-#	define debug
-#elif defined(G_HAVE_ISO_VARARGS)
-#	define debug(...)	debug_printf(DEBUG_DOMAINS, __VA_ARGS__)
-#elif defined(G_HAVE_GNUC_VARARGS)
-#	define debug(fmt...)	debug_printf(DEBUG_DOMAINS, fmt)
-#else
-#	define debug(x)		debug_printf(DEBUG_DOMAINS, x)
+#ifndef debug
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define debug(...)	debug_printf(DEBUG_DOMAINS, __VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define debug(fmt...)	debug_printf(DEBUG_DOMAINS, fmt)
+#	else
+#		define debug(x)		debug_printf(DEBUG_DOMAINS, x)
+#	endif
 #endif
 
 
-#ifndef DISABLE_DEBUG
+#ifndef IF_DEBUG
 #	define IF_DEBUG		if(debug_if_domain(DEBUG_DOMAINS))
-#else
-#	define IF_DEBUG
 #endif
 
-#define	IF_DEVEL		if(debug_if_devel())
+#ifndef IF_DEVEL
+#	define	IF_DEVEL		if(debug_if_devel())
+#endif
 
 void debug_init(void);
 

@@ -79,13 +79,29 @@ G_BEGIN_DECLS
  **********************************************************************/
 #ifndef GCONF_PATH
 #	if defined GNOME_ENABLE_DEBUG
-#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME "/debug"
+#		define	GCONF_PATH			"/apps/" PACKAGE_TARNAME "-debug"
 #	else
-#		define	GCONF_PATH		"/apps/" PACKAGE_TARNAME
+#		define	GCONF_PATH			"/apps/" PACKAGE_TARNAME
 #	endif
 #endif
 
-#define STATUSBAR_DEFAULT "HotKeys: [Ctrl+N] start a new tweet; [Ctrl+D] or [Shift+Return] to DM; [Ctrl+R], [Return], or '@' to reply, [Ctrl+F] or '>' to re-tweet."
+
+#ifndef CONFIG_SUBDIR
+#	if defined GNOME_ENABLE_DEBUG
+#		define	GET2GNOW_GNOME_SUBDIR		PACKAGE_TARNAME "-debug"
+#	else
+#		define	GET2GNOW_GNOME_SUBDIR		PACKAGE_TARNAME
+#	endif
+#endif
+
+#ifndef IPC_PIPE_PREFIX
+#	if defined GNOME_ENABLE_DEBUG
+#		define	IPC_PIPE_PREFIX		"%s-debug-%s"
+#	else
+#		define	IPC_PIPE_PREFIX		"%s-%s"
+#	endif
+#define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "-%d"
+#endif
 
 #ifndef uber_free
 #	define	uber_free(mem)					{ g_free(mem); mem=NULL; }

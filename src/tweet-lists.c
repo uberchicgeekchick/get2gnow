@@ -210,7 +210,7 @@ void tweet_lists_close(void){
 	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next)
 		tweet_lists_close_page(tweet_list_get_page((TweetList *)tabs->data));
 	g_list_free(tabs);
-}/*tweet_lists_stop();*/
+}/*tweet_lists_close();*/
 
 void tweet_lists_close_current_page(void){
 	tweet_lists_close_page(gtk_notebook_get_current_page( tweet_lists->notebook));
