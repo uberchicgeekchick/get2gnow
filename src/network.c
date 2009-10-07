@@ -103,8 +103,6 @@ struct _NetworkTweetListImageDL{
 	GtkTreeIter	*iter;
 };
 
-static gboolean retrying=FALSE;
-
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
@@ -221,11 +219,12 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 		
 		statusbar_printf("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		statusbar_printf("http error: #%i: %s", xml->status_code, xml->reason_phrase);
-			if(xml->status_code==100 && !online_service_wrapper_get_attempt(service_wrapper)){
-				debug("Resubmitting Tweet/Status update to: [%s] per http response.", service->key);
-				online_service_wrapper_reattempt(service_wrapper);
-			}
-		}else{
+		
+		if(xml->status_code==100 && !online_service_wrapper_get_attempt(service_wrapper)){
+			debug("Resubmitting Tweet/Status update to: [%s] per http response.", service->key);
+			online_service_wrapper_reattempt(service_wrapper);
+		}
+	}else{
 		debug("%s %s :-)", message, (direct_message?"succeeded":"updated"));
 		statusbar_printf("%s %s :-)", message, (direct_message?"sent":"updated"));
 	}
@@ -280,7 +279,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			return NULL;
 		}
 		
-		if(!retrying && (xml->status_code==100||xml->status_code==404)){
+		if(!online_service_wrapper_get_attempt(service_wrapper) && (xml->status_code==100||xml->status_code==404)){
 			network_retry(service_wrapper);
 			return NULL;
 		}
@@ -317,13 +316,11 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	}
 	
 	debug("Total tweets in this timeline: %d.", new_updates);
-	if(!retrying && !new_updates && !g_strrstr(request_uri, "?since_id=") && xml->status_code==200){
+	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(request_uri, "?since_id=") && xml->status_code==200){
 		uber_free(request_uri);
 		network_retry(service_wrapper);
 		return NULL;
 	}
-	
-	if(retrying) retrying=FALSE;
 	tweet_list_complete(tweet_list);
 	
 	uber_free(request_uri);
@@ -331,14 +328,12 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 }/*network_display_timeline(session, xml, service_wrapper);*/
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper){
-	retrying=TRUE;
-	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
 	network_set_state_loading_timeline(requested_uri, Retry);
-	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);
+	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/
 
