@@ -233,6 +233,7 @@ static void main_window_init(MainWindow *main_window);
 static void main_window_finalize(GObject *object);
 
 static gboolean main_window_statusbar_display(const gchar *message);
+static void main_window_statusbar_timeouts_free(void);
 
 static void main_window_setup(void);
 static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window);
@@ -308,6 +309,7 @@ static void main_window_finalize(GObject *object){
 	
 	g_list_free(main_window->private->widgets_connected);
 	g_list_free(main_window->private->widgets_disconnected);
+	main_window_statusbar_timeouts_free();
 	tweet_lists_destroy();
 	if(main_window->private->best_friends_tree_model_sort)
 		g_object_unref(main_window->private->best_friends_tree_model_sort);
@@ -1262,6 +1264,7 @@ void main_window_state_on_connection(gboolean connected){
 		return;
 	
 	if(!connected){
+		main_window_statusbar_timeouts_free();
 		online_service_request_unset_selected_update();
 		tweet_lists_stop();
 	} else
@@ -1304,26 +1307,37 @@ void main_window_statusbar_printf(const gchar *msg, ...){
 	g_free(message);
 }/*main_window_statusbar_printf("__format", ...);*/
 
-static guint statusbar_messages=0;
+static guint statusbar_messages[]={};
+static guint statusbar_messages_total=0;
 void main_window_set_statusbar_msg(gchar *message){
 	
 	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR( main_window->private->statusbar) ))
 		return;
 	
 	if(G_STR_N_EMPTY( message)){
-		statusbar_messages++;
-		g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages,(GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free);
+		statusbar_messages_total++;
+		statusbar_messages[statusbar_messages_total]=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free);
 	}
 	
 	program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar message"));
-	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(statusbar_messages>=5?statusbar_messages:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
+	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(statusbar_messages_total>=5?statusbar_messages_total:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
 }/*main_window_set_statusbar_msg("Message...");*/
 
 static gboolean main_window_statusbar_display(const gchar *message){
 	gtk_statusbar_pop( GTK_STATUSBAR( main_window->private->statusbar), 1 );
 	gtk_statusbar_push( GTK_STATUSBAR(main_window->private->statusbar), 1, ( G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
 	
-	if(statusbar_messages) statusbar_messages--;
+	if(statusbar_messages_total){
+		program_timeout_remove(&statusbar_messages[statusbar_messages_total], _("status bar message"));
+		statusbar_messages_total--;
+	}
 	
 	return FALSE;
 }/*main_window_set_statusbar_display(gpointer);*/
+
+static void main_window_statusbar_timeouts_free(void){
+	for(guint i=0; i<statusbar_messages_total; i++){
+		program_timeout_remove(&statusbar_messages[statusbar_messages_total], _("status bar message"));
+		statusbar_messages_total--;
+	}
+}/*main_window_statusbar_timeouts_free();*/

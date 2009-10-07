@@ -90,7 +90,7 @@ static void online_services_dialog_destroy(GtkDialog *dialog);
 static void online_services_dialog_show_password(GtkCheckButton *show_password, OnlineServicesDialog *online_services_dialog);
 static void online_services_dialog_load_service(GtkComboBoxEntry *urls, OnlineServicesDialog *online_services_dialog);
 
-static OnlineService *online_services_dialog_get_active_service(OnlineServicesDialog *online_services_dialog);
+static OnlineService *online_services_dialog_get_active_service(OnlineServicesDialog *online_services_dialog, GtkTreeIter **iter );
 static void online_services_dialog_new_service(GtkButton *online_service_new_button, OnlineServicesDialog *online_services_dialog);
 static void online_services_dialog_save_service(GtkButton *online_services_save_button, OnlineServicesDialog *online_services_dialog);
 static void online_services_dialog_connect(GtkButton *online_service_connect_button, OnlineServicesDialog *online_services_dialog);
@@ -133,8 +133,13 @@ static void online_services_dialog_new_service(GtkButton *online_service_new_but
 	
 	gtk_widget_grab_focus( GTK_WIDGET( online_services_dialog->urls ));
 	
-	if(!(online_services_dialog_get_active_service(online_services_dialog))) return;
+	GtkTreeIter		*iter=NULL;
+	if(!(online_services_dialog_get_active_service(online_services_dialog, &iter))){
+		if(iter) uber_free(iter);
+		return;
+	}
 	
+	if(iter) uber_free(iter);
 	gtk_entry_set_text( GTK_ENTRY( GTK_BIN( online_services_dialog->urls)->child), "");
 }/*online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);*/
 
@@ -156,7 +161,10 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	gboolean		new_service=FALSE;
 	
 	debug("Retriving current service.");
-	if(!( (service=online_services_dialog_get_active_service(online_services_dialog)) )){
+	GtkTreeIter		*iter=NULL;
+	if(!( (service=online_services_dialog_get_active_service(online_services_dialog, &iter)) && g_str_equal(service->uri, uri) && g_str_equal(service->user_name, user_name) )){
+		if(service)
+			gtk_list_store_remove( online_services_dialog->urls_list_store, iter );
 		debug("Current service does not have a valid GtkTreeIter, service will be appended later.");
 		new_service=TRUE;
 	}
@@ -172,20 +180,24 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect))
 	)) )){
 		debug("**ERROR:** Failed to save online service for '%s@%s' please see above for further details.", user_name, uri);
+		if(iter) uber_free(iter);
 		return;
 	}
 	
 	if(!new_service){
 		exit_okay=TRUE;
+		if(iter) uber_free(iter);
 		return;
 	}
 	
 	if(!( service && service->key && service->uri && service->user_name )){
 		debug("**ERROR:** OnlineServices saved resulting OnlineService is invalid.");
+		if(iter) uber_free(iter);
 		return;
 	}
+	if( iter ) uber_free(iter);
 	
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	iter=g_new0(GtkTreeIter, 1);
 	debug("Storing new service: '%s'.", service->key);
 	gtk_list_store_append(online_services_dialog->urls_list_store, iter);
 	gtk_list_store_set(
@@ -198,7 +210,7 @@ static void online_services_dialog_save_service(GtkButton *save_button, OnlineSe
 	debug("New service stored, selecting it new loction in the dialog.");
 	exit_okay=TRUE;
 	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(online_services_dialog->urls), iter);
-	uber_free(iter);
+	if(iter) uber_free(iter);
 }/*online_services_dialog_save_service(online_services_dialog->online_services_save_button, online_services_dialog);*/
 
 static void online_services_dialog_connect(GtkButton *connect_button, OnlineServicesDialog *online_services_dialog){
@@ -213,7 +225,8 @@ static void online_services_dialog_connect(GtkButton *connect_button, OnlineServ
 	
 	gboolean auto_connect=gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect));
 	
-	if(!(service=online_services_dialog_get_active_service(online_services_dialog))){
+	GtkTreeIter		*iter=NULL;
+	if(!(service=online_services_dialog_get_active_service(online_services_dialog, &iter))){
 		debug("OnlineService is not saved.  Creating temporary OnlineService to connect with.");
 		service=online_service_new(uri, user_name, password, enabled, https, auto_connect);
 		online_service_connect(service);
@@ -221,10 +234,12 @@ static void online_services_dialog_connect(GtkButton *connect_button, OnlineServ
 	}else if( service && G_STR_N_EMPTY(uri) && g_str_equal(service->uri, uri) && G_STR_N_EMPTY(user_name) && g_str_equal(service->user_name, user_name) && G_STR_N_EMPTY(password) && g_str_equal(service->password, password) ){
 		if(service->connected){
 			debug("OnlineService: %s is already connected.", service->key);
+			if(iter) uber_free(iter);
 			return;
 		}
 		online_service_connect(service);
 		online_service_login(service, TRUE);
+		if(iter) uber_free(iter);
 	}
 }/*online_services_dialog_connect(online_services_dialog->online_service_connect_button, online_services_dialog);*/
 
@@ -232,8 +247,10 @@ static void online_services_dialog_delete_service(GtkButton *online_service_dele
 	OnlineService		*service=NULL;
 	
 	debug("Retriving current service.");
-	if(!( (service=online_services_dialog_get_active_service(online_services_dialog)) )){
+	GtkTreeIter		*iter=NULL;
+	if(!( (service=online_services_dialog_get_active_service(online_services_dialog, &iter)) )){
 		debug("There is no valid account selected.");
+		if(iter) uber_free(iter);
 		return;
 	}
 	
@@ -246,6 +263,7 @@ static void online_services_dialog_delete_service(GtkButton *online_service_dele
 	))){
 		uber_free(confirm_message);
 		debug("Account deletion was canceled by the user.");
+		if(iter) uber_free(iter);
 		return;
 	}
 
@@ -257,6 +275,7 @@ static void online_services_dialog_delete_service(GtkButton *online_service_dele
 	debug("Reloading OnlineServices into OnlineServicesDialog 'urls_list_store.");
 	online_services_combo_box_fill(GTK_COMBO_BOX(online_services_dialog->urls), online_services_dialog->urls_list_store, FALSE);
 	online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);
+	if(iter) uber_free(iter);
 }/*online_services_dialog_delete_service(online_services_dialog->online_service_delete_button, online_services_dialog);*/
 
 static void online_services_dialog_destroy(GtkDialog *dialog){
@@ -270,21 +289,23 @@ static void online_services_dialog_show_password(GtkCheckButton *show_password, 
 	gtk_entry_set_visibility(GTK_ENTRY(online_services_dialog->password), visible);
 }/*online_services_dialog_show_password*/
 
-static OnlineService *online_services_dialog_get_active_service(OnlineServicesDialog *online_services_dialog){
-	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
+static OnlineService *online_services_dialog_get_active_service(OnlineServicesDialog *online_services_dialog, GtkTreeIter **iter){
+	*iter=g_new0(GtkTreeIter, 1);
 	OnlineService		*service=NULL;
 	
-	if(!( (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(online_services_dialog->urls), iter)) )){
+	if(!( (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(online_services_dialog->urls), *iter)) )){
 		return NULL;
 	}
 	
 	gtk_tree_model_get(
-				online_services_dialog->urls_tree_model, iter,
+				online_services_dialog->urls_tree_model, *iter,
 					OnlineServicePointer, &service,
 				-1
 	);
-	if(!(service && service->key && service->uri && service->user_name))
+	if(!(service && service->key && service->uri && service->user_name)){
+		uber_free( *iter );
 		return NULL;
+	}
 	
 	return service;
 }/*online_services_dialog_get_active_service(online_services_dialog);*/
@@ -295,7 +316,8 @@ static void online_services_dialog_check(GtkEntry *entry, GdkEventKey *event, On
 
 static void online_services_dialog_check_service(OnlineServicesDialog *online_services_dialog){
 	gboolean		service_okay_to_save=FALSE, service_exists=FALSE, service_is_saved=FALSE, service_is_connectable=FALSE;
-	OnlineService		*service=online_services_dialog_get_active_service(online_services_dialog);
+	GtkTreeIter		*iter=NULL;
+	OnlineService		*service=online_services_dialog_get_active_service(online_services_dialog, &iter);
 	
 	gchar *uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(online_services_dialog->urls));
 	const gchar *user_name=gtk_entry_get_text(GTK_ENTRY(online_services_dialog->user_name));
@@ -331,6 +353,8 @@ static void online_services_dialog_check_service(OnlineServicesDialog *online_se
 	debug("%s 'save_button' & 'okay_button'.", (service_okay_to_save ?_("Enabling") :_("Disabling")) );
 	gtk_widget_set_sensitive(GTK_WIDGET(online_services_dialog->online_services_save_button), service_okay_to_save);
 	gtk_widget_set_sensitive(GTK_WIDGET(online_services_dialog->online_services_okay_button), service_okay_to_save);
+	
+	if(iter) uber_free(iter);
 }/*online_services_dialog_check*/
 
 void online_services_dialog_show(GtkWindow *parent){
@@ -420,19 +444,22 @@ static void online_services_dialog_setup(GtkWindow *parent){
 static void online_services_dialog_load_service(GtkComboBoxEntry *urls, OnlineServicesDialog *online_services_dialog){
 	if(!online_services_dialog) return;
 	OnlineService		*service=NULL;
+	GtkTreeIter		*iter=NULL;
 	
-	if(!( (service=online_services_dialog_get_active_service(online_services_dialog)) )){
+	if(!( (service=online_services_dialog_get_active_service(online_services_dialog, &iter)) )){
 		gchar *uri=gtk_combo_box_get_active_text(GTK_COMBO_BOX(online_services_dialog->urls));
 		if(G_STR_EMPTY(uri) || g_str_equal(uri, "[new account]") )
 			online_services_dialog_new_service(online_services_dialog->online_service_new_button, online_services_dialog);
 		g_free(uri);
 		online_services_dialog_check_service(online_services_dialog);
+		if(iter) uber_free(iter);
 		return;
 	}
 	
 	if(!( service->key && service->user_name )){
 		debug("Unable to load valid account information from 'urls_list_store'.");
 		online_services_dialog_check_service(online_services_dialog);
+		if(iter) uber_free(iter);
 		return;
 	}
 	
@@ -446,4 +473,5 @@ static void online_services_dialog_load_service(GtkComboBoxEntry *urls, OnlineSe
 	gtk_entry_set_text(GTK_ENTRY(online_services_dialog->password), service->password );
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(online_services_dialog->auto_connect), service->auto_connect);
 	online_services_dialog_check_service(online_services_dialog);
+	if(iter) uber_free(iter);
 }/*online_services_dialog_load_service*/
