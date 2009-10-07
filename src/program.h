@@ -107,6 +107,14 @@ G_BEGIN_DECLS
 #	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
 #endif
 
+#ifndef uber_list_free
+#	define uber_list_free(l)				{ g_list_free(l); l=NULL; }
+#endif
+
+#ifndef uber_slist_free
+#	define uber_slist_free(l)				{ g_slist_free(l); l=NULL; }
+#endif
+
 #ifndef uber_object_unref
 #	define	uber_object_unref(o)				{ g_object_unref(o); o=NULL; }
 #endif

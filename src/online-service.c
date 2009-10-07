@@ -1179,11 +1179,9 @@ void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServ
 	
 	if(service->status) uber_free(service->status);
 	const gchar *status=NULL;
-	gboolean run_timer=TRUE;
-	if(!SOUP_STATUS_IS_SUCCESSFUL(xml->status_code)){
-		run_timer=FALSE;
+	if(!SOUP_STATUS_IS_SUCCESSFUL(xml->status_code))
 		status=_("[Failed]");
-	}else
+	else
 		status=_("[Success]");
 	
 	service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, requested_uri, xml->reason_phrase, xml->status_code);
@@ -1192,7 +1190,7 @@ void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServ
 	
 	online_service_wrapper_run(service_wrapper, session, xml);
 	
-	if(run_timer) timer_main(service->timer, xml);
+	timer_main(service->timer, xml);
 	
 	online_service_wrapper_free(service_wrapper);
 	

@@ -1307,37 +1307,43 @@ void main_window_statusbar_printf(const gchar *msg, ...){
 	g_free(message);
 }/*main_window_statusbar_printf("__format", ...);*/
 
-static guint statusbar_messages[]={};
+static GSList *statusbar_timers=NULL;
 static guint statusbar_messages_total=0;
 void main_window_set_statusbar_msg(gchar *message){
 	
 	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR( main_window->private->statusbar) ))
 		return;
 	
-	if(G_STR_N_EMPTY( message)){
-		statusbar_messages_total++;
-		statusbar_messages[statusbar_messages_total]=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free);
-	}
+	if(G_STR_N_EMPTY( message))
+		statusbar_timers=g_slist_append( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
+	
 	
 	program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar message"));
-	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(statusbar_messages_total>=5?statusbar_messages_total:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
+	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(statusbar_messages_total++>=5?statusbar_messages_total:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
 }/*main_window_set_statusbar_msg("Message...");*/
 
 static gboolean main_window_statusbar_display(const gchar *message){
 	gtk_statusbar_pop( GTK_STATUSBAR( main_window->private->statusbar), 1 );
 	gtk_statusbar_push( GTK_STATUSBAR(main_window->private->statusbar), 1, ( G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
 	
-	if(statusbar_messages_total){
-		program_timeout_remove(&statusbar_messages[statusbar_messages_total], _("status bar message"));
-		statusbar_messages_total--;
+	if(statusbar_timers && statusbar_timers->data){
+		statusbar_timers=g_slist_last(statusbar_timers);
+		gpointer timer_pointer=statusbar_timers->data;
+		guint timer=GPOINTER_TO_INT(timer_pointer);
+		program_timeout_remove(&timer, _("status bar message"));
+		statusbar_timers=g_slist_remove(statusbar_timers, timer_pointer);
 	}
+	
+	if(statusbar_messages_total) statusbar_messages_total--;
 	
 	return FALSE;
 }/*main_window_set_statusbar_display(gpointer);*/
 
 static void main_window_statusbar_timeouts_free(void){
-	for(guint i=0; i<statusbar_messages_total; i++){
-		program_timeout_remove(&statusbar_messages[statusbar_messages_total], _("status bar message"));
-		statusbar_messages_total--;
+	for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_timers; statusbar_timers=statusbar_timers->next){
+		gpointer timer_pointer=statusbar_timers->data;
+		guint timer=GPOINTER_TO_INT(timer_pointer);
+		program_timeout_remove(&timer, _("status bar message"));
 	}
+	uber_slist_free(statusbar_timers);
 }/*main_window_statusbar_timeouts_free();*/

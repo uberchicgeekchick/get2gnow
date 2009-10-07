@@ -131,16 +131,18 @@ static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml){
 	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) ))
 		return FALSE;
 	
-	if(!g_str_equal("GET", xml->method)){
+	if(g_str_equal("POST", xml->method)){
 		debug("RateLimitTimer is skipped for POST requests.");
 		return FALSE;
 	}
+	
 	gchar *rate_limit=NULL;
 	if(!( (rate_limit=g_strdup(soup_message_headers_get_one(xml->response_headers, "X-RateLimit-Remaining"))) )){
 		debug("RateLimitTimer does not need to process this request.  X-RateLimit-Remaining header was not received.");
 		uber_free(rate_limit);
 		return FALSE;
 	}
+	
 	timer->requests_remaining=atoi(rate_limit);
 	
 	debug("Running RateLimitTimer.");
