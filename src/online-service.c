@@ -1174,7 +1174,8 @@ void online_service_soup_session_callback_return_processor_func_default(OnlineSe
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	if(!(requested_uri && service && service->connected && G_STR_N_EMPTY(requested_uri) && G_STR_N_EMPTY(service->guid) && G_STR_N_EMPTY(service->key) )) return NULL;
+	if(!(requested_uri && G_STR_N_EMPTY(requested_uri) )) requested_uri=_("Unknown URI");
+	if(!(service && service->key && G_STR_N_EMPTY(service->key) )) return NULL;
 	
 	if(service->status) uber_free(service->status);
 	const gchar *status=NULL;
