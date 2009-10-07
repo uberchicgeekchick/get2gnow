@@ -387,7 +387,6 @@ gboolean online_service_save(OnlineService *service, const gchar *password, gboo
 	online_service_display_debug_details(service, FALSE, "saved");
 	
 	debug("Attempting to connect to OnlineService for: '%s'.", service->guid);
-	/*online_service_reconnect(service);*/
 	
 	return TRUE;
 }/*online_service_save*/
@@ -757,6 +756,8 @@ gboolean online_service_connect(OnlineService *service){
 static void online_service_cookie_jar_open(OnlineService *service){
 	return;
 	/*
+	 * TODO: fix cache_file_create_file_for_online_service on Ubuntu & libsoup 2.4 > 2.16.1
+	 *
 	SoupCookieJar	*cookie_jar=NULL;
 	gchar		*cookie_jar_filename=NULL;
 	
@@ -770,8 +771,8 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	soup_session_add_feature_by_type(service->session, soup_cookie_jar_get_type());
 	soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(cookie_jar));
 	
-	g_free(cookie_jar_filename);
-	g_object_unref(cookie_jar);
+	uber_free(cookie_jar_filename);
+	uber_object_unref(cookie_jar);
 	*/
 }/*online_servce_open_cookie_jar*/
 
@@ -1021,7 +1022,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 		return NULL;
 	}
 	
-	//g_signal_connect(xml, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);
+	/*g_signal_connect(xml, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);*/
 	
 	debug("Processing libsoup request for service: '%s'.", service->guid);
 	switch(request){

@@ -225,10 +225,10 @@ gint online_services_has_connected(guint count){
 static gint online_services_cmp_count(guint compare, guint count){
 	if(!compare) return -2;
 	if(!count) return compare;
-	if(compare > count ) return -1;
 	if(compare == count ) return 0;
+	if(compare > count ) return -1;
 	return 1;
-}/*online_services_has_connected(>1);*/
+}/*online_services_has_connected(1);*/
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect){
 	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) )){
@@ -242,12 +242,12 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 			online_services_delete_service(service);
 			recreating=TRUE;
 		}else{
-			debug("Saving existing service: '%s'.", decoded_key);
+			debug("Saving existing service: <%s>.", decoded_key);
 			online_service_disconnect(service, FALSE);
 			if( (online_service_save(service, password, enabled, https, auto_connect)) )
 				if(online_service_reconnect(service))
 					return service;
-			debug("Unable to save existing OnlineService for: [%s].", decoded_key);
+			debug("Unable to save existing OnlineService for: <%s>.", decoded_key);
 			uber_free(decoded_key);
 			return NULL;
 		}
@@ -255,54 +255,55 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	
 	longest_replacement_length=0;
 	
-	debug("Creating & saving new service: '%s'.", decoded_key);
+	debug("Creating & saving new service: <%s>.", decoded_key);
 	service=online_service_new(uri, user_name, password, enabled, https, auto_connect);
-	debug("New OnlineService '%s' created.  Saving OnlineServices", decoded_key);
+	debug("New OnlineService <%s> created.  Saving OnlineServices", decoded_key);
 	
 	services->total++;
-	debug("New service: '%s' created.  OnlineServices total: %d.", decoded_key, services->total);
+	debug("New service: <%s> created.  OnlineServices total: %d.", decoded_key, services->total);
 	
-	debug("Adding '%s' to OnlineServices' keys.", decoded_key);
+	debug("Adding <%s> to OnlineServices' keys.", decoded_key);
 	if(!( (services->keys=g_slist_append(services->keys, decoded_key)) )){
-		debug("**ERROR**: Failed to append new service's key: '%s', to OnlineServices' keys.", decoded_key);
+		debug("**ERROR**: Failed to append new service's key: <%s>, to OnlineServices' keys.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
 	debug("Saving accounts & services list: '%s'.", ONLINE_SERVICES_ACCOUNTS);
 	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
-		debug("**ERROR**: Failed to save new service: '%s', couldn't save gconf's services list.", decoded_key);
+		debug("**ERROR**: Failed to save new service: <%s>, couldn't save gconf's services list.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
-	debug("Adding new service: '%s' to OnlineServices.", decoded_key);
+	debug("Adding new service: <%s> to OnlineServices.", decoded_key);
 	if(!( (services->accounts=g_list_append(services->accounts, service)) )){
-		debug("**ERROR**: Failed to add: '%s', to OnlineServices' accounts.", decoded_key);
+		debug("**ERROR**: Failed to add: <%s>, to OnlineServices' accounts.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
-	debug("Retrieving new service: '%s' from OnlineServices accounts.", decoded_key);
+	debug("Retrieving new service: <%s> from OnlineServices accounts.", decoded_key);
 	services->accounts=g_list_last(services->accounts);
 	service=(OnlineService *)services->accounts->data;
 	services->accounts=g_list_first(services->accounts);
 	
-	debug("Saving OnlineService: '%s' reloaded from OnlineServices accounts.", decoded_key);
+	debug("Saving OnlineService: <%s> reloaded from OnlineServices accounts.", decoded_key);
 	if(!( online_service_save(service, password, enabled, https, auto_connect) )){
-		debug("**ERROR**: Failed saving new service: '%s'.", decoded_key);
+		debug("**ERROR**: Failed saving new service: <%s>.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 
 	debug("Saving accounts & services successful.");
 	if(!online_service_connect(service))
-		debug("\t\tConnecting to: '%s'\t[failed]", decoded_key);
+		debug("\t\tConnecting to: <%s>\t[failed]", decoded_key);
 	else{
-		debug("\t\tConnecting to: '%s'\t[succeeded]", decoded_key);
+		debug("\t\tConnecting to: <%s>\t[succeeded]", decoded_key);
 		
 		if(!online_service_login(service, FALSE)){
 			online_service_display_debug_details( service, TRUE, "re-connect");
+			uber_free(decoded_key);
 			return NULL;
 		}
 		
@@ -312,7 +313,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 		
 	}
 	
-	debug("Saving '%s' service complete.  Total services: %d; Total connected: %d", decoded_key, services->total, services->connected);
+	debug("Saving <%s> service complete.  Total services: %d; Total connected: %d", decoded_key, services->total, services->connected);
 	
 	uber_free(decoded_key);
 	return service;

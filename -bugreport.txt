@@ -7,43 +7,132 @@ GTK+ Theme: Clearlooks
 Icon Theme: Lila
 GTK+ Modules: pk-gtk-module, gnomebreakpad
 
-Memory status: size: 394293248 vsize: 394293248 resident: 26112000 share: 15106048 rss: 26112000 rss_rlim: 18446744073709551615
-CPU usage: start_time: 1254935765 rtime: 130 utime: 114 stime: 16 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+Memory status: size: 397811712 vsize: 397811712 resident: 33341440 share: 18104320 rss: 33341440 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1254942191 rtime: 758 utime: 689 stime: 69 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
 
-Backtrace was generated from '/projects/gtk/get2gnow/src/get2gnow'
+Backtrace was generated from '/usr/bin/get2gnow'
 
 [?1034h[Thread debugging using libthread_db enabled]
-[New Thread 0x7f013215b950 (LWP 15764)]
-0x00007f013c0c15af in waitpid () from /lib64/libpthread.so.0
-#0  0x00007f013c0c15af in waitpid () from /lib64/libpthread.so.0
-#1  0x00007f013c340f29 in IA__g_spawn_sync (working_directory=<value optimized out>, argv=<value optimized out>, envp=<value optimized out>, 
-    flags=<value optimized out>, child_setup=<value optimized out>, user_data=<value optimized out>, standard_output=0x0, standard_error=0x0, 
-    exit_status=0x0, error=0x7fffe00572b8) at gspawn.c:382
-#2  0x00007f013c341238 in IA__g_spawn_command_line_sync (command_line=<value optimized out>, standard_output=0x0, standard_error=0x0, 
-    exit_status=0x0, error=0x7fffe00572b8) at gspawn.c:694
-#3  0x00007f0137ec7bf2 in run_bug_buddy (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>)
+[New Thread 0x7f25cf79e950 (LWP 10741)]
+0x00007f25df7995af in waitpid () from /lib64/libpthread.so.0
+#0  0x00007f25df7995af in waitpid () from /lib64/libpthread.so.0
+#1  0x00007f25dfa18f29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fff0a4dfd28) at gspawn.c:382
+#2  0x00007f25dfa19238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fff0a4dfd28) at gspawn.c:694
+#3  0x00007f25db59fbf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
     at gnome-breakpad.cc:369
-#4  check_if_gdb (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>) at gnome-breakpad.cc:440
-#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>)
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
     at gnome-breakpad.cc:223
 #6  <signal handler called>
-#7  0x0000000000418ee6 in online_service_callback (session=0xe42160, xml=0x96fd90, service_wrapper=0xb8f3b0) at online-service.c:1176
-#8  0x00007f0143e05269 in queue_message_callback () from /usr/lib64/libsoup-2.4.so.1
-#9  0x00007f013c3095ea in g_main_dispatch (context=<value optimized out>) at gmain.c:1824
-#10 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
-#11 0x00007f013c30cd58 in g_main_context_iterate (context=0x685810, block=1, dispatch=1, self=<value optimized out>) at gmain.c:2455
-#12 0x00007f013c30d24d in IA__g_main_loop_run (loop=0x7f012c0093a0) at gmain.c:2663
-#13 0x00007f01404d8437 in IA__gtk_main () at gtkmain.c:1205
-#14 0x0000000000414351 in main (argc=1, argv=0x7fffe0057b28, envp=<value optimized out>) at main.c:72
+#7  online_service_request (service=0x19ba000019b8, request=POST, 
+    uri=0x434660 "/statuses/update.xml", 
+    online_service_soup_session_callback_return_processor_func=0, 
+    callback=0x4183d0 <network_tweet_cb>, user_data=0x434653, 
+    form_data=0x9b1250) at online-service.c:924
+#8  0x0000000000418285 in network_post_status (
+    update=0x9b1250 "I gained a new appreciation of sleep's value this morning. After over 9hrs of working on account management bugs in get2gnow I'd gone nuts.") at network.c:199
+#9  0x000000000040da9e in control_panel_sexy_send (service=0x0, user_name=0x0)
+    at control-panel.c:983
+#10 0x000000000040de82 in control_panel_send (activated_widget=0x8971c0)
+    at control-panel.c:952
+#11 0x00007f25e04da36d in IA__g_closure_invoke (closure=0x89d160, 
+    return_value=0x7fff0a4e05f0, n_param_values=1, param_values=0xe240b0, 
+    invocation_hint=0x7fff0a4e0470) at gclosure.c:767
+#12 0x00007f25e04efefb in signal_emit_unlocked_R (node=0x728a10, detail=0, 
+    instance=0x8971c0, emission_return=0x7fff0a4e05f0, 
+    instance_and_params=0xe240b0) at gsignal.c:3247
+#13 0x00007f25e3affcbc in gtk_binding_entry_activate (entry=0x6c40c0, 
+    object=0x8971c0) at gtkbindings.c:537
+#14 0x00007f25e3b001a1 in binding_match_activate (
+    pspec_list=<value optimized out>, object=0x8971c0, path_length=8, 
+    path=0x1128b40 "GtkEntry", path_reversed=0x111cd40 "yrtnEktG", 
+    unbound=0x7fff0a4e06d0) at gtkbindings.c:1123
+#15 0x00007f25e3b0041a in gtk_bindings_activate_list (object=0x8971c0, 
+    entries=<value optimized out>, is_release=<value optimized out>)
+    at gtkbindings.c:1268
+#16 0x00007f25e3b00585 in IA__gtk_bindings_activate_event (object=0x8971c0, 
+    event=0x9131d0) at gtkbindings.c:1361
+#17 0x00007f25e3b46564 in gtk_entry_key_press (widget=0x8971c0, event=0x9131d0)
+    at gtkentry.c:3956
+#18 0x00007f25e3bb6678 in _gtk_marshal_BOOLEAN__BOXED (closure=0x6bf540, 
+    return_value=0x7fff0a4e0910, n_param_values=<value optimized out>, 
+    param_values=0x99b590, invocation_hint=<value optimized out>, 
+    marshal_data=0x7f25e3b464c0) at gtkmarshalers.c:84
+#19 0x00007f25e04da2bf in IA__g_closure_invoke (closure=0x6bf540, 
+    return_value=0x7fff0a4e0910, n_param_values=2, param_values=0x99b590, 
+    invocation_hint=0x7fff0a4e08d0) at gclosure.c:767
+#20 0x00007f25e04efbde in signal_emit_unlocked_R (node=0x6bf5b0, detail=0, 
+    instance=0x8971c0, emission_return=0x7fff0a4e0a50, 
+    instance_and_params=0x99b590) at gsignal.c:3285
+#21 0x00007f25e04f137d in IA__g_signal_emit_valist (instance=0x8971c0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff0a4e0ab0)
+    at gsignal.c:2990
+#22 0x00007f25e04f1a13 in IA__g_signal_emit (instance=0x19ba000019b8, 
+    signal_id=0, detail=4408928) at gsignal.c:3037
+#23 0x00007f25e3cbe90e in gtk_widget_event_internal (widget=0x8971c0, 
+    event=0x9131d0) at gtkwidget.c:4764
+#24 0x00007f25e3cd0d3b in IA__gtk_window_propagate_key_event (window=0x6f20d0, 
+    event=0x9131d0) at gtkwindow.c:5142
+#25 0x00007f25e3cd3dab in gtk_window_key_press_event (widget=0x6f20d0, 
+    event=0x9131d0) at gtkwindow.c:5172
+#26 0x00007f25e3bb6678 in _gtk_marshal_BOOLEAN__BOXED (closure=0x6bf540, 
+    return_value=0x7fff0a4e0dd0, n_param_values=<value optimized out>, 
+    param_values=0x100c490, invocation_hint=<value optimized out>, 
+    marshal_data=0x7f25e3cd3d70) at gtkmarshalers.c:84
+#27 0x00007f25e04da36d in IA__g_closure_invoke (closure=0x6bf540, 
+    return_value=0x7fff0a4e0dd0, n_param_values=2, param_values=0x100c490, 
+    invocation_hint=0x7fff0a4e0d90) at gclosure.c:767
+#28 0x00007f25e04efbde in signal_emit_unlocked_R (node=0x6bf5b0, detail=0, 
+    instance=0x6f20d0, emission_return=0x7fff0a4e0f10, 
+    instance_and_params=0x100c490) at gsignal.c:3285
+#29 0x00007f25e04f137d in IA__g_signal_emit_valist (instance=0x6f20d0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff0a4e0f70)
+    at gsignal.c:2990
+#30 0x00007f25e04f1a13 in IA__g_signal_emit (instance=0x19ba000019b8, 
+    signal_id=0, detail=4408928) at gsignal.c:3037
+#31 0x00007f25e3cbe90e in gtk_widget_event_internal (widget=0x6f20d0, 
+    event=0x9131d0) at gtkwidget.c:4764
+#32 0x00007f25e3baefdd in IA__gtk_propagate_event (widget=0x6f20d0, 
+    event=0x9131d0) at gtkmain.c:2370
+#33 0x00007f25e3bb0023 in IA__gtk_main_do_event (event=0x9131d0)
+    at gtkmain.c:1601
+#34 0x00007f25e3828bec in gdk_event_dispatch (source=<value optimized out>, 
+    callback=<value optimized out>, user_data=<value optimized out>)
+    at gdkevents-x11.c:2368
+#35 0x00007f25df9e15ea in g_main_dispatch (context=<value optimized out>)
+    at gmain.c:1824
+#36 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
+#37 0x00007f25df9e4d58 in g_main_context_iterate (context=0x685810, block=1, 
+    dispatch=1, self=<value optimized out>) at gmain.c:2455
+#38 0x00007f25df9e524d in IA__g_main_loop_run (loop=0x7f25d000c7b0)
+    at gmain.c:2663
+#39 0x00007f25e3bb0437 in IA__gtk_main () at gtkmain.c:1205
+#40 0x00000000004143c1 in main (argc=1, argv=0x7fff0a4e1438, 
+    envp=<value optimized out>) at main.c:72
 
-Thread 2 (Thread 0x7f013215b950 (LWP 15764)):
-#0  0x00007f013be24386 in poll () from /lib64/libc.so.6
+Thread 2 (Thread 0x7f25cf79e950 (LWP 10741)):
+#0  0x00007f25df4fc386 in poll () from /lib64/libc.so.6
 No symbol table info available.
-#1  0x00007f013c30cc29 in g_main_context_poll (n_fds=<value optimized out>, fds=<value optimized out>, priority=<value optimized out>, 
-    timeout=<value optimized out>, context=<value optimized out>) at gmain.c:2768
+#1  0x00007f25df9e4c29 in g_main_context_poll (n_fds=<value optimized out>, 
+    fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>)
+    at gmain.c:2768
 No locals.
-#2  g_main_context_iterate (n_fds=<value optimized out>, fds=<value optimized out>, priority=<value optimized out>, 
-    timeout=<value optimized out>, context=<value optimized out>) at gmain.c:2450
+#2  g_main_context_iterate (n_fds=<value optimized out>, 
+    fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>)
+    at gmain.c:2450
         max_priority = 2147483647
         timeout = -1
         some_ready = <value optimized out>
@@ -51,96 +140,325 @@ No locals.
         allocated_nfds = 1
         fds = 0x6b7870
         __PRETTY_FUNCTION__ = "g_main_context_iterate"
-#3  0x00007f013c30d24d in IA__g_main_loop_run (loop=0x924090) at gmain.c:2663
-        self = 0x6b5310
+#3  0x00007f25df9e524d in IA__g_main_loop_run (loop=0x93aca0) at gmain.c:2663
+        self = 0x9c2490
         __PRETTY_FUNCTION__ = "IA__g_main_loop_run"
-#4  0x00007f0140bfc0d0 in link_io_thread_fn (data=<value optimized out>) at linc.c:396
+#4  0x00007f25e42d40d0 in link_io_thread_fn (data=<value optimized out>)
+    at linc.c:396
 No locals.
-#5  0x00007f013c332cd4 in g_thread_create_proxy (data=0x6b5310) at gthread.c:635
+#5  0x00007f25dfa0acd4 in g_thread_create_proxy (data=0x9c2490)
+    at gthread.c:635
         __PRETTY_FUNCTION__ = "g_thread_create_proxy"
-#6  0x00007f013c0ba070 in start_thread () from /lib64/libpthread.so.0
+#6  0x00007f25df792070 in start_thread () from /lib64/libpthread.so.0
 No symbol table info available.
-#7  0x00007f013be2d10d in clone () from /lib64/libc.so.6
+#7  0x00007f25df50510d in clone () from /lib64/libc.so.6
 No symbol table info available.
 
-Thread 1 (Thread 0x7f01449db7d0 (LWP 15757)):
-#0  0x00007f013c0c15af in waitpid () from /lib64/libpthread.so.0
+Thread 1 (Thread 0x7f25e80b37d0 (LWP 10724)):
+#0  0x00007f25df7995af in waitpid () from /lib64/libpthread.so.0
 No symbol table info available.
-#1  0x00007f013c340f29 in IA__g_spawn_sync (working_directory=<value optimized out>, argv=<value optimized out>, envp=<value optimized out>, 
-    flags=<value optimized out>, child_setup=<value optimized out>, user_data=<value optimized out>, standard_output=0x0, standard_error=0x0, 
-    exit_status=0x0, error=0x7fffe00572b8) at gspawn.c:382
+#1  0x00007f25dfa18f29 in IA__g_spawn_sync (
+    working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, 
+    child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, 
+    error=0x7fff0a4dfd28) at gspawn.c:382
         outpipe = -1
         errpipe = -1
-        pid = 15777
-        fds = {__fds_bits = {8665728, 8, 16, 16, 14810880, 0, 16, 0, 14810920, 8703328, 14810880, 140736951841464, 5, 139643281627062, 
-            140736951841144, 140736951841256}}
+        pid = 15577
+        fds = {__fds_bits = {14801920, 8, 16, 16, 17946672, 0, 16, 0, 
+            17946696, 8704544, 17946672, 140733366271272, 3, 139800642312118, 
+            140733366270952, 140733366271064}}
         ret = <value optimized out>
         outstr = 0x0
         errstr = 0x0
         failed = 0
         status = <value optimized out>
         __PRETTY_FUNCTION__ = "IA__g_spawn_sync"
-#2  0x00007f013c341238 in IA__g_spawn_command_line_sync (command_line=<value optimized out>, standard_output=0x0, standard_error=0x0, 
-    exit_status=0x0, error=0x7fffe00572b8) at gspawn.c:694
+#2  0x00007f25dfa19238 in IA__g_spawn_command_line_sync (
+    command_line=<value optimized out>, standard_output=0x0, 
+    standard_error=0x0, exit_status=0x0, error=0x7fff0a4dfd28) at gspawn.c:694
         retval = 0
-        argv = 0xe1ff00
+        argv = 0x111d830
         __PRETTY_FUNCTION__ = "IA__g_spawn_command_line_sync"
-#3  0x00007f0137ec7bf2 in run_bug_buddy (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>)
+#3  0x00007f25db59fbf2 in run_bug_buddy (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
     at gnome-breakpad.cc:369
         res = <value optimized out>
         warning_file = <value optimized out>
-        exec_str = 0xdcd9a0 "bug-buddy --appname=\"get2gnow\" --include=\"/tmp/bug-buddy-2X7F1U\" --unlink-tempfile --pid=15757"
+        exec_str = 0xe58b30 "bug-buddy --appname=\"get2gnow\" --pid=10724"
         args_str = <value optimized out>
         error = 0x0
-#4  check_if_gdb (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>) at gnome-breakpad.cc:440
+#4  check_if_gdb (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:440
         mypath = <value optimized out>
-        gdb = 0xb8b7e0 "/usr/bin/gdb"
+        gdb = 0xe5add0 "/usr/bin/gdb"
         has_debug_symbols = <value optimized out>
         appname = 0x651960 "get2gnow"
-        pid = 15757
-#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>)
+        pid = 10724
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, 
+    pid=<value optimized out>, appname=<value optimized out>)
     at gnome-breakpad.cc:223
         in_segv = 1
 #6  <signal handler called>
 No symbol table info available.
-#7  0x0000000000418ee6 in online_service_callback (session=0xe42160, xml=0x96fd90, service_wrapper=0xb8f3b0) at online-service.c:1176
-        service = 0x720030
-        requested_uri = <value optimized out>
-        status = <value optimized out>
-#8  0x00007f0143e05269 in queue_message_callback () from /usr/lib64/libsoup-2.4.so.1
+#7  online_service_request (service=0x19ba000019b8, request=POST, 
+    uri=0x434660 "/statuses/update.xml", 
+    online_service_soup_session_callback_return_processor_func=0, 
+    callback=0x4183d0 <network_tweet_cb>, user_data=0x434653, 
+    form_data=0x9b1250) at online-service.c:924
+        current_time = <value optimized out>
+        datetime = <value optimized out>
+        xml = <value optimized out>
+#8  0x0000000000418285 in network_post_status (
+    update=0x9b1250 "I gained a new appreciation of sleep's value this morning. After over 9hrs of working on account management bugs in get2gnow I'd gone nuts.") at network.c:199
 No locals.
-#9  0x00007f013c3095ea in g_main_dispatch (context=<value optimized out>) at gmain.c:1824
+#9  0x000000000040da9e in control_panel_sexy_send (service=0x0, user_name=0x0)
+    at control-panel.c:983
+No locals.
+#10 0x000000000040de82 in control_panel_send (activated_widget=0x8971c0)
+    at control-panel.c:952
+        user_name = <value optimized out>
+        text = <value optimized out>
+#11 0x00007f25e04da36d in IA__g_closure_invoke (closure=0x89d160, 
+    return_value=0x7fff0a4e05f0, n_param_values=1, param_values=0xe240b0, 
+    invocation_hint=0x7fff0a4e0470) at gclosure.c:767
+        marshal = 0x7f25e04e6e10 <IA__g_cclosure_marshal_VOID__VOID>
+        marshal_data = 0x0
+        __PRETTY_FUNCTION__ = "IA__g_closure_invoke"
+#12 0x00007f25e04efefb in signal_emit_unlocked_R (node=0x728a10, detail=0, 
+    instance=0x8971c0, emission_return=0x7fff0a4e05f0, 
+    instance_and_params=0xe240b0) at gsignal.c:3247
+        tmp = <value optimized out>
+        handler = 0x824c30
+        accumulator = 0x0
+        emission = {next = 0x7fff0a4e08c0, instance = 0x8971c0, ihint = {
+            signal_id = 162, detail = 0, run_type = G_SIGNAL_RUN_FIRST}, 
+          state = EMISSION_RUN, chain_type = 4}
+        class_closure = 0x72b3c0
+        handler_list = 0x824c30
+        return_accu = 0x7fff0a4e05f0
+        accu = {g_type = 0, data = {{v_int = 0, v_uint = 0, v_long = 0, 
+              v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        signal_id = 162
+        max_sequential_handler_number = 1739
+        return_value_altered = 0
+#13 0x00007f25e3affcbc in gtk_binding_entry_activate (entry=0x6c40c0, 
+    object=0x8971c0) at gtkbindings.c:537
+        params = 0xe240b0
+        return_val = {g_type = 0, data = {{v_int = 0, v_uint = 0, v_long = 0, 
+              v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        accelerator = 0x72b140 "\002"
+        query = {signal_id = 162, signal_name = 0x7f25e3dc7f01 "activate", 
+          itype = 7494384, signal_flags = 34, return_type = 4, n_params = 0, 
+          param_types = 0x0}
+        signal_id = 162
+        sig = 0x718a00
+        handled = 0
+        i = 7516480
+#14 0x00007f25e3b001a1 in binding_match_activate (
+    pspec_list=<value optimized out>, object=0x8971c0, path_length=8, 
+    path=0x1128b40 "GtkEntry", path_reversed=0x111cd40 "yrtnEktG", 
+    unbound=0x7fff0a4e06d0) at gtkbindings.c:1123
+        pspec = 0x72b140
+        binding_set = 0x1
+        slist = 0x962400
+#15 0x00007f25e3b0041a in gtk_bindings_activate_list (object=0x8971c0, 
+    entries=<value optimized out>, is_release=<value optimized out>)
+    at gtkbindings.c:1268
+        patterns = 0x7f25d0034f50
+        class_type = 7494384
+        unbound = 0
+        handled = 0
+#16 0x00007f25e3b00585 in IA__gtk_bindings_activate_event (object=0x8971c0, 
+    event=0x9131d0) at gtkbindings.c:1361
+        entries = 0xe1afb0
+        display = <value optimized out>
+        key_hash = 0x71c330
+        handled = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__gtk_bindings_activate_event"
+#17 0x00007f25e3b46564 in gtk_entry_key_press (widget=0x8971c0, event=0x9131d0)
+    at gtkentry.c:3956
+No locals.
+#18 0x00007f25e3bb6678 in _gtk_marshal_BOOLEAN__BOXED (closure=0x6bf540, 
+    return_value=0x7fff0a4e0910, n_param_values=<value optimized out>, 
+    param_values=0x99b590, invocation_hint=<value optimized out>, 
+    marshal_data=0x7f25e3b464c0) at gtkmarshalers.c:84
+        data1 = 0x8971c0
+        data2 = 0x434660
+        v_return = <value optimized out>
+        __PRETTY_FUNCTION__ = "_gtk_marshal_BOOLEAN__BOXED"
+#19 0x00007f25e04da2bf in IA__g_closure_invoke (closure=0x6bf540, 
+    return_value=0x7fff0a4e0910, n_param_values=2, param_values=0x99b590, 
+    invocation_hint=0x7fff0a4e08d0) at gclosure.c:767
+        marshal = 0x7f25e04d8870 <g_type_class_meta_marshal>
+        marshal_data = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_closure_invoke"
+#20 0x00007f25e04efbde in signal_emit_unlocked_R (node=0x6bf5b0, detail=0, 
+    instance=0x8971c0, emission_return=0x7fff0a4e0a50, 
+    instance_and_params=0x99b590) at gsignal.c:3285
+        accumulator = 0x6bf630
+        emission = {next = 0x7fff0a4e0d80, instance = 0x8971c0, ihint = {
+            signal_id = 54, detail = 0, run_type = G_SIGNAL_RUN_LAST}, 
+          state = EMISSION_RUN, chain_type = 9021904}
+        class_closure = 0x6bf540
+        handler_list = 0x833560
+        return_accu = 0x7fff0a4e0910
+        accu = {g_type = 20, data = {{v_int = 0, v_uint = 0, v_long = 0, 
+              v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        signal_id = 54
+        max_sequential_handler_number = 1739
+        return_value_altered = 0
+#21 0x00007f25e04f137d in IA__g_signal_emit_valist (instance=0x8971c0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff0a4e0ab0)
+    at gsignal.c:2990
+        return_value = {g_type = 20, data = {{v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        error = <value optimized out>
+        signal_return_type = 20
+        param_values = 0x99b5a8
+        node = 0x6bf5b0
+        i = 1
+        n_params = 1
+        __PRETTY_FUNCTION__ = "IA__g_signal_emit_valist"
+#22 0x00007f25e04f1a13 in IA__g_signal_emit (instance=0x19ba000019b8, 
+    signal_id=0, detail=4408928) at gsignal.c:3037
+        var_args = {{gp_offset = 32, fp_offset = 48, 
+            overflow_arg_area = 0x7fff0a4e0b90, 
+            reg_save_area = 0x7fff0a4e0ad0}}
+#23 0x00007f25e3cbe90e in gtk_widget_event_internal (widget=0x8971c0, 
+    event=0x9131d0) at gtkwidget.c:4764
+        signal_num = <value optimized out>
+        return_val = 0
+#24 0x00007f25e3cd0d3b in IA__gtk_window_propagate_key_event (window=0x6f20d0, 
+    event=0x9131d0) at gtkwindow.c:5142
+        parent = 0x9131d0
+        handled = 0
+        focus = 0x8971c0
+        __PRETTY_FUNCTION__ = "IA__gtk_window_propagate_key_event"
+#25 0x00007f25e3cd3dab in gtk_window_key_press_event (widget=0x6f20d0, 
+    event=0x9131d0) at gtkwindow.c:5172
+        handled = 1
+#26 0x00007f25e3bb6678 in _gtk_marshal_BOOLEAN__BOXED (closure=0x6bf540, 
+    return_value=0x7fff0a4e0dd0, n_param_values=<value optimized out>, 
+    param_values=0x100c490, invocation_hint=<value optimized out>, 
+    marshal_data=0x7f25e3cd3d70) at gtkmarshalers.c:84
+        data1 = 0x6f20d0
+        data2 = 0x434660
+        v_return = <value optimized out>
+        __PRETTY_FUNCTION__ = "_gtk_marshal_BOOLEAN__BOXED"
+#27 0x00007f25e04da36d in IA__g_closure_invoke (closure=0x6bf540, 
+    return_value=0x7fff0a4e0dd0, n_param_values=2, param_values=0x100c490, 
+    invocation_hint=0x7fff0a4e0d90) at gclosure.c:767
+        marshal = 0x7f25e04d8870 <g_type_class_meta_marshal>
+        marshal_data = 0x190
+        __PRETTY_FUNCTION__ = "IA__g_closure_invoke"
+#28 0x00007f25e04efbde in signal_emit_unlocked_R (node=0x6bf5b0, detail=0, 
+    instance=0x6f20d0, emission_return=0x7fff0a4e0f10, 
+    instance_and_params=0x100c490) at gsignal.c:3285
+        accumulator = 0x6bf630
+        emission = {next = 0x0, instance = 0x6f20d0, ihint = {signal_id = 54, 
+            detail = 0, run_type = G_SIGNAL_RUN_LAST}, state = EMISSION_RUN, 
+          chain_type = 7268000}
+        class_closure = 0x6bf540
+        handler_list = 0x71b4d0
+        return_accu = 0x7fff0a4e0dd0
+        accu = {g_type = 20, data = {{v_int = 0, v_uint = 0, v_long = 0, 
+              v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        signal_id = 54
+        max_sequential_handler_number = 1739
+        return_value_altered = 1
+#29 0x00007f25e04f137d in IA__g_signal_emit_valist (instance=0x6f20d0, 
+    signal_id=<value optimized out>, detail=0, var_args=0x7fff0a4e0f70)
+    at gsignal.c:2990
+        return_value = {g_type = 20, data = {{v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}, {v_int = 0, v_uint = 0, 
+              v_long = 0, v_ulong = 0, v_int64 = 0, v_uint64 = 0, v_float = 0, 
+              v_double = 0, v_pointer = 0x0}}}
+        error = <value optimized out>
+        signal_return_type = 20
+        param_values = 0x100c4a8
+        node = 0x6bf5b0
+        i = 1
+        n_params = 1
+        __PRETTY_FUNCTION__ = "IA__g_signal_emit_valist"
+#30 0x00007f25e04f1a13 in IA__g_signal_emit (instance=0x19ba000019b8, 
+    signal_id=0, detail=4408928) at gsignal.c:3037
+        var_args = {{gp_offset = 32, fp_offset = 48, 
+            overflow_arg_area = 0x7fff0a4e1050, 
+            reg_save_area = 0x7fff0a4e0f90}}
+#31 0x00007f25e3cbe90e in gtk_widget_event_internal (widget=0x6f20d0, 
+    event=0x9131d0) at gtkwidget.c:4764
+        signal_num = <value optimized out>
+        return_val = 0
+#32 0x00007f25e3baefdd in IA__gtk_propagate_event (widget=0x6f20d0, 
+    event=0x9131d0) at gtkmain.c:2370
+        window = 0x6f20d0
+        handled_event = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__gtk_propagate_event"
+#33 0x00007f25e3bb0023 in IA__gtk_main_do_event (event=0x9131d0)
+    at gtkmain.c:1601
+        event_widget = 0x6f20d0
+        grab_widget = 0x6f20d0
+        window_group = 0x0
+        rewritten_event = 0x0
+        tmp_list = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__gtk_main_do_event"
+#34 0x00007f25e3828bec in gdk_event_dispatch (source=<value optimized out>, 
+    callback=<value optimized out>, user_data=<value optimized out>)
+    at gdkevents-x11.c:2368
+        display = <value optimized out>
+        event = <value optimized out>
+#35 0x00007f25df9e15ea in g_main_dispatch (context=<value optimized out>)
+    at gmain.c:1824
         __PRETTY_FUNCTION__ = "g_main_dispatch"
-#10 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
+#36 IA__g_main_context_dispatch (context=<value optimized out>) at gmain.c:2377
 No locals.
-#11 0x00007f013c30cd58 in g_main_context_iterate (context=0x685810, block=1, dispatch=1, self=<value optimized out>) at gmain.c:2455
-        max_priority = 0
-        timeout = 0
+#37 0x00007f25df9e4d58 in g_main_context_iterate (context=0x685810, block=1, 
+    dispatch=1, self=<value optimized out>) at gmain.c:2455
+        max_priority = 2147483647
+        timeout = 400
         some_ready = 1
         nfds = 7
         allocated_nfds = <value optimized out>
-        fds = 0x7f012c002460
+        fds = 0x7f25d000cf90
         __PRETTY_FUNCTION__ = "g_main_context_iterate"
-#12 0x00007f013c30d24d in IA__g_main_loop_run (loop=0x7f012c0093a0) at gmain.c:2663
+#38 0x00007f25df9e524d in IA__g_main_loop_run (loop=0x7f25d000c7b0)
+    at gmain.c:2663
         self = 0x645430
         __PRETTY_FUNCTION__ = "IA__g_main_loop_run"
-#13 0x00007f01404d8437 in IA__gtk_main () at gtkmain.c:1205
+#39 0x00007f25e3bb0437 in IA__gtk_main () at gtkmain.c:1205
         tmp_list = 0x0
         functions = 0x0
         init = 0x6444d0
         loop = <value optimized out>
-#14 0x0000000000414351 in main (argc=1, argv=0x7fffe0057b28, envp=<value optimized out>) at main.c:72
+#40 0x00000000004143c1 in main (argc=1, argv=0x7fff0a4e1438, 
+    envp=<value optimized out>) at main.c:72
         option_context = 0x6444d0
-        option_entries = {{long_name = 0x4313f2 "", short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_FILENAME_ARRAY, arg_data = 0x6430d0, 
+        option_entries = {{long_name = 0x431492 "", short_name = 0 '\000', 
+            flags = 0, arg = G_OPTION_ARG_FILENAME_ARRAY, arg_data = 0x6430d0, 
             description = 0x4332b0 "Special option that collects any remaining arguments for us", arg_description = 0x0}, {long_name = 0x0, 
-            short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_NONE, arg_data = 0x0, description = 0x0, arg_description = 0x0}}
+            short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_NONE, 
+            arg_data = 0x0, description = 0x0, arg_description = 0x0}}
 A debugging session is active.
 
-	Inferior 1 [process 15757] will be detached.
+	Inferior 1 [process 10724] will be detached.
 
 Quit anyway? (y or n) [answered Y; input not from terminal]
-
-
----- Critical and fatal warnings logged during execution ----
-
-** Gdk **: gdk_x11_atom_to_xatom_for_display: assertion `atom != GDK_NONE' failed 

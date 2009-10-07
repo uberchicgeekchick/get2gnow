@@ -107,6 +107,10 @@ G_BEGIN_DECLS
 #	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
 #endif
 
+#ifndef uber_object_unref
+#	define	uber_object_unref(o)				{ g_object_unref(o); o=NULL; }
+#endif
+
 #ifndef g_str_n_equal
 #	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
 #endif

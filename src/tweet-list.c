@@ -590,6 +590,7 @@ static void tweet_list_check_maximum_updates(TweetList *tweet_list){
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
 	if(!this->total) return;
+	
 	gdouble max_updates=gtk_spin_button_get_value(this->max_tweets_spin_button);
 	if(max_updates > this->maximum)
 		max_updates=this->maximum;
@@ -602,6 +603,7 @@ static void tweet_list_check_maximum_updates(TweetList *tweet_list){
 		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
 		tweet_list_scroll_to_top(tweet_list);
 	}
+	
 	for(gint i=this->total-1; i>max_updates; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -633,13 +635,16 @@ static void tweet_list_set_selected_index(TweetList *tweet_list){
 		debug("Moving focus to TweetList's top since no iter is currently selected selected.");
 		tweet_list_scroll_to_top(tweet_list);
 	}
-	for(guint i=0; i<=this->total; i++){
+	
+	guint prev_selected_index=0;
+	for(guint i=0; i<this->total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path)))
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+			debug("Updating selected index for update at list_store's index: %d failed.  Unable to retrieve iter from path.", i);
 		else{
-			debug("Removing iter at index: %d", i);
+			gtk_tree_model_get(this->tree_model, iter, GUINT_SELECTED_INDEX, &prev_selected_index, -1);
+			debug("Updating selected index for update at list_store's index: %d.  Setting selecting index to: %d previous selected index: %d.", i, i, prev_selected_index );
 			gtk_list_store_set(this->list_store, iter, GUINT_SELECTED_INDEX, i, -1);
 		}
 		gtk_tree_path_free(path);

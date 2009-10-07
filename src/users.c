@@ -477,6 +477,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
+					GUINT_SELECTED_INDEX, 0,				/*The row's 'selected index'.*/
 				-1
 	);
 	
