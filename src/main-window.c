@@ -1314,7 +1314,7 @@ void main_window_set_statusbar_msg(gchar *message){
 	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR( main_window->private->statusbar) ))
 		return;
 	
-	if(G_STR_N_EMPTY( message))
+	if(G_STR_N_EMPTY(message))
 		statusbar_timers=g_slist_append( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
 	
 	
@@ -1327,7 +1327,6 @@ static gboolean main_window_statusbar_display(const gchar *message){
 	gtk_statusbar_push( GTK_STATUSBAR(main_window->private->statusbar), 1, ( G_STR_N_EMPTY(message) ?message :STATUSBAR_DEFAULT ) );
 	
 	if(statusbar_timers && statusbar_timers->data){
-		statusbar_timers=g_slist_last(statusbar_timers);
 		gpointer timer_pointer=statusbar_timers->data;
 		guint timer=GPOINTER_TO_INT(timer_pointer);
 		program_timeout_remove(&timer, _("status bar message"));
