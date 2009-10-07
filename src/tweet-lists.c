@@ -57,6 +57,7 @@
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include "program.h"
+#include "online-services-typedefs.h"
 #include "tweet-lists.h"
 
 
@@ -190,6 +191,19 @@ void tweet_lists_start(void){
 		tweet_list_start((TweetList *)tabs->data);
 	g_list_free(tabs);
 }/*tweet_lists_start();*/
+
+void tweet_lists_remove_service(OnlineService *service){
+	GList *tabs=NULL;
+	TweetList *tweet_list;
+	for(tabs=tweet_lists->tabs; tabs; tabs=tabs->next){
+		tweet_list=(TweetList *)tabs->data;
+		if(tweet_list_get_service(tweet_list) == service)
+			tweet_lists_close_page(tweet_list_get_page(tweet_list));
+		else
+			tweet_list_remove_service(tweet_list, service);
+	}
+	g_list_free(tabs);
+}/*tweet_lists_remove_service(service);*/
 
 void tweet_lists_refresh(void){
 	GList *tabs=NULL;

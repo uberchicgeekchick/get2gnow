@@ -306,11 +306,9 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 			return NULL;
 		}
 		
-		if( services->total==1 && !recreating ){
-			main_window_state_on_connection(TRUE);
+		if( services->total<2 && !recreating )
 			main_window_tabs_init();
-		}else
-			tweet_lists_refresh();
+		main_window_state_on_connection(TRUE);
 		
 	}
 	

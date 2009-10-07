@@ -78,6 +78,11 @@
 #include "online-service.types.h"
 #include "online-service.h"
 
+#include "online-services-dialog.h"
+#include "online-service-request.h"
+
+#include "tweet-lists.h"
+
 #include "users.types.h"
 #include "users-glists.h"
 #include "users.h"
@@ -94,8 +99,6 @@
 #include "gconfig.h"
 #include "cache.h"
 
-#include "online-services-dialog.h"
-#include "online-service-request.h"
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -412,7 +415,9 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	cache_dir_clean_up(cache_dir, TRUE);
 	uber_free(cache_dir);
 	
-	online_service_display_debug_details(service, FALSE, "deleted/closed");
+	tweet_lists_remove_service(service);
+	
+	online_service_display_debug_details(service, FALSE, "deleted");
 	online_service_free(service);
 	return TRUE;
 }/*online_service_delete*/
@@ -1168,6 +1173,7 @@ void online_service_soup_session_callback_return_processor_func_default(OnlineSe
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
+	if(!(requested_uri && service && service->connected && G_STR_N_EMPTY(requested_uri) && G_STR_N_EMPTY(service->guid) && G_STR_N_EMPTY(service->key) )) return NULL;
 	
 	if(service->status) uber_free(service->status);
 	const gchar *status=NULL;

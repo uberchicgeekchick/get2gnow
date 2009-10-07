@@ -94,8 +94,8 @@ enum TweetListStoreColumns{		/**************************************************
 	STRING_FROM,			/*	<status's auther @ OnlineService URI>					*/
 	STRING_RCPT,			/* 	OnlineService key To: <user@service>					*/
 	GUINT_SELECTED_INDEX,		/*	The associated order/place this item appears in the acciated tree view. */
-					/********************************************************************************/
-};
+};					/********************************************************************************/
+
 
 GType tweet_list_get_type(void) G_GNUC_CONST;
 TweetList *tweet_list_new(const gchar *timeline, OnlineService *service);
@@ -105,10 +105,12 @@ GtkVBox *tweet_list_get_child(TweetList *tweet_list);
 GtkLabel *tweet_list_get_tab(TweetList *tweet_list);
 GtkLabel *tweet_list_get_menu(TweetList *tweet_list);
 
+OnlineService *tweet_list_get_service(TweetList *tweet_list);
 GtkListStore *tweet_list_get_list_store(TweetList *tweet_list);
 GtkTreeModel *tweet_list_get_tree_model(TweetList *tweet_list);
 
 void tweet_list_start(TweetList *tweet_list);
+void tweet_list_remove_service(TweetList *tweet_list, OnlineService *service);
 gboolean tweet_list_refresh(TweetList *tweet_list);
 void tweet_list_stop(TweetList *tweet_list);
 void tweet_list_complete(TweetList *tweet_list);

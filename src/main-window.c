@@ -911,32 +911,32 @@ static void main_window_tabs_menu_timeline_selected(GtkRadioMenuItem *item, Main
 	
 	if( main_window->private->timeline_public->active){
 		tweet_lists_get_timeline(API_TIMELINE_PUBLIC, NULL);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if( main_window->private->timeline_mine->active){
 		tweet_lists_get_timeline(API_TIMELINE_MINE, NULL);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if( main_window->private->timeline_favorites->active){
 		tweet_lists_get_timeline(API_FAVORITES, NULL);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if( main_window->private->timeline_dm->active){
 		tweet_lists_get_timeline(API_DIRECT_MESSAGES, NULL);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if( main_window->private->timeline_replies->active){
 		tweet_lists_get_timeline(API_REPLIES, NULL);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if( main_window->private->timeline_friends->active){
 		tweet_lists_get_timeline(API_TIMELINE_FRIENDS, NULL);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	/* just in case, fall back to friends timeline */
@@ -1141,32 +1141,32 @@ static void main_window_tabs_menu_set_active(MainWindow *main_window, gchar *tim
 	
 	if((g_str_equal(timeline, API_TIMELINE_FRIENDS)) ){
 		gtk_check_menu_item_set_active( main_window->private->timeline_friends, TRUE);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if((g_str_equal(timeline, API_REPLIES)) ){
 		gtk_check_menu_item_set_active( main_window->private->timeline_replies, TRUE);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if((g_str_equal(timeline, API_DIRECT_MESSAGES)) ){
 		gtk_check_menu_item_set_active( main_window->private->timeline_dm, TRUE);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if((g_str_equal(timeline, API_FAVORITES)) ){
 		gtk_check_menu_item_set_active( main_window->private->timeline_favorites, TRUE);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if((g_str_equal(timeline, API_TIMELINE_MINE)) ){
 		gtk_check_menu_item_set_active( main_window->private->timeline_mine, TRUE);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	if((g_str_equal(timeline, API_TIMELINE_PUBLIC)) ){
 		gtk_check_menu_item_set_active( main_window->private->timeline_public, TRUE);
-		timeline_found=TRUE;
+		if(!timeline_found) timeline_found=TRUE;
 	}
 	
 	/* Let's fallback to friends timeline */
@@ -1266,9 +1266,9 @@ void main_window_state_on_connection(gboolean connected){
 	if(!connected){
 		main_window_statusbar_timeouts_free();
 		online_service_request_unset_selected_update();
-		tweet_lists_stop();
-	} else
-		tweet_lists_refresh();
+		//tweet_lists_stop();
+	}/* else
+		tweet_lists_refresh();*/
 	
 	GList         *l;
 	for(l=main_window->private->widgets_connected; l; l=l->next)

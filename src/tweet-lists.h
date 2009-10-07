@@ -64,7 +64,8 @@
 #include <gtk/gtk.h>
 
 #include "program.h"
-#include "online-service.h"
+#include "online-services-typedefs.h"
+#include "tweet-list.h"
 
 
 G_BEGIN_DECLS
@@ -92,8 +93,10 @@ TweetList *tweet_lists_get_previous(void);
 TweetList *tweet_lists_get_page(gint page, gboolean close);
 
 void tweet_lists_start(void);
+void tweet_lists_remove_service(OnlineService *service);
 void tweet_lists_refresh(void);
 void tweet_lists_stop(void);
+
 void tweet_lists_close(void);
 void tweet_lists_close_current_page(void);
 void tweet_lists_close_page(gint page);

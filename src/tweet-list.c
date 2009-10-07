@@ -400,6 +400,11 @@ GtkLabel *tweet_list_get_menu(TweetList *tweet_list){
 	return GET_PRIVATE(tweet_list)->menu_label;
 }/*tweet_list_get_label(TweetList *tweet_list);*/
 
+OnlineService *tweet_list_get_service(TweetList *tweet_list){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) && GET_PRIVATE(tweet_list)->service )) return NULL;
+	return GET_PRIVATE(tweet_list)->service;
+}/*tweet_list_get_timeline(tweet_list);*/
+
 GtkListStore *tweet_list_get_list_store(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) )) return NULL;
 	return GET_PRIVATE(tweet_list)->list_store;
@@ -681,6 +686,39 @@ static void tweet_list_check_inbox(TweetList *tweet_list){
 	
 	tweet_list_update_age(tweet_list, update_expiration);
 }/*tweet_list_check_inbox(tweet_list);*/
+
+void tweet_list_remove_service(TweetList *tweet_list, OnlineService *service){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	if(!this->total) return;
+	
+	OnlineService	*service_at_index;
+	
+	debug( "Removing <%s>'s %s updates.", service->guid, this->monitoring_string );
+	for(gint i=0; i<=this->total; i++){
+		service_at_index=NULL;
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gtk_tree_model_get(
+					this->tree_model, iter,
+						ONLINE_SERVICE, &service_at_index,
+					-1
+		);
+		
+		if( service && service_at_index && service==service_at_index ){
+			debug( "Removing <%s>'s %s updates at index: %d.", service_at_index->guid, this->monitoring_string, i );
+			gtk_list_store_remove(this->list_store, iter);
+		}
+		uber_free(iter);
+	}
+}/*tweet_list_remove_service(tweet_list, service);*/
 
 static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
