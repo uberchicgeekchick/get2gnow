@@ -457,6 +457,7 @@ void user_status_store(UserStatus *status, TweetList *tweet_list){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
 	guint tweet_list_total=tweet_list_increment(tweet_list);
+	/*tweet_list_mark_as_unread(tweet_list);*/
 	debug("Appending tweet to TweetList <%s>'s; update ID for [%s].  %s - status ID.  Total updates: %u", status->service->guid, tweet_list_get_timeline(tweet_list), status->id_str, tweet_list_total);
 	
 	gtk_list_store_prepend(tweet_list_store, iter);

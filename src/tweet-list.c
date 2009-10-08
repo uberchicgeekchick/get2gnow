@@ -1205,7 +1205,6 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 					STRING_USER, &user_name,
 					PIXBUF_AVATAR, &pixbuf,
 					ONLINE_SERVICE, &service,
-					GUINT_SELECTED_INDEX, &this->index,
 				-1
 	);
 	

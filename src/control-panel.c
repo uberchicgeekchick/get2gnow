@@ -1006,7 +1006,6 @@ void control_panel_sexy_send_dm(void){
 
 static void control_panel_sexy_append(const gchar *update, ControlPanel *control_panel){
 	if(G_STR_EMPTY( update)) return;
-	static gboolean first_update=TRUE;
 	const gint max_updates=50;
 	
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
@@ -1019,11 +1018,6 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 				-1
 	);
 	uber_free(iter);
-	
-	if(first_update){
-		gtk_combo_box_entry_set_text_column(control_panel->sexy_entry_combo_box_entry, GSTRING_UPDATE);
-		first_update=FALSE;
-	}
 	
 	if(control_panel->updates<=max_updates){
 		control_panel->updates++;
