@@ -314,13 +314,13 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			break;
 	}
 	
-	debug("Total tweets in this timeline: %d.", new_updates);
-	if(!retrying && !new_updates && !g_strrstr(request_uri, "?since_id=") && tweet_list_has_loaded(tweet_list) >= 2 && xml->status_code==200){
+	/*if(!retrying && !new_updates && !g_strrstr(request_uri, "?since_id=") && tweet_list_has_loaded(tweet_list) >= 2 && xml->status_code==200){
 		uber_free(request_uri);
 		return NULL;
 		return network_retry(service_wrapper);
-	}
+	}*/
 	
+	debug("Total tweets in this timeline: %d.", new_updates);
 	if(retrying) retrying=FALSE;
 	tweet_list_complete(tweet_list);
 	

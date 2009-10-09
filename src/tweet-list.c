@@ -518,7 +518,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	if(this->page) minutes+=this->page;
 	if(this->has_loaded < 2) {
 		this->has_loaded++;
-		if(this->has_loaded < 2 && !this->total) {
+		if(this->has_loaded < 2) {
 			statusbar_printf("Please wait %d seconds for %s to load.", (this->has_loaded+1)*15, this->monitoring_string);
 			this->reload=(this->has_loaded+1)*15000;
 			return 1.0;
