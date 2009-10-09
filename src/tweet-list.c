@@ -458,6 +458,7 @@ void tweet_list_start(TweetList *tweet_list){
 	tweet_list_clean_up(tweet_list);
 	tweet_list_update_age(tweet_list, 0);
 	tweet_list_set_adjustment(tweet_list);
+	if(this->has_loaded < 1) return;
 	if(this->loading) return;
 	if(this->minutes){
 		this->loading=TRUE;
@@ -515,7 +516,14 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	}
 	
 	if(this->page) minutes+=this->page;
-	if(this->has_loaded < 2) this->has_loaded++;
+	if(this->has_loaded < 2) {
+		this->has_loaded++;
+		if(this->has_loaded < 2 && !this->total) {
+			statusbar_printf("Please wait %d seconds for %s to load.", (this->has_loaded+1)*15, this->monitoring_string);
+			this->reload=(this->has_loaded+1)*15000;
+			return 1.0;
+		}
+	}
 	this->reload=minutes*60000;
 	
 	return 1.0;
@@ -1045,6 +1053,8 @@ static void tweet_list_move(TweetList *tweet_list, GdkEventKey *event){
 			return;
 	}//switch
 	
+	tweet_list_index_validate(tweet_list);
+	
 	switch(event->state){
 		case GDK_CONTROL_MASK|GDK_MOD1_MASK:
 			tweet_list_index_select(tweet_list);
@@ -1072,8 +1082,6 @@ static void tweet_list_index_select(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	tweet_list_index_validate(tweet_list);
-	
 	debug("Selecting update %d, out of %d total updates.", this->index, this->total);
 	
 	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
@@ -1090,7 +1098,7 @@ static void tweet_list_index_scroll_to(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	tweet_list_index_validate(tweet_list);
+	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return;
 	
 	debug("Scrolling to update %d, out of %d total updates.", this->index, this->total);
 	GtkTreePath *path=gtk_tree_path_new_from_indices(this->index, -1);
