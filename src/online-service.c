@@ -745,14 +745,16 @@ gboolean online_service_connect(OnlineService *service){
 	
 #endif
 	
-	proxy_attach_online_service(service);
-	
 	online_service_cookie_jar_open(service);
 	
 	return (service->connected=(service->authenticated=TRUE));
+	
+	proxy_attach_online_service(service);
 }/*online_service_connect*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
+	return;
+	/*
 	SoupCookieJar	*cookie_jar=NULL;
 	gchar		*cookie_jar_filename=NULL;
 	
@@ -768,6 +770,7 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	
 	uber_free(cookie_jar_filename);
 	uber_object_unref(cookie_jar);
+	*/
 }/*online_servce_open_cookie_jar*/
 
 /* Login to service. */

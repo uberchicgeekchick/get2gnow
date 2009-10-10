@@ -1112,8 +1112,8 @@ static void main_window_login(void){
 		return;
 	}
 	
-	/*tabs_init_timeout=g_timeout_add(30000, (GSourceFunc)main_window_tabs_init, NULL);
-	return;*/
+	tabs_init_timeout=g_timeout_add(3000, (GSourceFunc)main_window_tabs_init, NULL);
+	return;
 	main_window_tabs_init();
 }/*main_window_login*/
 
@@ -1121,8 +1121,8 @@ static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 	if(!( online_services_reconnect()))
 		return;
 	
-	/*tabs_init_timeout=g_timeout_add(30000, (GSourceFunc)main_window_tabs_init, NULL);
-	return;*/
+	tabs_init_timeout=g_timeout_add(3000, (GSourceFunc)main_window_tabs_init, NULL);
+	return;
 	main_window_tabs_init();
 }/*main_window_reconnect*/
 
@@ -1184,7 +1184,7 @@ gboolean main_window_tabs_init(void){
 	gboolean open_home_page=TRUE;
 	gchar *timeline=NULL;
 	gconfig_get_string(PREFS_TWEETS_HOME_TIMELINE, &timeline);
-	/*online_services_refresh();*/
+	online_services_refresh();
 	if(G_STR_EMPTY( timeline)){
 		if(timeline) uber_free(timeline);
 		timeline=g_strdup(API_TIMELINE_FRIENDS);
@@ -1219,7 +1219,7 @@ gboolean main_window_tabs_init(void){
 	main_window_tabs_menu_set_active(main_window, timeline);
 	uber_free(timeline);
 	if(tabs_init_timeout) tabs_init_timeout=0;
-	return TRUE;
+	return FALSE;
 }/*main_window_tabs_init();*/
 
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
@@ -1323,7 +1323,7 @@ void main_window_set_statusbar_msg(gchar *message){
 		return;
 	
 	if(G_STR_N_EMPTY(message))
-		statusbar_timers=g_slist_prepend( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
+		statusbar_timers=g_slist_append( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
 	
 	
 	program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar message"));
@@ -1347,7 +1347,7 @@ static gboolean main_window_statusbar_display(const gchar *message){
 }/*main_window_set_statusbar_display(gpointer);*/
 
 static void main_window_statusbar_timeouts_free(void){
-	for(statusbar_timers=g_slist_last(statusbar_timers); statusbar_timers; statusbar_timers=statusbar_timers->next){
+	for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_timers; statusbar_timers=statusbar_timers->next){
 		gpointer timer_pointer=statusbar_timers->data;
 		guint timer=GPOINTER_TO_INT(timer_pointer);
 		program_timeout_remove(&timer, _("status bar message"));
