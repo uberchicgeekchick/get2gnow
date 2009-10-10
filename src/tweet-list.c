@@ -476,12 +476,6 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return 0.0;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	if(gtk_progress_bar_get_fraction(this->progress_bar)==0.0){
-		this->minutes=0;
-		this->reload=(this->monitoring+this->page+1)*5000;
-		return 0.0;
-	}
-	
 	gint minutes=0;
 	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
 	/* With multiple timeline support timeline reloading interval shouldn't be less than 5 minutes */
@@ -493,23 +487,22 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 			debug("TweetList(s) monitoring %s does not auto-reload.", this->monitoring_string);
 			return 1.0;
 		case Archive:	case Timelines:
-			if(minutes<15) minutes=15;
-			else minutes+=8;
-			break;
-		case Replies:
-			minutes+=1;
-			break;
-		case DMs:
-			minutes+=3;
-			break;
-		case BestFriends:	case Users:
 			minutes+=12;
 			break;
+		case Replies:
+			minutes+=2;
+			break;
+		case DMs:
+			minutes+=4;
+			break;
+		case BestFriends:	case Users:
+			minutes+=6;
+			break;
 		case Faves:
-			minutes+=5;
+			minutes+=8;
 			break;
 		case Searches: case Groups:
-			minutes+=7;
+			minutes+=10;
 			break;
 		case Tweets:
 			break;
@@ -525,7 +518,7 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 			guint seconds=15;
 			statusbar_printf("Please wait %d seconds for %s to load.", seconds, this->monitoring_string);
 			this->reload=seconds*1000;
-			return 1.0;
+			return 0.0;
 		}
 	}
 	this->reload=this->minutes*60000;

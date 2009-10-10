@@ -96,11 +96,11 @@ G_BEGIN_DECLS
 
 #ifndef IPC_PIPE_PREFIX
 #	if defined GNOME_ENABLE_DEBUG
-#		define	IPC_PIPE_PREFIX		"%s-debug-%s"
+#		define	IPC_PIPE_PREFIX		"%s-debug-%s-"
 #	else
-#		define	IPC_PIPE_PREFIX		"%s-%s"
+#		define	IPC_PIPE_PREFIX		"%s-%s-"
 #	endif
-#define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "-%d"
+#define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "%d"
 #endif
 
 #ifndef uber_free
