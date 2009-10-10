@@ -401,15 +401,15 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	control_panel_sexy_select();
 }/*online_service_request_main(service, parent, Follow|UnFollow|ViewProfile|ViewUpdates|..., user_name);*/
 
-void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper){
+void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineServiceRequest *request=(OnlineServiceRequest *)online_service_wrapper_get_user_data(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
 	const gchar *service_guid=service->guid;
-	if( msg->status_code!=403 && !network_check_http(service, msg) ){
-		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, msg->status_code);
+	if( xml->status_code!=403 && !network_check_http(service, xml) ){
+		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, xml->status_code);
 		
-		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_guid, msg->reason_phrase, msg->status_code);
+		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_guid, xml->reason_phrase, xml->status_code);
 		online_service_request_free(request);
 		return NULL;
 	}
@@ -422,8 +422,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 		case Follow:
 		case BestFriendAdd:
 		case BestFriendDrop:
-			if(!(user=user_parse_profile(service->session, msg, service_wrapper))){
-				if(msg->status_code!=403){
+			if(!(user=user_parse_profile(service->session, xml, service_wrapper))){
+				if(xml->status_code!=403){
 					debug("\t\t[failed]");
 					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_name, service_guid);
 				}else{
@@ -434,7 +434,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 			}else{
 				debug("\t\t[succeeded]");
 				if(request->action==BestFriendAdd||request->action==BestFriendDrop)
-					online_service_best_friends_list_store_update_check( service_wrapper, user );
+					online_service_best_friends_list_store_update_check( service_wrapper, xml, user );
 				else if(request->action==Follow)
 					users_glists_append_friend(service, user);
 				else if(request->action==UnFollow)
@@ -451,7 +451,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, O
 		case Fave:
 		case UnFave:
 		case UnBlock:
-			if(msg->status_code!=403){
+			if(xml->status_code!=403){
 				debug("\t\t[succceed]");
 				main_window_statusbar_printf("Successfully %s on %s.", request->message, service_guid);
 			}else{

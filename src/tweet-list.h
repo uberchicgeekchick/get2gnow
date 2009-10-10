@@ -52,6 +52,7 @@
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
 #include "online-services-typedefs.h"
+#include "users.types.h"
 
 G_BEGIN_DECLS
 
@@ -110,15 +111,16 @@ GtkListStore *tweet_list_get_list_store(TweetList *tweet_list);
 GtkTreeModel *tweet_list_get_tree_model(TweetList *tweet_list);
 
 void tweet_list_start(TweetList *tweet_list);
-void tweet_list_remove_service(TweetList *tweet_list, OnlineService *service);
 gboolean tweet_list_refresh(TweetList *tweet_list);
 void tweet_list_stop(TweetList *tweet_list);
 void tweet_list_complete(TweetList *tweet_list);
 
+void tweet_list_store( TweetList *tweet_list, UserStatus *status );
+void tweet_list_remove_service(TweetList *tweet_list, OnlineService *service);
+
 void tweet_list_toggle_toolbar(TweetList *tweet_list);
 
 void tweet_list_mark_as_read(TweetList *tweet_list);
-void tweet_list_mark_as_unread(TweetList *tweet_list);
 
 gint8 tweet_list_has_loaded(TweetList *tweet_list);
 
@@ -130,7 +132,6 @@ const gchar *tweet_list_get_monitoring_string(TweetList *tweet_list);
 const gchar *monitoring_to_string(UpdateMonitor monitoring);
 
 gint tweet_list_get_total(TweetList *tweet_list);
-guint tweet_list_increment(TweetList *tweet_list);
 guint tweet_list_get_notify_delay(TweetList *tweet_list);
 
 void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);

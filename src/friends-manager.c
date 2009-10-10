@@ -289,7 +289,7 @@ void friends_manager_display_following_and_followers(GList *friends_and_follower
 					friends_manager->friends_manager_liststore,
 					iter,
 						USER_NAME, user1->user_name,
-						USER_NICK, user1->user_nick,
+						USER_NICK, user1->nick_name,
 						FOLLOWING, (following?"Yes":"No"),
 						FOLLOWER, (follower?"Yes":"No"),
 						USER_POINTER, user1,

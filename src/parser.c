@@ -259,6 +259,61 @@ const gchar *parser_xml_node_type_to_string(xmlElementType type){
 	}
 }/*parser_xml_node_type_to_string(node->type);*/
 
+gboolean parser_xml_error_check(OnlineService *service, SoupMessage *xml, gchar **error_message){
+	if(!SOUP_STATUS_IS_SUCCESSFUL(xml->status_code)){
+		*error_message=g_strdup_printf("OnlineService: <%s> returned: %s(%d).", service->key, xml->reason_phrase, xml->status_code);
+		return FALSE;
+	}
+	
+	xmlDoc		*doc=NULL;
+	xmlNode		*root_element=NULL;
+	
+	*error_message=NULL;
+	gboolean error_free=TRUE;
+	
+	debug("Parsing xml document to find any authentication errors.");
+	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
+		debug("Unable to parse xml doc.");
+		*error_message=g_strdup("Unable to parse xml doc.");
+		xmlCleanupParser();
+		return FALSE;
+	}
+	
+	root_element=xmlDocGetRootElement(doc);
+	if(root_element==NULL) {
+		debug("Failed getting first element of xml data.");
+		*error_message=g_strdup("Failed getting first element of xml data.");
+		xmlFreeDoc(doc);
+		return FALSE;
+	}
+	
+	xmlNode	*current_node=NULL;
+	for(current_node = root_element; current_node; current_node = current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE ) continue;
+		
+		if(!( g_str_equal(current_node->name, "error") )) continue;
+		
+		error_free=FALSE;
+		*error_message=(gchar *)xmlNodeGetContent(current_node);
+		break;
+	}
+	
+	if(error_free) *error_message=g_strdup("");
+	else{
+		gchar *error_message_swap=g_strdup_printf("OnlineService: <%s> returned: %s(%d) with the error: %s.", service->key, xml->reason_phrase, xml->status_code, *error_message);
+		uber_free( (*error_message) );
+		*error_message=error_message_swap;
+		error_message_swap=NULL;
+		debug("%s", *error_message);
+		statusbar_printf( "%s", *error_message );
+	}
+	
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
+	
+	return error_free;
+}/*parser_xml_error_check(service, xml);*/
+
 gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
@@ -435,7 +490,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", status->user->user_name, status->id, service->key);
-		user_status_store(status, tweet_list);
+		tweet_list_store(tweet_list, status);
 		if( ( monitoring!=BestFriends && monitoring!=DMs ) && online_service_is_user_best_friend(service, status->user->user_name) ){
 			gdouble best_friend_newest_update_id=0.0, best_friend_oldest_update_id=0.0;
 			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, status->user->user_name );
@@ -453,13 +508,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			uber_free( user_timeline );
 		}
 		
-		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
-			tweet_list_mark_as_unread(tweet_list);
-			if(notify && free_status){
-				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				tweet_list_notify_delay+=tweet_display_interval;
-			}
+		if( notify && free_status && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
+			free_status=FALSE;
+			g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			tweet_list_notify_delay+=tweet_display_interval;
 		}
 		
 		if(!id_newest_update) id_newest_update=status->id;

@@ -200,7 +200,7 @@ void online_service_wrapper_retry(OnlineServiceWrapper *online_service_wrapper){
 void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml){
 	if(!(online_service_wrapper->callback && online_service_wrapper->can_run)) return;
 	online_service_wrapper->can_run=FALSE;
-	online_service_wrapper->online_service_soup_session_callback_return_processor_func( online_service_wrapper, (online_service_wrapper->callback(session, xml, online_service_wrapper)) );
+	online_service_wrapper->online_service_soup_session_callback_return_processor_func( online_service_wrapper, xml, (online_service_wrapper->callback(session, xml, online_service_wrapper)) );
 }/*online_service_wrapper_run*/
 
 OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *online_service_wrapper){

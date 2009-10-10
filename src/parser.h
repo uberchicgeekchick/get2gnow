@@ -73,6 +73,8 @@ xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, UpdateMonitor monitoring);
 guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list);
 
+gboolean parser_xml_error_check(OnlineService *service, SoupMessage *xml, gchar **error_message);
+
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
 
 gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath);

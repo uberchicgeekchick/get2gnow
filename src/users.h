@@ -65,19 +65,15 @@
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
 #include "online-services-typedefs.h"
-#include "tweet-list.h"
+#include "users.types.h"
 
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
-typedef struct _User User;
-typedef struct _UserStatus UserStatus;
-
 /**********************************************************************
  *          Global method & function prototypes                      *
  **********************************************************************/
-User *user_fetch_profile(OnlineService *service, const gchar *user_name);
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
 gboolean user_download_avatar(OnlineService *service, User *user);
@@ -89,7 +85,6 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element);
 void user_free(User *user);
 
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list);
-void user_status_store(UserStatus *status, TweetList *tweet_list);
 gboolean user_status_notify_on_timeout(UserStatus *status);
 
 void user_status_free(UserStatus *status);

@@ -99,7 +99,7 @@ void online_service_request_unblock(OnlineService *service, GtkWindow *parent, c
 void online_service_request_fave(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_unfave(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 
-void *online_service_request_main_quit(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
 void online_service_request_selected_update_view_updates_new(void);
 void online_service_request_selected_update_view_updates(void);

@@ -71,6 +71,9 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
+typedef struct _User User;
+typedef struct _UserStatus UserStatus;
+
 struct _User {
 	OnlineService		*service;
 	
@@ -78,7 +81,7 @@ struct _User {
 	gchar			*id_str;
 	
 	gchar			*user_name;
-	gchar			*user_nick;
+	gchar			*nick_name;
 	
 	UserStatus		*status;
 	

@@ -119,7 +119,7 @@ enum _UsersGListGetWhich{
 /**********************************************************************
  *                         Macros & methods.                          *
  **********************************************************************/
-typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
+typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
 typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 typedef void (*UsersGListLoadFunc) (GList *users);
 

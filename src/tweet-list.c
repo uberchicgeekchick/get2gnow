@@ -241,6 +241,8 @@ static void tweet_list_stop_toggle_tool_button_toggled(GtkToggleToolButton *stop
 
 static void tweet_list_set_adjustment(TweetList *tweet_list);
 
+static void tweet_list_mark_as_unread(TweetList *tweet_list);
+
 static void tweet_list_update_age(TweetList *tweet_list, gint delete_older_then);
 static void tweet_list_clean_up(TweetList *tweet_list);
 static void tweet_list_set_selected_index(TweetList *tweet_list);
@@ -482,8 +484,6 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	
 	gint minutes=0;
 	gconfig_get_int(PREFS_TWEETS_RELOAD_TIMELINES, &minutes);
-	if(this->minutes==minutes && this->has_loaded > 1 ) return 0.0;
-	this->minutes=minutes;
 	/* With multiple timeline support timeline reloading interval shouldn't be less than 5 minutes */
 	if(this->minutes < 5)
 		gconfig_set_int(PREFS_TWEETS_RELOAD_TIMELINES, (this->minutes=minutes=5) );
@@ -516,15 +516,19 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 	}
 	
 	if(this->page) minutes+=this->page;
+	if(this->minutes==minutes && this->has_loaded > 1) return 0.0;
+	this->minutes=minutes;
 	if(this->has_loaded < 2) {
 		this->has_loaded++;
 		if(this->has_loaded < 1) {
-			statusbar_printf("Please wait %d seconds for %s to load.", (this->has_loaded+1)*15, this->monitoring_string);
-			this->reload=(this->has_loaded+1)*15000;
+			this->minutes=0;
+			guint seconds=15;
+			statusbar_printf("Please wait %d seconds for %s to load.", seconds, this->monitoring_string);
+			this->reload=seconds*1000;
 			return 1.0;
 		}
 	}
-	this->reload=minutes*60000;
+	this->reload=this->minutes*60000;
 	
 	return 1.0;
 }/*tweet_list_prepare_reload(tweet_list);*/
@@ -913,15 +917,6 @@ static void tweet_list_set_timeline_label(TweetList *tweet_list, const gchar *ti
 	this->monitoring_string=monitoring_to_string(this->monitoring);
 }/*tweet_list_set_timeline_label(tweet_list, timeline);*/
 
-guint tweet_list_increment(TweetList *tweet_list){
-	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return -1;
-	TweetListPrivate *this=GET_PRIVATE(tweet_list);
-	
-	gtk_progress_bar_pulse(this->progress_bar);
-	if(this->index) this->index++;
-	return (this->total++);
-}/*tweet_list_increment(tweet_list);*/
-
 static void tweet_list_setup(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
@@ -1148,6 +1143,48 @@ void tweet_list_toggle_toolbar(TweetList *tweet_list){
 	gtk_widget_toggle_visibility( GTK_WIDGET( GET_PRIVATE(tweet_list)->handlebox ) );
 }/*tweet_list_toggle_toolbar();*/
 
+void tweet_list_store( TweetList *tweet_list, UserStatus *status){
+	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
+	TweetListPrivate *this=GET_PRIVATE(tweet_list);
+	
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	
+	gtk_progress_bar_pulse(this->progress_bar);
+	if(this->index) this->index++;
+	this->total++;
+	debug("Appending tweet to TweetList <%s>'s; update ID for [%s].  %s - status ID.  Total updates: %u", status->service->guid, this->timeline, status->id_str, this->total);
+	
+	tweet_list_mark_as_unread(tweet_list);
+	gtk_list_store_prepend(this->list_store, iter);
+	gtk_list_store_set(
+				this->list_store, iter,
+					GUINT_TWEET_LIST_INDEX, this->total,
+					GDOUBLE_TWEET_ID, status->id,				/*Tweet's ID.*/
+					GDOUBLE_USER_ID, status->user->id,			/*User's ID.*/
+					STRING_USER, status->user->user_name,			/*Useruser_name string.*/
+					STRING_NICK, status->user->nick_name,			/*Author user_name string.*/
+					STRING_TEXT, status->text,				/*Tweet string.*/
+					STRING_TWEET, status->tweet,				/*Display string.*/
+					STRING_SEXY_TWEET, status->sexy_tweet,			/*SexyTreeView's tooltip.*/
+					STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
+					STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
+					GINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
+					ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
+					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
+					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
+					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
+					GUINT_SELECTED_INDEX, 0,				/*The row's 'selected index'.*/
+				-1
+	);
+	
+	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
+	if(!g_file_test(status->user->image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+		return network_get_image(status->service, tweet_list, status->user->image_file, status->user->image_url, iter);
+	
+	tweet_list_set_image(tweet_list, status->user->image_file, iter);
+	uber_free(iter);
+}/*tweet_list_store_update( tweet_list, status );*/
+
 void tweet_list_mark_as_read(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
@@ -1160,11 +1197,11 @@ void tweet_list_mark_as_read(TweetList *tweet_list){
 	gtk_label_set_markup_with_mnemonic(this->menu_label, this->menu_label_string);
 }/*tweet_list_mark_as_read(tweet_list);*/
 
-void tweet_list_mark_as_unread(TweetList *tweet_list){
+static void tweet_list_mark_as_unread(TweetList *tweet_list){
 	if(!( tweet_list && IS_TWEET_LIST(tweet_list) ))	return;
 	TweetListPrivate *this=GET_PRIVATE(tweet_list);
 	
-	if(this->unread) return;
+	if(this->has_loaded<2 || this->unread) return;
 	
 	this->unread=TRUE;
 	
@@ -1200,13 +1237,13 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	gdouble		tweet_id, user_id;
 	OnlineService	*service=NULL;
 	GdkPixbuf	*pixbuf;
-	gchar		*user_name, *user_nick, *date, *sexy_tweet, *text_tweet;
+	gchar		*user_name, *nick_name, *date, *sexy_tweet, *text_tweet;
 	
 	gtk_tree_model_get(
 				GTK_TREE_MODEL(this->tree_model_sort), iter,
 					GDOUBLE_TWEET_ID, &tweet_id,
 					GDOUBLE_USER_ID, &user_id,
-					STRING_NICK, &user_nick,
+					STRING_NICK, &nick_name,
 					STRING_TEXT, &text_tweet,
 					STRING_SEXY_TWEET, &sexy_tweet,
 					STRING_CREATED_AGO, &date,
@@ -1218,15 +1255,15 @@ static void tweet_list_changed_cb(SexyTreeView *tweet_list_sexy_tree_view, Tweet
 	
 	debug("Displaying tweet: #%d, update ID: %f from <%s>.", this->index, tweet_id, service->guid);
 	
-	control_panel_view_selected_update(service, tweet_id, user_id, user_name, user_nick, date, sexy_tweet, text_tweet, pixbuf);
+	control_panel_view_selected_update(service, tweet_id, user_id, user_name, nick_name, date, sexy_tweet, text_tweet, pixbuf);
 	
-	g_free(user_name);
-	g_free(sexy_tweet);
-	g_free(text_tweet);
-	g_free(date);
-	g_free(user_nick);
-	if(pixbuf) g_object_unref(pixbuf);
-	g_free(iter);
+	uber_free(user_name);
+	uber_free(sexy_tweet);
+	uber_free(text_tweet);
+	uber_free(date);
+	uber_free(nick_name);
+	if(pixbuf) uber_object_unref(pixbuf);
+	uber_free(iter);
 	
 	control_panel_sexy_select();
 }/*tweet_list_changed_cb(tweet_list_sexy_tree_view, tweet_list);*/

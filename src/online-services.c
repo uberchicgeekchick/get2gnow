@@ -201,6 +201,20 @@ gboolean online_services_reconnect(void){
 	return relogin_okay;
 }/*online_services_reconnect*/
 
+gboolean online_services_refresh(void){
+	GList		*accounts=NULL;
+	OnlineService	*service=NULL;
+	
+	gboolean	refresh_okay=FALSE;
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
+		if(online_service_refresh(service))
+			if(!refresh_okay) refresh_okay=TRUE;
+	}
+	g_list_free(accounts);
+	return refresh_okay;
+}/*online_services_refresh();*/
+
 void online_services_disconnect(void){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
@@ -404,13 +418,12 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 		OnlineService *service=(OnlineService *)accounts->data;
 		if( connected_only && !service->connected ) continue;
 		
-		const gchar *service_uri=service->uri;
-		debug("Appending account: '%s'; server: %s.", service->key, service_uri);
+		debug("Appending account: '%s'; server: %s.", service->key, service->uri);
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						UrlString, service_uri,
+						UrlString, service->uri,
 						OnlineServicePointer, service,
 					-1
 		);
@@ -511,13 +524,14 @@ void online_services_request(RequestMethod request, const gchar *uri, OnlineServ
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
-		const gchar *service_key=service->key;
-		if(!online_service_refresh(service, uri)){
-			debug("**ERROR:** Unable to load: %s refreshing: <%s> failed.", uri, service_key);
-			continue;
+		if(!(service->connected && service->authenticated)){
+			if(!online_service_refresh(service)){
+				debug("**ERROR:** Unable to load: %s refreshing: <%s> failed.", uri, service->key);
+				continue;
+			}
 		}
 		
-		debug("Requesting: %s from <%s>.", uri, service_key);
+		debug("Requesting: %s from <%s>.", uri, service->key);
 		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
 	g_list_free(accounts);
@@ -543,7 +557,7 @@ gssize online_services_get_length_of_longest_replacement(void){
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
 		if(service->connected)
-			if( (replacement_length=strlen( (replace_with==1?service->user_nick:service->user_name) )) > longest_replacement_length)
+			if( (replacement_length=strlen( (replace_with==1?service->nick_name:service->user_name) )) > longest_replacement_length)
 				longest_replacement_length=replacement_length;
 	}
 	

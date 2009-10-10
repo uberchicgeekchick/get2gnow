@@ -160,10 +160,9 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		new_updates++;
 		free_status=TRUE;
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", status->user->user_name, status->id, service->key);
-		user_status_store(status, tweet_list);
+		tweet_list_store(tweet_list, status);
 		
 		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
-			tweet_list_mark_as_unread(tweet_list);
 			if(notify){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);

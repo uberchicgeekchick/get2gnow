@@ -65,7 +65,8 @@
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include "config.h"
-#include "users.h"
+#include "tweet-list.h"
+
 #include "online-service.h"
 
 #include "online-services-typedefs.h"

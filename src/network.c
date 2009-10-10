@@ -320,9 +320,13 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		return network_retry(service_wrapper);
 	}*/
 	
-	debug("Total tweets in this timeline: %d.", new_updates);
+	if(new_updates){
+		debug("Total tweets in this timeline: %d.", new_updates);
+	}
 	if(retrying) retrying=FALSE;
-	tweet_list_complete(tweet_list);
+	
+	if( IS_TWEET_LIST(tweet_list) )
+		tweet_list_complete(tweet_list);
 	
 	uber_free(request_uri);
 	return NULL;

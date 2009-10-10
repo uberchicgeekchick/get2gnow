@@ -74,9 +74,10 @@
 #include "online-service.h"
 #include "online-service-request.h"
 
-#include "network.h"
 #include "users.types.h"
 #include "users.h"
+
+#include "network.h"
 #include "users-glists.h"
 #include "gtkbuilder.h"
 #include "tweets.h"
@@ -719,7 +720,7 @@ static void control_panel_reorder(void){
 }/*control_panel_reorder*/
 
 
-void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
+void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
 	if(!id)
 		online_service_request_unset_selected_update();
 	else
@@ -747,14 +748,14 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	if(!id)
 		sexy_text=g_strdup("");
 	else
-		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service->user_nick, uri_scheme_suffix, service->uri, service->user_name, service->user_name, service->uri);
+		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service->nick_name, uri_scheme_suffix, service->uri, service->user_name, service->user_name, service->uri);
 	debug("Setting 'sexy_to' for 'selected_update':\n\t\t%s.", sexy_text);
 	label_set_text(service, control_panel->sexy_to, sexy_text, FALSE, TRUE);
 	uber_free(sexy_text);
 	
-	if(!(G_STR_EMPTY( user_nick) && G_STR_EMPTY(user_name) )){
+	if(!(G_STR_EMPTY( nick_name) && G_STR_EMPTY(user_name) )){
 		if(! G_STR_EMPTY(user_name) )
-		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", user_nick, uri_scheme_suffix, service->uri, user_name, user_name, service->uri);
+		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", nick_name, uri_scheme_suffix, service->uri, user_name, user_name, service->uri);
 	}else
 		sexy_text=g_strdup("");
 	debug("Setting 'sexy_from' for 'selected_update':\n\t\t%s.", sexy_text);
@@ -1123,8 +1124,8 @@ void control_panel_dm_data_fill(GList *followers){
 	for(followers=g_list_first(followers); followers; followers=followers->next) {
 		user=(User *)followers->data;
 		if(!service) service=user->service;
-		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user->user_name, user->user_nick);
-		debug("Adding user: %s <%s> from <%s> to DM form", user->user_name, user->user_nick, service->guid );
+		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user->user_name, user->nick_name);
+		debug("Adding user: %s <%s> from <%s> to DM form", user->user_name, user->nick_name, service->guid );
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(control_panel->followers_list_store, iter);
 		gtk_list_store_set(

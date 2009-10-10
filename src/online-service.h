@@ -95,7 +95,7 @@ gint online_service_best_friends_list_store_validate( OnlineService *service, Gt
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name );
-void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, User *user);
+void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
 void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store );
 
 GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich users_glist_get_which);
@@ -103,7 +103,7 @@ void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich u
 
 gboolean online_service_connect(OnlineService *service);
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection);
-gboolean online_service_refresh(OnlineService *service, const gchar *uri);
+gboolean online_service_refresh(OnlineService *service);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
@@ -121,7 +121,7 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 
-void online_service_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, gpointer soup_session_callback_return_gpointer);
+void online_service_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
 

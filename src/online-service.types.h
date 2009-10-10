@@ -109,7 +109,7 @@ struct _OnlineService{
 	gchar				*server;
 	gchar				*path;
 	gchar				*user_name;
-	gchar				*user_nick;
+	gchar				*nick_name;
 	gchar				*password;
 	
 	GSList				*best_friends;

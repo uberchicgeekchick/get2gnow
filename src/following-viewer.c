@@ -240,7 +240,7 @@ void following_viewer_load_lists(GList *followers){
 		gtk_list_store_set(
 				following_viewer->following_list_store, iter,
 					FOLLOWER_USER, user->user_name,
-					FOLLOWER_NAME, user->user_nick,
+					FOLLOWER_NAME, user->nick_name,
 					USER_POINTER, user,
 				-1
 		);
