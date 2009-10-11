@@ -464,6 +464,7 @@ void tweet_list_start(TweetList *tweet_list){
 	if(this->loading) return;
 	if(this->minutes){
 		this->loading=TRUE;
+		statusbar_printf("Please wait %d seconds for %s to re-load.", this->minutes, this->monitoring_string);
 		if(!this->service){
 			online_services_request(QUEUE, this->timeline, NULL, network_display_timeline, tweet_list, (gpointer)this->monitoring);
 		}else{
@@ -508,14 +509,14 @@ static float tweet_list_prepare_reload(TweetList *tweet_list){
 			break;
 	}
 	
-	if(this->page) minutes+=this->page;
+	guint seconds=((this->page+1)*5)+((this->monitoring+1)*3)+10;
+	minutes+=(seconds*1000)+(this->page+1)+(this->monitoring+1);
 	if(this->minutes==minutes && this->has_loaded > 1) return 0.0;
 	this->minutes=minutes;
 	if(this->has_loaded < 2) {
 		this->has_loaded++;
 		if(this->has_loaded < 1) {
 			this->minutes=0;
-			guint seconds=15;
 			statusbar_printf("Please wait %d seconds for %s to load.", seconds, this->monitoring_string);
 			this->reload=seconds*1000;
 			return 0.0;
