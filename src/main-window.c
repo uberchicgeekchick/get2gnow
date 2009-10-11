@@ -1347,10 +1347,13 @@ static gboolean main_window_statusbar_display(const gchar *message){
 }/*main_window_set_statusbar_display(gpointer);*/
 
 static void main_window_statusbar_timeouts_free(void){
-	for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_timers; statusbar_timers=statusbar_timers->next){
-		gpointer timer_pointer=statusbar_timers->data;
-		guint timer=GPOINTER_TO_INT(timer_pointer);
-		program_timeout_remove(&timer, _("status bar message"));
+	if(statusbar_messages_total){
+		for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_timers; statusbar_timers=statusbar_timers->next){
+			gpointer timer_pointer=statusbar_timers->data;
+			guint timer=GPOINTER_TO_INT(timer_pointer);
+			program_timeout_remove(&timer, _("status bar message"));
+			statusbar_timers=g_slist_remove(statusbar_timers, timer_pointer);
+		}
 	}
 	uber_slist_free(statusbar_timers);
 }/*main_window_statusbar_timeouts_free();*/

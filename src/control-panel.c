@@ -483,6 +483,7 @@ static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *
 		"user_vbox",
 		"control_panel_left_vseparator",
 		"status_view_vbox",
+		"control_panel_view_controls_aspect_frame",
 		"control_panel_right_vseparator",
 		"controls_vbox"
 	};
@@ -538,7 +539,7 @@ static void control_panel_bind_hotkeys(GtkBuilder *ui){
 		"control_panel_sexy_entry_combo_box_entry",
 		"dm_frame",
 		"followers_combo_box",
-
+		
 		"controls_vbox",
 		"status_control_hbox",
 	};
@@ -853,7 +854,8 @@ void control_panel_beep(void){
 void control_panel_sexy_select(void){
 	if(gtk_widget_has_focus( GTK_WIDGET( control_panel->sexy_entry))) return;
 	gtk_widget_grab_focus(GTK_WIDGET( control_panel->sexy_entry));
-	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), -1 );
+	guint position=gtk_editable_get_position(GTK_EDITABLE( control_panel->sexy_entry));
+	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), (position ?position :-1) );
 }/*control_panel_sexy_select*/
 
 void control_panel_sexy_prefix_char(const char c){
