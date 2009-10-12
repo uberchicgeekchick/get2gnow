@@ -1,6 +1,5 @@
-UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb
+UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb -Wno-parentheses
 AM_CFLAGS=									\
-		$(UBERCHICK_CFLAGS)						\
 		-I$(top_srcdir)                        			  	\
 		-I${top_builddir}						\
 		-DBUILDDIR=\""${abs_top_builddir}"\"				\
@@ -13,7 +12,8 @@ AM_CFLAGS=									\
 		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"	\
 		$(WARN_CFLAGS)							\
 		$(debug_CFLAGS)							\
-		$(get2gnow_CFLAGS)
+		$(get2gnow_CFLAGS)						\
+		$(UBERCHICK_CFLAGS)
 
 bin_PROGRAMS = get2gnow
 
@@ -21,7 +21,7 @@ if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 
-get2gnow_SOURCES = 								\
+get2gnow_SOURCES = 										\
 	about.c						about.h					\
 	control-panel.c					control-panel.h				\
 	cache.c						cache.h					\
@@ -32,6 +32,7 @@ get2gnow_SOURCES = 								\
 	geometry.c					geometry.h				\
 	groups.c					groups.h				\
 	gtkbuilder.c					gtkbuilder.h				\
+	hotkeys.c					hotkeys.h				\
 	images.c					images.h				\
 	ipc.c						ipc.h					\
 	$(keyring_sources)									\
@@ -50,11 +51,10 @@ get2gnow_SOURCES = 								\
 	program.c					program.h				\
 	proxy.c						proxy.h					\
 	searches.c					searches.h				\
+	tabs.c						tabs.h					\
 	timer.c						timer.h					\
-	tweet-list.c					tweet-list.h				\
-	tweet-lists.c					tweet-lists.h				\
-	tweets.c					tweets.h				\
 	ui-utils.c					ui-utils.h				\
+	update-viewer.c					update-viewer.h				\
 	users-glists.c							users-glists.h		\
 	users.c				users.types.h			users.h
 

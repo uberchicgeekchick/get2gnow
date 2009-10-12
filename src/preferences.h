@@ -91,18 +91,18 @@ G_BEGIN_DECLS
 
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
-#define	PREFS_TWEETS_ARCHIVE_ALL			GCONF_PATH "/online-services/xml-cache/archive/expiration/default"
-#define	PREFS_TWEETS_ARCHIVE_DMS			GCONF_PATH "/online-services/xml-cache/archive/expiration/dms"
-#define	PREFS_TWEETS_ARCHIVE_REPLIES			GCONF_PATH "/online-services/xml-cache/archive/expiration/replies"
-#define	PREFS_TWEETS_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/faves"
-#define	PREFS_TWEETS_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
+#define	PREFS_UPDATES_ARCHIVE_ALL			GCONF_PATH "/online-services/xml-cache/archive/expiration/default"
+#define	PREFS_UPDATES_ARCHIVE_DMS			GCONF_PATH "/online-services/xml-cache/archive/expiration/dms"
+#define	PREFS_UPDATES_ARCHIVE_REPLIES			GCONF_PATH "/online-services/xml-cache/archive/expiration/replies"
+#define	PREFS_UPDATES_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/faves"
+#define	PREFS_UPDATES_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 
-#define	PREFS_TWEETS_HOME_TIMELINE			GCONF_PATH "/updates/home_timeline"
-#define	PREFS_TWEETS_RELOAD_TIMELINES			GCONF_PATH "/updates/reload_timeline"
+#define	PREFS_UPDATES_HOME_TIMELINE			GCONF_PATH "/updates/home_timeline"
+#define	PREFS_TIMELINE_RELOAD_MINUTES			GCONF_PATH "/updates/reload_timeline"
 
-#define	PREFS_TWEET_REPLACE_ME_W_NICK			GCONF_PATH "/updates/replace_me_w_nick"
-#define PREFS_TWEETS_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
-#define	PREFS_TWEETS_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
+#define	PREFS_UPDATES_REPLACE_ME_W_NICK			GCONF_PATH "/updates/replace_me_w_nick"
+#define PREFS_UPDATES_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
+#define	PREFS_UPDATES_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
 
 
 void preferences_dialog_show (GtkWindow *parent);

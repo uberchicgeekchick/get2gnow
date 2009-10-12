@@ -43,8 +43,8 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __TWEET_LIST_H__
-#define __TWEET_LIST_H__
+#ifndef __UPDATE_VIEWER_H__
+#define __UPDATE_VIEWER_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -57,34 +57,34 @@
 G_BEGIN_DECLS
 
 
-#define TYPE_TWEET_LIST			(tweet_list_get_type())
-#define TWEET_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_TWEET_LIST, TweetList))
-#define TWEET_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), TYPE_TWEET_LIST, TweetListClass))
-#define IS_TWEET_LIST(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_TWEET_LIST))
-#define IS_TWEET_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_TWEET_LIST))
-#define TWEET_LIST_GET_CLASS(o)		(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_TWEET_LIST, TweetListClass))
+#define TYPE_UPDATE_VIEWER			(update_viewer_get_type())
+#define UPDATE_VIEWER(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UPDATE_VIEWER, UpdateViewer))
+#define UPDATE_VIEWER_CLASS(k)			(G_TYPE_CHECK_CLASS_CAST((k), TYPE_UPDATE_VIEWER, UpdateViewerClass))
+#define IS_UPDATE_VIEWER(o)			(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UPDATE_VIEWER))
+#define IS_UPDATE_VIEWER_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UPDATE_VIEWER))
+#define UPDATE_VIEWER_GET_CLASS(o)		(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UPDATE_VIEWER, UpdateViewerClass))
 
-typedef struct _TweetList      TweetList;
-typedef struct _TweetListClass TweetListClass;
-typedef struct _TweetListPrivate  TweetListPrivate;
+typedef struct _UpdateViewer      UpdateViewer;
+typedef struct _UpdateViewerClass UpdateViewerClass;
+typedef struct _UpdateViewerPrivate  UpdateViewerPrivate;
 
-struct _TweetList {
+struct _UpdateViewer {
 	SexyTreeView            parent;
 };
 
-struct _TweetListClass {
+struct _UpdateViewerClass {
 	SexyTreeViewClass       parent_class;
 };
 
 
-enum TweetListStoreColumns{		/********************************************************************************/
-	GUINT_TWEET_LIST_INDEX,		/*	The update's index in the list-store.                                   */
-	GDOUBLE_TWEET_ID,		/*	Tweet's ID.								*/
+enum UpdateViewerStoreColumns{		/********************************************************************************/
+	GUINT_UPDATE_VIEWER_INDEX,	/*	The update's index in the list-store.                                   */
+	GDOUBLE_UPDATE_ID,		/*	Tweet's ID.								*/
 	GDOUBLE_USER_ID,		/*	User's ID.								*/
 	STRING_USER,			/*	Username string.							*/
 	STRING_NICK,			/*	Author name string.							*/
 	STRING_TEXT,			/*	Unformated Tweet string.						*/
-	STRING_TWEET,			/*	Tweet for display string in the TweetList, SexyTreeView, GtkTreeView.	*/
+	STRING_TWEET,			/*	Tweet for display string in the UpdateViewer, SexyTreeView, GtkTreeView.	*/
 	STRING_SEXY_TWEET,		/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
 	STRING_CREATED_AGO,		/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,		/*	Date string.								*/
@@ -98,45 +98,45 @@ enum TweetListStoreColumns{		/**************************************************
 };					/********************************************************************************/
 
 
-GType tweet_list_get_type(void) G_GNUC_CONST;
-TweetList *tweet_list_new(const gchar *timeline, OnlineService *service);
-const gchar *tweet_list_get_timeline(TweetList *tweet_list);
+GType update_viewer_get_type(void) G_GNUC_CONST;
+UpdateViewer *update_viewer_new(const gchar *timeline, OnlineService *service);
+const gchar *update_viewer_get_timeline(UpdateViewer *update_viewer);
 
-GtkVBox *tweet_list_get_child(TweetList *tweet_list);
-GtkLabel *tweet_list_get_tab(TweetList *tweet_list);
-GtkLabel *tweet_list_get_menu(TweetList *tweet_list);
+GtkVBox *update_viewer_get_child(UpdateViewer *update_viewer);
+GtkLabel *update_viewer_get_tab(UpdateViewer *update_viewer);
+GtkLabel *update_viewer_get_menu(UpdateViewer *update_viewer);
 
-OnlineService *tweet_list_get_service(TweetList *tweet_list);
-GtkListStore *tweet_list_get_list_store(TweetList *tweet_list);
-GtkTreeModel *tweet_list_get_tree_model(TweetList *tweet_list);
+OnlineService *update_viewer_get_service(UpdateViewer *update_viewer);
+GtkListStore *update_viewer_get_list_store(UpdateViewer *update_viewer);
+GtkTreeModel *update_viewer_get_tree_model(UpdateViewer *update_viewer);
 
-void tweet_list_start(TweetList *tweet_list);
-gboolean tweet_list_refresh(TweetList *tweet_list);
-void tweet_list_stop(TweetList *tweet_list);
-void tweet_list_complete(TweetList *tweet_list);
+void update_viewer_start(UpdateViewer *update_viewer);
+gboolean update_viewer_refresh(UpdateViewer *update_viewer);
+void update_viewer_stop(UpdateViewer *update_viewer);
+void update_viewer_complete(UpdateViewer *update_viewer);
 
-void tweet_list_store( TweetList *tweet_list, UserStatus *status );
-void tweet_list_remove_service(TweetList *tweet_list, OnlineService *service);
+void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status );
+void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *service);
 
-void tweet_list_toggle_toolbar(TweetList *tweet_list);
+void update_viewer_toggle_toolbar(UpdateViewer *update_viewer);
 
-void tweet_list_mark_as_read(TweetList *tweet_list);
+void update_viewer_mark_as_read(UpdateViewer *update_viewer);
 
-gint8 tweet_list_has_loaded(TweetList *tweet_list);
+gint8 update_viewer_has_loaded(UpdateViewer *update_viewer);
 
-gint tweet_list_get_page(TweetList *tweet_list);
-void tweet_list_set_page(TweetList *tweet_list, gint page);
+gint update_viewer_get_page(UpdateViewer *update_viewer);
+void update_viewer_set_page(UpdateViewer *update_viewer, gint page);
 
-UpdateMonitor tweet_list_get_monitoring(TweetList *tweet_list);
-const gchar *tweet_list_get_monitoring_string(TweetList *tweet_list);
+UpdateMonitor update_viewer_get_monitoring(UpdateViewer *update_viewer);
+const gchar *update_viewer_get_monitoring_string(UpdateViewer *update_viewer);
 const gchar *monitoring_to_string(UpdateMonitor monitoring);
 
-gint tweet_list_get_total(TweetList *tweet_list);
-guint tweet_list_get_notify_delay(TweetList *tweet_list);
+gint update_viewer_get_total(UpdateViewer *update_viewer);
+guint update_viewer_get_notify_delay(UpdateViewer *update_viewer);
 
-void tweet_list_key_pressed(TweetList *tweet_list, GdkEventKey *event);
-void tweet_list_set_image(TweetList *tweet_list, const gchar *image_filename, GtkTreeIter *iter);
+void update_viewer_key_pressed(UpdateViewer *update_viewer, GdkEventKey *event);
+void update_viewer_set_image(UpdateViewer *update_viewer, const gchar *image_filename, GtkTreeIter *iter);
 
 
 G_END_DECLS
-#endif /* __TWEET_LIST_H__ */
+#endif /* __UPDATE_VIEWER_H__ */

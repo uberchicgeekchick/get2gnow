@@ -95,14 +95,18 @@ struct _OnlineService{
 	gboolean			has_loaded;
 	guint				logins;
 	
+	gboolean			processing;
+	GList				*queue;
+	GSList				*queue_timers;
+	
+	MicroBloggingService		micro_blogging_service;
+	gchar				*micro_blogging_client;
+	
 	gboolean			enabled;
 	gboolean			auto_connect;
 	
 	gchar				*key;
 	gchar				*guid;
-	
-	MicroBloggingService		micro_blogging_service;
-	gchar				*micro_blogging_client;
 	
 	gboolean			https;
 	gchar				*uri;

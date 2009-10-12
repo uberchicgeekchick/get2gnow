@@ -230,14 +230,14 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_TWEETS_NO_PROFILE_LINK, TRUE, prefs->tweets_no_profile_link_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_NO_PROFILE_LINK, TRUE, prefs->tweets_no_profile_link_checkbutton);
 	
-	preferences_hookup_string_combo(prefs, PREFS_TWEETS_HOME_TIMELINE, prefs->combo_default_timeline);
+	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
-	preferences_hookup_int_combo(prefs, PREFS_TWEET_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
+	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
 	
-	preferences_hookup_int_combo(prefs, PREFS_TWEETS_RELOAD_TIMELINES, prefs->combo_reload);
+	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, prefs->combo_reload);
 }/*preferences_setup_widgets(prefs);*/
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){

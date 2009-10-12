@@ -78,8 +78,6 @@
 #include "network.h"
 #include "proxy.h"
 
-#include "tweet-list.h"
-#include "tweets.h"
 #include "images.h"
 #include "cache.h"
 

@@ -77,7 +77,7 @@
 #include "users.h"
 
 #include "main-window.h"
-#include "tweet-list.h"
+#include "update-viewer.h"
 #include "preferences.h"
 #include "images.h"
 #include "label.h"
@@ -95,7 +95,7 @@
 
 
 /* Parse a timeline XML file */
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list){
+guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -113,13 +113,13 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	gdouble	last_notified_update=id_newest_update;
 	id_newest_update=0.0;
 	
-	gboolean	has_loaded=tweet_list_has_loaded(tweet_list);
+	gboolean	has_loaded=update_viewer_has_loaded(update_viewer);
 	gboolean	notify=((id_oldest_update&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE):FALSE);
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
-	guint		tweet_list_notify_delay=tweet_list_get_notify_delay(tweet_list);
+	guint		update_viewer_notify_delay=update_viewer_get_notify_delay(update_viewer);
 	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(tweet_list_get_page(tweet_list)-1)*100;
+	const gint	notify_priority=(update_viewer_get_page(update_viewer)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
@@ -159,14 +159,14 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		
 		new_updates++;
 		free_status=TRUE;
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TweetList.", status->user->user_name, status->id, service->key);
-		tweet_list_store(tweet_list, status);
+		debug("Adding UserStatus from: %s, ID: %f, on <%s> to UpdateViewer.", status->user->user_name, status->id, service->key);
+		update_viewer_store(update_viewer, status);
 		
 		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			if(notify){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, tweet_list_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				tweet_list_notify_delay+=tweet_display_interval;
+				g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				update_viewer_notify_delay+=tweet_display_interval;
 			}
 		}
 		
@@ -193,7 +193,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*search_parse_results(service, xml, uri, tweet_list);*/
+}/*search_parse_results(service, xml, uri, update_viewer);*/
 
 /********************************************************************************
  *                                    eof                                       *

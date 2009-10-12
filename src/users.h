@@ -84,7 +84,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element);
 
 void user_free(User *user);
 
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list);
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
 gboolean user_status_notify_on_timeout(UserStatus *status);
 
 void user_status_free(UserStatus *status);

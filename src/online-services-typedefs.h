@@ -63,6 +63,7 @@
 #include <glib.h>
 #include <libsoup/soup-message.h>
 
+#include "online-service.types.h"
 #include "online-services.types.h"
 
 G_BEGIN_DECLS
@@ -76,17 +77,17 @@ enum _RequestMethod{
 };
 
 enum _UpdateMonitor{
-	None,
-	DMs,
-	Replies,
-	BestFriends,
-	Faves,
-	Tweets,
-	Searches,
-	Groups,
-	Timelines,
-	Users,
-	Archive,
+	None		=	0,
+	Tweets		=	1,
+	Replies		=	3,
+	DMs		=	5,
+	BestFriends	=	7,
+	Users		=	9,
+	Searches	=	11,
+	Groups		=	13,
+	Timelines	=	17,
+	Faves		=	19,
+	Archive		=	23,
 };
 
 enum _OnlineServicesListStoreColumns{

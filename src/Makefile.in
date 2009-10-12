@@ -58,6 +58,7 @@ get2gnow_SOURCES = 								\
 	geometry.c					geometry.h				\
 	groups.c					groups.h				\
 	gtkbuilder.c					gtkbuilder.h				\
+	hotkeys.c					hotkeys.h				\
 	images.c					images.h				\
 	ipc.c						ipc.h					\
 	$(keyring_sources)									\
@@ -76,11 +77,10 @@ get2gnow_SOURCES = 								\
 	program.c					program.h				\
 	proxy.c						proxy.h					\
 	searches.c					searches.h				\
+	tabs.c						tabs.h					\
 	timer.c						timer.h					\
-	tweet-list.c					tweet-list.h				\
-	tweet-lists.c					tweet-lists.h				\
-	tweets.c					tweets.h				\
 	ui-utils.c					ui-utils.h				\
+	update-viewer.c					update-viewer.h				\
 	users-glists.c							users-glists.h		\
 	users.c				users.types.h			users.h
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
@@ -95,6 +95,7 @@ get2gnow_OBJECTS =					\
 	geometry.$(OBJEXT)				\
 	groups.$(OBJEXT)				\
 	gtkbuilder.$(OBJEXT)				\
+	hotkeys.$(OBJEXT)				\
 	images.$(OBJEXT)				\
 	ipc.$(OBJEXT)					\
 	$(am__objects_1)				\
@@ -112,11 +113,10 @@ get2gnow_OBJECTS =					\
 	program.$(OBJEXT)				\
 	proxy.$(OBJEXT)					\
 	searches.$(OBJEXT)				\
+	tabs.$(OBJEXT)					\
 	timer.$(OBJEXT)					\
-	tweet-list.$(OBJEXT)				\
-	tweet-lists.$(OBJEXT)				\
-	tweets.$(OBJEXT)				\
 	ui-utils.$(OBJEXT)				\
+	update-viewer.$(OBJEXT)				\
 	users-glists.$(OBJEXT)				\
 	users.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -308,9 +308,8 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb
+UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb -Wno-parentheses
 AM_CFLAGS=									\
-		$(UBERCHICK_CFLAGS)						\
 		-I$(top_srcdir)                        				\
 		-I${top_builddir}						\
 		-DBUILDDIR=\""${abs_top_builddir}"\"				\
@@ -323,7 +322,8 @@ AM_CFLAGS=									\
 		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"	\
 		$(WARN_CFLAGS)							\
 		$(debug_CFLAGS)							\
-		$(get2gnow_CFLAGS)
+		$(UBERCHICK_CFLAGS)						\
+		$(get2gnow_CFLAGS)						\
 
 get2gnow_LDADD =								\
 	$(get2gnow_LIBS)
@@ -410,6 +410,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geometry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/groups.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbuilder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hotkeys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
@@ -426,11 +427,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tabs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-list.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweet-lists.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-viewer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
 

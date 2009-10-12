@@ -80,7 +80,6 @@
 #include "online-service.h"
 
 #include "main-window.h"
-#include "tweet-lists.h"
 #include "control-panel.h"
 #include "preferences.h"
 #include "gconfig.h"
@@ -552,7 +551,7 @@ gssize online_services_get_length_of_longest_replacement(void){
 		return longest_replacement_length;
 	
 	gint		replace_with=0;
-	gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace_with, 2);
+	gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace_with, 2);
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;

@@ -95,6 +95,7 @@ struct _OnlineServiceWrapper {
 	gpointer						user_data;
 	gpointer						form_data;
 	gboolean						can_run;
+	gboolean						can_free;
 	guint							attempt;
 };
 
@@ -128,7 +129,7 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, Request
 	online_service_wrapper->user_data=user_data;
 	online_service_wrapper->form_data=form_data;
 	
-	online_service_wrapper->can_run=TRUE;
+	online_service_wrapper->can_run=online_service_wrapper->can_free=TRUE;
 	
 	online_service_wrapper_user_data_processor(online_service_wrapper, DataSet);
 	
@@ -195,6 +196,7 @@ void online_service_wrapper_retry(OnlineServiceWrapper *online_service_wrapper){
 				online_service_wrapper->user_data,
 				online_service_wrapper->form_data
 	);
+	online_service_wrapper->can_free=FALSE;
 }/*void online_service_wrapper_retry(online_service_wrapper);*/
 
 void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml){

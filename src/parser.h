@@ -63,15 +63,15 @@
 #include <libsoup/soup-message.h>
 
 #include "online-services-typedefs.h"
-#include "tweet-list.h"
+#include "update-viewer.h"
 #include "users.h"
 
 G_BEGIN_DECLS
 
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list, UpdateMonitor monitoring);
-guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TweetList *tweet_list);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer, UpdateMonitor monitoring);
+guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer);
 
 gboolean parser_xml_error_check(OnlineService *service, SoupMessage *xml, gchar **error_message);
 

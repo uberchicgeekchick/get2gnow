@@ -65,7 +65,7 @@
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include "config.h"
-#include "tweet-list.h"
+#include "update-viewer.h"
 
 #include "online-service.h"
 
@@ -80,7 +80,7 @@ G_BEGIN_DECLS
 gboolean network_check_http(OnlineService *service, SoupMessage *xml);
 
 
-void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
+void network_get_image(OnlineService *service, UpdateViewer *update_viewer, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
 void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
 

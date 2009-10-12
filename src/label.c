@@ -67,7 +67,6 @@
 
 #include "main-window.h"
 #include "label.h"
-#include "tweets.h"
 #include "network.h"
 #include "parser.h"
 #include "gconfig.h"

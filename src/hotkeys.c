@@ -77,7 +77,7 @@
 
 #include "main-window.h"
 #include "geometry.h"
-#include "tweets.h"
+#include "hotkeys.h"
 
 #include "online-service.h"
 #include "online-service-request.h"
@@ -85,8 +85,8 @@
 
 #include "gconfig.h"
 #include "preferences.h"
-#include "tweet-lists.h"
-#include "tweet-list.h"
+#include "tabs.h"
+#include "update-viewer.h"
 #include "control-panel.h"
 #include "ui-utils.h"
 #include "users.h"
@@ -95,17 +95,17 @@
 #define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Tweets.c"
 #include "debug.h"
 
-static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
+static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
 
 
-void tweets_hotkey(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
-	tweets_hotkey_process(widget, event, user_date);
+void hotkey_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
+	hotkey_process(widget, event, user_date);
 	control_panel_sexy_select();
-}/*void tweets_hotkey(widget, event, user_date){*/
+}/*void hotkey(widget, event, user_date){*/
 
-static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
+static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
 	if(event->keyval==GDK_Escape){
-		control_panel_hide_previous_tweets();
+		control_panel_hide_previous_updates();
 		return;
 	}
 	
@@ -138,10 +138,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					g_signal_emit_by_name(main_window_get_menu("help"), "activate");
 					return;
 				case GDK_Down: case GDK_KP_Down:
-					control_panel_show_previous_tweets();
+					control_panel_show_previous_updates();
 					return;
 				case GDK_R: case GDK_r:
-					tweet_list_refresh(tweet_lists_get_current()); 
+					update_viewer_refresh(tabs_get_current()); 
 					return;
 				case GDK_I:	case GDK_i:
 				case GDK_question:
@@ -174,10 +174,10 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					online_service_request_selected_update_unblock();
 					return;
 				case GDK_Page_Up:
-					tweet_lists_get_previous();
+					tabs_get_previous();
 					return;
 				case GDK_Page_Down:
-					tweet_lists_get_next();
+					tabs_get_next();
 					return;
 				default: break;
 			}
@@ -205,7 +205,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					control_panel_sexy_insert_char('\t');
 					return;
 				case GDK_N:	case GDK_n:
-					tweets_new_tweet();
+					control_panel_new_update();
 					return;
 				case GDK_Q:	case GDK_q:
 					gtk_main_quit();
@@ -215,7 +215,7 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					online_service_request_selected_update_save_fave();
 					return;
 				case GDK_F5:
-					tweet_list_refresh(tweet_lists_get_current()); 
+					update_viewer_refresh(tabs_get_current()); 
 					return;
 				case GDK_Z:	case GDK_z:
 					online_service_request_selected_update_destroy_fave();
@@ -230,13 +230,13 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 					control_panel_new_dm();
 					return;
 				case GDK_W: case GDK_w:
-					tweet_lists_close_current_page();
+					tabs_close_current_page();
 					return;
 				case GDK_Page_Up:
-					tweet_lists_get_previous();
+					tabs_get_previous();
 					return;
 				case GDK_Page_Down:
-					tweet_lists_get_next();
+					tabs_get_next();
 					return;
 				default: break;
 			}
@@ -259,12 +259,8 @@ static void tweets_hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointe
 			}
 			break;
 	}
-	tweet_list_key_pressed(tweet_lists_get_current(), event);
-}/*tweets_hotkey_process(widget, event, user_date);*/
-
-void tweets_new_tweet(void){
-	control_panel_new_update();
-}/*tweets_new_tweet*/
+	update_viewer_key_pressed(tabs_get_current(), event);
+}/*hotkey_process(widget, event, user_date);*/
 
 /********************************************************
  *                       eof                            *

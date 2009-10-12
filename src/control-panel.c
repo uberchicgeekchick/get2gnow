@@ -68,9 +68,10 @@
 #include "gconfig.h"
 
 #include "online-services-typedefs.h"
+#include "online-services.types.h"
+#include "online-service.types.h"
 #include "online-services.h"
 
-#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
 
@@ -80,7 +81,7 @@
 #include "network.h"
 #include "users-glists.h"
 #include "gtkbuilder.h"
-#include "tweets.h"
+#include "hotkeys.h"
 
 #include "main-window.h"
 #include "geometry.h"
@@ -392,7 +393,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 				"control_panel_sexy_entry_combo_box_entry", "changed", control_panel_select_previous_update,
 				"sexy_send", "clicked", control_panel_send,
 				"sexy_dm_button", "clicked", control_panel_send,
-				"new_tweet_button", "clicked", tweets_new_tweet,
+				"new_tweet_button", "clicked", control_panel_new_update,
 				"dm_form_active_togglebutton", "toggled", control_panel_dm_show,
 				
 				"dm_refresh", "clicked", control_panel_dm_refresh,
@@ -553,7 +554,7 @@ static void control_panel_bind_hotkeys(GtkBuilder *ui){
 		}
 		
 		debug("Binding %s's hotkeys to %s.", _(GETTEXT_PACKAGE), hotkey_widgets[i]);
-		g_signal_connect_after(widget, "key-press-event",(GCallback)tweets_hotkey, widget);
+		g_signal_connect_after(widget, "key-press-event",(GCallback)hotkey_pressed, widget);
 	}
 }/*control_panel_bind_hotkey(ui);*/
 
@@ -592,7 +593,7 @@ static void control_panel_compact_view_display(gboolean compact){
 static void control_panel_scale(gboolean compact){
 	gint h=0, w=0;
 	gtk_window_get_size( main_window_get_window(), &w, &h );
-	gint position=gtk_paned_get_position( main_window_get_tweet_paned() );
+	gint position=gtk_paned_get_position( main_window_get_main_paned() );
 	position++;
 }/* control_panel_scale(TRUE); */ 
 
@@ -683,7 +684,7 @@ static void control_panel_sexy_init(void){
 	gtk_container_add(GTK_CONTAINER( control_panel->sexy_entry_combo_box_entry), GTK_WIDGET(control_panel->sexy_entry));
 	gtk_widget_show(GTK_WIDGET( control_panel->sexy_entry));
 		
-	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(tweets_hotkey), NULL);
+	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
 	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_count_tweet_char), control_panel->char_count);
 	g_signal_connect(control_panel->sexy_entry, "activate", G_CALLBACK(control_panel_send), NULL);
 	g_signal_connect_after(control_panel->followers_combo_box, "changed", G_CALLBACK(control_panel_sexy_select), control_panel->followers_combo_box);
@@ -739,12 +740,8 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
 	control_panel->viewing_user=g_strdup((G_STR_EMPTY( user_name) ?"" :user_name ) );
 	
-	if(!id)
-		main_window_set_statusbar_msg(NULL);
-	else
-		statusbar_printf("Displaying @%s's, on <%s>, update.  ID: %s.", user_name, service->uri, gdouble_to_str(id) );
-			
-
+	if(!id) main_window_set_statusbar_msg(NULL);
+	
 	gchar *sexy_text=NULL;
 	if(!id)
 		sexy_text=g_strdup("");
@@ -802,7 +799,7 @@ static gshort tweetlen(gchar *tweet){
 	gushort character_count=0;
 	gushort me_match=0;
 	gint		replace_me=0;
-	gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace_me, 2);
+	gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace_me, 2);
 	while(*tweet){
 		unsigned char l=*tweet++;
 		if(l=='<' || l=='>')
@@ -902,13 +899,13 @@ gint control_panel_sexy_puts(const gchar *str, gint position_after){
 	return position_after;
 }/*control_panel_sexy_puts*/
 
-void control_panel_hide_previous_tweets(void){
+void control_panel_hide_previous_updates(void){
 	g_signal_emit_by_name(control_panel->sexy_entry_combo_box_entry, "popup");
-}/*control_panel_hide_previous_tweets();*/
+}/*control_panel_hide_previous_updates();*/
 
-void control_panel_show_previous_tweets(void){
+void control_panel_show_previous_updates(void){
 	g_signal_emit_by_name(control_panel->sexy_entry_combo_box_entry, "popup");
-}/*control_panel_show_previous_tweets();*/
+}/*control_panel_show_previous_updates();*/
 
 void control_panel_send(GtkWidget *activated_widget){
 	gchar *user_name=NULL;

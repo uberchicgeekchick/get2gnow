@@ -306,8 +306,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/disabled</key>
-			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/disabled</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/disabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/disabled</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -321,8 +321,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/selected_only</key>
-			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/selected_only</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/selected_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/selected_only</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -333,8 +333,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/user_profiles</key>
-			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/user_profiles</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/user_profiles</key>
+			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/user_profiles</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -345,8 +345,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/tweet_view/url_expansion/replace_with_titles</key>
-			<applyto>/apps/@PACKAGE_NAME@/tweet_view/url_expansion/replace_with_titles</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/replace_with_titles</key>
+			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/replace_with_titles</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -554,8 +554,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/vpaned_tweet_list</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/vpaned_tweet_list</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/vpaned_update_viewer</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/vpaned_update_viewer</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>25</default>
@@ -626,8 +626,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweet_view/height</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/tweet_view/height</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/height</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>300</default>
@@ -638,8 +638,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/tweet_view/width</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/tweet_view/width</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/width</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/width</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>575</default>
@@ -650,8 +650,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/tweet_view_x</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/tweet_view_x</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/control_panel_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/control_panel_x</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>690</default>
@@ -662,8 +662,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/tweet_view_y</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/tweet_view_y</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/control_panel_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/positions/control_panel_y</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>505</default>

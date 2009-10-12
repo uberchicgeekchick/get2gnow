@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__TWEET_LISTS_H__
-#define	__TWEET_LISTS_H__
+#ifndef	__TABS_H__
+#define	__TABS_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -65,7 +65,7 @@
 
 #include "program.h"
 #include "online-services-typedefs.h"
-#include "tweet-list.h"
+#include "update-viewer.h"
 
 
 G_BEGIN_DECLS
@@ -83,30 +83,30 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void tweet_lists_init(GtkNotebook *notebook);
+void tabs_init(GtkNotebook *notebook);
 
-TweetList *tweet_lists_get_timeline(const gchar *timeline, OnlineService *service);
+UpdateViewer *tabs_get_timeline(const gchar *timeline, OnlineService *service);
 
-TweetList *tweet_lists_get_next(void);
-TweetList *tweet_lists_get_current(void);
-TweetList *tweet_lists_get_previous(void);
-TweetList *tweet_lists_get_page(gint page, gboolean close);
+UpdateViewer *tabs_get_next(void);
+UpdateViewer *tabs_get_current(void);
+UpdateViewer *tabs_get_previous(void);
+UpdateViewer *tabs_get_page(gint page, gboolean close);
 
-void tweet_lists_start(void);
-void tweet_lists_remove_service(OnlineService *service);
-void tweet_lists_refresh(void);
-void tweet_lists_stop(void);
+void tabs_start(void);
+void tabs_remove_service(OnlineService *service);
+void tabs_refresh(void);
+void tabs_stop(void);
 
-void tweet_lists_close(void);
-void tweet_lists_close_current_page(void);
-void tweet_lists_close_page(gint page);
+void tabs_close(void);
+void tabs_close_current_page(void);
+void tabs_close_page(gint page);
 
-void tweet_lists_toggle_toolbars(void);
+void tabs_toggle_toolbars(void);
 
-void tweet_lists_destroy(void);
+void tabs_destroy(void);
 
 G_END_DECLS
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-#endif /* __TWEET_LISTS_H__*/
+#endif /* __TABS_H__*/

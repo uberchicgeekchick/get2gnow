@@ -83,7 +83,7 @@
 #include "online-services-dialog.h"
 #include "online-service-request.h"
 
-#include "tweet-lists.h"
+#include "tabs.h"
 
 #include "users.types.h"
 #include "users-glists.h"
@@ -275,6 +275,10 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	
 	service->password=NULL;
 	
+	service->processing=FALSE;
+	service->queue=NULL;
+	service->queue_timers=NULL;
+	
 	service->best_friends=NULL;
 	service->best_friends_total=0;
 	
@@ -417,7 +421,7 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	cache_dir_clean_up(cache_dir, TRUE);
 	uber_free(cache_dir);
 	
-	tweet_lists_remove_service(service);
+	tabs_remove_service(service);
 	
 	online_service_display_debug_details(service, FALSE, "deleted");
 	online_service_free(service);
@@ -1031,6 +1035,13 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	debug("Processing libsoup request for service: '%s'.", service->guid);
 	switch(request){
 		case QUEUE:
+			if(!service->processing){
+				debug("OnlineService: <%s> has began processing: <%s>.", service->guid, request_uri);
+				service->processing=TRUE;
+			}
+			/*TODO: implement support for 'service->queue' & 'service->queue_timers'.
+			 * ensure only one request is 'in queue' at one time.
+			 */
 		case POST:
 			debug("Adding libsoup request to service: '%s' libsoup's message queue.", service->guid);
 			soup_session_queue_message(service->session, xml, (SoupSessionCallback)online_service_callback, online_service_wrapper);
@@ -1060,8 +1071,8 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	if(g_strrstr(*request_uri, "?since_id=")) return;
 	
 	UpdateMonitor monitoring=(UpdateMonitor)*form_data;
-	TweetList *tweet_list=(TweetList *)*user_data;
-	gint8 has_loaded=tweet_list_has_loaded(tweet_list);
+	UpdateViewer *update_viewer=(UpdateViewer *)*user_data;
+	gint8 has_loaded=update_viewer_has_loaded(update_viewer);
 	if(!( (*form_data) && (*user_data) )) return;
 	
 	gdouble id_newest_update=0, id_oldest_update=0;
@@ -1071,7 +1082,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
-	if( has_loaded && tweet_list_get_total(tweet_list) ){
+	if( has_loaded && update_viewer_get_total(update_viewer) ){
 		requesting=_("new");
 		since_id=id_newest_update;
 	}else if(monitoring==DMs || monitoring==Replies){
@@ -1109,7 +1120,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	gchar *reply_form_data=NULL;
 	if(service->user_name && g_strrstr( (gchar *)(*form_data), "/me" ) ){
 		gint replace=0;
-		gconfig_get_int_or_default(PREFS_TWEET_REPLACE_ME_W_NICK, &replace, 2);
+		gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace, 2);
 		if(replace!=-1){
 			debug("Auto-replacement trigger match '/me' to be replaced with user nick.");
 			debug("/me auto-replacement triggered.  Replacing '/me' with: '%s'", service->user_name);
@@ -1196,6 +1207,9 @@ void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServ
 	online_service_wrapper_run(service_wrapper, session, xml);
 	
 	timer_main(service->timer, xml);
+	
+	debug("OnlineService: <%s> has finished processing: <%s>.", service->guid, requested_uri);
+	service->processing=FALSE;
 	
 	online_service_wrapper_free(service_wrapper);
 	

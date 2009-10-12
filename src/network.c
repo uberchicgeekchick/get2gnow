@@ -79,7 +79,6 @@
 #include "online-service.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
-#include "network.h"
 
 #include "parser.h"
 #include "groups.h"
@@ -87,7 +86,11 @@
 #include "cache.h"
 
 #include "main-window.h"
+#include "update-viewer.h"
+
 #include "preferences.h"
+
+#include "network.h"
 
 /********************************************************
  *          Variable definitions.                       *
@@ -95,10 +98,10 @@
 #define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up"
 #include "debug.h"
 
-typedef struct _NetworkTweetListImageDL NetworkTweetListImageDL;
+typedef struct _NetworkUpdateViewerImageDL NetworkUpdateViewerImageDL;
 
-struct _NetworkTweetListImageDL{
-	TweetList	*tweet_list;
+struct _NetworkUpdateViewerImageDL{
+	UpdateViewer	*update_viewer;
 	gchar		*filename;
 	GtkTreeIter	*iter;
 };
@@ -108,8 +111,8 @@ static gboolean retrying=FALSE;
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static NetworkTweetListImageDL *network_tweet_list_image_dl_new(TweetList *tweet_list, const gchar *filename, GtkTreeIter *iter);
-static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image);
+static NetworkUpdateViewerImageDL *network_update_viewer_image_dl_new(UpdateViewer *update_viewer, const gchar *filename, GtkTreeIter *iter);
+static void network_update_viewer_image_dl_free(NetworkUpdateViewerImageDL *image);
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper);
 
@@ -132,18 +135,18 @@ gboolean network_check_http(OnlineService *service, SoupMessage *xml){
 
 
 
-static NetworkTweetListImageDL *network_tweet_list_image_dl_new(TweetList *tweet_list, const gchar *filename, GtkTreeIter *iter){
-	NetworkTweetListImageDL *image=g_new0(NetworkTweetListImageDL, 1);
-	image->tweet_list=tweet_list;
+static NetworkUpdateViewerImageDL *network_update_viewer_image_dl_new(UpdateViewer *update_viewer, const gchar *filename, GtkTreeIter *iter){
+	NetworkUpdateViewerImageDL *image=g_new0(NetworkUpdateViewerImageDL, 1);
+	image->update_viewer=update_viewer;
 	image->filename=g_strdup(filename);
 	image->iter=iter;
 	return image;
-}/*network_tweet_list_image_dl_new*/
+}/*network_update_viewer_image_dl_new*/
 
 
-void network_get_image(OnlineService *service, TweetList *tweet_list, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
+void network_get_image(OnlineService *service, UpdateViewer *update_viewer, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
 	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
-	NetworkTweetListImageDL *image=network_tweet_list_image_dl_new(tweet_list, image_filename, iter);
+	NetworkUpdateViewerImageDL *image=network_update_viewer_image_dl_new(update_viewer, image_filename, iter);
 	
 	online_service_request_uri(service, QUEUE, image_url, 0, NULL, network_cb_on_image, image, NULL);
 }/*network_get_image*/
@@ -151,8 +154,8 @@ void network_get_image(OnlineService *service, TweetList *tweet_list, const gcha
 
 void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	NetworkTweetListImageDL *image=(NetworkTweetListImageDL *)online_service_wrapper_get_user_data(service_wrapper);
-	if(!( image && image->tweet_list && image->filename && image->iter )){
+	NetworkUpdateViewerImageDL *image=(NetworkUpdateViewerImageDL *)online_service_wrapper_get_user_data(service_wrapper);
+	if(!( image && image->update_viewer && image->filename && image->iter )){
 		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", image->filename, (image->iter ?"valid" :"unknown") );
 		return NULL;
 	}
@@ -173,17 +176,17 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 			image_filename=g_strdup(image->filename);
 	}
 	
-	main_window_statusbar_printf("New avatar added to TweetList.");
-	tweet_list_set_image(image->tweet_list, image_filename, image->iter);
+	main_window_statusbar_printf("New avatar added to UpdateViewer.");
+	update_viewer_set_image(image->update_viewer, image_filename, image->iter);
 	
 	uber_free(image_filename);
 	
-	network_tweet_list_image_dl_free(image);
+	network_update_viewer_image_dl_free(image);
 	return NULL;
 }/*network_cb_on_image(session, xml, user_data);*/
 
-static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image){
-	image->tweet_list=NULL;
+static void network_update_viewer_image_dl_free(NetworkUpdateViewerImageDL *image){
+	image->update_viewer=NULL;
 	uber_object_free(&image->filename, &image->iter, &image, NULL);
 }/*network_image_free*/
 
@@ -193,7 +196,7 @@ static void network_tweet_list_image_dl_free(NetworkTweetListImageDL *image){
 void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
 	
-	if(!( in_reply_to_service && gconfig_if_bool(PREFS_TWEETS_DIRECT_REPLY_ONLY, TRUE)))
+	if(!( in_reply_to_service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE)))
 		online_services_request(POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
 	else
 		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
@@ -272,7 +275,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
+	UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	
 	if(!network_check_http(service, xml)){
@@ -296,10 +299,10 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
-			new_updates=searches_parse_results(service, xml, timeline, tweet_list);
+			new_updates=searches_parse_results(service, xml, timeline, update_viewer);
 			break;
 		case Groups:
-			new_updates=groups_parse_conversation(service, xml, timeline, tweet_list);
+			new_updates=groups_parse_conversation(service, xml, timeline, update_viewer);
 			break;
 		case DMs:
 		case Replies:
@@ -310,11 +313,11 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Archive:
 		case BestFriends:
 		default:
-			new_updates=parse_timeline(service, xml, timeline, tweet_list, monitoring);
+			new_updates=parse_timeline(service, xml, timeline, update_viewer, monitoring);
 			break;
 	}
 	
-	/*if(!retrying && !new_updates && !g_strrstr(request_uri, "?since_id=") && tweet_list_has_loaded(tweet_list) >= 2 && xml->status_code==200){
+	/*if(!retrying && !new_updates && !g_strrstr(request_uri, "?since_id=") && update_viewer_has_loaded(update_viewer) >= 2 && xml->status_code==200){
 		uber_free(request_uri);
 		return NULL;
 		return network_retry(service_wrapper);
@@ -325,8 +328,8 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	}
 	if(retrying) retrying=FALSE;
 	
-	if( IS_TWEET_LIST(tweet_list) )
-		tweet_list_complete(tweet_list);
+	if( IS_UPDATE_VIEWER(update_viewer) )
+		update_viewer_complete(update_viewer);
 	
 	uber_free(request_uri);
 	return NULL;
@@ -336,11 +339,11 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	retrying=TRUE;
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	TweetList *tweet_list=(TweetList *)online_service_wrapper_get_user_data(service_wrapper);
+	UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
 	network_set_state_loading_timeline(requested_uri, Retry);
-	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, tweet_list, (gpointer)monitoring);
+	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, update_viewer, (gpointer)monitoring);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/
 

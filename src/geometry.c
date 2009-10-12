@@ -77,8 +77,8 @@
  ********************************************************/
 typedef enum{
 	Embed,
-	MainTweetList,
-	FloatingCotrolPanel,
+	MicroBlogging_Viewer_MainWindow,
+	FloatingControlPanel,
 } ViewType;
 
 enum {
@@ -89,7 +89,7 @@ enum {
 	PreferencePositionY,
 	PreferenceTotal,
 };
-#define DEBUG_DOMAINS "FloatingCotrolPanel:MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainTweetList:Geometry.c"
+#define DEBUG_DOMAINS "FloatingControlPanel:MicroBlogging_Viewer_MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainWindow:Geometry.c"
 #include"debug.h"
 
 /* Window height, width, & position gconf values. */
@@ -116,16 +116,16 @@ void geometry_load(void){
 	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
 		return geometry_load_for_window(Embed);
 	
-	geometry_load_for_window(MainTweetList);
-	geometry_load_for_window(FloatingCotrolPanel);
+	geometry_load_for_window(MicroBlogging_Viewer_MainWindow);
+	geometry_load_for_window(FloatingControlPanel);
 }/*geometry_load*/
 
 void geometry_save(void){
 	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
 		return geometry_save_for_window(Embed);
 	
-	geometry_save_for_window(MainTweetList);
-	geometry_save_for_window(FloatingCotrolPanel);
+	geometry_save_for_window(MicroBlogging_Viewer_MainWindow);
+	geometry_save_for_window(FloatingControlPanel);
 }/*geometry_save();*/
 
 static void geometry_load_for_window(ViewType view){
@@ -159,8 +159,8 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
-	geometry_set_paned(main_window_get_tweet_list_paned(), "tweet_list", view, FALSE, FALSE);
-	geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);
+	geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, FALSE);
+	geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, FALSE);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
@@ -198,11 +198,11 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) {
 		calls++;
-		geometry_set_paned(main_window_get_tweet_list_paned(), "tweet_list", view, FALSE, FALSE);
-		geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);
+		geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, FALSE);
+		geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, FALSE);
 	}else if(calls==LOAD_COUNT){
-		geometry_set_paned(main_window_get_tweet_list_paned(), "tweet_list", view, FALSE, TRUE);
-		geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, TRUE);
+		geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, TRUE);
+		geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, TRUE);
 	}
 }/*geometry_save_for_window(view);*/
  
@@ -210,11 +210,11 @@ static GtkWindow *geometry_get_window(ViewType view){
 	debug("Getting window to set geometry for.");
 	switch(view){
 		case Embed:
-		case MainTweetList:
+		case MicroBlogging_Viewer_MainWindow:
 			return main_window_get_window();
 		break;
 		
-		case FloatingCotrolPanel:
+		case FloatingControlPanel:
 			return control_panel_get_window();
 		break;
 	}
@@ -234,11 +234,11 @@ static gchar **geometry_get_prefs_path(ViewType view){
 			prefs_path[PrefernceWindow]=g_strdup("embed");
 		break;
 		
-		case MainTweetList:
+		case MicroBlogging_Viewer_MainWindow:
 			prefs_path[PrefernceWindow]=g_strdup("main_window");
 		break;
 		
-		case FloatingCotrolPanel:
+		case FloatingControlPanel:
 			prefs_path[PrefernceWindow]=g_strdup("control_panel");
 		break;
 		
@@ -310,7 +310,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
-}/*geometry_set_paned(main_window_get_tweet_paned(), "control_panel", view, TRUE, FALSE);*/
+}/*geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, FALSE);*/
 
 /********************************************************
  *                       eof                            *

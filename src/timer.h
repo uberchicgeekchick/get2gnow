@@ -63,6 +63,7 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
 
+#include "online-services.types.h"
 #include "online-services-typedefs.h"
 
 /********************************************************

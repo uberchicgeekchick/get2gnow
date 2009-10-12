@@ -92,7 +92,6 @@
 
 #include "ui-utils.h"
 #include "control-panel.h"
-#include "tweet-list.h"
 
 
 /********************************************************************************
@@ -143,7 +142,7 @@ static UserProfileViewer *user_profile_viewer=NULL;
 static User *user_new(OnlineService *service, gboolean a_follower);
 static void user_validate( User **user );
 
-static UserStatus *user_status_new(OnlineService *service, UpdateMonitor tweet_list);
+static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring);
 static void user_status_validate( UserStatus **status );
 static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status);
 static void user_status_format_dates(UserStatus *status);
@@ -297,12 +296,12 @@ void user_free(User *user){
 /********************************************************************************
  *                           UserStatus methods                                 *
  ********************************************************************************/
-static UserStatus *user_status_new(OnlineService *service, UpdateMonitor tweet_list){
+static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring){
 	UserStatus	*status=g_new0(UserStatus, 1);
 	
 	status->service=service;
 	status->user=NULL;
-	status->type=tweet_list;
+	status->type=monitoring;
 	status->id_str=status->text=status->tweet=status->notification=status->sexy_tweet=status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=0;
@@ -324,10 +323,10 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
 }/*user_status_validate(&status);*/ 
 
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor tweet_list){
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	xmlNode		*current_node = NULL;
 	gchar		*content=NULL;
-	UserStatus	*status=user_status_new(service, tweet_list);
+	UserStatus	*status=user_status_new(service, monitoring);
 	
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing status & tweet at node: %s", root_element->name);
@@ -371,7 +370,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		user_status_format_updates(service, status->user, status);
 	
 	return status;
-}/*user_status_parse(service, current_node->children, tweet_list);*/
+}/*user_status_parse(service, current_node->children, monitoring);*/
 
 static void user_status_format_dates(UserStatus *status){
 	tzset();

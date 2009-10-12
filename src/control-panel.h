@@ -110,8 +110,8 @@ void control_panel_new_update(void);
 void control_panel_new_dm(void);
 void control_panel_reply(void);
 
-void control_panel_hide_previous_tweets(void);
-void control_panel_show_previous_tweets(void);
+void control_panel_hide_previous_updates(void);
+void control_panel_show_previous_updates(void);
 
 void control_panel_send(GtkWidget *activated_widget);
 void control_panel_sexy_send_dm(void);

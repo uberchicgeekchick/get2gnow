@@ -23,13 +23,13 @@ gtkbuilder_DATA =		 				\
 
 sexy_DATA =							\
 			main-window.ui				\
-			tweet-list.ui				\
+			update-viewer.ui				\
 			friends-manager.ui			\
 			following-viewer.ui
 
 un_sexy_DATA =							\
 			main-window.in.ui			\
-			tweet-list.in.ui			\
+			update-viewer.in.ui			\
 			friends-manager.in.ui			\
 			following-viewer.in.ui
 
@@ -54,7 +54,7 @@ gtk_update_icon_cache=gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 
 
 main-window.ui: sexy_DATA
-tweet-list.ui: sexy_DATA
+update-viewer.ui: sexy_DATA
 friends-manager.ui: sexy_DATA
 following-viewer.ui: sexy_DATA
 sexy_DATA: $(un_sexy_DATA)

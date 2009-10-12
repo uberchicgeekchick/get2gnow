@@ -83,7 +83,7 @@
 
 #include "gtkbuilder.h"
 
-#include "tweet-lists.h"
+#include "tabs.h"
 #include "main-window.h"
 #include "control-panel.h"
 
@@ -376,7 +376,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 			timeline=user_timeline;
 		}
 		
-		tweet_lists_get_timeline(timeline, service);
+		tabs_get_timeline(timeline, service);
 		uber_free(timeline);
 		return;
 	}
@@ -523,7 +523,7 @@ gchar *online_service_request_selected_update_reply_to_strdup(gboolean retweet){
 	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
 		return NULL;
 	
-	if(!( (gconfig_if_bool(PREFS_TWEETS_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(1) ))
+	if(!( (gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(1) ))
 		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (retweet ?selected_update->tweet :"" ));
 	
 	return g_strdup_printf("%s@%s %s", (retweet ?"RT " :""), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
@@ -617,14 +617,14 @@ void online_service_request_selected_update_save_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
 	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), fave_tweet_id);
-	g_free(fave_tweet_id);
+	uber_free(fave_tweet_id);
 }/*online_service_request_selected_update_save_fave*/
 
 void online_service_request_selected_update_destroy_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
 	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), fave_tweet_id);
-	g_free(fave_tweet_id);
+	uber_free(fave_tweet_id);
 }/*online_service_request_selected_update_destroy_fave*/
 
 

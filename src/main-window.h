@@ -61,7 +61,7 @@
 #include <gtk/gtk.h>
 
 #include "online-services-typedefs.h"
-#include "tweet-list.h"
+#include "update-viewer.h"
 
 G_BEGIN_DECLS
 
@@ -98,8 +98,8 @@ gboolean main_window_tabs_init( void );
 void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *main_window_get_window(void);
-GtkPaned *main_window_get_tweet_list_paned(void);
-GtkPaned *main_window_get_tweet_paned(void);
+GtkPaned *main_window_get_update_viewer_paned(void);
+GtkPaned *main_window_get_main_paned(void);
 
 GtkMenuItem *main_window_get_menu(const gchar *menu);
 

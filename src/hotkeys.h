@@ -20,8 +20,8 @@
  * Authors: Kaity G. B. <uberChick@uberChicGeekChick.com>
  */
 
-#ifndef __TWEETS_H__
-#define __TWEETS_H__
+#ifndef __HOTKEYS_H__
+#define __HOTKEYS_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -37,11 +37,9 @@
 
 G_BEGIN_DECLS
 
-void tweets_hotkey(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
-
-void tweets_new_tweet(void);
+void hotkey_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
 
 G_END_DECLS
 
-#endif /* __TWEETS_H__ */
+#endif /* __HOTKEYS_H__ */
 
