@@ -13,7 +13,7 @@ AM_CFLAGS=									\
 		$(WARN_CFLAGS)							\
 		$(debug_CFLAGS)							\
 		$(get2gnow_CFLAGS)						\
-		$(UBERCHICK_CFLAGS)
+		$(UBERCHICK_CFLAGS)						\
 
 bin_PROGRAMS = get2gnow
 

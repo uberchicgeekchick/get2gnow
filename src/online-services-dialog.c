@@ -412,6 +412,10 @@ static void online_services_dialog_setup(GtkWindow *parent){
 	debug("UI loaded... setting services tree view model.");
 	online_services_dialog->urls_tree_model=(GtkTreeModel *)online_services_dialog->urls_list_store;
 	
+	gchar *window_title=g_strdup_printf("%s - %s", _(GETTEXT_PACKAGE), _("Manage Online Services"));
+	gtk_window_set_title(GTK_WINDOW(online_services_dialog->online_services_dialog), window_title);
+	uber_free(window_title);
+	
 	/* Connect the signals */
 	debug("Services tree view model retrieved... setting signal handlers.");
 	gtkbuilder_connect(ui, online_services_dialog,

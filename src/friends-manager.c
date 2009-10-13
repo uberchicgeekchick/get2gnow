@@ -350,7 +350,11 @@ static void friends_manager_setup(GtkWindow *parent){
 				NULL
 	);
 	friends_manager->friends_and_followers_model=gtk_tree_view_get_model(friends_manager->friends_and_followers);
-
+	
+	gchar *window_title=g_strdup_printf("%s - <%s>'s %s", _(GETTEXT_PACKAGE), selected_service->key, _("Friends Manager"));
+	gtk_window_set_title(GTK_WINDOW(friends_manager->dialog), window_title);
+	uber_free(window_title);
+	
 	debug("FriendsManager created now connecting its signal handlers.");
 	gtkbuilder_connect(
 				ui, friends_manager,

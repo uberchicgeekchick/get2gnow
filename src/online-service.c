@@ -240,11 +240,14 @@ GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich
 void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich users_glist_get_which, GList *new_users){
 	if(!service) return;
 	GList *users=online_service_users_glist_get(service, users_glist_get_which);
-	if(!users)
-		users=new_users;
-	else
-		users=g_list_concat(users, new_users);
+	if(new_users)
+		if(!users)
+			users=new_users;
+		else
+			users=g_list_concat(users, new_users);
+	
 	users=g_list_sort(users, (GCompareFunc)usrglistscasecmp);
+	
 	switch(users_glist_get_which){
 		case GetFriends:
 			service->friends=users;
@@ -430,7 +433,10 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 
 void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action){
 	gchar *prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PREFIX, service->key);
-	debug("OnlineService: %s %s service.  GCONF path:\t [%s]. OnlineService details: account guid:%s(key==%s)'\t\t\t[%sabled] %sservice uri: %s over https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", action, (new_service ?"created" :"existing"), prefs_auth_path, service->guid, service->key, (service->enabled?"en":"dis"), micro_blogging_service_to_string(service->micro_blogging_service), service->uri, (service->https ?_("TRUE") :_("FALSE")), service->user_name, (DEBUG_DISPLAY_PASSWORDS ?service->password :"[*passwords are hidden out side of debug mode*]"), (service->auto_connect ?_("TRUE") :_("FALSE") ) );
+	debug("OnlineService: %s %s service.  GCONF path: [%s]", action, (new_service ?"created" :"existing"), prefs_auth_path );
+	debug("OnlineService account details guid: %s; key: %s.'\n\t\t\t[%sabled]", service->guid, service->key, (service->enabled?"en":"dis") );
+	debug("Micro-Blogging Service: %s @ service uri: %s", micro_blogging_service_to_string(service->micro_blogging_service), service->uri );
+	debug("Connectng using: https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", (service->https ?_("TRUE") :_("FALSE")), service->user_name, (DEBUG_DISPLAY_PASSWORDS ?service->password :"[*passwords are hidden out side of debug mode*]"), (service->auto_connect ?_("TRUE") :_("FALSE") ) );
 	g_free(prefs_auth_path);
 }/*online_service_display_debug_details(service, "action");*/
 
@@ -1082,7 +1088,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
-	if( has_loaded && update_viewer_get_total(update_viewer) ){
+	if( has_loaded>0 && update_viewer_get_total(update_viewer) ){
 		requesting=_("new");
 		since_id=id_newest_update;
 	}else if(monitoring==DMs || monitoring==Replies){

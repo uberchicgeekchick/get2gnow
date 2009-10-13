@@ -181,16 +181,33 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	
 	gchar *uri=NULL;
 	if( (users_glist_get_which==GetFriends || ( users_glist_get_which==GetBoth && !which_pass ) ) ){
-		getting_followers=FALSE;
-		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
-	}else{
-		if(users_glist_get_which==GetBoth && online_service_users_glist_get(service, GetFriends) && online_service_users_glist_get(service, GetFollowers) ){
+		if(online_service_users_glist_get(service, GetFriends)){
+			if(!online_service_users_glist_get(service, GetFollowers))
+				which_pass=1;
+			else
+				which_pass=2;
 			fetching_users=FALSE;
-			which_pass=2;
 			return users_glist_get(users_glist_get_which, FALSE, NULL);
 		}
+		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
+	}else{
+		if(online_service_users_glist_get(service, GetFollowers)){
+			which_pass=2;
+			fetching_users=FALSE;
+			return users_glist_get(users_glist_get_which, FALSE, NULL);
+		}
+		
+		if(users_glist_get_which==GetBoth){
+			if(online_service_users_glist_get(service, GetFriends))
+				which_pass=1;
+			if(which_pass && online_service_users_glist_get(service, GetFollowers) )
+				which_pass=2;
+			if(which_pass){
+				fetching_users=FALSE;
+				return users_glist_get(users_glist_get_which, FALSE, NULL);
+			}
+		}
 		which_pass=1;
-		getting_followers=TRUE;
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
 	}
 	
@@ -219,6 +236,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	if(!network_check_http(service, xml)){
 		debug("**ERROR:** No more %s could be downloaded the request was not successful./", which_glist_str);
 		debug("**ERROR:** <%s>'s %s should be refreshed.", service_key, which_glist_str);
+		getting_followers=FALSE;
 		which_pass++;
 		return NULL;
 	}
@@ -227,6 +245,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	debug("Parsing user list");
 	if(!(new_users=users_glist_parse(service, xml)) ){
 		debug("No more %s where found, yippies we've got'em all.", which_glist_str);
+		getting_followers=FALSE;
 		which_pass++;
 		return NULL;
 	}

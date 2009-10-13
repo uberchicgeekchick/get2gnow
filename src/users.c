@@ -449,7 +449,7 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 	
 	notify_notification_show(notify_notification, &error);
 	
-	g_object_unref(G_OBJECT( notify_notification));
+	g_object_unref(G_OBJECT(notify_notification));
 	
 	if(error){
 		debug("Error displaying status->notification: %s.", error->message);
@@ -517,6 +517,10 @@ void user_profile_viewer_show(OnlineService *service, const gchar *user_name, Gt
 		user_profile_viewer_setup(parent);
 	
 	user_profile_viewer_clear_profile(parent, service, user_name);
+	
+	gchar *window_title=g_strdup_printf("%s - <%s@%s>'s %s", _(GETTEXT_PACKAGE), user_name, service->uri, _("profile"));
+	gtk_window_set_title(GTK_WINDOW(user_profile_viewer->dialog), window_title);
+	uber_free(window_title);
 	
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->dialog));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_image));

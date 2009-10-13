@@ -192,6 +192,7 @@ static void online_service_request_free(OnlineServiceRequest *request);
 static void online_service_request_selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release);
 
 
+static gchar *online_service_request_action_to_title(RequestAction action);
 static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup);
 static void online_service_request_popup_dialog_show(RequestAction action);
 static void online_service_request_popup_response_cb(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
@@ -376,7 +377,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 			timeline=user_timeline;
 		}
 		
-		tabs_get_timeline(timeline, service);
+		tabs_open_timeline(timeline, service);
 		uber_free(timeline);
 		return;
 	}
@@ -631,52 +632,78 @@ void online_service_request_selected_update_destroy_fave(void){
 /********************************************************************************
  *         online_service_request's methods, handlers, callbacks, & etc.        *
  ********************************************************************************/
-static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup){
-	switch( action ){
+static gchar *online_service_request_action_to_title(RequestAction action){
+	switch(action){
 		case Confirmation:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Are you sure you want to:");
-			break;
+			return _("Confirmation Dialog");
+		case ViewUpdatesNew:
+			return _("Who's newest updates do you want see?");
+		case ViewUpdates:
+			return _("Who's updates do you want see?");
+		case ViewProfile:
+			return _("Who's user profile would you like to view?");
+		case BestFriendAdd:
+			return _("Who would you like to add to your best friends list?");
+		case BestFriendDrop:
+			return _("Who do you want to remove from your best friends list?");
+		case Follow:
+			return _("Who do you want to follow?");
+		case UnFollow:
+			return _("Who do you want to unfollow?");
+		case Block:
+			return _("Who do you want to block?");
+		case UnBlock:
+			return _("Who do you want to unblocked?");
+		case Fave:
+			return _("What update ID # do you want to star?");
+		case UnFave:
+			return _("What update ID # do you want to un-star?");
 		case SelectService:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Please select account to use:");
-			gchar *label_markup=g_markup_printf_escaped("Please select the 'default' account you want to use for sending direct messages, managing friends, and etc.\n\n<span weight=\"bold\">NOTE: You're being asked this before %s loads your friends, followers, or both.  This may take a while, so after selecting your account, please be patient while you're friends, followers, or both are download.  They will be displeyed, it may just take awhile.</span>\n\nYou can select a different account at any time by selecting 'Select Default Account' from the 'Accounts' file menu:", GETTEXT_PACKAGE);
+			return _("Which Online Service/Account do you want to use?");
+		default:
+			/*We never get here, but it makes gcc happy.*/
+			return _("**ERROR:** Unsupported?  How on any planet did you get here?");
+	}//switch
+}/*online_service_request_action_to_title(action);*/
+
+static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup){
+	gtk_window_set_title(GTK_WINDOW(online_service_request_popup->dialog), online_service_request_action_to_title(action) );
+	
+	gchar *label_markup=NULL;
+	switch( action ){
+		case SelectService:
+			label_markup=g_markup_printf_escaped("Please select the 'default' account you want to use for sending direct messages, managing friends, and etc.\n\n<span weight=\"bold\">NOTE: You're being asked this before %s loads your friends, followers, or both.  This may take a while, so after selecting your account, please be patient while you're friends, followers, or both are download.  They will be displeyed, it may just take awhile.</span>\n\nYou can select a different account at any time by selecting 'Select Default Account' from the 'Accounts' file menu:", GETTEXT_PACKAGE);
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, label_markup);
 			g_free(label_markup);
 			break;
 		case ViewUpdates:
 		case ViewUpdatesNew:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Who's tweets do you want to see?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or user id, who's resent updates you would like to view:");
 			break;
 		case ViewProfile:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Who's profile do you want to see?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to view:");
 			break;
 		case BestFriendAdd:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom that you're following, or who's following you, would you like to add to your best friends list?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd you like to add to your best friends list:");
 			break;
 		case BestFriendDrop:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom that you're following, or who's following you, would you like to remove from your best friends list?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd you like to remove from your best friends list:");
 			break;
 		case Block:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to block?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to block?  They'll no longer be able to read your tweets, send you messages, and you'll no longer be notified when they 'mention' you, using the @ symbol:");
 			break;
 		case UnBlock:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to un-block?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-block?  They'll be able to once again read your tweets and you'll see when they mention you, using the @ symbol, again:");
 			break;
 		case UnFollow:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom you want to un-follow?" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-follow?");
 			break;
 		case Follow:
-			gtk_window_set_title(GTK_WINDOW( online_service_request_popup->dialog), "Whom do you want to follow:" );
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to follow:");
 			break;
 		case Fave:
 		case UnFave:
+		case Confirmation:
 		default:
 			break;
 	}

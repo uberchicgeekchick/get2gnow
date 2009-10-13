@@ -140,6 +140,7 @@ struct _MainWindowPrivate {
 	
 	/* Timeline menu items */
 	GtkMenuItem		*menu_tabs;
+	GList			*tabs_menu_widgets;
 	GtkCheckMenuItem	*timeline_public;
 	GtkCheckMenuItem	*timeline_friends;
 	GtkCheckMenuItem	*timeline_mine;
@@ -256,8 +257,8 @@ static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_windo
 static void main_window_about_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_window); 
 
-static void main_window_tabs_menu_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window);
-static void main_window_tabs_menu_set_active(MainWindow *main_window, gchar *timeline);
+static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p);
+static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab);
 
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window);
 
@@ -279,7 +280,7 @@ static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEven
 
 
 static MainWindow  *main_window=NULL;
-//static MainWindowPriv *main_window->private=NULL;
+static guint tabs_init_timeout=0;
 
 G_DEFINE_TYPE(MainWindow, main_window, G_TYPE_OBJECT);
 
@@ -407,6 +408,7 @@ static void main_window_setup(void){
 	);
 	
 	tabs_init(tabs_notebook);
+	main_window_tabs_menu_widgets_setup(main_window->private);
 	
 	/* Connect the signals */
 	gtkbuilder_connect( ui, main_window,
@@ -434,12 +436,12 @@ static void main_window_setup(void){
 					"selected_update_author_unfollow_image_menu_item", "activate", online_service_request_selected_update_unfollow,
 					"selected_update_author_block_image_menu_item", "activate", online_service_request_selected_update_block,
 					
-					"tabs_public_timeline", "activate", main_window_tabs_menu_timeline_selected,
-					"tabs_friends_timeline", "activate", main_window_tabs_menu_timeline_selected,
-					"tabs_my_timeline", "activate", main_window_tabs_menu_timeline_selected,
-					"tabs_direct_messages", "activate", main_window_tabs_menu_timeline_selected,
-					"tabs_replies", "activate", main_window_tabs_menu_timeline_selected,
-					"tabs_favorites_timeline", "activate", main_window_tabs_menu_timeline_selected,
+					"tabs_public_timeline", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_friends_timeline", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_my_timeline", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_direct_messages", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_replies", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_favorites_timeline", "toggled", main_window_tabs_menu_timeline_selected,
 					
 					"online_service_request_menu_friends_manager", "activate", online_service_request_menu_process,
 					"online_service_request_menu_following_viewer", "activate", online_service_request_menu_process,
@@ -478,6 +480,10 @@ static void main_window_setup(void){
 	
 	/* TODO: fix online_service_best_friends_list_store_validate(); */
 	gtk_widget_hide( GTK_WIDGET( main_window->private->best_friends_refresh_button ) );
+	
+	gchar *window_title=g_strdup_printf("%s", _(GETTEXT_PACKAGE));
+	gtk_window_set_title(GTK_WINDOW(main_window->private->window), window_title);
+	uber_free(window_title);
 	
 	/*main_window->private->search_tree_model=gtk_combo_box_get_model( (GtkComboBox *)main_window->private->search_combo_box_entry ));*/
 	g_signal_connect_after( main_window->private->window, "event-after", (GCallback)control_panel_sexy_select, NULL );
@@ -905,44 +911,116 @@ static void main_window_exit(GtkWidget  *widget, MainWindow  *main_window){
 	gtk_main_quit();
 }
 
-static void main_window_tabs_menu_timeline_selected(GtkRadioMenuItem *item, MainWindow *main_window){
+static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p){
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_public);
+	g_object_set_data_full( G_OBJECT(m_w_p->timeline_public), "timeline", API_TIMELINE_PUBLIC, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_mine);
+	g_object_set_data_full( G_OBJECT(m_w_p->timeline_mine), "timeline", API_TIMELINE_MINE, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_favorites);
+	g_object_set_data_full( G_OBJECT(m_w_p->timeline_favorites), "timeline", API_FAVORITES, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_dm);
+	g_object_set_data_full( G_OBJECT(m_w_p->timeline_dm), "timeline", API_DIRECT_MESSAGES, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_replies);
+	g_object_set_data_full( G_OBJECT(m_w_p->timeline_replies), "timeline", API_REPLIES, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_friends);
+	g_object_set_data_full( G_OBJECT(m_w_p->timeline_friends), "timeline", API_TIMELINE_FRIENDS, NULL );
+}/*main_window_tabs_menu_widgets_setup(main_window);*/
+
+static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab){
+	MainWindowPrivate *m_w_p=main_window->private;
 	gboolean timeline_found=FALSE;
-	debug("Switching timelines. MenuItem selected: %s", gtk_menu_item_get_label(GTK_MENU_ITEM( item)) );
-	
-	if( main_window->private->timeline_public->active){
-		tabs_get_timeline(API_TIMELINE_PUBLIC, NULL);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if( main_window->private->timeline_mine->active){
-		tabs_get_timeline(API_TIMELINE_MINE, NULL);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if( main_window->private->timeline_favorites->active){
-		tabs_get_timeline(API_FAVORITES, NULL);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if( main_window->private->timeline_dm->active){
-		tabs_get_timeline(API_DIRECT_MESSAGES, NULL);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if( main_window->private->timeline_replies->active){
-		tabs_get_timeline(API_REPLIES, NULL);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if( main_window->private->timeline_friends->active){
-		tabs_get_timeline(API_TIMELINE_FRIENDS, NULL);
-		if(!timeline_found) timeline_found=TRUE;
+	GList *tab_menu_items=NULL;
+	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items && !timeline_found; tab_menu_items=tab_menu_items->next){
+		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
+		if(check_menu_item!=selected_tab) continue;
+		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
+		debug("Opening a timeline. GtkCheckMenuItem selected: %s; timeline: %s.", gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)), timeline );
+		if(!gtk_check_menu_item_get_active(check_menu_item))
+			tabs_close_timeline(timeline);
+		else
+			tabs_open_timeline(timeline, NULL);
+		timeline_found=TRUE;
 	}
 	
 	/* just in case, fall back to friends timeline */
 	if(!timeline_found)
-		gtk_check_menu_item_set_active(main_window->private->timeline_friends,TRUE);
-}/*main_window_tabs_menu_timeline_selected(item, main_window);*/
+		gtk_check_menu_item_set_active(main_window->private->timeline_friends, TRUE);
+}/*main_window_tabs_menu_timeline_selected(selected_tab);*/
+
+/*
+ * Function to set the default
+ * timeline in the menu.
+ */
+void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open){
+	/* This shouldn't happen, but just in case */
+	if(G_STR_EMPTY(timeline_to_open)) {
+		debug("**ERROR:** Default timeline in not set.  Selecting 'timeline_friends' by default.");
+		return gtk_check_menu_item_set_active( main_window->private->timeline_friends, open);
+	}
+	
+	MainWindowPrivate *m_w_p=main_window->private;
+	gboolean timeline_found=FALSE;
+	GList *tab_menu_items=NULL;
+	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items && !timeline_found; tab_menu_items=tab_menu_items->next){
+		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
+		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
+		if(!g_str_equal(timeline, timeline_to_open)) continue;
+		debug("%s timeline tab: %s. GtkCheckMenuItem selected: %s.", (open ?_("Opening") :_("Closing") ), timeline, gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)) );
+		gtk_check_menu_item_set_active(check_menu_item, open);
+		tabs_open_timeline(timeline, NULL);
+		timeline_found=TRUE;
+	}
+	
+	if(!timeline_found)
+		gtk_check_menu_item_set_active( main_window->private->timeline_friends, open);
+}/*main_window_tabs_menu_set_active(API_TIMELINE_FRIENDS, TRUE);*/
+
+/* Function to retrieve the users default timeline */
+gboolean main_window_tabs_init(void){
+	gboolean open_home_page=TRUE;
+	gchar *timeline=NULL;
+	gconfig_get_string(PREFS_UPDATES_HOME_TIMELINE, &timeline);
+	online_services_refresh();
+	if(G_STR_EMPTY( timeline)){
+		if(timeline) uber_free(timeline);
+		timeline=g_strdup(API_TIMELINE_FRIENDS);
+	}
+	debug("Retrived default timeline: %s.  Loading timeline tabs.", timeline);
+	
+	if(gconfig_if_bool(PREFS_AUTOLOAD_FOLLOWING, TRUE)){
+		debug("Preparing auto-monitor for My Friends' Tweets.");
+		main_window_tabs_menu_set_active(API_TIMELINE_FRIENDS, TRUE);
+		if(open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
+			open_home_page=FALSE;
+	}
+	
+	if(gconfig_if_bool(PREFS_AUTOLOAD_REPLIES, TRUE)){
+		debug("Preparing auto-monitor for Replies.");
+		main_window_tabs_menu_set_active(API_REPLIES, TRUE);
+		if(open_home_page && g_str_equal(timeline, API_REPLIES))
+			open_home_page=FALSE;
+	}
+	
+	if(gconfig_if_bool(PREFS_AUTOLOAD_DMS, TRUE)){
+		debug("Preparing auto-monitor for DMs.");
+		main_window_tabs_menu_set_active(API_DIRECT_MESSAGES, TRUE);
+		if(open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
+			open_home_page=FALSE;
+	}
+	
+	if(open_home_page){
+		debug("Retriving default timeline: %s", timeline);
+		main_window_tabs_menu_set_active(timeline, TRUE);
+	}
+	uber_free(timeline);
+	if(tabs_init_timeout) tabs_init_timeout=0;
+	return FALSE;
+}/*main_window_tabs_init();*/
 
 
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
@@ -1104,7 +1182,6 @@ static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEven
 	return FALSE;
 }
 
-static guint tabs_init_timeout=0;
 static void main_window_login(void){
 	debug("Logging into online services.");
 	if(!online_services_login()){
@@ -1129,98 +1206,6 @@ static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 void main_window_disconnect(void){
 	online_services_disconnect();
 }/*main_window_disconnect*/
-
-/*
- * Function to set the default
- * timeline in the menu.
- */
-static void main_window_tabs_menu_set_active(MainWindow *main_window, gchar *timeline){
-	/* This shouldn't happen, but just in case */
-	if(G_STR_EMPTY( timeline)) {
-		debug("**ERROR:** Default timeline in not set.  Selecting 'timeline_friends' by default.");
-		return gtk_check_menu_item_set_active( main_window->private->timeline_friends, TRUE);
-	}
-	
-	gboolean timeline_found=FALSE;
-	debug("Selecting default timeline's radio button: %s", timeline);
-	
-	if((g_str_equal(timeline, API_TIMELINE_FRIENDS)) ){
-		gtk_check_menu_item_set_active( main_window->private->timeline_friends, TRUE);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if((g_str_equal(timeline, API_REPLIES)) ){
-		gtk_check_menu_item_set_active( main_window->private->timeline_replies, TRUE);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if((g_str_equal(timeline, API_DIRECT_MESSAGES)) ){
-		gtk_check_menu_item_set_active( main_window->private->timeline_dm, TRUE);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if((g_str_equal(timeline, API_FAVORITES)) ){
-		gtk_check_menu_item_set_active( main_window->private->timeline_favorites, TRUE);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if((g_str_equal(timeline, API_TIMELINE_MINE)) ){
-		gtk_check_menu_item_set_active( main_window->private->timeline_mine, TRUE);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	if((g_str_equal(timeline, API_TIMELINE_PUBLIC)) ){
-		gtk_check_menu_item_set_active( main_window->private->timeline_public, TRUE);
-		if(!timeline_found) timeline_found=TRUE;
-	}
-	
-	/* Let's fallback to friends timeline */
-	if(!timeline_found)
-		gtk_check_menu_item_set_active( main_window->private->timeline_friends, TRUE);
-}
-
-/* Function to retrieve the users default timeline */
-gboolean main_window_tabs_init(void){
-	gboolean open_home_page=TRUE;
-	gchar *timeline=NULL;
-	gconfig_get_string(PREFS_UPDATES_HOME_TIMELINE, &timeline);
-	online_services_refresh();
-	if(G_STR_EMPTY( timeline)){
-		if(timeline) uber_free(timeline);
-		timeline=g_strdup(API_TIMELINE_FRIENDS);
-	}
-	debug("Retrived default timeline: %s.  Loading timeline tabs.", timeline);
-	
-	if(gconfig_if_bool(PREFS_AUTOLOAD_FOLLOWING, TRUE)){
-		debug("Preparing auto-monitor for My Friends' Tweets.");
-		main_window_tabs_menu_set_active(main_window, API_TIMELINE_FRIENDS);
-		if(open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
-			open_home_page=FALSE;
-	}
-	
-	if(gconfig_if_bool(PREFS_AUTOLOAD_REPLIES, TRUE)){
-		debug("Preparing auto-monitor for Replies.");
-		main_window_tabs_menu_set_active(main_window, API_REPLIES);
-		if(open_home_page && g_str_equal(timeline, API_REPLIES))
-			open_home_page=FALSE;
-	}
-	
-	if(gconfig_if_bool(PREFS_AUTOLOAD_DMS, TRUE)){
-		debug("Preparing auto-monitor for DMs.");
-		main_window_tabs_menu_set_active(main_window, API_DIRECT_MESSAGES);
-		if(open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
-			open_home_page=FALSE;
-	}
-	
-	if(open_home_page){
-		debug("Retriving default timeline: %s", timeline);
-		tabs_get_timeline(timeline, NULL);
-	}
-	main_window_tabs_menu_set_active(main_window, timeline);
-	uber_free(timeline);
-	if(tabs_init_timeout) tabs_init_timeout=0;
-	return FALSE;
-}/*main_window_tabs_init();*/
 
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={

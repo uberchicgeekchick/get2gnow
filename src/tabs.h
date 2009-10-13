@@ -85,7 +85,8 @@ G_BEGIN_DECLS
  ********************************************************************************/
 void tabs_init(GtkNotebook *notebook);
 
-UpdateViewer *tabs_get_timeline(const gchar *timeline, OnlineService *service);
+UpdateViewer *tabs_open_timeline(const gchar *timeline, OnlineService *service);
+void tabs_close_timeline(const gchar *timeline);
 
 UpdateViewer *tabs_get_next(void);
 UpdateViewer *tabs_get_current(void);

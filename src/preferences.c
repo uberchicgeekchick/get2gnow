@@ -595,6 +595,10 @@ void preferences_dialog_show(GtkWindow *parent){
 				NULL
 	);
 
+	gchar *window_title=g_strdup_printf("%s - %s", _(GETTEXT_PACKAGE), _("Preferences"));
+	gtk_window_set_title(GTK_WINDOW(prefs->dialog), window_title);
+	uber_free(window_title);
+	
 	/* Connect the signals */
 	gtkbuilder_connect(
 				ui, prefs,

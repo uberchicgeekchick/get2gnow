@@ -156,6 +156,7 @@ struct _ControlPanel{
 	GtkListStore		*previous_updates_list_store;
 	GtkTreeModel		*previous_updates_tree_model;
 	SexySpellEntry		*sexy_entry;
+	guint			sexy_position;
 	
 	/* Info on the update being viewed to avoid issues with the 'best friends' toggle button. */
 	OnlineService		*viewing_service;
@@ -405,9 +406,9 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 			NULL
 	);
 	
-	gchar *control_panel_title=g_strdup_printf("%s - Control Panel", _(GETTEXT_PACKAGE));
-	gtk_window_set_title(control_panel->control_panel, control_panel_title);
-	uber_free(control_panel_title);
+	gchar *window_title=g_strdup_printf("%s - %s", _(GETTEXT_PACKAGE), _("Control Panel"));
+	gtk_window_set_title(control_panel->control_panel, window_title);
+	uber_free(window_title);
 	
 	if(!( parent && gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) )){
 		debug("ControlPanel's set to be embed, no further setup needed.");

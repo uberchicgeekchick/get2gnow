@@ -61,6 +61,7 @@
 #include "online-services.types.h"
 #include "online-services-typedefs.h"
 
+#include "main-window.h"
 #include "update-viewer.h"
 #include "tabs.h"
 
@@ -128,11 +129,12 @@ static UpdateViewer *tabs_new_tab(const gchar *timeline, OnlineService *service 
 	
 	gint page=gtk_notebook_append_page_menu(tabs->notebook, GTK_WIDGET(update_viewer_get_child( update_viewer)), GTK_WIDGET(update_viewer_get_tab( update_viewer)), GTK_WIDGET(update_viewer_get_menu( update_viewer)) );
 	update_viewer_set_page(update_viewer, page);
+	gtk_notebook_set_current_page( tabs->notebook, page );
 	
 	return update_viewer;
 }/*tabs_new_tab("/replies.xml");*/
 
-UpdateViewer *tabs_get_timeline(const gchar *timeline, OnlineService *service){
+UpdateViewer *tabs_open_timeline(const gchar *timeline, OnlineService *service){
 	if(G_STR_EMPTY(timeline)) return NULL;
 	GList *t=NULL;
 	UpdateViewer *update_viewer=NULL;
@@ -144,6 +146,20 @@ UpdateViewer *tabs_get_timeline(const gchar *timeline, OnlineService *service){
 		}
 	g_list_free(t);
 	return tabs_new_tab(timeline, service);
+}/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
+
+void tabs_close_timeline(const gchar *timeline){
+	if(G_STR_EMPTY(timeline)) return;
+	GList *t=NULL;
+	gboolean timeline_found=FALSE;
+	UpdateViewer *update_viewer=NULL;
+	for(t=tabs->tabs; t && !timeline_found; t=t->next)
+		if(g_str_equal(update_viewer_get_timeline((UpdateViewer *)t->data), timeline)){
+			update_viewer=(UpdateViewer *)t->data;
+			tabs_close_page(update_viewer_get_page(update_viewer));
+			timeline_found=TRUE;
+		}
+	g_list_free(t);
 }/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
 
 static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num){
@@ -225,8 +241,11 @@ void tabs_stop(void){
 
 void tabs_close(void){
 	GList *t=NULL;
-	for(t=tabs->tabs; t; t=t->next)
-		tabs_close_page(update_viewer_get_page((UpdateViewer *)t->data));
+	for(t=tabs->tabs; t; t=t->next){
+		UpdateViewer *update_viewer=(UpdateViewer *)t->data;
+		main_window_tabs_menu_set_active(update_viewer_get_timeline(update_viewer), FALSE);
+		tabs_close_page(update_viewer_get_page(update_viewer));
+	}
 	g_list_free(t);
 }/*tabs_close();*/
 

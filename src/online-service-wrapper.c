@@ -223,9 +223,8 @@ const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *onli
 guint online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper){
 	if(!online_service_wrapper) return ONLINE_SERVICE_MAX_REQUESTS;
 	
-	/*if(online_service_wrapper->attempt < ONLINE_SERVICE_MAX_REQUESTS)*/
-	if(!online_service_wrapper->attempt)
-		online_service_request_uri(online_service_wrapper->service, online_service_wrapper->request_method, online_service_wrapper->requested_uri, (++online_service_wrapper->attempt), online_service_wrapper->online_service_soup_session_callback_return_processor_func, online_service_wrapper->callback, online_service_wrapper->user_data, online_service_wrapper->form_data );
+	if(++online_service_wrapper->attempt < ONLINE_SERVICE_MAX_REQUESTS)
+		online_service_request_uri(online_service_wrapper->service, online_service_wrapper->request_method, online_service_wrapper->requested_uri, online_service_wrapper->attempt, online_service_wrapper->online_service_soup_session_callback_return_processor_func, online_service_wrapper->callback, online_service_wrapper->user_data, online_service_wrapper->form_data );
 	
 	return online_service_wrapper->attempt;
 }/*online_service_wrapper_reattempt(online_service_wrapper);*/
@@ -257,10 +256,9 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_servi
 }/*online_service_wrapper_get_form_data(online_service_wrapper);*/
 
 void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
-	if(!online_service_wrapper) return;
+	if(!online_service_wrapper || (online_service_wrapper->attempt && online_service_wrapper->attempt < ONLINE_SERVICE_MAX_REQUESTS ) ) return;
 	
 	online_service_wrapper_user_data_processor(online_service_wrapper, DataFree);
-	
 	online_service_wrapper_form_data_processor(online_service_wrapper, DataFree);
 	
 	online_service_wrapper->online_service_soup_session_callback_return_processor_func=NULL;

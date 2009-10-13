@@ -106,8 +106,6 @@ struct _NetworkUpdateViewerImageDL{
 	GtkTreeIter	*iter;
 };
 
-static gboolean retrying=FALSE;
-
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
@@ -317,16 +315,14 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			break;
 	}
 	
-	/*if(!retrying && !new_updates && !g_strrstr(request_uri, "?since_id=") && update_viewer_has_loaded(update_viewer) >= 2 && xml->status_code==200){
+	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(request_uri, "?since_id=") && update_viewer_has_loaded(update_viewer) > 0 && xml->status_code==200){
 		uber_free(request_uri);
-		return NULL;
 		return network_retry(service_wrapper);
-	}*/
+	}
 	
 	if(new_updates){
 		debug("Total tweets in this timeline: %d.", new_updates);
 	}
-	if(retrying) retrying=FALSE;
 	
 	if( IS_UPDATE_VIEWER(update_viewer) )
 		update_viewer_complete(update_viewer);
@@ -336,14 +332,14 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 }/*network_display_timeline(session, xml, service_wrapper);*/
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper){
-	retrying=TRUE;
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
-	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
+	/*UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
+	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	network_set_state_loading_timeline(requested_uri, Retry);
-	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, update_viewer, (gpointer)monitoring);
+	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, update_viewer, (gpointer)monitoring);*/
+	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/
 

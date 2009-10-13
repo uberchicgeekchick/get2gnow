@@ -255,7 +255,6 @@ void following_viewer_show(GtkWindow *parent){
 	
 	if(!(following_viewer && following_viewer->viewer ))
 		return following_viewer_setup(parent);
-	
 	gtk_window_present((GTK_WINDOW( following_viewer->viewer )) );
 }/*following_viewer_show*/
 
@@ -281,6 +280,10 @@ static void following_viewer_setup(GtkWindow *parent){
 				NULL
 	);
 	following_viewer->following_model=gtk_tree_view_get_model(following_viewer->following_tree_view);
+	
+	gchar *window_title=g_strdup_printf("%s - %s, <%s>, %s.", _(GETTEXT_PACKAGE), _("People you"), selected_service->key, _("are following"));
+	gtk_window_set_title(GTK_WINDOW(following_viewer->viewer), window_title);
+	uber_free(window_title);
 	
 	/* Connect the signals */
 	gtkbuilder_connect(
