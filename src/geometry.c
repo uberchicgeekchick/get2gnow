@@ -97,8 +97,6 @@ enum {
 #define PREFS_UI_HEIGHT				GCONF_PATH "/ui/%s/height"
 #define PREFS_UI_POSITIONS			GCONF_PATH "/ui/%s/position_%s"
 
-#define	LOAD_COUNT				2
-
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
@@ -165,7 +163,6 @@ static void geometry_load_for_window(ViewType view){
 
 static void geometry_save_for_window(ViewType view){
 	if( gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
-	static guint	calls=0;
 	gint		x=0, y=0, w=0, h=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
@@ -191,19 +188,10 @@ static void geometry_save_for_window(ViewType view){
 	}
 	prefs_path_free(prefs_path);
 	
-	if(view!=Embed){
-		if(calls) calls=0;
-		return;
-	}
+	if(view!=Embed) return;
 	
-	if(calls<LOAD_COUNT) {
-		calls++;
-		geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, FALSE);
-		geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, FALSE);
-	}else if(calls==LOAD_COUNT){
-		geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, TRUE);
-		geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, TRUE);
-	}
+	geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, TRUE);
+	geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, TRUE);
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
