@@ -510,7 +510,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/height</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>680</default>
+			<default>700</default>
 			<locale name="C">
 				<short>Embed view height</short>
 				<long>Embed view height.</long>
@@ -530,11 +530,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/embed_view_x</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/embed_view_x</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/position_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/position_x</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>680</default>
+			<default>100</default>
 			<locale name="C">
 				<short>Embed view X position</short>
 				<long>Embed view X position.</long>
@@ -542,11 +542,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/embed_view_y</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/embed_view_y</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/position_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/position_y</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>25</default>
+			<default>100</default>
 			<locale name="C">
 				<short>Embed view Y position</short>
 				<long>Embed view Y position.</long>
@@ -554,11 +554,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/vpaned_update_viewer</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/vpaned_update_viewer</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/position_hpaned</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/position_hpaned</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>25</default>
+			<default>320</default>
 			<locale name="C">
 				<short>Tweet View's vertical slider bar's position</short>
 				<long>Tweet View's vertical slider bar's position.</long>
@@ -566,11 +566,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/hpaned_control_panel</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/hpaned_control_panel</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/position_vpaned</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/position_vpaned</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>25</default>
+			<default>420</default>
 			<locale name="C">
 				<short>Tweet View's vertical slider bar's position</short>
 				<long>Tweet View's vertical slider bar's position.</long>
@@ -582,7 +582,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/height</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>445</default>
+			<default>700</default>
 			<locale name="C">
 				<short>Main window height</short>
 				<long>Main window height.</long>
@@ -594,7 +594,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/width</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>730</default>
+			<default>1100</default>
 			<locale name="C">
 				<short>Main window width</short>
 				<long>Main window width.</long>
@@ -602,11 +602,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/main_window_x</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/main_window_x</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/main_window/position_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/position_x</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>680</default>
+			<default>100</default>
 			<locale name="C">
 				<short>Main window X position</short>
 				<long>Main window X position.</long>
@@ -614,11 +614,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/main_window_y</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/main_window_y</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/main_window/position_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/position_y</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>25</default>
+			<default>100</default>
 			<locale name="C">
 				<short>Main window Y position</short>
 				<long>Main window Y position.</long>
@@ -630,7 +630,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/height</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>300</default>
+			<default>350</default>
 			<locale name="C">
 				<short>Tweet View height</short>
 				<long>Tweet View height.</long>
@@ -642,7 +642,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/width</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>575</default>
+			<default>700</default>
 			<locale name="C">
 				<short>Tweet View width</short>
 				<long>Tweet View width.</long>
@@ -650,11 +650,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/control_panel_x</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/control_panel_x</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/position_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/position_x</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>690</default>
+			<default>100</default>
 			<locale name="C">
 				<short>Tweet View X position</short>
 				<long>Tweet View X position.</long>
@@ -662,11 +662,11 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/positions/control_panel_y</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/positions/control_panel_y</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/position_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/position_y</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>505</default>
+			<default>800</default>
 			<locale name="C">
 				<short>Tweet View Y position</short>
 				<long>Tweet View Y position.</long>

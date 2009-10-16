@@ -93,9 +93,9 @@ enum {
 #include"debug.h"
 
 /* Window height, width, & position gconf values. */
-#define PREFS_UI_WIDTH				GCONF_PATH "/ui/widths/%s"
-#define PREFS_UI_HEIGHT				GCONF_PATH "/ui/heights/%s"
-#define PREFS_UI_POSITIONS			GCONF_PATH "/ui/positions/%s_%s"
+#define PREFS_UI_WIDTH				GCONF_PATH "/ui/%s/width"
+#define PREFS_UI_HEIGHT				GCONF_PATH "/ui/%s/height"
+#define PREFS_UI_POSITIONS			GCONF_PATH "/ui/%s/position_%s"
 
 #define	LOAD_COUNT				2
 
@@ -288,7 +288,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	gtk_window_get_size(window, &w, &h);
 	gint position=0, min_position=0, max_position=0, padding=0;/*(h/10)*5;*/
 	
-	gchar *paned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, (vpaned ?"vpanded" :"hpaned"), widget);
+	gchar *paned_position_prefs_path=g_strdup_printf(PREFS_UI_POSITIONS, widget, (vpaned ?"vpaned" :"hpaned"));
 	
 	if(save){
 		position=gtk_paned_get_position(paned);
