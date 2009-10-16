@@ -1,0 +1,308 @@
+System: Linux 2.6.27.29-0.1-default #1 SMP 2009-08-15 17:53:59 +0200 x86_64
+X Vendor: The X.Org Foundation
+X Vendor Release: 10502000
+Selinux: No
+Accessibility: Disabled
+GTK+ Theme: Clearlooks
+Icon Theme: Lila
+GTK+ Modules: pk-gtk-module, gnomebreakpad
+
+Memory status: size: 375226368 vsize: 375226368 resident: 23908352 share: 15413248 rss: 23908352 rss_rlim: 18446744073709551615
+CPU usage: start_time: 1255667235 rtime: 73 utime: 66 stime: 7 cutime:0 cstime: 0 timeout: 0 it_real_value: 0 frequency: 100
+
+Backtrace was generated from '/usr/bin/get2gnow'
+
+[?1034h[Thread debugging using libthread_db enabled]
+[New Thread 0x7f4f10f34950 (LWP 10736)]
+[New Thread 0x7f4f11fcb950 (LWP 10735)]
+[New Thread 0x7f4f11795950 (LWP 10733)]
+[New Thread 0x7f4f127cc950 (LWP 10731)]
+0x00007f4f19a98386 in poll () from /lib64/libc.so.6
+#0  0x00007f4f19a98386 in poll () from /lib64/libc.so.6
+#1  0x00007f4f19f80c29 in g_main_context_poll (n_fds=<value optimized out>, fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>) at gmain.c:2768
+#2  g_main_context_iterate (n_fds=<value optimized out>, fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>) at gmain.c:2450
+#3  0x00007f4f19f8124d in IA__g_main_loop_run (loop=0x7f4f0c000af0) at gmain.c:2663
+#4  0x00007f4f1e14c437 in IA__gtk_main () at gtkmain.c:1205
+#5  0x0000000000415041 in main (argc=1, argv=0x7fff2ab82598, envp=<value optimized out>) at main.c:72
+
+Thread 5 (Thread 0x7f4f127cc950 (LWP 10731)):
+#0  0x00007f4f19d3487b in read () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f4f21a63e59 in read (__nbytes=<value optimized out>, __buf=<value optimized out>, __fd=<value optimized out>)
+    at /usr/include/bits/unistd.h:45
+No locals.
+#2  soup_gnutls_pull_func (__nbytes=<value optimized out>, __buf=<value optimized out>, __fd=<value optimized out>) at soup-gnutls.c:393
+        nread = <value optimized out>
+#3  0x00007f4f217ae193 in ?? () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#4  0x00007f4f217ae5f0 in _gnutls_io_read_buffered () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#5  0x00007f4f217aac5d in _gnutls_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#6  0x00007f4f217ad87e in _gnutls_handshake_io_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#7  0x00007f4f217b226d in _gnutls_recv_handshake () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#8  0x00007f4f217b61d3 in _gnutls_recv_server_certificate () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#9  0x00007f4f217b3178 in _gnutls_handshake_client () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#10 0x00007f4f217b3a98 in gnutls_handshake () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#11 0x00007f4f21a639fc in do_handshake (chan=0xb15710, err=0x7f4f127cbed0) at soup-gnutls.c:146
+        result = -4
+#12 0x00007f4f21a63c37 in soup_gnutls_write (channel=0xb15710, 
+    buf=0xc3be20 "GET /api/statuses/friends_timeline.xml HTTP/1.1\r\nHost: identi.ca\r\nConnection: close\r\nAuthorization: Basic dWJlcmNoaWNrOnViM3J8LXwwKyt5Q2gxY2s=\r\n\r\n", count=146, bytes_written=0x7f4f127cbe80, err=0x7f4f127cbed0) at soup-gnutls.c:250
+        result = 1207
+#13 0x00007f4f19f72a68 in IA__g_io_channel_write_chars (channel=0xb15710, 
+    buf=0xc3be20 "GET /api/statuses/friends_timeline.xml HTTP/1.1\r\nHost: identi.ca\r\nConnection: close\r\nAuthorization: Basic dWJlcmNoaWNrOnViM3J8LXwwKyt5Q2gxY2s=\r\n\r\n", count=146, bytes_written=0x7f4f127cbf30, error=0x7f4f127cbed0) at giochannel.c:2054
+        tmp_bytes = <value optimized out>
+        status = <value optimized out>
+        wrote_bytes = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_io_channel_write_chars"
+#14 0x00007f4f21a74d98 in soup_socket_write (sock=0x916530, buffer=0xc3be20, len=<value optimized out>, nwrote=0x7f4f127cbf30, 
+    cancellable=<value optimized out>, error=0x7f4f127cbf28) at soup-socket.c:1468
+        priv = 0x916550
+        status = <value optimized out>
+        cond = G_IO_OUT
+        my_err = 0x0
+        __PRETTY_FUNCTION__ = "soup_socket_write"
+#15 0x00007f4f21a6afdf in write_data (msg=0xb13160, 
+    data=0xc3be20 "GET /api/statuses/friends_timeline.xml HTTP/1.1\r\nHost: identi.ca\r\nConnection: close\r\nAuthorization: Basic dWJlcmNoaWNrOnViM3J8LXwwKyt5Q2gxY2s=\r\n\r\n", len=146, body=0) at soup-message-io.c:371
+        priv = <value optimized out>
+        io = 0x9165d0
+        status = <value optimized out>
+        nwrote = 11612512
+        error = 0x0
+        chunk = <value optimized out>
+#16 0x00007f4f21a6b886 in io_write (sock=0x916530, msg=0xb13160) at soup-message-io.c:465
+        priv = 0xb131b0
+        io = 0x9165d0
+        __PRETTY_FUNCTION__ = "io_write"
+#17 0x00007f4f21a744f9 in process_queue_item (item=0xb20c00) at soup-session-sync.c:251
+        priv = 0x6846d0
+        conn = 0x892b00
+#18 0x00007f4f21a748b9 in queue_message_thread (data=0x13) at soup-session-sync.c:273
+No locals.
+#19 0x00007f4f19fa6cd4 in g_thread_create_proxy (data=0xc17a80) at gthread.c:635
+        __PRETTY_FUNCTION__ = "g_thread_create_proxy"
+#20 0x00007f4f19d2e070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#21 0x00007f4f19aa110d in clone () from /lib64/libc.so.6
+No symbol table info available.
+
+Thread 4 (Thread 0x7f4f11795950 (LWP 10733)):
+#0  0x00007f4f19d355af in waitpid () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f4f19fb4f29 in IA__g_spawn_sync (working_directory=<value optimized out>, argv=<value optimized out>, 
+    envp=<value optimized out>, flags=<value optimized out>, child_setup=<value optimized out>, user_data=<value optimized out>, 
+    standard_output=0x0, standard_error=0x0, exit_status=0x0, error=0x7f4f11791eb8) at gspawn.c:382
+        outpipe = -1
+        errpipe = -1
+        pid = 10734
+        fds = {__fds_bits = {12839232, 8, 16, 16, 12817328, 0, 16, 0, 12817368, 12684080, 12817328, 139977572294328, 5, 139977714931638, 
+            139977572294008, 139977572294120}}
+        ret = <value optimized out>
+        outstr = 0x0
+        errstr = 0x0
+        failed = 0
+        status = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_spawn_sync"
+#2  0x00007f4f19fb5238 in IA__g_spawn_command_line_sync (command_line=<value optimized out>, standard_output=0x0, standard_error=0x0, 
+    exit_status=0x0, error=0x7f4f11791eb8) at gspawn.c:694
+        retval = 0
+        argv = 0xc393b0
+        __PRETTY_FUNCTION__ = "IA__g_spawn_command_line_sync"
+#3  0x00007f4f1615abf2 in run_bug_buddy (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:369
+        res = <value optimized out>
+        warning_file = <value optimized out>
+        exec_str = 0xc33e80 "bug-buddy --appname=\"get2gnow\" --include=\"/tmp/bug-buddy-EVWO1U\" --unlink-tempfile --pid=10722"
+        args_str = <value optimized out>
+        error = 0x0
+#4  check_if_gdb (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>) at gnome-breakpad.cc:440
+        mypath = <value optimized out>
+        gdb = 0xc4ce90 "/usr/bin/gdb"
+        has_debug_symbols = <value optimized out>
+        appname = 0x654960 "get2gnow"
+        pid = 10722
+#5  bugbuddy_segv_handle (minidump_path=<value optimized out>, pid=<value optimized out>, appname=<value optimized out>)
+    at gnome-breakpad.cc:223
+        in_segv = 1
+#6  <signal handler called>
+No symbol table info available.
+#7  0x00007f4f19a00645 in raise () from /lib64/libc.so.6
+No symbol table info available.
+#8  0x00007f4f19a01c33 in abort () from /lib64/libc.so.6
+No symbol table info available.
+#9  0x00007f4f19a3c8e8 in ?? () from /lib64/libc.so.6
+No symbol table info available.
+#10 0x00007f4f19a42118 in ?? () from /lib64/libc.so.6
+No symbol table info available.
+#11 0x00007f4f19a46fe5 in realloc () from /lib64/libc.so.6
+No symbol table info available.
+#12 0x00007f4f19f85c4e in IA__g_realloc (mem=0xc1a720, n_bytes=32) at gmem.c:170
+No locals.
+#13 0x00007f4f19f590f3 in g_array_maybe_expand (array=0xc1ab40, len=<value optimized out>) at garray.c:339
+        want_alloc = 0
+#14 0x00007f4f19f59532 in IA__g_array_append_vals (farray=0x29e2, data=0x7f4f11792f20, len=6) at garray.c:132
+No locals.
+#15 0x00007f4f19f59599 in IA__g_byte_array_append (array=0x29e2, data=0x29ed <Address 0x29ed out of bounds>, len=6) at garray.c:653
+No locals.
+#16 0x00007f4f21a6ae68 in read_metadata (msg=0xb132c0, to_blank=1) at soup-message-io.c:245
+        io = 0x953a90
+        status = SOUP_SOCKET_OK
+        read_buf = "HTTP/1.1 200 OK\r\n", '\000' <repeats 3015 times>"\240, \000\000\000\000\000\000\000x", '\000' <repeats 43 times>, "\b", '\000' <repeats 11 times>, "x\000\000\000\000\000\000\000\000*\322\031O\177\000\000\000\000\000\000\000\000\000\000\024\000\000\000\000\000\000\000\200<y\021O\177\000\000PMy\021O\177\000\000\221h\244\031O\177\000\000x\000\000\000\000\000\000\000\220My\021O\177\000\000\340Ly\021O\177\000\000\353&\254\031O\177\000\000\000@\000\000\003\000\000\000\376\200\000\000\000\000\000\000\002\023\002\377\376\246]+\300;y\021O\177\000\000\000\000\000\000\000\000\000\000\371 \252\031O\177\000\000\000\200\000\000\001", '\000' <repeats 18 times>, "\001\356\a\244\031O\177\000\000\000\000\000\000\000\000\000\000"...
+        nread = <value optimized out>
+        got_lf = 1
+        error = 0x0
+#17 0x00007f4f21a6b265 in io_read (sock=0x9163f0, msg=0xb132c0) at soup-message-io.c:684
+        priv = 0xb13310
+        io = 0x953a90
+        status = 8989312
+        __PRETTY_FUNCTION__ = "io_read"
+#18 0x00007f4f21a744f9 in process_queue_item (item=0x9180c0) at soup-session-sync.c:251
+        priv = 0x6846d0
+        conn = 0x892a80
+#19 0x00007f4f21a748b9 in queue_message_thread (data=0x29e2) at soup-session-sync.c:273
+No locals.
+#20 0x00007f4f19fa6cd4 in g_thread_create_proxy (data=0xc39420) at gthread.c:635
+        __PRETTY_FUNCTION__ = "g_thread_create_proxy"
+#21 0x00007f4f19d2e070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#22 0x00007f4f19aa110d in clone () from /lib64/libc.so.6
+No symbol table info available.
+
+Thread 3 (Thread 0x7f4f11fcb950 (LWP 10735)):
+#0  0x00007f4f19d3487b in read () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f4f21a63e59 in read (__nbytes=<value optimized out>, __buf=<value optimized out>, __fd=<value optimized out>)
+    at /usr/include/bits/unistd.h:45
+No locals.
+#2  soup_gnutls_pull_func (__nbytes=<value optimized out>, __buf=<value optimized out>, __fd=<value optimized out>) at soup-gnutls.c:393
+        nread = <value optimized out>
+#3  0x00007f4f217ae193 in ?? () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#4  0x00007f4f217ae5f0 in _gnutls_io_read_buffered () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#5  0x00007f4f217aab8a in _gnutls_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#6  0x00007f4f217ad87e in _gnutls_handshake_io_recv_int () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#7  0x00007f4f217b226d in _gnutls_recv_handshake () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#8  0x00007f4f217b2d79 in _gnutls_handshake_client () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#9  0x00007f4f217b3a98 in gnutls_handshake () from /usr/lib64/libgnutls.so.26
+No symbol table info available.
+#10 0x00007f4f21a639fc in do_handshake (chan=0xb152f0, err=0x7f4f11fcaed0) at soup-gnutls.c:146
+        result = -4
+#11 0x00007f4f21a63c37 in soup_gnutls_write (channel=0xb152f0, 
+    buf=0xc50630 "GET /direct_messages.xml?since_id=315530242 HTTP/1.1\r\nHost: twitter.com\r\n\r\n", count=75, 
+    bytes_written=0x7f4f11fcae80, err=0x7f4f11fcaed0) at soup-gnutls.c:250
+        result = 5
+#12 0x00007f4f19f72a68 in IA__g_io_channel_write_chars (channel=0xb152f0, 
+    buf=0xc50630 "GET /direct_messages.xml?since_id=315530242 HTTP/1.1\r\nHost: twitter.com\r\n\r\n", count=75, 
+    bytes_written=0x7f4f11fcaf30, error=0x7f4f11fcaed0) at giochannel.c:2054
+        tmp_bytes = <value optimized out>
+        status = <value optimized out>
+        wrote_bytes = <value optimized out>
+        __PRETTY_FUNCTION__ = "IA__g_io_channel_write_chars"
+#13 0x00007f4f21a74d98 in soup_socket_write (sock=0x953bd0, buffer=0xc50630, len=<value optimized out>, nwrote=0x7f4f11fcaf30, 
+    cancellable=<value optimized out>, error=0x7f4f11fcaf28) at soup-socket.c:1468
+        priv = 0x953bf0
+        status = <value optimized out>
+        cond = G_IO_OUT
+        my_err = 0x0
+        __PRETTY_FUNCTION__ = "soup_socket_write"
+#14 0x00007f4f21a6afdf in write_data (msg=0xb13370, 
+    data=0xc50630 "GET /direct_messages.xml?since_id=315530242 HTTP/1.1\r\nHost: twitter.com\r\n\r\n", len=75, body=0)
+    at soup-message-io.c:371
+        priv = <value optimized out>
+        io = 0x953c70
+        status = <value optimized out>
+        nwrote = 11613040
+        error = 0x0
+        chunk = <value optimized out>
+#15 0x00007f4f21a6b886 in io_write (sock=0x953bd0, msg=0xb13370) at soup-message-io.c:465
+        priv = 0xb133c0
+        io = 0x953c70
+        __PRETTY_FUNCTION__ = "io_write"
+#16 0x00007f4f21a744f9 in process_queue_item (item=0xb20ea0) at soup-session-sync.c:251
+        priv = 0x6844f0
+        conn = 0x952aa0
+#17 0x00007f4f21a748b9 in queue_message_thread (data=0x16) at soup-session-sync.c:273
+No locals.
+#18 0x00007f4f19fa6cd4 in g_thread_create_proxy (data=0xc3c080) at gthread.c:635
+        __PRETTY_FUNCTION__ = "g_thread_create_proxy"
+#19 0x00007f4f19d2e070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#20 0x00007f4f19aa110d in clone () from /lib64/libc.so.6
+No symbol table info available.
+
+Thread 2 (Thread 0x7f4f10f34950 (LWP 10736)):
+#0  0x00007f4f19d34b8b in connect () from /lib64/libpthread.so.0
+No symbol table info available.
+#1  0x00007f4f21a75ff9 in socket_connect_internal (sock=<value optimized out>) at soup-socket.c:662
+        sa = <value optimized out>
+        len = 16
+        status = -4
+#2  0x00007f4f21a5d036 in soup_connection_connect_sync (conn=0x952a20) at soup-connection.c:451
+        priv = 0x952a40
+        status = <value optimized out>
+        __PRETTY_FUNCTION__ = "soup_connection_connect_sync"
+#3  0x00007f4f21a745f0 in wait_for_connection (item=<value optimized out>) at soup-session-sync.c:204
+No locals.
+#4  process_queue_item (item=<value optimized out>) at soup-session-sync.c:247
+        priv = 0x6846d0
+        conn = 0x952a20
+#5  0x00007f4f21a748b9 in queue_message_thread (data=0x17) at soup-session-sync.c:273
+No locals.
+#6  0x00007f4f19fa6cd4 in g_thread_create_proxy (data=0xc32ac0) at gthread.c:635
+        __PRETTY_FUNCTION__ = "g_thread_create_proxy"
+#7  0x00007f4f19d2e070 in start_thread () from /lib64/libpthread.so.0
+No symbol table info available.
+#8  0x00007f4f19aa110d in clone () from /lib64/libc.so.6
+No symbol table info available.
+
+Thread 1 (Thread 0x7f4f226467d0 (LWP 10722)):
+#0  0x00007f4f19a98386 in poll () from /lib64/libc.so.6
+No symbol table info available.
+#1  0x00007f4f19f80c29 in g_main_context_poll (n_fds=<value optimized out>, fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>) at gmain.c:2768
+No locals.
+#2  g_main_context_iterate (n_fds=<value optimized out>, fds=<value optimized out>, priority=<value optimized out>, 
+    timeout=<value optimized out>, context=<value optimized out>) at gmain.c:2450
+        max_priority = 2147483647
+        timeout = 3983
+        some_ready = <value optimized out>
+        nfds = 10
+        allocated_nfds = 1
+        fds = 0x7f4f0c000f30
+        __PRETTY_FUNCTION__ = "g_main_context_iterate"
+#3  0x00007f4f19f8124d in IA__g_main_loop_run (loop=0x7f4f0c000af0) at gmain.c:2663
+        self = 0x648430
+        __PRETTY_FUNCTION__ = "IA__g_main_loop_run"
+#4  0x00007f4f1e14c437 in IA__gtk_main () at gtkmain.c:1205
+        tmp_list = 0x0
+        functions = 0x0
+        init = 0x6474d0
+        loop = <value optimized out>
+#5  0x0000000000415041 in main (argc=1, argv=0x7fff2ab82598, envp=<value optimized out>) at main.c:72
+        option_context = 0x6474d0
+        option_entries = {{long_name = 0x433218 "", short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_FILENAME_ARRAY, 
+            arg_data = 0x6460d8, description = 0x4350d0 "Special option that collects any remaining arguments for us", 
+            arg_description = 0x0}, {long_name = 0x0, short_name = 0 '\000', flags = 0, arg = G_OPTION_ARG_NONE, arg_data = 0x0, 
+            description = 0x0, arg_description = 0x0}}
+A debugging session is active.
+
+	Inferior 1 [process 10722] will be detached.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]
+
+
+---- Critical and fatal warnings logged during execution ----
+
+** libsoup **: set_current_request: assertion `priv->cur_req == NULL' failed 

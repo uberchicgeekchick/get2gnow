@@ -710,7 +710,7 @@ void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateVi
 			case	GDOUBLE_USER_ID:
 			case	GINT_CREATED_AGO:
 			case	ULONG_CREATED_AT:
-			case	GUINT_SELECTED_INDEX:
+			case	GINT_SELECTED_INDEX:
 			case	GBOOLEAN_UNREAD:
 				return;
 				break;
@@ -773,7 +773,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 					this->tree_model, iter,
 						STRING_CREATED_AT, &created_at_str,
 						ONLINE_SERVICE, &service,
-						GUINT_SELECTED_INDEX, &selected_index,
+						GINT_SELECTED_INDEX, &selected_index,
 						GBOOLEAN_UNREAD, &unread,
 					-1
 		);
@@ -791,7 +791,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 							/*(seconds|minutes|hours|day) ago.*/
 						GINT_CREATED_AGO, created_ago,
 							/*How old the post is, in seconds, for sorting.*/
-						GUINT_SELECTED_INDEX, (selected_index ? (selected_index+1) :0 ),
+						GINT_SELECTED_INDEX, (selected_index ? (selected_index+1) :0 ),
 					-1
 			);
 		}
@@ -1211,7 +1211,7 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
-					GUINT_SELECTED_INDEX, 0,				/*The row's 'selected index'.*/
+					GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
 					GBOOLEAN_UNREAD, unread,
 				-1
 	);
@@ -1369,7 +1369,7 @@ static void update_viewer_changed_cb(SexyTreeView *update_viewer_sexy_tree_view,
 					STRING_USER, &user_name,
 					PIXBUF_AVATAR, &pixbuf,
 					ONLINE_SERVICE, &service,
-					GUINT_SELECTED_INDEX, &this->index,
+					GINT_SELECTED_INDEX, &this->index,
 					GBOOLEAN_UNREAD, &unread,
 				-1
 	);
@@ -1378,7 +1378,7 @@ static void update_viewer_changed_cb(SexyTreeView *update_viewer_sexy_tree_view,
 			
 	
 	gchar *update_id_str=gdouble_to_str(update_id);
-	if(!this->index){
+	if(this->index < 0){
 		debug("Searching for update ID's: %s index.  For update from <%s@%s> & to: <%s>.", update_id_str, user_name, service->uri, service->guid);
 		update_viewer_find_selected_update_index(update_viewer, service, user_name, update_id);
 	}
@@ -1445,7 +1445,7 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 			}
 			
 			debug("Updating UpdateViewer, for %s (timeline: %s), selected index for update at list_store's index: %d.  Setting selecting index to: %d previous selected index: %d.", this->monitoring_string, this->timeline, x, x, this->index );
-			gtk_list_store_set(this->list_store, iter2, GUINT_SELECTED_INDEX, i, GBOOLEAN_UNREAD, FALSE, -1);
+			gtk_list_store_set(this->list_store, iter2, GINT_SELECTED_INDEX, i, GBOOLEAN_UNREAD, FALSE, -1);
 			if( unread && this->unread_updates ){
 				this->unread_updates--;
 				update_viewer_mark_as_read(update_viewer);

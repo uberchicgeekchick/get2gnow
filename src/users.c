@@ -394,13 +394,13 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	debug("Formatting status text for display.");
 	
 	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
-	if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
+	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
 		status->sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
 		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
-	}else{
+	}else{*/
 		status->sexy_tweet=g_strdup(sexy_status_swap);
 		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
-	}
+	//}
 	uber_free(sexy_status_swap);
 
 	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>", user->nick_name, user->user_name, service->uri);

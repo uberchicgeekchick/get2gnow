@@ -54,8 +54,8 @@
       <column type="gchararray"/>
       <!-- column-name STRING_RCPT -->
       <column type="gchararray"/>
-      <!-- column-name GUINT_SELECTED_INDEX -->
-      <column type="guint"/>
+      <!-- column-name GINT_SELECTED_INDEX -->
+      <column type="gint"/>
       <!-- column-name GBOOLEAN_UNREAD -->
       <column type="gboolean"/>
     </columns>
