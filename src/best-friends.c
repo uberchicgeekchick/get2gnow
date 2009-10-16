@@ -106,7 +106,6 @@ gboolean best_friends_check_update_ids( OnlineService *service, const gchar *bes
 		save_best_friends_ids=TRUE;
 		notify_of_new_update=TRUE;
 		best_friends_newest_update_id=unread_update_id;
-		online_services_best_friends_list_store_mark_as_read(service, best_friends_user_name, main_window_get_best_friends_list_store() );
 	}else if(unread_update_id>best_friends_unread_update_id)
 		notify_of_new_update=TRUE;
 	
@@ -125,6 +124,7 @@ gboolean best_friends_check_update_ids( OnlineService *service, const gchar *bes
 	if(save_best_friends_ids){
 		debug("Saving Best Friend's update IDs.  Newest ID: %f; Unread ID: %f; Oldest ID: %f.", best_friends_newest_update_id, best_friends_unread_update_id, best_friends_oldest_update_id );
 		online_service_update_ids_set(service, user_timeline, best_friends_newest_update_id, best_friends_unread_update_id, best_friends_oldest_update_id );
+		online_services_best_friends_list_store_mark_as_read(service, best_friends_user_name, main_window_get_best_friends_list_store() );
 	}
 	uber_free( user_timeline );
 	return notify_of_new_update;
