@@ -247,11 +247,14 @@ static void update_viewer_stop_toggle_tool_button_toggled(GtkToggleToolButton *s
 static void update_viewer_set_maximum_updates(GtkSpinButton *max_updates_spin_button, UpdateViewer *update_viewer);
 static void update_viewer_set_adjustment(UpdateViewer *update_viewer);
 
+const gchar *update_viewer_list_store_column_to_string(UpdateViewerListStoreColumn update_viewer_list_store_column);
+static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value, gboolean list_store_remove );
+
 static gboolean update_viewer_notification(UpdateViewer *update_viewer);
 static void update_viewer_increment_unread(UpdateViewer *update_viewer);
 static void update_viewer_mark_as_unread(UpdateViewer *update_viewer);
 
-static void update_viewer_list_store_update(UpdateViewer *update_viewer);
+static void update_viewer_check_updates(UpdateViewer *update_viewer);
 static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiration);
 static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer);
 static void update_viewer_check_inbox(UpdateViewer *update_viewer);
@@ -471,7 +474,7 @@ void update_viewer_start(UpdateViewer *update_viewer){
 		debug("Creating timeout to reload %s.", this->menu_label_string);
 		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)update_viewer_refresh, update_viewer);
 	}
-	update_viewer_list_store_update(update_viewer);
+	update_viewer_check_updates(update_viewer);
 	if(this->has_loaded < 1) return;
 	if(this->loading) return;
 	if(this->minutes){
@@ -539,7 +542,7 @@ static void update_viewer_set_adjustment(UpdateViewer *update_viewer){
 	gtk_spin_button_set_value(this->max_updates_spin_button, this->max_updates);
 }/*update_viewer_set_adjustment(update_viewer);*/
 
-static void update_viewer_list_store_update(UpdateViewer *update_viewer){
+static void update_viewer_check_updates(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
@@ -559,7 +562,7 @@ static void update_viewer_list_store_update(UpdateViewer *update_viewer){
 		case None: default:
 			return;
 	}
-}/*update_viewer_list_store_update(update_viewer);*/
+}/*update_viewer_check_updates(update_viewer);*/
 
 static void update_viewer_set_maximum_updates(GtkSpinButton *max_updates_spin_button, UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
@@ -592,6 +595,7 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 	
 	if(!this->total || this->total <= this->max_updates)	return;
 	
+	gboolean unread_found=FALSE;
 	debug("Cleaning up UpdateViewer for %s.  UpdateViewer's total updates: %d.  Maximum allowed updates: %f", this->timeline, this->total, this->max_updates);
 	if( gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ) ){
 		debug("Moving focus to UpdateViewer's top since no iter is currently selected selected.");
@@ -599,24 +603,49 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 	}
 	
 	for(gint i=this->total-1; i>this->max_updates; i--){
+		OnlineService *service=NULL;
+		gboolean unread=TRUE;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path)))
+		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
 			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
-		else{
-			debug("Removing iter at index: %d", i);
-			if(i==this->index){
-				debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
-				update_viewer_scroll_to_top(update_viewer);
-			}
-			gtk_list_store_remove(this->list_store, iter);
-			this->total--;
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
 		}
+		
+		debug("Removing iter at index: %d", i);
+		if(i==this->index){
+			debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
+			update_viewer_scroll_to_top(update_viewer);
+		}
+		gtk_tree_model_get(
+				this->tree_model, iter,
+					ONLINE_SERVICE, &service,
+					GBOOLEAN_UNREAD, &unread,
+					ONLINE_SERVICE, &service,
+				-1
+		);
+		
+		debug( "Removing <%s>'s %s at index %i which exceeds maximum updates: %s.", service->guid, this->monitoring_string, i, this->max_updates_str );
+		
+		if( unread && this->unread_updates ){
+			if(unread_found) unread_found=TRUE;
+			this->unread_updates--;
+		}
+		gtk_list_store_remove(this->list_store, iter);
+		this->total--;
+		
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
+	if(unread_found)
+		if(this->unread)
+			update_viewer_mark_as_unread(update_viewer);
+		else
+			update_viewer_mark_as_read(update_viewer);
 	update_viewer_update_age(update_viewer, 0);
-}/*tweet_check_maximum_updates(update_viewer);*/
+}/*update_viewer_check_maximum_updates(update_viewer);*/
 
 static void update_viewer_check_inbox(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
@@ -658,7 +687,31 @@ static void update_viewer_check_inbox(UpdateViewer *update_viewer){
 	update_viewer_update_age(update_viewer, update_expiration);
 }/*update_viewer_check_inbox(update_viewer);*/
 
-void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value ){
+const gchar *update_viewer_list_store_column_to_string(UpdateViewerListStoreColumn update_viewer_list_store_column){
+	switch( update_viewer_list_store_column ){
+		case	ONLINE_SERVICE: return _("ONLINE_SERVICE");
+		case	STRING_USER: return _("STRING_USER");
+		case	STRING_NICK: return _("STRING_NICK");
+		case	STRING_TEXT: return _("STRING_TEXT");
+		case	STRING_TWEET: return _("STRING_TWEET");
+		case	STRING_SEXY_TWEET: return _("STRING_SEXY_TWEET");
+		case	STRING_CREATED_AGO: return _("STRING_CREATED_AGO");	
+		case	STRING_CREATED_AT: return _("STRING_CREATED_AT");
+		case	STRING_FROM: return _("STRING_FROM");
+		case	STRING_RCPT: return _("STRING_RCPT");
+		case	PIXBUF_AVATAR: return _("PIXBUF_AVATAR");
+		case	GUINT_UPDATE_VIEWER_INDEX: return _("GUINT_UPDATE_VIEWER_INDEX");
+		case	GDOUBLE_UPDATE_ID: return _("GDOUBLE_UPDATE_ID");
+		case	GDOUBLE_USER_ID: return _("GDOUBLE_USER_ID");
+		case	GINT_CREATED_AGO: return _("GINT_CREATED_AGO");
+		case	ULONG_CREATED_AT: return _("ULONG_CREATED_AT");
+		case	GINT_SELECTED_INDEX: return _("GINT_SELECTED_INDEX");
+		case	GBOOLEAN_UNREAD: return _("GBOOLEAN_UNREAD");
+		default: return _("UNKNOWN COLUMN");
+	}
+}/*update_viewer_list_store_column_to_string(update_viewer_list_store_column);*/
+
+static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value, gboolean list_store_remove ){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
@@ -668,6 +721,7 @@ void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateVi
 	
 	for(gint i=0; i<=this->total; i++){
 		gboolean unread=FALSE;
+		OnlineService *service=NULL;
 		gpointer value_at_index=NULL;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -680,6 +734,7 @@ void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateVi
 		gtk_tree_model_get(
 					this->tree_model, iter,
 						update_viewer_list_store_column, &value_at_index,
+						ONLINE_SERVICE, &service,
 						GBOOLEAN_UNREAD, &unread,
 					-1
 		);
@@ -689,21 +744,23 @@ void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateVi
 				if(value!=value_at_index) continue;
 				break;
 			
-			case 	STRING_USER:
-			case 	STRING_NICK:
-			case 	STRING_TEXT:
-			case 	STRING_TWEET:
-			case 	STRING_SEXY_TWEET:
-			case 	STRING_CREATED_AGO:	
-			case 	STRING_CREATED_AT:
-			case 	STRING_FROM:
-			case 	STRING_RCPT:
+			case	STRING_USER:
+			case	STRING_NICK:
+			case	STRING_TEXT:
+			case	STRING_TWEET:
+			case	STRING_SEXY_TWEET:
+			case	STRING_CREATED_AGO:	
+			case	STRING_CREATED_AT:
+			case	STRING_FROM:
+			case	STRING_RCPT:
 				if(!g_str_equal((gchar *)value, (gchar *)value_at_index)){
 					uber_free(value_at_index);
 					continue;
 				}
 				break;
 			case	PIXBUF_AVATAR:
+				if( value_at_index==value ) break;
+				
 				g_object_unref( value_at_index );
 			case	GUINT_UPDATE_VIEWER_INDEX:
 			case	GDOUBLE_UPDATE_ID:
@@ -716,13 +773,18 @@ void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateVi
 				break;
 		}
 		
-		debug( "Removing %s at index: %d.", this->monitoring_string, i );
-		gtk_list_store_remove(this->list_store, iter);
-		if(unread){
-			if(!unread_found) unread_found=TRUE;
-			if(this->unread_updates)
-				if( !--this->unread_updates && this->unread )
-					this->unread=FALSE;
+		if(!list_store_remove){
+			debug( "Updating <%s>'s %s at index: %d.", service->guid, this->monitoring_string, i );
+			gtk_list_store_set( this->list_store, iter, update_viewer_list_store_column_to_string(update_viewer_list_store_column), value, -1 );
+		}else{
+			debug( "Removing <%s>'s %s at index: %d.", service->guid, this->monitoring_string, i );
+			gtk_list_store_remove(this->list_store, iter);
+			if(unread){
+				if(!unread_found) unread_found=TRUE;
+				if(this->unread_updates)
+					if( !--this->unread_updates && this->unread )
+						this->unread=FALSE;
+			}
 		}
 		
 		uber_free(iter);
@@ -732,6 +794,16 @@ void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateVi
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
+}/*update_viewer_modifiy_updates_list_store( update_viewer, update_viewer_list_store_column, value, TRUE|FALSE );*/
+
+void update_viewer_update_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value ){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+	update_viewer_modifiy_updates_list_store( update_viewer, update_viewer_list_store_column, value, FALSE );	
+}/*update_viewer_update_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );*/
+
+void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value ){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+	update_viewer_modifiy_updates_list_store( update_viewer, update_viewer_list_store_column, value, TRUE );
 }/*update_viewer_remove_from_list_store( update_viewer, ONLINE_SERVICE, service );*/
 
 void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *service){
@@ -760,7 +832,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		created_ago=0;
 		created_at_str=NULL;
 		created_how_long_ago=NULL;
-		gboolean unread=FALSE;
+		gboolean unread=TRUE;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
@@ -791,8 +863,8 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 							/*(seconds|minutes|hours|day) ago.*/
 						GINT_CREATED_AGO, created_ago,
 							/*How old the post is, in seconds, for sorting.*/
-						GINT_SELECTED_INDEX, (selected_index ? (selected_index+1) :0 ),
-					-1
+						GINT_SELECTED_INDEX, (selected_index ? (selected_index+1) :-1 ),
+				-1
 			);
 		}
 		if(unread && !unread_found)
@@ -915,10 +987,9 @@ static void update_viewer_set_timeline_label(UpdateViewer *update_viewer, const 
 		this->timeline=g_strdup_printf(timeline_labels->timeline, this->user);
 		this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
 		this->menu_label_string=g_strdup_printf(timeline_labels->menu_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
-		if(user_is_best_friend && viewing_newest_updates){
+		if(user_is_best_friend && viewing_newest_updates)
 			this->monitoring=BestFriends;
-			online_services_best_friends_list_store_mark_as_read(this->service, this->user, main_window_get_best_friends_list_store() );
-		}else
+		else
 			this->monitoring=timeline_labels->monitoring;
 		g_strfreev(feed_info);
 		g_strfreev(user_info);
@@ -1451,8 +1522,9 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 				update_viewer_mark_as_read(update_viewer);
 			}
 			
-			online_service_update_ids_check( service2, this->timeline, index_update_id, FALSE );	
-			best_friends_check_update_ids( service2, user_name, index_update_id );	
+			online_service_update_ids_check( service2, this->timeline, index_update_id, FALSE );
+			best_friends_check_update_ids( service2, user_name, index_update_id );
+			online_services_best_friends_list_store_mark_as_read(service2, user_name, index_update_id, main_window_get_best_friends_list_store() );
 			
 			i=x=(this->total+1);
 			

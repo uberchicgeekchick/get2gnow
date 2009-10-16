@@ -364,7 +364,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
 		if(action==ViewUpdatesNew){
 			gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-			online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+			online_service_update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 			if(!unread_update_id){
 				debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", user_name, service->guid );
 				timeline=user_timeline;

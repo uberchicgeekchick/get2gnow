@@ -13,10 +13,10 @@
       <column type="gchararray"/>
       <!-- column-name STRING_BEST_FRIEND_USER_NAME -->
       <column type="gchararray"/>
-      <!-- column-name GUINT_BEST_FRIENDS_UNREAD_UPDATES -->
-      <column type="guint"/>
       <!-- column-name GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID -->
       <column type="gdouble"/>
+      <!-- column-name GUINT_BEST_FRIENDS_UNREAD_UPDATES -->
+      <column type="guint"/>
     </columns>
   </object>
   <object class="GtkWindow" id="main_window">
@@ -801,19 +801,6 @@
                                   <object class="GtkCellRendererText" id="best_friends_online_service_cell_renderer_text"/>
                                   <attributes>
                                     <attribute name="markup">2</attribute>
-                                  </attributes>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkTreeViewColumn" id="best_friends_unread_updates_tree_view_column">
-                                <property name="sizing">fixed</property>
-                                <property name="fixed_width">48</property>
-                                <property name="title">New:</property>
-                                <child>
-                                  <object class="GtkCellRendererText" id="best_friends_unread_updates_cell_renderer_text"/>
-                                  <attributes>
-                                    <attribute name="markup">4</attribute>
                                   </attributes>
                                 </child>
                               </object>

@@ -102,13 +102,11 @@ gboolean best_friends_check_update_ids( OnlineService *service, const gchar *bes
 	gdouble best_friends_newest_update_id=0.0, best_friends_unread_update_id=0.0, best_friends_oldest_update_id=0.0;
 	online_service_update_ids_get( service, user_timeline, &best_friends_newest_update_id, &best_friends_unread_update_id, &best_friends_oldest_update_id );
 	gboolean notify_of_new_update=FALSE;
-	if( (unread_update_id=online_services_best_friends_list_store_mark_as_unread(service, best_friends_user_name, update_id, main_window_get_best_friends_list_store() )) != best_friends_unread_update_id ){
+	if( (unread_update_id=online_services_best_friends_list_store_mark_as_unread(service, best_friends_user_name, update_id, main_window_get_best_friends_list_store() )) > best_friends_unread_update_id ){
 		save_best_friends_ids=TRUE;
 		notify_of_new_update=TRUE;
-		best_friends_newest_update_id=unread_update_id;
-	}else if(unread_update_id>best_friends_unread_update_id)
-		notify_of_new_update=TRUE;
-	
+		best_friends_unread_update_id=unread_update_id;
+	}
 	
 	if(!( best_friends_newest_update_id && best_friends_newest_update_id>update_id )){
 		if(!save_best_friends_ids) save_best_friends_ids=TRUE;
@@ -121,11 +119,10 @@ gboolean best_friends_check_update_ids( OnlineService *service, const gchar *bes
 		best_friends_oldest_update_id=update_id;
 	}
 	
-	if(save_best_friends_ids){
+	/*if(save_best_friends_ids){
 		debug("Saving Best Friend's update IDs.  Newest ID: %f; Unread ID: %f; Oldest ID: %f.", best_friends_newest_update_id, best_friends_unread_update_id, best_friends_oldest_update_id );
 		online_service_update_ids_set(service, user_timeline, best_friends_newest_update_id, best_friends_unread_update_id, best_friends_oldest_update_id );
-		online_services_best_friends_list_store_mark_as_read(service, best_friends_user_name, main_window_get_best_friends_list_store() );
-	}
+	}*/
 	uber_free( user_timeline );
 	return notify_of_new_update;
 }/*best_friends_check_update_ids( service, update->user->user_name, update->id);*/

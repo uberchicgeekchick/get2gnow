@@ -118,6 +118,7 @@ void update_viewer_stop(UpdateViewer *update_viewer);
 void update_viewer_complete(UpdateViewer *update_viewer);
 
 void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status );
+void update_viewer_update_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
 void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
 void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *service);
 
