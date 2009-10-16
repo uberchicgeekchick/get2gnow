@@ -86,6 +86,7 @@
 #include "label.h"
 #include "gconfig.h"
 
+#include "best-friends.h"
 #include "parser.h"
 
 #define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Dates:Times:Parser.c"
@@ -259,17 +260,50 @@ const gchar *parser_xml_node_type_to_string(xmlElementType type){
 	}
 }/*parser_xml_node_type_to_string(node->type);*/
 
-gboolean parser_xml_error_check(OnlineService *service, SoupMessage *xml, gchar **error_message){
-	if(!SOUP_STATUS_IS_SUCCESSFUL(xml->status_code)){
-		*error_message=g_strdup_printf("OnlineService: <%s> returned: %s(%d).", service->key, xml->reason_phrase, xml->status_code);
+gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message){
+	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) )){
+		*error_message=g_strdup_printf("OnlineService: <%s> has returned an invalid or failed libsoup request.  The URI [%s] returned:: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code );
 		return FALSE;
 	}
+	
 	
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	
 	*error_message=NULL;
 	gboolean error_free=TRUE;
+	
+	if(xml->status_code==401 || xml->status_code==503){
+		debug("**ERROR:** Authentication failed and/or access denied.  OnlineService: <%s> returned. %s(%d) when requesting [%s].", service->key, xml->reason_phrase, xml->status_code, uri );
+		return FALSE;
+	}
+	
+	debug("Getting content-type from uri: [%s].", uri);
+	gchar **content_v=NULL;
+	debug("Parsing xml document's content-type & DOM information from: [%s].", uri);
+	gchar *content_info=NULL;
+	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
+		debug("**ERROR**: Failed to determine content-type for:  [%s].", uri);
+		return FALSE;
+	}
+	
+	debug("Parsing content info: [%s] from: [%s].", content_info, uri);
+	content_v=g_strsplit(content_info, "; ", -1);
+	g_free(content_info);
+	gchar *content_type=NULL;
+	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
+		debug("**ERROR**: Failed to determine content-type for:  [%s].", uri);
+		g_strfreev(content_v);
+		return FALSE;
+	}
+	debug("Parsed Content-Type: [%s] for: [%s].", content_type, uri);
+	
+	g_strfreev(content_v);
+	if(!g_str_equal(content_type, "application/xml")){
+		uber_free(content_type);
+		return TRUE;
+	}
+	uber_free(content_type);
 	
 	debug("Parsing xml document to find any authentication errors.");
 	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
@@ -284,6 +318,7 @@ gboolean parser_xml_error_check(OnlineService *service, SoupMessage *xml, gchar 
 		debug("Failed getting first element of xml data.");
 		*error_message=g_strdup("Failed getting first element of xml data.");
 		xmlFreeDoc(doc);
+		xmlCleanupParser();
 		return FALSE;
 	}
 	
@@ -378,7 +413,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
 	guint		new_updates=0;
-	gdouble		id_newest_update=0.0, id_oldest_update=0.0;
 	gint		update_expiration=0, best_friends_expiration=0;
 	gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &best_friends_expiration, 86400);
 	
@@ -386,9 +420,10 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
-	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
-	gdouble	last_notified_update=id_newest_update;
-	id_newest_update=0.0;
+	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	gdouble	last_notified_update=newest_update_id;
+	newest_update_id=0.0;
 	
 	switch(monitoring){
 		case Searches: case Groups:
@@ -401,7 +436,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			debug("Parsing DMs.");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_DMS, &update_expiration, 2419200);
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
-			if(!id_oldest_update) save_oldest_id=TRUE;
+			if(!oldest_update_id) save_oldest_id=TRUE;
 			else save_oldest_id=FALSE;
 			break;
 		
@@ -410,7 +445,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			debug("Parsing Replies and/or @ Mentions.");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_REPLIES, &update_expiration, 604800);
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
-			if(!id_oldest_update) save_oldest_id=TRUE;
+			if(!oldest_update_id) save_oldest_id=TRUE;
 			else save_oldest_id=FALSE;
 			break;
 		
@@ -418,7 +453,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			/*Favorite/Star'd updates are kept for 4 weeks, by default.*/
 			debug("Parsing Faves.");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_FAVES, &update_expiration, 2419200);
-			if(!id_oldest_update) save_oldest_id=TRUE;
+			if(!oldest_update_id) save_oldest_id=TRUE;
 			else save_oldest_id=FALSE;
 			break;
 		
@@ -445,7 +480,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			uber_free(timeline);
 			return 0;
 	}
-	if(!id_oldest_update && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
+	if(!oldest_update_id && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
 	guint		update_viewer_notify_delay=update_viewer_get_notify_delay(update_viewer);
 	const gint	tweet_display_interval=10;
@@ -489,23 +524,14 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		new_updates++;
 		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to UpdateViewer.", status->user->user_name, status->id, service->key);
+		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UpdateViewer.", status->user->user_name, status->id_str, service->key);
 		update_viewer_store(update_viewer, status);
 		if( ( monitoring!=BestFriends && monitoring!=DMs ) && online_service_is_user_best_friend(service, status->user->user_name) ){
-			gdouble best_friend_newest_update_id=0.0, best_friend_oldest_update_id=0.0;
-			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, status->user->user_name );
-			online_service_update_ids_get( service, user_timeline, &best_friend_newest_update_id, &best_friend_oldest_update_id );
-			if(status->id > (best_friend_newest_update_id+1.0) ){
-				best_friend_newest_update_id=online_services_best_friends_list_store_mark_as_unread(service, status->user->user_name, status->id, main_window_get_best_friends_list_store() );
-				online_service_update_ids_set(service, user_timeline, best_friend_newest_update_id, ( ((status->id-1.0) > best_friend_oldest_update_id) ?(status->id-1.0) :best_friend_oldest_update_id ) );
-				
-				if(notify_best_friends){
-					free_status=FALSE;
-					g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-					update_viewer_notify_delay+=tweet_display_interval;
-				}
+			if( best_friends_check_update_ids( service, status->user->user_name, status->id) && notify_best_friends){
+				free_status=FALSE;
+				g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				update_viewer_notify_delay+=tweet_display_interval;
 			}
-			uber_free( user_timeline );
 		}
 		
 		if( notify && free_status && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
@@ -514,23 +540,24 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			update_viewer_notify_delay+=tweet_display_interval;
 		}
 		
-		if(!id_newest_update) id_newest_update=status->id;
+		if(!newest_update_id && status->id) newest_update_id=status->id;
 		if(save_oldest_id && status->id){
-			oldest_update_id_saved=TRUE;
-			id_oldest_update=status->id;
+			if(!oldest_update_id_saved) oldest_update_id_saved=TRUE;
+			oldest_update_id=status->id;
 		}
 		
 		if(free_status) user_status_free(status);
 	}
 	
-	if(new_updates && id_newest_update){
+	if(new_updates && newest_update_id){
 		/*TODO implement this only once it won't ending up causing bloating.
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
-		const gchar *online_service_guid=service->guid;
-		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
-		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);
-		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);
+		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
+		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		if(newest_update_id>unread_update_id)
+			unread_update_id=newest_update_id;
+		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
 	uber_free(timeline);

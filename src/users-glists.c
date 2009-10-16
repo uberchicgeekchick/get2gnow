@@ -228,18 +228,20 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
 	const gchar *which_glist_str=( (users_glist_get_which==GetFriends) ? _("friends") : ( (users_glist_get_which==GetFollowers) ? _("followers") :_("friends and followers" ) ) );
-	const gchar *service_key=service->key;
 	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
-	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service_key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
+	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service->key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
 	
-	if(!network_check_http(service, xml)){
-		debug("**ERROR:** No more %s could be downloaded the request was not successful./", which_glist_str);
-		debug("**ERROR:** <%s>'s %s should be refreshed.", service_key, which_glist_str);
+	gchar *error_message=NULL;
+	if(!(parser_xml_error_check(service, uri, xml, &error_message))){
+		debug("**ERROR:** No more %s could be downloaded the request was not successful.", which_glist_str);
+		debug("**ERROR:** <%s>'s %s should be refreshed.", service->key, which_glist_str);
+		uber_free(error_message);
 		getting_followers=FALSE;
 		which_pass++;
 		return NULL;
 	}
+	uber_free(error_message);
 	
 	GList *new_users=NULL;
 	debug("Parsing user list");

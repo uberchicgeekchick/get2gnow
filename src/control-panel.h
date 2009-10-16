@@ -99,7 +99,7 @@ void control_panel_sexy_select(void);
 
 void control_panel_sexy_prefix_char(const char c);
 void control_panel_sexy_prefix_string(const gchar *str);
-void control_panel_sexy_set(gchar *tweet);
+void control_panel_sexy_set(gchar *text);
 void control_panel_sexy_insert_char(const char c);
 void control_panel_sexy_insert_string(const gchar *str);
 void control_panel_sexy_append_char(const char c);

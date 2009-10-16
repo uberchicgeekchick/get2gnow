@@ -177,7 +177,7 @@ UpdateViewer *tabs_get_next(void){
 }/*tabs_current()*/
 
 UpdateViewer *tabs_get_current(void){
-	return tabs_get_page(gtk_notebook_get_current_page( tabs->notebook), FALSE);
+	return tabs_get_page(gtk_notebook_get_current_page(tabs->notebook), FALSE);
 }/*tabs_current()*/
 
 UpdateViewer *tabs_get_previous(void){
@@ -189,6 +189,21 @@ UpdateViewer *tabs_get_previous(void){
 	gtk_notebook_set_current_page(tabs->notebook, (gtk_notebook_get_n_pages(tabs->notebook)-1));
 	return tabs_get_current();
 }/*tabs_current()*/
+
+UpdateViewer *tabs_view_page(gint page){
+	GList *t=NULL;
+	gint update_viewer_page=0;
+	UpdateViewer *update_viewer=NULL;
+	for(t=tabs->tabs; t; t=t->next){
+		update_viewer_page=update_viewer_get_page((UpdateViewer *)t->data);
+		if(update_viewer_page==page){
+			update_viewer=(UpdateViewer *)t->data;
+			gtk_notebook_set_current_page( tabs->notebook, page );
+			return update_viewer;
+		}
+	}
+	return NULL;
+}/*tabs_view_page(0);*/
 
 UpdateViewer *tabs_get_page(gint page, gboolean close){
 	GList *t=NULL;
@@ -211,6 +226,14 @@ void tabs_start(void){
 		update_viewer_start((UpdateViewer *)t->data);
 	g_list_free(t);
 }/*tabs_start();*/
+
+void tabs_remove_from_update_viewers_list_stores( UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value ){
+	GList *t=NULL;
+	for(t=tabs->tabs; t; t=t->next)
+		update_viewer_remove_from_list_store((UpdateViewer *)t->data, update_viewer_list_store_column, value);
+	
+	g_list_free(t);
+}/*tabs_remove_from_update_viewers_list_stores( UpdateViewerStoreColumn, value );*/
 
 void tabs_remove_service(OnlineService *service){
 	GList *t=NULL;

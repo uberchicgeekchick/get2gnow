@@ -165,7 +165,7 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef	gdouble_to_str
-#	define	gdouble_to_str					program_double_drop_precision
+#	define	gdouble_to_str					program_gdouble_drop_precision
 #endif
 
 
@@ -177,7 +177,7 @@ gboolean program_init(int argc, char **argv);
 const gchar *program_gtk_response_to_string(gint response);
 
 void program_uber_object_free(gpointer pointer1, ...) G_GNUC_NULL_TERMINATED;
-gchar *program_double_drop_precision(const gdouble gdouble_value);
+gchar *program_gdouble_drop_precision(const gdouble gdouble_value);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 
 gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property);

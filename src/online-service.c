@@ -168,7 +168,7 @@ MicroBloggingServices MicroBloggingServicesList[]={
 #endif
 
 
-#define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Settings:Authentication:Settings:Setup:Start-Up:online-service.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Authentication:Settings:Setup:Start-Up:online-service.c"
 #include "debug.h"
 
 
@@ -529,7 +529,9 @@ void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *o
 		debug( "Adding best friend %s, on %s to the best friends list_store & GSList.", user_name, service->guid );
 		service->best_friends=g_slist_append( service->best_friends, g_strdup(user_name) );
 		gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user->user_name );
-		online_service_update_ids_set( service, user_timeline, user->status->id, user->status->id );
+		gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+		online_service_update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+		online_service_update_ids_set( service, user_timeline, ( (newest_update_id>user->status->id) ?newest_update_id :user->status->id ), ( (unread_update_id>user->status->id) ?unread_update_id :user->status->id ), user->status->id );
 		uber_free( user_timeline );
 		online_service_best_friends_list_store_append( service, user_name );
 	}else{
@@ -547,9 +549,9 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 	if(!list_store) list_store=main_window_get_best_friends_list_store();
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	gdouble id_best_friend_newest_update=0.0, id_best_friend_oldest_update=0.0;
-	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user_name );
-	online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_oldest_update );
+	gdouble id_best_friend_newest_update=0.0, id_best_friend_unread_update=0.0, id_best_friend_oldest_update=0.0;
+	gchar *user_timeline=g_strdup_printf("/%s.xml", user_name );
+	online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_unread_update, &id_best_friend_oldest_update );
 	uber_free( user_timeline );
 	gtk_list_store_append( list_store, iter );
 	gtk_list_store_set(
@@ -559,7 +561,7 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 					STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, service->guid,
 					STRING_BEST_FRIEND_USER_NAME, user_name,
 					GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0,
-					GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, id_best_friend_newest_update,
+					GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, id_best_friend_unread_update,
 				-1
 	);
 	uber_free( iter );
@@ -664,9 +666,40 @@ void online_service_fetch_profile( OnlineService *service, const gchar *user_nam
 	uber_free(user_profile_uri);
 }/*online_service_best_friend_fetch_profile( OnlineService *service, const gchar *user_name );*/
 
-void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gdouble *id_newest_update, gdouble *id_oldest_update){
-	online_service_update_id_get( service, timeline, "newest", id_newest_update );
-	online_service_update_id_get( service, timeline, "oldest", id_oldest_update );
+gboolean online_service_update_ids_check( OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest ){
+	gboolean	ids_set=FALSE;
+	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	debug("Checking <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f.", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
+	if( update_id > newest_update_id ){
+		ids_set=TRUE;
+		newest_update_id=update_id;
+	}
+	
+	if( update_id > unread_update_id ){
+		if(!ids_set) ids_set=TRUE;
+		unread_update_id=update_id;
+	}
+	
+	if( check_oldest && update_id > oldest_update_id ){
+		if(!ids_set) ids_set=TRUE;
+		oldest_update_id=update_id;
+	}
+	
+	if(ids_set){
+		debug("Saving <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f.", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
+		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
+	}
+	
+	return ids_set;
+}/*online_service_update_ids_check( service, timeline, index_update_id, FALSE );*/
+
+void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id){
+	debug("Retrieving update IDs for [%s] on <%s>.", timeline, service->guid );
+	online_service_update_id_get( service, timeline, "newest", newest_update_id );
+	online_service_update_id_get( service, timeline, "unread", unread_update_id );
+	online_service_update_id_get( service, timeline, "oldest", oldest_update_id );
+	debug("Retrieved update IDs for [%s] on <%s>.", timeline, service->guid );
 }/*online_service_update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
 void online_service_update_id_get( OnlineService *service, const gchar *timeline, const gchar *key, gdouble *update_id ){
@@ -676,11 +709,13 @@ void online_service_update_id_get( OnlineService *service, const gchar *timeline
 	 * 				service->key			/timeline.xml	(newest|oldest)
 	 */
 	if(G_STR_EMPTY(timeline)) return;
+	const gchar *timeline_xml=g_strrstr(timeline, "/");
+	debug("Getting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gdouble swap_id;
 	gboolean success;
 	
-	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, key);
+	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline_xml, key);
 	success=gconfig_get_string(prefs_path, &swap_id_str);
 	uber_free(prefs_path);
 	
@@ -690,12 +725,15 @@ void online_service_update_id_get( OnlineService *service, const gchar *timeline
 		uber_free(swap_id_str);
 	}
 	if(swap_id>0) *update_id=swap_id;
-	debug("Loaded <%s>'s; [%s] %s ID: %f.", service->uri, timeline, key, *update_id);
+	debug("Retrieved %s update ID: %s for [%s] on <%s>.", key, gdouble_to_str( *update_id ), timeline_xml, service->uri );
 }/*online_service_update_id_get( service, "/friends.xml", "newest", &newest_update_id );*/
 
-void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble id_newest_update, gdouble id_oldest_update ){
-	online_service_update_id_set( service, timeline, "newest", id_newest_update );
-	online_service_update_id_set( service, timeline, "oldest", id_oldest_update );
+void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id ){
+	debug("Saving update IDs for [%s] on <%s>.", timeline, service->guid );
+	online_service_update_id_set( service, timeline, "newest", newest_update_id );
+	online_service_update_id_set( service, timeline, "unread", unread_update_id );
+	online_service_update_id_set( service, timeline, "oldest", oldest_update_id );
+	debug("Savved update IDs for [%s] on <%s>.", timeline, service->guid );
 }/*online_service_update_ids_set(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
 void online_service_update_id_set( OnlineService *service, const gchar *timeline, const gchar *key, gdouble update_id ){
@@ -705,14 +743,16 @@ void online_service_update_id_set( OnlineService *service, const gchar *timeline
 	 * 				service->key			/timeline.xml (newest|oldest)
 	 */
 	if(G_STR_EMPTY(timeline)) return;
+	const gchar *timeline_xml=g_strrstr(timeline, "/");
+	debug("Setting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gboolean success;
 	
-	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline, key);
+	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline_xml, key);
 	swap_id_str=gdouble_to_str(update_id);
 	success=gconfig_set_string(prefs_path, swap_id_str);
 	uber_free(prefs_path);
-	debug("Saved <%s>'s; [%s] %s ID: %f (using string: %s).", service->uri, timeline, key, update_id, swap_id_str);
+	debug("Saved %s update ID: %s for %s on <%s>.", key, swap_id_str, timeline_xml, service->uri );
 	uber_free(swap_id_str);
 }/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
 
@@ -808,14 +848,13 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	return TRUE;
 }/*online_service_login(service, TRUE|FALSE);*/
 
-/*static void *online_service_login_check(SoupMessage *xml, OnlineService *service){*/
 static void *online_service_login_check(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 
 	debug("OnlineService: <%s>'s http status: %d.  Status: authenticated: [%s].", service->guid, xml->status_code, (service->authenticated ?"TRUE" :"FALSE" ) );
 
 	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, xml, &error_message)){
+	if(!parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)){
 		debug("Logging on to <%s> failed.  Please check your user name and/or password. %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		statusbar_printf("Logging on to <%s> failed.  Please check your user name and/or password. %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		service->authenticated=FALSE;
@@ -1081,22 +1120,22 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	gint8 has_loaded=update_viewer_has_loaded(update_viewer);
 	if(!( (*form_data) && (*user_data) )) return;
 	
-	gdouble id_newest_update=0, id_oldest_update=0;
 	const gchar *timeline=g_strrstr(*request_uri, "/");
-	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
+	gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
 	if( has_loaded>0 && update_viewer_get_total(update_viewer) ){
 		requesting=_("new");
-		since_id=id_newest_update;
+		since_id=newest_update_id;
 	}else if(monitoring==DMs || monitoring==Replies){
 		requesting=_("total");
-		since_id=id_oldest_update;
+		since_id=oldest_update_id;
 	}else if(monitoring==BestFriends){
 		requesting=_("best friend's newest");
-		since_id=id_newest_update;
+		since_id=unread_update_id;
 	}else return;
 	
 	if(!since_id) return;
@@ -1201,7 +1240,7 @@ void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServ
 	if(service->status) uber_free(service->status);
 	const gchar *status=NULL;
 	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, xml, &error_message))
+	if(!parser_xml_error_check(service, requested_uri, xml, &error_message))
 		status=_("[Failed]");
 	else
 		status=_("[Success]");
@@ -1228,7 +1267,7 @@ gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *
 	debug("Downloading headers for: %s to determine its content-type.", uri);
 	*xml=online_service_request_uri(service, GET, uri, 0, NULL, NULL, NULL, NULL);
 	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, *xml, &error_message)){
+	if(!parser_xml_error_check(service, uri, *xml, &error_message)){
 		uber_free(error_message);
 		return NULL;
 	}
@@ -1237,7 +1276,7 @@ gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *
 	
 	debug("Getting content-type from uri: '%s'.", uri);
 	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type & DOM information from: %s", uri);
+	debug("Parsing xml document's content-type from [%s]'s headers.", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one((*xml)->response_headers, "Content-Type")))){
 		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
@@ -1246,7 +1285,7 @@ gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *
 	
 	debug("Parsing content info: [%s] from: %s", content_info, uri);
 	content_v=g_strsplit(content_info, "; ", -1);
-	g_free(content_info);
+	uber_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
 		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);

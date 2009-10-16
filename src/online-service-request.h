@@ -120,9 +120,9 @@ OnlineService *online_service_request_selected_update_get_service(void);
 gdouble online_service_request_selected_update_get_id(void);
 const gchar *online_service_request_selected_update_get_user_name(void);
 gdouble online_service_request_selected_update_get_user_id(void);
-gchar *online_service_request_selected_update_reply_to_strdup(gboolean retweet);
+gchar *online_service_request_selected_update_reply_to_strdup(gboolean forward_update);
 void online_service_request_selected_update_reply(void);
-void online_service_request_selected_update_retweet(void);
+void online_service_request_selected_update_forward_update(void);
 void online_service_request_unset_selected_update(void);
 
 void online_service_request_popup_select_service(void);

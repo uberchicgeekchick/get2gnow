@@ -107,10 +107,11 @@ gboolean online_service_refresh(OnlineService *service);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
 
-void online_service_update_ids_get( OnlineService *service, const gchar *timeline, gdouble *newest_id, gdouble *oldest_id );
+gboolean online_service_update_ids_check( OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest );
+void online_service_update_ids_get( OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id );
 void online_service_update_id_get( OnlineService *service, const gchar *timeline, const gchar *key, gdouble *update_id );
 void online_service_update_id_set( OnlineService *service, const gchar *timeline, const gchar *key, gdouble update_id );
-void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_id, gdouble oldest_id );
+void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id );
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 

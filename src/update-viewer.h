@@ -77,25 +77,27 @@ struct _UpdateViewerClass {
 };
 
 
-enum UpdateViewerStoreColumns{		/********************************************************************************/
-	GUINT_UPDATE_VIEWER_INDEX,	/*	The update's index in the list-store.                                   */
-	GDOUBLE_UPDATE_ID,		/*	Tweet's ID.								*/
-	GDOUBLE_USER_ID,		/*	User's ID.								*/
-	STRING_USER,			/*	Username string.							*/
-	STRING_NICK,			/*	Author name string.							*/
-	STRING_TEXT,			/*	Unformated Tweet string.						*/
-	STRING_TWEET,			/*	Tweet for display string in the UpdateViewer, SexyTreeView, GtkTreeView.	*/
-	STRING_SEXY_TWEET,		/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
-	STRING_CREATED_AGO,		/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
-	STRING_CREATED_AT,		/*	Date string.								*/
-	GINT_CREATED_AGO,		/*	How old the post is, in seconds, for sorting.				*/
-	ULONG_CREATED_AT,		/*	Unix seconds since epoc of how old the tweet's is.			*/
-	PIXBUF_AVATAR,			/*	Avatar pixbuf.								*/
-	ONLINE_SERVICE,			/*	OnlineService pointer.							*/
-	STRING_FROM,			/*	<status's auther @ OnlineService URI>					*/
-	STRING_RCPT,			/* 	OnlineService key To: <user@service>					*/
-	GUINT_SELECTED_INDEX,		/*	The associated order/place this item appears in the acciated tree view. */
-};					/********************************************************************************/
+typedef enum _UpdateViewerListStoreColumn{		/********************************************************************************/
+	GUINT_UPDATE_VIEWER_INDEX,			/*	The update's index in the list-store.                                   */
+	GDOUBLE_UPDATE_ID,				/*	Tweet's ID.								*/
+	GDOUBLE_USER_ID,				/*	User's ID.								*/
+	STRING_USER,					/*	Username string.							*/
+	STRING_NICK,					/*	Author name string.							*/
+	STRING_TEXT,					/*	Unformated Tweet string.						*/
+	STRING_TWEET,					/*	Update for display string in the UpdateViewer's SexyTreeView.           */
+	STRING_SEXY_TWEET,				/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
+	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
+	STRING_CREATED_AT,				/*	Date string.								*/
+	GINT_CREATED_AGO,				/*	How old the post is, in seconds, for sorting.				*/
+	ULONG_CREATED_AT,				/*	Unix seconds since epoc of how old the tweet's is.			*/
+	PIXBUF_AVATAR,					/*	Avatar pixbuf.								*/
+	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
+	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
+	STRING_RCPT,					/* 	OnlineService key To: <user@service>					*/
+	GUINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the acciated tree view. */
+	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
+							/********************************************************************************/
+} UpdateViewerListStoreColumn;
 
 
 GType update_viewer_get_type(void) G_GNUC_CONST;
@@ -116,6 +118,7 @@ void update_viewer_stop(UpdateViewer *update_viewer);
 void update_viewer_complete(UpdateViewer *update_viewer);
 
 void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status );
+void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
 void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *service);
 
 void update_viewer_toggle_toolbar(UpdateViewer *update_viewer);

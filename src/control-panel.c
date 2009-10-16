@@ -98,9 +98,9 @@ struct _ControlPanel{
 	
 	/* Linked lists used for changing the appearance of the ControlPanel. */
 	/* Widgets which are only seen when the user's enabled the compact ControlPanel by default.
-	 * Or whenever a tweet is selected. */
+	 * Or whenever a update is selected. */
 	GList			*compact_control_panel_hidden_containers;
-	/* Widgets that are enabled when we a tweet is selected */
+	/* Widgets that are enabled when we a update is selected */
 	GList			*selected_update_buttons;
 	
 	/* GtkWidgets for viewing user details & for controlling one's relationship to them. */
@@ -111,7 +111,7 @@ struct _ControlPanel{
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkButton		*view_user_profile_button;
-	GtkButton		*view_user_tweets_button;
+	GtkButton		*view_user_updates_button;
 	GtkToggleButton		*best_friend_toggle_button;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
@@ -130,8 +130,8 @@ struct _ControlPanel{
 	GtkVBox			*status_view_vbox;
 	Label			*sexy_to;
 	Label			*sexy_from;
-	GtkLabel		*tweet_datetime_label;
-	Label			*sexy_tweet;
+	GtkLabel		*update_datetime_label;
+	Label			*sexy_update;
 	
 	/* Tweet, status, & DM writing area & widgets. */
 	GtkAspectFrame		*view_controls_aspect_frame;
@@ -169,7 +169,7 @@ struct _ControlPanel{
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm_button;
 	GtkVSeparator		*sexy_vseparator;
-	GtkButton		*new_tweet_button;
+	GtkButton		*new_update_button;
 	
 	/* The list & actual GtkWidgets for sending DMs. */
 	GtkFrame		*dm_frame;
@@ -191,9 +191,9 @@ struct _ControlPanel{
 	GtkVBox			*controls_vbox;
 	
 	GtkHBox			*status_control_hbox;
-	/* Buttons for stuff to do with the current selected & extended tweet. */
+	/* Buttons for stuff to do with the current selected & extended update. */
 	GtkButton		*reply_button;
-	GtkButton		*retweet_button;
+	GtkButton		*forward_update_button;
 	GtkButton		*make_fave_button;
 };
 
@@ -220,6 +220,7 @@ typedef enum{
 #define	TWEET_MAX_CHARS	140
 
 static ControlPanel *control_panel=NULL;
+static guint sexy_position=0;
 
 
 
@@ -244,7 +245,8 @@ static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *
 static void control_panel_compact_view_display(gboolean compact);
 static void control_panel_scale(gboolean compact);
 
-static void control_panel_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter);
+static void control_panel_sexy_position_store(GtkEntry *entry, GdkEventKey *event);
+static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter);
 
 static void control_panel_sexy_send(OnlineService *service, const gchar *user_name);
 static void control_panel_sexy_append(const gchar *update, ControlPanel *control_panel);
@@ -316,7 +318,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					"user_image", &control_panel->user_image,
 					
 					"view_user_profile_button", &control_panel->view_user_profile_button,
-					"view_user_tweets_button", &control_panel->view_user_tweets_button,
+					"view_user_updates_button", &control_panel->view_user_updates_button,
 					"best_friend_toggle_button", &control_panel->best_friend_toggle_button,
 					
 					"user_follow_button", &control_panel->user_follow_button,
@@ -326,7 +328,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					"control_panel_left_vseparator", &control_panel->left_vseparator,
 					"status_vbox", &control_panel->status_vbox,
 					"status_view_vbox", &control_panel->status_view_vbox,
-					"tweet_datetime_label", &control_panel->tweet_datetime_label,
+					"update_datetime_label", &control_panel->update_datetime_label,
 					
 					"control_panel_update_composition_vbox", &control_panel->update_composition_vbox,
 					"notification_labels_hbox", &control_panel->notification_labels_hbox,
@@ -339,7 +341,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					"sexy_send", &control_panel->sexy_send,
 					"sexy_dm_button", &control_panel->sexy_dm_button,
 					"sexy_vseparator", &control_panel->sexy_vseparator,
-					"new_tweet_button", &control_panel->new_tweet_button,
+					"new_update_button", &control_panel->new_update_button,
 					
 					"dm_frame", &control_panel->dm_frame,
 					"dm_form_hbox", &control_panel->dm_form_hbox,
@@ -362,7 +364,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 					
 					"status_control_hbox", &control_panel->status_control_hbox,
 					"reply_button", &control_panel->reply_button, 
-					"retweet_button", &control_panel->retweet_button,
+					"forward_update_button", &control_panel->forward_update_button,
 					"make_fave_button", &control_panel->make_fave_button,
 				NULL
 	);
@@ -385,7 +387,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 				"control_panel", "configure_event", control_panel_configure_event_cb,
 
 				"view_user_profile_button", "clicked", online_service_request_selected_update_view_profile,
-				"view_user_tweets_button", "clicked", online_service_request_selected_update_view_updates,
+				"view_user_updates_button", "clicked", online_service_request_selected_update_view_updates,
 				
 				"user_follow_button", "clicked", online_service_request_selected_update_follow,
 				"user_unfollow_button", "clicked", online_service_request_selected_update_unfollow,
@@ -394,14 +396,14 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 				"control_panel_sexy_entry_combo_box_entry", "changed", control_panel_select_previous_update,
 				"sexy_send", "clicked", control_panel_send,
 				"sexy_dm_button", "clicked", control_panel_send,
-				"new_tweet_button", "clicked", control_panel_new_update,
+				"new_update_button", "clicked", control_panel_new_update,
 				"dm_form_active_togglebutton", "toggled", control_panel_dm_show,
 				
 				"dm_refresh", "clicked", control_panel_dm_refresh,
 				"followers_send_dm", "clicked", control_panel_send,
 				
 				"reply_button", "clicked", online_service_request_selected_update_reply,
-				"retweet_button", "clicked", online_service_request_selected_update_retweet,
+				"forward_update_button", "clicked", online_service_request_selected_update_forward_update,
 				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
 			NULL
 	);
@@ -422,7 +424,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	debug("Setting ControlPanel's embed state indicators.");
 	control_panel_set_embed_toggle_and_image();
 	
-	debug("Disabling 'selected widgets' since no tweet could be selected when we 1st start.");
+	debug("Disabling 'selected widgets' since no update could be selected when we 1st start.");
 	control_panel_selected_update_buttons_show(FALSE, NULL);
 	
 	debug("Disabling & hiding ControlPanel's dm form since friends have not yet been loaded.");
@@ -499,7 +501,7 @@ static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *
 static void control_panel_selected_update_buttons_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
 		"view_user_profile_button",
-		"view_user_tweets_button",
+		"view_user_updates_button",
 		"best_friend_toggle_button",
 		
 		"user_follow_button",
@@ -507,10 +509,10 @@ static void control_panel_selected_update_buttons_setup(GtkBuilder *ui){
 		"user_block_button",
 		
 		"sexy_dm_button",
-		"new_tweet_button",
+		"new_update_button",
 		
 		"reply_button",
-		"retweet_button",
+		"forward_update_button",
 		"make_fave_button",
 	};
 	
@@ -643,7 +645,7 @@ static void control_panel_dm_form_activate(gboolean dm_activate){
 }/*control_panel_dm_form_activate*/
 
 static void control_panel_sexy_init(void){
-	/* Set-up expand ControlPanel.  Used to view tweets in detailed & send tweets and DMs. */
+	/* Set-up expand ControlPanel.  Used to view updates in detailed & send updates and DMs. */
 	debug("Creating Tweet's service link area, 'control_panel->sexy_to', using sexy label interface.");
 	control_panel->sexy_to=label_new();
 	gtk_box_pack_start(
@@ -662,21 +664,21 @@ static void control_panel_sexy_init(void){
 			FALSE, FALSE, 5
 	);
 	
-	debug("Aligning Tweet's view area, 'control_panel->tweet_datetime_label',");
-	g_object_set(control_panel->tweet_datetime_label, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	debug("Aligning Tweet's view area, 'control_panel->update_datetime_label',");
+	g_object_set(control_panel->update_datetime_label, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	
 	g_object_set(control_panel->sexy_from, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_widget_show(GTK_WIDGET( control_panel->sexy_from));
 	
-	debug("Creating Tweet's view area, 'control_panel->sexy_tweet', using sexy label interface.");
-	control_panel->sexy_tweet=label_new();
+	debug("Creating Tweet's view area, 'control_panel->sexy_update', using sexy label interface.");
+	control_panel->sexy_update=label_new();
 	gtk_box_pack_start(
 			GTK_BOX(control_panel->status_view_vbox),
-			GTK_WIDGET(control_panel->sexy_tweet),
+			GTK_WIDGET(control_panel->sexy_update),
 			TRUE, TRUE, 5
 	);
-	g_object_set(control_panel->sexy_tweet, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
-	gtk_widget_show(GTK_WIDGET( control_panel->sexy_tweet));
+	g_object_set(control_panel->sexy_update, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	gtk_widget_show(GTK_WIDGET( control_panel->sexy_update));
 	
 	debug("Creating Tweet's entry, 'control_panel->sexy_entry', using SexyEntry, and adding it to ControlPanel's 'sexy_entry_combo_box_entry'.");
 	control_panel->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
@@ -685,8 +687,8 @@ static void control_panel_sexy_init(void){
 	gtk_container_add(GTK_CONTAINER( control_panel->sexy_entry_combo_box_entry), GTK_WIDGET(control_panel->sexy_entry));
 	gtk_widget_show(GTK_WIDGET( control_panel->sexy_entry));
 		
-	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
-	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_count_tweet_char), control_panel->char_count);
+	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(control_panel_sexy_position_store), NULL);
+	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
 	g_signal_connect(control_panel->sexy_entry, "activate", G_CALLBACK(control_panel_send), NULL);
 	g_signal_connect_after(control_panel->followers_combo_box, "changed", G_CALLBACK(control_panel_sexy_select), control_panel->followers_combo_box);
 }/*control_panel_sexy_init*/
@@ -707,27 +709,27 @@ static void control_panel_reorder(void){
 			1
 	);
 	
-	debug("Setting 'tweet_datetime_label' as 'status_view_vbox' 3rd widget.");
+	debug("Setting 'update_datetime_label' as 'status_view_vbox' 3rd widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(control_panel->status_view_vbox),
-			GTK_WIDGET(control_panel->tweet_datetime_label),
+			GTK_WIDGET(control_panel->update_datetime_label),
 			2
 	);
 		
-	debug("Setting 'sexy_tweet' as 'status_view_vbox' 4th widget.");
+	debug("Setting 'sexy_update' as 'status_view_vbox' 4th widget.");
 	gtk_box_reorder_child(
 			GTK_BOX(control_panel->status_view_vbox),
-			GTK_WIDGET(control_panel->sexy_tweet),
+			GTK_WIDGET(control_panel->sexy_update),
 			3
 	);
 }/*control_panel_reorder*/
 
 
-void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf){
+void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf){
 	if(!id)
 		online_service_request_unset_selected_update();
 	else
-		online_service_request_set_selected_update(service, id, user_id, user_name, text_tweet);
+		online_service_request_set_selected_update(service, id, user_id, user_name, text_update);
 	
 	debug("%s the Control Panel.", (id ?_("Enlarging") :"") );
 	control_panel_compact_view_display( (id ?FALSE :gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE) ) );
@@ -765,19 +767,19 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 		sexy_text=g_markup_printf_escaped("<span style=\"italic\">[%s]</span>", date);
 	else
 		sexy_text=g_strdup("");
-	gtk_label_set_markup(control_panel->tweet_datetime_label, sexy_text);
+	gtk_label_set_markup(control_panel->update_datetime_label, sexy_text);
 	uber_free(sexy_text);
 	
 	
 	/*
-	 * gchar sexy_tweet has already been formatted to include urls, hyperlinks, titles, & etc.
+	 * gchar sexy_update has already been formatted to include urls, hyperlinks, titles, & etc.
 	 * So we just set it as a SexyLable & bypass Label
 	 */
-	debug("Setting 'sexy_tweet' for 'selected_update':\n\t\t%s.", sexy_tweet);
+	debug("Setting 'sexy_update' for 'selected_update':\n\t\t%s.", sexy_update);
 	if(!(gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)))
-		sexy_url_label_set_markup(SEXY_URL_LABEL( control_panel->sexy_tweet), sexy_tweet);
+		sexy_url_label_set_markup(SEXY_URL_LABEL( control_panel->sexy_update), sexy_update);
 	else
-		label_set_text(service, control_panel->sexy_tweet, sexy_tweet, TRUE, TRUE);
+		label_set_text(service, control_panel->sexy_update, sexy_update, TRUE, TRUE);
 	
 	if(!pixbuf)
 		gtk_image_set_from_icon_name(control_panel->user_image, GETTEXT_PACKAGE, ImagesExpanded);
@@ -792,17 +794,17 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 		}
 	}
 	
-	debug("Selecting 'sexy_entry' for entering a new tweet.");
+	debug("Selecting 'sexy_entry' for entering a new update.");
 	control_panel_sexy_select();
 }/*control_panel_view_selected_update*/
 
-static gshort tweetlen(gchar *tweet){
+static gshort updatelen(gchar *update){
 	gushort character_count=0;
 	gushort me_match=0;
 	gint		replace_me=0;
 	gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace_me, 2);
-	while(*tweet){
-		unsigned char l=*tweet++;
+	while(*update){
+		unsigned char l=*update++;
 		if(l=='<' || l=='>')
 			character_count+=3;
 		else if(l=='/' && replace_me>0)
@@ -818,10 +820,15 @@ static gshort tweetlen(gchar *tweet){
 	}
 	
 	return TWEET_MAX_CHARS-character_count;
-}/*tweetlen(update);*/
+}/*updatelen(update);*/
 
-static void control_panel_count_tweet_char(GtkEntry *entry, GdkEventKey *event, GtkLabel *tweet_character_counter){
-	gshort remaining_character_count=tweetlen(entry->text);
+static void control_panel_sexy_position_store(GtkEntry *entry, GdkEventKey *event){
+	sexy_position=gtk_editable_get_position(GTK_EDITABLE( control_panel->sexy_entry));
+	hotkey_pressed( GTK_WIDGET(entry), event, NULL );
+}/*control_panel_sexy_position_store(control_panel->sexy_entry, event);*/
+
+static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter){
+	gshort remaining_character_count=updatelen(entry->text);
 	gchar *remaining_characters_markup_label=NULL;
 	if(remaining_character_count < 0){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
@@ -840,9 +847,9 @@ static void control_panel_count_tweet_char(GtkEntry *entry, GdkEventKey *event, 
 		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"green\">%d</span>", remaining_character_count);
 	}
 	
-	gtk_label_set_markup(tweet_character_counter, remaining_characters_markup_label);
+	gtk_label_set_markup(update_character_counter, remaining_characters_markup_label);
 	uber_free(remaining_characters_markup_label);
-}/*control_panel_count_tweet_char*/
+}/*control_panel_sexy_entry_character_count*/
 
 void control_panel_beep(void){
 	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
@@ -852,8 +859,7 @@ void control_panel_beep(void){
 void control_panel_sexy_select(void){
 	if(gtk_widget_has_focus( GTK_WIDGET( control_panel->sexy_entry))) return;
 	gtk_widget_grab_focus(GTK_WIDGET( control_panel->sexy_entry));
-	guint position=gtk_editable_get_position(GTK_EDITABLE( control_panel->sexy_entry));
-	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), (position ?position :-1) );
+	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), (sexy_position ?sexy_position :-1) );
 }/*control_panel_sexy_select*/
 
 void control_panel_sexy_prefix_char(const char c){
@@ -866,8 +872,8 @@ void control_panel_sexy_prefix_string(const gchar *str){
 	control_panel_sexy_puts(str, 0);
 }/*control_panel_sexy_prefix_string*/
 
-void control_panel_sexy_set(gchar *tweet){
-	gtk_entry_set_text(GTK_ENTRY( control_panel->sexy_entry), tweet);
+void control_panel_sexy_set(gchar *text){
+	gtk_entry_set_text(GTK_ENTRY( control_panel->sexy_entry), (text==NULL ?(gchar *)"" :text));
 	control_panel_sexy_select();
 }/*control_panel_sexy_set*/
 
@@ -974,7 +980,7 @@ void control_panel_new_update(void){
 }/*control_panel_new_update();*/
 
 static void control_panel_sexy_send(OnlineService *service, const gchar *user_name){
-	if(!((GTK_ENTRY( control_panel->sexy_entry)->text) &&(tweetlen( GTK_ENTRY( control_panel->sexy_entry)->text) > -1) )){
+	if(!((GTK_ENTRY( control_panel->sexy_entry)->text) &&(updatelen( GTK_ENTRY( control_panel->sexy_entry)->text) > -1) )){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
 			control_panel_beep();
 		return;
@@ -1006,8 +1012,9 @@ void control_panel_sexy_send_dm(void){
 
 
 static void control_panel_sexy_append(const gchar *update, ControlPanel *control_panel){
-	if(G_STR_EMPTY( update)) return;
+	if(G_STR_EMPTY(update)) return;
 	const gint max_updates=50;
+	static gboolean first_update=TRUE;
 	
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 	gtk_list_store_prepend(control_panel->previous_updates_list_store, iter);
@@ -1019,6 +1026,11 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 				-1
 	);
 	uber_free(iter);
+	
+	if(first_update){
+		gtk_combo_box_entry_set_text_column(control_panel->sexy_entry_combo_box_entry, GSTRING_UPDATE);
+		first_update=FALSE;
+	}
 	
 	if(control_panel->updates<=max_updates){
 		control_panel->updates++;
@@ -1051,10 +1063,15 @@ static void control_panel_select_previous_update(GtkComboBoxEntry *sexy_entry_co
 					IN_REPLY_TO_STATUS_ID, &in_reply_to_status_id,
 				-1
 	);
-	control_panel_sexy_set(g_strdup( update));
+	if(!G_STR_N_EMPTY(update)){
+		if(update) uber_free(update);
+		uber_free(iter);
+		return;
+	}
+	control_panel_sexy_set(g_strdup(update));
 	uber_free(update);
 	uber_free(iter);
-}/*control_panel_select_previous_update(control_panel->sexy_entry_combo_box_entry);*/
+}/*control_panel_select_previous_update(control_panel->sexy_entry_combo_box_entry, control_panel);*/
 
 static void control_panel_free_updates(ControlPanel *control_panel){
 	debug("Removing all %d saved updates from this session.", control_panel->updates);

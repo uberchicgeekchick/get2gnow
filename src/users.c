@@ -224,8 +224,8 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ) continue;
 		
 		if(g_str_equal(current_node->name, "id" )){
-			user->id_str=g_strdup(content);
 			user->id=strtod(content, NULL);
+			user->id_str=gdouble_to_str(user->id);
 			debug("User ID: %s(=%f).", user->id_str, user->id);
 			
 		}else if(g_str_equal(current_node->name, "name" ))
@@ -339,8 +339,8 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		}
 		
 		if(g_str_equal(current_node->name, "id")){
-			status->id_str=g_strdup(content);
 			status->id=strtod(content, NULL);
+			status->id_str=gdouble_to_str(status->id);
 			debug("Status ID: %s(=%f).", content, status->id);
 			
 		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
@@ -493,14 +493,17 @@ gboolean user_download_avatar(OnlineService *service, User *user){
 	
 	debug("Downloading Image: %s.  GET: %s", image_file, user->image_url);
 	
-	SoupMessage *msg=online_service_request_uri(service, GET, user->image_url, 0, NULL, NULL, NULL, NULL);
+	SoupMessage *xml=online_service_request_uri(service, GET, user->image_url, 0, NULL, NULL, NULL, NULL);
 	
-	debug("Image response: %i", msg->status_code);
+	debug("Image response: %i", xml->status_code);
 	
-	if(!( (network_check_http(service, msg)) && (g_file_set_contents(user->image_file, msg->response_body->data, msg->response_body->length, NULL)) ))
-		return FALSE;
+	gchar *error_message=NULL;
+	gboolean avatar_downloaded=TRUE;
+	if(!( (parser_xml_error_check(service, user->image_url, xml, &error_message)) && (g_file_set_contents(user->image_file, xml->response_body->data, xml->response_body->length, NULL)) ))
+		avatar_downloaded=FALSE;
+	uber_free(error_message);
 	
-	return TRUE;
+	return avatar_downloaded;
 }/*user_download_avatar(user);*/
 
 void user_profile_viewer_cleanup(void){

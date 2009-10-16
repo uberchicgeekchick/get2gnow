@@ -60,6 +60,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "online-services-typedefs.h"
 
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
@@ -74,7 +75,8 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-gboolean best_friends_new_update_notify();
+gboolean best_friends_check_update_ids( OnlineService *service, const gchar *best_friends_user_name, gdouble update_id);
+gboolean best_friends_new_update_notify(void);
 
 
 G_END_DECLS

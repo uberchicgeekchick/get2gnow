@@ -47,8 +47,9 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-get2gnow_SOURCES = 								\
+get2gnow_SOURCES = 										\
 	about.c						about.h					\
+	best-friends.c					best-friends.h				\
 	control-panel.c					control-panel.h				\
 	cache.c						cache.h					\
 	debug.c						debug.h					\
@@ -86,6 +87,7 @@ get2gnow_SOURCES = 								\
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 get2gnow_OBJECTS =					\
 	about.$(OBJEXT)					\
+	best-friends.$(OBJEXT)				\
 	cache.$(OBJEXT)					\
 	control-panel.$(OBJEXT)				\
 	debug.$(OBJEXT)					\
@@ -148,7 +150,7 @@ CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-#CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -401,6 +403,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/best-friends.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/control-panel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@

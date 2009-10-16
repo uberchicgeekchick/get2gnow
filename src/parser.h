@@ -73,7 +73,7 @@ xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer, UpdateMonitor monitoring);
 guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer);
 
-gboolean parser_xml_error_check(OnlineService *service, SoupMessage *xml, gchar **error_message);
+gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
 

@@ -87,6 +87,7 @@ OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *o
 RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *online_service_wrapper);
 const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *online_service_wrapper);
 
+guint online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper);
 guint online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper);
 guint online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper);
 

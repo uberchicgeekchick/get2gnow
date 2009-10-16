@@ -23,6 +23,7 @@ endif
 
 get2gnow_SOURCES = 										\
 	about.c						about.h					\
+	best-friends.c					best-friends.h				\
 	control-panel.c					control-panel.h				\
 	cache.c						cache.h					\
 	debug.c						debug.h					\

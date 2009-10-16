@@ -103,18 +103,18 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	
 	/* Count new tweets */
 	guint		new_updates=0;
-	gdouble		id_newest_update=0, id_oldest_update=0;
 	
 	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
-	online_service_update_ids_get(service, timeline, &id_newest_update, &id_oldest_update);
-	gdouble	last_notified_update=id_newest_update;
-	id_newest_update=0.0;
+	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	gdouble	last_notified_update=newest_update_id;
+	newest_update_id=0.0;
 	
 	gboolean	has_loaded=update_viewer_has_loaded(update_viewer);
-	gboolean	notify=((id_oldest_update&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE):FALSE);
+	gboolean	notify=((oldest_update_id&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE):FALSE);
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
 	guint		update_viewer_notify_delay=update_viewer_get_notify_delay(update_viewer);
@@ -170,22 +170,21 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 			}
 		}
 		
-		if(!id_newest_update) id_newest_update=status->id;
+		if(!newest_update_id && status->id) newest_update_id=status->id;
 		
-		if(save_oldest_id)
-			id_oldest_update=status->id;
+		if(save_oldest_id && status->id)
+			oldest_update_id=status->id;
 		
 		if(free_status) user_status_free(status);
 	}
 	
-	if(new_updates && id_newest_update){
+	if(new_updates && newest_update_id){
 		/*TODO implement this only once it won't ending up causing bloating.
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
-		const gchar *online_service_guid=service->guid;
-		debug("Processing <%s>'s requested URI's: [%s] new update IDs", online_service_guid, uri);
-		debug("Saving <%s>'s; update IDs for [%s].  %f - newest ID.  %f - oldest ID.", online_service_guid, timeline, id_newest_update, id_oldest_update);
-		online_service_update_ids_set(service, timeline, id_newest_update, id_oldest_update);
+		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
+		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
 	uber_free(timeline);

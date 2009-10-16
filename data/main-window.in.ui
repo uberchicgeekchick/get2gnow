@@ -435,12 +435,12 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkImageMenuItem" id="selected_update_retweet_image_menu_item">
+                              <object class="GtkImageMenuItem" id="selected_update_forward_update_image_menu_item">
                                 <property name="label">Retweet / _Forward</property>
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="image">compos_menu_retweet_image</property>
+                                <property name="image">compos_menu_forward_update_image</property>
                                 <property name="use_stock">False</property>
                                 <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
@@ -1233,7 +1233,7 @@
     <property name="visible">True</property>
     <property name="stock">gtk-undo</property>
   </object>
-  <object class="GtkImage" id="compos_menu_retweet_image">
+  <object class="GtkImage" id="compos_menu_forward_update_image">
     <property name="visible">True</property>
     <property name="stock">gtk-media-next</property>
   </object>

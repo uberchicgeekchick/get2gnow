@@ -224,7 +224,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 					online_service_request_selected_update_reply();
 					return;
 				case GDK_F:	case GDK_f:
-					online_service_request_selected_update_retweet();
+					online_service_request_selected_update_forward_update();
 					return;
 				case GDK_D:	case GDK_d:
 					control_panel_new_dm();
@@ -247,7 +247,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 					help_show(main_window_get_window());
 					return;
 				case GDK_greater:
-					online_service_request_selected_update_retweet();
+					online_service_request_selected_update_forward_update();
 					return;
 				case GDK_at:
 					online_service_request_selected_update_reply();

@@ -642,36 +642,37 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	}
 	
 	guint unread_updates=0;
-	gdouble newest_update_id=0.0;
+	gdouble unread_update_id=0.0;
 	gchar *user_at_index=NULL, *user_name_at_index=NULL;
 	gtk_tree_model_get(
 			 (GtkTreeModel *)list_store, iter,
 				GUINT_BEST_FRIENDS_UNREAD_UPDATES, &unread_updates,
 				STRING_BEST_FRIEND_USER, &user_at_index,
 				STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
-				GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, &newest_update_id,
+				GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, &unread_update_id,
 			-1
 	);
 	
-	update_id--;
+	if(!(unread_update_id && update_id && unread_update_id > update_id))
+		update_id--;
+	else
+		update_id=unread_update_id;
+	
 	if( g_str_has_prefix( user_name_at_index, "<b>" ) ){
 		debug("Best Friend: %s, on service: %s, is already marked as having unread updates.", user_name, service->guid );
-		gtk_list_store_set(list_store, iter, GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, (unread_updates+1), -1);
+		gtk_list_store_set(list_store, iter, GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, (unread_updates+1), -1);
 	}else{
 		debug("Marking best friend: %s, on service <%s>, as having unread messages.", user_name_at_index, service->guid );
 		uber_free(user_name_at_index);
 		user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
-		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 1, -1);
+		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 1, -1);
 	}
 	
 	uber_free(iter);
 	uber_free(user_at_index);
 	uber_free(user_name_at_index);
 	control_panel_sexy_select();
-	if(!(newest_update_id && update_id && newest_update_id > update_id))
-		return update_id;
-	else
-		return newest_update_id;
+	return update_id;
 }/*online_services_best_friends_mark_list_store_as_unread(user_name )*/
 
 gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, GtkListStore *list_store ){
@@ -691,18 +692,22 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 			-1
 	);
 	
+	gchar		*timeline=g_strdup_printf("/%s.xml", user_at_index);
+	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	uber_free(timeline);
 	if( !g_str_has_prefix( user_name_at_index, "<b>" ) )
 		debug("Best Friend: %s, on service: %s, is already marked as having all of their updates read.", user_name, service->guid  );
 	else{
 		debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, service->guid );
-		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_at_index, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0, -1);
+		gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_at_index, GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, unread_update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0, -1);
 	}
 	uber_free(iter);
 	uber_free(user_at_index);
 	uber_free(user_name_at_index);
 	control_panel_sexy_select();
 	return TRUE;
-}/*online_services_best_friends_tree_view_mark_as_read(service, user_name, tree_view, list_store, tree_model );*/
+}/*online_services_best_friends_list_store_mark_as_read(service, user_name, tree_view, list_store );*/
 
 gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name ){
 	if(G_STR_EMPTY(user_name)) return FALSE;

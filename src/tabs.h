@@ -88,12 +88,14 @@ void tabs_init(GtkNotebook *notebook);
 UpdateViewer *tabs_open_timeline(const gchar *timeline, OnlineService *service);
 void tabs_close_timeline(const gchar *timeline);
 
+UpdateViewer *tabs_view_page(gint page);
+UpdateViewer *tabs_get_page(gint page, gboolean close);
 UpdateViewer *tabs_get_next(void);
 UpdateViewer *tabs_get_current(void);
 UpdateViewer *tabs_get_previous(void);
-UpdateViewer *tabs_get_page(gint page, gboolean close);
 
 void tabs_start(void);
+void tabs_remove_from_update_viewers_list_stores( UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
 void tabs_remove_service(OnlineService *service);
 void tabs_refresh(void);
 void tabs_stop(void);

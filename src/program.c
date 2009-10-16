@@ -187,14 +187,14 @@ void program_timeout_remove(guint *id, const gchar *usage){
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
 
-gchar *program_double_drop_precision(const gdouble gdouble_value){
+gchar *program_gdouble_drop_precision(const gdouble gdouble_value){
 	gchar *gdouble_str=g_strdup_printf("%f", gdouble_value);
 	gchar **gdouble_precision=g_strsplit(gdouble_str, ".", 2);
 	g_free(gdouble_str);
 	gdouble_str=g_strdup(gdouble_precision[0]);
 	g_strfreev(gdouble_precision);
 	return gdouble_str;
-}/*program_float_drop_precision();*/
+}/*program_gdouble_drop_precision();*/
 
 gboolean program_gtk_widget_toggle_visibility( GtkWidget *widget ){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;

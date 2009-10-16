@@ -117,22 +117,6 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper);
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-/* Check HTTP response code */
-gboolean network_check_http(OnlineService *service, SoupMessage *xml){
-	if(!( SOUP_IS_MESSAGE(xml) )){
-		debug("**ERROR**: Attempting validate invalid SoupMessage.");
-		return FALSE;
-	}
-	
-	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) ))
-		return FALSE;
-	
-	return TRUE;
-}/*network_check_http(service, xml);*/
-
-
-
-
 static NetworkUpdateViewerImageDL *network_update_viewer_image_dl_new(UpdateViewer *update_viewer, const gchar *filename, GtkTreeIter *iter){
 	NetworkUpdateViewerImageDL *image=g_new0(NetworkUpdateViewerImageDL, 1);
 	image->update_viewer=update_viewer;
@@ -152,16 +136,20 @@ void network_get_image(OnlineService *service, UpdateViewer *update_viewer, cons
 
 void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
+	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	NetworkUpdateViewerImageDL *image=(NetworkUpdateViewerImageDL *)online_service_wrapper_get_user_data(service_wrapper);
 	if(!( image && image->update_viewer && image->filename && image->iter )){
 		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", image->filename, (image->iter ?"valid" :"unknown") );
 		return NULL;
 	}
 	
-	gchar *image_filename=NULL;
-	if(!(network_check_http(service, xml)))
+	gchar *image_filename=NULL, *error_message=NULL;
+	if(!(parser_xml_error_check(service, requested_uri, xml, &error_message))){
+		debug("Failed to download and save <%s> as <%s>.", requested_uri, image->filename);
+		debug("Detailed error message: %s.", error_message);
 		image_filename=cache_images_get_unknown_image_filename();
-	else{
+		main_window_statusbar_printf("Error adding avatar to UpdateViewer.  GNOME's unknown-image will be used instead.");
+	}else{
 		debug("Saving avatar to file: %s", image->filename);
 		if(!(g_file_set_contents(
 					image->filename,
@@ -172,13 +160,13 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 			image_filename=cache_images_get_unknown_image_filename();
 		else
 			image_filename=g_strdup(image->filename);
+		main_window_statusbar_printf("New avatar added to UpdateViewer.");
 	}
 	
-	main_window_statusbar_printf("New avatar added to UpdateViewer.");
 	update_viewer_set_image(image->update_viewer, image_filename, image->iter);
 	
+	uber_free(error_message);
 	uber_free(image_filename);
-	
 	network_update_viewer_image_dl_free(image);
 	return NULL;
 }/*network_cb_on_image(session, xml, user_data);*/
@@ -216,7 +204,8 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 	if(!direct_message) message=g_strdup_printf("<%s>'s status", service->guid);
 	else message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, service->uri, service->guid);
 	
-	if(!network_check_http(service, xml)){
+	gchar *error_message=NULL;
+	if(!(parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){
 		debug("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		debug("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 		
@@ -232,6 +221,7 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 		statusbar_printf("%s %s :-)", message, (direct_message?"sent":"updated"));
 	}
 	uber_free(message);
+	uber_free(error_message);
 	
 	debug("HTTP response: %s(#%i)", xml->reason_phrase, xml->status_code);
 	
@@ -275,16 +265,16 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
+	if(!IS_UPDATE_VIEWER(update_viewer))
+		return NULL;
 	
-	if(!network_check_http(service, xml)){
-		if(xml->status_code==401){
-			debug("*WARNING:* Authentication failed for online service: %s.", service->key);
-			return NULL;
-		}
-		
-		if(!online_service_wrapper_get_attempt(service_wrapper) && (xml->status_code==100||xml->status_code==404))
+	gchar *error_message=NULL;
+	if(!(parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)))
+		if( !online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
+			uber_free(error_message);
 			return network_retry(service_wrapper);
-	}
+		}
+	uber_free(error_message);
 	
 	gchar *request_uri=online_service_request_uri_create(service, NULL);
 	const gchar *timeline=g_strrstr(online_service_wrapper_get_requested_uri(service_wrapper), request_uri);
@@ -324,8 +314,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		debug("Total tweets in this timeline: %d.", new_updates);
 	}
 	
-	if( IS_UPDATE_VIEWER(update_viewer) )
-		update_viewer_complete(update_viewer);
+	update_viewer_complete(update_viewer);
 	
 	uber_free(request_uri);
 	return NULL;
@@ -339,6 +328,17 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	network_set_state_loading_timeline(requested_uri, Retry);
 	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, update_viewer, (gpointer)monitoring);*/
+	online_service_request_uri(
+				online_service_wrapper_get_online_service(service_wrapper),
+				online_service_wrapper_get_request_method(service_wrapper),
+				online_service_wrapper_get_requested_uri(service_wrapper),
+				online_service_wrapper_increment_attempt(service_wrapper),
+				online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(service_wrapper),
+				online_service_wrapper_get_callback(service_wrapper),
+				online_service_wrapper_get_user_data(service_wrapper),
+				online_service_wrapper_get_form_data(service_wrapper)
+	);
+	return NULL;
 	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/

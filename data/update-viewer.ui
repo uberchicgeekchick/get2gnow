@@ -1,0 +1,355 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkLabel" id="update_viewer_menu_label">
+    <property name="visible">True</property>
+    <property name="label" translatable="yes">update_viewer_menu_label</property>
+    <property name="use_markup">True</property>
+  </object>
+  <object class="GtkAdjustment" id="update_viewer_max_updates_adjustment">
+    <property name="value">20</property>
+    <property name="lower">20</property>
+    <property name="upper">100</property>
+    <property name="step_increment">10</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkLabel" id="update_viewer_tab_label">
+    <property name="visible">True</property>
+    <property name="label" translatable="yes">update_viewer_tab_label</property>
+    <property name="use_markup">True</property>
+    <property name="use_underline">True</property>
+  </object>
+  <object class="GtkListStore" id="update_viewer_list_store">
+    <columns>
+      <!-- column-name GUINT_TWEET_LIST_INDEX -->
+      <column type="guint"/>
+      <!-- column-name GDOUBLE_TWEET_ID -->
+      <column type="gdouble"/>
+      <!-- column-name GDOUBLE_USER_ID -->
+      <column type="gdouble"/>
+      <!-- column-name STRING_USER -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_NICK -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_TEXT -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_TWEET -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_SEXY_TWEET -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_CREATED_AGO -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_CREATED_AT -->
+      <column type="gchararray"/>
+      <!-- column-name GINT_CREATED_AGO -->
+      <column type="gint"/>
+      <!-- column-name ULONG_CREATED_AT -->
+      <column type="gulong"/>
+      <!-- column-name PIXBUP_AVATAR -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name ONLINE_SERVICE -->
+      <column type="gpointer"/>
+      <!-- column-name STRING_FROM -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_RCPT -->
+      <column type="gchararray"/>
+      <!-- column-name GUINT_SELECTED_INDEX -->
+      <column type="guint"/>
+      <!-- column-name GBOOLEAN_UNREAD -->
+      <column type="gboolean"/>
+    </columns>
+  </object>
+  <object class="GtkAdjustment" id="update_viewer_progress_bar_adjustment">
+    <property name="upper">100</property>
+    <property name="step_increment">10</property>
+    <property name="page_increment">10</property>
+    <property name="page_size">10</property>
+  </object>
+  <object class="GtkVBox" id="update_viewer_vbox">
+    <property name="visible">True</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkHBox" id="update_viewer_hbox">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkHandleBox" id="update_viewer_handlebox">
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkToolbar" id="update_viewer_toolbar">
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkToolButton" id="update_viewer_refresh_tool_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">_Refresh</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-refresh</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparatorToolItem" id="toolbutton2">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolItem" id="update_viewer_progress_bar_custom_tool_button">
+                    <property name="visible">True</property>
+                    <property name="border_width">12</property>
+                    <child>
+                      <object class="GtkProgressBar" id="update_viewer_progress_bar">
+                        <property name="visible">True</property>
+                        <property name="show_text">True</property>
+                        <property name="adjustment">update_viewer_progress_bar_adjustment</property>
+                        <property name="discrete_blocks">20</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolItem" id="update_viewer_max_updates_custom_tool_button">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkFrame" id="update_viewer_max_updates_frame">
+                        <property name="visible">True</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkAlignment" id="update_viewer_max_updates_alignment">
+                            <property name="visible">True</property>
+                            <property name="xalign">1</property>
+                            <property name="xscale">0.25</property>
+                            <child>
+                              <object class="GtkSpinButton" id="update_viewer_max_updates_spin_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="max_length">100</property>
+                                <property name="invisible_char">&#x25CF;</property>
+                                <property name="shadow_type">etched-out</property>
+                                <property name="adjustment">update_viewer_max_updates_adjustment</property>
+                                <property name="climb_rate">10</property>
+                                <property name="snap_to_ticks">True</property>
+                                <property name="numeric">True</property>
+                                <property name="update_policy">if-valid</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="update_viewer_max_updates_label">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Ma_x updates:&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                            <property name="use_underline">True</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparatorToolItem" id="toolbutton1">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToggleToolButton" id="update_viewer_stop_toggle_tool_button">
+                    <property name="visible">True</property>
+                    <property name="use_underline">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="update_viewer_close_tool_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">_Close</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-close</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkHSeparator" id="update_viewer_hseparator">
+        <property name="visible">True</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow" id="update_viewer_scrolled_window">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="hscrollbar_policy">automatic</property>
+        <property name="vscrollbar_policy">automatic</property>
+        <child>
+          <object class="SexyTreeView" id="update_viewer_sexy_tree_view">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="model">update_viewer_list_store</property>
+            <property name="headers_clickable">False</property>
+            <property name="expander_column">update_viewer_string_tweet_tree_view_column</property>
+            <property name="reorderable">True</property>
+            <property name="rules_hint">True</property>
+            <property name="search_column">1</property>
+            <property name="level_indentation">5</property>
+            <property name="enable_grid_lines">both</property>
+            <property name="enable_tree_lines">True</property>
+            <child>
+              <object class="GtkTreeViewColumn" id="update_viewer_pixbuf_avatar_tree_view_column">
+                <property name="sizing">fixed</property>
+                <property name="fixed_width">58</property>
+                <property name="min_width">58</property>
+                <property name="max_width">58</property>
+                <property name="title">Avatar</property>
+                <child>
+                  <object class="GtkCellRendererPixbuf" id="update_viewer_pixbuf_avatar_cell_renderer_pixbuf">
+                    <property name="xpad">5</property>
+                    <property name="ypad">5</property>
+                    <property name="yalign">0</property>
+                  </object>
+                  <attributes>
+                    <attribute name="pixbuf">12</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="update_viewer_string_tweet_tree_view_column">
+                <property name="resizable">True</property>
+                <property name="sizing">fixed</property>
+                <property name="title">Update</property>
+                <property name="expand">True</property>
+                <property name="clickable">True</property>
+                <child>
+                  <object class="GtkCellRendererText" id="update_viewer_string_tweet_cell_renderer_text">
+                    <property name="xpad">5</property>
+                    <property name="ypad">5</property>
+                    <property name="yalign">0</property>
+                    <property name="editable">True</property>
+                    <property name="rise">13</property>
+                    <property name="stretch">semi-condensed</property>
+                    <property name="wrap_mode">word</property>
+                    <property name="wrap_width">200</property>
+                  </object>
+                  <attributes>
+                    <attribute name="markup">6</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="update_viewer_string_from_tree_view_column">
+                <property name="resizable">True</property>
+                <property name="sizing">fixed</property>
+                <property name="fixed_width">95</property>
+                <property name="title">From:</property>
+                <child>
+                  <object class="GtkCellRendererText" id="update_viewer_string_from_cell_renderer_text">
+                    <property name="xpad">5</property>
+                    <property name="ypad">5</property>
+                    <property name="yalign">0</property>
+                    <property name="alignment">right</property>
+                    <property name="stretch">extra-condensed</property>
+                    <property name="variant">small-caps</property>
+                    <property name="wrap_mode">word-char</property>
+                    <property name="wrap_width">85</property>
+                  </object>
+                  <attributes>
+                    <attribute name="markup">14</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="update_viewer_string_rcpt_tree_view_column">
+                <property name="resizable">True</property>
+                <property name="sizing">fixed</property>
+                <property name="min_width">95</property>
+                <property name="title">RCPT:</property>
+                <child>
+                  <object class="GtkCellRendererText" id="update_viewer_string_rcpt_cell_renderer_text">
+                    <property name="xpad">5</property>
+                    <property name="ypad">5</property>
+                    <property name="yalign">0</property>
+                    <property name="alignment">right</property>
+                    <property name="stretch">extra-condensed</property>
+                    <property name="wrap_mode">word-char</property>
+                    <property name="wrap_width">85</property>
+                  </object>
+                  <attributes>
+                    <attribute name="markup">15</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="update_viewer_created_ago_str_tree_view_column">
+                <property name="resizable">True</property>
+                <property name="sizing">fixed</property>
+                <property name="fixed_width">80</property>
+                <property name="title">Received</property>
+                <child>
+                  <object class="GtkCellRendererText" id="update_viewer_created_ago_str_cell_renderer_text">
+                    <property name="yalign">0</property>
+                    <property name="alignment">right</property>
+                    <property name="stretch">condensed</property>
+                    <property name="style">italic</property>
+                    <property name="wrap_mode">word</property>
+                    <property name="wrap_width">70</property>
+                  </object>
+                  <attributes>
+                    <attribute name="text">8</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">2</property>
+      </packing>
+    </child>
+  </object>
+</interface>

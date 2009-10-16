@@ -18,6 +18,7 @@ data/get2gnow.schemas.in
 
 
 src/about.c
+src/best-friends.c
 src/cache.c
 src/control-panel.c
 src/debug.c

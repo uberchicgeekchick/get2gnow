@@ -77,9 +77,6 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-gboolean network_check_http(OnlineService *service, SoupMessage *xml);
-
-
 void network_get_image(OnlineService *service, UpdateViewer *update_viewer, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
 void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 

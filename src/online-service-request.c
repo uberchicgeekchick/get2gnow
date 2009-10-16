@@ -74,7 +74,8 @@
 #include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
-#include "network.h"
+
+#include "parser.h"
 
 #include "gconfig.h"
 #include "preferences.h"
@@ -362,15 +363,15 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 		gchar *timeline=NULL;
 		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
 		if(action==ViewUpdatesNew){
-			gdouble id_newest_update=0.0, id_oldest_update=0.0;
-			online_service_update_ids_get(service, user_timeline, &id_newest_update, &id_oldest_update);
-			if(!id_newest_update){
+			gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+			online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+			if(!unread_update_id){
 				debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", user_name, service->guid );
 				timeline=user_timeline;
 			}else{
-				debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", user_name, service->guid, id_newest_update );
+				debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", user_name, service->guid, newest_update_id );
 				uber_free( user_timeline );
-				timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, id_newest_update );
+				timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, unread_update_id );
 			}
 		}else{
 			debug( "Loading %s's updates, on <%s>.  Displaying all updates.", user_name, service->guid );
@@ -407,19 +408,23 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
 	const gchar *service_guid=service->guid;
-	if( xml->status_code!=403 && !network_check_http(service, xml) ){
+	gchar *error_message=NULL;
+	if(!(parser_xml_error_check(service, request->uri, xml, &error_message))){
 		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, xml->status_code);
 		
 		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_guid, xml->reason_phrase, xml->status_code);
 		online_service_request_free(request);
+		uber_free(error_message);
 		return NULL;
 	}
+	uber_free(error_message);
 	
 	User *user=NULL;
 	debug("OnlineServiceRequest to %s %s.  OnlineService: <%s> Loading: <%s>:", request->message, request->user_name, service_guid, request->uri);
 	switch(request->action){
 		case UnFollow:
 		case Block:
+			tabs_remove_from_update_viewers_list_stores(STRING_USER, request->user_name);
 		case Follow:
 		case BestFriendAdd:
 		case BestFriendDrop:
@@ -520,21 +525,21 @@ gdouble online_service_request_selected_update_get_user_id(void){
 	return ( (selected_update && selected_update->user_id) ?selected_update->user_id :0.0 );
 }/*online_service_request_selected_update_get_user_id();*/
 
-gchar *online_service_request_selected_update_reply_to_strdup(gboolean retweet){
+gchar *online_service_request_selected_update_reply_to_strdup(gboolean forward_update){
 	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
 		return NULL;
 	
 	if(!( (gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(1) ))
-		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (retweet ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (retweet ?selected_update->tweet :"" ));
+		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forward_update ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
 	
-	return g_strdup_printf("%s@%s %s", (retweet ?"RT " :""), selected_update->user_name, (retweet ?selected_update->tweet :"" ));
+	return g_strdup_printf("%s@%s %s", (forward_update ?"RT " :""), selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
 }/*online_service_request_selected_update_reply_to_strdup();*/
 
 void online_service_request_selected_update_reply(void){
 	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(FALSE), TRUE, TRUE);
 }/*online_service_request_selected_update_reply();*/
 
-void online_service_request_selected_update_retweet(void){
+void online_service_request_selected_update_forward_update(void){
 	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(TRUE), TRUE, TRUE);
 }/*online_service_request_selected_update_reply();*/
 

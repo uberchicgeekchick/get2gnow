@@ -186,6 +186,7 @@ static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceW
 }/*online_service_wrapper_data_processor(&data, DataSet|DataFree);*/
 
 void online_service_wrapper_retry(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper->can_run) online_service_wrapper->can_run=TRUE;
 	online_service_request_uri(
 				online_service_wrapper->service,
 				online_service_wrapper->request_method,
@@ -219,6 +220,14 @@ const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *onli
 	if(!online_service_wrapper) return NULL;
 	return online_service_wrapper->requested_uri;
 }/*online_service_wrapper_get_requested_uri(online_service_wrapper);*/
+
+guint online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper){
+	if(!online_service_wrapper) return ONLINE_SERVICE_MAX_REQUESTS;
+	
+	online_service_wrapper->attempt++;
+	
+	return online_service_wrapper->attempt;
+}/*online_service_wrapper_reattempt(online_service_wrapper);*/
 
 guint online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper){
 	if(!online_service_wrapper) return ONLINE_SERVICE_MAX_REQUESTS;
@@ -256,7 +265,8 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_servi
 }/*online_service_wrapper_get_form_data(online_service_wrapper);*/
 
 void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
-	if(!online_service_wrapper || (online_service_wrapper->attempt && online_service_wrapper->attempt < ONLINE_SERVICE_MAX_REQUESTS ) ) return;
+	if(!online_service_wrapper) return;
+	/*if( online_service_wrapper->attempt && online_service_wrapper->attempt < ONLINE_SERVICE_MAX_REQUESTS ) return;*/
 	
 	online_service_wrapper_user_data_processor(online_service_wrapper, DataFree);
 	online_service_wrapper_form_data_processor(online_service_wrapper, DataFree);

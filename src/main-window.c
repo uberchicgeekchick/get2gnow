@@ -427,7 +427,7 @@ static void main_window_setup(void){
 					"new_update", "activate", control_panel_new_update,
 					"new_dm", "activate", control_panel_new_dm,
 					"selected_update_reply_image_menu_item", "activate", online_service_request_selected_update_reply,
-					"selected_update_retweet_image_menu_item", "activate", online_service_request_selected_update_retweet,
+					"selected_update_forward_update_image_menu_item", "activate", online_service_request_selected_update_forward_update,
 					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_save_fave,
 					"selected_update_author_view_profile_image_menu_item", "activate", online_service_request_selected_update_view_profile,
 					"selected_update_author_view_updates_image_menu_item", "activate", online_service_request_selected_update_view_updates,
@@ -612,10 +612,10 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 		*user_name=NULL;
 	}else{
 		found=TRUE;
-		if( g_str_has_prefix(selected_user_name, "<b>") )
-			online_services_best_friends_list_store_mark_as_read(selected_service, selected_user, main_window->private->best_friends_list_store);
 		*user=g_strdup(selected_user);
+		uber_free(selected_user);
 		*user_name=g_strdup(selected_user_name);
+		uber_free(selected_user_name);
 		*service=selected_service;
 	}
 	
@@ -1019,6 +1019,7 @@ gboolean main_window_tabs_init(void){
 	}
 	uber_free(timeline);
 	if(tabs_init_timeout) tabs_init_timeout=0;
+	tabs_view_page(0);
 	return FALSE;
 }/*main_window_tabs_init();*/
 
@@ -1211,7 +1212,7 @@ static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
 		"selected_update",
 		"selected_update_reply_image_menu_item",
-		"selected_update_retweet_image_menu_item",
+		"selected_update_forward_update_image_menu_item",
 		"selected_update_save_fave_image_menu_item",
 		"selected_update_author_view_profile_image_menu_item",
 		"selected_update_author_view_updates_image_menu_item",

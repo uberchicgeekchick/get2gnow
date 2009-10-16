@@ -49,8 +49,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">best_friend_image</property>
-                        <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                         <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -59,13 +59,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="view_user_tweets_button">
+                      <object class="GtkButton" id="view_user_updates_button">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
-                          <object class="GtkImage" id="view_user_tweets_image">
+                          <object class="GtkImage" id="view_user_updates_image">
                             <property name="visible">True</property>
                             <property name="stock">gtk-home</property>
                           </object>
@@ -209,7 +209,7 @@
                   <placeholder/>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="tweet_datetime_label">
+                  <object class="GtkLabel" id="update_datetime_label">
                     <property name="visible">True</property>
                     <property name="xalign">1</property>
                     <property name="yalign">1</property>
@@ -271,13 +271,13 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="retweet_button">
+                          <object class="GtkButton" id="forward_update_button">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
-                              <object class="GtkImage" id="retweet_button_image">
+                              <object class="GtkImage" id="forward_update_button_image">
                                 <property name="visible">True</property>
                                 <property name="stock">gtk-media-next</property>
                               </object>
@@ -412,14 +412,6 @@
                         <property name="model">previous_updates_list_store</property>
                         <property name="add_tearoffs">True</property>
                         <property name="tearoff_title">Previous Updates</property>
-                        <child>
-                          <object class="GtkCellRendererText" id="previous_update_cell_renderer_text">
-                            <property name="xpad">5</property>
-                          </object>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
                       </object>
                       <packing>
                         <property name="position">1</property>
@@ -430,8 +422,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
@@ -450,8 +442,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
@@ -477,14 +469,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="new_tweet_button">
+                      <object class="GtkButton" id="new_update_button">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
-                          <object class="GtkImage" id="new_tweet_image">
+                          <object class="GtkImage" id="new_update_image">
                             <property name="visible">True</property>
                             <property name="stock">gtk-clear</property>
                           </object>
@@ -512,8 +504,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="dm_form_active_image">
                             <property name="visible">True</property>
@@ -589,7 +581,7 @@
                             <child>
                               <object class="GtkImage" id="dm_send_image">
                                 <property name="visible">True</property>
-                                <property name="tooltip_markup">&lt;b&gt;Send this tweet as a DM, direct message, to the selected follower:&lt;/b&gt;</property>
+                                <property name="tooltip_markup">&lt;b&gt;Send this update as a DM, direct message, to the selected follower:&lt;/b&gt;</property>
                                 <property name="stock">gtk-goto-last</property>
                               </object>
                             </child>
