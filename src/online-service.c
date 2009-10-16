@@ -1013,7 +1013,8 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	}
 	
 	gchar *request_uri=NULL;
-	if(!( g_str_has_prefix(uri, "https") || g_str_has_prefix(uri, "http") || g_str_has_prefix(uri, "ftp") ))
+	/*if(!( g_str_has_prefix(uri, "https") || g_str_has_prefix(uri, "http") || g_str_has_prefix(uri, "ftp") ))*/
+	if(!g_strrstr(uri, "://"))
 		request_uri=g_strdup_printf("http://%s", uri);
 	else
 		request_uri=g_strdup(uri);
@@ -1033,13 +1034,11 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	}
 	
 	debug("Creating libsoup request for service: '%s'.", service->guid);
-	OnlineServiceWrapper *online_service_wrapper=NULL;
 	switch(request){
 		case QUEUE:
 			online_service_request_validate_uri(service, &request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
+			break;
 		case POST:
-			online_service_wrapper=online_service_wrapper_new(service, request, request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
-			if(request!=POST) break;
 			online_service_request_validate_form_data(service, &request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 		case GET: default: break;
 	}
@@ -1053,7 +1052,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 		
 		case POST:
 			debug("form_data: [%s]", (gchar *)form_data);
-			xml=soup_message_new(request_string, request_uri);
+			xml=soup_message_new("POST", request_uri);
 			
 			soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 			soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
@@ -1077,16 +1076,21 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	
 	/*g_signal_connect(xml, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);*/
 	
+	debug("Creating and Queueing OnlineServiceWrapper request: [%s]", request_uri);
+	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, xml, request, request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
+	
+	if(!service->processing){
+		debug("OnlineService: <%s> has began processing: <%s>.", service->guid, request_uri);
+		service->processing=TRUE;
+	}
+	/*TODO: implement support for 'service->queue' & 'service->queue_timers'.
+	 * ensure only one request is 'in queue' at one time by using
+	 * OnlineServiceWrapper to actually process & queue requests.
+	 * 1st) get rid of *all* GET requests.
+	 */
 	debug("Processing libsoup request for service: '%s'.", service->guid);
 	switch(request){
 		case QUEUE:
-			if(!service->processing){
-				debug("OnlineService: <%s> has began processing: <%s>.", service->guid, request_uri);
-				service->processing=TRUE;
-			}
-			/*TODO: implement support for 'service->queue' & 'service->queue_timers'.
-			 * ensure only one request is 'in queue' at one time.
-			 */
 		case POST:
 			debug("Adding libsoup request to service: '%s' libsoup's message queue.", service->guid);
 			soup_session_queue_message(service->session, xml, (SoupSessionCallback)online_service_callback, online_service_wrapper);
@@ -1095,6 +1099,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 		case GET:
 			debug("Sending libsoup request to service: '%s' & returning libsoup's message.", service->guid);
 			soup_session_send_message(service->session, xml);
+			online_service_wrapper_free(online_service_wrapper);
 			break;
 	}
 	
@@ -1233,9 +1238,9 @@ void online_service_soup_session_callback_return_processor_func_default(OnlineSe
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
+	if(!(service && service->key && G_STR_N_EMPTY(service->key) )) return NULL;
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	if(!(requested_uri && G_STR_N_EMPTY(requested_uri) )) requested_uri=_("Unknown URI");
-	if(!(service && service->key && G_STR_N_EMPTY(service->key) )) return NULL;
 	
 	if(service->status) uber_free(service->status);
 	const gchar *status=NULL;
@@ -1254,7 +1259,6 @@ void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServ
 	timer_main(service->timer, xml);
 	
 	debug("OnlineService: <%s> has finished processing: <%s>.", service->guid, requested_uri);
-	service->processing=FALSE;
 	
 	online_service_wrapper_free(service_wrapper);
 	

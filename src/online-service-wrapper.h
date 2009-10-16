@@ -78,7 +78,7 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, RequestMethod request, const gchar *request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request, const gchar *request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 void online_service_wrapper_retry(OnlineServiceWrapper *online_service_wrapper);
 void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml);

@@ -550,7 +550,7 @@ static void update_viewer_check_updates(UpdateViewer *update_viewer){
 	switch(this->monitoring){
 		case	DMs:	case Replies:
 		case	Faves:	case BestFriends:
-		case Users:
+		case	Users:
 			update_viewer_check_inbox(update_viewer);
 			break;
 		
@@ -559,7 +559,7 @@ static void update_viewer_check_updates(UpdateViewer *update_viewer){
 		case	Archive:
 			update_viewer_check_maximum_updates(update_viewer);
 		
-		case None: default:
+		case	None: default:
 			return;
 	}
 }/*update_viewer_check_updates(update_viewer);*/
@@ -852,18 +852,24 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
+			if(this->index==i) this->index=0;
+			if( update_viewer_goto_index(update_viewer, FALSE) )
+				debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
+			
 			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%i] it was posted %i.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
 			if( unread && this->unread_updates )
 				this->unread_updates--;
 		}else{
+			if(this->index==i)
+				this->index++;
 			gtk_list_store_set(
 					this->list_store, iter,
 						STRING_CREATED_AGO, created_how_long_ago,
 							/*(seconds|minutes|hours|day) ago.*/
 						GINT_CREATED_AGO, created_ago,
 							/*How old the post is, in seconds, for sorting.*/
-						GINT_SELECTED_INDEX, (selected_index ? (selected_index+1) :-1 ),
+						GINT_SELECTED_INDEX, ( (selected_index>-1) ? (selected_index+1) :-1 ),
 				-1
 			);
 		}
@@ -1118,7 +1124,7 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 	gint index=this->index;
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
-			this->index=index=0;
+			this->index=0;
 			update_viewer_index_select(update_viewer);
 			break;
 		case GDK_Home: case GDK_KP_Home:

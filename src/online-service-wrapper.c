@@ -88,6 +88,7 @@ typedef enum{
 
 struct _OnlineServiceWrapper {
 	OnlineService						*service;
+	SoupMessage						*xml;
 	RequestMethod						request_method;
 	gchar							*requested_uri;
 	OnlineServiceSoupSessionCallbackReturnProcessorFunc	online_service_soup_session_callback_return_processor_func;
@@ -109,12 +110,13 @@ static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *onl
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, RequestMethod request, const gchar *request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request, const gchar *request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(callback==NULL) return NULL;
 	
 	OnlineServiceWrapper *online_service_wrapper=g_new0(OnlineServiceWrapper, 1);
 	
 	online_service_wrapper->service=service;
+	online_service_wrapper->xml=xml;
 	online_service_wrapper->request_method=request;
 	online_service_wrapper->requested_uri=g_strdup(request_uri);
 	online_service_wrapper->attempt=attempt;
@@ -267,6 +269,8 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_servi
 void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
 	if(!online_service_wrapper) return;
 	/*if( online_service_wrapper->attempt && online_service_wrapper->attempt < ONLINE_SERVICE_MAX_REQUESTS ) return;*/
+	if(online_service_wrapper->service->processing)
+		online_service_wrapper->service->processing=FALSE;
 	
 	online_service_wrapper_user_data_processor(online_service_wrapper, DataFree);
 	online_service_wrapper_form_data_processor(online_service_wrapper, DataFree);
