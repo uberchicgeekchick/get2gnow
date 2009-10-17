@@ -430,9 +430,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 }/*user_status_format_updates(service, status, user);*/
 
 gboolean user_status_notify_on_timeout(UserStatus *status){
-	if(!(status && G_STR_N_EMPTY(status->notification) )){
-		return FALSE;
-	}
+	if(!(status && G_STR_N_EMPTY(status->notification) )) return FALSE;
 	
 	NotifyNotification *notify_notification;
 	GError             *error=NULL;
@@ -456,6 +454,9 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 		g_error_free(error);
 		return FALSE;
 	}
+	
+	gtk_window_set_urgency_hint( main_window_get_window(), FALSE );
+	
 	return FALSE;
 }/*user_status_notify_on_timeout*/
 

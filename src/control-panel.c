@@ -1018,7 +1018,7 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 					GSTRING_UPDATE, g_strdup(update),
 					IN_REPLY_TO_SERVICE,(in_reply_to_service?in_reply_to_service:NULL),
 					IN_REPLY_TO_STATUS_ID,(in_reply_to_status_id?in_reply_to_status_id:0.0),
-					GSTRING_NULL, "",
+					GSTRING_NULL, g_strdup(""),
 				-1
 	);
 	uber_free(iter);

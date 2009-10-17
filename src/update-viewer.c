@@ -890,8 +890,8 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
 			if( unread && this->unread_updates ){
-				this->unread_updates--;
 				if(!unread_found) unread_found=TRUE;
+				this->unread_updates--;
 			}
 		}else{
 			if(this->index==selected_index) this->index=selected_index+1;;
@@ -1398,8 +1398,6 @@ void update_viewer_mark_as_read(UpdateViewer *update_viewer){
 	
 	debug("Marking UpdatViewer, for %s (timeline: %s), as having %d unread updates.  UpdateViewer has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 	
-	gtk_window_set_urgency_hint( main_window_get_window(), FALSE );
-	
 	if(this->unread) this->unread=FALSE;
 	gchar *tab_label_markup=NULL, *menu_label_markup=NULL;
 	if(!this->unread_updates){
@@ -1579,7 +1577,10 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 		gtk_list_store_set(this->list_store, iter2, GINT_SELECTED_INDEX, i, GBOOLEAN_UNREAD, FALSE, -1);
 		if( unread && this->unread_updates ){
 			this->unread_updates--;
-			update_viewer_mark_as_read(update_viewer);
+			if(this->unread_updates)
+				update_viewer_mark_as_unread(update_viewer);
+			else
+				update_viewer_mark_as_read(update_viewer);
 		}
 		
 		online_service_update_ids_check( service2, this->timeline, index_update_id, FALSE );
