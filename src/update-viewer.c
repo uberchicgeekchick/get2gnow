@@ -729,7 +729,7 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 	
 	gboolean unread_found=FALSE;
 	
-	for(gint i=0; i<this->total; i++){
+	for(gint i=this->total-1; i>=0; i++){
 		gboolean unread=FALSE;
 		OnlineService *service=NULL;
 		gpointer value_at_index=NULL;
@@ -787,10 +787,6 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 				break;
 		}
 		
-		uber_free(iter);
-		gtk_tree_path_free(path);
-		iter=g_new0(GtkTreeIter, 1);
-		path=gtk_tree_path_new_from_indices(list_store_index, -1);
 		if(!list_store_remove){
 			debug( "Updating <%s>'s %s at index: %d.", service->guid, this->monitoring_string, i );
 			gtk_list_store_set( this->list_store, iter, update_viewer_list_store_column_to_string(update_viewer_list_store_column), value, -1 );
@@ -802,6 +798,7 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 				update_viewer_scroll_to_top(update_viewer);
 			}
 			gtk_list_store_remove(this->list_store, iter);
+			this->total--;
 			if(unread && this->unread_updates){
 				if(!unread_found) unread_found=TRUE;
 				this->unread_updates--;
@@ -845,7 +842,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 	
 	gboolean	unread_found=FALSE;
 	
-	for(gint i=0; i<this->total; i++){
+	for(gint i=this->total-1; i>=0; i--){
 		gint created_ago=0;
 		gboolean unread=TRUE;
 		OnlineService	*service=NULL;
@@ -891,6 +888,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 			
 			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%i] it was posted %i.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
+			this->total--;
 			if( unread && this->unread_updates ){
 				this->unread_updates--;
 				if(!unread_found) unread_found=TRUE;
@@ -1473,7 +1471,7 @@ static void update_viewer_changed_cb(SexyTreeView *update_viewer_sexy_tree_view,
 	GtkTreeSelection	*sel;
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(this->sexy_tree_view))) && gtk_tree_selection_get_selected(sel, &this->tree_model_sort, iter) )){
-		g_free(iter);
+		uber_free(iter);
 		control_panel_sexy_select();
 		return;
 	}
@@ -1536,7 +1534,6 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 		OnlineService *service1=NULL;
 		GtkTreeIter *iter1=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path1=gtk_tree_path_new_from_indices(i, -1);
-		gint list_store_index=-1;
 		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter1, path1))){
 			debug("Retrieving iter from path to index %d failed.  Unable to remove row.  Getting update->id from selected_index for update: %f failed.", i, update_id );
 			gtk_tree_path_free(path1);
@@ -1544,6 +1541,7 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 			continue;
 		}
 		
+		gint list_store_index=-1;
 		gtk_tree_model_get(
 				this->tree_model_sort, iter1,
 					ONLINE_SERVICE, &service1,

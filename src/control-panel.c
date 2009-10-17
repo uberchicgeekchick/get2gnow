@@ -207,6 +207,7 @@ typedef enum{
 	GSTRING_UPDATE,
 	IN_REPLY_TO_SERVICE,
 	IN_REPLY_TO_STATUS_ID,
+	GSTRING_NULL,
 } PeviousUpdateInfo;
 
 
@@ -1017,12 +1018,13 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 					GSTRING_UPDATE, g_strdup(update),
 					IN_REPLY_TO_SERVICE,(in_reply_to_service?in_reply_to_service:NULL),
 					IN_REPLY_TO_STATUS_ID,(in_reply_to_status_id?in_reply_to_status_id:0.0),
+					GSTRING_NULL, "",
 				-1
 	);
 	uber_free(iter);
 	
 	if(first_update){
-		gtk_combo_box_entry_set_text_column(control_panel->sexy_entry_combo_box_entry, GSTRING_UPDATE);
+		gtk_combo_box_entry_set_text_column(control_panel->sexy_entry_combo_box_entry, GSTRING_NULL);
 		first_update=FALSE;
 	}
 	

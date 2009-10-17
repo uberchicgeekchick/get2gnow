@@ -89,7 +89,7 @@ typedef enum _UpdateViewerListStoreColumn{		/***********************************
 	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,				/*	Date string.								*/
 	GINT_CREATED_AGO,				/*	How old the post is, in seconds, for sorting.				*/
-	ULONG_CREATED_AT,				/*	Unix seconds since epoc of how old the tweet's is.			*/
+	ULONG_CREATED_AT,				/*	Unix seconds since epoc of how old the update is.			*/
 	PIXBUF_AVATAR,					/*	Avatar pixbuf.								*/
 	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
 	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
