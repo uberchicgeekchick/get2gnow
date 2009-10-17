@@ -156,7 +156,7 @@ struct _ControlPanel{
 	GtkListStore		*previous_updates_list_store;
 	GtkTreeModel		*previous_updates_tree_model;
 	SexySpellEntry		*sexy_entry;
-	guint			sexy_position;
+	gint			sexy_position;
 	
 	/* Info on the update being viewed to avoid issues with the 'best friends' toggle button. */
 	OnlineService		*viewing_service;
@@ -220,8 +220,6 @@ typedef enum{
 #define	TWEET_MAX_CHARS	140
 
 static ControlPanel *control_panel=NULL;
-static guint sexy_position=0;
-
 
 
 /********************************************************
@@ -245,7 +243,6 @@ static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *
 static void control_panel_compact_view_display(gboolean compact);
 static void control_panel_scale(gboolean compact);
 
-static void control_panel_sexy_position_store(GtkEntry *entry, GdkEventKey *event);
 static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter);
 
 static void control_panel_sexy_send(OnlineService *service, const gchar *user_name);
@@ -308,6 +305,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	
 	control_panel=g_new0(ControlPanel, 1);
 	debug("Building ControlPanel");
+	control_panel->sexy_position=-1;
 	control_panel->updates=0;
 	ui=gtkbuilder_get_file(
 				GtkBuilderUI,
@@ -559,7 +557,7 @@ static void control_panel_bind_hotkeys(GtkBuilder *ui){
 		debug("Binding %s's hotkeys to %s.", _(GETTEXT_PACKAGE), hotkey_widgets[i]);
 		g_signal_connect_after(widget, "key-press-event",(GCallback)hotkey_pressed, widget);
 	}
-}/*control_panel_bind_hotkey(ui);*/
+}/*control_panel_bind_hotkeys(ui);*/
 
 void control_panel_compact_view_toggled(GtkToggleButton *compact_view_toggle_button){
 	gboolean compact;
@@ -685,12 +683,10 @@ static void control_panel_sexy_init(void){
 	control_panel->sexy_entry=g_object_ref_sink(control_panel->sexy_entry);
 	gtk_container_remove(GTK_CONTAINER(control_panel->sexy_entry_combo_box_entry), gtk_bin_get_child(GTK_BIN(control_panel->sexy_entry_combo_box_entry)));
 	gtk_container_add(GTK_CONTAINER(control_panel->sexy_entry_combo_box_entry), GTK_WIDGET(control_panel->sexy_entry));
-	gtk_widget_set_sensitive(GTK_WIDGET(control_panel->sexy_entry_combo_box_entry), TRUE);
-	gtk_widget_set_sensitive(GTK_WIDGET(control_panel->sexy_entry), TRUE);
 	gtk_widget_show(GTK_WIDGET(control_panel->sexy_entry));
 		
-	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(control_panel_sexy_position_store), NULL);
-	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
+	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
+	g_signal_connect(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
 	g_signal_connect(control_panel->sexy_entry, "activate", G_CALLBACK(control_panel_send), NULL);
 	g_signal_connect_after(control_panel->followers_combo_box, "changed", G_CALLBACK(control_panel_sexy_select), control_panel->followers_combo_box);
 }/*control_panel_sexy_init*/
@@ -824,12 +820,8 @@ static gshort updatelen(gchar *update){
 	return TWEET_MAX_CHARS-character_count;
 }/*updatelen(update);*/
 
-static void control_panel_sexy_position_store(GtkEntry *entry, GdkEventKey *event){
-	sexy_position=gtk_editable_get_position(GTK_EDITABLE( control_panel->sexy_entry));
-	hotkey_pressed( GTK_WIDGET(entry), event, NULL );
-}/*control_panel_sexy_position_store(control_panel->sexy_entry, event);*/
-
 static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter){
+	control_panel->sexy_position=gtk_editable_get_position(GTK_EDITABLE(entry));
 	gshort remaining_character_count=updatelen(entry->text);
 	gchar *remaining_characters_markup_label=NULL;
 	if(remaining_character_count < 0){
@@ -861,7 +853,7 @@ void control_panel_beep(void){
 void control_panel_sexy_select(void){
 	if(gtk_widget_has_focus( GTK_WIDGET(control_panel->sexy_entry))) return;
 	gtk_widget_grab_focus(GTK_WIDGET(control_panel->sexy_entry));
-	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), (sexy_position ?sexy_position :-1) );
+	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), ( (control_panel->sexy_position>0) ?control_panel->sexy_position :-1) );
 }/*control_panel_sexy_select*/
 
 void control_panel_sexy_prefix_char(const char c){

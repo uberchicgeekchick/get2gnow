@@ -610,21 +610,23 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		gboolean unread=TRUE;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter, path))){
 			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
 		}
 		
-		debug("Removing iter at index: %d", i);
+		gint list_store_index=-1;
 		gtk_tree_model_get(
-				this->tree_model, iter,
+				this->tree_model_sort, iter,
 					ONLINE_SERVICE, &service,
 					GBOOLEAN_UNREAD, &unread,
 					ONLINE_SERVICE, &service,
+					GINT_LIST_STORE_INDEX, &list_store_index,
 				-1
 		);
+		debug("Removing iter at index: %d", list_store_index);
 		
 		debug( "Removing <%s>'s %s at index %i which exceeds maximum updates: %s.", service->guid, this->monitoring_string, i, this->max_updates_str );
 		
@@ -637,6 +639,10 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 			debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
 			update_viewer_scroll_to_top(update_viewer);
 		}
+		uber_free(iter);
+		gtk_tree_path_free(path);
+		iter=g_new0(GtkTreeIter, 1);
+		path=gtk_tree_path_new_from_indices(list_store_index, -1);
 		gtk_list_store_remove(this->list_store, iter);
 		this->total--;
 		
@@ -736,11 +742,13 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 			continue;
 		}
 		
+		gint list_store_index=-1;
 		gtk_tree_model_get(
 					this->tree_model, iter,
 						update_viewer_list_store_column, &value_at_index,
 						ONLINE_SERVICE, &service,
 						GBOOLEAN_UNREAD, &unread,
+						GINT_LIST_STORE_INDEX, &list_store_index,
 					-1
 		);
 		
@@ -779,6 +787,10 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 				break;
 		}
 		
+		uber_free(iter);
+		gtk_tree_path_free(path);
+		iter=g_new0(GtkTreeIter, 1);
+		path=gtk_tree_path_new_from_indices(list_store_index, -1);
 		if(!list_store_remove){
 			debug( "Updating <%s>'s %s at index: %d.", service->guid, this->monitoring_string, i );
 			gtk_list_store_set( this->list_store, iter, update_viewer_list_store_column_to_string(update_viewer_list_store_column), value, -1 );
@@ -844,21 +856,27 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		gboolean unread=TRUE;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter, path))){
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
 		}
 		
+		gint list_store_index=-1;
 		gtk_tree_model_get(
-					this->tree_model, iter,
+					this->tree_model_sort, iter,
 						STRING_CREATED_AT, &created_at_str,
 						ONLINE_SERVICE, &service,
 						GINT_SELECTED_INDEX, &selected_index,
 						GBOOLEAN_UNREAD, &unread,
+						GINT_LIST_STORE_INDEX, &list_store_index,
 					-1
 		);
 		
+		uber_free(iter);
+		gtk_tree_path_free(path);
+		iter=g_new0(GtkTreeIter, 1);
+		path=gtk_tree_path_new_from_indices(list_store_index, -1);
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
 			if(this->index==selected_index) this->index=0;
@@ -1461,7 +1479,7 @@ static void update_viewer_changed_cb(SexyTreeView *update_viewer_sexy_tree_view,
 	gboolean	unread=FALSE;
 	
 	gtk_tree_model_get(
-				GTK_TREE_MODEL(this->tree_model_sort), iter,
+				this->tree_model_sort, iter,
 					GDOUBLE_UPDATE_ID, &update_id,
 					GDOUBLE_USER_ID, &user_id,
 					STRING_NICK, &nick_name,
@@ -1511,14 +1529,21 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 		OnlineService *service1=NULL;
 		GtkTreeIter *iter1=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path1=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(GTK_TREE_MODEL(this->tree_model_sort), iter1, path1))){
+		gint list_store_index=-1;
+		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter1, path1))){
 			debug("Getting update->id from selected_index for update: %f failed.  Unable to retrieve iter from path to index: %d.", update_id, i);
 			gtk_tree_path_free(path1);
 			uber_free(iter1);
 			continue;
 		}
 		
-		gtk_tree_model_get(GTK_TREE_MODEL(this->tree_model_sort), iter1, ONLINE_SERVICE, &service1, GDOUBLE_UPDATE_ID, &index_update_id, -1);
+		gtk_tree_model_get(
+				this->tree_model_sort, iter1,
+					ONLINE_SERVICE, &service1,
+					GDOUBLE_UPDATE_ID, &index_update_id,
+					GINT_LIST_STORE_INDEX, &list_store_index,
+				-1
+		);
 		if(!( service0==service1 && index_update_id==update_id )){
 			gtk_tree_path_free(path1);
 			uber_free(iter1);
@@ -1527,43 +1552,40 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 		
 		debug("Updating UpdateViewer, for %s (timeline: %s), selected index for update at list_store's index: %d.  Setting selecting index to: %d previous selected index: %d.", this->monitoring_string, this->timeline, i, i, this->index );
 		this->index=i;
-		for(guint x=0; x<this->total; x++){
-			gboolean unread=FALSE;
-			OnlineService *service2=NULL;
-			GtkTreeIter *iter2=g_new0(GtkTreeIter, 1);
-			GtkTreePath *path2=gtk_tree_path_new_from_indices(x, -1);
-			if(!(gtk_tree_model_get_iter(this->tree_model, iter2, path2))){
-				debug("Getting update->id from selected_index for update: %f failed.  Unable to retrieve iter from path to index: %d.", update_id, x);
-				gtk_tree_path_free(path2);
-				uber_free(iter2);
-				continue;
-			}
-			
-			gtk_tree_model_get(this->tree_model, iter2, ONLINE_SERVICE, &service2, GBOOLEAN_UNREAD, &unread, GDOUBLE_UPDATE_ID, &index_update_id, -1);
-			if(!( service1==service2 && index_update_id==update_id )){
-				gtk_tree_path_free(path2);
-				uber_free(iter2);
-				continue;
-			}
-			
-			debug("Updating UpdateViewer, for %s (timeline: %s), selected index for update at list_store's index: %d.  Setting selecting index to: %d previous selected index: %d.", this->monitoring_string, this->timeline, x, x, this->index );
-			gtk_list_store_set(this->list_store, iter2, GINT_SELECTED_INDEX, i, GBOOLEAN_UNREAD, FALSE, -1);
-			if( unread && this->unread_updates ){
-				this->unread_updates--;
-				update_viewer_mark_as_read(update_viewer);
-			}
-			
-			online_service_update_ids_check( service2, this->timeline, index_update_id, FALSE );
-			best_friends_check_update_ids( service2, user_name, index_update_id );
-			online_services_best_friends_list_store_mark_as_read(service2, user_name, index_update_id, main_window_get_best_friends_list_store() );
-			
-			i=x=(this->total+1);
-			
+		gboolean unread=FALSE;
+		OnlineService *service2=NULL;
+		GtkTreeIter *iter2=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path2=gtk_tree_path_new_from_indices(list_store_index, -1);
+		if(!(gtk_tree_model_get_iter(this->tree_model, iter2, path2))){
+			debug("Getting update->id from selected_index for update: %f failed.  Unable to retrieve iter from path to index: %d.", update_id, list_store_index);
 			gtk_tree_path_free(path2);
 			uber_free(iter2);
+			continue;
 		}
+		
+		gtk_tree_model_get(this->tree_model, iter2, ONLINE_SERVICE, &service2, GBOOLEAN_UNREAD, &unread, GDOUBLE_UPDATE_ID, &index_update_id, -1);
+		if(!( service1==service2 && index_update_id==update_id )){
+			gtk_tree_path_free(path2);
+			uber_free(iter2);
+			continue;
+		}
+		
+		debug("Updating UpdateViewer, for %s (timeline: %s), selected index for update at list_store's index: %d.  Setting selecting index to: %d previous selected index: %d.", this->monitoring_string, this->timeline, list_store_index, list_store_index, this->index );
+		gtk_list_store_set(this->list_store, iter2, GINT_SELECTED_INDEX, i, GBOOLEAN_UNREAD, FALSE, -1);
+		if( unread && this->unread_updates ){
+			this->unread_updates--;
+			update_viewer_mark_as_read(update_viewer);
+		}
+		
+		online_service_update_ids_check( service2, this->timeline, index_update_id, FALSE );
+		best_friends_check_update_ids( service2, user_name, index_update_id );
+		online_services_best_friends_list_store_mark_as_read(service2, user_name, index_update_id, main_window_get_best_friends_list_store() );
+		
+		gtk_tree_path_free(path2);
+		uber_free(iter2);
 		gtk_tree_path_free(path1);
 		uber_free(iter1);
+		break;
 	}
 }/*update_viewer_find_selected_update_index(update_viewer, service, user_name, update_id);*/
 
