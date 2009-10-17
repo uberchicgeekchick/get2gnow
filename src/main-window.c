@@ -1309,11 +1309,11 @@ void main_window_set_statusbar_msg(gchar *message){
 		return;
 	
 	if(G_STR_N_EMPTY(message))
-		statusbar_timers=g_slist_append( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, statusbar_messages_total, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
+		statusbar_timers=g_slist_append( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, (++statusbar_messages_total>=5?statusbar_messages_total:5), (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
 	
 	
 	program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar message"));
-	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT,(++statusbar_messages_total>=5?statusbar_messages_total:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
+	main_window->private->timeout_id_status_bar_message_default=g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, (++statusbar_messages_total>=5?statusbar_messages_total:5),(GSourceFunc)main_window_statusbar_display, g_strdup(STATUSBAR_DEFAULT), g_free);
 }/*main_window_set_statusbar_msg("Message...");*/
 
 static gboolean main_window_statusbar_display(const gchar *message){
