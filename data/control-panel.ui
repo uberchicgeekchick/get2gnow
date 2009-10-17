@@ -406,13 +406,21 @@
                         <property name="position">0</property>
                       </packing>
                     </child>
-                    <child>
+		    <child>
                       <object class="GtkComboBoxEntry" id="control_panel_sexy_entry_combo_box_entry">
                         <property name="visible">True</property>
                         <property name="model">previous_updates_list_store</property>
                         <property name="add_tearoffs">True</property>
-                        <property name="tearoff_title">Previous Updates</property>
-                      </object>
+			<property name="tearoff_title">Previous Updates</property><!--
+                        <child>
+                          <object class="GtkCellRendererText" id="previous_update_cell_renderer_text">
+                            <property name="xpad">5</property>
+                          </object>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>-->
+                     </object>
                       <packing>
                         <property name="position">1</property>
                       </packing>

@@ -153,11 +153,11 @@ struct _UpdateViewerPrivate {
 	gchar			*menu_label_string;
 	
 	gint			index;
+	guint			list_store_index;
 	
 	guint			total;
 	gboolean		unread;
 	guint			unread_updates;
-	gboolean		loading;
 	
 	guint			connected_online_services;
 	gdouble			max_updates;
@@ -271,9 +271,9 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event);
 static gboolean update_viewer_index_validate(UpdateViewer *update_viewer, gint *index);
 static gboolean update_viewer_goto(UpdateViewer *update_viewer, gint goto_index, gboolean select);
 static gboolean update_viewer_goto_index(UpdateViewer *update_viewer, gboolean select);
-static void update_viewer_index_select(UpdateViewer *update_viewer);
-static void update_viewer_index_scroll_to(UpdateViewer *update_viewer);
-static void update_viewer_scroll_to_top(UpdateViewer *update_viewer);
+static gboolean update_viewer_index_select(UpdateViewer *update_viewer);
+static gboolean update_viewer_index_scroll_to(UpdateViewer *update_viewer);
+static gboolean update_viewer_scroll_to_top(UpdateViewer *update_viewer);
 
 static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer, OnlineService *service0, const gchar *user_name, gdouble update_id);
 
@@ -300,10 +300,11 @@ static void update_viewer_init(UpdateViewer *update_viewer){
 	
 	this->has_loaded=-1;
 	this->unread_updates=0;
-	this->unread=this->loading=FALSE;
+	this->unread=FALSE;
 	
 	this->minutes=0;
 	this->reload=0;
+	this->list_store_index=0;
 	
 	this->connected_online_services=this->timeout_id=this->index=this->total=0;
 	this->max_updates_str=gdouble_to_str( (this->max_updates=0.0) );
@@ -392,7 +393,7 @@ const gchar *monitoring_to_string(UpdateMonitor monitoring){
 
 /*BEGIN: Custom UpdateViewer methods.*/
 /**
- *@returns: -1, 0, 1 if the timeline hasn't loaded, is loading, or is reloading.
+ *@returns: -1, 0, 1 if the timeline hasn't loaded, is loading, or is re-loading.
  */
 gint8 update_viewer_has_loaded(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return 0;
@@ -474,11 +475,13 @@ void update_viewer_start(UpdateViewer *update_viewer){
 		debug("Creating timeout to reload %s.", this->menu_label_string);
 		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)update_viewer_refresh, update_viewer);
 	}
-	update_viewer_check_updates(update_viewer);
+	
 	if(this->has_loaded < 1) return;
-	if(this->loading) return;
+	
+	if(this->has_loaded>1)
+		update_viewer_check_updates(update_viewer);
+	
 	if(this->minutes){
-		this->loading=TRUE;
 		if(!this->service){
 			online_services_request(QUEUE, this->timeline, NULL, network_display_timeline, update_viewer, (gpointer)this->monitoring);
 		}else{
@@ -493,7 +496,7 @@ static float update_viewer_prepare_reload(UpdateViewer *update_viewer){
 	
 	gint minutes=0;
 	gconfig_get_int(PREFS_TIMELINE_RELOAD_MINUTES, &minutes);
-	/* With multiple timeline support timeline reloading interval shouldn't be less than 5 minutes */
+	/* With multiple timeline support timeline re-loading interval shouldn't be less than 5 minutes */
 	if(this->minutes < 5)
 		gconfig_set_int(PREFS_TIMELINE_RELOAD_MINUTES, (this->minutes=minutes=5) );
 	
@@ -615,10 +618,6 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		}
 		
 		debug("Removing iter at index: %d", i);
-		if(i==this->index){
-			debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
-			update_viewer_scroll_to_top(update_viewer);
-		}
 		gtk_tree_model_get(
 				this->tree_model, iter,
 					ONLINE_SERVICE, &service,
@@ -633,6 +632,11 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 			if(unread_found) unread_found=TRUE;
 			this->unread_updates--;
 		}
+		if(i==this->index){
+			this->index=0;
+			debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
+			update_viewer_scroll_to_top(update_viewer);
+		}
 		gtk_list_store_remove(this->list_store, iter);
 		this->total--;
 		
@@ -640,7 +644,7 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		uber_free(iter);
 	}
 	if(unread_found)
-		if(this->unread)
+		if(this->unread_updates)
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
@@ -705,6 +709,7 @@ const gchar *update_viewer_list_store_column_to_string(UpdateViewerListStoreColu
 		case	GDOUBLE_USER_ID: return _("GDOUBLE_USER_ID");
 		case	GINT_CREATED_AGO: return _("GINT_CREATED_AGO");
 		case	ULONG_CREATED_AT: return _("ULONG_CREATED_AT");
+		case	GINT_LIST_STORE_INDEX: return _("GINT_LIST_STORE_INDEX");
 		case	GINT_SELECTED_INDEX: return _("GINT_SELECTED_INDEX");
 		case	GBOOLEAN_UNREAD: return _("GBOOLEAN_UNREAD");
 		default: return _("UNKNOWN COLUMN");
@@ -767,6 +772,7 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 			case	GDOUBLE_USER_ID:
 			case	GINT_CREATED_AGO:
 			case	ULONG_CREATED_AT:
+			case	GINT_LIST_STORE_INDEX:
 			case	GINT_SELECTED_INDEX:
 			case	GBOOLEAN_UNREAD:
 				return;
@@ -778,19 +784,22 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 			gtk_list_store_set( this->list_store, iter, update_viewer_list_store_column_to_string(update_viewer_list_store_column), value, -1 );
 		}else{
 			debug( "Removing <%s>'s %s at index: %d.", service->guid, this->monitoring_string, i );
+			if(i==this->index){
+				this->index=0;
+				debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
+				update_viewer_scroll_to_top(update_viewer);
+			}
 			gtk_list_store_remove(this->list_store, iter);
-			if(unread){
+			if(unread && this->unread_updates){
 				if(!unread_found) unread_found=TRUE;
-				if(this->unread_updates)
-					if( !--this->unread_updates && this->unread )
-						this->unread=FALSE;
+				this->unread_updates--;
 			}
 		}
 		
 		uber_free(iter);
 	}
 	if(unread_found)
-		if(this->unread)
+		if(this->unread_updates)
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
@@ -852,17 +861,18 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
-			if(this->index==i) this->index=0;
-			if( update_viewer_goto_index(update_viewer, FALSE) )
+			if(this->index==selected_index) this->index=0;
+			if( update_viewer_scroll_to_top(update_viewer) )
 				debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
 			
 			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%i] it was posted %i.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
-			if( unread && this->unread_updates )
+			if( unread && this->unread_updates ){
 				this->unread_updates--;
+				if(!unread_found) unread_found=TRUE;
+			}
 		}else{
-			if(this->index==i)
-				this->index++;
+			if(this->index==selected_index) this->index=selected_index+1;;
 			gtk_list_store_set(
 					this->list_store, iter,
 						STRING_CREATED_AGO, created_how_long_ago,
@@ -873,17 +883,16 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 				-1
 			);
 		}
-		if(unread && !unread_found)
-			unread_found=TRUE;
+		if(unread && !unread_found) unread_found=TRUE;
 		
 		uber_free(created_how_long_ago);
 		uber_free(created_at_str);
+		service=NULL;
 		gtk_tree_path_free(path);
 		uber_free(iter);
-		service=NULL;
 	}
 	if(unread_found)
-		if(this->unread)
+		if(this->unread_updates)
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
@@ -906,8 +915,8 @@ void update_viewer_complete(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
-	if(this->loading) this->loading=FALSE;
 	if(!this->connected_online_services)	return;
+	this->list_store_index=0;
 	
 	if(gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ))
 		update_viewer_scroll_to_top(update_viewer);
@@ -926,14 +935,19 @@ static void update_viewer_stop_toggle_setup(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
+	gchar *tooltip_markup=NULL;
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button)){
 		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"bold\">Disable auto_-update.</span>");
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-media-pause");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Stop auto-reloading these updates.</span>");
+		tooltip_markup=g_strdup_printf("<span weight=\"bold\">Stop auto re-loading %s.</span>", this->monitoring_string);
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), tooltip_markup);
+		uber_free(tooltip_markup);
 	}else{
 		gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "<span weight=\"light\">Enable auto_-update.</span>");
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->stop_toggle_tool_button), "gtk-media-play");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), "<span weight=\"bold\">Start auto-reloading these updates.</span>");
+		tooltip_markup=g_strdup_printf("<span weight=\"bold\">Start auto re-loading %s.</span>", this->monitoring_string);
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(this->stop_toggle_tool_button), tooltip_markup);
+		uber_free(tooltip_markup);
 	}
 }/*update_viewer_stop_toggle_setup(update_viewer);*/
 
@@ -1126,7 +1140,7 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 		case GDK_Tab: case GDK_KP_Tab:
 			this->index=0;
 			update_viewer_index_select(update_viewer);
-			break;
+			return;
 		case GDK_Home: case GDK_KP_Home:
 		case GDK_Begin: case GDK_Escape:
 			index=0;
@@ -1202,33 +1216,42 @@ static gboolean update_viewer_goto_index(UpdateViewer *update_viewer, gboolean s
 	return update_viewer_goto(update_viewer, this->index, select);
 }/*update_viewer_goto_index(update_viewer);*/
 
-static void update_viewer_index_select(UpdateViewer *update_viewer){
-	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+static gboolean update_viewer_index_select(UpdateViewer *update_viewer){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return FALSE;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
-	if(!( GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)) && this->total )) return;
-	if( update_viewer_goto_index(update_viewer, TRUE) )
+	if(!( GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)) && this->total )) return FALSE;
+	if( update_viewer_goto_index(update_viewer, TRUE) ){
 		debug("UpdateViewer for %s(timeline %s) index selected.  Update %d, out of %d total updates.", this->monitoring_string, this->timeline, this->index, this->total );
+		return TRUE;
+	}
+	return FALSE;
 }/*update_viewer_index_select(update_viewer);*/
 
-static void update_viewer_index_scroll_to(UpdateViewer *update_viewer){
-	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+static gboolean update_viewer_index_scroll_to(UpdateViewer *update_viewer){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return FALSE;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
-	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return;
+	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return FALSE;
 	
-	if( update_viewer_goto_index(update_viewer, FALSE) )
+	if( update_viewer_goto_index(update_viewer, FALSE) ){
 		debug("UpdateViewer for %s(timeline %s) perspective scrolled to index.  Update %d, out of %d total updates.", this->monitoring_string, this->timeline, this->index, this->total );
+		return TRUE;
+	}
+	return FALSE;
 }/*update_viewer_index_scroll_to(update_viewer);*/
 
-static void update_viewer_scroll_to_top(UpdateViewer *update_viewer){
-	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+static gboolean update_viewer_scroll_to_top(UpdateViewer *update_viewer){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return FALSE;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
-	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return;
-	if(this->index) this->index=0;
-	if( update_viewer_goto_index(update_viewer, FALSE) )
+	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return FALSE;
+	gint index_zero=0;
+	if( update_viewer_goto(update_viewer, index_zero, FALSE) ){
 		debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
+		return TRUE;
+	}
+	return FALSE;
 }/*update_viewer_scroll_to_top(update_viewer);*/
 
 static void update_viewer_clear(UpdateViewer *update_viewer){
@@ -1240,7 +1263,10 @@ static void update_viewer_clear(UpdateViewer *update_viewer){
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 	this->has_loaded=1;
 	this->minutes=0;
-	if(this->index) update_viewer_scroll_to_top(update_viewer);
+	if(this->index) {
+		this->index=0;
+		update_viewer_scroll_to_top(update_viewer);
+	}
 	
 	this->total=0;
 }/*update_viewer_clear(update_viewer);*/
@@ -1262,14 +1288,13 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
 	gtk_progress_bar_pulse(this->progress_bar);
-	if(this->index) this->index++;
-	this->total++;
 	debug("Appending update to UpdateViewer <%s>'s; timeline [%s]; update ID: %s.  Total updates: %u", status->service->guid, this->timeline, status->id_str, this->total);
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	online_service_update_ids_get(status->service, this->timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	gboolean unread=(status->id && status->id > unread_update_id);
 	
+	this->total++;
 	gtk_list_store_prepend(this->list_store, iter);
 	gtk_list_store_set(
 				this->list_store, iter,
@@ -1289,9 +1314,11 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
 					GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
+					GINT_LIST_STORE_INDEX, this->list_store_index,		/*The row's unsorted index.*/
 					GBOOLEAN_UNREAD, unread,
 				-1
 	);
+	this->list_store_index++;
 	
 	if( unread )
 		update_viewer_increment_unread(update_viewer);
@@ -1351,21 +1378,37 @@ void update_viewer_mark_as_read(UpdateViewer *update_viewer){
 	gtk_window_set_urgency_hint( main_window_get_window(), FALSE );
 	
 	if(this->unread) this->unread=FALSE;
-	gchar *label_markup;
-	if(!this->unread_updates)
-		label_markup=g_markup_printf_escaped("%s", this->tab_label_string );
-	else
-		label_markup=g_markup_printf_escaped("%s (%d unread)", this->tab_label_string, this->unread_updates );
+	gchar *tab_label_markup=NULL, *menu_label_markup=NULL;
+	if(!this->unread_updates){
+		tab_label_markup=g_markup_printf_escaped("%s", this->tab_label_string );
+		menu_label_markup=g_markup_printf_escaped("%s", this->menu_label_string );
+	}else{
+		tab_label_markup=g_markup_printf_escaped("%s (%d unread)", this->tab_label_string, this->unread_updates );
+		menu_label_markup=g_markup_printf_escaped("%s (%d unread)", this->menu_label_string, this->unread_updates );
+	}
+	gtk_label_set_markup_with_mnemonic(this->tab_label, tab_label_markup);
+	gtk_label_set_markup_with_mnemonic(this->menu_label, menu_label_markup);
+	uber_free(tab_label_markup);
+	uber_free(menu_label_markup);
+}/*update_viewer_mark_as_read(update_viewer);*/
+
+static void update_viewer_mark_as_unread(UpdateViewer *update_viewer){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
+	
+	gtk_window_set_urgency_hint( main_window_get_window(), update_viewer_notification(update_viewer) );
+	debug("Marking UpdatViewer, for %s (timeline: %s), as having %d unread updates(maximum allowed updates: %s).  UpdateViewer's total updates:%d; has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
+	
+	control_panel_beep();
+	
+	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s (%d unread)*</span>", this->tab_label_string, this->unread_updates );
 	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
 	uber_free(label_markup);
 	
-	if(!this->unread_updates)
-		label_markup=g_markup_printf_escaped("%s", this->menu_label_string );
-	else
-		label_markup=g_markup_printf_escaped("%s (%d unread)", this->menu_label_string, this->unread_updates );
+	label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s (%d unread)*</span>", this->menu_label_string, this->unread_updates );
 	gtk_label_set_markup_with_mnemonic(this->menu_label, label_markup);
 	uber_free(label_markup);
-}/*update_viewer_mark_as_read(update_viewer);*/
+}/*update_viewer_mark_as_unread(update_viewer);*/
 
 static void update_viewer_increment_unread(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
@@ -1394,24 +1437,6 @@ static void update_viewer_increment_unread(UpdateViewer *update_viewer){
 	
 	update_viewer_mark_as_unread(update_viewer);
 }/*update_viewer_increment_unread(update_viewer);*/
-
-static void update_viewer_mark_as_unread(UpdateViewer *update_viewer){
-	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
-	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
-	
-	gtk_window_set_urgency_hint( main_window_get_window(), update_viewer_notification(update_viewer) );
-	debug("Marking UpdatViewer, for %s (timeline: %s), as having %d unread updates(maximum allowed updates: %s).  UpdateViewer's total updates:%d; has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
-	
-	control_panel_beep();
-	
-	gchar *label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s (%d unread)*</span>", this->tab_label_string, this->unread_updates );
-	gtk_label_set_markup_with_mnemonic(this->tab_label, label_markup);
-	uber_free(label_markup);
-	
-	label_markup=g_markup_printf_escaped("<span weight=\"ultrabold\">*%s (%d unread)*</span>", this->menu_label_string, this->unread_updates );
-	gtk_label_set_markup_with_mnemonic(this->menu_label, label_markup);
-	uber_free(label_markup);
-}/*update_viewer_mark_as_unread(update_viewer);*/
 
 static void update_viewer_set_sexy_tooltip(SexyTreeView *sexy_tree_view, GtkTreePath *path, GtkTreeViewColumn *column, UpdateViewer *update_viewer){
 }/*static void update_viewer_set_sexy_tooltip(sexy_tree_view, path, column, update_viewer);*/

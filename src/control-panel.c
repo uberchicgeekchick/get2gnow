@@ -272,7 +272,7 @@ static void control_panel_destroy_cb(GtkWidget *window, ControlPanel *control_pa
 	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
 	if(control_panel->best_friends_user_name) uber_free(control_panel->best_friends_user_name);
 	
-	gtk_widget_destroy(GTK_WIDGET( control_panel->control_panel) );
+	gtk_widget_destroy(GTK_WIDGET(control_panel->control_panel) );
 	uber_free(control_panel);
 }/*control_panel_destroy_cb*/
 
@@ -416,7 +416,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 		debug("ControlPanel's set to be embed, no further setup needed.");
 	}else{
 		debug("Displaying ControlPanel as a stand alone dialog & setting ControlPanel's parent window..");
-		gtk_widget_show_all(GTK_WIDGET( control_panel->control_panel));
+		gtk_widget_show_all(GTK_WIDGET(control_panel->control_panel));
 		g_object_add_weak_pointer(G_OBJECT( control_panel->control_panel),(gpointer)&control_panel);
 		gtk_window_set_transient_for(GTK_WINDOW( control_panel->control_panel), parent);
 	}
@@ -470,13 +470,13 @@ void control_panel_set_embed_toggle_and_image(void){
 	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE)){
 		debug("Setting ControlPanel's embed state indicators to split ControlPanel off into a floating window.");
 		gtk_toggle_button_set_active(control_panel->embed_toggle_button, FALSE);
-		gtk_widget_set_tooltip_markup(GTK_WIDGET( control_panel->embed_toggle_button), "<span weight=\"bold\">Split ControlPanel into its own window.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->embed_toggle_button), "<span weight=\"bold\">Split ControlPanel into its own window.</span>");
 		gtk_image_set_from_icon_name(control_panel->embed_image, "gtk-go-up", ImagesMinimum);
 	}else{
 		debug("Setting ControlPanel's embed state indicators to embed ControlPanel into %s's main window.", PACKAGE_NAME);
 		gtk_toggle_button_set_active(control_panel->embed_toggle_button, TRUE);
 		gchar *tooltip_markup=g_strdup_printf("<span weight=\"light\">Move ControlPanel back into %s's main window.</span>", PACKAGE_NAME);
-		gtk_widget_set_tooltip_markup(GTK_WIDGET( control_panel->embed_toggle_button), tooltip_markup );
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->embed_toggle_button), tooltip_markup );
 		uber_free(tooltip_markup);
 		gtk_image_set_from_icon_name(control_panel->embed_image, "gtk-go-down", ImagesMinimum);
 	}
@@ -569,10 +569,10 @@ void control_panel_compact_view_toggled(GtkToggleButton *compact_view_toggle_but
 	control_panel_compact_view_display(compact);
 	
 	if(!compact){
-		gtk_widget_set_tooltip_markup(GTK_WIDGET( control_panel->compact_view_toggle_button), "<span weight=\"bold\" variant=\"small-caps\">Enlarge control panel.</span>\n<span style=\"italic\" size=\"small\">Shows all control panel buttons &amp; items.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->compact_view_toggle_button), "<span weight=\"bold\" variant=\"small-caps\">Enlarge control panel.</span>\n<span style=\"italic\" size=\"small\">Shows all control panel buttons &amp; items.</span>");
 		gtk_image_set_from_icon_name(control_panel->compact_view_image, "gtk-fullscreen", ImagesMinimum);
 	}else{
-		gtk_widget_set_tooltip_markup(GTK_WIDGET( control_panel->compact_view_toggle_button), "<span weight=\"light\">Compact control panel.</span>\n<span style=\"italic\" size=\"small\">Shows only enabled control panel buttons &amp; items.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->compact_view_toggle_button), "<span weight=\"light\">Compact control panel.</span>\n<span style=\"italic\" size=\"small\">Shows only enabled control panel buttons &amp; items.</span>");
 		gtk_image_set_from_icon_name(control_panel->compact_view_image, "gtk-leave-fullscreen", ImagesMinimum);
 	}
 }/*control_panel_compact_view_toggled(control_panel->compact_view_toggle_button); */
@@ -588,8 +588,8 @@ static void control_panel_compact_view_display(gboolean compact){
 	g_list_free(l);
 	
 	control_panel_scale(compact);
-	gtk_widget_set_sensitive(GTK_WIDGET( control_panel->update_composition_vbox), TRUE );
-	gtk_widget_show(GTK_WIDGET( control_panel->update_composition_vbox) );
+	gtk_widget_set_sensitive(GTK_WIDGET(control_panel->update_composition_vbox), TRUE );
+	gtk_widget_show(GTK_WIDGET(control_panel->update_composition_vbox) );
 	control_panel_sexy_select();
 }/*control_panel_compact_view_display(TRUE); */
 
@@ -613,7 +613,7 @@ static void control_panel_selected_update_buttons_show(gboolean selected_update,
 	main_window_selected_update_image_menu_items_show(selected_update);
 	GList *l=NULL;
 	for(l=control_panel->selected_update_buttons; l; l=l->next)
-		gtk_widget_set_sensitive(GTK_WIDGET( l->data), selected_update);
+		gtk_widget_set_sensitive(GTK_WIDGET(l->data), selected_update);
 	g_list_free(l);
 	if(selected_update && G_STR_N_EMPTY(user_name) )
 		gtk_toggle_button_set_active( control_panel->best_friend_toggle_button, (online_service_is_user_best_friend(online_service_request_selected_update_get_service(), user_name)) );
@@ -623,11 +623,11 @@ static void control_panel_selected_update_buttons_show(gboolean selected_update,
 static void control_panel_dm_form_set_toggle_and_image(void){
 	if(!gtk_toggle_button_get_active( control_panel->dm_form_active_togglebutton)){
 		debug("Setting ControlPanel's dm form toggle button to enable the DM form.");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET( control_panel->dm_form_active_togglebutton), "<span weight=\"bold\">Compose DM's to any of your friends.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->dm_form_active_togglebutton), "<span weight=\"bold\">Compose DM's to any of your friends.</span>");
 		gtk_image_set_from_icon_name(control_panel->dm_form_active_image, "gtk-edit", ImagesMinimum);
 	}else{
 		debug("Setting ControlPanel's dm form toggle button to disable the DM form.");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET( control_panel->dm_form_active_togglebutton), "<span weight=\"light\">Hide the DM form &amp; area.  You'll still be able to send DMs in the future by clicking this button again.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->dm_form_active_togglebutton), "<span weight=\"light\">Hide the DM form &amp; area.  You'll still be able to send DMs in the future by clicking this button again.</span>");
 		gtk_image_set_from_icon_name(control_panel->dm_form_active_image, "gtk-close", ImagesMinimum);
 	}
 }/*control_panel_dm_form_set_toggle_and_image*/
@@ -636,11 +636,11 @@ static void control_panel_dm_form_activate(gboolean dm_activate){
 	control_panel_dm_form_set_toggle_and_image();
 	
 	if(!dm_activate){
-		gtk_widget_hide(GTK_WIDGET( control_panel->dm_frame));
-		gtk_widget_grab_focus(GTK_WIDGET( control_panel->sexy_entry));
+		gtk_widget_hide(GTK_WIDGET(control_panel->dm_frame));
+		gtk_widget_grab_focus(GTK_WIDGET(control_panel->sexy_entry));
 	}else{
-		gtk_widget_show(GTK_WIDGET( control_panel->dm_frame));
-		gtk_widget_grab_focus(GTK_WIDGET( control_panel->followers_combo_box));
+		gtk_widget_show(GTK_WIDGET(control_panel->dm_frame));
+		gtk_widget_grab_focus(GTK_WIDGET(control_panel->followers_combo_box));
 	}
 }/*control_panel_dm_form_activate*/
 
@@ -654,7 +654,7 @@ static void control_panel_sexy_init(void){
 			FALSE, FALSE, 5
 	);
 	g_object_set(control_panel->sexy_to, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
-	gtk_widget_show(GTK_WIDGET( control_panel->sexy_to));
+	gtk_widget_show(GTK_WIDGET(control_panel->sexy_to));
 	
 	debug("Creating Tweet's title area, 'control_panel->sexy_from', using sexy label interface.");
 	control_panel->sexy_from=label_new();
@@ -668,7 +668,7 @@ static void control_panel_sexy_init(void){
 	g_object_set(control_panel->update_datetime_label, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	
 	g_object_set(control_panel->sexy_from, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
-	gtk_widget_show(GTK_WIDGET( control_panel->sexy_from));
+	gtk_widget_show(GTK_WIDGET(control_panel->sexy_from));
 	
 	debug("Creating Tweet's view area, 'control_panel->sexy_update', using sexy label interface.");
 	control_panel->sexy_update=label_new();
@@ -678,14 +678,16 @@ static void control_panel_sexy_init(void){
 			TRUE, TRUE, 5
 	);
 	g_object_set(control_panel->sexy_update, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
-	gtk_widget_show(GTK_WIDGET( control_panel->sexy_update));
+	gtk_widget_show(GTK_WIDGET(control_panel->sexy_update));
 	
 	debug("Creating Tweet's entry, 'control_panel->sexy_entry', using SexyEntry, and adding it to ControlPanel's 'sexy_entry_combo_box_entry'.");
 	control_panel->sexy_entry=(SexySpellEntry *)sexy_spell_entry_new();
 	control_panel->sexy_entry=g_object_ref_sink(control_panel->sexy_entry);
-	gtk_container_remove(GTK_CONTAINER( control_panel->sexy_entry_combo_box_entry), gtk_bin_get_child(GTK_BIN( control_panel->sexy_entry_combo_box_entry)));
-	gtk_container_add(GTK_CONTAINER( control_panel->sexy_entry_combo_box_entry), GTK_WIDGET(control_panel->sexy_entry));
-	gtk_widget_show(GTK_WIDGET( control_panel->sexy_entry));
+	gtk_container_remove(GTK_CONTAINER(control_panel->sexy_entry_combo_box_entry), gtk_bin_get_child(GTK_BIN(control_panel->sexy_entry_combo_box_entry)));
+	gtk_container_add(GTK_CONTAINER(control_panel->sexy_entry_combo_box_entry), GTK_WIDGET(control_panel->sexy_entry));
+	gtk_widget_set_sensitive(GTK_WIDGET(control_panel->sexy_entry_combo_box_entry), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(control_panel->sexy_entry), TRUE);
+	gtk_widget_show(GTK_WIDGET(control_panel->sexy_entry));
 		
 	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(control_panel_sexy_position_store), NULL);
 	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
@@ -853,12 +855,12 @@ static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKe
 
 void control_panel_beep(void){
 	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
-		gtk_widget_error_bell(GTK_WIDGET( control_panel->sexy_entry));
+		gtk_widget_error_bell(GTK_WIDGET(control_panel->sexy_entry));
 }/*control_panel_beep*/
 
 void control_panel_sexy_select(void){
-	if(gtk_widget_has_focus( GTK_WIDGET( control_panel->sexy_entry))) return;
-	gtk_widget_grab_focus(GTK_WIDGET( control_panel->sexy_entry));
+	if(gtk_widget_has_focus( GTK_WIDGET(control_panel->sexy_entry))) return;
+	gtk_widget_grab_focus(GTK_WIDGET(control_panel->sexy_entry));
 	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), (sexy_position ?sexy_position :-1) );
 }/*control_panel_sexy_select*/
 
@@ -930,14 +932,14 @@ void control_panel_send(GtkWidget *activated_widget){
 		return;
 	}
 	
-	if(activated_widget==GTK_WIDGET( control_panel->sexy_dm_button) ){
+	if(activated_widget==GTK_WIDGET(control_panel->sexy_dm_button) ){
 		const gchar *user_name;
 		if(!(( user_name=online_service_request_selected_update_get_user_name()) && G_STR_N_EMPTY(user_name) )) return control_panel_beep();
 		control_panel_sexy_send( online_service_request_selected_update_get_service(), user_name);
 		return;
 	}
 	
-	if((activated_widget==GTK_WIDGET( control_panel->followers_send_dm)) &&(GTK_WIDGET_IS_SENSITIVE( control_panel->followers_combo_box)) &&G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) ) ){
+	if((activated_widget==GTK_WIDGET(control_panel->followers_send_dm)) &&(GTK_WIDGET_IS_SENSITIVE(control_panel->followers_combo_box)) &&G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) ) ){
 		uber_free(user_name);
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		User *user=NULL;
@@ -1004,7 +1006,7 @@ void control_panel_sexy_send_dm(void){
 	if( (service=online_service_request_selected_update_get_service()) && G_STR_N_EMPTY( (user_name=online_service_request_selected_update_get_user_name()) ) )
 		return control_panel_sexy_send(service, user_name);
 	
-	if( (GTK_WIDGET_IS_SENSITIVE( control_panel->followers_combo_box)) && G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) )  )
+	if( (GTK_WIDGET_IS_SENSITIVE(control_panel->followers_combo_box)) && G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) )  )
 		return control_panel_send( GTK_WIDGET(control_panel->followers_send_dm) );
 	
 	control_panel_beep();

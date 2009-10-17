@@ -94,7 +94,8 @@ typedef enum _UpdateViewerListStoreColumn{		/***********************************
 	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
 	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
 	STRING_RCPT,					/* 	OnlineService key To: <user@service>					*/
-	GINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the acciated tree view. */
+	GINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the sorted tree model.  */
+	GINT_LIST_STORE_INDEX,				/*	The associated order/place this item appears in the list store.         */
 	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
 							/********************************************************************************/
 } UpdateViewerListStoreColumn;

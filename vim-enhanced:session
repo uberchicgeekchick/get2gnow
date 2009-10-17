@@ -1,0 +1,16 @@
+#!/bin/tcsh -f
+set my_editor = "`printf "\""${0}"\"" | sed 's/.*\/\([^\.]\+\).*/\1/g'`"
+switch ( "${my_editor}" )
+case "connectED":
+case "gedit":
+	breaksw
+case "vi":
+case "vim":
+case "vim-enhanced":
+default:
+	set my_editor = `printf "%s -p" "vim-enhanced"`
+	breaksw
+endsw
+
+${my_editor} "./src/best-friends.c" "./src/best-friends.h" "./src/online-service.c" "./src/online-service-request.c" "./src/online-services.c" "./src/online-service-wrapper.c" "./src/online-service-wrapper.h" "./src/parser.c" "./src/update-viewer.c" "./src/update-viewer.h" "./src/users.c"
+
