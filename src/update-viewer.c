@@ -562,12 +562,13 @@ static void update_viewer_check_updates(UpdateViewer *update_viewer){
 		case	Faves:	case BestFriends:
 		case	Users:
 			update_viewer_check_inbox(update_viewer);
-			break;
+			return;
 		
 		case	Tweets:	case Timelines:
 		case	Searches:	case Groups:
 		case	Archive:
 			update_viewer_check_maximum_updates(update_viewer);
+			return;
 		
 		case	None: default:
 			return;
@@ -692,6 +693,7 @@ static void update_viewer_check_inbox(UpdateViewer *update_viewer){
 		
 		case Users:
 			update_expiration=86400;
+			break;
 		
 		case	None:	case	Tweets:
 		case	Searches:	case Groups:
@@ -848,7 +850,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 	
 	gboolean	unread_found=FALSE;
 	
-	for(gint i=this->total-1; i>=0; i--){
+	for(gint i=0; i<this->total; i++){
 		gint created_ago=0;
 		gboolean unread=TRUE;
 		OnlineService	*service=NULL;
