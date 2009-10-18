@@ -655,12 +655,12 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-	update_viewer_update_age(update_viewer, 0);
 	if(unread_found)
 		if(this->unread_updates)
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
+	update_viewer_update_age(update_viewer, 0);
 }/*update_viewer_check_maximum_updates(update_viewer);*/
 
 static void update_viewer_check_inbox(UpdateViewer *update_viewer){
@@ -1597,6 +1597,9 @@ static void update_viewer_find_selected_update_index(UpdateViewer *update_viewer
 		
 		online_service_update_ids_check( service2, this->timeline, index_update_id, FALSE );
 		best_friends_check_update_ids( service2, user_name, index_update_id );
+		gchar *user_timeline=g_strdup_printf("/%s.xml", user_name);
+		online_service_update_ids_check( service2, user_timeline, index_update_id, FALSE );
+		uber_free(user_timeline);
 		online_services_best_friends_list_store_mark_as_read(service2, user_name, index_update_id, main_window_get_best_friends_list_store() );
 		
 		gtk_tree_path_free(path1);
