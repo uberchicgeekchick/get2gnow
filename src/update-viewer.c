@@ -857,7 +857,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		gchar *created_at_str=NULL, *created_how_long_ago=NULL;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model_sort, iter, path))){
+		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
 			debug("Retrieving iter from path to index %d failed.  Unable to update row's created_ago time.", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
@@ -866,7 +866,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		
 		gint list_store_index=-1, selected_index=-1;
 		gtk_tree_model_get(
-					this->tree_model_sort, iter,
+					this->tree_model, iter,
 						STRING_CREATED_AT, &created_at_str,
 						ONLINE_SERVICE, &service,
 						GINT_SELECTED_INDEX, &selected_index,
@@ -874,19 +874,6 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 						GINT_LIST_STORE_INDEX, &list_store_index,
 					-1
 		);
-		
-		uber_free(iter);
-		gtk_tree_path_free(path);
-		iter=g_new0(GtkTreeIter, 1);
-		
-		path=gtk_tree_path_new_from_indices(list_store_index, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
-			debug("Retrieving iter from path to index %d failed.  Unable to get list_store_index from tree_model.", list_store_index);
-			uber_free(created_at_str);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
 		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
