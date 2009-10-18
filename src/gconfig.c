@@ -169,7 +169,7 @@ static void gconfig_suggest_sync(const gchar *gtype, const gchar *key){
 }/*gconfig_suggest_sync(key);*/
 
 gboolean gconfig_set_int(const gchar *key, gint value){
-	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
+	if(G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
 		cached_int_value=value;
 	debug("Setting int:'%s' to %d", key, value);
 	GError *error=NULL;
@@ -183,7 +183,7 @@ gboolean gconfig_set_int(const gchar *key, gint value){
 }/*gconfig_get_int(key, int);*/
 
 gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_int){
-	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
+	if(G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
 		return cached_int_value;
 	
 	GConfValue *gconf_value=NULL;
@@ -228,7 +228,7 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 
 
 gboolean gconfig_get_int(const gchar *key, gint *value){
-	if( G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) ){
+	if(G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) ){
 		*value=cached_int_value;
 		return TRUE;
 	}
@@ -251,7 +251,7 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 }/*gconfig_get_int(key, &int);*/
 
 gboolean gconfig_set_float(const gchar *key, gfloat value){
-	if( G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) )
+	if(G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) )
 		cached_float_value=value;
 	debug("Setting: '%s' to %f [type: float]", key, value);
 	GError *error=NULL;
@@ -265,7 +265,7 @@ gboolean gconfig_set_float(const gchar *key, gfloat value){
 }/*gconfig_get_float(key, float);*/
 
 gboolean gconfig_get_float(const gchar *key, gfloat *value){
-	if( G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) ){
+	if(G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) ){
 		*value=cached_float_value;
 		return TRUE;
 	}
@@ -292,7 +292,7 @@ gboolean gconfig_get_float(const gchar *key, gfloat *value){
 }/*gconfig_get_float(key, &float);*/
 
 gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
-	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
+	if(G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
 		return cached_bool_value;
 	
 	GConfValue *gconf_value=NULL;
@@ -336,7 +336,7 @@ gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
 }/*gconfig_if_bool(key, default_boolean);*/
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
-	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
+	if(G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
 		cached_bool_value=value;
 	
 	debug("Setting bool:'%s' to %s.", key, (value ? "TRUE" : "FALSE"));
@@ -352,7 +352,7 @@ gboolean gconfig_set_bool(const gchar *key, gboolean value){
 }/*gconfig_set_bool(key, boolean);*/
 
 gboolean gconfig_get_bool(const gchar *key, gboolean *value){
-	if( G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) ){
+	if(G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) ){
 		(*value)=cached_bool_value;
 		return TRUE;
 	}
@@ -375,7 +375,7 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 }/*gconfig_get_bool(key, &boolean);*/
 
 gboolean gconfig_set_string(const gchar *key, const gchar *value){
-	if( G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
+	if(G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
 		uber_free(cached_string_value);
 		cached_string_value=g_strdup(value);
 	}
@@ -392,7 +392,7 @@ gboolean gconfig_set_string(const gchar *key, const gchar *value){
 }/*gconfig_set_string(key, string);*/
 
 gboolean gconfig_get_string(const gchar *key, gchar **value){
-	if( G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
+	if(G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
 		*value=g_strdup(cached_string_value);
 		return TRUE;
 	}

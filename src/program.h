@@ -112,7 +112,7 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef uber_slist_free
-#	define uber_slist_free(l)				{ g_slist_free(l); l=NULL; }
+#	define uber_slist_free(sl)				{ g_slist_free(sl); sl=NULL; }
 #endif
 
 #ifndef uber_object_unref
@@ -124,19 +124,42 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef	gtk_widget_is_visible
-#	define	gtk_widget_is_visible(widget)			program_gtk_widget_get_gboolean_property_value( widget, "visible" )
+#	define	gtk_widget_is_visible(widget)			program_gtk_widget_get_gboolean_property_value(widget, "visible")
 #endif
 
 #ifndef	gtk_widget_is_sensitive
-#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_gboolean_property_value( widget, "sensitive" )
+#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_gboolean_property_value(widget, "sensitive")
 #endif
 
 #ifndef	gtk_widget_has_focus
-#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value( widget, "has-focus" )
+#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value(widget, "has-focus")
+#endif
+
+#ifndef	gtk_tree_view_column_toggle_visibility
+#	define	gtk_tree_view_column_toggle_visibility(tree_view_column)								\
+	G_STMT_START{															\
+		if(!( tree_view_column != NULL && GTK_IS_TREE_VIEW_COLUMN(tree_view_column) )) return FALSE;				\
+		gtk_tree_view_column_set_visible(tree_view_column, !gtk_tree_view_column_get_visible(tree_view_column) );		\
+		return gtk_tree_view_column_get_visible(tree_view_column);								\
+	}G_STMT_END
+#endif
+
+#ifndef gtk_word_wrap_tree_view_column
+#define gtk_word_wrap_tree_view_column(tree_view_column, cell_renderer_text, wrap_width)						\
+	G_STMT_START{															\
+		if(!(															\
+			tree_view_column != NULL && cell_renderer_text != NULL								\
+			&& GTK_IS_TREE_VIEW_COLUMN(tree_view_column)									\
+			&& GTK_IS_CELL_RENDERER_TEXT(cell_renderer_text)								\
+			&& gtk_tree_view_column_get_visible(tree_view_column)								\
+			&& gtk_tree_view_column_get_width(tree_view_column) > wrap_width						\
+		)) return;														\
+		g_object_set(cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(tree_view_column))-wrap_width), NULL);	\
+	}G_STMT_END
 #endif
 
 #ifndef	gtk_widget_toggle_visibility
-#	define	gtk_widget_toggle_visibility(widget)		program_gtk_widget_toggle_visibility( widget )
+#	define	gtk_widget_toggle_visibility(widget)		program_toggle_visibility_gtk_widget(widget)
 #endif
 
 #ifndef	uber_g_str_equal
@@ -181,7 +204,8 @@ gchar *program_gdouble_drop_precision(const gdouble gdouble_value);
 gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1, ...);
 
 gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property);
-gboolean program_gtk_widget_toggle_visibility( GtkWidget *widget );
+gboolean program_toggle_visibility_gtk_tree_view_column(GtkTreeViewColumn *tree_view_column);
+gboolean program_toggle_visibility_gtk_widget( GtkWidget *widget);
 void program_timeout_remove(guint *id, const gchar *usage);
 
 void get2gnow_program_deinit(void);

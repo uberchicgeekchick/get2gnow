@@ -53,6 +53,12 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
+#include <glib.h>
+#include <glib/gi18n.h>
+#include <glib/gprintf.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+
 #include "program.h"
 #include "template.h"
 

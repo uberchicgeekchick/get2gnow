@@ -59,7 +59,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="separator3">
+                      <object class="GtkSeparatorMenuItem" id="network_menue_connection_separator">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -93,7 +93,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="separator7">
+                      <object class="GtkSeparatorMenuItem" id="tabs_menu_friends_separator">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -112,7 +112,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem2">
+                      <object class="GtkSeparatorMenuItem" id="tabs_menu_my_timelines_separator">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -124,15 +124,15 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="separator8">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkCheckMenuItem" id="tabs_my_timeline">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_My Updates</property>
                         <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="tabs_menu_public_timeline_separator">
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
@@ -182,8 +182,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -191,144 +191,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem4">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="accounts_image_menu_item">
-                        <property name="label" translatable="yes">_Accounts</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Setup your accounts and online services.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">accounts_menu_accounts_image</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="select_service_image_menu_item">
-                        <property name="label" translatable="yes">_Select Default Account</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Select the default account that you would like to use when sending Direct Messages, Managing friends and followers, &amp; viewing friends tweets.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">accounts_menu_select_default_account_image</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem8">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="preferences">
-                        <property name="label" translatable="yes">Prefere_nces</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Setup your prefereces &amp; options.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">accounts_menu_preferences_image</property>
-                        <property name="use_stock">False</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="view">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_View</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="view_menu">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_toolbar_main_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Main Toolbar</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_toolbar_tabs_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Tabs Toolbars</property>
-                        <property name="use_underline">True</property>
-                        <property name="active">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="view_menu_best_friends_vbar_separator">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_best_friends_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">My _Best Friends</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="view_menu_control_panel_separator">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_control_panel_floating_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Floating Control Panel</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_control_panel_compact_view_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Compact Control Panel</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="online_service_request">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Tools</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="online_service_request_menu">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_friends_manager">
-                        <property name="label" translatable="yes">Friends _Manager</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">friends_menu_friends_manager_image</property>
-                        <property name="use_stock">False</property>
-                        <accelerator key="m" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_following_viewer">
-                        <property name="label" translatable="yes">Update _Viewer</property>
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Select someone you follow &amp; view their updates.</property>
-                        <property name="use_underline">True</property>
-                        <property name="image">friends_menu_control_panel_image</property>
-                        <property name="use_stock">False</property>
-                        <accelerator key="t" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
+                      <object class="GtkSeparatorMenuItem" id="edit_menu_composition_separator">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -372,19 +235,19 @@
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkSeparatorMenuItem" id="menuitem7">
+                                      <object class="GtkSeparatorMenuItem" id="selected_update_author_best_friend_separator_menu_item">
                                         <property name="visible">True</property>
                                       </object>
                                     </child>
                                     <child>
                                       <object class="GtkCheckMenuItem" id="selected_update_author_best_friend_image_menu_item">
                                         <property name="visible">True</property>
-                                        <property name="label" translatable="yes">This Author's one of your _Best Friend</property>
+                                        <property name="label" translatable="yes">_Best Friend the author</property>
                                         <property name="use_underline">True</property>
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkSeparatorMenuItem" id="menuitem6">
+                                      <object class="GtkSeparatorMenuItem" id="selected_update_author_relationship_separator_menu_item">
                                         <property name="visible">True</property>
                                       </object>
                                     </child>
@@ -420,7 +283,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkSeparatorMenuItem" id="menuitem3">
+                              <object class="GtkSeparatorMenuItem" id="selected_update_actions_separator_menu_item">
                                 <property name="visible">True</property>
                               </object>
                             </child>
@@ -461,7 +324,159 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem5">
+                      <object class="GtkSeparatorMenuItem" id="edit_menu_accounts_separator">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="accounts_image_menu_item">
+                        <property name="label" translatable="yes">_Accounts</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Setup your accounts and online services.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">accounts_menu_accounts_image</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="select_service_image_menu_item">
+                        <property name="label" translatable="yes">_Select Default Account</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Select the default account that you would like to use when sending Direct Messages, Managing friends and followers, &amp; viewing friends tweets.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">accounts_menu_select_default_account_image</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="edit_menu_preferences_separator">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="preferences">
+                        <property name="label" translatable="yes">Prefere_nces</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Setup your prefereces &amp; options.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">accounts_menu_preferences_image</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="view">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_View</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="view_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_toolbar_main_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Main Toolbar</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_toolbar_tabs_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Tabs Toolbars</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="view_menu_best_friends_separator">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_best_friends_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My Best _Friends</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="view_menu_ui_view_separator">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_control_panel_floating_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">F_loating Control Panel</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_control_panel_compact_view_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Compact Control Panel</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="view_menu_columns_view_separator">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_from_colums_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Hides or displays the 'From' column in all tabs.</property>
+                        <property name="label" translatable="yes">_Whom an update's 'From'.</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_rcpt_colums_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Hides or displays the 'RCPT' column in all tabs.</property>
+			<property name="label" translatable="yes">Which _account an update's To/RCPT'.</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="online_service_request">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Tools</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="online_service_request_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_menu_friends_manager">
+                        <property name="label" translatable="yes">Friends _Manager</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">friends_menu_friends_manager_image</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="m" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_menu_following_viewer">
+                        <property name="label" translatable="yes">Update _Viewer</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Select someone you follow &amp; view their updates.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">friends_menu_control_panel_image</property>
+                        <property name="use_stock">False</property>
+                        <accelerator key="t" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="tools_menue_mini_apps_separator_menu_item">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -496,7 +511,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="menuitem1">
+                      <object class="GtkSeparatorMenuItem" id="view_menu_relationship_separator">
                         <property name="visible">True</property>
                       </object>
                     </child>
@@ -670,7 +685,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSeparatorToolItem" id="toolbar_separator_2">
+                  <object class="GtkSeparatorToolItem" id="main_toolbar_accounts_separator">
                     <property name="visible">True</property>
                   </object>
                   <packing>
@@ -691,7 +706,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSeparatorToolItem" id="toolbutton1">
+                  <object class="GtkSeparatorToolItem" id="main_toolbar_preferences_separator">
                     <property name="visible">True</property>
                   </object>
                   <packing>
@@ -912,6 +927,7 @@
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -975,6 +991,7 @@
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">5</property>
                           </packing>
                         </child>
@@ -1002,6 +1019,7 @@
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">7</property>
                           </packing>
                         </child>
@@ -1035,7 +1053,7 @@
                         <property name="visible">True</property>
                         <property name="homogeneous">True</property>
                         <child>
-                          <object class="GtkHSeparator" id="hseparator1">
+                          <object class="GtkHSeparator" id="best_friends_management_horizontal_separator">
                             <property name="visible">True</property>
                           </object>
                           <packing>
@@ -1216,18 +1234,6 @@
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
   </object>
-  <object class="GtkImage" id="image5">
-    <property name="visible">True</property>
-    <property name="stock">gtk-undo</property>
-  </object>
-  <object class="GtkImage" id="compos_menu_forward_update_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-media-next</property>
-  </object>
-  <object class="GtkImage" id="help_menu_about_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-about</property>
-  </object>
   <object class="GtkImage" id="image7">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
@@ -1251,5 +1257,17 @@
   <object class="GtkImage" id="image9">
     <property name="visible">True</property>
     <property name="stock">gtk-stop</property>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="stock">gtk-undo</property>
+  </object>
+  <object class="GtkImage" id="compos_menu_forward_update_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-media-next</property>
+  </object>
+  <object class="GtkImage" id="help_menu_about_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-about</property>
   </object>
 </interface>

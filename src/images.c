@@ -100,7 +100,7 @@ GtkImage *images_get_expanded_image_from_stock( const gchar *stock_image_name ){
 
 GtkImage *images_get_maximized_image_from_stock( const gchar *stock_image_name ){
 	return GTK_IMAGE( gtk_image_new_from_stock( stock_image_name, ImagesMaximum ) );
-}/*images_get_maximized_image_from_stock( "gtk-dialog-info" );*/
+}/*images_get_maximized_image_from_stock("gtk-dialog-info");*/
 
 GtkImage *images_get_default_image_from_stock( const gchar *stock_image_name ){
 	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesDefault );
@@ -108,7 +108,7 @@ GtkImage *images_get_default_image_from_stock( const gchar *stock_image_name ){
 
 GtkImage *images_get_dialog_image_from_stock( const gchar *stock_image_name ){
 	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesDialog );
-}/*images_get_dialog_image_from_stock( "gtk-dialog-info" );*/
+}/*images_get_dialog_image_from_stock("gtk-dialog-info");*/
 
 GtkImage *images_get_minimized_image_from_stock( const gchar *stock_image_name ){
 	return (GtkImage *)gtk_image_new_from_stock( stock_image_name, ImagesMinimum );
@@ -117,9 +117,9 @@ GtkImage *images_get_minimized_image_from_stock( const gchar *stock_image_name )
 GtkImage *images_get_image_from_filename( gchar *image_filename ){
 	images_validate_filename(&image_filename);
 	
-	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename( image_filename );
-	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
-	g_object_unref( pixbuf );
+	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename(image_filename);
+	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf(pixbuf) );
+	g_object_unref(pixbuf);
 	return image;
 }//images_get_image_from_file
 
@@ -131,8 +131,8 @@ GtkImage *images_get_scaled_image_from_filename( gchar *image_filename, gint wid
 	images_validate_width(&width);
 	images_validate_height(&height);
 	GdkPixbuf *pixbuf=images_get_scaled_pixbuf_from_filename( image_filename, width, height );
-	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf( pixbuf ) );
-	g_object_unref( pixbuf );
+	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf(pixbuf) );
+	g_object_unref(pixbuf);
 	return image;
 }//images_get_image_from_file
 
@@ -241,7 +241,7 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint w
 	images_validate_filename(&image_filename);
 	
 	if( width == ImagesUnscaled || height == ImagesUnscaled )
-		return images_get_unscaled_pixbuf_from_filename( image_filename );
+		return images_get_unscaled_pixbuf_from_filename(image_filename);
 	
 	images_validate_width(&width);
 	images_validate_height(&height);
@@ -272,7 +272,7 @@ GdkPixbuf *images_get_and_scale_pixbuf_from_filename( gchar *image_filename, gin
 		return NULL;
 	
 	resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR );
-	g_object_unref( pixbuf );
+	g_object_unref(pixbuf);
 	return resized;
 }//images_get_and_scale_pixbuf_from_file
 

@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#010001a26"
+PACKAGE_VERSION="#010001a28"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
@@ -798,6 +798,7 @@ GTK_VERSION_REQUIRED
 GCONF_VERSION_REQUIRED
 LIBGIO_VERSION_REQUIRED
 LIBCANBERRA_VERSION_REQUIRED
+gtk_update_icon_cache
 exec_prefix
 prefix
 program_transform_name
@@ -22788,6 +22789,12 @@ fi
 		DISABLE_DEPRECATED=""
 	fi
 
+if test -e ${datarootdir}/hicolor/icons/apps/get2gnow.svg ; then
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
+else
+	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"
+fi
+
 
 
 # Check whether --enable-gnome_keyring was given.
@@ -25422,6 +25429,7 @@ GTK_ICON_UPDATE_CACHE!$ac_delim
 GCONF_VERSION_REQUIRED!$GCONF_VERSION_REQUIRED$ac_delim
 LIBGIO_VERSION_REQUIRED!$LIBGIO_VERSION_REQUIRED$ac_delim
 LIBCANBERRA_VERSION_REQUIRED!$LIBCANBERRA_VERSION_REQUIRED$ac_delim
+gtk_update_icon_cache!$gtk_update_icon_cache$ac_delim
 exec_prefix!$exec_prefix$ac_delim
 prefix!$prefix$ac_delim
 program_transform_name!$program_transform_name$ac_delim
@@ -25512,7 +25520,7 @@ CPP!$CPP$ac_delim
 CXX!$CXX$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 104; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 105; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

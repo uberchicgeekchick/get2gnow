@@ -94,7 +94,7 @@ void main_window_disconnect(void);
 void main_window_create(void);
 MainWindow *main_window_get(void);
 
-gboolean main_window_tabs_init( void );
+gboolean main_window_tabs_init(void);
 void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open);
 void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 

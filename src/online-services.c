@@ -134,14 +134,14 @@ OnlineServices *online_services_init(void){
 	
 	gconfig_get_list_string(ONLINE_SERVICES_ACCOUNTS, &services->keys);
 	
-	for( k=services->keys; k; k=k->next ){
+	for(k=services->keys; k; k=k->next){
 		account_key=(gchar *)k->data;
 		if(!g_strrstr(account_key, "@")){
 			debug("**ERROR:** Invalid OnlineService: <%s> - skipping.", account_key);
 			continue;
 		}
 		debug("Loading '%s' account.", account_key);
-		if(!(service=online_service_open( (const gchar *)account_key ))) continue;
+		if(!(service=online_service_open( (const gchar *)account_key))) continue;
 		
 		services->accounts=g_list_append(services->accounts, service);
 		services->accounts=g_list_last(services->accounts);
@@ -238,13 +238,13 @@ gint online_services_has_connected(guint count){
 static gint online_services_cmp_count(guint compare, guint count){
 	if(!compare) return -2;
 	if(!count) return compare;
-	if(compare == count ) return 0;
-	if(compare > count ) return -1;
+	if(compare == count) return 0;
+	if(compare > count) return -1;
 	return 1;
 }/*online_services_has_connected(1);*/
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect){
-	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) )){
+	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name))){
 		return NULL;
 	}
 	
@@ -257,7 +257,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 		}else{
 			debug("Saving existing service: <%s>.", decoded_key);
 			online_service_disconnect(service, FALSE);
-			if( (online_service_save(service, password, enabled, https, auto_connect)) )
+			if((online_service_save(service, password, enabled, https, auto_connect)))
 				if(online_service_reconnect(service))
 					return service;
 			debug("Unable to save existing OnlineService for: <%s>.", decoded_key);
@@ -276,21 +276,21 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	debug("New service: <%s> created.  OnlineServices total: %d.", decoded_key, services->total);
 	
 	debug("Adding <%s> to OnlineServices' keys.", decoded_key);
-	if(!( (services->keys=g_slist_append(services->keys, decoded_key)) )){
+	if(!( (services->keys=g_slist_append(services->keys, decoded_key)))){
 		debug("**ERROR**: Failed to append new service's key: <%s>, to OnlineServices' keys.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
 	debug("Saving accounts & services list: '%s'.", ONLINE_SERVICES_ACCOUNTS);
-	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
+	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
 		debug("**ERROR**: Failed to save new service: <%s>, couldn't save gconf's services list.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
 	debug("Adding new service: <%s> to OnlineServices.", decoded_key);
-	if(!( (services->accounts=g_list_append(services->accounts, service)) )){
+	if(!( (services->accounts=g_list_append(services->accounts, service)))){
 		debug("**ERROR**: Failed to add: <%s>, to OnlineServices' accounts.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
@@ -302,7 +302,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	services->accounts=g_list_first(services->accounts);
 	
 	debug("Saving OnlineService: <%s> reloaded from OnlineServices accounts.", decoded_key);
-	if(!( online_service_save(service, password, enabled, https, auto_connect) )){
+	if(!( online_service_save(service, password, enabled, https, auto_connect))){
 		debug("**ERROR**: Failed saving new service: <%s>.", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
@@ -320,7 +320,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 			return NULL;
 		}
 		
-		if( services->total<2 && !recreating )
+		if(services->total<2 && !recreating)
 			main_window_tabs_init();
 		main_window_state_on_connection(TRUE);
 		
@@ -355,7 +355,7 @@ void online_services_delete_service(OnlineService *service){
 	services->keys=keys;
 	
 	debug("Saving re-built OnlineServices' keys.");
-	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)) )){
+	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
 		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list.", service_key);
 		return;
 	}
@@ -415,7 +415,7 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 	debug("Loading services into tree view. total services: '%d'.", services->total);
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		OnlineService *service=(OnlineService *)accounts->data;
-		if( connected_only && !service->connected ) continue;
+		if(connected_only && !service->connected) continue;
 		
 		debug("Appending account: '%s'; server: %s.", service->key, service->uri);
 		iter=g_new0(GtkTreeIter, 1);
@@ -473,17 +473,17 @@ OnlineService *online_services_connected_get_first(void){
 	return NULL;
 }/*online_services_connected_get_first();*/
 
-OnlineService *online_services_get_online_service_by_guid(const gchar *online_service_guid ){
+OnlineService *online_services_get_online_service_by_guid(const gchar *online_service_guid){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
 		service=(OnlineService *)accounts->data;
-		if(!strcasecmp( service->guid, online_service_guid ) )
+		if(!strcasecmp( service->guid, online_service_guid))
 			return service;
 	g_list_free(accounts);
 	return NULL;
-}/*online_services_get_online_service_by_guid( Online_services, online_service_guid );*/
+}/*online_services_get_online_service_by_guid(Online_services, online_service_guid);*/
 
 void online_services_increment_total(const gchar *service_guid){
 	services->total++;
@@ -496,7 +496,7 @@ OnlineService *online_services_connected_get_last(void){
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
-		if(!(service->connected ))
+		if(!(service->connected))
 			service=NULL;
 	}
 	return service;
@@ -556,7 +556,7 @@ gssize online_services_get_length_of_longest_replacement(void){
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
 		if(service->connected)
-			if( (replacement_length=strlen( (replace_with==1?service->nick_name:service->user_name) )) > longest_replacement_length)
+			if((replacement_length=strlen((replace_with==1?service->nick_name:service->user_name))) > longest_replacement_length)
 				longest_replacement_length=replacement_length;
 	}
 	
@@ -566,37 +566,37 @@ gssize online_services_get_length_of_longest_replacement(void){
 
 
 
-gint online_services_best_friends_list_store_fill(GtkListStore *list_store ){
+gint online_services_best_friends_list_store_fill(GtkListStore *list_store){
 	GList		*accounts=NULL;
-	gtk_list_store_clear( list_store );
+	gtk_list_store_clear(list_store);
 	services->best_friends_total=0;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		services->best_friends_total+=online_service_best_friends_list_store_fill( (OnlineService *)accounts->data, list_store );
+		services->best_friends_total+=online_service_best_friends_list_store_fill((OnlineService *)accounts->data, list_store);
 	g_list_free(accounts);
 	return services->best_friends_total;
 }/*online_services_best_friends_list_store_fill(list_store);*/
 
 
-gint online_services_best_friends_list_store_validate(GtkListStore *list_store ){
+gint online_services_best_friends_list_store_validate(GtkListStore *list_store){
 	GList		*accounts=NULL;
-	gtk_list_store_clear( list_store );
+	gtk_list_store_clear(list_store);
 	services->best_friends_total=0;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		services->best_friends_total+=online_service_best_friends_list_store_validate( (OnlineService *)accounts->data, list_store );
+		services->best_friends_total+=online_service_best_friends_list_store_validate((OnlineService *)accounts->data, list_store);
 	g_list_free(accounts);
 	return services->best_friends_total;
 }/*online_services_best_friends_list_store_fill();*/
 
 
-void online_services_best_friends_list_store_free(GtkListStore *list_store ){
+void online_services_best_friends_list_store_free(GtkListStore *list_store){
 	GList		*accounts=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		online_service_best_friends_list_store_free( (OnlineService *)accounts->data, list_store );
+		online_service_best_friends_list_store_free((OnlineService *)accounts->data, list_store);
 	g_list_free(accounts);
 }/*online_services_best_friends_list_store_free();*/
 
 static gboolean online_services_best_friends_list_store_get_user_iter(OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeIter **iter){
-	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
+	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
 	
 	OnlineService *service_at_index=NULL;
 	gchar *user_at_index=NULL;
@@ -604,9 +604,9 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, *iter, path))){
-			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path.", user_name, service->guid, i );
+			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path.", user_name, service->guid, i);
 			gtk_tree_path_free(path);
-			uber_free( *iter );
+			uber_free(*iter);
 			continue;
 		}
 		
@@ -616,10 +616,10 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 					STRING_BEST_FRIEND_USER, &user_at_index,
 				-1
 		);
-		if(!( service==service_at_index && !strcasecmp(user_name, user_at_index) )){
+		if(!( service==service_at_index && !strcasecmp(user_name, user_at_index))){
 			gtk_tree_path_free(path);
 			uber_free(user_at_index);
-			uber_free( *iter );
+			uber_free(*iter);
 			continue;
 		}
 		
@@ -628,18 +628,18 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 		uber_free(user_at_index);
 		return TRUE;
 	}
-	debug("Unable to find best friend iter for best friend: %s, on service: <%s>.", user_at_index, service_at_index->guid );
+	debug("Unable to find best friend iter for best friend: %s, on service: <%s>.", user_at_index, service_at_index->guid);
 	uber_free(user_at_index);
-	if( *iter ) uber_free( *iter );
+	if(*iter) uber_free(*iter);
 	return FALSE;
 }/*online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter);*/
 
-gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store ){
-	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
+gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store){
+	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
 	
 	GtkTreeIter *iter=NULL;
 	if(!online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter)){
-		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid );
+		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid);
 		return 0.0;
 	}
 	
@@ -655,7 +655,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 			-1
 	);
 	
-	if(!(unread_update_id && update_id && update_id > unread_update_id )){
+	if(!(unread_update_id && update_id && update_id > unread_update_id)){
 		update_id=unread_update_id;
 	}else{
 		unread_updates++;
@@ -664,7 +664,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 			user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
 		}
 	}
-	debug("Marking best friend: %s(%s), on service <%s>, as having %d unread updates.  Last read update: %f is new than the one current one: %f..", user_at_index, user_name_at_index, service->guid, unread_updates, unread_update_id, update_id );
+	debug("Marking best friend: %s(%s), on service <%s>, as having %d unread updates.  Last read update: %f is new than the one current one: %f..", user_at_index, user_name_at_index, service->guid, unread_updates, unread_update_id, update_id);
 	gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_name_at_index, GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, update_id, GUINT_BEST_FRIENDS_UNREAD_UPDATES, unread_updates, -1);
 	
 	uber_free(iter);
@@ -672,14 +672,14 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	uber_free(user_name_at_index);
 	control_panel_sexy_select();
 	return update_id;
-}/*online_services_best_friends_mark_list_store_as_unread(user_name )*/
+}/*online_services_best_friends_list_store_mark_as_unread(user_name)*/
 
-gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store ){
-	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name) )) return FALSE;
+gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store){
+	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
 	
 	GtkTreeIter *iter=NULL;
 	if(!online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter)){
-		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid );
+		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid);
 		return FALSE;
 	}
 	
@@ -696,10 +696,10 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	gchar		*timeline=g_strdup_printf("/%s.xml", user_at_index);
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	online_service_update_ids_set(service, timeline, ( (update_id>newest_update_id) ?update_id :newest_update_id) , update_id, ( (update_id>oldest_update_id) ?update_id :oldest_update_id) );
+	online_service_update_ids_set(service, timeline, ( (update_id>newest_update_id) ?update_id :newest_update_id) , update_id, ( (update_id>oldest_update_id) ?update_id :oldest_update_id));
 	uber_free(timeline);
 	
-	debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, service->guid );
+	debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, service->guid);
 	gtk_list_store_set(list_store, iter, STRING_BEST_FRIEND_USER_NAME, user_at_index, GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0, GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, unread_update_id, -1);
 	
 	uber_free(iter);
@@ -707,18 +707,18 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	uber_free(user_name_at_index);
 	control_panel_sexy_select();
 	return TRUE;
-}/*online_services_best_friends_list_store_mark_as_read(service, user_name, tree_view, list_store );*/
+}/*online_services_best_friends_list_store_mark_as_read(service, user_name, tree_view, list_store);*/
 
-gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name ){
+gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name){
 	if(G_STR_EMPTY(user_name)) return FALSE;
 	GList		*accounts=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		if( (service==(OnlineService *)accounts->data) && online_service_is_user_best_friend( (OnlineService *)accounts->data, user_name ))
+		if((service==(OnlineService *)accounts->data) && online_service_is_user_best_friend((OnlineService *)accounts->data, user_name))
 			return TRUE;
 	
 	g_list_free(accounts);
 	return FALSE;
-}/*online_services_is_user_best_friend( service, user_name );*/
+}/*online_services_is_user_best_friend(service, user_name);*/
 
 gint online_services_best_friends_total_update(gint best_friends_to_add){
 	return (services->best_friends_total+=best_friends_to_add);

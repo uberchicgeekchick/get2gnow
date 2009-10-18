@@ -218,7 +218,7 @@ static gchar *label_format_user_at_link(OnlineService *service, const gchar *at_
 	gssize end=0;
 	gchar delim;
 	
-	if( (end=(find_first_non_user_name(&users_at[1])+1) ) ){
+	if((end=(find_first_non_user_name(&users_at[1])+1) ) ){
 		delim=users_at[end];
 		users_at[end]='\0';
 	}

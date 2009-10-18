@@ -176,7 +176,7 @@ static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceW
 	if(!(*data)) return;
 	switch(data_processor){
 		case DataFree:
-			uber_free( (*data) );
+			uber_free((*data) );
 			break;
 		case DataSet:
 			*data=g_strdup(*data);

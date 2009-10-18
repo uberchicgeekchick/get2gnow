@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#010001a26"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#010001a28"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -35,6 +35,14 @@ dnl /************************************************************
 dnl  * get2gnow's package, data, & install variables.           *
 dnl  ***********************************************************/
 AC_SUBST(PACKAGE)
+
+
+if test -e ${datarootdir}/hicolor/icons/apps/get2gnow.svg ; then
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
+else
+	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"
+fi
+AC_SUBST(gtk_update_icon_cache)
 
 
 dnl /************************************************************

@@ -138,7 +138,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	if(!( g_strrstr(content_type, "text") || g_strrstr(content_type, "xml") )){
 		debug("**ERROR:** <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further.", uri, content_type );
-		uber_free( content_type );
+		uber_free(content_type);
 		return NULL;
 	}
 	
@@ -336,7 +336,7 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	if(error_free) *error_message=g_strdup("");
 	else{
 		gchar *error_message_swap=g_strdup_printf("OnlineService: <%s> returned: %s(%d) with the error: %s.", service->key, xml->reason_phrase, xml->status_code, *error_message);
-		uber_free( (*error_message) );
+		uber_free((*error_message) );
 		*error_message=error_message_swap;
 		error_message_swap=NULL;
 		debug("%s", *error_message);

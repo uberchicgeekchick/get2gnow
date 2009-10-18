@@ -61,6 +61,7 @@
  ********************************************************/
 #include <libnotify/notify.h>
 #include <gtk/gtk.h>
+#include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 
@@ -183,7 +184,7 @@ void program_timeout_remove(guint *id, const gchar *usage){
 	if(!( *id > 0 )) return;
 	
 	debug("Stopping %s monitoring.  Timeout id: %i.", ( G_STR_N_EMPTY(usage) ?usage :"[unknown pthread timer]" ), (*id));
-	g_source_remove( (*id) );
+	g_source_remove((*id) );
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
 
@@ -196,15 +197,26 @@ gchar *program_gdouble_drop_precision(const gdouble gdouble_value){
 	return gdouble_str;
 }/*program_gdouble_drop_precision();*/
 
-gboolean program_gtk_widget_toggle_visibility( GtkWidget *widget ){
+/*
+ * MACRO: gtk_tree_view_column_toggle_visibility
+ * returns: TRUE or FALSE if the GtkTreeViewColumn's now visibily or not.
+ */
+gboolean program_toggle_visibility_gtk_tree_view_column(GtkTreeViewColumn *tree_view_column){
+	{ g_return_val_if_fail( tree_view_column != NULL, FALSE ); g_return_val_if_fail( GTK_IS_TREE_VIEW_COLUMN(tree_view_column), FALSE ); }
+	gboolean now_visible;
+	gtk_tree_view_column_set_visible(tree_view_column, (now_visible=!gtk_tree_view_column_get_visible(tree_view_column)) );
+	return now_visible;
+}/*program_toggle_visibility_gtk_tree_view_column(tree_view_column);*/
+
+gboolean program_toggle_visibility_gtk_widget(GtkWidget *widget){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
 	gboolean is_visible;
-	if(!( (is_visible=gtk_widget_is_visible( widget )) ))
-		gtk_widget_show( widget );
+	if(!( (is_visible=gtk_widget_is_visible(widget)) ))
+		gtk_widget_show(widget);
 	else
-		gtk_widget_hide( widget );
+		gtk_widget_hide(widget);
 	return !is_visible;
-}/*program_gtk_widget_toggle_visibility( widget );*/
+}/*program_toggle_visibility_gtk_widget(widget);*/
 
 gboolean program_gtk_widget_get_gboolean_property_value( GtkWidget *widget, const gchar *property ){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
@@ -213,9 +225,9 @@ gboolean program_gtk_widget_get_gboolean_property_value( GtkWidget *widget, cons
 	return value;
 }/*program_gtk_widget_get_property(GtkWidget *widget, "has-focus"|"visibility"|"sensitive");
 MACROS:
-	gtk_widget_is_visible(widget) == program_gtk_widget_get_gboolean_property_value( widget, "visibile" )
-	gtk_widget_is_sensitive(widget) == program_gtk_widget_get_gboolean_property_value( widget, "sensitive" )
-	gtk_widget_has_focus(widget) == program_gtk_widget_get_gboolean_property_value( widget, "has-focus" )
+	gtk_widget_is_visible(widget) == program_gtk_widget_get_gboolean_property_value(widget, "visibile")
+	gtk_widget_is_sensitive(widget) == program_gtk_widget_get_gboolean_property_value(widget, "sensitive")
+	gtk_widget_has_focus(widget) == program_gtk_widget_get_gboolean_property_value(widget, "has-focus")
 */
 
 /********************************************************

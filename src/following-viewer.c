@@ -255,7 +255,7 @@ void following_viewer_show(GtkWindow *parent){
 	
 	if(!(following_viewer && following_viewer->viewer ))
 		return following_viewer_setup(parent);
-	gtk_window_present((GTK_WINDOW( following_viewer->viewer )) );
+	gtk_window_present((GTK_WINDOW(following_viewer->viewer)) );
 }/*following_viewer_show*/
 
 
@@ -309,7 +309,7 @@ static void following_viewer_setup(GtkWindow *parent){
 	gtk_window_set_transient_for(GTK_WINDOW(following_viewer->viewer), parent);
 	
 	/* Now that we're done setting up, let's show the widget */
-	gtk_window_present((GTK_WINDOW( following_viewer->viewer )) );
+	gtk_window_present((GTK_WINDOW(following_viewer->viewer)) );
 	
 	main_window_set_statusbar_msg(_("Please wait while the list of every one you\'re following is loaded."));
 	GdkCursor *cursor=gdk_cursor_new(GDK_WATCH);

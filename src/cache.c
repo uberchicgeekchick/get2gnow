@@ -191,7 +191,7 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm
 	
 	const gchar *cache_file=NULL;
 	GDir *cache_dir=g_dir_open(cache_dir_path, 0, NULL);
-	while( (cache_file=g_dir_read_name(cache_dir)) ){
+	while((cache_file=g_dir_read_name(cache_dir)) ){
 		gchar *cache_file_path=g_strdup_printf("%s/%s", cache_dir_path, cache_file);
 		if(g_file_test(cache_file, G_FILE_TEST_IS_REGULAR))
 			cache_file_clean_up(cache_file_path);

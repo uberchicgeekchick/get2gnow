@@ -608,7 +608,7 @@ char *oauth_gen_nonce() {
   static int rndinit = 1;
   const char *chars = "abcdefghijklmnopqrstuvwxyz"
   	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789_";
-  unsigned int max = strlen( chars );
+  unsigned int max = strlen(chars);
   int i, len;
 
   if(rndinit) {srand(time(NULL) 

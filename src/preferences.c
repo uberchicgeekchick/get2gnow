@@ -456,7 +456,7 @@ static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gch
 	g_signal_connect(check_button, "toggled", (GCallback)preferences_toggle_button_toggled_cb, prefs);
 	preferences_widget_sync_bool(key, check_button);
 	
-	if( (id=gconfig_notify_add(g_strdup(key), preferences_notify_bool_cb, check_button)) )
+	if((id=gconfig_notify_add(g_strdup(key), preferences_notify_bool_cb, check_button)) )
 		preferences_add_id(prefs, id);
 }
 
@@ -469,7 +469,7 @@ static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gcha
 
 	g_signal_connect(combo_box, "changed", (GCallback)preferences_string_combo_changed_cb, prefs);
 
-	if( (id=gconfig_notify_add(g_strdup(key), preferences_notify_string_combo_cb, combo_box)) )
+	if((id=gconfig_notify_add(g_strdup(key), preferences_notify_string_combo_cb, combo_box)) )
 		preferences_add_id(prefs, id);
 }
 

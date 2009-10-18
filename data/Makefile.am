@@ -50,7 +50,8 @@ DISTCLEANFILES =						\
 			$(schemas_DATA)
 
 
-gtk_update_icon_cache=gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
+@gtk_update_icon_cache@
+#gtk_update_icon_cache=gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 
 
 main-window.ui: sexy_DATA

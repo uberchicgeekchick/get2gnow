@@ -374,12 +374,12 @@ void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_ge
 	uber_list_free(glist_free);
 	if(users_glist_get_which==GetBoth) return;
 	
-	if( ((users_glist_get_which!=GetFriends)) && (glist_free=online_service_users_glist_get(service, GetFriends)) ){
+	if(((users_glist_get_which!=GetFriends)) && (glist_free=online_service_users_glist_get(service, GetFriends)) ){
 		g_list_foreach(glist_free, (GFunc)user_free, NULL);
 		uber_list_free(glist_free);
 	}
 	
-	if( ((users_glist_get_which!=GetFollowers)) && (glist_free=online_service_users_glist_get(service, GetFollowers)) ){
+	if(((users_glist_get_which!=GetFollowers)) && (glist_free=online_service_users_glist_get(service, GetFollowers)) ){
 		g_list_foreach(glist_free, (GFunc)user_free, NULL);
 		uber_list_free(glist_free);
 	}

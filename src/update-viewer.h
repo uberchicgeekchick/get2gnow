@@ -123,7 +123,9 @@ void update_viewer_update_list_store( UpdateViewer *update_viewer, UpdateViewerL
 void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
 void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *service);
 
-void update_viewer_toggle_toolbar(UpdateViewer *update_viewer);
+gboolean update_viewer_toggle_toolbar(UpdateViewer *update_viewer);
+gboolean update_viewer_toggle_from_column(UpdateViewer *update_viewer);
+gboolean update_viewer_toggle_rcpt_column(UpdateViewer *update_viewer);
 
 void update_viewer_mark_as_read(UpdateViewer *update_viewer);
 

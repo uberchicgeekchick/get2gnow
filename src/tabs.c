@@ -112,7 +112,7 @@ void tabs_init(GtkNotebook *notebook){
 	tabs=g_new0(TimelineTabs, 1);
 	
 	tabs->notebook=notebook;
-	if(gtk_notebook_get_n_pages( tabs->notebook) )
+	if(gtk_notebook_get_n_pages(tabs->notebook) )
 		gtk_notebook_remove_page(tabs->notebook, 0);
 	
 	g_signal_connect( tabs->notebook, "switch-page", (GCallback)tabs_mark_as_read, NULL );
@@ -127,7 +127,7 @@ static UpdateViewer *tabs_new_tab(const gchar *timeline, OnlineService *service 
 	update_viewer=tabs->tabs->data;
 	tabs->tabs=g_list_first(tabs->tabs);
 	
-	gint page=gtk_notebook_append_page_menu(tabs->notebook, GTK_WIDGET(update_viewer_get_child( update_viewer)), GTK_WIDGET(update_viewer_get_tab( update_viewer)), GTK_WIDGET(update_viewer_get_menu( update_viewer)) );
+	gint page=gtk_notebook_append_page_menu(tabs->notebook, GTK_WIDGET(update_viewer_get_child(update_viewer)), GTK_WIDGET(update_viewer_get_tab(update_viewer)), GTK_WIDGET(update_viewer_get_menu(update_viewer)) );
 	update_viewer_set_page(update_viewer, page);
 	gtk_notebook_set_current_page( tabs->notebook, page );
 	
@@ -167,7 +167,7 @@ static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guin
 }/*tabs_mark_as_read(tabs->notebook, page, 0, main_window);*/
 
 UpdateViewer *tabs_get_next(void){
-	if(gtk_notebook_get_n_pages( tabs->notebook)==1) return tabs_get_current();
+	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
 	UpdateViewer *current=tabs_get_current();
 	gtk_notebook_next_page(tabs->notebook);
 	UpdateViewer *next=tabs_get_current();
@@ -181,7 +181,7 @@ UpdateViewer *tabs_get_current(void){
 }/*tabs_current()*/
 
 UpdateViewer *tabs_get_previous(void){
-	if(gtk_notebook_get_n_pages( tabs->notebook)==1) return tabs_get_current();
+	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
 	UpdateViewer *current=tabs_get_current();
 	gtk_notebook_prev_page(tabs->notebook);
 	UpdateViewer *previous=tabs_get_current();
@@ -289,6 +289,20 @@ void tabs_toggle_toolbars(void){
 		update_viewer_toggle_toolbar((UpdateViewer *)t->data);
 	g_list_free(t);
 }/*tabs_toggle_toolbars();*/
+
+void tabs_toggle_from_columns(void){
+	GList *t=NULL;
+	for(t=tabs->tabs; t; t=t->next)
+		update_viewer_toggle_from_column((UpdateViewer *)t->data);
+	g_list_free(t);
+}/*tabs_toggle_from_columns();*/
+
+void tabs_toggle_rcpt_columns(void){
+	GList *t=NULL;
+	for(t=tabs->tabs; t; t=t->next)
+		update_viewer_toggle_rcpt_column((UpdateViewer *)t->data);
+	g_list_free(t);
+}/*tabs_toggle_rcpt_columns();*/
 
 void tabs_destroy(void){
 	UpdateViewer *update_viewer=NULL;

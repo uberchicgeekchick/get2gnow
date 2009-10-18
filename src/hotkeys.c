@@ -242,7 +242,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 			}
 			break;
 		default:
-			switch( event->keyval ){
+			switch(event->keyval){
 				case GDK_F1:
 					help_show(main_window_get_window());
 					return;

@@ -183,7 +183,7 @@ static void user_validate( User **user ){
 	if(! (*user)->url ) (*user)->url=g_strdup("");
 	if(! (*user)->image_url ) (*user)->image_url=g_strdup("");
 	if(! (*user)->image_file ) (*user)->image_file=g_strdup("");
-}/*user_validate( &user );*/ 
+}/*user_validate(&user);*/ 
 
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
@@ -262,7 +262,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		
 	}
 	
-	user_validate( &user );
+	user_validate(&user);
 	
 	if(user->status)
 		user_status_format_updates(service, user, user->status);
@@ -279,15 +279,15 @@ void user_free(User *user){
 	
 	user->service=NULL;
 	
-	if( user->user_name ) uber_free( user->user_name );
-	if( user->nick_name ) uber_free( user->nick_name );
-	if( user->location ) uber_free( user->location );
-	if( user->bio ) uber_free( user->bio );
-	if( user->url ) uber_free( user->url );
-	if( user->image_url ) uber_free( user->image_url );
-	if( user->image_file ) uber_free( user->image_file );
+	if(user->user_name) uber_free(user->user_name);
+	if(user->nick_name) uber_free(user->nick_name);
+	if(user->location) uber_free(user->location);
+	if(user->bio) uber_free(user->bio);
+	if(user->url) uber_free(user->url);
+	if(user->image_url) uber_free(user->image_url);
+	if(user->image_file) uber_free(user->image_file);
 
-	uber_free( user );
+	uber_free(user);
 	
 	/*uber_object_free(&user->user_name, &user->nick_name, &user->location, &user->bio, &user->url, &user->image_url, &user->image_file, &user, NULL);*/
 }/*user_free*/
@@ -364,7 +364,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		
 	}
 
-	user_status_validate( &status );
+	user_status_validate(&status);
 	
 	if(status->user)
 		user_status_format_updates(service, status->user, status);
@@ -455,7 +455,7 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 		return FALSE;
 	}
 	
-	gtk_window_set_urgency_hint( main_window_get_window(), FALSE );
+	gtk_window_set_urgency_hint(main_window_get_window(), FALSE );
 	
 	return FALSE;
 }/*user_status_notify_on_timeout*/
@@ -463,19 +463,19 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 void user_status_free(UserStatus *status){
 	if(!( status && status->id && status->service )) return;
 	if(status->user) user_free(status->user);
-	user_status_validate( &status );
+	user_status_validate(&status);
 	status->service=NULL;
 	
-	if( status->text ) uber_free( status->text );
-	if( status->id_str ) uber_free( status->id_str );
-	if( status->from ) uber_free( status->from );
-	if( status->rcpt ) uber_free( status->rcpt );
-	if( status->tweet ) uber_free( status->tweet );
-	if( status->source ) uber_free( status->source );
-	if( status->sexy_tweet ) uber_free( status->sexy_tweet );
-	if( status->notification ) uber_free( status->notification );
-	if( status->created_at_str ) uber_free( status->created_at_str );
-	if( status->created_how_long_ago ) uber_free( status->created_how_long_ago );
+	if(status->text) uber_free(status->text);
+	if(status->id_str) uber_free(status->id_str);
+	if(status->from) uber_free(status->from);
+	if(status->rcpt) uber_free(status->rcpt);
+	if(status->tweet) uber_free(status->tweet);
+	if(status->source) uber_free(status->source);
+	if(status->sexy_tweet) uber_free(status->sexy_tweet);
+	if(status->notification) uber_free(status->notification);
+	if(status->created_at_str) uber_free(status->created_at_str);
+	if(status->created_how_long_ago) uber_free(status->created_how_long_ago);
 
 	uber_free(status);
 	
@@ -547,7 +547,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 		debug("Avatar: GtkImage created GtkImage for display in UserProfileViewer");
 		debug("Avatar: Downloaded from <%s>", user->image_url);
 		debug("Avatar: saved to: [%s]", user->image_file);
-		gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET( user_profile_viewer->image=images_get_maximized_image_from_filename(user->image_file)) );
+		gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET(user_profile_viewer->image=images_get_maximized_image_from_filename(user->image_file)) );
 	}
 	
 	gchar *profile_details=g_strdup_printf(
@@ -556,7 +556,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	);
 	
 	label_set_text(service, LABEL(user_profile_viewer->service_label), profile_details, TRUE, TRUE);
-	uber_free( profile_details );
+	uber_free(profile_details);
 	
 	
 	
@@ -565,7 +565,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					user->nick_name, user->user_name
 	);
 	label_set_text(service, LABEL(user_profile_viewer->user_label), profile_details, TRUE, TRUE);
-	uber_free( profile_details );
+	uber_free(profile_details);
 	
 	
 	
@@ -583,10 +583,10 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	label_set_text(service, user_profile_viewer->url_hyperlink, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
-	g_object_set( GTK_LABEL( user_profile_viewer->bio_html ), "single-line-mode", FALSE, NULL );
+	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", FALSE, NULL );
 	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", user->bio );
 	label_set_text(service, user_profile_viewer->bio_html, profile_details, TRUE, TRUE);
-	uber_free( profile_details );
+	uber_free(profile_details);
 	
 	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", user->status->created_how_long_ago);
 	gtk_label_set_markup(user_profile_viewer->updated_when_label, profile_details);
@@ -596,7 +596,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	
 	user_profile_view_show_all();
 	
-	user_free( user );
+	user_free(user);
 }/*static void user_profile_viewer_display_profile(online_service_wrapper, xml, user);*/
 
 static void user_profile_viewer_response(GtkDialog *dialog, gint response){
@@ -693,7 +693,7 @@ static void user_profile_view_show_all(void){
 
 static void user_profile_viewer_clear_profile(GtkWindow *parent, OnlineService *service, const gchar *user_name){
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_image));
-	gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET( images_get_dialog_image_from_stock( "gtk-dialog-info" ) ) );
+	gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET(images_get_dialog_image_from_stock("gtk-dialog-info") ) );
 	gtk_image_set_from_stock(user_profile_viewer->user_image, "gtk-dialog-info", ImagesDialog );
 	gtk_message_dialog_set_markup( user_profile_viewer->dialog, "" );
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->updated_when_label));
@@ -702,10 +702,10 @@ static void user_profile_viewer_clear_profile(GtkWindow *parent, OnlineService *
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->url_hyperlink));
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->latest_tweet));
 	
-	g_object_set( GTK_LABEL( user_profile_viewer->bio_html ), "single-line-mode", TRUE, NULL );
+	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", TRUE, NULL );
 	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_name, (service->https?"s":""), service->uri, service->uri );
 	label_set_text(service, user_profile_viewer->bio_html, profile_details, FALSE, TRUE);
-	uber_free( profile_details );
+	uber_free(profile_details);
 	
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->dialog));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_image));

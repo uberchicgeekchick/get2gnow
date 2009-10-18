@@ -101,7 +101,7 @@ gboolean update_notify_on_timeout(gpointer data){
 	NotifyNotification *notify_notification;
 	GError             *error=NULL;
 	
-	if(!gtk_status_icon_is_embedded( main_window->private->status_icon))
+	if(!gtk_status_icon_is_embedded(main_window->private->status_icon))
 		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
 	else
 		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window->private->status_icon);
@@ -113,7 +113,7 @@ gboolean update_notify_on_timeout(gpointer data){
 	
 	notify_notification_show(notify_notification, &error);
 	
-	g_object_unref(G_OBJECT( notify_notification));
+	g_object_unref(G_OBJECT(notify_notification));
 	
 	if(error){
 		debug("Error displaying status->notification: %s.", error->message);

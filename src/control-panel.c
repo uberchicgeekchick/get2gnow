@@ -156,6 +156,7 @@ struct _ControlPanel{
 	GtkListStore		*previous_updates_list_store;
 	GtkTreeModel		*previous_updates_tree_model;
 	SexySpellEntry		*sexy_entry;
+	GtkEntryCompletion	*sexy_completion;
 	gint			sexy_position;
 	
 	/* Info on the update being viewed to avoid issues with the 'best friends' toggle button. */
@@ -244,6 +245,7 @@ static void control_panel_grab_widgets_compact_control_panel_hidden(GtkBuilder *
 static void control_panel_compact_view_display(gboolean compact);
 static void control_panel_scale(gboolean compact);
 
+static gshort control_panel_sexy_entry_update_length(gchar *update);
 static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter);
 
 static void control_panel_sexy_send(OnlineService *service, const gchar *user_name);
@@ -368,7 +370,7 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 				NULL
 	);
 	control_panel->followers_model=gtk_combo_box_get_model(control_panel->followers_combo_box);
-	control_panel->previous_updates_tree_model=gtk_combo_box_get_model(GTK_COMBO_BOX( control_panel->sexy_entry_combo_box_entry));
+	control_panel->previous_updates_tree_model=gtk_combo_box_get_model(GTK_COMBO_BOX(control_panel->sexy_entry_combo_box_entry));
 	
 	debug("Building & setting up new Tweet entry area.");
 	control_panel_sexy_init();
@@ -416,8 +418,8 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 	}else{
 		debug("Displaying ControlPanel as a stand alone dialog & setting ControlPanel's parent window..");
 		gtk_widget_show_all(GTK_WIDGET(control_panel->control_panel));
-		g_object_add_weak_pointer(G_OBJECT( control_panel->control_panel),(gpointer)&control_panel);
-		gtk_window_set_transient_for(GTK_WINDOW( control_panel->control_panel), parent);
+		g_object_add_weak_pointer(G_OBJECT(control_panel->control_panel),(gpointer)&control_panel);
+		gtk_window_set_transient_for(GTK_WINDOW(control_panel->control_panel), parent);
 	}
 	
 	debug("Setting ControlPanel's embed state indicators.");
@@ -458,11 +460,11 @@ GtkWindow *control_panel_get_window(void){
 }/*control_panel_get_window*/
 
 void contol_panel_emulate_embed_toggle(void){
-	gtk_toggle_button_set_active(control_panel->embed_toggle_button, !gtk_toggle_button_get_active( control_panel->embed_toggle_button) );
+	gtk_toggle_button_set_active(control_panel->embed_toggle_button, !gtk_toggle_button_get_active(control_panel->embed_toggle_button) );
 }/*contol_panel_emulate_embed_toggle();*/
 
 void contol_panel_emulate_compact_view_toggle(void){
-	gtk_toggle_button_set_active(control_panel->compact_view_toggle_button, !gtk_toggle_button_get_active( control_panel->compact_view_toggle_button) );
+	gtk_toggle_button_set_active(control_panel->compact_view_toggle_button, !gtk_toggle_button_get_active(control_panel->compact_view_toggle_button) );
 }/*contol_panel_emulate_compact_view_toggle();*/
 
 void control_panel_set_embed_toggle_and_image(void){
@@ -562,7 +564,7 @@ static void control_panel_bind_hotkeys(GtkBuilder *ui){
 
 void control_panel_compact_view_toggled(GtkToggleButton *compact_view_toggle_button){
 	gboolean compact;
-	if((compact=gtk_toggle_button_get_active( compact_view_toggle_button)) != gconfig_if_bool(PREFS_CONTROL_PANEL_COMPACT, TRUE) )
+	if((compact=gtk_toggle_button_get_active(compact_view_toggle_button)) != gconfig_if_bool(PREFS_CONTROL_PANEL_COMPACT, TRUE) )
 		gconfig_set_bool(PREFS_CONTROL_PANEL_COMPACT, compact);
 	
 	control_panel_compact_view_display(compact);
@@ -594,8 +596,8 @@ static void control_panel_compact_view_display(gboolean compact){
 
 static void control_panel_scale(gboolean compact){
 	gint h=0, w=0;
-	gtk_window_get_size( main_window_get_window(), &w, &h );
-	gint position=gtk_paned_get_position( main_window_get_main_paned() );
+	gtk_window_get_size(main_window_get_window(), &w, &h );
+	gint position=gtk_paned_get_position(main_window_get_main_paned() );
 	position++;
 }/* control_panel_scale(TRUE); */ 
 
@@ -620,7 +622,7 @@ static void control_panel_selected_update_buttons_show(gboolean selected_update,
 }/*control_panel_selected_widgets_show*/
 
 static void control_panel_dm_form_set_toggle_and_image(void){
-	if(!gtk_toggle_button_get_active( control_panel->dm_form_active_togglebutton)){
+	if(!gtk_toggle_button_get_active(control_panel->dm_form_active_togglebutton)){
 		debug("Setting ControlPanel's dm form toggle button to enable the DM form.");
 		gtk_widget_set_tooltip_markup(GTK_WIDGET(control_panel->dm_form_active_togglebutton), "<span weight=\"bold\">Compose DM's to any of your friends.</span>");
 		gtk_image_set_from_icon_name(control_panel->dm_form_active_image, "gtk-edit", ImagesMinimum);
@@ -684,13 +686,16 @@ static void control_panel_sexy_init(void){
 	control_panel->sexy_entry=g_object_ref_sink(control_panel->sexy_entry);
 	gtk_container_remove(GTK_CONTAINER(control_panel->sexy_entry_combo_box_entry), gtk_bin_get_child(GTK_BIN(control_panel->sexy_entry_combo_box_entry)));
 	gtk_container_add(GTK_CONTAINER(control_panel->sexy_entry_combo_box_entry), GTK_WIDGET(control_panel->sexy_entry));
+	control_panel->sexy_completion=gtk_entry_completion_new();
+	gtk_entry_completion_set_model(control_panel->sexy_completion, control_panel->previous_updates_tree_model);
+	gtk_entry_set_completion(GTK_ENTRY(control_panel->sexy_entry), control_panel->sexy_completion);
 	gtk_widget_show(GTK_WIDGET(control_panel->sexy_entry));
 		
 	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
-	g_signal_connect(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
+	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
 	g_signal_connect(control_panel->sexy_entry, "activate", G_CALLBACK(control_panel_send), NULL);
 	g_signal_connect_after(control_panel->followers_combo_box, "changed", G_CALLBACK(control_panel_sexy_select), control_panel->followers_combo_box);
-}/*control_panel_sexy_init*/
+}/*control_panel_sexy_init();*/
 
 static void control_panel_reorder(void){
 	debug("Ordering ControlPanel.");
@@ -740,7 +745,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	
 	control_panel->viewing_service=service;
 	if(control_panel->viewing_user) uber_free(control_panel->viewing_user);
-	control_panel->viewing_user=g_strdup((G_STR_EMPTY( user_name) ?"" :user_name ) );
+	control_panel->viewing_user=g_strdup((G_STR_EMPTY(user_name) ?"" :user_name ) );
 	
 	if(!id) main_window_set_statusbar_msg(NULL);
 	
@@ -753,7 +758,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	label_set_text(service, control_panel->sexy_to, sexy_text, FALSE, TRUE);
 	uber_free(sexy_text);
 	
-	if(!(G_STR_EMPTY( nick_name) && G_STR_EMPTY(user_name) )){
+	if(!(G_STR_EMPTY(nick_name) && G_STR_EMPTY(user_name) )){
 		if(! G_STR_EMPTY(user_name) )
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", nick_name, uri_scheme_suffix, service->uri, user_name, user_name, service->uri);
 	}else
@@ -762,7 +767,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	label_set_text(service, control_panel->sexy_from, sexy_text, FALSE, TRUE);
 	uber_free(sexy_text);
 	
-	if(!( G_STR_EMPTY( date)))
+	if(!( G_STR_EMPTY(date)))
 		sexy_text=g_markup_printf_escaped("<span style=\"italic\">[%s]</span>", date);
 	else
 		sexy_text=g_strdup("");
@@ -776,7 +781,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	 */
 	debug("Setting 'sexy_update' for 'selected_update':\n\t\t%s.", sexy_update);
 	if(!(gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)))
-		sexy_url_label_set_markup(SEXY_URL_LABEL( control_panel->sexy_update), sexy_update);
+		sexy_url_label_set_markup(SEXY_URL_LABEL(control_panel->sexy_update), sexy_update);
 	else
 		label_set_text(service, control_panel->sexy_update, sexy_update, TRUE, TRUE);
 	
@@ -785,7 +790,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	else{
 		debug("Setting avatar for the user who wrote the 'selected_update'.");
 		GdkPixbuf *resized=NULL;
-		if(!( resized=images_expand_pixbuf( pixbuf)))
+		if(!( resized=images_expand_pixbuf(pixbuf)))
 			gtk_image_set_from_pixbuf(control_panel->user_image, pixbuf);
 		else{
 			gtk_image_set_from_pixbuf(control_panel->user_image, resized);
@@ -797,7 +802,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	control_panel_sexy_select();
 }/*control_panel_view_selected_update*/
 
-static gshort updatelen(gchar *update){
+static gshort control_panel_sexy_entry_update_length(gchar *update){
 	gushort character_count=0;
 	gushort me_match=0;
 	gint		replace_me=0;
@@ -819,11 +824,11 @@ static gshort updatelen(gchar *update){
 	}
 	
 	return TWEET_MAX_CHARS-character_count;
-}/*updatelen(update);*/
+}/*control_panel_sexy_entry_update_length(update);*/
 
 static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter){
 	control_panel->sexy_position=gtk_editable_get_position(GTK_EDITABLE(entry));
-	gshort remaining_character_count=updatelen(entry->text);
+	gshort remaining_character_count=control_panel_sexy_entry_update_length(entry->text);
 	gchar *remaining_characters_markup_label=NULL;
 	if(remaining_character_count < 0){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
@@ -833,7 +838,7 @@ static void control_panel_sexy_entry_character_count(GtkEntry *entry, GdkEventKe
 		if(TWEET_MAX_CHARS==remaining_character_count && (control_panel->best_friends_service ||  in_reply_to_status_id) ){
 			in_reply_to_status_id=0.0;
 			in_reply_to_service=NULL;
-			if(control_panel->best_friends_service || G_STR_N_EMPTY( control_panel->best_friends_user_name) ){
+			if(control_panel->best_friends_service || G_STR_N_EMPTY(control_panel->best_friends_user_name) ){
 				control_panel->best_friends_service=NULL;
 				if(control_panel->best_friends_user_name) uber_free(control_panel->best_friends_user_name);
 				gtk_widget_hide( (GtkWidget *)control_panel->best_friend_dm_notification_label );
@@ -852,9 +857,12 @@ void control_panel_beep(void){
 }/*control_panel_beep*/
 
 void control_panel_sexy_select(void){
-	if(gtk_widget_has_focus( GTK_WIDGET(control_panel->sexy_entry))) return;
+	if(gtk_widget_has_focus(GTK_WIDGET(control_panel->sexy_entry))) return;
 	gtk_widget_grab_focus(GTK_WIDGET(control_panel->sexy_entry));
-	gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), ( (control_panel->sexy_position>0) ?control_panel->sexy_position :-1) );
+	gint sexy_position=-1;
+	if( control_panel->sexy_position > 0 && control_panel->sexy_position <= gtk_entry_get_text_length((GtkEntry *)control_panel->sexy_entry) )
+		sexy_position=control_panel->sexy_position;
+	gtk_entry_set_position(GTK_ENTRY(control_panel->sexy_entry), sexy_position );
 }/*control_panel_sexy_select*/
 
 void control_panel_sexy_prefix_char(const char c){
@@ -868,7 +876,7 @@ void control_panel_sexy_prefix_string(const gchar *str){
 }/*control_panel_sexy_prefix_string*/
 
 void control_panel_sexy_set(gchar *text){
-	gtk_entry_set_text(GTK_ENTRY( control_panel->sexy_entry), (text==NULL ?(gchar *)"" :text));
+	gtk_entry_set_text(GTK_ENTRY(control_panel->sexy_entry), (text==NULL ?(gchar *)"" :text));
 	control_panel_sexy_select();
 }/*control_panel_sexy_set*/
 
@@ -879,7 +887,7 @@ void control_panel_sexy_insert_char(const char c){
 }/*control_panel_sexy_insert_char*/
 
 void control_panel_sexy_insert_string(const gchar *str){
-	control_panel_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE( control_panel->sexy_entry)) );
+	control_panel_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(control_panel->sexy_entry)) );
 }/*control_panel_sexy_insert_string*/
 
 void control_panel_sexy_append_char(const char c){
@@ -889,14 +897,14 @@ void control_panel_sexy_append_char(const char c){
 }/*control_panel_sexy_append_char*/
 
 void control_panel_sexy_append_string(const gchar *str){
-	control_panel_sexy_puts(str,(gint)gtk_entry_get_text_length(GTK_ENTRY( control_panel->sexy_entry)) );
+	control_panel_sexy_puts(str,(gint)gtk_entry_get_text_length(GTK_ENTRY(control_panel->sexy_entry)) );
 }/*control_panel_sexy_append_string*/
 
 gint control_panel_sexy_puts(const gchar *str, gint position_after){
-	gint position_prior=gtk_editable_get_position(GTK_EDITABLE( control_panel->sexy_entry));
-	gtk_editable_insert_text(GTK_EDITABLE( control_panel->sexy_entry), str, -1, &position_after );
+	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(control_panel->sexy_entry));
+	gtk_editable_insert_text(GTK_EDITABLE(control_panel->sexy_entry), str, -1, &position_after );
 	if(position_after>position_prior)
-		gtk_entry_set_position(GTK_ENTRY( control_panel->sexy_entry), position_after);
+		gtk_entry_set_position(GTK_ENTRY(control_panel->sexy_entry), position_after);
 	control_panel_sexy_select();
 	return position_after;
 }/*control_panel_sexy_puts*/
@@ -913,9 +921,9 @@ void control_panel_send(GtkWidget *activated_widget){
 	gchar *user_name=NULL;
 	
 	const gchar *text=GTK_ENTRY(control_panel->sexy_entry)->text;
-	if(G_STR_EMPTY( text)){
+	if(G_STR_EMPTY(text)){
 		gchar *reply_to_string=online_service_request_selected_update_reply_to_strdup(FALSE);
-		if( !online_service_request_selected_update_get_user_name())
+		if(!online_service_request_selected_update_get_user_name())
 			control_panel_beep();
 		else if(g_str_has_prefix(text, reply_to_string))
 			control_panel_beep();
@@ -928,11 +936,11 @@ void control_panel_send(GtkWidget *activated_widget){
 	if(activated_widget==GTK_WIDGET(control_panel->sexy_dm_button) ){
 		const gchar *user_name;
 		if(!(( user_name=online_service_request_selected_update_get_user_name()) && G_STR_N_EMPTY(user_name) )) return control_panel_beep();
-		control_panel_sexy_send( online_service_request_selected_update_get_service(), user_name);
+		control_panel_sexy_send(online_service_request_selected_update_get_service(), user_name);
 		return;
 	}
 	
-	if((activated_widget==GTK_WIDGET(control_panel->followers_send_dm)) &&(GTK_WIDGET_IS_SENSITIVE(control_panel->followers_combo_box)) &&G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) ) ){
+	if((activated_widget==GTK_WIDGET(control_panel->followers_send_dm)) &&(GTK_WIDGET_IS_SENSITIVE(control_panel->followers_combo_box)) &&G_STR_N_EMPTY((user_name=gtk_combo_box_get_active_text(control_panel->followers_combo_box)) ) ){
 		uber_free(user_name);
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		User *user=NULL;
@@ -975,32 +983,32 @@ void control_panel_new_update(void){
 }/*control_panel_new_update();*/
 
 static void control_panel_sexy_send(OnlineService *service, const gchar *user_name){
-	if(!((GTK_ENTRY( control_panel->sexy_entry)->text) &&(updatelen( GTK_ENTRY( control_panel->sexy_entry)->text) > -1) )){
+	if(!((GTK_ENTRY(control_panel->sexy_entry)->text) &&(control_panel_sexy_entry_update_length(GTK_ENTRY(control_panel->sexy_entry)->text) > -1) )){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
 			control_panel_beep();
 		return;
 	}
 	
 	if(!(service && user_name && G_STR_N_EMPTY(user_name) ))
-		network_post_status(GTK_ENTRY( control_panel->sexy_entry)->text);
+		network_post_status(GTK_ENTRY(control_panel->sexy_entry)->text);
 	else
 		network_send_message(service, user_name, GTK_ENTRY(control_panel->sexy_entry)->text);
 	
-	control_panel_sexy_append(GTK_ENTRY( control_panel->sexy_entry)->text, control_panel);
+	control_panel_sexy_append(GTK_ENTRY(control_panel->sexy_entry)->text, control_panel);
 	control_panel_sexy_set((gchar *)"");
-}/*control_panel_sexy_send( online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
+}/*control_panel_sexy_send(online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
 
 void control_panel_sexy_send_dm(void){
 	OnlineService *service=NULL;
 	const gchar *user_name=NULL;
-	if( (service=control_panel->best_friends_service) && G_STR_N_EMPTY( (user_name=control_panel->best_friends_user_name) ) )
+	if((service=control_panel->best_friends_service) && G_STR_N_EMPTY((user_name=control_panel->best_friends_user_name) ) )
 		return control_panel_sexy_send(service, user_name );
 	
-	if( (service=online_service_request_selected_update_get_service()) && G_STR_N_EMPTY( (user_name=online_service_request_selected_update_get_user_name()) ) )
+	if((service=online_service_request_selected_update_get_service()) && G_STR_N_EMPTY((user_name=online_service_request_selected_update_get_user_name()) ) )
 		return control_panel_sexy_send(service, user_name);
 	
-	if( (GTK_WIDGET_IS_SENSITIVE(control_panel->followers_combo_box)) && G_STR_N_EMPTY( (user_name=gtk_combo_box_get_active_text( control_panel->followers_combo_box)) )  )
-		return control_panel_send( GTK_WIDGET(control_panel->followers_send_dm) );
+	if((GTK_WIDGET_IS_SENSITIVE(control_panel->followers_combo_box)) && G_STR_N_EMPTY((user_name=gtk_combo_box_get_active_text(control_panel->followers_combo_box)) )  )
+		return control_panel_send(GTK_WIDGET(control_panel->followers_send_dm) );
 	
 	control_panel_beep();
 }/*control_panel_sexy_send_dm();*/
@@ -1025,6 +1033,7 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 	
 	if(first_update){
 		gtk_combo_box_entry_set_text_column(control_panel->sexy_entry_combo_box_entry, GSTRING_NULL);
+		gtk_entry_completion_set_text_column(control_panel->sexy_completion, GSTRING_UPDATE);
 		first_update=FALSE;
 	}
 	
@@ -1042,11 +1051,11 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 		gtk_list_store_remove(control_panel->previous_updates_list_store, iter);
 	}
 	uber_free(iter);
-}/*control_panel_sexy_append(GTK_ENTRY( control_panel->sexy_entry), control_panel);*/
+}/*control_panel_sexy_append(GTK_ENTRY(control_panel->sexy_entry), control_panel);*/
 
 static void control_panel_select_previous_update(GtkComboBoxEntry *sexy_entry_combo_box_entry, ControlPanel *control_panel){
 	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
-	if(!gtk_combo_box_get_active_iter( GTK_COMBO_BOX( control_panel->sexy_entry_combo_box_entry), iter)){
+	if(!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(control_panel->sexy_entry_combo_box_entry), iter)){
 		uber_free(iter);
 		return;
 	}
@@ -1091,7 +1100,7 @@ void control_panel_new_dm(void){
 }/*control_panel_new_dm*/
 
 static void control_panel_dm_show(GtkToggleButton *toggle_button){
-	if(!gtk_toggle_button_get_active( control_panel->dm_form_active_togglebutton)){
+	if(!gtk_toggle_button_get_active(control_panel->dm_form_active_togglebutton)){
 		debug("Disabled ControlPanel's dm form.");
 		control_panel_dm_form_activate(FALSE);
 		return;
@@ -1099,7 +1108,7 @@ static void control_panel_dm_show(GtkToggleButton *toggle_button){
 	online_service_request_popup_select_service();
 	
 	if(!( selected_service)) {
-		if(gtk_toggle_button_get_active( control_panel->dm_form_active_togglebutton))
+		if(gtk_toggle_button_get_active(control_panel->dm_form_active_togglebutton))
 			gtk_toggle_button_set_active(control_panel->dm_form_active_togglebutton, FALSE);
 		return;
 	}

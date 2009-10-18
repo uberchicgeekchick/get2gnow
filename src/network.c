@@ -270,7 +270,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	
 	gchar *error_message=NULL;
 	if(!(parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)))
-		if( !online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
+		if(!online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
 			uber_free(error_message);
 			return network_retry(service_wrapper);
 		}

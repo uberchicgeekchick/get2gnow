@@ -58,9 +58,11 @@
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
+#include <glib.h>
+#include <glib/gi18n.h>
+#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <libsexy/sexy.h>
 
 #include "config.h"
 #include "main.h"
