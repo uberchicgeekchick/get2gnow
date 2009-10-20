@@ -111,7 +111,6 @@ static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_
 static void online_service_set_micro_blogging_service(OnlineService **service);
 
 static void online_service_http_authenticate(SoupSession *session, SoupMessage *xml, SoupAuth *auth, gboolean retrying, gpointer user_data);
-/*static void *online_service_login_check( SoupMessage *xml, OnlineService *service);*/
 static void *online_service_login_check(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, User *user);
@@ -803,8 +802,6 @@ gboolean online_service_connect(OnlineService *service){
 }/*online_service_connect*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
-	return;
-	/*
 	SoupCookieJar	*cookie_jar=NULL;
 	gchar		*cookie_jar_filename=NULL;
 	
@@ -820,7 +817,6 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	
 	uber_free(cookie_jar_filename);
 	uber_object_unref(cookie_jar);
-	*/
 }/*online_servce_open_cookie_jar*/
 
 /* Login to service. */
@@ -836,7 +832,7 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	if(!service->authenticated)	return FALSE;
 	if(!online_service_refresh(service)) return FALSE;
 	
-	main_window_statusbar_printf("Connecting to %s...", service->key);
+	statusbar_printf("Connecting to %s...", service->key);
 	
 	/* Verify cedentials */
 	debug("Logging into: '%s'. user_name: %s, password: %s.", service->guid, service->user_name, service->password);
@@ -852,6 +848,11 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 
 	debug("OnlineService: <%s>'s http status: %d.  Status: authenticated: [%s].", service->guid, xml->status_code, (service->authenticated ?"TRUE" :"FALSE" ) );
+	if( xml->status_code==504 && !online_service_wrapper_get_attempt(service_wrapper) ){
+		debug("Log-in to <%s> timed out. Reattemping authentication.", service->guid);
+		online_service_wrapper_reattempt(service_wrapper);
+		return NULL;
+	}
 
 	gchar *error_message=NULL;
 	if(!parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)){
@@ -943,7 +944,7 @@ gboolean online_service_refresh(OnlineService *service){
 		debug("Unable to log in to: %s%s.", service->key, service->status);
 	
 	debug("Unable to load one of <%s>'s REST resources.  You're not connected to %s.  Attempting to reconnect.", service->uri, service->guid);
-	main_window_statusbar_printf("Unable to load one of <%s>'s REST resources.  You're not connected to: %s.", service->uri, service->guid);
+	statusbar_printf("Unable to load one of <%s>'s REST resources.  You're not connected to: %s.", service->uri, service->guid);
 	
 	return FALSE;
 }/*online_service_refresh(service);*/
@@ -995,7 +996,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	if(!(service->connected && service->authenticated)){
 		if(!online_service_refresh(service)){
 			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
-			main_window_statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
+			statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
 			return NULL;
 		}
 	}
@@ -1161,7 +1162,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		&&
 		callback!=NULL
 		&&
-		callback==network_tweet_cb
+		callback==network_update_posted
 	))
 		return;
 	
@@ -1238,8 +1239,11 @@ void online_service_soup_session_callback_return_processor_func_default(OnlineSe
 
 void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	if(!(service && service->key && G_STR_N_EMPTY(service->key) )) return NULL;
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
+	if(!(service && service->key && G_STR_N_EMPTY(service->key) )){
+		debug("Invalid OnlineService.  Cannot process request for: %s.", requested_uri);
+		return NULL;
+	}
 	if(!(requested_uri && G_STR_N_EMPTY(requested_uri) )) requested_uri=_("Unknown URI");
 	
 	if(service->status) uber_free(service->status);
@@ -1250,8 +1254,7 @@ void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServ
 	else
 		status=_("[Success]");
 	
-	service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, requested_uri, xml->reason_phrase, xml->status_code);
-	debug("%s", service->status);
+	debug("%s", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, requested_uri, xml->reason_phrase, xml->status_code)) );
 	statusbar_printf("<%s> loading %s: %s.", service->key, g_strrstr(requested_uri, "/"), status);
 	
 	online_service_wrapper_run(service_wrapper, session, xml);

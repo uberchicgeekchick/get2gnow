@@ -108,6 +108,7 @@ enum _ReloadState{
 	Load,
 	Reload,
 	Retry,
+	Reattempt,
 };
 
 enum _UsersGListGetWhich{

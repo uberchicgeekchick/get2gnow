@@ -218,7 +218,7 @@ struct _UpdateViewerPrivate {
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Tweets:Requests:Notification:Settings:Setup:Start-Up:UpdateViewer.c"
+#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Tweets:Requests:Notification:Settings:Setup:Start-Up:update-viewer.c"
 #include "debug.h"
 
 #define GtkBuilderUI "update-viewer"
@@ -484,8 +484,8 @@ void update_viewer_start(UpdateViewer *update_viewer){
 	
 	if(this->has_loaded < 1) return;
 	
-	if(this->has_loaded>1)
-		update_viewer_check_updates(update_viewer);
+	/*if(this->has_loaded>1)
+		update_viewer_check_updates(update_viewer);*/
 	
 	if(this->minutes){
 		if(this->list_store_index) this->list_store_index=0;
@@ -898,7 +898,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 							/*How old the post is, in seconds, for sorting.*/
 						GINT_SELECTED_INDEX, ( (selected_index>-1) ? (selected_index+1) :-1 ),
 							/* the rows location in the list store.*/
-						GINT_LIST_STORE_INDEX, ( this->list_store_index ?(list_store_index+1) :list_store_index ),
+						GINT_LIST_STORE_INDEX, ( this->list_store_index ?(list_store_index+this->list_store_index) :list_store_index ),
 				-1
 			);
 		}
@@ -938,6 +938,8 @@ void update_viewer_complete(UpdateViewer *update_viewer){
 	
 	if(gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ))
 		update_viewer_scroll_to_top(update_viewer);
+	
+	update_viewer_check_updates(update_viewer);
 	
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*update_viewer_complete(update_viewer);*/
@@ -1319,9 +1321,7 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 	debug("Appending update to UpdateViewer <%s>'s; timeline [%s]; update ID: %s.  Total updates: %u", status->service->guid, this->timeline, status->id_str, this->total);
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	gchar *user_timeline=g_strdup_printf("/%s.xml", status->user->user_name);
-	online_service_update_ids_get(status->service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	uber_free(user_timeline);
+	online_service_update_ids_get(status->service, this->timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	gboolean unread=(status->id && status->id > unread_update_id);
 	
 	gtk_list_store_append(this->list_store, iter);
@@ -1356,8 +1356,8 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 	
 	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 	if(!g_file_test(status->user->image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)){
-		debug("User Avatar file [%s] not found. Attempting to download: %s", status->user->image_file, status->user->image_url );
-		return network_get_image(status->service, update_viewer, status->user->image_file, status->user->image_url, iter);
+		debug("User Avatar file [%s] not found. Attempting to download: %s", status->user->image_file, status->user->image_uri );
+		return network_get_image(status->service, update_viewer, status->user->image_file, status->user->image_uri, iter);
 	}
 	
 	update_viewer_set_image(update_viewer, status->user->image_file, iter);
@@ -1452,9 +1452,7 @@ static void update_viewer_increment_unread(UpdateViewer *update_viewer){
 		case	Tweets:		case Timelines:
 		case	Searches:	case Groups:
 		case	Archive:
-			break;
 			if( this->has_loaded>1 && this->total ) break;
-			
 			debug("Not-Marking UpdatViewer, for %s (timeline: %s), as having %d unread updates(maximum allowed updates exceded: %s).  UpdateViewer's total updates:%d; has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 		
 		case	None:		default:

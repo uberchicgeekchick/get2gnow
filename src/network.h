@@ -83,7 +83,7 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceW
 
 void network_post_status(gchar *text);
 void network_send_message(OnlineService *service, const gchar *friend, gchar *text);
-void *network_tweet_cb(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
+void *network_update_posted(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
 
 void network_set_state_loading_timeline(const gchar *uri, ReloadState state);

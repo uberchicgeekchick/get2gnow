@@ -79,7 +79,7 @@ typedef struct {
 	gpointer		user_data;
 } GConfigNotifyData;
 
-#define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:GConfig.c"
+#define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:gconfig.c"
 #include "debug.h"
 
 #define DESKTOP_INTERFACE_ROOT  "/desktop/gnome/interface"

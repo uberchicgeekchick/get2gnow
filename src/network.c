@@ -95,7 +95,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up"
+#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up:network.c"
 #include "debug.h"
 
 typedef struct _NetworkUpdateViewerImageDL NetworkUpdateViewerImageDL;
@@ -183,17 +183,17 @@ void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
 	
 	if(!( in_reply_to_service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE)))
-		online_services_request(POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
+		online_services_request(POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
 	else
-		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_tweet_cb, "post->update", update);
+		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
 }/*network_post_status(tweet);*/
 
 void network_send_message(OnlineService *service, const gchar *friend, gchar *dm){
-	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_tweet_cb, (gchar *)friend, dm);
+	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_update_posted, (gchar *)friend, dm);
 }/*network_send_message(service, friend, dm);*/
 
 
-void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
+void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	gchar *user_data=(gchar *)online_service_wrapper_get_user_data(service_wrapper);
 	
@@ -230,11 +230,11 @@ void *network_tweet_cb(SoupSession *session, SoupMessage *xml, OnlineServiceWrap
 		in_reply_to_status_id=0;
 		if(xml->status_code==404){
 			debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", service->key);
-			online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_tweet_cb, user_data, online_service_wrapper_get_form_data(service_wrapper));
+			online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_update_posted, user_data, online_service_wrapper_get_form_data(service_wrapper));
 		}
 	}
 	return NULL;
-}/*network_tweet_cb*/
+}/*network_update_posted*/
 
 
 
@@ -243,11 +243,15 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 	const gchar *notice_prefix=NULL;
 	switch(state){
 		case Retry:
-			notice_prefix=_("Retrying");
+			notice_prefix=_("Re-trying");
 			break;
 			
 		case Reload:
-			notice_prefix=_("Reloading");
+			notice_prefix=_("Re-loading");
+			break;
+		
+		case Reattempt:
+			notice_prefix=_("Re-attempting");
 			break;
 		
 		case Load:
@@ -255,31 +259,32 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 			notice_prefix=_("Loading");
 			break;
 	}
-	const gchar *timeline=g_strrstr(uri, "/");
-	debug("%s current timeline: %s", notice_prefix, timeline);
-	statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  timeline, ( ( gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
-}/*network_timeline_loading_notification*/
+	debug("%s URI: %s", notice_prefix, uri);
+	statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  uri, ( ( gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
+}/*network_set_state_loading_timeline(uri, Load);*/
 
 
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
+	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	if(!IS_UPDATE_VIEWER(update_viewer))
 		return NULL;
 	
 	gchar *error_message=NULL;
-	if(!(parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)))
+	if(!(parser_xml_error_check(service, requested_uri, xml, &error_message)))
 		if(!online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
 			uber_free(error_message);
 			return network_retry(service_wrapper);
 		}
 	uber_free(error_message);
 	
-	gchar *request_uri=online_service_request_uri_create(service, NULL);
-	const gchar *timeline=g_strrstr(online_service_wrapper_get_requested_uri(service_wrapper), request_uri);
+	gchar		**uri_split=g_strsplit( g_strrstr(requested_uri, "/"), "?", 2);
+	gchar		*timeline=g_strdup(uri_split[0]);
+			g_strfreev(uri_split);
 	
-	debug("Started processing timeline: %s.", timeline);
+	debug("Started processing <%s>'s timeline: %s.  Requested URI: %s.", service->key, timeline, requested_uri);
 	
 	guint new_updates=0;
 	switch(monitoring){
@@ -305,18 +310,17 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			break;
 	}
 	
-	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(request_uri, "?since_id=") && update_viewer_has_loaded(update_viewer) > 0 && xml->status_code==200){
-		uber_free(request_uri);
+	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(requested_uri, "?since_id=") && update_viewer_has_loaded(update_viewer) > 0 && xml->status_code==200){
+		uber_free(timeline);
 		return network_retry(service_wrapper);
 	}
 	
-	if(new_updates){
+	if(new_updates)
 		debug("Total tweets in this timeline: %d.", new_updates);
-	}
 	
 	update_viewer_complete(update_viewer);
+	uber_free(timeline);
 	
-	uber_free(request_uri);
 	return NULL;
 }/*network_display_timeline(session, xml, service_wrapper);*/
 
@@ -326,9 +330,8 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
 	/*UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
-	network_set_state_loading_timeline(requested_uri, Retry);
 	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, update_viewer, (gpointer)monitoring);*/
-	online_service_request_uri(
+	/*online_service_request_uri(
 				online_service_wrapper_get_online_service(service_wrapper),
 				online_service_wrapper_get_request_method(service_wrapper),
 				online_service_wrapper_get_requested_uri(service_wrapper),
@@ -338,7 +341,7 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 				online_service_wrapper_get_user_data(service_wrapper),
 				online_service_wrapper_get_form_data(service_wrapper)
 	);
-	return NULL;
+	return NULL;*/
 	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/

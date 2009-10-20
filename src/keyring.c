@@ -32,7 +32,7 @@
 #include "online-service.types.h"
 #include "keyring.h"
 
-#define DEBUG_DOMAINS   "OnlineServices:Authentication:Settings:Setup:Keyring"
+#define DEBUG_DOMAINS   "OnlineServices:Authentication:Settings:Setup:GNOME-Keyring:keyring.c"
 #include "debug.h"
 
 #ifndef GNOME_ENABLE_DEBUG

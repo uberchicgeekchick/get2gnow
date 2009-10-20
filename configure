@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#010001a28"
+PACKAGE_VERSION="#010001a2C"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
@@ -22789,7 +22789,7 @@ fi
 		DISABLE_DEPRECATED=""
 	fi
 
-if test -e ${datarootdir}/hicolor/icons/apps/get2gnow.svg ; then
+if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` ; then
 	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
 else
 	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"

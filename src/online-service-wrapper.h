@@ -78,23 +78,22 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request, const gchar *request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
-
-void online_service_wrapper_retry(OnlineServiceWrapper *online_service_wrapper);
-void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml);
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request, const gchar *request_uri, gint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *online_service_wrapper);
 RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *online_service_wrapper);
 const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *online_service_wrapper);
 
-guint online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper);
-guint online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper);
-guint online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper);
-
 OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(OnlineServiceWrapper *online_service_wrapper);
 OnlineServiceSoupSessionCallbackFunc online_service_wrapper_get_callback(OnlineServiceWrapper *online_service_wrapper);
 gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *online_service_wrapper);
 gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_service_wrapper);
+
+void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml);
+
+gint8 online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper);
+gint8 online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper);
+gint8 online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper);
 
 void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper);
 

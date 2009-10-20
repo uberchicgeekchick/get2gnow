@@ -49,4 +49,5 @@ uninstall-gconf:
 uninstall-cache-dir:
 	if test -d "~/.gnome2/get2gnow"; then rm -rf ~/.gnome2/get2gnow; fi
 uninstall: uninstall-gconf uninstall-cache-dir uninstall-recursive
+distclean: clean-debug distclean-recursive
 

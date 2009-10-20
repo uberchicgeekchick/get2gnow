@@ -73,7 +73,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAINS "OnlineServices:Requests:Tweets:Users:Images:Files:I/O:Setup:Start-Up:Shutdown:Cache"
+#define DEBUG_DOMAINS "OnlineServices:Requests:Tweets:Users:Images:Files:I/O:Setup:Start-Up:Shutdown:Cache:cache.c"
 #include "debug.h"
 
 static gchar *cache_prefix=NULL;
@@ -295,6 +295,8 @@ void cache_get_uri_filename(const gchar *uri, gboolean set_subdir, gchar **subdi
 
 
 gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...){
+	gchar	*subdir_or_filename=NULL;
+	
 	gchar	*dir=NULL;
 	gchar	*directory=NULL;
 	
@@ -305,16 +307,19 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	
 	va_list cache_subdirs_and_file;
 	va_start(cache_subdirs_and_file, subdir1_or_file);
-	for(file=(gchar *)subdir1_or_file; file; file=va_arg(cache_subdirs_and_file, gchar *)){
-		if(filename) g_free(filename);
-		filename=cache_path_create(dir, file, NULL);
+	for(subdir_or_filename=(gchar *)subdir1_or_file; subdir_or_filename; subdir_or_filename=va_arg(cache_subdirs_and_file, gchar *)){
+		if(file) g_free(file);
+		file=cache_path_create(dir, subdir_or_filename, NULL);
+		
+		if(!(subdir_or_filename=va_arg(cache_subdirs_and_file, gchar *))) break;
+		
 		if(directory) g_free(directory);
-		directory=cache_path_create(dir, filename);
+		directory=cache_path_create(dir, subdir_or_filename, NULL);
 		dir=directory;
 	}
 	va_end(cache_subdirs_and_file);
 	
-	if(!( (directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(filename)) )){
+	if(!( (directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(file)) )){
 		debug("**ERROR:** Unable to create cache file.");
 		debug("**ERROR:** Cache prefix: [%s].", cache_prefix);
 		
@@ -330,9 +335,9 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 		return NULL;
 	}
 	
-	debug("Created <%s>'s cache file: [%s]", service->key, file);
+	debug("Created <%s>'s cache filename: [%s]", service->key, filename);
 	debug("Directory: [%s]", directory);
-	debug("Filename: [%s]", filename);
+	debug("File: [%s]", file);
 	
 	uber_free(dir);
 	uber_free(file);

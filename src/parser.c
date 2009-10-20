@@ -89,7 +89,7 @@
 #include "best-friends.h"
 #include "parser.h"
 
-#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Dates:Times:Parser.c"
+#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Dates:Times:parser.c"
 #include "debug.h"
 
 
@@ -110,7 +110,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	
 	if(!( xml->response_headers && xml->response_body && xml->response_body->data && xml->response_body->length )){
-		debug("**ERROR**: Cannot parse empty or xml resonse from: %s.", uri);
+		debug("**ERROR:** Cannot parse empty or xml resonse from: %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
@@ -120,7 +120,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	debug("Parsing xml document's content-type & DOM information from: %s", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
+		debug("**ERROR:** Failed to determine content-type for:  %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
@@ -146,7 +146,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	gchar *charset=NULL;
 	if(!( ((content_v[1])) && (charset=g_strdup(content_v[1])) )){
-		debug("**ERROR**: Failed to determine charset for:  %s.", uri);
+		debug("**ERROR:** Failed to determine charset for:  %s.", uri);
 		g_free(content_type);
 		g_strfreev(content_v);
 		g_free(uri);
@@ -191,7 +191,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	debug("Parsing %s document.", dom_base_entity);
 	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
-		debug("**ERROR**: Failed to parse %s document.", dom_base_entity);
+		debug("**ERROR:** Failed to parse %s document.", dom_base_entity);
 		g_free(uri);
 		g_free(content_type);
 		g_free(dom_base_entity);
@@ -261,29 +261,32 @@ const gchar *parser_xml_node_type_to_string(xmlElementType type){
 }/*parser_xml_node_type_to_string(node->type);*/
 
 gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message){
-	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) )){
+	if(!( SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) && xml->status_code>99 )){
 		*error_message=g_strdup_printf("OnlineService: <%s> has returned an invalid or failed libsoup request.  The URI [%s] returned:: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code );
 		return FALSE;
 	}
 	
+	*error_message=g_strdup("");;
 	
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
-	
-	*error_message=NULL;
-	gboolean error_free=TRUE;
+	if(xml->status_code==100||xml->status_code==200){
+		debug("OnlineService: <%s>'s request for: %s has succeed.  HTTP status returned: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code);
+		return TRUE;
+	}
 	
 	if(xml->status_code==401 || xml->status_code==503){
 		debug("**ERROR:** Authentication failed and/or access denied.  OnlineService: <%s> returned. %s(%d) when requesting [%s].", service->key, xml->reason_phrase, xml->status_code, uri );
 		return FALSE;
 	}
 	
+	xmlDoc		*doc=NULL;
+	xmlNode		*root_element=NULL;
+	
 	debug("Getting content-type from uri: [%s].", uri);
 	gchar **content_v=NULL;
 	debug("Parsing xml document's content-type & DOM information from: [%s].", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("**ERROR**: Failed to determine content-type for:  [%s].", uri);
+		debug("**ERROR:** Failed to determine content-type for:  [%s].", uri);
 		return FALSE;
 	}
 	
@@ -292,7 +295,7 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	g_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR**: Failed to determine content-type for:  [%s].", uri);
+		debug("**ERROR:** Failed to determine content-type for:  [%s].", uri);
 		g_strfreev(content_v);
 		return FALSE;
 	}
@@ -308,6 +311,7 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	debug("Parsing xml document to find any authentication errors.");
 	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
 		debug("Unable to parse xml doc.");
+		uber_free( *error_message );
 		*error_message=g_strdup("Unable to parse xml doc.");
 		xmlCleanupParser();
 		return FALSE;
@@ -316,12 +320,14 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	root_element=xmlDocGetRootElement(doc);
 	if(root_element==NULL) {
 		debug("Failed getting first element of xml data.");
+		uber_free( *error_message );
 		*error_message=g_strdup("Failed getting first element of xml data.");
 		xmlFreeDoc(doc);
 		xmlCleanupParser();
 		return FALSE;
 	}
 	
+	gboolean error_free=TRUE;
 	xmlNode	*current_node=NULL;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
@@ -329,12 +335,12 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 		if(!( g_str_equal(current_node->name, "error") )) continue;
 		
 		error_free=FALSE;
+		uber_free( *error_message );
 		*error_message=(gchar *)xmlNodeGetContent(current_node);
 		break;
 	}
 	
-	if(error_free) *error_message=g_strdup("");
-	else{
+	if(!error_free){
 		gchar *error_message_swap=g_strdup_printf("OnlineService: <%s> returned: %s(%d) with the error: %s.", service->key, xml->reason_phrase, xml->status_code, *error_message);
 		uber_free((*error_message) );
 		*error_message=error_message_swap;
@@ -399,7 +405,7 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer, UpdateMonitor monitoring){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, UpdateViewer *update_viewer, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -416,10 +422,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gint		update_expiration=0, best_friends_expiration=0;
 	gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &best_friends_expiration, 86400);
 	
-	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
-	gchar		*timeline=g_strdup(uri_split[0]);
-			g_strfreev(uri_split);
-	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	gdouble	last_notified_update=newest_update_id;
@@ -428,7 +430,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	switch(monitoring){
 		case Searches: case Groups:
 			debug("**ERROR:** parse_timeline requested to parse %s.  This method sould not have been called.", (monitoring==Groups?"Groups":"Searches"));
-			uber_free(timeline);
 			return 0;
 			
 		case DMs:
@@ -477,7 +478,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		
 		case None: default:
 			/* These cases are never reached - they're just here to make gcc happy. */
-			uber_free(timeline);
 			return 0;
 	}
 	if(!oldest_update_id && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
@@ -487,9 +487,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	const gint	notify_priority=(update_viewer_get_page(update_viewer)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
-		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
+		debug("Failed to parse xml document, <%s>'s timeline: %s.", service->key, timeline);
 		xmlCleanupParser();
-		uber_free(timeline);
 		return 0;
 	}
 	
@@ -551,21 +550,18 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	if(new_updates && newest_update_id){
 		/*TODO implement this only once it won't ending up causing bloating.
-		 *cache_save_page(service, uri, xml->response_body);
+		 *cache_save_page(service, timeline, xml->response_body);
 		 */
-		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
+		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, timeline);
 		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
-		if(newest_update_id>unread_update_id)
-			unread_update_id=newest_update_id;
 		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
-	uber_free(timeline);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*parse_timeline(service, xml, uri, update_viewer);*/
+}/*parse_timeline(service, xml, timeline, update_viewer, monitoring);*/
 
 gchar *parser_escape_text(gchar *text){
 	gchar *escaped_text=NULL;

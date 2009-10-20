@@ -89,7 +89,7 @@ struct _User {
 	gchar			*bio;
 	gchar			*url;
 	
-	gchar			*image_url;
+	gchar			*image_uri;
 	gchar			*image_file;
 	
 	gulong			tweets;

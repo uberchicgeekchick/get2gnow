@@ -66,7 +66,13 @@
 G_BEGIN_DECLS
 
 #ifndef statusbar_printf
-#define	statusbar_printf		main_window_statusbar_printf
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define statusbar_printf(...)		main_window_statusbar_printf(__VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define statusbar_printf(fmt...)		main_window_statusbar_printf(fmt)
+#	else
+#		define statusbar_printf(x)		main_window_statusbar_printf(x)
+#	endif
 #endif
 
 #define TYPE_MAIN_WINDOW		(main_window_get_type())

@@ -662,7 +662,7 @@ clean-debug:
 clean: clean-recursive clean-debug
 clean-am: clean-generic clean-libtool mostlyclean-am
 
-distclean: distclean-recursive
+distclean: clean-debug distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic distclean-hdr \

@@ -76,10 +76,6 @@
  **********************************************************************/
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
-gboolean user_download_avatar(OnlineService *service, User *user);
-void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
-void user_profile_viewer_cleanup(void);
-
 User *user_parse_node(OnlineService *service, xmlNode *root_element);
 
 void user_free(User *user);
@@ -88,6 +84,9 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 gboolean user_status_notify_on_timeout(UserStatus *status);
 
 void user_status_free(UserStatus *status);
+
+void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
+void user_profile_viewer_cleanup(void);
 
 
 #endif /*__USERS_H__*/
