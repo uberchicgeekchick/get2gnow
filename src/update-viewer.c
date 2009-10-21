@@ -659,7 +659,6 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
-	/*update_viewer_check_updates(update_viewer);*/
 	update_viewer_update_age(update_viewer, 0);
 }/*update_viewer_check_maximum_updates(update_viewer);*/
 
@@ -877,10 +876,6 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		if( this->list_store_index>-1 && selected_index>-1 ){
 			gint previous_list_store_index=list_store_index;
 			debug("Updating UpdateViewer for <%s>'s %s at GINT_SELECTED_INDEX(i): %d; previous GINT_SELECTED_INDEX:%d; this->list_store_index: %d; GINT_LIST_STORE_INDEX: %d; previous GINT_LIST_STORE_INDEX: %d.", service->guid, this->monitoring_string, i, selected_index, this->list_store_index, list_store_index, previous_list_store_index);
-			/*if(!list_store_index){
-				debug("Incrementing list_store_index for <%s>'s %s by 1.", service->key, this->monitoring_string);
-				list_store_index++;
-			}*/
 			debug("Incrementing list_store_index for <%s>'s %s by %d.", service->key, this->monitoring_string, this->list_store_index);
 			list_store_index+=this->list_store_index;
 		}
@@ -936,13 +931,10 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 			debug("Updating UpdateViewer iter for <%s>'s %s at index: %d; list_store_index: %d; new selected_index: %d; previous selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, i, selected_index);
 			gtk_list_store_set(
 					this->list_store, iter2,
-						STRING_CREATED_AGO, created_how_long_ago,
-							/*(seconds|minutes|hours|day) ago.*/
-						GINT_CREATED_AGO, created_ago,
-							/*How old the post is, in seconds, for sorting.*/
-						GINT_SELECTED_INDEX, i,
-							/* the rows location in the list store.*/
-						GINT_LIST_STORE_INDEX, list_store_index,
+						STRING_CREATED_AGO, created_how_long_ago, /* (seconds|minutes|hours|day) ago.*/ 
+						GINT_CREATED_AGO, created_ago, /* How old the post is, in seconds, for sorting.*/
+						GINT_LIST_STORE_INDEX, list_store_index, /* the row's list store index..*/
+						GINT_SELECTED_INDEX, i, /* the row's tree_model_sortable index.*/ 
 				-1
 			);
 		}
@@ -1235,7 +1227,7 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 	
 	this->index=index;
 	switch(event->state){
-		case GDK_SHIFT_MASK:
+		case GDK_SHIFT_MASK: case GDK_CONTROL_MASK|GDK_MOD1_MASK:
 			update_viewer_index_select(update_viewer);
 			break;
 		default:
@@ -1558,10 +1550,11 @@ static void update_viewer_update_selected(SexyTreeView *update_viewer_sexy_tree_
 	);
 	
 	gchar *update_id_str=gdouble_to_str(update_id);
-	debug("Updating UpdateViewer, for %s (timeline: %s), marking update ID: %s; from: <%s@%s>; to: <%s>; as read.  UpdateViewer details: total updates: %d; list_store_index: %d; selected_index: %d.", this->monitoring_string, this->timeline, update_id_str, user_name, service->uri, service->guid, this->total, list_store_index, selected_index);
-	update_viewer_set_update_ids(update_viewer, list_store_index, service, user_name, update_id);
+	if(unread){
+		debug("Updating UpdateViewer, for %s (timeline: %s), marking update ID: %s; from: <%s@%s>; to: <%s>; as read.  UpdateViewer details: total updates: %d; list_store_index: %d; selected_index: %d.", this->monitoring_string, this->timeline, update_id_str, user_name, service->uri, service->guid, this->total, list_store_index, selected_index);
+		update_viewer_set_update_ids(update_viewer, list_store_index, service, user_name, update_id);
+	}
 	
-	this->index=selected_index;
 	this->index=list_store_index;
 	
 	debug("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: list_store %d; selected: %d.", update_id_str, user_name, service->uri, service->guid,list_store_index, selected_index);

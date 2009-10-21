@@ -1270,7 +1270,7 @@ void main_window_state_on_connection(gboolean connected){
 	if(!connected){
 		main_window_statusbar_timeouts_free();
 		online_service_request_unset_selected_update();
-		STATUSBAR_DEFAULT=_("You are currently not connected to any OnlineService");
+		STATUSBAR_DEFAULT=_("You're currently not connected to any Online Services.");
 		//tabs_stop();
 	}else{
 		STATUSBAR_DEFAULT=_("Hotkeys: [CTRL+N] start a new tweet; [CTRL+D] or [SHIFT+Return] to dm; [CTRL+R], [Return], or '@' to reply, [CTRL+F] or '>' to forward/retweet.");
