@@ -216,9 +216,9 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 }/*online_service_wrapper_callback(session, xml, online_service_wrapper);*/
 
 void online_service_wrapper_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer){
-	debug("|-----------------------------------------------------------------------------|\n"
+	debug("|-------------------------------------------------------------------------------------|\n"
 		"\t\t|     online_service_wrapper_soup_session_callback_return_processor_func_default      |\n"
-		"\t\t|_____________________________________________________________________________|"
+		"\t\t|_____________________________________________________________________________________|"
 	);
 }/*online_service_wrapper_soup_session_callback_return_processor_func_default(soup_session_callback_return_gpointer);*/
 

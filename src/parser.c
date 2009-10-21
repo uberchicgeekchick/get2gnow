@@ -110,7 +110,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	
 	if(!( xml->response_headers && xml->response_body && xml->response_body->data && xml->response_body->length )){
-		debug("**ERROR:** Cannot parse empty or xml resonse from: %s.", uri);
+		debug("*ERROR:* Cannot parse empty or xml resonse from: %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
@@ -120,7 +120,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	debug("Parsing xml document's content-type & DOM information from: %s", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("**ERROR:** Failed to determine content-type for:  %s.", uri);
+		debug("*ERROR:* Failed to determine content-type for:  %s.", uri);
 		g_free(uri);
 		return NULL;
 	}
@@ -130,14 +130,14 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	g_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR:**: Failed to determine content-type for:  %s.", uri);
+		debug("*ERROR:*: Failed to determine content-type for:  %s.", uri);
 		g_strfreev(content_v);
 		g_free(uri);
 		return NULL;
 	}
 	
 	if(!( g_strrstr(content_type, "text") || g_strrstr(content_type, "xml") )){
-		debug("**ERROR:** <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further.", uri, content_type );
+		debug("*ERROR:* <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further.", uri, content_type );
 		uber_free(content_type);
 		return NULL;
 	}
@@ -146,7 +146,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	gchar *charset=NULL;
 	if(!( ((content_v[1])) && (charset=g_strdup(content_v[1])) )){
-		debug("**ERROR:** Failed to determine charset for:  %s.", uri);
+		debug("*ERROR:* Failed to determine charset for:  %s.", uri);
 		g_free(content_type);
 		g_strfreev(content_v);
 		g_free(uri);
@@ -191,7 +191,7 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	
 	debug("Parsing %s document.", dom_base_entity);
 	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
-		debug("**ERROR:** Failed to parse %s document.", dom_base_entity);
+		debug("*ERROR:* Failed to parse %s document.", dom_base_entity);
 		g_free(uri);
 		g_free(content_type);
 		g_free(dom_base_entity);
@@ -286,7 +286,7 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	debug("Parsing xml document's content-type & DOM information from: [%s].", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("**ERROR:** Failed to determine content-type for:  [%s].", uri);
+		debug("*ERROR:* Failed to determine content-type for:  [%s].", uri);
 		return FALSE;
 	}
 	
@@ -295,7 +295,7 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	g_free(content_info);
 	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR:** Failed to determine content-type for:  [%s].", uri);
+		debug("*ERROR:* Failed to determine content-type for:  [%s].", uri);
 		g_strfreev(content_v);
 		return FALSE;
 	}
@@ -429,7 +429,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	
 	switch(monitoring){
 		case Searches: case Groups:
-			debug("**ERROR:** parse_timeline requested to parse %s.  This method sould not have been called.", (monitoring==Groups?"Groups":"Searches"));
+			debug("*ERROR:* Unsupported timeline.  parse_timeline requested to parse %s.  This method sould not have been called.", (monitoring==Groups?"Groups":"Searches"));
 			return 0;
 			
 		case DMs:
@@ -525,8 +525,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UpdateViewer.", status->user->user_name, status->id_str, service->key);
 		update_viewer_store(update_viewer, status);
-		if( ( monitoring!=BestFriends && monitoring!=DMs ) && online_service_is_user_best_friend(service, status->user->user_name) ){
-			if( best_friends_check_update_ids( service, status->user->user_name, status->id) && notify_best_friends){
+		if( monitoring!=BestFriends && monitoring!=DMs && online_service_is_user_best_friend(service, status->user->user_name) ){
+			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 				update_viewer_notify_delay+=tweet_display_interval;
