@@ -372,7 +372,7 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	guint	xpath_index=0, xpath_target_index=g_strv_length(xpathv)-1;
 	
 	debug("Searching for xpath: '%s' content.", xpath);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
+	for(current_node=root_element; current_node; current_node=current_node->next){
 		
 		if(xpath_index>xpath_target_index) break;
 		

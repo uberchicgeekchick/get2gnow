@@ -1346,7 +1346,6 @@ static gboolean main_window_statusbar_display(const gchar *message){
 	if(statusbar_timers && statusbar_timers->data && !g_str_equal(message, STATUSBAR_DEFAULT) )
 		main_window_statusbar_timer_remove();
 	
-	
 	return FALSE;
 }/*main_window_set_statusbar_display(gpointer);*/
 
