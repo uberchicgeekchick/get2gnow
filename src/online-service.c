@@ -83,6 +83,8 @@
 #include "online-services-dialog.h"
 #include "online-service-request.h"
 
+#include "best-friends.h"
+
 #include "tabs.h"
 
 #include "users.types.h"
@@ -544,7 +546,7 @@ void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *o
 
 static void online_service_best_friends_list_store_append( OnlineService *service, const gchar *user_name ){
 	static GtkListStore *list_store=NULL;
-	if(!list_store) list_store=main_window_get_best_friends_list_store();
+	if(!list_store) list_store=best_friends_get_list_store();
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	gdouble id_best_friend_newest_update=0.0, id_best_friend_unread_update=0.0, id_best_friend_oldest_update=0.0;
@@ -586,7 +588,7 @@ static gboolean online_service_best_friends_confirm_clean_up( OnlineService *ser
 
 static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name ){
 	static GtkListStore *list_store=NULL;
-	if(!list_store) list_store=main_window_get_best_friends_list_store();
+	if(!list_store) list_store=best_friends_get_list_store();
 	
 	OnlineService *service_at_index=NULL;
 	gchar *user_name_at_index=NULL;

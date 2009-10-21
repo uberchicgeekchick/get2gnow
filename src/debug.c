@@ -281,7 +281,7 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			g_fprintf(debug_output_fp, "\t\t");
 			g_vfprintf(debug_output_fp, msg, args);
 			va_end(args);
-			g_fprintf(debug_output_fp, "\n\t\t\t@ %s", datetime);
+			g_fprintf(debug_output_fp, " @ %s", datetime);
 			
 			g_strfreev(debug_domains);
 

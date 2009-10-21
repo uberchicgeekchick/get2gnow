@@ -110,7 +110,6 @@ GtkPaned *main_window_get_main_paned(void);
 
 GtkMenuItem *main_window_get_menu(const gchar *menu);
 
-GtkListStore *main_window_get_best_friends_list_store(void);
 GtkTreeModel *main_window_get_best_friends_tree_model(void);
 gboolean main_window_best_friends_get_selected( OnlineService **service, gchar **user, gchar **user_name );
 

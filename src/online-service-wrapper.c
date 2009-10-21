@@ -157,8 +157,10 @@ gboolean online_service_wrapper_process(OnlineServiceWrapper *online_service_wra
 			if(!online_service_refresh(service)){
 				debug("Unable to load: %s.  You are no longer connected to %s.", online_service_wrapper->requested_uri, service->key);
 				statusbar_printf("Unable to load: %s.  You are no longer connected to: %s.", online_service_wrapper->requested_uri, service->key);
-				online_service_wrapper_free(online_service_wrapper);
-				return FALSE;
+				if(++online_service_wrapper->attempt > ONLINE_SERVICE_MAX_REQUESTS){
+					online_service_wrapper_free(online_service_wrapper);
+					return FALSE;
+				}
 			}
 		}
 		

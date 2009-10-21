@@ -153,7 +153,7 @@ struct _UpdateViewerPrivate {
 	gchar			*menu_label_string;
 	
 	gint			index;
-	gint			list_store_index;
+	guint			list_store_index;
 	
 	guint			total;
 	gboolean		unread;
@@ -851,7 +851,6 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 	gboolean unread_found=FALSE, index_updated;
 	if(this->index>-1) index_updated=FALSE;
 	else index_updated=TRUE;
-	if(this->list_store_index>-1) this->list_store_index++;
 	
 	for(gint i=0; i<this->total; i++){
 		GtkTreeIter *iter1=g_new0(GtkTreeIter, 1);
@@ -865,24 +864,20 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		
 		OnlineService	*service=NULL;
 		gint list_store_index=-1;
-		gint selected_index=-1;
 		gtk_tree_model_get(
-				this->tree_model_sort, iter1,
-					ONLINE_SERVICE, &service,
-					GINT_SELECTED_INDEX, &selected_index,
-					GINT_LIST_STORE_INDEX, &list_store_index,
-				-1
+					this->tree_model_sort, iter1,
+						ONLINE_SERVICE, &service,
+						GINT_LIST_STORE_INDEX, &list_store_index,
+					-1
 		);
-		
-		if( this->list_store_index>-1 && selected_index>-1 ){
+		if( this->list_store_index>-1 && i>this->list_store_index && list_store_index!=i ){
 			gint previous_list_store_index=list_store_index;
-			debug("Updating UpdateViewer for <%s>'s %s at GINT_SELECTED_INDEX(i): %d; previous GINT_SELECTED_INDEX:%d; this->list_store_index: %d; GINT_LIST_STORE_INDEX: %d; previous GINT_LIST_STORE_INDEX: %d.", service->guid, this->monitoring_string, i, selected_index, this->list_store_index, list_store_index, previous_list_store_index);
-			/*if(!list_store_index){
-				debug("Incrementing list_store_index for <%s>'s %s by 1.", service->key, this->monitoring_string);
+			if(!list_store_index) list_store_index++;
+			if(!this->list_store_index)
 				list_store_index++;
-			}*/
-			debug("Incrementing list_store_index for <%s>'s %s by %d.", service->key, this->monitoring_string, this->list_store_index);
-			list_store_index+=this->list_store_index;
+			else
+				list_store_index+=this->list_store_index;
+			debug("Updating list_store_index for <%s>'s %s at index: %d; list_store_index: %d; previous list_store_index: %d.", service->guid, this->monitoring_string, i, list_store_index, previous_list_store_index);
 		}
 		
 		GtkTreeIter *iter2=g_new0(GtkTreeIter, 1);
@@ -899,13 +894,14 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		gint created_ago=0;
 		gboolean unread=TRUE;
 		gchar *created_at_str=NULL, *created_how_long_ago=NULL;
+		gint selected_index=-1;
 		gtk_tree_model_get(
 					this->tree_model, iter2,
 						STRING_CREATED_AT, &created_at_str,
 						GBOOLEAN_UNREAD, &unread,
+						GINT_SELECTED_INDEX, &selected_index,
 					-1
 		);
-		
 		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
 			if( !index_updated && this->list_store_index>-1 && selected_index>-1 && this->index==selected_index ){
@@ -916,7 +912,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 					debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
 			}
 			
-			debug("Removing UpdateViewer iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, selected_index);
+			debug("Removing iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, selected_index);
 			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
 			gtk_list_store_remove(this->list_store, iter2);
 			this->total--;
@@ -933,7 +929,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 				else
 					this->index+=this->list_store_index;
 			}
-			debug("Updating UpdateViewer iter for <%s>'s %s at index: %d; list_store_index: %d; new selected_index: %d; previous selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, i, selected_index);
+			debug("Updating iter for <%s>'s %s at index: %d; list_store_index: %d; new selected_index: %d; previous selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, i, selected_index);
 			gtk_list_store_set(
 					this->list_store, iter2,
 						STRING_CREATED_AGO, created_how_long_ago,
@@ -1235,7 +1231,7 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 	
 	this->index=index;
 	switch(event->state){
-		case GDK_SHIFT_MASK:
+		case GDK_CONTROL_MASK|GDK_MOD1_MASK:
 			update_viewer_index_select(update_viewer);
 			break;
 		default:
@@ -1333,7 +1329,6 @@ static void update_viewer_clear(UpdateViewer *update_viewer){
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 	this->has_loaded=1;
 	this->minutes=0;
-	if(this->list_store_index>-1) this->list_store_index=-1;
 	if(this->index) {
 		this->index=-1;
 		update_viewer_scroll_to_top(update_viewer);
@@ -1395,6 +1390,7 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
 					GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
+					/*GINT_LIST_STORE_INDEX, this->total,*/			/*The row's unsorted index.*/
 					GINT_LIST_STORE_INDEX, this->list_store_index,		/*The row's unsorted index.*/
 					GBOOLEAN_UNREAD, unread,
 				-1
@@ -1562,10 +1558,9 @@ static void update_viewer_update_selected(SexyTreeView *update_viewer_sexy_tree_
 	update_viewer_set_update_ids(update_viewer, list_store_index, service, user_name, update_id);
 	
 	this->index=selected_index;
-	this->index=list_store_index;
 	
-	debug("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: list_store %d; selected: %d.", update_id_str, user_name, service->uri, service->guid,list_store_index, selected_index);
-	statusbar_printf("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: list_store %d; selected: %d.", update_id_str, user_name, service->uri, service->guid, list_store_index, selected_index);
+	debug("Displaying update: #%d, ID: %s.  From <%s@%s>; To: <%s>.", this->index, update_id_str, user_name, service->uri, service->guid);
+	statusbar_printf("Displaying update: #%d, ID: %s.  From <%s@%s>; To: <%s>.", this->index, update_id_str, user_name, service->uri, service->guid);
 	
 	control_panel_view_selected_update(service, update_id, user_id, user_name, nick_name, date, sexy_tweet, text_tweet, pixbuf);
 	
@@ -1608,7 +1603,7 @@ static gboolean update_viewer_set_update_ids(UpdateViewer *update_viewer, gint l
 	best_friends_check_update_ids( service, user_name, update_id );
 	if(this->monitoring!=DMs){
 		if(online_service_is_user_best_friend(service, user_name))
-			online_services_best_friends_list_store_mark_as_read(service, user_name, update_id, best_friends_get_list_store() );
+			online_services_best_friends_list_store_mark_as_read(service, user_name, update_id, main_window_get_best_friends_list_store() );
 		else if(this->monitoring!=Users){
 			gchar *user_timeline=g_strdup_printf("/%s.xml", user_name);
 			online_service_update_ids_check( service, user_timeline, update_id, FALSE );

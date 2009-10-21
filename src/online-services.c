@@ -655,7 +655,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 			-1
 	);
 	
-	if(!(unread_update_id && update_id && update_id > unread_update_id)){
+	if( unread_update_id && update_id && update_id > unread_update_id ){
 		update_id=unread_update_id;
 	}else{
 		unread_updates++;
