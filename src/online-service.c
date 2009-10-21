@@ -278,8 +278,7 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	service->password=NULL;
 	
 	service->processing=FALSE;
-	service->queue=NULL;
-	service->queue_timers=NULL;
+	service->processing_timer=0;
 	
 	service->best_friends=NULL;
 	service->best_friends_total=0;
@@ -990,7 +989,7 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 	return xml;
 }/*online_service_request*/
 
-SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request, const gchar *uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request_method, const gchar *uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(!( G_STR_N_EMPTY(uri) && service->enabled )) return NULL;
 	
 	if(!(service->connected && service->authenticated)){
@@ -1006,7 +1005,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	gchar *prefs_path=g_strdup_printf(ONLINE_SERVICE_LAST_REQUEST, service->key);
 	gconfig_set_string(prefs_path, datetime);
 	uber_free(prefs_path);
-
+	
 	if(!(service && service->session && SOUP_IS_SESSION(service->session) )){
 		online_service_reconnect(service);
 		if(!SOUP_IS_SESSION(service->session))
@@ -1022,7 +1021,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	
 	SoupMessage *xml=NULL;
 	gchar *request_string=NULL;
-	switch(request){
+	switch(request_method){
 		case GET:
 			request_string=_("GET");
 			break;
@@ -1035,7 +1034,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	}
 	
 	debug("Creating libsoup request for service: '%s'.", service->guid);
-	switch(request){
+	switch(request_method){
 		case QUEUE:
 			online_service_request_validate_uri(service, &request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 			break;
@@ -1044,7 +1043,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 		case GET: default: break;
 	}
 	
-	switch(request){
+	switch(request_method){
 		case QUEUE:
 		case GET:
 			debug("%s: %s", request_string, request_uri);
@@ -1078,27 +1077,22 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	/*g_signal_connect(xml, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);*/
 	
 	debug("Creating and Queueing OnlineServiceWrapper request: [%s]", request_uri);
-	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, xml, request, request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
+	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, xml, request_method, request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	
-	if(!service->processing){
-		debug("OnlineService: <%s> has began processing: <%s>.", service->guid, request_uri);
-		service->processing=TRUE;
-	}
 	/*TODO: implement support for 'service->queue' & 'service->queue_timers'.
 	 * ensure only one request is 'in queue' at one time by using
 	 * OnlineServiceWrapper to actually process & queue requests.
 	 * 1st) get rid of *all* GET requests.
 	 */
-	debug("Processing libsoup request for service: '%s'.", service->guid);
-	switch(request){
+	switch(request_method){
 		case QUEUE:
 		case POST:
-			debug("Adding libsoup request to service: '%s' libsoup's message queue.", service->guid);
-			soup_session_queue_message(service->session, xml, (SoupSessionCallback)online_service_callback, online_service_wrapper);
+			debug("Processing <%s>'s libsoup %s request for: [%s].", service->guid, request_string, request_uri );
+			online_service_wrapper_process(online_service_wrapper);
 			break;
 			
 		case GET:
-			debug("Sending libsoup request to service: '%s' & returning libsoup's message.", service->guid);
+			debug("Sending <%s>'s libsoup %s request for: [%s].", service->guid, request_string, request_uri );
 			soup_session_send_message(service->session, xml);
 			online_service_wrapper_free(online_service_wrapper);
 			break;
@@ -1228,47 +1222,6 @@ static void online_service_message_restarted(SoupMessage *xml, gpointer user_dat
 	soup_session_cancel_message(service->session, xml, 401);
 	online_service_disconnect(service, FALSE);
 }/*onlin_service_message_restarted*/
-
-
-void online_service_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer){
-	debug(" \t\t\t|-----------------------------------------------------------------------------|\n"
-		"\t\t\t\t\t|     online_service_soup_session_callback_return_processor_func_default      |\n"
-		"\t\t\t\t\t|_____________________________________________________________________________|"
-	);
-}/*online_service_soup_session_callback_return_processor_func_default(soup_session_callback_return_gpointer);*/
-
-void *online_service_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
-	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	if(!(service && service->key && G_STR_N_EMPTY(service->key) )){
-		debug("Invalid OnlineService.  Cannot process request for: %s.", requested_uri);
-		return NULL;
-	}
-	if(!(requested_uri && G_STR_N_EMPTY(requested_uri) )) requested_uri=_("Unknown URI");
-	
-	if(service->status) uber_free(service->status);
-	const gchar *status=NULL;
-	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, requested_uri, xml, &error_message))
-		status=_("[Failed]");
-	else
-		status=_("[Success]");
-	
-	debug("%s", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, requested_uri, xml->reason_phrase, xml->status_code)) );
-	statusbar_printf("<%s> loading %s: %s.", service->key, g_strrstr(requested_uri, "/"), status);
-	
-	online_service_wrapper_run(service_wrapper, session, xml);
-	
-	timer_main(service->timer, xml);
-	
-	debug("OnlineService: <%s> has finished processing: <%s>.", service->guid, requested_uri);
-	
-	online_service_wrapper_free(service_wrapper);
-	
-	uber_free(error_message);
-	
-	return NULL;
-}/*online_service_callback(session, xml, online_service_wrapper);*/
 
 gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml){
 	debug("Downloading headers for: %s to determine its content-type.", uri);

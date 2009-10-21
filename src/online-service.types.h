@@ -96,8 +96,7 @@ struct _OnlineService{
 	guint				logins;
 	
 	gboolean			processing;
-	GList				*queue;
-	GSList				*queue_timers;
+	guint				processing_timer;
 	
 	MicroBloggingService		micro_blogging_service;
 	gchar				*micro_blogging_client;
