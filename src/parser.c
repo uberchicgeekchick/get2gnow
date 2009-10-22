@@ -89,7 +89,7 @@
 #include "best-friends.h"
 #include "parser.h"
 
-#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Dates:Times:parser.c"
+#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Updates:UI:Refreshing:Dates:Times:parser.c"
 #include "debug.h"
 
 
@@ -466,7 +466,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 			if(!save_oldest_id) save_oldest_id=TRUE;
 			break;
 		
-		case Tweets:	case Timelines: case Users:
+		case Updates:	case Timelines: case Users:
 			debug("Parsing updates from someone I'm following.");
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
 			if(!save_oldest_id) save_oldest_id=TRUE;

@@ -121,7 +121,7 @@ struct _TimelineLabels{
 };
 
 TimelineLabels TimelineLabelsList[]={
-	{Tweets,	API_TIMELINE_FRIENDS,		N_("My _Friends' Updates"),	N_("My Friends' Updates")},
+	{Updates,	API_TIMELINE_FRIENDS,		N_("My _Friends' Updates"),	N_("My Friends' Updates")},
 	{Replies,	API_REPLIES,			N_("@ _Replies"),		N_("@ Replies")},
 	/*{Replies,	API_MENTIONS,			N_("@ _Mentions"),		N_("@ Mentions")},*/
 	{DMs,		API_DIRECT_MESSAGES,		N_("My DMs _Inbox"),		N_("My DMs Inbox")},
@@ -218,7 +218,7 @@ struct _UpdateViewerPrivate {
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Tweets:Requests:Notification:Settings:Setup:Start-Up:update-viewer.c"
+#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Updates:Requests:Notification:Settings:Setup:Start-Up:update-viewer.c"
 #include "debug.h"
 
 #define GtkBuilderUI "update-viewer"
@@ -382,18 +382,18 @@ static void update_viewer_finalize(UpdateViewer *update_viewer){
 
 const gchar *monitoring_to_string(UpdateMonitor monitoring){
 	switch(monitoring){
-		case None: return _("None");
-		case DMs: return _("DMs");
-		case Replies: return _("Replies");
-		case Faves: _("Faves");
-		case BestFriends: return _("BestFriends");
-		case Tweets: return _("Tweets");
-		case Searches: return _("Searches");
-		case Groups: return _("Groups");
-		case Timelines: return _("Timelines");
-		case Users: return _("Users");
-		case Archive: return _("Archive");
-		default: return _("Unknown UpdateMonitor");
+		case Updates:		return _("friends' updates");
+		case Replies:		return _("@ replies");
+		case DMs:		return _("direct messages");
+		case BestFriends:	return _("best friend's updates");
+		case Users:		return _("friend's updates");
+		case Faves:		return _("star'd updates");
+		case Searches:		return _("search results");
+		case Groups:		return _("group discussions");
+		case Timelines:		return _("global updates");
+		case Archive:		return _("own updates");
+		case None:	default:
+			return _("a lil cracker :-P");
 	}
 }/*monitoring_to_string(monitoring);*/
 
@@ -479,7 +479,7 @@ void update_viewer_start(UpdateViewer *update_viewer){
 	
 	if(!gtk_toggle_tool_button_get_active(this->stop_toggle_tool_button)){
 		debug("Creating timeout to reload %s.", this->menu_label_string);
-		this->timeout_id=g_timeout_add(this->reload, (GSourceFunc)update_viewer_refresh, update_viewer);
+		this->timeout_id=g_timeout_add_seconds(this->reload, (GSourceFunc)update_viewer_refresh, update_viewer);
 	}
 	
 	if(this->has_loaded < 1) return;
@@ -517,15 +517,15 @@ static float update_viewer_prepare_reload(UpdateViewer *update_viewer){
 	
 	this->has_loaded++;
 	if(this->has_loaded >= 1){
-		statusbar_printf("%s will reload every %d minutes.", this->monitoring_string, minutes);
-		this->reload=(seconds*1000)+(this->minutes*60000);
+		statusbar_printf("Your %s will automatically update every %d minutes and %d seconds.", this->monitoring_string, minutes, seconds);
+		this->reload=seconds+(this->minutes*60);
 	}else{
 		this->minutes=0;
-		statusbar_printf("Please wait %d seconds for %s to load.", seconds, this->monitoring_string);
-		this->reload=seconds*1000;
+		statusbar_printf("Please wait %d seconds for your %s to load.", seconds, this->monitoring_string);
+		this->reload=seconds;
 	}
 	
-	debug("Setting %s(timeline: %s) to reload evey %lu;", this->monitoring_string, this->timeline, this->reload);
+	debug("Setting timeout for %s, timeline: %s.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, minutes, seconds);
 	return 0.0;
 }/*update_viewer_prepare_reload(update_viewer);*/
 
@@ -563,7 +563,7 @@ static void update_viewer_check_updates(UpdateViewer *update_viewer){
 			update_viewer_check_inbox(update_viewer);
 			return;
 		
-		case	Tweets:	case Timelines:
+		case	Updates:	case Timelines:
 		case	Searches:	case Groups:
 		case	Archive:
 			update_viewer_check_maximum_updates(update_viewer);
@@ -690,7 +690,7 @@ static void update_viewer_check_inbox(UpdateViewer *update_viewer){
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
 			break;
 		
-		case	Users:	case	Tweets:
+		case	Updates:	case Users:
 		case	Searches:	case Groups:
 		case	Timelines:	case	Archive:
 			break;
@@ -851,6 +851,9 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 	if(this->index>-1) index_updated=FALSE;
 	else index_updated=TRUE;
 	if(this->list_store_index>-1) this->list_store_index++;
+	OnlineService *service_for_tracking=NULL;
+	
+						
 	
 	for(gint i=0; i<this->total; i++){
 		GtkTreeIter *iter1=g_new0(GtkTreeIter, 1);
@@ -873,10 +876,14 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 				-1
 		);
 		
+		if(service_for_tracking!=service){
+			service_for_tracking=service;
+			debug("Updating UpdateViewer for <%s>'s %s updating GINT_SELECTED_INDEX; GINT_LIST_STORE_INDEX; STRING_CREATED_AGO; GINT_CREATED_AGO; this->total: %d; this->list_store_index: %d; this->unread_updates: %d.", service_for_tracking->key, this->monitoring_string, this->total, this->list_store_index, this->unread_updates);
+		}
+		
 		if( this->list_store_index>-1 && selected_index>-1 ){
-			gint previous_list_store_index=list_store_index;
-			debug("Updating UpdateViewer for <%s>'s %s at GINT_SELECTED_INDEX(i): %d; previous GINT_SELECTED_INDEX:%d; this->list_store_index: %d; GINT_LIST_STORE_INDEX: %d; previous GINT_LIST_STORE_INDEX: %d.", service->guid, this->monitoring_string, i, selected_index, this->list_store_index, list_store_index, previous_list_store_index);
 			debug("Incrementing list_store_index for <%s>'s %s by %d.", service->key, this->monitoring_string, this->list_store_index);
+			if(list_store_index) list_store_index++;
 			list_store_index+=this->list_store_index;
 		}
 		
@@ -928,7 +935,6 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 				else
 					this->index+=this->list_store_index;
 			}
-			debug("Updating UpdateViewer iter for <%s>'s %s at index: %d; list_store_index: %d; new selected_index: %d; previous selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, i, selected_index);
 			gtk_list_store_set(
 					this->list_store, iter2,
 						STRING_CREATED_AGO, created_how_long_ago, /* (seconds|minutes|hours|day) ago.*/ 
@@ -1195,7 +1201,6 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
-	gint index=this->index;
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
 			this->index=0;
@@ -1203,29 +1208,28 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 			return;
 		case GDK_Home: case GDK_KP_Home:
 		case GDK_Begin: case GDK_Escape:
-			index=0;
+			this->index=0;
 			break;
 		case GDK_End: case GDK_KP_End:
-			index=this->total-1;
+			this->index=this->total-1;
 			break;
 		case GDK_Up: case GDK_KP_Up: case GDK_KP_Prior:
-			index--;
+			this->index--;
 			break;
 		case GDK_Down: case GDK_KP_Down: case GDK_KP_Next:
-			index++;
+			this->index++;
 			break;
 		case GDK_Page_Up:
-			index-=3; break;
+			this->index-=3; break;
 		case GDK_Page_Down:
-			index+=3; break;
+			this->index+=3; break;
 		default:
 			control_panel_sexy_select();
 			return;
 	}//switch
 	
-	update_viewer_index_validate(update_viewer, &index);
+	update_viewer_index_validate(update_viewer, &this->index);
 	
-	this->index=index;
 	switch(event->state){
 		case GDK_SHIFT_MASK: case GDK_CONTROL_MASK|GDK_MOD1_MASK:
 			update_viewer_index_select(update_viewer);
@@ -1244,9 +1248,7 @@ static gboolean update_viewer_index_validate(UpdateViewer *update_viewer, gint *
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
 	if( *index > -1 && *index < this->total ) return TRUE;
-	
-	if( *index>=this->total ) *index=this->total;
-	else *index=0;
+	*index=( (*index)>=this->total ?this->total :0 );
 	control_panel_beep();
 	return FALSE;
 }/*update_viewer_index_validate(update_viewer, &index);*/
@@ -1414,7 +1416,7 @@ static gboolean update_viewer_notification(UpdateViewer *update_viewer){
 		return TRUE;
 	
 	switch(GET_PRIVATE(update_viewer)->monitoring){
-		case Tweets: case Users:
+		case Updates: case Users:
 			if(gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE))
 				return TRUE;
 			break;
@@ -1492,7 +1494,7 @@ static void update_viewer_increment_unread(UpdateViewer *update_viewer){
 		case	Users:
 			break;
 		
-		case	Tweets:		case Timelines:
+		case	Updates:	case Timelines:
 		case	Searches:	case Groups:
 		case	Archive:
 			if( this->has_loaded>1 && this->total ) break;

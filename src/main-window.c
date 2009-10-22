@@ -1188,7 +1188,7 @@ static gboolean configure_event_timeout_cb(GtkWidget *widget){
 static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, MainWindow *main_window){
 	program_timeout_remove(&main_window->private->size_timeout_id, _("main window configuration"));
 	
-	main_window->private->size_timeout_id=g_timeout_add(500,(GSourceFunc)configure_event_timeout_cb, widget);
+	main_window->private->size_timeout_id=g_timeout_add_seconds(1, (GSourceFunc)configure_event_timeout_cb, widget);
 	
 	return FALSE;
 }
@@ -1200,7 +1200,7 @@ static void main_window_login(void){
 		return;
 	}
 	
-	tabs_init_timeout=g_timeout_add(3000, (GSourceFunc)main_window_tabs_init, NULL);
+	tabs_init_timeout=g_timeout_add_seconds(3, (GSourceFunc)main_window_tabs_init, NULL);
 	return;
 	main_window_tabs_init();
 }/*main_window_login*/
@@ -1209,7 +1209,7 @@ static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 	if(!( online_services_reconnect()))
 		return;
 	
-	tabs_init_timeout=g_timeout_add(3000, (GSourceFunc)main_window_tabs_init, NULL);
+	tabs_init_timeout=g_timeout_add_seconds(3, (GSourceFunc)main_window_tabs_init, NULL);
 	return;
 	main_window_tabs_init();
 }/*main_window_reconnect*/

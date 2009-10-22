@@ -156,7 +156,7 @@ void debug_init(void){
 
 static gboolean debug_reinit(void){
 	debug_pause=TRUE;
-	debug_timeout_id=g_timeout_add(600000, (GSourceFunc)debug_reinit, NULL);
+	debug_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)debug_reinit, NULL);
 	debug_environment_check();
 	return (debug_pause=FALSE);
 }/*static void debug_refresh(void);*/

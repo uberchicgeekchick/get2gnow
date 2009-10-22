@@ -133,7 +133,7 @@ struct _UserProfileViewer{
 
 #define API_USER_PROFILE	"/users/show/%s.xml"
 
-#define	DEBUG_DOMAINS	"OnlineServices:Tweets:Requests:Dates:Times:Users:Settings:UserProfileViewer:ViewProfile:users.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Updates:Requests:Dates:Times:Users:Settings:UserProfileViewer:ViewProfile:users.c"
 #include "debug.h"
 
 #define GtkBuilderUI "user-profile-viewer"
@@ -269,7 +269,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 			user->image_uri=g_strdup(content);
 		
 		else if(g_str_equal(current_node->name, "status") && current_node->children)
-			user->status=user_status_parse(service, current_node->children, Tweets);
+			user->status=user_status_parse(service, current_node->children, Updates);
 		
 		xmlFree(content);
 		
@@ -321,7 +321,7 @@ static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitor
 	status->created_seconds_ago=0;
 	
 	return status;
-}/*user_status_new(service, Tweets|Replies|Dms);*/
+}/*user_status_new(service, Updates|Replies|Dms);*/
 
 static void user_status_validate( UserStatus **status ){
 	if(! (*status)->text ) (*status)->text=g_strdup("");
@@ -565,7 +565,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	
 	
 	profile_details=g_strdup_printf(
-					"\t<b>Tweets:</b> %lu\n\t<b>Following:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n",
+					"\t<b>Updates:</b> %lu\n\t<b>Following:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n",
 					user->tweets,
 					user->following,
 					user->followers,

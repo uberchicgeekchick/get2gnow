@@ -287,19 +287,14 @@ static gboolean control_panel_configure_event_timeout_cb(GtkWidget *widget){
 		control_panel->size_timeout_id=0;
 		return FALSE;
 	}
-	
 	geometry_save();
-	
-	control_panel->size_timeout_id=0;
-	
 	return FALSE;
 }
 
 static gboolean control_panel_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, ControlPanel *control_panel){
+	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE)) return FALSE;
 	program_timeout_remove(&control_panel->size_timeout_id, _("main window configuration"));
-	
-	control_panel->size_timeout_id=g_timeout_add(500,(GSourceFunc) control_panel_configure_event_timeout_cb, widget );
-	
+	control_panel->size_timeout_id=g_timeout_add_seconds(1, (GSourceFunc)control_panel_configure_event_timeout_cb, widget );
 	return FALSE;
 }
 

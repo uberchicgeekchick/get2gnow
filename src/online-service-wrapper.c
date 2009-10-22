@@ -164,12 +164,13 @@ gboolean online_service_wrapper_process(OnlineServiceWrapper *online_service_wra
 			}
 		}
 		
-		g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, ++service->processing_timer,(GSourceFunc)online_service_wrapper_process, online_service_wrapper, NULL);
-		debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed is %d seconds.", service->key, online_service_wrapper->requested_uri, service->processing_timer);
+		g_timeout_add_seconds(++service->processing_timer, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
+		debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed in %d seconds.", service->key, online_service_wrapper->requested_uri, service->processing_timer);
 		return FALSE;
 	}
 	
 	service->processing=TRUE;
+	if(service->processing_timer) service->processing_timer--;
 	debug("OnlineService: <%s> has began processing: <%s>.", online_service_wrapper->service->guid, online_service_wrapper->requested_uri);
 	debug("Adding libsoup request to service: <%s> libsoup's message queue.", service->guid );
 	soup_session_queue_message(online_service_wrapper->service->session, online_service_wrapper->xml, (SoupSessionCallback)online_service_wrapper_callback, online_service_wrapper);
@@ -338,8 +339,6 @@ void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
 	if(!online_service_wrapper) return;
 	if(online_service_wrapper->service->processing)
 		online_service_wrapper->service->processing=FALSE;
-	if(online_service_wrapper->service->processing_timer)
-		online_service_wrapper->service->processing_timer--;
 	
 	online_service_wrapper_user_data_processor(online_service_wrapper, DataFree);
 	online_service_wrapper_form_data_processor(online_service_wrapper, DataFree);

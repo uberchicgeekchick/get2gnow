@@ -78,7 +78,7 @@ enum _RequestMethod{
 
 enum _UpdateMonitor{
 	None		=	0,
-	Tweets		=	1,
+	Updates		=	1,
 	Replies		=	3,
 	DMs		=	5,
 	BestFriends	=	7,

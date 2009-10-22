@@ -95,7 +95,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"Networking:OnlineServices:Tweets:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up:network.c"
+#define	DEBUG_DOMAINS	"Networking:OnlineServices:Updates:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up:network.c"
 #include "debug.h"
 
 typedef struct _NetworkUpdateViewerImageDL NetworkUpdateViewerImageDL;
@@ -300,7 +300,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case DMs:
 		case Replies:
 		case Faves:
-		case Tweets:
+		case Updates:
 		case Timelines:
 		case Users:
 		case Archive:
