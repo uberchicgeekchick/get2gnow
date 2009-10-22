@@ -654,11 +654,6 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-	if(unread_found)
-		if(this->unread_updates)
-			update_viewer_mark_as_unread(update_viewer);
-		else
-			update_viewer_mark_as_read(update_viewer);
 	update_viewer_update_age(update_viewer, 0);
 }/*update_viewer_check_maximum_updates(update_viewer);*/
 
@@ -815,7 +810,7 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 		uber_free(iter);
 	}
 	if(unread_found)
-		if(this->unread_updates)
+		if(this->unread && this->unread_updates)
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
@@ -955,7 +950,7 @@ static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiratio
 		uber_free(iter2);
 	}
 	if(unread_found)
-		if(this->unread_updates)
+		if(this->unread && this->unread_updates)
 			update_viewer_mark_as_unread(update_viewer);
 		else
 			update_viewer_mark_as_read(update_viewer);
@@ -1201,6 +1196,7 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
 	
+	gboolean supported_keyval=TRUE;
 	switch(event->keyval){
 		case GDK_Tab: case GDK_KP_Tab:
 			this->index=0;
@@ -1224,21 +1220,20 @@ static void update_viewer_move(UpdateViewer *update_viewer, GdkEventKey *event){
 		case GDK_Page_Down:
 			this->index+=3; break;
 		default:
-			control_panel_sexy_select();
-			return;
+			supported_keyval=FALSE;
+			break;
 	}//switch
 	
-	update_viewer_index_validate(update_viewer, &this->index);
-	
-	switch(event->state){
-		case GDK_SHIFT_MASK: case GDK_CONTROL_MASK|GDK_MOD1_MASK:
-			update_viewer_index_select(update_viewer);
-			break;
-		default:
-			update_viewer_index_scroll_to(update_viewer);
-			break;
-	}
-	
+	if(supported_keyval)
+		switch(event->state){
+			case GDK_SHIFT_MASK: case GDK_CONTROL_MASK|GDK_MOD1_MASK:
+				update_viewer_index_select(update_viewer);
+				break;
+			default:
+				update_viewer_index_scroll_to(update_viewer);
+				break;
+		}
+		
 	if(this->unread) update_viewer_mark_as_read(update_viewer);
 	control_panel_sexy_select();
 }/* update_viewer_move(update_viewer, event); */
@@ -1265,10 +1260,8 @@ static gboolean update_viewer_goto(UpdateViewer *update_viewer, gint goto_index,
 	update_viewer_index_validate(update_viewer, &goto_index);
 	
 	GtkTreePath *path=gtk_tree_path_new_from_indices(goto_index, -1);
-	if(!select)
-		gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
-	else
-		gtk_tree_view_set_cursor(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE);
+	if(!select) gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE, 0.0, 0.0);
+	else gtk_tree_view_set_cursor(GTK_TREE_VIEW(this->sexy_tree_view), path, NULL, FALSE);
 	gtk_tree_path_free(path);
 	
 	control_panel_sexy_select();
@@ -1507,8 +1500,6 @@ static void update_viewer_increment_unread(UpdateViewer *update_viewer){
 	if(!this->unread) this->unread=TRUE;
 	if(this->unread_updates<this->max_updates)
 		this->unread_updates++;
-	
-	update_viewer_mark_as_unread(update_viewer);
 }/*update_viewer_increment_unread(update_viewer);*/
 
 static void update_viewer_set_sexy_tooltip(SexyTreeView *sexy_tree_view, GtkTreePath *path, GtkTreeViewColumn *column, UpdateViewer *update_viewer){
