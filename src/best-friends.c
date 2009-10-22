@@ -112,21 +112,21 @@ gboolean best_friends_check_update_ids( OnlineService *service, const gchar *bes
 	gboolean notify_of_new_update=FALSE, save_update_ids=FALSE;;
 	unread_update_id=online_services_best_friends_list_store_mark_as_unread(service, best_friends_user_name, update_id, best_friends_list_store );
 	if( best_friends_unread_update_id < unread_update_id ){
-		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new unread update.  Update->ID: %f.", service->guid, best_friends_user_name, service->uri, unread_update_id);
+		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new unread update.  Update->ID: %f.  Previous unread_update_id: %f.", service->guid, best_friends_user_name, service->uri, unread_update_id, best_friends_unread_update_id);
 		notify_of_new_update=TRUE;
 		save_update_ids=TRUE;
 		best_friends_unread_update_id=unread_update_id;
 	}
 	
 	if( best_friends_newest_update_id<update_id ){
-		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new newest update.  Update->ID: %f.", service->guid, best_friends_user_name, service->uri, update_id);
+		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new newest update.  Update->ID: %f.  Previous newest_update_id: %f.", service->guid, best_friends_user_name, service->uri, update_id, best_friends_newest_update_id);
 		if(!notify_of_new_update) notify_of_new_update=TRUE;
 		if(!save_update_ids) save_update_ids=TRUE;
 		best_friends_newest_update_id=update_id;
 	}
 	
 	if( best_friends_oldest_update_id<update_id ){
-		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new oldest update.  Update->ID: %f.", service->guid, best_friends_user_name, service->uri, update_id);
+		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new oldest update.  Update->ID: %f.  Previous oldest_update_id: %f.", service->guid, best_friends_user_name, service->uri, update_id, best_friends_oldest_update_id);
 		if(!save_update_ids) save_update_ids=TRUE;
 		best_friends_oldest_update_id=update_id;
 	}

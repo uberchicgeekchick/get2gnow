@@ -655,15 +655,14 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 			-1
 	);
 	
-	if( unread_update_id && update_id && update_id > unread_update_id ){
-		update_id=unread_update_id;
-	}else{
-		unread_updates++;
-		if(!g_str_has_prefix(user_name_at_index, "<b>")){
-			uber_free(user_name_at_index);
-			user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
-		}
+	if(!(unread_update_id && update_id && update_id > unread_update_id )) return unread_update_id;
+	
+	unread_updates++;
+	if(!g_str_has_prefix(user_name_at_index, "<b>")){
+		uber_free(user_name_at_index);
+		user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
 	}
+	
 	debug("Marking best friend: %s(%s), on service <%s>, as having %d unread updates.  Last read update: %f; current update ID: %f..", user_at_index, user_name_at_index, service->guid, unread_updates, unread_update_id, update_id);
 	gtk_list_store_set(
 			list_store, iter,
