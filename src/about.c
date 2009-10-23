@@ -58,6 +58,8 @@
 #include <glib/gi18n.h>
 
 #include "about.h"
+#define	DEBUG_DOMAINS	"ui:gtkbuilder:gtkbuildable:information:settings:artistry:graphics:programming:code:about.c"
+#include "debug.h"
 
 const gchar *authors[] = {
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
@@ -100,30 +102,29 @@ const gchar *license[] = {
 };
 
 static void about_dialog_activate_link_cb( GtkAboutDialog *about, const gchar *link, gpointer data ){
-	if( g_app_info_launch_default_for_uri(link, NULL, NULL) == FALSE )
-		g_warning("Couldn't show URL: '%s'", link );
+	if(!g_app_info_launch_default_for_uri(link, NULL, NULL))
+		debug("Couldn't show URL: <%s>.", link );
+	else
+		debug("**NOTICE:** Opening URI: <%s>.", link );
 }
 
 void about_dialog_new (GtkWindow *parent){
-	gchar *license_trans;
-
-	gtk_about_dialog_set_url_hook (about_dialog_activate_link_cb, NULL, NULL);
-
-	license_trans = g_strconcat (_(license[0]), "\n\n", _(license[1]), "\n\n",
-								 _(license[2]), "\n\n", NULL);
-
-	gtk_show_about_dialog (parent,
-						   "authors", authors,
-						   "artists", artists,
-						   "comments", _("A GNOME client for Twitter."),
-						   "copyright", _("Copyright \xc2\xa9 2009 Kaity G. B."),
-						   "license", license_trans,
-						   "translator-credits", _("translator-credits"),
-						   "version", PACKAGE_VERSION,
-						   "website", PACKAGE_BUGREPORT,
-						   "wrap-license", TRUE,
-						   "logo-icon-name", PACKAGE_TARNAME,
-						   NULL);
-
+	gtk_about_dialog_set_url_hook(about_dialog_activate_link_cb, NULL, NULL);
+	
+	gchar *license_trans=g_strconcat( _(license[0]), "\n\n", _(license[1]), "\n\n", _(license[2]), "\n\n", _(license[3]), "\n\n", _(license[4]), NULL );
+	gtk_show_about_dialog(
+				parent,
+					"authors", authors,
+					"artists", artists,
+					"comments", _("GNOME's micro-blogging client with support for Twitter.com and any StatusNet instance, e.g. Identi.ca(of course)."),
+					"copyright", _("Copyright \xc2\xa9 2009 Kaity G. B."),
+					"license", license_trans,
+					"translator-credits", _("translator-credits"),
+					"version", PACKAGE_VERSION,
+					"website", PACKAGE_BUGREPORT,
+					"wrap-license", TRUE,
+					"logo-icon-name", GETTEXT_PACKAGE,
+				NULL
+	);
 	g_free(license_trans);
 }

@@ -89,7 +89,7 @@ enum {
 	PreferencePositionY,
 	PreferenceTotal,
 };
-#define DEBUG_DOMAINS "FloatingControlPanel:MicroBlogging_Viewer_MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainWindow:Geometry.c"
+#define DEBUG_DOMAINS "Geometry:FloatingControlPanel:MicroBlogging_Viewer_MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainWindow:geometry.c"
 #include"debug.h"
 
 /* Window height, width, & position gconf values. */
@@ -197,10 +197,9 @@ static void geometry_save_for_window(ViewType view){
 	}
 	
 	if(calls<LOAD_COUNT) calls++;
-	else{
-		geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, TRUE);
-		geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, TRUE);
-	}
+	
+	geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, (calls==LOAD_COUNT) );
+	geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, (calls==LOAD_COUNT) );
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){

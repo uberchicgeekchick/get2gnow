@@ -70,7 +70,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAINS "Networking:RateLimitTimer:Requests:Setup:Start-Up:Threads:Headers:timer.c"
+#define DEBUG_DOMAINS "Networking:RateLimitTimer:Requests:Setup:Start-Up:Updates:Threads:Headers:timer.c"
 #include "debug.h"
 
 struct _RateLimitTimer{

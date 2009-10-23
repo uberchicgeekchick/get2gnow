@@ -89,7 +89,7 @@ struct _Input{
 	gboolean	ready;
 };
 
-#define DEBUG_DOMAINS "Settings:Setup:Start-Up:CLI:Options:IPC.c"
+#define DEBUG_DOMAINS "Settings:Setup:Start-Up:CLI:Options:IPC:Threads:Pipe:Arguments:Protocol:ipc.c"
 #include "debug.h"
 
 static Input *input=NULL;

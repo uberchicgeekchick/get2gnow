@@ -92,7 +92,7 @@
 #include "users.h"
 
 
-#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Tweets.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Updates:hotkeys.c"
 #include "debug.h"
 
 static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date);

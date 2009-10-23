@@ -85,7 +85,8 @@ extern OnlineService *in_reply_to_service;
  **********************************************************************/
 G_BEGIN_DECLS
 
-gchar *online_service_request_action_to_string(RequestAction action);
+const gchar *online_service_request_method_to_string(RequestMethod request_method);
+const gchar *online_service_request_action_to_string(RequestAction action);
 
 void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_view_updates_new(OnlineService *service, GtkWindow *parent, const gchar *user_name);

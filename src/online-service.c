@@ -123,12 +123,12 @@ static void online_service_best_friends_list_store_append( OnlineService *servic
 static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name );
 static gboolean online_service_best_friends_list_store_remove( OnlineService *service, const gchar *user_name );
 
-static void online_service_message_restarted(SoupMessage *xml, gpointer user_data);
+static void online_service_message_restarted(SoupMessage *xml, OnlineService *service);
 
 static void online_service_cookie_jar_open(OnlineService *service);
 
-static void online_service_request_validate_uri(OnlineService *service, gchar **request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
-static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
+static void online_service_request_validate_uri(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
+static void online_service_request_validate_form_data(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
 
 /********************************************************
  *          Variable definitions.                       *
@@ -950,6 +950,17 @@ gboolean online_service_refresh(OnlineService *service){
 	return FALSE;
 }/*online_service_refresh(service);*/
 
+gboolean online_service_validate_session(OnlineService *service, const gchar *requested_uri){
+	if(service && service->session && SOUP_IS_SESSION(service->session) ) return TRUE;
+	online_service_reconnect(service);
+	if(service && service->session && SOUP_IS_SESSION(service->session) ) return TRUE;
+	if(service && service->session)
+		online_service_disconnect(service, TRUE);
+	debug("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"[Unknown]"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
+	statusbar_printf("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"[Unknown]"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
+	return FALSE;
+}/*online_service_validate_session(service, requested_uri);*/
+
 void online_service_disconnect(OnlineService *service, gboolean no_state_change){
 	if(!(service->session && service->authenticated)) return;
 
@@ -971,7 +982,7 @@ gboolean online_service_reconnect(OnlineService *service){
 	if(!(service->enabled && service->auto_connect))
 		return FALSE;
 	
-	if(service->connected)
+	if(service->connected || service->session)
 		online_service_disconnect(service, TRUE);
 	
 	return online_service_connect(service);
@@ -1008,53 +1019,41 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	gconfig_set_string(prefs_path, datetime);
 	uber_free(prefs_path);
 	
-	if(!(service && service->session && SOUP_IS_SESSION(service->session) )){
-		online_service_reconnect(service);
-		if(!SOUP_IS_SESSION(service->session))
-			return NULL;
-	}
-	
-	gchar *request_uri=NULL;
+	gchar *requested_uri=NULL;
 	/*if(!( g_str_has_prefix(uri, "https") || g_str_has_prefix(uri, "http") || g_str_has_prefix(uri, "ftp") ))*/
 	if(!g_strrstr(uri, "://"))
-		request_uri=g_strdup_printf("http://%s", uri);
+		requested_uri=g_strdup_printf("http://%s", uri);
 	else
-		request_uri=g_strdup(uri);
+		requested_uri=g_strdup(uri);
+	
+	if(!online_service_validate_session(service, requested_uri)){
+		uber_free(requested_uri);
+		return NULL;
+	}
 	
 	SoupMessage *xml=NULL;
-	gchar *request_string=NULL;
-	switch(request_method){
-		case GET:
-			request_string=_("GET");
-			break;
-		case QUEUE:
-			request_string=_("QUEUE");
-			break;
-		case POST:
-			request_string=_("POST");
-			break;
-	}
+	const gchar *request_string=online_service_request_method_to_string(request_method);
 	
 	debug("Creating libsoup request for service: '%s'.", service->guid);
 	switch(request_method){
 		case QUEUE:
-			online_service_request_validate_uri(service, &request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
+			online_service_request_validate_uri(service, &requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 			break;
 		case POST:
-			online_service_request_validate_form_data(service, &request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
+			online_service_request_validate_form_data(service, &requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 		case GET: default: break;
 	}
 	
 	switch(request_method){
 		case QUEUE:
 		case GET:
-			debug("%s: %s", request_string, request_uri);
-			xml=soup_message_new("GET", request_uri);
+			debug("%s: %s", request_string, requested_uri);
+			xml=soup_message_new("GET", requested_uri);
 			break;
 		
 		case POST:
 			debug("form_data: [%s]", (gchar *)form_data);
-			xml=soup_message_new("POST", request_uri);
+			xml=soup_message_new("POST", requested_uri);
 			
 			soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 			soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
@@ -1071,41 +1070,30 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	}
 	
 	if(!( SOUP_IS_SESSION(service->session) && SOUP_IS_MESSAGE(xml) )){
-		debug("Unable to process libsoup request for service: '%s'. Attempting to %s: %s", service->guid, request_string, request_uri);
-		uber_free(request_uri);
+		debug("Unable to process libsoup request for service: '%s'. Attempting to %s: %s", service->guid, request_string, requested_uri);
+		uber_free(requested_uri);
 		return NULL;
 	}
 	
-	/*g_signal_connect(xml, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);*/
-	
-	debug("Creating and Queueing OnlineServiceWrapper request: [%s]", request_uri);
-	OnlineServiceWrapper *online_service_wrapper=online_service_wrapper=online_service_wrapper_new(service, xml, request_method, request_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
-	
-	/*TODO: implement support for 'service->queue' & 'service->queue_timers'.
-	 * ensure only one request is 'in queue' at one time by using
-	 * OnlineServiceWrapper to actually process & queue requests.
-	 * 1st) get rid of *all* GET requests.
-	 */
 	switch(request_method){
 		case QUEUE:
 		case POST:
-			debug("Processing <%s>'s libsoup %s request for: [%s].", service->guid, request_string, request_uri );
-			online_service_wrapper_process(online_service_wrapper);
+			debug("Creating and Queueing OnlineServiceWrapper request.");
+			online_service_wrapper_init(service, xml, request_method, requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 			break;
 			
 		case GET:
-			debug("Sending <%s>'s libsoup %s request for: [%s].", service->guid, request_string, request_uri );
+			debug("Sending <%s>'s libsoup %s request for: [%s].", service->guid, request_string, requested_uri );
 			soup_session_send_message(service->session, xml);
-			online_service_wrapper_free(online_service_wrapper);
 			break;
 	}
 	
-	uber_free(request_uri);
+	uber_free(requested_uri);
 	return xml;
-	g_signal_connect(xml, "restarted", G_CALLBACK(online_service_message_restarted), (gpointer)service);
+	g_signal_connect(xml, "restarted", (GCallback)online_service_message_restarted, service);
 }/*online_service_request_uri*/
 
-static void online_service_request_validate_uri(OnlineService *service, gchar **request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
+static void online_service_request_validate_uri(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
 	if(!(
 		!attempt
 		&&
@@ -1115,20 +1103,20 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	))
 		return;
 	
-	if(g_strrstr(*request_uri, "?since_id=")) return;
+	if(g_strrstr(*requested_uri, "?since_id=")) return;
 	
 	UpdateMonitor monitoring=(UpdateMonitor)*form_data;
 	UpdateViewer *update_viewer=(UpdateViewer *)*user_data;
 	gint8 has_loaded=update_viewer_has_loaded(update_viewer);
 	if(!( (*form_data) && (*user_data) )) return;
 	
-	const gchar *timeline=g_strrstr(*request_uri, "/");
+	const gchar *timeline=g_strrstr(*requested_uri, "/");
 	gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	
 	const gchar *requesting;
 	gdouble since_id=0;
-	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *request_uri, has_loaded);
+	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *requested_uri, has_loaded);
 	if( has_loaded>0 && update_viewer_get_total(update_viewer) ){
 		requesting=_("new");
 		since_id=newest_update_id;
@@ -1143,16 +1131,16 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	if(!since_id) return;
 	
 	gchar *update_str=gdouble_to_str(since_id);
-	gchar *request_uri_swap=g_strdup_printf("%s?since_id=%s", *request_uri, update_str);
-	g_free(*request_uri);
-	*request_uri=request_uri_swap;
+	gchar *request_uri_swap=g_strdup_printf("%s?since_id=%s", *requested_uri, update_str);
+	g_free(*requested_uri);
+	*requested_uri=request_uri_swap;
 	
 	debug("Requesting <%s>'s timeline: %s; %s updates since: %f (using string: %s).", service->key, timeline, requesting, since_id, update_str);
 	uber_free(update_str);
 	request_uri_swap=NULL;
-}/*online_service_request_validate_uri(service, &request_uri, attempt, callback, &user_data, &form_data);*/
+}/*online_service_request_validate_uri(service, &requested_uri, attempt, callback, &user_data, &form_data);*/
 
-static void online_service_request_validate_form_data(OnlineService *service, gchar **request_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
+static void online_service_request_validate_form_data(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
 	if(!(
 		!attempt
 		&&
@@ -1208,13 +1196,11 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	(*form_data)=(gpointer)reply_form_data;
 	
 	debug("Update: [%s].", (gchar *)(*form_data));
-}/*online_service_request_validate_form_data(service, &request_uri, attempt, callback, &user_data, &form_data);*/
+}/*online_service_request_validate_form_data(service, &requested_uri, attempt, callback, &user_data, &form_data);*/
 
 
-static void online_service_message_restarted(SoupMessage *xml, gpointer user_data){
-	if(!( (SOUP_IS_MESSAGE(xml)) && xml->status_code!=401 )) return;
-	OnlineService *service=(OnlineService *)user_data;
-	if(!(service->authenticated && service->has_loaded)) return;
+static void online_service_message_restarted(SoupMessage *xml, OnlineService *service){
+	if(!( ( (SOUP_IS_MESSAGE(xml)) && xml->status_code!=401 ) && (service->authenticated && service->has_loaded) )) return;
 	
 	service->logins++;
 	

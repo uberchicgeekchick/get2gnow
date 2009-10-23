@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#010001a39"
+PACKAGE_VERSION="#010001a40"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
@@ -22789,13 +22789,6 @@ fi
 		DISABLE_DEPRECATED=""
 	fi
 
-if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` ; then
-	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
-else
-	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"
-fi
-
-
 
 # Check whether --enable-gnome_keyring was given.
 if test "${enable_gnome_keyring+set}" = set; then
@@ -24871,6 +24864,16 @@ echo "$as_me: error: conditional \"HAVE_GNOME_KEYRING\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+printf "Checking for %s's icon.  Looking for:\n\t%s/share/icons/hicolor/scalable/apps/get2gnow.svg\n" ${PACKAGE_NAME} ${prefix}
+if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` ; then
+	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n"
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
+else
+	printf "%s will be install and make install will attempt to update GTK's icon cache.\n"
+	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"
+fi
+
 
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files

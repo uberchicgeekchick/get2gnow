@@ -55,7 +55,7 @@
 #include "config.h"
 #include "program.h"
 
-#define	DEBUG_DOMAINS	"Debug:UI:GtkBuilder:GtkBuildable:Setup"
+#define	DEBUG_DOMAINS	"Debug:UI:GtkBuilder:GtkBuildable:Setup:gtkbuilder.c"
 #include "debug.h"
 #include "gtkbuilder.h"
 

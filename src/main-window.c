@@ -224,7 +224,7 @@ struct _MainWindowPrivate {
 #define PREFS_HINTS_HIDE_MAIN_WINDOW		GCONF_PATH "/popup_confirmation_dialog/disabled_when/closing/main_window"
 #define PREFS_HINTS_CLOSE_MAIN_WINDOW		GCONF_PATH "/popup_confirmation_dialog/disabled_when/hiding/main_window"
 
-#define	DEBUG_DOMAINS	"ui:gtkbuilder:gtkbuildable:onlineservices:networking:tweets:requests:users:authentication:preferences:settings:setup:start-up:main-window.c"
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Updates:Requests:Users:Start-Up:main-window.c"
 #include "debug.h"
 
 #define	GtkBuilderUI	"main-window"

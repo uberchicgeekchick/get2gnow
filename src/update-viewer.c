@@ -345,6 +345,8 @@ UpdateViewer *update_viewer_new(const gchar *timeline, OnlineService *service){
 	
 	gtk_widget_show_all(GTK_WIDGET(GET_PRIVATE(update_viewer)->vbox));
 	
+	update_viewer_set_adjustment(update_viewer);
+	
 	update_viewer=g_object_ref_sink(update_viewer);
 	
 	if(gconfig_if_bool( UPDATE_VEWER_TOOLBAR_VISIBILITY, FALSE) )
@@ -357,7 +359,7 @@ UpdateViewer *update_viewer_new(const gchar *timeline, OnlineService *service){
 		update_viewer_toggle_rcpt_column(update_viewer);
 	
 	return update_viewer;
-}/*update_viewer_new(timeline);*/
+}/*update_viewer_new(timeline, NULL);*/
 
 static void update_viewer_finalize(UpdateViewer *update_viewer){
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
@@ -499,33 +501,33 @@ void update_viewer_start(UpdateViewer *update_viewer){
 static float update_viewer_prepare_reload(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return 0.0;
 	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
-	
-	gint minutes=0;
-	gconfig_get_int(PREFS_TIMELINE_RELOAD_MINUTES, &minutes);
-	/* With multiple timeline support timeline re-loading interval shouldn't be less than 5 minutes */
-	if(this->minutes < 5)
-		gconfig_set_int(PREFS_TIMELINE_RELOAD_MINUTES, (this->minutes=minutes=5) );
-	
-	guint seconds=((this->page+1)*5)+(this->monitoring*3)+10;
-	if(!(seconds%2)) seconds+=1;
-	minutes+=(this->page+1)+this->monitoring;
-	if(!(minutes%2)) minutes+=1;
-	if(this->minutes!=minutes)
-		this->minutes=minutes;
-	else if(this->has_loaded > 1)
+	if(this->has_loaded > 1 && this->minutes)
 		return 0.0;
 	
 	this->has_loaded++;
-	if(this->has_loaded >= 1){
-		statusbar_printf("Your %s will automatically update every %d minutes and %d seconds.", this->monitoring_string, minutes, seconds);
-		this->reload=seconds+(this->minutes*60);
-	}else{
-		this->minutes=0;
+	
+	guint seconds=((this->page+1)*5)+(this->monitoring*3)+10;
+	if(!(seconds%2)) seconds+=1;
+	if(!this->has_loaded){
 		statusbar_printf("Please wait %d seconds for your %s to load.", seconds, this->monitoring_string);
 		this->reload=seconds;
+		return 0.0;
 	}
 	
-	debug("Setting timeout for %s, timeline: %s.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, minutes, seconds);
+	if(!this->minutes){
+		gconfig_get_int(PREFS_TIMELINE_RELOAD_MINUTES, &this->minutes);
+		/* With multiple timeline support timeline re-loading interval shouldn't be less than 5 minutes */
+		if(this->minutes < 5)
+			gconfig_set_int(PREFS_TIMELINE_RELOAD_MINUTES, (this->minutes=5) );
+		
+		this->minutes+=this->page+this->monitoring+1;
+		debug("Setting %s's, timeline: %s, UpdateViewer's minutes and initial timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
+	}
+	
+	statusbar_printf("Your %s will automatically update every %d minutes and %d seconds.", this->monitoring_string, this->minutes, seconds);
+	this->reload=(this->minutes*60)+seconds;
+	
+	debug("Setting %s's, timeline: %s,  UpdateViewer's timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
 	return 0.0;
 }/*update_viewer_prepare_reload(update_viewer);*/
 
@@ -1112,8 +1114,6 @@ static void update_viewer_create_gui(UpdateViewer *update_viewer){
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(this->sexy_tree_view), this->tree_model_sort);
 	sexy_tree_view_set_tooltip_label_column(this->sexy_tree_view, STRING_SEXY_TWEET);
-	
-	update_viewer_set_adjustment(update_viewer);
 }/*update_viewer_create_gui(update_viewer);*/
 
 void update_viewer_key_pressed(UpdateViewer *update_viewer, GdkEventKey *event){
@@ -1261,13 +1261,9 @@ static void update_viewer_clear(UpdateViewer *update_viewer){
 	debug("Clearing UpdateViewer, for %s (timeline: %s).  UpdateViewer has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 	gtk_list_store_clear(this->list_store);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
-	this->has_loaded=1;
-	this->minutes=0;
+	if(this->has_loaded < 1) this->has_loaded=1;
 	if(this->list_store_index>-1) this->list_store_index=-1;
-	if(this->index) {
-		this->index=-1;
-		update_viewer_scroll_to_top(update_viewer);
-	}
+	if(this->index) this->index=-1;
 	
 	this->total=0;
 }/*update_viewer_clear(update_viewer);*/
@@ -1279,17 +1275,20 @@ static void update_viewer_grab_focus_cb(GtkWidget *widget, UpdateViewer *update_
 
 gboolean update_viewer_toggle_toolbar(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return FALSE;
-	return gtk_widget_toggle_visibility(GTK_WIDGET(GET_PRIVATE(update_viewer)->handlebox ) );
+	gtk_widget_toggle_visibility( GTK_WIDGET( GET_PRIVATE(update_viewer)->handlebox ) );
+	return gtk_widget_is_visible( GTK_WIDGET( GET_PRIVATE(update_viewer)->handlebox ) );
 }/*update_viewer_toggle_toolbar(update_viewer);*/
 
 gboolean update_viewer_toggle_from_column(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return FALSE;
-	gtk_tree_view_column_toggle_visibility(GET_PRIVATE(update_viewer)->string_from_tree_view_column);
+	gtk_tree_view_column_toggle_visibility( GET_PRIVATE(update_viewer)->string_from_tree_view_column );
+	return gtk_tree_view_column_get_visible( GET_PRIVATE(update_viewer)->string_from_tree_view_column );
 }/*update_viewer_toggle_from_column(update_viewer);*/
 
 gboolean update_viewer_toggle_rcpt_column(UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return FALSE;
-	gtk_tree_view_column_toggle_visibility(GET_PRIVATE(update_viewer)->string_rcpt_tree_view_column);
+	gtk_tree_view_column_toggle_visibility( GET_PRIVATE(update_viewer)->string_rcpt_tree_view_column );
+	return gtk_tree_view_column_get_visible( GET_PRIVATE(update_viewer)->string_rcpt_tree_view_column );
 }/*update_viewer_toggle_rcpt_column(update_viewer);*/
 
 void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){

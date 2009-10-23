@@ -90,7 +90,7 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"Search:Groups:Parser:Requests:OnlineServices:Tweets:UI:Refreshing:Dates:Times:Search.c"
+#define	DEBUG_DOMAINS	"Groups:Parser:Requests:OnlineServices:Updates:UI:Refreshing:Dates:Times:groups.c"
 #include "debug.h"
 
 

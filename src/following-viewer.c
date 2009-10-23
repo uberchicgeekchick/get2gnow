@@ -103,6 +103,9 @@ typedef struct {
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
+#define	DEBUG_DOMAINS	"FollowingViewer:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Updates:Requests:Users:Setup:following-viewer.c"
+#include "debug.h"
+
 #define GtkBuilderUI "following-viewer"
 
 static FollowingViewer *following_viewer=NULL;

@@ -75,7 +75,7 @@
 #include "online-services.h"
 #include "preferences.h"
 
-#define	DEBUG_DOMAINS	"UI:Parse:Sexy:URLs:TweetView:OnlineServices:Networking:Tweets:XPath:Auto-Magical:Label.c"
+#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:UpdateViewer:OnlineServices:Networking:Updates:XPath:Auto-Magical:label.c"
 #include "debug.h"
 
 static void label_class_init(LabelClass *klass);

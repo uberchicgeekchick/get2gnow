@@ -28,6 +28,9 @@
 
 #include "ui-utils.h"
 
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:GTK:Settings:Requests:Users:Start-Up:Geometry:Windows:ui-utils.c"
+#include "debug.h"
+
 static gboolean
 window_get_is_on_current_workspace (GtkWindow *window)
 {

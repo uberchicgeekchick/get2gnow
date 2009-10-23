@@ -60,7 +60,7 @@
 #include "images.h"
 
 
-#define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up"
+#define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up:Cache:UpdateViewer:Graphics:images.c"
 #include "debug.h"
 
 

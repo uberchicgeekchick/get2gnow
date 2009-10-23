@@ -69,7 +69,6 @@
 #include "program.h"
 
 #include "ipc.h"
-#include "debug.h"
 #include "gconfig.h"
 
 #include "main-window.h"
@@ -86,6 +85,9 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
+#define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:program.c"
+#include "debug.h"
+
 static gboolean notifing=FALSE;
 
 /********************************************************
@@ -183,7 +185,7 @@ void program_uber_object_free(gpointer pointer1, ...){
 void program_timeout_remove(guint *id, const gchar *usage){
 	if(!( *id > 0 )) return;
 	
-	debug("Stopping %s monitoring.  Timeout id: %i.", ( G_STR_N_EMPTY(usage) ?usage :"[unknown pthread timer]" ), (*id));
+	debug("Stopping %s monitoring.  Timeout id: %d.", ( G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]" ), (*id));
 	g_source_remove((*id) );
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
@@ -196,27 +198,6 @@ gchar *program_gdouble_drop_precision(const gdouble gdouble_value){
 	g_strfreev(gdouble_precision);
 	return gdouble_str;
 }/*program_gdouble_drop_precision();*/
-
-/*
- * MACRO: gtk_tree_view_column_toggle_visibility
- * returns: TRUE or FALSE if the GtkTreeViewColumn's now visibily or not.
- */
-gboolean program_toggle_visibility_gtk_tree_view_column(GtkTreeViewColumn *tree_view_column){
-	{ g_return_val_if_fail( tree_view_column != NULL, FALSE ); g_return_val_if_fail( GTK_IS_TREE_VIEW_COLUMN(tree_view_column), FALSE ); }
-	gboolean now_visible;
-	gtk_tree_view_column_set_visible(tree_view_column, (now_visible=!gtk_tree_view_column_get_visible(tree_view_column)) );
-	return now_visible;
-}/*program_toggle_visibility_gtk_tree_view_column(tree_view_column);*/
-
-gboolean program_toggle_visibility_gtk_widget(GtkWidget *widget){
-	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
-	gboolean is_visible;
-	if(!( (is_visible=gtk_widget_is_visible(widget)) ))
-		gtk_widget_show(widget);
-	else
-		gtk_widget_hide(widget);
-	return !is_visible;
-}/*program_toggle_visibility_gtk_widget(widget);*/
 
 gboolean program_gtk_widget_get_gboolean_property_value( GtkWidget *widget, const gchar *property ){
 	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;

@@ -254,7 +254,16 @@ void online_service_request_unfave(OnlineService *service, GtkWindow *parent, co
 	online_service_request_main(service, UnFave, parent, user_name);
 }/*online_service_request_view_unfave(service, parent, user_name);*/
 
-gchar *online_service_request_action_to_string(RequestAction action){
+const gchar *online_service_request_method_to_string(RequestMethod request_method){
+	switch(request_method){
+		case QUEUE: return _("QUEUE");
+		case POST: return _("POST");
+		case GET: return _("GET");
+	}
+	return _("**ERROR:** Unknown RequestMethod ");
+}/*online_service_request_method_to_string(request_method);*/
+
+const gchar *online_service_request_action_to_string(RequestAction action){
 	switch(action){
 		case Confirmation:
 			return _("confirming action");

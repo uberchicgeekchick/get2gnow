@@ -101,7 +101,7 @@ typedef struct {
 
 static FriendsManager *friends_manager=NULL;
 
-#define	DEBUG_DOMAINS	"FriendsManager:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Requests:Users:Setup"
+#define	DEBUG_DOMAINS	"FriendsManager:UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Requests:Updates:Users:Setup:friends-manager.c"
 #include "debug.h"
 
 #define GtkBuilderUI "friends-manager"

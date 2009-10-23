@@ -78,15 +78,7 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *request_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
-
-gboolean online_service_wrapper_process(OnlineServiceWrapper *service_wrapper);
-
-void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml);
-
-void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
-
-void online_service_wrapper_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
+gboolean online_service_wrapper_init(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *online_service_wrapper);
 RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *online_service_wrapper);
@@ -100,8 +92,6 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_servi
 guint8 online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper);
 guint8 online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper);
 guint8 online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper);
-
-void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper);
 
 
 G_END_DECLS

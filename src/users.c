@@ -133,7 +133,7 @@ struct _UserProfileViewer{
 
 #define API_USER_PROFILE	"/users/show/%s.xml"
 
-#define	DEBUG_DOMAINS	"OnlineServices:Updates:Requests:Dates:Times:Users:Settings:UserProfileViewer:ViewProfile:users.c"
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Updates:Requests:Dates:Times:Users:Settings:Profiles:UserProfileViewer:ViewProfile:users.c"
 #include "debug.h"
 
 #define GtkBuilderUI "user-profile-viewer"

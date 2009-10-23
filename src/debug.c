@@ -108,7 +108,7 @@ static guint debug_timeout_id=0;
  * Each value is checked against value in the environmental variable:
  *	GETTEXT_PACKAGE_DEBUG, in this case its: GET2GNOW_DEBUG.
  */
-#define DEBUG_DOMAINS "All"
+#define DEBUG_DOMAINS "All:debug.c"
 #include "debug.h"
 
 
@@ -143,7 +143,7 @@ void debug_init(void){
 	/*re-checks GET(2GNOW_DEBUG every 10 minutes.*/
 	debug_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)debug_reinit, NULL);
 	
-	gchar *debug_package=g_utf8_strup(PACKAGE_TARNAME, -1);
+	gchar *debug_package=g_utf8_strup(GETTEXT_PACKAGE, -1);
 	debug_environmental_variable=g_strdup_printf("%s_DEBUG", debug_package);
 	g_free(debug_package);
 	
@@ -156,9 +156,8 @@ void debug_init(void){
 
 static gboolean debug_reinit(void){
 	debug_pause=TRUE;
-	debug_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)debug_reinit, NULL);
 	debug_environment_check();
-	return (debug_pause=FALSE);
+	return !(debug_pause=FALSE);
 }/*static void debug_refresh(void);*/
 
 void debug_deinit(void){
@@ -261,11 +260,12 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 				}
 			}
 			
-			if(g_str_has_prefix(msg, "**ERROR:**")){
+			gboolean error=FALSE, notice=FALSE;
+			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
 				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[debug_domains_source_code_index], _("error"));
 				va_list args;
 				va_start(args, msg);
-				g_vfprintf(stderr, msg, args);
+				g_vfprintf(stderr, (notice ?g_strrstr(msg, "**NOTICE:**") :msg), args);
 				va_end(args);
 				g_fprintf(stderr, " @ %s", datetime);
 			}

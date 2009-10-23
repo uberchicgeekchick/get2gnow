@@ -103,17 +103,27 @@ struct _OnlineServiceWrapper {
 	guint8							attempt;
 };
 
+static OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_service_wrapper);
+static gboolean online_service_wrapper_process(OnlineServiceWrapper *service_wrapper);
+static void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml);
 
 static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceWrapperDataProcessor data_processor);
 static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *online_service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
 static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *online_service_wrapper, OnlineServiceWrapperDataProcessor data_processor);
+
+static void online_service_wrapper_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
+static void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *wrapper);
+
+static void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper);
 
 
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *request_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+static OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(callback==NULL) return NULL;
 	
 	OnlineServiceWrapper *online_service_wrapper=g_new0(OnlineServiceWrapper, 1);
@@ -121,7 +131,7 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMes
 	online_service_wrapper->service=service;
 	online_service_wrapper->xml=xml;
 	online_service_wrapper->request_method=request_method;
-	online_service_wrapper->requested_uri=g_strdup(request_uri);
+	online_service_wrapper->requested_uri=g_strdup(requested_uri);
 	online_service_wrapper->attempt=attempt;
 	
 	if(online_service_soup_session_callback_return_processor_func!=NULL)
@@ -141,33 +151,22 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMes
 	online_service_wrapper_form_data_processor(online_service_wrapper, DataSet);
 	
 	return online_service_wrapper;
-}/*online_service_wrapper_new(service, request_uri, callback, user_data, form_data);*/
+}/*online_service_wrapper_new(service, xml, requested_uri, 0, post_process_callback, callback, user_data, form_data);*/
 
-gboolean online_service_wrapper_process(OnlineServiceWrapper *online_service_wrapper){
+gboolean online_service_wrapper_init(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+	debug("Processing <%s>'s libsoup %s request for: [%s].  Creating and Queueing OnlineServiceWrapper.", service->guid, online_service_request_method_to_string(request_method), requested_uri );
+	online_service_wrapper_process( online_service_wrapper_new(service, xml, request_method, requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data) );
+	return service->processing;
+}/*online_service_wrapper_init(service, xml, requested_uri, 0, post_process_callback, callback, user_data, form_data);*/
+
+static gboolean online_service_wrapper_process(OnlineServiceWrapper *online_service_wrapper){
 	OnlineService *service=online_service_wrapper->service;
-	if(!online_service_wrapper->service){
-		debug("Cannot complete processing request for: %s.  The OnlineService no-longer exists.", online_service_wrapper->requested_uri);
-		statusbar_printf("Cannot complete processing request for: %s.  The OnlineService no-longer exists.", online_service_wrapper->requested_uri);
+	if(!online_service_validate_session(service, online_service_wrapper->requested_uri)){
 		online_service_wrapper_free(online_service_wrapper);
 		return FALSE;
 	}
-	if(service->processing){
-		
-		if(!(service->enabled && service->connected && service->authenticated)){
-			if(!online_service_refresh(service)){
-				debug("Unable to load: %s.  You are no longer connected to %s.", online_service_wrapper->requested_uri, service->key);
-				statusbar_printf("Unable to load: %s.  You are no longer connected to: %s.", online_service_wrapper->requested_uri, service->key);
-				if(++online_service_wrapper->attempt > ONLINE_SERVICE_MAX_REQUESTS){
-					online_service_wrapper_free(online_service_wrapper);
-					return FALSE;
-				}
-			}
-		}
-		
-		g_timeout_add_seconds(++service->processing_timer, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
-		debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed in %d seconds.", service->key, online_service_wrapper->requested_uri, service->processing_timer);
-		return FALSE;
-	}
+	if(service->processing)
+		return online_service_wrapper_queue(online_service_wrapper);
 	
 	service->processing=TRUE;
 	if(service->processing_timer) service->processing_timer--;
@@ -178,7 +177,25 @@ gboolean online_service_wrapper_process(OnlineServiceWrapper *online_service_wra
 	return FALSE;
 }/*online_service_wrapper_process(online_service_wrapper);*/
 
-void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml){
+static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_service_wrapper){
+	OnlineService *service=online_service_wrapper->service;
+	if(!(service->enabled && service->connected && service->authenticated)){
+		if(!online_service_refresh(service)){
+			debug("Unable to load: %s.  You are no longer connected to %s.", online_service_wrapper->requested_uri, service->key);
+			statusbar_printf("Unable to load: %s.  You are no longer connected to: %s.", online_service_wrapper->requested_uri, service->key);
+			if(++online_service_wrapper->attempt > ONLINE_SERVICE_MAX_REQUESTS){
+				online_service_wrapper_free(online_service_wrapper);
+				return FALSE;
+			}
+		}
+	}
+	
+	g_timeout_add((service->processing_timer++)*100, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
+	debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed in %d milliseconds.", service->key, online_service_wrapper->requested_uri, service->processing_timer);
+	return FALSE;
+}/*online_service_wrapper_queue(online_service_wrapper);*/
+
+static void online_service_wrapper_run(OnlineServiceWrapper *online_service_wrapper, SoupSession *session, SoupMessage *xml){
 	if(!(online_service_wrapper->callback && online_service_wrapper->can_run)) return;
 	online_service_wrapper->can_run=FALSE;
 	online_service_wrapper->online_service_soup_session_callback_return_processor_func( online_service_wrapper, xml, (online_service_wrapper->callback(session, xml, online_service_wrapper)) );
@@ -218,7 +235,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 	return NULL;
 }/*online_service_wrapper_callback(session, xml, online_service_wrapper);*/
 
-void online_service_wrapper_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer){
+static void online_service_wrapper_soup_session_callback_return_processor_func_default(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer){
 	debug("|-------------------------------------------------------------------------------------|\n"
 		"\t\t|     online_service_wrapper_soup_session_callback_return_processor_func_default      |\n"
 		"\t\t|_____________________________________________________________________________________|"
@@ -335,7 +352,7 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_servi
 	return online_service_wrapper->form_data;
 }/*online_service_wrapper_get_form_data(online_service_wrapper);*/
 
-void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
+static void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper){
 	if(!online_service_wrapper) return;
 	if(online_service_wrapper->service->processing)
 		online_service_wrapper->service->processing=FALSE;

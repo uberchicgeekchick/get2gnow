@@ -85,6 +85,7 @@
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
+#define DEBUG_DOMAINS "OnlineServices:UI:Networking:Updates:Requests:Notification:Settings:Setup:Users:Timelines:updates.c"
 
 
 /********************************************************************************

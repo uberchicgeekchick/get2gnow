@@ -85,7 +85,7 @@ static gboolean i_changed_no_profile=FALSE;
 
 #define GtkBuilderUI "preferences"
 
-#define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Tweets:Notification:Settings:Setup:Start-Up:Preferences.c"
+#define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Updates:Notification:Settings:Setup:Start-Up:Preferences:preferences.c"
 #include "debug.h"
 
 typedef struct _PreferencesDialog PreferencesDialog;
