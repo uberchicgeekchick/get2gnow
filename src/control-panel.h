@@ -109,6 +109,7 @@ gint control_panel_sexy_puts(const gchar *str, gint position);
 void control_panel_new_update(void);
 void control_panel_new_dm(void);
 void control_panel_reply(void);
+void control_panel_forward(void);
 
 void control_panel_hide_previous_updates(void);
 void control_panel_show_previous_updates(void);

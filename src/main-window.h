@@ -95,6 +95,8 @@ struct _MainWindowClass {
         GObjectClass parent_class;
 };
 
+extern gchar *STATUSBAR_DEFAULT;
+
 GType main_window_get_type(void) G_GNUC_CONST;
 void main_window_disconnect(void);
 void main_window_create(void);
@@ -113,6 +115,7 @@ GtkMenuItem *main_window_get_menu(const gchar *menu);
 GtkTreeModel *main_window_get_best_friends_tree_model(void);
 gboolean main_window_best_friends_get_selected( OnlineService **service, gchar **user, gchar **user_name );
 
+const gchar *main_window_set_statusbar_default_message(const gchar *default_message);
 void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);
 void main_window_set_statusbar_msg(gchar *msg);
 

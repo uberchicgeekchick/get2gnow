@@ -106,6 +106,7 @@ gint online_services_has_total(guint count);
 gint online_services_has_connected(guint count);
 
 OnlineService *online_services_get_online_service_by_guid(const gchar *online_service_guid );
+OnlineService *online_services_get_online_service_by_uri(const gchar *online_service_uri );
 gint online_services_best_friends_list_store_fill(GtkListStore *list_store);
 gint online_services_best_friends_list_store_validate(GtkListStore *list_store);
 void online_services_best_friends_list_store_free(GtkListStore *list_store);

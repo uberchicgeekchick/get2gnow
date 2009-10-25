@@ -223,15 +223,11 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	uber_free(message);
 	uber_free(error_message);
 	
-	debug("HTTP response: %s(#%i)", xml->reason_phrase, xml->status_code);
+	debug("HTTP response: %s(#%d) while %s.", xml->reason_phrase, xml->status_code, (direct_message ?"sending direct messaging" :"updating your status") );
 	
-	if(in_reply_to_service && service==in_reply_to_service){
-		in_reply_to_service=NULL;
-		in_reply_to_status_id=0;
-		if(xml->status_code==404){
-			debug("Resubmitting Tweet/Status update to: [%s] due to Laconica bug.", service->key);
-			online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_update_posted, user_data, online_service_wrapper_get_form_data(service_wrapper));
-		}
+	if( !direct_message && xml->status_code==404 && (service->micro_blogging_service==Identica || service->micro_blogging_service==StatusNet)){
+		debug("Resubmitting status update to: <%s> due to StatusNet bug.", service->key);
+		online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_update_posted, user_data, online_service_wrapper_get_form_data(service_wrapper));
 	}
 	return NULL;
 }/*network_update_posted*/

@@ -153,9 +153,10 @@ struct _UpdateViewerPrivate {
 	gchar			*menu_label_string;
 	
 	gint			index;
+	
+	gint			total;
 	gint			list_store_index;
 	
-	guint			total;
 	gboolean		unread;
 	guint			unread_updates;
 	
@@ -522,11 +523,10 @@ static float update_viewer_prepare_reload(UpdateViewer *update_viewer){
 		
 		this->minutes+=this->page+this->monitoring+1;
 		debug("Setting %s's, timeline: %s, UpdateViewer's minutes and initial timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
+		this->reload=(this->minutes*60)+seconds;
 	}
 	
 	statusbar_printf("Your %s will automatically update every %d minutes and %d seconds.", this->monitoring_string, this->minutes, seconds);
-	this->reload=(this->minutes*60)+seconds;
-	
 	debug("Setting %s's, timeline: %s,  UpdateViewer's timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
 	return 0.0;
 }/*update_viewer_prepare_reload(update_viewer);*/
@@ -613,6 +613,7 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		update_viewer_scroll_to_top(update_viewer);
 	}
 	
+	gboolean index_updated=FALSE;
 	for(gint i=this->total-1; i>this->max_updates; i--){
 		OnlineService *service=NULL;
 		gboolean unread=TRUE;
@@ -642,10 +643,12 @@ static void update_viewer_check_maximum_updates(UpdateViewer *update_viewer){
 		if( unread && this->unread_updates )
 			this->unread_updates--;
 		
-		if(this->index==selected_index){
+		if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
+			index_updated=TRUE;
 			this->index=-1;
-			debug("Moving focus to UpdateViewer's top since the currently selected iter is being removed.");
-			update_viewer_scroll_to_top(update_viewer);
+			
+			if(update_viewer_scroll_to_top(update_viewer) )
+				debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
 		}
 		
 		gtk_list_store_remove(this->list_store, iter);
@@ -697,14 +700,90 @@ static void update_viewer_check_inbox(UpdateViewer *update_viewer){
 	update_viewer_update_age(update_viewer, update_expiration);
 }/*update_viewer_check_inbox(update_viewer);*/
 
+static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiration){
+	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
+	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
+	
+	if(!this->total) return;
+	if(this->list_store_index>-1) this->list_store_index++;
+	
+	gboolean index_updated=FALSE;
+	for(gint i=0; i<this->total; i++){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+			debug("Retrieving iter from path to index %d failed.  Unable to update row's created_ago time.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		OnlineService	*service=NULL;
+		gint list_store_index=-1;
+		gint selected_index=-1;
+		gint created_ago=0;
+		gboolean unread=TRUE;
+		gchar *created_at_str=NULL, *created_how_long_ago=NULL;
+		gtk_tree_model_get(
+				this->tree_model, iter,
+					ONLINE_SERVICE, &service,
+					GINT_SELECTED_INDEX, &selected_index,
+					GINT_LIST_STORE_INDEX, &list_store_index,
+					STRING_CREATED_AT, &created_at_str,
+				-1
+		);
+		
+		if(this->list_store_index>-1 && i>=this->list_store_index)
+			list_store_index+=this->list_store_index;
+		
+		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
+		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
+			if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
+				index_updated=TRUE;
+				this->index=-1;
+				
+				if(update_viewer_scroll_to_top(update_viewer) )
+					debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
+			}
+			
+			debug("Removing UpdateViewer iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, selected_index);
+			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
+			gtk_list_store_remove(this->list_store, iter);
+			this->total--;
+			if( unread && this->unread_updates )
+				this->unread_updates--;
+		}else{
+			if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
+				debug("Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, ( this->index ?(this->index+this->list_store_index+1) :(this->index+this->list_store_index) ) );
+				index_updated=TRUE;
+				this->index+=this->list_store_index;
+			}
+			gtk_list_store_set(
+					this->list_store, iter,
+						STRING_CREATED_AGO, created_how_long_ago, /* (seconds|minutes|hours|day) ago.*/ 
+						GINT_CREATED_AGO, created_ago, /* How old the post is, in seconds, for sorting.*/
+						GINT_LIST_STORE_INDEX, i, /* the row's list store index..*/
+						GINT_SELECTED_INDEX, -1, /* the row's tree_model_sortable index.*/ 
+				-1
+			);
+		}
+		uber_free(created_how_long_ago);
+		uber_free(created_at_str);
+		service=NULL;
+		gtk_tree_path_free(path);
+		uber_free(iter);
+	}
+	if(this->list_store_index>-1) this->list_store_index=-1;
+}/*update_viewer_update_age(update_viewer, 0);*/
+
 const gchar *update_viewer_list_store_column_to_string(UpdateViewerListStoreColumn update_viewer_list_store_column){
 	switch(update_viewer_list_store_column){
 		case	ONLINE_SERVICE: return _("ONLINE_SERVICE");
 		case	STRING_USER: return _("STRING_USER");
 		case	STRING_NICK: return _("STRING_NICK");
 		case	STRING_TEXT: return _("STRING_TEXT");
-		case	STRING_TWEET: return _("STRING_TWEET");
-		case	STRING_SEXY_TWEET: return _("STRING_SEXY_TWEET");
+		case	STRING_UPDATE: return _("STRING_UPDATE");
+		case	STRING_SEXY_UPDATE: return _("STRING_SEXY_UPDATE");
 		case	STRING_CREATED_AGO: return _("STRING_CREATED_AGO");	
 		case	STRING_CREATED_AT: return _("STRING_CREATED_AT");
 		case	STRING_FROM: return _("STRING_FROM");
@@ -760,8 +839,8 @@ static void update_viewer_modifiy_updates_list_store( UpdateViewer *update_viewe
 			case	STRING_USER:
 			case	STRING_NICK:
 			case	STRING_TEXT:
-			case	STRING_TWEET:
-			case	STRING_SEXY_TWEET:
+			case	STRING_UPDATE:
+			case	STRING_SEXY_UPDATE:
 			case	STRING_CREATED_AGO:	
 			case	STRING_CREATED_AT:
 			case	STRING_FROM:
@@ -826,81 +905,6 @@ void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *se
 	debug( "Removing <%s>'s %s updates.", service->guid, this->monitoring_string );
 	update_viewer_remove_from_list_store( update_viewer, ONLINE_SERVICE, service );
 }/*update_viewer_remove_service(update_viewer, service);*/
-
-static void update_viewer_update_age(UpdateViewer *update_viewer, gint expiration){
-	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
-	UpdateViewerPrivate *this=GET_PRIVATE(update_viewer);
-	
-	if(!this->total) return;
-	
-	gboolean index_updated=FALSE;
-	for(gint i=0; i<this->total; i++){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
-			debug("Retrieving iter from path to index %d failed.  Unable to update row's created_ago time.", i);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		OnlineService	*service=NULL;
-		gint list_store_index=-1;
-		gint selected_index=-1;
-		gint created_ago=0;
-		gboolean unread=TRUE;
-		gchar *created_at_str=NULL, *created_how_long_ago=NULL;
-		gtk_tree_model_get(
-				this->tree_model, iter,
-					ONLINE_SERVICE, &service,
-					GINT_SELECTED_INDEX, &selected_index,
-					GINT_LIST_STORE_INDEX, &list_store_index,
-					STRING_CREATED_AT, &created_at_str,
-				-1
-		);
-		
-		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
-		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
-			if( !index_updated && selected_index>-1 && this->index==selected_index ){
-				index_updated=TRUE;
-				this->index=-1;
-				
-				if(update_viewer_scroll_to_top(update_viewer) )
-					debug("UpdateViewer for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
-			}
-			
-			debug("Removing UpdateViewer iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, selected_index);
-			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
-			gtk_list_store_remove(this->list_store, iter);
-			this->total--;
-			if( unread && this->unread_updates )
-				this->unread_updates--;
-		}else{
-			if( !index_updated && this->list_store_index>-1 && selected_index>-1 && this->index==selected_index ){
-				debug("Updating index for %s(timeline %s), previous index: %d; new index: %d.", this->monitoring_string, this->timeline, this->index, ( this->index ?(this->index+this->list_store_index+1) :(this->index+this->list_store_index) ) );
-				index_updated=TRUE;
-				if(!this->list_store_index)
-					this->index+=this->list_store_index+1;
-				else
-					this->index+=this->list_store_index;
-			}
-			gtk_list_store_set(
-					this->list_store, iter,
-						STRING_CREATED_AGO, created_how_long_ago, /* (seconds|minutes|hours|day) ago.*/ 
-						GINT_CREATED_AGO, created_ago, /* How old the post is, in seconds, for sorting.*/
-						GINT_LIST_STORE_INDEX, list_store_index, /* the row's list store index..*/
-						GINT_SELECTED_INDEX, -1, /* the row's tree_model_sortable index.*/ 
-				-1
-			);
-		}
-		uber_free(created_how_long_ago);
-		uber_free(created_at_str);
-		service=NULL;
-		gtk_tree_path_free(path);
-		uber_free(iter);
-	}
-	if(this->list_store_index>-1) this->list_store_index=-1;
-}/*update_viewer_update_age(update_viewer, 0);*/
 
 static void update_viewer_refresh_clicked(GtkButton *update_viewer_refresh_tool_button, UpdateViewer *update_viewer){
 	if(!( update_viewer && IS_UPDATE_VIEWER(update_viewer) ))	return;
@@ -1113,7 +1117,7 @@ static void update_viewer_create_gui(UpdateViewer *update_viewer){
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(this->tree_model_sort), GINT_CREATED_AGO, GTK_SORT_ASCENDING);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(this->sexy_tree_view), this->tree_model_sort);
-	sexy_tree_view_set_tooltip_label_column(this->sexy_tree_view, STRING_SEXY_TWEET);
+	sexy_tree_view_set_tooltip_label_column(this->sexy_tree_view, STRING_SEXY_UPDATE);
 }/*update_viewer_create_gui(update_viewer);*/
 
 void update_viewer_key_pressed(UpdateViewer *update_viewer, GdkEventKey *event){
@@ -1298,14 +1302,14 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
 	gtk_progress_bar_pulse(this->progress_bar);
-	debug("Appending update to UpdateViewer <%s>'s; timeline [%s]; update ID: %s.  Total updates: %u", status->service->guid, this->timeline, status->id_str, this->total);
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	online_service_update_ids_get(status->service, this->timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	gboolean unread=(status->id && status->id > unread_update_id);
 	
 	this->list_store_index++;
-	gtk_list_store_append(this->list_store, iter);
+	/*gtk_list_store_append(this->list_store, iter);*/
+	gtk_list_store_insert(this->list_store, iter, this->list_store_index);
 	gtk_list_store_set(
 				this->list_store, iter,
 					GUINT_UPDATE_VIEWER_INDEX, this->total,
@@ -1314,8 +1318,8 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 					STRING_USER, status->user->user_name,			/*Useruser_name string.*/
 					STRING_NICK, status->user->nick_name,			/*Author user_name string.*/
 					STRING_TEXT, status->text,				/*Tweet string.*/
-					STRING_TWEET, status->tweet,				/*Display string.*/
-					STRING_SEXY_TWEET, status->sexy_tweet,			/*SexyTreeView's tooltip.*/
+					STRING_UPDATE, status->tweet,				/*Display string.*/
+					STRING_SEXY_UPDATE, status->sexy_tweet,			/*SexyTreeView's tooltip.*/
 					STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
 					STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
 					GINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
@@ -1324,12 +1328,13 @@ void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status){
 					STRING_FROM, status->from,				/*Who the tweet/update is from.*/
 					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the tweet is to.*/
 					GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
-					GINT_LIST_STORE_INDEX, this->total,			/*The row's unsorted index.*/
+					GINT_LIST_STORE_INDEX, this->list_store_index,		/*The row's unsorted index.*/
 					GBOOLEAN_UNREAD, unread,
 				-1
 	);
 	this->total++;
 	
+	debug("Inserting update in to UpdateViewer at index %d.  Inserting one of <%s>'s %s; timeline [%s]; update ID: %s; read status: %s.  Total updates: %u", this->list_store_index, status->service->guid, this->monitoring_string, this->timeline, status->id_str, (unread ?"TRUE" :"FALSE"), this->total);
 	debug("Inserting iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", status->service->guid, this->monitoring_string, this->total, this->total, -1);
 	if(unread)
 		update_viewer_increment_unread(update_viewer);
@@ -1473,22 +1478,25 @@ static void update_viewer_update_selected(SexyTreeView *update_viewer_sexy_tree_
 					GDOUBLE_USER_ID, &user_id,
 					STRING_NICK, &nick_name,
 					STRING_TEXT, &text_tweet,
-					STRING_SEXY_TWEET, &sexy_tweet,
+					STRING_SEXY_UPDATE, &sexy_tweet,
 					STRING_CREATED_AGO, &date,
 					STRING_USER, &user_name,
 					PIXBUF_AVATAR, &pixbuf,
 					ONLINE_SERVICE, &service,
-					GINT_SELECTED_INDEX, &this->index,
+					GINT_SELECTED_INDEX, &selected_index,
 					GINT_LIST_STORE_INDEX, &list_store_index,
 					GBOOLEAN_UNREAD, &unread,
 				-1
 	);
 	
 	gchar *update_id_str=gdouble_to_str(update_id);
-	if(this->index < 0 ){
-		debug("Updating UpdateViewer, for %s (timeline: %s), marking update ID: %s; from: <%s@%s>; to: <%s>; as read.  UpdateViewer details: total updates: %d; list_store_index: %d; selected_index: %d.", this->monitoring_string, this->timeline, update_id_str, user_name, service->uri, service->guid, this->total, list_store_index, selected_index);
+	if(selected_index < 0 ){
 		update_viewer_find_selected_update_index(update_viewer, service, user_name, update_id);
+		selected_index=this->index;
+		debug("Updating UpdateViewer, for %s (timeline: %s), marking update ID: %s; from: <%s@%s>; to: <%s>; as read.  UpdateViewer details: total updates: %d; list_store_index: %d; selected: %d.", this->monitoring_string, this->timeline, update_id_str, user_name, service->uri, service->guid, this->total, list_store_index, selected_index);
 	}
+	this->index=list_store_index;
+	this->index=selected_index;
 	
 	debug("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: list_store %d; selected: %d.", update_id_str, user_name, service->uri, service->guid, list_store_index, selected_index);
 	statusbar_printf("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: list_store %d; selected: %d.", update_id_str, user_name, service->uri, service->guid, list_store_index, selected_index);

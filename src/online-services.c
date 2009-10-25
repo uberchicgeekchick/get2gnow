@@ -239,9 +239,9 @@ static gint online_services_cmp_count(guint compare, guint count){
 	if(!compare) return -2;
 	if(!count) return compare;
 	if(compare == count) return 0;
-	if(compare > count) return -1;
-	return 1;
-}/*online_services_has_connected(1);*/
+	if(compare > count) return 1;
+	return -1;
+}/*online_services_cmp_count(service->logins, 1);*/
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect){
 	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name))){
@@ -477,10 +477,24 @@ OnlineService *online_services_get_online_service_by_guid(const gchar *online_se
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	for(accounts=services->accounts; accounts; accounts=accounts->next)
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
 		if(!strcasecmp( service->guid, online_service_guid))
 			return service;
+	}
+	g_list_free(accounts);
+	return NULL;
+}/*online_services_get_online_service_by_guid(Online_services, online_service_guid);*/
+
+OnlineService *online_services_get_online_service_by_uri(const gchar *online_service_uri){
+	GList		*accounts=NULL;
+	OnlineService	*service=NULL;
+	
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=((OnlineService *)accounts->data);
+		if(!strcasecmp( service->uri, online_service_uri))
+			return service;
+	}
 	g_list_free(accounts);
 	return NULL;
 }/*online_services_get_online_service_by_guid(Online_services, online_service_guid);*/
@@ -494,10 +508,9 @@ OnlineService *online_services_connected_get_last(void){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	for(accounts=services->accounts; accounts; accounts=accounts->next){
+	for(accounts=g_list_last(services->accounts); accounts; accounts=accounts->prev){
 		service=(OnlineService *)accounts->data;
-		if(!(service->connected))
-			service=NULL;
+		if(service->connected) return service;
 	}
 	return service;
 }/*online_services_connected_get_last();*/
@@ -508,7 +521,7 @@ void online_services_decrement_connected(const gchar *service_guid, gboolean no_
 	debug("OnlineServices has disconnected from OnlineService: <%s>.  Remaining connections: #%d.", service_guid, services->connected);
 	if(services->connected) return;
 	
-	main_window_state_on_connection(FALSE);
+	main_window_state_on_connection(!no_state_change);
 	
 	if(no_state_change) return;
 	online_services_dialog_show(main_window_get_window());

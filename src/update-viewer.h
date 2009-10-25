@@ -84,8 +84,8 @@ typedef enum _UpdateViewerListStoreColumn{		/***********************************
 	STRING_USER,					/*	Username string.							*/
 	STRING_NICK,					/*	Author name string.							*/
 	STRING_TEXT,					/*	Unformated Tweet string.						*/
-	STRING_TWEET,					/*	Update for display string in the UpdateViewer's SexyTreeView.           */
-	STRING_SEXY_TWEET,				/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
+	STRING_UPDATE,					/*	Update for display string in the UpdateViewer's SexyTreeView.           */
+	STRING_SEXY_UPDATE,				/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
 	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,				/*	Date string.								*/
 	GINT_CREATED_AGO,				/*	How old the post is, in seconds, for sorting.				*/

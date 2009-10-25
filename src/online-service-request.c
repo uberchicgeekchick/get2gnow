@@ -538,7 +538,7 @@ gchar *online_service_request_selected_update_reply_to_strdup(gboolean forward_u
 	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
 		return NULL;
 	
-	if(!( (gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE)) && online_services_has_connected(1) ))
+	if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) ))
 		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forward_update ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
 	
 	return g_strdup_printf("%s@%s %s", (forward_update ?"RT " :""), selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
@@ -884,8 +884,7 @@ static void online_service_request_popup_confirmation_dialog_add_gconfig_key( co
 }/*online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );*/
 
 void online_service_request_popup_select_service(void){
-	if(!online_services_has_connected(1)){
-		if(selected_service) return;
+	if(!( online_services_has_connected(1) > 0 )){
 		selected_service=online_services_connected_get_first();
 		debug("There is only one connected OnlineService, auto-selecting: %s.", selected_service->guid);
 		return;
@@ -1015,7 +1014,7 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	else
 		debug("OnlineServices found & loaded.  Selecting active service.");
 	
-	if(!(online_services_has_connected(1) && online_services_has_total(1))){
+	if(!(online_services_has_connected(1) > 0 && online_services_has_total(1) > 0)){
 		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
 		gtk_widget_hide(GTK_WIDGET( online_service_request_popup->online_services_frame));
 	}

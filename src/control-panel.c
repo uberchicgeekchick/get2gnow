@@ -253,6 +253,8 @@ static void control_panel_sexy_append(const gchar *update, ControlPanel *control
 static void control_panel_select_previous_update(GtkComboBoxEntry *sexy_entry_combo_box_entry, ControlPanel *control_panel);
 static void control_panel_free_updates(ControlPanel *control_panel);
 
+static void control_panel_reply_or_forward(GtkButton *update_button);
+
 static void control_panel_dm_show(GtkToggleButton *toggle_button);
 static void control_panel_dm_form_activate(gboolean dm_activate);
 static void control_panel_dm_refresh(void);
@@ -398,8 +400,8 @@ ControlPanel *control_panel_new(GtkWindow *parent){
 				"dm_refresh", "clicked", control_panel_dm_refresh,
 				"followers_send_dm", "clicked", control_panel_send,
 				
-				"reply_button", "clicked", online_service_request_selected_update_reply,
-				"forward_update_button", "clicked", online_service_request_selected_update_forward_update,
+				"reply_button", "clicked", control_panel_reply,
+				"forward_update_button", "clicked", control_panel_forward,
 				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
 			NULL
 	);
@@ -668,12 +670,12 @@ static void control_panel_sexy_init(void){
 	
 	debug("Creating Tweet's view area, 'control_panel->sexy_update', using sexy label interface.");
 	control_panel->sexy_update=label_new();
+	g_object_set(control_panel->sexy_update, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_box_pack_start(
 			GTK_BOX(control_panel->status_view_vbox),
 			GTK_WIDGET(control_panel->sexy_update),
 			TRUE, TRUE, 5
 	);
-	g_object_set(control_panel->sexy_update, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_widget_show(GTK_WIDGET(control_panel->sexy_update));
 	
 	debug("Creating Tweet's entry, 'control_panel->sexy_entry', using SexyEntry, and adding it to ControlPanel's 'sexy_entry_combo_box_entry'.");
@@ -727,8 +729,10 @@ static void control_panel_reorder(void){
 void control_panel_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf){
 	if(!id)
 		online_service_request_unset_selected_update();
-	else
+	else{
 		online_service_request_set_selected_update(service, id, user_id, user_name, text_update);
+		main_window_set_statusbar_default_message( _("Hotkeys: <CTRL+N> start a new tweet; <CTRL+D> or <SHIFT+Return> to dm; <CTRL+R>, <Return>, or '@' to reply, <CTRL+F> or '>' to forward/retweet.") );
+	}
 	
 	debug("%s the Control Panel.", (id ?_("Enlarging") :"") );
 	control_panel_compact_view_display( (id ?FALSE :gconfig_if_bool( PREFS_CONTROL_PANEL_COMPACT, TRUE) ) );
@@ -750,7 +754,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	else
 		sexy_text=g_strdup_printf("<span size=\"small\" weight=\"light\" variant=\"smallcaps\">To: %s<a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", service->nick_name, uri_scheme_suffix, service->uri, service->user_name, service->user_name, service->uri);
 	debug("Setting 'sexy_to' for 'selected_update':\n\t\t%s.", sexy_text);
-	label_set_text(service, control_panel->sexy_to, sexy_text, FALSE, TRUE);
+	label_set_text(service, control_panel->sexy_to, id, sexy_text, FALSE, TRUE);
 	uber_free(sexy_text);
 	
 	if(!(G_STR_EMPTY(nick_name) && G_STR_EMPTY(user_name) )){
@@ -759,7 +763,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	}else
 		sexy_text=g_strdup("");
 	debug("Setting 'sexy_from' for 'selected_update':\n\t\t%s.", sexy_text);
-	label_set_text(service, control_panel->sexy_from, sexy_text, FALSE, TRUE);
+	label_set_text(service, control_panel->sexy_from, id, sexy_text, FALSE, TRUE);
 	uber_free(sexy_text);
 	
 	if(!( G_STR_EMPTY(date)))
@@ -778,7 +782,7 @@ void control_panel_view_selected_update(OnlineService *service, const gdouble id
 	if(!(gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)))
 		sexy_url_label_set_markup(SEXY_URL_LABEL(control_panel->sexy_update), sexy_update);
 	else
-		label_set_text(service, control_panel->sexy_update, sexy_update, TRUE, TRUE);
+		label_set_text(service, control_panel->sexy_update, id, sexy_update, TRUE, TRUE);
 	
 	if(!pixbuf)
 		gtk_image_set_from_icon_name(control_panel->user_image, GETTEXT_PACKAGE, ImagesExpanded);
@@ -912,21 +916,31 @@ void control_panel_show_previous_updates(void){
 	g_signal_emit_by_name(control_panel->sexy_entry_combo_box_entry, "popup");
 }/*control_panel_show_previous_updates();*/
 
+void control_panel_reply(void){
+	control_panel_reply_or_forward(control_panel->reply_button);
+}/*control_panel_reply("user_name");*/
+
+void control_panel_forward(void){
+	control_panel_reply_or_forward(control_panel->forward_update_button);
+}/*control_panel_reply("user_name");*/
+
+static void control_panel_reply_or_forward(GtkButton *update_button){
+	gchar *reply_to_string=online_service_request_selected_update_reply_to_strdup(update_button==control_panel->forward_update_button);
+	if(!online_service_request_selected_update_get_user_name())
+		control_panel_beep();
+	else if(g_str_has_prefix(GTK_ENTRY(control_panel->sexy_entry)->text, reply_to_string))
+		control_panel_beep();
+	else
+		online_service_request_selected_update_reply();
+	uber_free(reply_to_string);
+}/*control_panel_reply_or_forward(button);*/
+
 void control_panel_send(GtkWidget *activated_widget){
 	gchar *user_name=NULL;
 	
 	const gchar *text=GTK_ENTRY(control_panel->sexy_entry)->text;
-	if(G_STR_EMPTY(text)){
-		gchar *reply_to_string=online_service_request_selected_update_reply_to_strdup(FALSE);
-		if(!online_service_request_selected_update_get_user_name())
-			control_panel_beep();
-		else if(g_str_has_prefix(text, reply_to_string))
-			control_panel_beep();
-		else
-			online_service_request_selected_update_reply();
-		uber_free(reply_to_string);
-		return;
-	}
+	if(G_STR_EMPTY(text))
+		return control_panel_reply();
 	
 	if(activated_widget==GTK_WIDGET(control_panel->sexy_dm_button) ){
 		const gchar *user_name;
@@ -958,6 +972,7 @@ void control_panel_send(GtkWidget *activated_widget){
 }/*control_panel_send*/
 
 void control_panel_new_update(void){
+	main_window_set_statusbar_default_message( _("Hotkeys: Press Up, Down, Page Up, or Page Down to browse updates.  Press & Hold <CTRL+SHIFT> while browsing to select the update.") );
 	control_panel_view_selected_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
 	
 	if(control_panel->best_friends_service) control_panel->best_friends_service=NULL;

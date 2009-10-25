@@ -265,7 +265,8 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[debug_domains_source_code_index], _("error"));
 				va_list args;
 				va_start(args, msg);
-				g_vfprintf(stderr, (notice ?g_strrstr(msg, "**NOTICE:**") :msg), args);
+				/*g_vfprintf(stderr, (notice ?g_strrstr(msg, "**NOTICE:**") :msg), args);*/
+				g_vfprintf(stderr, msg, args);
 				va_end(args);
 				g_fprintf(stderr, " @ %s", datetime);
 			}

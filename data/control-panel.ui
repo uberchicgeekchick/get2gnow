@@ -49,8 +49,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">best_friend_image</property>
-                        <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
                         <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -212,12 +212,10 @@
                   <object class="GtkLabel" id="update_datetime_label">
                     <property name="visible">True</property>
                     <property name="xalign">1</property>
-                    <property name="yalign">1</property>
                     <property name="use_markup">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">False</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
@@ -406,12 +404,12 @@
                         <property name="position">0</property>
                       </packing>
                     </child>
-		    <child>
+                    <child>
                       <object class="GtkComboBoxEntry" id="control_panel_sexy_entry_combo_box_entry">
                         <property name="visible">True</property>
                         <property name="model">previous_updates_list_store</property>
                         <property name="add_tearoffs">True</property>
-			<property name="tearoff_title">Previous Updates</property>
+                        <property name="tearoff_title">Previous Updates</property>
                         <child>
                           <object class="GtkCellRendererText" id="previous_update_cell_renderer_text">
                             <property name="xpad">5</property>
@@ -420,7 +418,7 @@
                             <attribute name="text">0</attribute>
                           </attributes>
                         </child>
-                     </object>
+                      </object>
                       <packing>
                         <property name="position">1</property>
                       </packing>
@@ -430,8 +428,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
@@ -450,8 +448,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
@@ -481,8 +479,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="new_update_image">
                             <property name="visible">True</property>
@@ -512,8 +510,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="dm_form_active_image">
                             <property name="visible">True</property>

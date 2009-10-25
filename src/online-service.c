@@ -1117,7 +1117,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *requested_uri, has_loaded);
-	if( has_loaded>0 && update_viewer_get_total(update_viewer) ){
+	if( has_loaded>1 && update_viewer_get_total(update_viewer) ){
 		requesting=_("new");
 		since_id=newest_update_id;
 	}else if(monitoring==DMs || monitoring==Replies){
@@ -1160,11 +1160,11 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 			debug("Auto-replacement trigger match '/me' to be replaced with user nick.");
 			debug("/me auto-replacement triggered.  Replacing '/me' with: '%s'", service->user_name);
 			gchar **reply_form_data_parts=g_strsplit( (gchar *)(*form_data), "/me", -1);
-			gchar *replace_with=g_strdup_printf("*%s", ( replace==1 ? service->nick_name : service->user_name ) );
+			gchar *replace_with=g_strdup_printf("%s", ( replace==1 ? service->nick_name : service->user_name ) );
 			reply_form_data=g_strdup("");
 			gchar *reply_form_data_swap=NULL;
 			for(gint i=0; reply_form_data_parts[i]; i++){
-				reply_form_data_swap=g_strdup_printf("%s%s%s", reply_form_data, reply_form_data_parts[i], (reply_form_data_parts[i+1]?replace_with:""));
+				reply_form_data_swap=g_strdup_printf("%s%s%s%s", reply_form_data, reply_form_data_parts[i], ((reply_form_data_parts[i+1] && ( ((i>0)) || (service->micro_blogging_service!=Identica && service->micro_blogging_service!=StatusNet))) ?"*" :""), (reply_form_data_parts[i+1]?replace_with:""));
 				g_free(reply_form_data);
 				reply_form_data=reply_form_data_swap;
 				reply_form_data_swap=NULL;
@@ -1190,6 +1190,8 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
 		reply_form_data=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data));
 		uber_free(in_reply_to_status_id_str);
+		in_reply_to_service=NULL;
+		in_reply_to_status_id=0;
 	}
 	
 	g_free(*form_data);

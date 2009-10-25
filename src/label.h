@@ -75,9 +75,9 @@ G_BEGIN_DECLS
 #define IS_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_LABEL))
 #define LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_LABEL, LabelClass))
 
-typedef struct _Label        Label;
-typedef struct _LabelClass   LabelClass;
-typedef struct _LabelPriv    LabelPriv;
+typedef struct _Label		Label;
+typedef struct _LabelClass	LabelClass;
+typedef struct _LabelPrivate	LabelPrivate;
 
 struct _Label {
 	SexyUrlLabel           parent;
@@ -87,9 +87,9 @@ struct _LabelClass {
 	SexyUrlLabelClass      parent_class;
 };
 
-GType label_get_type  (void) G_GNUC_CONST;
-Label *label_new       (void);
-void label_set_text(OnlineService *service, Label  *nav, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+GType label_get_type(void) G_GNUC_CONST;
+Label *label_new(void);
+void label_set_text(OnlineService *service, Label  *label, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 gchar *label_msg_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS

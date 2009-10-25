@@ -122,7 +122,7 @@ struct _UserProfileViewer{
 	GtkLabel		*updated_when_label;
 	
 	GtkVBox			*latest_update_vbox;
-	Label			*latest_tweet;
+	Label			*most_recent_update;
 };
 
 
@@ -550,7 +550,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					(service->https?"s":""), service->uri, service->guid
 	);
 	
-	label_set_text(service, LABEL(user_profile_viewer->service_label), profile_details, TRUE, TRUE);
+	label_set_text(service, LABEL(user_profile_viewer->service_label), user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	
@@ -559,7 +559,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					"\t\t<u><b>%s:</b></u> @%s",
 					user->nick_name, user->user_name
 	);
-	label_set_text(service, LABEL(user_profile_viewer->user_label), profile_details, TRUE, TRUE);
+	label_set_text(service, LABEL(user_profile_viewer->user_label), user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	
@@ -575,19 +575,19 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	uber_free(profile_details);
 	
 	profile_details=g_strdup_printf( "\t<b>URL:</b>\t<a href=\"%s\">%s</a>\n", user->url, user->url );
-	label_set_text(service, user_profile_viewer->url_hyperlink, profile_details, TRUE, TRUE);
+	label_set_text(service, user_profile_viewer->url_hyperlink, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", FALSE, NULL );
 	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", user->bio );
-	label_set_text(service, user_profile_viewer->bio_html, profile_details, TRUE, TRUE);
+	label_set_text(service, user_profile_viewer->bio_html, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", user->status->created_how_long_ago);
 	gtk_label_set_markup(user_profile_viewer->updated_when_label, profile_details);
 	uber_free(profile_details);
 	
-	label_set_text(service, user_profile_viewer->latest_tweet, user->status->sexy_tweet, TRUE, TRUE);
+	label_set_text(service, user_profile_viewer->most_recent_update, user->status->id, user->status->sexy_tweet, TRUE, TRUE);
 	
 	if(!user_profile_viewer->loading)
 		user_profile_viewer_show_all();
@@ -660,10 +660,10 @@ static void user_profile_viewer_setup(void){
 				TRUE, TRUE, 0
 	);
 	
-	user_profile_viewer->latest_tweet=label_new();
+	user_profile_viewer->most_recent_update=label_new();
 	gtk_box_pack_end(
 			GTK_BOX(user_profile_viewer->latest_update_vbox),
-			GTK_WIDGET(user_profile_viewer->latest_tweet),
+			GTK_WIDGET(user_profile_viewer->most_recent_update),
 			TRUE, TRUE, 0
 	);
 	
@@ -724,7 +724,7 @@ static void user_profile_viewer_show_all(void){
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_label));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->url_hyperlink));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->latest_tweet));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->most_recent_update));
 	
 	window_present(GTK_WINDOW(user_profile_viewer->dialog), TRUE);
 }/*user_profile_viewer_show_all();*/
@@ -740,11 +740,11 @@ static void user_profile_viewer_hide_all(void){
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->service_label));
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->user_label));
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->url_hyperlink));
-	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->latest_tweet));
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->most_recent_update));
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", TRUE, NULL );
 	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_profile_viewer->user_name, (user_profile_viewer->service->https?"s":""), user_profile_viewer->service->uri, user_profile_viewer->service->uri );
-	label_set_text(user_profile_viewer->service, user_profile_viewer->bio_html, profile_details, FALSE, TRUE);
+	label_set_text(user_profile_viewer->service, user_profile_viewer->bio_html, 0.0, profile_details, FALSE, TRUE);
 	uber_free(profile_details);
 	
 	user_profile_viewer->loading=TRUE;

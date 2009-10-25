@@ -34,9 +34,9 @@
       <column type="gchararray"/>
       <!-- column-name STRING_TEXT -->
       <column type="gchararray"/>
-      <!-- column-name STRING_TWEET -->
+      <!-- column-name STRING_UPDATE -->
       <column type="gchararray"/>
-      <!-- column-name STRING_SEXY_TWEET -->
+      <!-- column-name STRING_SEXY_UPDATE -->
       <column type="gchararray"/>
       <!-- column-name STRING_CREATED_AGO -->
       <column type="gchararray"/>

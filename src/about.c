@@ -103,7 +103,7 @@ const gchar *license[] = {
 
 static void about_dialog_activate_link_cb( GtkAboutDialog *about, const gchar *link, gpointer data ){
 	if(!g_app_info_launch_default_for_uri(link, NULL, NULL))
-		debug("Couldn't show URL: <%s>.", link );
+		debug("**ERROR:** Can't open URI: <%s>.", link );
 	else
 		debug("**NOTICE:** Opening URI: <%s>.", link );
 }
