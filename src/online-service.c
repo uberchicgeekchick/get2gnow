@@ -427,7 +427,7 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 	tabs_remove_service(service);
 	
 	online_service_display_debug_details(service, FALSE, "deleted");
-	online_service_free(service);
+	online_service_free(service, TRUE);
 	return TRUE;
 }/*online_service_delete*/
 
@@ -779,7 +779,7 @@ gboolean online_service_connect(OnlineService *service){
 	debug("Adding authenticating callback for: '%s'. user_name: %s, password: %s", service->guid, service->user_name, service->password);
 	g_signal_connect(service->session, "authenticate", (GCallback)online_service_http_authenticate, service);
 	
-#ifdef GNOME_ENABLE_DEBUG
+/*#ifdef GNOME_ENABLE_DEBUG
 	
 	SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_HEADERS, -1);
 	soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(logger));
@@ -793,7 +793,7 @@ gboolean online_service_connect(OnlineService *service){
 		g_object_unref(logger);
 	}
 	
-#endif
+#endif*/
 	
 	online_service_cookie_jar_open(service);
 	
@@ -956,8 +956,8 @@ gboolean online_service_validate_session(OnlineService *service, const gchar *re
 	if(service && service->session && SOUP_IS_SESSION(service->session) ) return TRUE;
 	if(service && service->session)
 		online_service_disconnect(service, TRUE);
-	debug("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"[Unknown]"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
-	statusbar_printf("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"[Unknown]"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
+	debug("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"Unknown account"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
+	statusbar_printf("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"Unknown account"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
 	return FALSE;
 }/*online_service_validate_session(service, requested_uri);*/
 
@@ -1249,11 +1249,11 @@ gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *
 	return content_type;
 }/*online_service_get_uri_content_type*/
 
-void online_service_free(OnlineService *service){
+void online_service_free(OnlineService *service, gboolean no_state_change){
 	if(!service) return;
 	
 	debug("Unloading instance of: %s service", service->guid);
-	online_service_disconnect(service, TRUE);
+	online_service_disconnect(service, no_state_change);
 	
 	debug("Shutting down network rate-limit timer for OnlineService\t[%s].", service->guid );
 	timer_free(service->timer);
@@ -1268,7 +1268,7 @@ void online_service_free(OnlineService *service){
 	users_glists_free_lists(service);
 	
 	debug("Destroying OnlineService <%s> object.", service->guid );
-	uber_object_free(&service->key, &service->uri, &service->user_name, &service->nick_name, &service->password, &service->status, &service->guid, &service->micro_blogging_client, &service, NULL);
+	uber_object_free(&service->key, &service->uri, &service->user_name, &service->nick_name, &service->password, &service->guid, &service->micro_blogging_client, &service->status, &service, NULL);
 }/*online_service_free*/
 
 /********************************************************

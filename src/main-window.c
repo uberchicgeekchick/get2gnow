@@ -436,7 +436,7 @@ static void main_window_setup(void){
 					"new_update", "activate", control_panel_new_update,
 					"new_dm", "activate", control_panel_new_dm,
 					"selected_update_reply_image_menu_item", "activate", online_service_request_selected_update_reply,
-					"selected_update_forward_update_image_menu_item", "activate", online_service_request_selected_update_forward_update,
+					"selected_update_forward_update_image_menu_item", "activate", online_service_request_selected_update_forward,
 					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_save_fave,
 					"selected_update_author_view_profile_image_menu_item", "activate", online_service_request_selected_update_view_profile,
 					"selected_update_author_view_updates_image_menu_item", "activate", online_service_request_selected_update_view_updates,
@@ -700,12 +700,13 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 	
 	if(button==main_window->private->best_friends_send_at_message_button){
 		gchar *at_string=NULL;
-		if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) ))
+		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
 			at_string=g_strdup_printf("@%s ( http://%s/%s ) ", user, service->uri, user );
 		else
 			at_string=g_strdup_printf("@%s ", user);
 		
-		control_panel_sexy_prefix_string(at_string);
+		in_reply_to_service=service;
+		control_panel_sexy_prefix_string(at_string, TRUE);
 		control_panel_sexy_select();
 		uber_free(at_string);
 		uber_free(user_name);
@@ -1216,6 +1217,7 @@ static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 }/*main_window_reconnect*/
 
 void main_window_disconnect(void){
+	main_window_state_on_connection(FALSE);
 	online_services_disconnect();
 }/*main_window_disconnect*/
 
@@ -1269,16 +1271,17 @@ void main_window_state_on_connection(gboolean connected){
 		return;
 	
 	if(main_window->private->connected==connected) return;
+	main_window->private->connected=connected;
 	
 	if(!connected){
 		control_panel_new_update();
 		main_window_statusbar_timeouts_free();
 		online_service_request_unset_selected_update();
 		main_window_set_statusbar_default_message( _("You're currently not connected to any Online Services.") );
-		//tabs_stop();
+		tabs_stop();
 	}else{
 		control_panel_new_update();
-		/*tabs_refresh();*/
+		tabs_refresh();
 	}
 	
 	GList         *l;
@@ -1360,7 +1363,7 @@ static gboolean main_window_statusbar_display(const gchar *message){
 
 static void main_window_statusbar_timeouts_free(void){
 	if(statusbar_timers)
-		for(statusbar_timers=g_slist_nth(statusbar_timers, statusbar_messages_total); statusbar_timers; statusbar_timers=g_slist_nth(statusbar_timers, statusbar_messages_total))
+		for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_messages_total; --statusbar_messages_total, statusbar_timers=g_slist_nth(statusbar_timers, 0) )
 			main_window_statusbar_timer_remove();
 	
 	uber_slist_free(statusbar_timers);

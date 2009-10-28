@@ -125,8 +125,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 
 gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml);
 
-void online_service_free(OnlineService *service);
+void online_service_free(OnlineService *service, gboolean no_state_change);
 
 G_END_DECLS
 #endif /* __ONLINE_SERVICE_H__ */
-

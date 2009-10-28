@@ -104,19 +104,19 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef uber_free
-#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
+#	define	uber_free(mem)					{ if(mem) g_free(mem); mem=NULL; }
 #endif
 
 #ifndef uber_list_free
-#	define uber_list_free(l)				{ g_list_free(l); l=NULL; }
+#	define uber_list_free(l)				{ if(l) g_list_free(l); l=NULL; }
 #endif
 
 #ifndef uber_slist_free
-#	define uber_slist_free(sl)				{ g_slist_free(sl); sl=NULL; }
+#	define uber_slist_free(sl)				{ if(sl) g_slist_free(sl); sl=NULL; }
 #endif
 
 #ifndef uber_object_unref
-#	define	uber_object_unref(o)				{ g_object_unref(o); o=NULL; }
+#	define	uber_object_unref(o)				{ if(o) g_object_unref(o); o=NULL; }
 #endif
 
 #ifndef g_str_n_equal

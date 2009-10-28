@@ -155,7 +155,7 @@ void gconfig_shutdown(void){
 	uber_free(cached_float_key);
 	uber_free(cached_string_key);
 	uber_free(cached_string_value);
-	if(gconfig) uber_unref(gconfig);
+	if(gconfig) uber_object_unref(gconfig);
 }/*gconfig_shutdown();*/
 
 static void gconfig_suggest_sync(const gchar *gtype, const gchar *key){

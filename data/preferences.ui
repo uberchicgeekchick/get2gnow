@@ -184,7 +184,7 @@ Enable: _Floating Update Viewer</property>
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="expand_urls_selected_only_checkbutton">
-                                <property name="label" translatable="yes">_Only show link titles once an update's selected.</property>
+                                <property name="label" translatable="yes">Only show link _titles once an update's selected.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -649,7 +649,7 @@ Enable: _Floating Update Viewer</property>
                                 <property name="receives_default">False</property>
                                 <property name="border_width">12</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">False</property>
+                                <property name="draw_indicator">True</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -659,6 +659,7 @@ Enable: _Floating Update Viewer</property>
                             </child>
                             <child>
                               <object class="GtkFrame" id="frame2">
+                                <property name="visible">True</property>
                                 <property name="label_xalign">0</property>
                                 <property name="shadow_type">none</property>
                                 <child>
@@ -728,7 +729,7 @@ Enable: _Floating Update Viewer</property>
                                 <property name="receives_default">False</property>
                                 <property name="border_width">12</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">False</property>
+                                <property name="draw_indicator">True</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -744,7 +745,7 @@ Enable: _Floating Update Viewer</property>
                                 <property name="receives_default">False</property>
                                 <property name="border_width">12</property>
                                 <property name="use_underline">True</property>
-                                <property name="draw_indicator">False</property>
+                                <property name="draw_indicator">True</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -798,7 +799,7 @@ Enable: _Floating Update Viewer</property>
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="okay_button">
-                <property name="label">gtk-close</property>
+                <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>

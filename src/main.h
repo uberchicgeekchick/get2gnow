@@ -35,21 +35,6 @@ G_BEGIN_DECLS
 #endif
 
 
-#ifndef g_str_n_equal
-#	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
-#endif
-
-
-#ifndef uber_unref
-#	define		uber_unref(object)			{ g_object_unref(object); object=NULL; }
-#endif
-
-
-#ifndef	uber_list_free
-#	define		uber_list_free(glist)			{ g_list_free(glist); glist=NULL; }
-#endif
-
-
 G_END_DECLS
 #endif /* _MAIN_H_ */
 

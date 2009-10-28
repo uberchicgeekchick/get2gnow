@@ -651,7 +651,7 @@ static void control_panel_sexy_init(void){
 			GTK_WIDGET(control_panel->sexy_to),
 			FALSE, FALSE, 5
 	);
-	g_object_set(control_panel->sexy_to, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	g_object_set(control_panel->sexy_to, "yalign", 0.50, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_widget_show(GTK_WIDGET(control_panel->sexy_to));
 	
 	debug("Creating Tweet's title area, 'control_panel->sexy_from', using sexy label interface.");
@@ -663,14 +663,14 @@ static void control_panel_sexy_init(void){
 	);
 	
 	debug("Aligning Tweet's view area, 'control_panel->update_datetime_label',");
-	g_object_set(control_panel->update_datetime_label, "yalign", 0.00, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	g_object_set(control_panel->update_datetime_label, "yalign", 0.50, "xalign", 1.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	
-	g_object_set(control_panel->sexy_from, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	g_object_set(control_panel->sexy_from, "yalign", 0.50, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_widget_show(GTK_WIDGET(control_panel->sexy_from));
 	
 	debug("Creating Tweet's view area, 'control_panel->sexy_update', using sexy label interface.");
 	control_panel->sexy_update=label_new();
-	g_object_set(control_panel->sexy_update, "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
+	g_object_set(control_panel->sexy_update, "yalign", 0.50, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, NULL);
 	gtk_box_pack_start(
 			GTK_BOX(control_panel->status_view_vbox),
 			GTK_WIDGET(control_panel->sexy_update),
@@ -687,7 +687,7 @@ static void control_panel_sexy_init(void){
 	gtk_entry_completion_set_model(control_panel->sexy_completion, control_panel->previous_updates_tree_model);
 	gtk_entry_set_completion(GTK_ENTRY(control_panel->sexy_entry), control_panel->sexy_completion);
 	gtk_widget_show(GTK_WIDGET(control_panel->sexy_entry));
-		
+	
 	g_signal_connect_after(control_panel->sexy_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
 	g_signal_connect_after(control_panel->sexy_entry, "key-release-event", G_CALLBACK(control_panel_sexy_entry_character_count), control_panel->char_count);
 	g_signal_connect(control_panel->sexy_entry, "activate", G_CALLBACK(control_panel_send), NULL);
@@ -866,12 +866,13 @@ void control_panel_sexy_select(void){
 
 void control_panel_sexy_prefix_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
-	control_panel_sexy_prefix_string((const gchar *)str);
+	control_panel_sexy_prefix_string((const gchar *)str, FALSE);
 	uber_free(str);
 }/*control_panel_sexy_prefix_char*/
 
-void control_panel_sexy_prefix_string(const gchar *str){
-	control_panel_sexy_puts(str, 0);
+void control_panel_sexy_prefix_string(const gchar *str, gboolean uniq){
+	if(!(uniq && g_str_has_prefix(GTK_ENTRY(control_panel->sexy_entry)->text, str) ))
+		control_panel_sexy_puts(str, 0);
 }/*control_panel_sexy_prefix_string*/
 
 void control_panel_sexy_set(gchar *text){
@@ -918,28 +919,30 @@ void control_panel_show_previous_updates(void){
 
 void control_panel_reply(void){
 	control_panel_reply_or_forward(control_panel->reply_button);
-}/*control_panel_reply("user_name");*/
+}/*control_panel_reply();*/
 
 void control_panel_forward(void){
 	control_panel_reply_or_forward(control_panel->forward_update_button);
-}/*control_panel_reply("user_name");*/
+}/*control_panel_forward();*/
 
 static void control_panel_reply_or_forward(GtkButton *update_button){
-	gchar *reply_to_string=online_service_request_selected_update_reply_to_strdup(update_button==control_panel->forward_update_button);
-	if(!online_service_request_selected_update_get_user_name())
+	if(!online_service_request_selected_update_get_user_name()){
+		if(G_STR_N_EMPTY(GTK_ENTRY(control_panel->sexy_entry)->text))
+			return control_panel_sexy_send(NULL, NULL);
 		control_panel_beep();
-	else if(g_str_has_prefix(GTK_ENTRY(control_panel->sexy_entry)->text, reply_to_string))
-		control_panel_beep();
-	else
+		return;
+	}
+	if(update_button!=control_panel->forward_update_button)
 		online_service_request_selected_update_reply();
-	uber_free(reply_to_string);
+	else
+		online_service_request_selected_update_forward();
+	control_panel_sexy_send(NULL, NULL);
 }/*control_panel_reply_or_forward(button);*/
 
 void control_panel_send(GtkWidget *activated_widget){
 	gchar *user_name=NULL;
 	
-	const gchar *text=GTK_ENTRY(control_panel->sexy_entry)->text;
-	if(G_STR_EMPTY(text))
+	if(G_STR_EMPTY(GTK_ENTRY(control_panel->sexy_entry)->text) || activated_widget==GTK_WIDGET(control_panel->sexy_entry))
 		return control_panel_reply();
 	
 	if(activated_widget==GTK_WIDGET(control_panel->sexy_dm_button) ){

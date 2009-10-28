@@ -98,7 +98,7 @@ void control_panel_set_embed_toggle_and_image(void);
 void control_panel_sexy_select(void);
 
 void control_panel_sexy_prefix_char(const char c);
-void control_panel_sexy_prefix_string(const gchar *str);
+void control_panel_sexy_prefix_string(const gchar *str, gboolean uniq);
 void control_panel_sexy_set(gchar *text);
 void control_panel_sexy_insert_char(const char c);
 void control_panel_sexy_insert_string(const gchar *str);

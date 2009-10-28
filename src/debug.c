@@ -120,15 +120,8 @@ gboolean debug_if_devel(void){
 }/*IF_DEVEL==if(debug_if_devel())*/
 
 gboolean debug_check_devel(const gchar *debug_environmental_value){
-#ifndef GNOME_ENABLE_DEBUG
 	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
 		return (debug_devel=FALSE);
-	#define GNOME_ENABLE_DEBUG
-	
-#else
-	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
-		return (debug_devel=FALSE);
-#endif
 	
 	if(debug_environment) g_strfreev(debug_environment);
 	
@@ -194,7 +187,7 @@ static void debug_environment_check(void){
 }/*debug_environment_check();*/
 
 static void debug_domains_check(const gchar *domains){
-	/*if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;*/
+	if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;
 	
 	if(debug_last_domains) g_free(debug_last_domains);
 	debug_last_domains=g_strdup(domains);
@@ -244,7 +237,7 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 	FILE *debug_output_fp=NULL;
 	
 	debug_domains_check(domains);
-	gchar **debug_domains=g_strsplit(domains, ":", -1);
+	/*gchar **debug_domains=g_strsplit(domains, ":", -1);*/
 	gint debug_domains_source_code_index=g_strv_length(debug_domains)-1;
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
@@ -284,12 +277,12 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			va_end(args);
 			g_fprintf(debug_output_fp, " @ %s", datetime);
 			
-			g_strfreev(debug_domains);
+			/*g_strfreev(debug_domains);*/
 
 			return;
 		}
 	}
-	g_strfreev(debug_domains);
+	/*g_strfreev(debug_domains);*/
 }/*debug_printf(DEBUG_DOMAINS, "message" __format, format_args...);*/
 
 gboolean debug_if_domain(const gchar *domains){

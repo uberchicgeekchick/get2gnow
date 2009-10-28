@@ -157,15 +157,9 @@ replace_me_with replace_me_list[]={
 };
 
 enum {
-	COL_REPLACE_ENABLED,
-	COL_REPLACE_LABEL,
-	COL_REPLACE_COUNT,
-};
-
-enum {
 	COL_COMBO_VISIBLE_NAME,
 	COL_COMBO_NAME,
-	COL_COMBO_COUNT
+	COL_COMBO_COUNT,
 };
 
 
@@ -235,9 +229,9 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
-	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
-	
 	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, prefs->combo_reload);
+	
+	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
 }/*preferences_setup_widgets(prefs);*/
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
@@ -278,15 +272,15 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 		API_TIMELINE_PUBLIC,	N_("All Public Tweets"),
 		NULL
 	};
-
+	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
-
+	
 	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
-
+	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_default_timeline), GTK_TREE_MODEL(list_store));
-
+	
 	for(gint i=0; timelines[i]; i+=2) {
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
@@ -298,37 +292,36 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 		);
 		uber_free(iter);
 	}
-
+	
 	g_object_unref(list_store);
 }/*static void preferences_timeline_setup(prefs);*/
 
 static void preferences_replace_with_setup(PreferencesDialog *prefs){
 	debug("Setting-up /me replacement preference.");
 	
-	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_REPLACE_LABEL, NULL);
-	
-	GtkListStore *list_store=gtk_list_store_new(COL_REPLACE_COUNT, G_TYPE_INT, G_TYPE_STRING);
+	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
 	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->replace_me_with_combo_box), GTK_TREE_MODEL(list_store));
 	
-	GtkTreeIter	*iter=NULL;
+	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	
 	replace_me_with	*replacements=replace_me_list;
-	while(replacements->label){
-		iter=g_new0(GtkTreeIter, 1);
+	while(replacements->label != NULL){
+		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_REPLACE_ENABLED, replacements->value,
-						COL_REPLACE_LABEL, replacements->label,
+						COL_COMBO_VISIBLE_NAME, replacements->label,
+						COL_COMBO_NAME, replacements->value,
 					-1
 		);
 		replacements++;
 		uber_free(iter);
 	}
 	
-	/*g_object_unref(list_store);*/
+	g_object_unref(list_store);
 }/*static void preferences_replace_with_setup(prefs);*/
 
 static void preferences_reload_setup(PreferencesDialog *prefs){
@@ -419,15 +412,10 @@ static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *com
 	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
 	gboolean      found=FALSE;
 	
-	if(gtk_tree_model_get_iter_first(model, iter))
-		gtk_combo_box_set_active_iter (combo_box, iter);
-	g_free(iter);
-	
-	if(!value) return;
+	if(!( value && gtk_tree_model_get_iter_first(model, iter) )) return;
 	
 	gint option;
-	while(gtk_tree_model_iter_next(model, iter)){
-		iter=g_new0(GtkTreeIter, 1);
+	do{
 		gtk_tree_model_get(model, iter,
 					COL_COMBO_NAME, &option,
 				-1
@@ -436,11 +424,14 @@ static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *com
 		if(option==value) {
 			found=TRUE;
 			gtk_combo_box_set_active_iter(combo_box, iter);
-			g_free(iter);
-			return;
+			break;
 		}
-		g_free(iter);
-	}
+	}while( gtk_tree_model_iter_next(model, iter));
+	/* Fallback to the first one. */
+	if( !found && gtk_tree_model_get_iter_first(model, iter) )
+		gtk_combo_box_set_active_iter(combo_box, iter);
+	
+	if(iter) uber_free(iter);
 }
 
 static void preferences_add_id (PreferencesDialog *prefs, guint id){
@@ -481,6 +472,7 @@ static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *
 	g_object_set_data_full(G_OBJECT (combo_box), "key", g_strdup(key), g_free);
 	
 	g_signal_connect(combo_box, "changed", (GCallback)preferences_int_combo_changed_cb, prefs);
+	//return;
 	
 	if( (id=gconfig_notify_add(key, preferences_notify_int_combo_cb, combo_box)) )
 		preferences_add_id (prefs, id);
@@ -512,23 +504,23 @@ static void preferences_string_combo_changed_cb (GtkComboBox *combo_box, Prefere
 static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, PreferencesDialog *prefs){
 	GtkTreeModel *model;
 	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
-	gint          preference_value;
-
-	const gchar *key=g_object_get_data (G_OBJECT (combo_box), "key");
+	gint          value=0;
+	
+	const gchar *key=g_object_get_data(G_OBJECT(combo_box), "key");
 	if(combo_box==prefs->replace_me_with_combo_box)
 		online_services_reset_length_of_longest_replacement();
 	
 	if(gtk_combo_box_get_active_iter(combo_box, iter)) {
-		model = gtk_combo_box_get_model(combo_box);
-		gtk_tree_model_get(model, iter, COL_COMBO_NAME, &preference_value, -1);
-
-		gconfig_set_int(key, preference_value);
+		model=gtk_combo_box_get_model(combo_box);
+		gtk_tree_model_get(model, iter, COL_COMBO_NAME, &value, -1);
+		
+		gconfig_set_int(key, value);
 	}
+	uber_free(iter);
 }
 
 static void preferences_response_cb(GtkDialog *dialog, gint response, PreferencesDialog *prefs){
 	gtk_widget_destroy(GTK_WIDGET(dialog));
-	uber_free(prefs);
 }
 
 static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs){
@@ -542,7 +534,7 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs){
 	}
 	
 	g_list_free(prefs->notify_ids);
-	g_free(prefs);
+	uber_free(prefs);
 }
 
 void preferences_dialog_show(GtkWindow *parent){
@@ -608,11 +600,11 @@ void preferences_dialog_show(GtkWindow *parent){
 				NULL
 	);
 	
-	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggle", (GCallback)control_panel_compact_view_toggled, NULL );
-	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggle", (GCallback)main_window_control_panel_set_embed, NULL );
+	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
+	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
 	
 	g_object_unref(ui);
-
+	
 	g_object_add_weak_pointer(G_OBJECT (prefs->dialog), (gpointer) &prefs);
 	gtk_window_set_transient_for(GTK_WINDOW (prefs->dialog), parent);
 	

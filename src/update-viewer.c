@@ -1129,7 +1129,7 @@ void update_viewer_key_pressed(UpdateViewer *update_viewer, GdkEventKey *event){
 			control_panel_sexy_insert_char('\n');
 			return;
 		case GDK_MOD1_MASK:
-			online_service_request_selected_update_forward_update();
+			online_service_request_selected_update_forward();
 			return;
 		case GDK_SHIFT_MASK:
 			control_panel_new_dm();

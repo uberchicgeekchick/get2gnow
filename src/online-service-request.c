@@ -535,10 +535,9 @@ gdouble online_service_request_selected_update_get_user_id(void){
 }/*online_service_request_selected_update_get_user_id();*/
 
 gchar *online_service_request_selected_update_reply_to_strdup(gboolean forward_update){
-	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name)))
-		return NULL;
+	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name))) return NULL;
 	
-	if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) ))
+	if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
 		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forward_update ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
 	
 	return g_strdup_printf("%s@%s %s", (forward_update ?"RT " :""), selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
@@ -548,29 +547,31 @@ void online_service_request_selected_update_reply(void){
 	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(FALSE), TRUE, TRUE);
 }/*online_service_request_selected_update_reply();*/
 
-void online_service_request_selected_update_forward_update(void){
+void online_service_request_selected_update_forward(void){
 	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(TRUE), TRUE, TRUE);
-}/*online_service_request_selected_update_reply();*/
+}/*online_service_request_selected_update_forward();*/
 
-static void online_service_request_selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release){
-	if(!( ( tweet && G_STR_N_EMPTY(tweet) ) )){
+static void online_service_request_selected_update_include_and_begin_to_send(gchar *prefix, gboolean in_response, gboolean release){
+	if(G_STR_EMPTY(prefix)){
 		control_panel_beep();
-		if(tweet && release) uber_free(tweet);
+		if(prefix && release) uber_free(prefix);
 		return;
 	}
 	
-	if(!selected_update) return;
+	if(!(selected_update && selected_update->id )){
+		control_panel_beep();
+		if(prefix && release) uber_free(prefix);
+		return;
+	}
 	
 	if(in_response){
 		in_reply_to_status_id=selected_update->id;
 		in_reply_to_service=selected_update->service;
 	}
 	
-	control_panel_sexy_prefix_string(tweet);
+	control_panel_sexy_prefix_string(prefix, TRUE);
 	
-	if(!release) return;
-	
-	uber_free(tweet);
+	if(release) uber_free(prefix);
 }/*online_service_request_selected_update_include_and_begin_to_send*/
 
 void online_service_request_unset_selected_update(void){

@@ -233,7 +233,7 @@ gint online_services_has_total(guint count){
 
 gint online_services_has_connected(guint count){
 	return online_services_cmp_count(services->connected, count);
-}/*online_services_has_connected(>1);*/
+}/*online_services_has_connected(1);*/
 
 static gint online_services_cmp_count(guint compare, guint count){
 	if(!compare) return -2;
@@ -464,8 +464,9 @@ OnlineService *online_services_connected_get_first(void){
 	OnlineService	*service=NULL;
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		if(!accounts->data) continue;
 		service=(OnlineService *)accounts->data;
-		if(service->connected)
+		if(service && service->connected)
 			return service;
 	}
 		
@@ -519,11 +520,9 @@ void online_services_decrement_connected(const gchar *service_guid, gboolean no_
 	if(services->connected) services->connected--;
 	
 	debug("OnlineServices has disconnected from OnlineService: <%s>.  Remaining connections: #%d.", service_guid, services->connected);
-	if(services->connected) return;
+	if(services->connected || no_state_change) return;
 	
 	main_window_state_on_connection(!no_state_change);
-	
-	if(no_state_change) return;
 	online_services_dialog_show(main_window_get_window());
 }/*online_services_decrement_connected();*/
 
@@ -751,7 +750,7 @@ gint online_services_best_friends_total_update(gint best_friends_to_add){
 
 void online_services_deinit(void){
 	debug("**SHUTDOWN:** Closing & releasing %d accounts.", services->total);
-	g_list_foreach(services->accounts, (GFunc)online_service_free, NULL);
+	g_list_foreach(services->accounts, (GFunc)online_service_free, GINT_TO_POINTER(TRUE) );
 	g_list_free(services->accounts);
 
 	debug("**SHUTDOWN:** freeing OnlineServices keys.");

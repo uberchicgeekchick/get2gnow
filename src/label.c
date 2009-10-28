@@ -136,9 +136,9 @@ static void label_url_activated_cb(Label *label, const gchar *uri){
 		if(!in_reply_to_service) in_reply_to_service=this->service;
 		if(!in_reply_to_status_id) in_reply_to_status_id=this->update_id;
 		gchar *user_profile_link=NULL;
-		if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) ))
+		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
 			user_profile_link=g_strdup_printf(" ( http://%s%s )", this->service->uri, users_at );
-		gchar *user_at=g_strdup_printf("@%s %s ", &users_at[1], (user_profile_link ?user_profile_link :""));
+		gchar *user_at=g_strdup_printf("@%s%s ", &users_at[1], (user_profile_link ?user_profile_link :""));
 		control_panel_sexy_insert_string(user_at);
 		uber_free(user_at);
 		if(user_profile_link) uber_free(user_profile_link);
