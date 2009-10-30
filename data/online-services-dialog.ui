@@ -16,7 +16,7 @@
           <object class="GtkTable" id="account_table">
             <property name="visible">True</property>
             <property name="border_width">6</property>
-            <property name="n_rows">9</property>
+            <property name="n_rows">10</property>
             <property name="n_columns">4</property>
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
@@ -30,8 +30,8 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">4</property>
-                <property name="top_attach">5</property>
-                <property name="bottom_attach">6</property>
+                <property name="top_attach">6</property>
+                <property name="bottom_attach">7</property>
                 <property name="y_options"></property>
               </packing>
             </child>
@@ -44,76 +44,41 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">4</property>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
                 <property name="y_options"></property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="password_label">
                 <property name="visible">True</property>
+                <property name="xalign">0</property>
                 <property name="label" translatable="yes">_Password:	</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">password_entry</property>
               </object>
               <packing>
-                <property name="top_attach">5</property>
-                <property name="bottom_attach">6</property>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
+                <property name="top_attach">6</property>
+                <property name="bottom_attach">7</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="username_label">
                 <property name="visible">True</property>
+                <property name="xalign">0</property>
                 <property name="label" translatable="yes">_Username:	</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">user_name_entry</property>
               </object>
               <packing>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="show_password_checkbutton">
-                <property name="label" translatable="yes">Sho_w Password</property>
+              <object class="GtkComboBoxEntry" id="online_services_keys_combo_box">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_underline">True</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="right_attach">4</property>
-                <property name="top_attach">6</property>
-                <property name="bottom_attach">7</property>
-                <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="services_label">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Server _Address:
-&lt;i&gt;(e.g. identi.ca)&lt;/i&gt;</property>
-                <property name="use_markup">True</property>
-                <property name="use_underline">True</property>
-                <property name="mnemonic_widget">urls</property>
-              </object>
-              <packing>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkComboBoxEntry" id="urls">
-                <property name="visible">True</property>
-                <property name="model">urls_list_store</property>
+                <property name="model">online_services_keys_list_store</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -121,21 +86,6 @@
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
                 <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="autoconnect_checkbutton">
-                <property name="label" translatable="yes">Automatically _log-in.</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_underline">True</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="right_attach">4</property>
-                <property name="top_attach">7</property>
-                <property name="bottom_attach">8</property>
               </packing>
             </child>
             <child>
@@ -154,21 +104,20 @@
             <child>
               <object class="GtkLabel" id="service_type_label">
                 <property name="sensitive">False</property>
+                <property name="xalign">0</property>
                 <property name="label" translatable="yes">_Type of service</property>
                 <property name="use_underline">True</property>
+                <property name="mnemonic_widget">service_type_combo_box</property>
               </object>
               <packing>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
               </packing>
             </child>
             <child>
               <object class="GtkComboBox" id="service_type_combo_box">
                 <property name="sensitive">False</property>
                 <property name="model">service_type_list_store</property>
-                <property name="active">0</property>
                 <child>
                   <object class="GtkCellRendererText" id="service_type_cell_renderer_text"/>
                   <attributes>
@@ -179,8 +128,8 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">4</property>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
               </packing>
             </child>
             <child>
@@ -211,8 +160,8 @@
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">4</property>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
                 <property name="x_options"></property>
               </packing>
             </child>
@@ -226,8 +175,8 @@
               </object>
               <packing>
                 <property name="right_attach">2</property>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
               </packing>
             </child>
             <child>
@@ -237,6 +186,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -246,18 +196,105 @@
               </packing>
             </child>
             <child>
-              <object class="GtkAlignment" id="alignment1">
+              <object class="GtkAlignment" id="online_service_connect_alignment">
                 <property name="visible">True</property>
                 <property name="xalign">1</property>
                 <property name="yalign">1</property>
                 <property name="xscale">0</property>
-                <property name="yscale">0</property>
                 <child>
                   <object class="GtkButton" id="online_service_connect_button">
                     <property name="label">gtk-connect</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="right_attach">4</property>
+                <property name="top_attach">9</property>
+                <property name="bottom_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="online_services_service_uri_label">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Server _Address:
+&lt;i&gt;(e.g. identi.ca)&lt;/i&gt;</property>
+                <property name="use_markup">True</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">online_services_service_uri_entry</property>
+              </object>
+              <packing>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="online_services_service_uri_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">&#x25CF;</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="online_services_service_key_label">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Account's _Label:
+(e.g. me@identi.ca)</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">online_services_keys_combo_box</property>
+              </object>
+              <packing>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAlignment" id="show_password_alignment">
+                <property name="visible">True</property>
+                <property name="xalign">1</property>
+                <property name="yalign">1</property>
+                <property name="xscale">0</property>
+                <child>
+                  <object class="GtkCheckButton" id="show_password_checkbutton">
+                    <property name="label" translatable="yes">Sho_w Password</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="use_underline">True</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="right_attach">4</property>
+                <property name="top_attach">7</property>
+                <property name="bottom_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAlignment" id="alignment1">
+                <property name="visible">True</property>
+                <property name="xalign">1</property>
+                <property name="yalign">1</property>
+                <property name="xscale">0</property>
+                <child>
+                  <object class="GtkCheckButton" id="autoconnect_checkbutton">
+                    <property name="label" translatable="yes">Automatically _log-in.</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="use_underline">True</property>
+                    <property name="draw_indicator">True</property>
                   </object>
                 </child>
               </object>
@@ -345,7 +382,10 @@
         <col id="0" translatable="yes">Twitter.com</col>
       </row>
       <row>
-        <col id="0" translatable="yes">Laconica</col>
+        <col id="0" translatable="yes">Identi.ca</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">StatusNet</col>
       </row>
     </data>
   </object>
@@ -359,8 +399,10 @@
     <property name="tooltip">Save changes to the selected service and/or save a new service</property>
     <property name="stock_id">gtk-save</property>
   </object>
-  <object class="GtkListStore" id="urls_list_store">
+  <object class="GtkListStore" id="online_services_keys_list_store">
     <columns>
+      <!-- column-name OnlineServiceKey -->
+      <column type="gchararray"/>
       <!-- column-name UrlString -->
       <column type="gchararray"/>
       <!-- column-name OnlineService -->

@@ -88,9 +88,9 @@ G_BEGIN_DECLS
 
 #ifndef CONFIG_SUBDIR
 #	if defined GNOME_ENABLE_DEBUG
-#		define	GET2GNOW_GNOME_SUBDIR		PACKAGE_TARNAME "-debug"
+#		define	CONFIG_SUBDIR		PACKAGE_TARNAME "-debug"
 #	else
-#		define	GET2GNOW_GNOME_SUBDIR		PACKAGE_TARNAME
+#		define	CONFIG_SUBDIR		PACKAGE_TARNAME
 #	endif
 #endif
 
@@ -100,27 +100,27 @@ G_BEGIN_DECLS
 #	else
 #		define	IPC_PIPE_PREFIX		"%s-%s-"
 #	endif
-#define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "%d"
+#	define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "%d"
 #endif
 
 #ifndef uber_free
-#	define	uber_free(mem)					{ if(mem) g_free(mem); mem=NULL; }
+#	define	uber_free(mem)					{ if(mem){g_free(mem);} mem=NULL; }
 #endif
 
 #ifndef uber_list_free
-#	define uber_list_free(l)				{ if(l) g_list_free(l); l=NULL; }
+#	define uber_list_free(l)				{ if(l){g_list_free(l);} l=NULL; }
 #endif
 
 #ifndef uber_slist_free
-#	define uber_slist_free(sl)				{ if(sl) g_slist_free(sl); sl=NULL; }
+#	define uber_slist_free(sl)				{ if(sl){g_slist_free(sl);} sl=NULL; }
 #endif
 
 #ifndef uber_object_unref
-#	define	uber_object_unref(o)				{ if(o) g_object_unref(o); o=NULL; }
+#	define	uber_object_unref(o)				{ if(o){g_object_unref(o);} o=NULL; }
 #endif
 
 #ifndef g_str_n_equal
-#	define	g_str_n_equal(string1, string2)			(!g_str_equal(string1, string2))
+#	define	g_str_n_equal(string1, string2)			!g_str_equal(string1, string2)
 #endif
 
 #ifndef	gtk_widget_is_visible
@@ -135,32 +135,6 @@ G_BEGIN_DECLS
 #	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value(widget, "has-focus")
 #endif
 
-#ifndef	gtk_tree_view_column_toggle_visibility
-#	define	gtk_tree_view_column_toggle_visibility(tree_view_column)								\
-	G_STMT_START{															\
-		if( tree_view_column && GTK_IS_TREE_VIEW_COLUMN(tree_view_column) )							\
-			gtk_tree_view_column_set_visible(tree_view_column, !gtk_tree_view_column_get_visible(tree_view_column) );	\
-	}G_STMT_END
-#endif
-
-#ifndef gtk_word_wrap_tree_view_column
-#define gtk_word_wrap_tree_view_column(tree_view_column, cell_renderer_text, wrap_width)						\
-	G_STMT_START{															\
-		if(															\
-			tree_view_column && cell_renderer_text										\
-			&& GTK_IS_TREE_VIEW_COLUMN(tree_view_column)									\
-			&& GTK_IS_CELL_RENDERER_TEXT(cell_renderer_text)								\
-			&& gtk_tree_view_column_get_visible(tree_view_column)								\
-			&& gtk_tree_view_column_get_width(tree_view_column) > wrap_width						\
-		)															\
-			g_object_set(													\
-					cell_renderer_text,										\
-						"wrap-width", ((gtk_tree_view_column_get_width(tree_view_column))-wrap_width),		\
-					NULL												\
-			);														\
-}G_STMT_END
-#endif
-
 #ifndef	gtk_widget_toggle_visibility
 #	define	gtk_widget_toggle_visibility(widget)											\
 	G_STMT_START{															\
@@ -172,7 +146,7 @@ G_BEGIN_DECLS
 	}G_STMT_END
 #endif
 
-#ifndef	uber_g_str_equal
+#ifndef	uber_object_free
 #	if defined(G_HAVE_ISO_VARARGS)
 #		define	uber_object_free(...)			program_uber_object_free(__VA_ARGS__)
 #	elif defined(G_HAVE_GNUC_VARARGS)
@@ -183,7 +157,7 @@ G_BEGIN_DECLS
 #endif
 
 
-#ifndef	uber_g_str_equal
+#ifndef	uber_str_equal
 #	if defined(G_HAVE_ISO_VARARGS)
 #		define uber_str_equal(...)			program_uber_g_str_equal(__VA_ARGS__)
 #	elif defined(G_HAVE_GNUC_VARARGS)

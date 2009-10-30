@@ -50,7 +50,6 @@ PROGRAMS = $(bin_PROGRAMS)
 get2gnow_SOURCES = 										\
 	about.c						about.h					\
 	best-friends.c					best-friends.h				\
-	control-panel.c					control-panel.h				\
 	cache.c						cache.h					\
 	debug.c						debug.h					\
 	following-viewer.c				following-viewer.h			\
@@ -79,17 +78,17 @@ get2gnow_SOURCES = 										\
 	proxy.c						proxy.h					\
 	searches.c					searches.h				\
 	tabs.c						tabs.h					\
+	timelines-sexy-tree-view.c	timelines-sexy-tree-view.macros.h		timelines-sexy-tree-view.h		\
 	timer.c						timer.h					\
 	ui-utils.c					ui-utils.h				\
 	update-viewer.c					update-viewer.h				\
-	users-glists.c							users-glists.h		\
+	users-glists.c					users-glists.h				\
 	users.c				users.types.h			users.h
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 get2gnow_OBJECTS =					\
 	about.$(OBJEXT)					\
 	best-friends.$(OBJEXT)				\
 	cache.$(OBJEXT)					\
-	control-panel.$(OBJEXT)				\
 	debug.$(OBJEXT)					\
 	following-viewer.$(OBJEXT)			\
 	friends-manager.$(OBJEXT)			\
@@ -116,6 +115,7 @@ get2gnow_OBJECTS =					\
 	proxy.$(OBJEXT)					\
 	searches.$(OBJEXT)				\
 	tabs.$(OBJEXT)					\
+	timelines-sexy-tree-view.$(OBJEXT)		\
 	timer.$(OBJEXT)					\
 	ui-utils.$(OBJEXT)				\
 	update-viewer.$(OBJEXT)				\
@@ -405,7 +405,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/best-friends.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/control-panel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@
@@ -431,6 +430,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tabs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timelines-sexy-tree-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-viewer.Po@am__quote@

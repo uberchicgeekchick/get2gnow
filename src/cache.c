@@ -95,7 +95,7 @@ static void cache_file_clean_up(const gchar *cache_file);
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 void cache_init(void){
-	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", GET2GNOW_GNOME_SUBDIR, NULL);
+	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", CONFIG_SUBDIR, NULL);
 	
 	gchar *cache_path_test=NULL;
 	if(!(cache_path_test=cache_dir_test("services", TRUE) ))

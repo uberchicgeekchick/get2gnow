@@ -86,7 +86,7 @@
 #include "cache.h"
 
 #include "main-window.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 
 #include "preferences.h"
 
@@ -98,37 +98,37 @@
 #define	DEBUG_DOMAINS	"Networking:OnlineServices:Updates:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up:network.c"
 #include "debug.h"
 
-typedef struct _NetworkUpdateViewerImageDL NetworkUpdateViewerImageDL;
+typedef struct _NetworkTimelinesSexyTreeViewImageDL NetworkTimelinesSexyTreeViewImageDL;
 
-struct _NetworkUpdateViewerImageDL{
-	UpdateViewer	*update_viewer;
-	gchar		*filename;
-	GtkTreeIter	*iter;
+struct _NetworkTimelinesSexyTreeViewImageDL{
+	TimelinesSexyTreeView	*timelines_sexy_tree_view;
+	gchar			*filename;
+	GtkTreeIter		*iter;
 };
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static NetworkUpdateViewerImageDL *network_update_viewer_image_dl_new(UpdateViewer *update_viewer, const gchar *filename, GtkTreeIter *iter);
-static void network_update_viewer_image_dl_free(NetworkUpdateViewerImageDL *image);
+static NetworkTimelinesSexyTreeViewImageDL *network_timelines_sexy_tree_view_image_dl_new(TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *filename, GtkTreeIter *iter);
+static void network_timelines_sexy_tree_view_image_dl_free(NetworkTimelinesSexyTreeViewImageDL *image);
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-static NetworkUpdateViewerImageDL *network_update_viewer_image_dl_new(UpdateViewer *update_viewer, const gchar *filename, GtkTreeIter *iter){
-	NetworkUpdateViewerImageDL *image=g_new0(NetworkUpdateViewerImageDL, 1);
-	image->update_viewer=update_viewer;
+static NetworkTimelinesSexyTreeViewImageDL *network_timelines_sexy_tree_view_image_dl_new(TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *filename, GtkTreeIter *iter){
+	NetworkTimelinesSexyTreeViewImageDL *image=g_new0(NetworkTimelinesSexyTreeViewImageDL, 1);
+	image->timelines_sexy_tree_view=timelines_sexy_tree_view;
 	image->filename=g_strdup(filename);
 	image->iter=iter;
 	return image;
-}/*network_update_viewer_image_dl_new*/
+}/*network_timelines_sexy_tree_view_image_dl_new*/
 
 
-void network_get_image(OnlineService *service, UpdateViewer *update_viewer, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
+void network_get_image(OnlineService *service, TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
 	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
-	NetworkUpdateViewerImageDL *image=network_update_viewer_image_dl_new(update_viewer, image_filename, iter);
+	NetworkTimelinesSexyTreeViewImageDL *image=network_timelines_sexy_tree_view_image_dl_new(timelines_sexy_tree_view, image_filename, iter);
 	
 	online_service_request_uri(service, QUEUE, image_url, 0, NULL, network_cb_on_image, image, NULL);
 }/*network_get_image*/
@@ -137,8 +137,8 @@ void network_get_image(OnlineService *service, UpdateViewer *update_viewer, cons
 void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	NetworkUpdateViewerImageDL *image=(NetworkUpdateViewerImageDL *)online_service_wrapper_get_user_data(service_wrapper);
-	if(!( image && image->update_viewer && image->filename && image->iter )){
+	NetworkTimelinesSexyTreeViewImageDL *image=(NetworkTimelinesSexyTreeViewImageDL *)online_service_wrapper_get_user_data(service_wrapper);
+	if(!( image && image->timelines_sexy_tree_view && image->filename && image->iter )){
 		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", image->filename, (image->iter ?"valid" :"unknown") );
 		return NULL;
 	}
@@ -148,7 +148,7 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		debug("Failed to download and save <%s> as <%s>.", requested_uri, image->filename);
 		debug("Detailed error message: %s.", error_message);
 		image_filename=cache_images_get_unknown_image_filename();
-		main_window_statusbar_printf("Error adding avatar to UpdateViewer.  GNOME's unknown-image will be used instead.");
+		main_window_statusbar_printf("Error adding avatar to TimelinesSexyTreeView.  GNOME's unknown-image will be used instead.");
 	}else{
 		debug("Saving avatar to file: %s", image->filename);
 		if(!(g_file_set_contents(
@@ -160,19 +160,19 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 			image_filename=cache_images_get_unknown_image_filename();
 		else
 			image_filename=g_strdup(image->filename);
-		main_window_statusbar_printf("New avatar added to UpdateViewer.");
+		main_window_statusbar_printf("New avatar added to TimelinesSexyTreeView.");
 	}
 	
-	update_viewer_set_image(image->update_viewer, image_filename, image->iter);
+	timelines_sexy_tree_view_set_image(image->timelines_sexy_tree_view, image_filename, image->iter);
 	
 	uber_free(error_message);
 	uber_free(image_filename);
-	network_update_viewer_image_dl_free(image);
+	network_timelines_sexy_tree_view_image_dl_free(image);
 	return NULL;
 }/*network_cb_on_image(session, xml, user_data);*/
 
-static void network_update_viewer_image_dl_free(NetworkUpdateViewerImageDL *image){
-	image->update_viewer=NULL;
+static void network_timelines_sexy_tree_view_image_dl_free(NetworkTimelinesSexyTreeViewImageDL *image){
+	image->timelines_sexy_tree_view=NULL;
 	uber_object_free(&image->filename, &image->iter, &image, NULL);
 }/*network_image_free*/
 
@@ -255,17 +255,20 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 			notice_prefix=_("Loading");
 			break;
 	}
-	debug("%s URI: %s", notice_prefix, uri);
-	statusbar_printf("%s: %s %s.%s", notice_prefix, _("timeline"),  uri, ( ( gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) ) ?"" :_("  This may take several moments.") ));
+	const gchar *notice_suffix=NULL;
+	if( gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) )
+		notice_suffix=_("  URL auto-expansion is enabled loading timelines may take a while.");
+	debug("%s request for %s.%s", notice_prefix, uri, notice_suffix);
+	statusbar_printf("%s request for %s.%s", notice_prefix, uri, (notice_suffix ?_("  This may take several moments.") :"" ) );
 }/*network_set_state_loading_timeline(uri, Load);*/
 
 
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
+	TimelinesSexyTreeView *timelines_sexy_tree_view=(TimelinesSexyTreeView *)online_service_wrapper_get_user_data(service_wrapper);
 	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	if(!IS_UPDATE_VIEWER(update_viewer))
+	if(!IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view))
 		return NULL;
 	
 	gchar *error_message=NULL;
@@ -288,10 +291,10 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
-			new_updates=searches_parse_results(service, xml, timeline, update_viewer);
+			new_updates=searches_parse_results(service, xml, timeline, timelines_sexy_tree_view);
 			break;
 		case Groups:
-			new_updates=groups_parse_conversation(service, xml, timeline, update_viewer);
+			new_updates=groups_parse_conversation(service, xml, timeline, timelines_sexy_tree_view);
 			break;
 		case DMs:
 		case Replies:
@@ -302,11 +305,11 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Archive:
 		case BestFriends:
 		default:
-			new_updates=parse_timeline(service, xml, timeline, update_viewer, monitoring);
+			new_updates=parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);
 			break;
 	}
 	
-	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(requested_uri, "?since_id=") && update_viewer_has_loaded(update_viewer) > 0 && xml->status_code==200){
+	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(requested_uri, "?since_id=") && timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view) > 0 && xml->status_code==200){
 		uber_free(timeline);
 		return network_retry(service_wrapper);
 	}
@@ -314,7 +317,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	if(new_updates)
 		debug("Total tweets in this timeline: %d.", new_updates);
 	
-	update_viewer_complete(update_viewer);
+	timelines_sexy_tree_view_complete(timelines_sexy_tree_view);
 	uber_free(timeline);
 	
 	return NULL;
@@ -324,20 +327,6 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
-	/*UpdateViewer *update_viewer=(UpdateViewer *)online_service_wrapper_get_user_data(service_wrapper);
-	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
-	online_service_request_uri(service, QUEUE, requested_uri, 0, NULL, network_display_timeline, update_viewer, (gpointer)monitoring);*/
-	/*online_service_request_uri(
-				online_service_wrapper_get_online_service(service_wrapper),
-				online_service_wrapper_get_request_method(service_wrapper),
-				online_service_wrapper_get_requested_uri(service_wrapper),
-				online_service_wrapper_increment_attempt(service_wrapper),
-				online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(service_wrapper),
-				online_service_wrapper_get_callback(service_wrapper),
-				online_service_wrapper_get_user_data(service_wrapper),
-				online_service_wrapper_get_form_data(service_wrapper)
-	);
-	return NULL;*/
 	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, monitoring);*/

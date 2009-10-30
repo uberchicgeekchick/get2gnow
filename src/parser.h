@@ -63,15 +63,15 @@
 #include <libsoup/soup-message.h>
 
 #include "online-services-typedefs.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 #include "users.h"
 
 G_BEGIN_DECLS
 
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, UpdateViewer *update_viewer, UpdateMonitor monitoring);
-guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring);
+guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view);
 
 gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
 

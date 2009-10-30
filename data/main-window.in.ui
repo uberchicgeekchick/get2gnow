@@ -407,14 +407,14 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_control_panel_floating_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="view_update_viewer_floating_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">F_loating Control Panel</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_control_panel_compact_view_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="view_update_viewer_compact_view_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Compact Control Panel</property>
                         <property name="use_underline">True</property>
@@ -470,7 +470,7 @@
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Select someone you follow &amp; view their updates.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">friends_menu_control_panel_image</property>
+                        <property name="image">friends_menu_update_viewer_image</property>
                         <property name="use_stock">False</property>
                         <accelerator key="t" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -744,7 +744,7 @@
             <property name="position">2</property>
             <property name="position_set">True</property>
             <child>
-              <object class="GtkHPaned" id="update_viewer_hpaned">
+              <object class="GtkHPaned" id="timelines_sexy_tree_view_hpaned">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child>
@@ -1119,7 +1119,7 @@
               <object class="GtkHBox" id="expand_box">
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkVBox" id="control_panel_vbox">
+                  <object class="GtkVBox" id="update_viewer_vbox">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
                     <child>
@@ -1166,7 +1166,7 @@
     <property name="visible">True</property>
     <property name="stock">gtk-page-setup</property>
   </object>
-  <object class="GtkImage" id="friends_menu_control_panel_image">
+  <object class="GtkImage" id="friends_menu_update_viewer_image">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
   </object>

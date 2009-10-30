@@ -1,5 +1,9 @@
+/* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
- * Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * get2gnow is:
+ * 	Copyright(c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the RPL
+ *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
@@ -10,7 +14,8 @@
  * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
  * 	http://Dystonia-DREAMS.Org/
  *
- * 
+ *
+ *
  * Unless explicitly acquired and licensed from Licensor under another
  * license, the contents of this file are subject to the Reciprocal Public
  * License("RPL") Version 1.5, or subsequent versions as allowed by the RPL,
@@ -43,107 +48,77 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __UPDATE_VIEWER_H__
-#define __UPDATE_VIEWER_H__
+/********************************************************
+ *          My art, code, & programming.                *
+ ********************************************************/
+#ifndef __CONTROL_VIEWER_H__
+#define __CONTROL_VIEWER_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
+
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
-#include "online-services-typedefs.h"
-#include "users.types.h"
+#include "label.h"
 
+
+/*********************************************************************
+ *        Objects, structures, and etc typedefs                      *
+ *********************************************************************/
+/* My, Kaity G. B., new uber update-viewer. */
 G_BEGIN_DECLS
 
+typedef struct _UpdateViewer UpdateViewer;
 
-#define TYPE_UPDATE_VIEWER			(update_viewer_get_type())
-#define UPDATE_VIEWER(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UPDATE_VIEWER, UpdateViewer))
-#define UPDATE_VIEWER_CLASS(k)			(G_TYPE_CHECK_CLASS_CAST((k), TYPE_UPDATE_VIEWER, UpdateViewerClass))
-#define IS_UPDATE_VIEWER(o)			(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UPDATE_VIEWER))
-#define IS_UPDATE_VIEWER_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UPDATE_VIEWER))
-#define UPDATE_VIEWER_GET_CLASS(o)		(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UPDATE_VIEWER, UpdateViewerClass))
+/********************************************************
+ *          Global method  & function prototypes        *
+ ********************************************************/
+UpdateViewer *update_viewer_new(GtkWindow *parent);
+GtkWindow *update_viewer_get_window(void);
+GtkHBox *update_viewer_get_embed(void);
 
-typedef struct _UpdateViewer      UpdateViewer;
-typedef struct _UpdateViewerClass UpdateViewerClass;
-typedef struct _UpdateViewerPrivate  UpdateViewerPrivate;
+void update_viewer_beep(void);
 
-struct _UpdateViewer {
-	SexyTreeView            parent;
-};
+void update_viewer_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
 
-struct _UpdateViewerClass {
-	SexyTreeViewClass       parent_class;
-};
+void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
+void update_viewer_dm_data_fill(GList *my_followers);
 
-typedef enum _UpdateViewerListStoreColumn{		/********************************************************************************/
-	GUINT_UPDATE_VIEWER_INDEX,			/*	The update's index in the list-store.                                   */
-	GDOUBLE_UPDATE_ID,				/*	Tweet's ID.								*/
-	GDOUBLE_USER_ID,				/*	User's ID.								*/
-	STRING_USER,					/*	Username string.							*/
-	STRING_NICK,					/*	Author name string.							*/
-	STRING_TEXT,					/*	Unformated Tweet string.						*/
-	STRING_UPDATE,					/*	Update for display string in the UpdateViewer's SexyTreeView.           */
-	STRING_SEXY_UPDATE,				/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
-	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
-	STRING_CREATED_AT,				/*	Date string.								*/
-	GINT_CREATED_AGO,				/*	How old the post is, in seconds, for sorting.				*/
-	ULONG_CREATED_AT,				/*	Unix seconds since epoc of how old the update is.			*/
-	PIXBUF_AVATAR,					/*	Avatar pixbuf.								*/
-	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
-	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
-	STRING_RCPT,					/* 	OnlineService key To: <user@service>					*/
-	GINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the sorted tree model.  */
-	GINT_LIST_STORE_INDEX,				/*	The associated order/place this item appears in the list store.         */
-	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
-							/********************************************************************************/
-} UpdateViewerListStoreColumn;
+void contol_panel_emulate_embed_toggle(void);
+void contol_panel_emulate_compact_view_toggle(void);
+void update_viewer_compact_view_toggled(GtkToggleButton *compact_toggle_button);
+void update_viewer_set_embed_toggle_and_image(void);
 
+void update_viewer_sexy_select(void);
 
-GType update_viewer_get_type(void) G_GNUC_CONST;
-UpdateViewer *update_viewer_new(const gchar *timeline, OnlineService *service);
-const gchar *update_viewer_get_timeline(UpdateViewer *update_viewer);
+void update_viewer_sexy_prefix_char(const char c);
+gboolean update_viewer_sexy_prefix_string(const gchar *prefix, gboolean uniq);
+void update_viewer_sexy_set(gchar *text);
+void update_viewer_sexy_insert_char(const char c);
+void update_viewer_sexy_insert_string(const gchar *str);
+void update_viewer_sexy_append_char(const char c);
+void update_viewer_sexy_append_string(const gchar *str);
+gint update_viewer_sexy_puts(const gchar *str, gint position);
 
-GtkVBox *update_viewer_get_child(UpdateViewer *update_viewer);
-GtkLabel *update_viewer_get_tab(UpdateViewer *update_viewer);
-GtkLabel *update_viewer_get_menu(UpdateViewer *update_viewer);
+void update_viewer_new_update(void);
+void update_viewer_new_dm(void);
+void update_viewer_reply(void);
+void update_viewer_forward(void);
 
-OnlineService *update_viewer_get_service(UpdateViewer *update_viewer);
-GtkListStore *update_viewer_get_list_store(UpdateViewer *update_viewer);
-GtkTreeModel *update_viewer_get_tree_model(UpdateViewer *update_viewer);
+void update_viewer_hide_previous_updates(void);
+void update_viewer_show_previous_updates(void);
 
-void update_viewer_start(UpdateViewer *update_viewer);
-gboolean update_viewer_refresh(UpdateViewer *update_viewer);
-void update_viewer_stop(UpdateViewer *update_viewer);
-void update_viewer_complete(UpdateViewer *update_viewer);
-
-void update_viewer_store( UpdateViewer *update_viewer, UserStatus *status );
-void update_viewer_update_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
-void update_viewer_remove_from_list_store( UpdateViewer *update_viewer, UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
-void update_viewer_remove_service(UpdateViewer *update_viewer, OnlineService *service);
-
-gboolean update_viewer_toggle_toolbar(UpdateViewer *update_viewer);
-gboolean update_viewer_toggle_from_column(UpdateViewer *update_viewer);
-gboolean update_viewer_toggle_rcpt_column(UpdateViewer *update_viewer);
-
-void update_viewer_mark_as_read(UpdateViewer *update_viewer);
-
-gint8 update_viewer_has_loaded(UpdateViewer *update_viewer);
-
-gint update_viewer_get_page(UpdateViewer *update_viewer);
-void update_viewer_set_page(UpdateViewer *update_viewer, gint page);
-
-UpdateMonitor update_viewer_get_monitoring(UpdateViewer *update_viewer);
-const gchar *update_viewer_get_monitoring_string(UpdateViewer *update_viewer);
-const gchar *monitoring_to_string(UpdateMonitor monitoring);
-
-gint update_viewer_get_total(UpdateViewer *update_viewer);
-guint update_viewer_get_notify_delay(UpdateViewer *update_viewer);
-
-void update_viewer_key_pressed(UpdateViewer *update_viewer, GdkEventKey *event);
-void update_viewer_set_image(UpdateViewer *update_viewer, const gchar *image_filename, GtkTreeIter *iter);
-
+void update_viewer_send(GtkWidget *activated_widget);
+void update_viewer_sexy_send_dm(void);
 
 G_END_DECLS
-#endif /* __UPDATE_VIEWER_H__ */
+#endif /* __CONTROL_VIEWER_H__ */
+/********************************************************
+ *                       eof                            *
+ ********************************************************/

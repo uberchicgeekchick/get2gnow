@@ -67,7 +67,7 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup-message.h>
 
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 
 
 G_BEGIN_DECLS
@@ -79,7 +79,7 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer);
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view);
 
 
 G_END_DECLS

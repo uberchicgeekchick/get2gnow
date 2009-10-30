@@ -80,7 +80,7 @@
 #include "online-service.h"
 
 #include "main-window.h"
-#include "control-panel.h"
+#include "update-viewer.h"
 #include "preferences.h"
 #include "gconfig.h"
 #include "online-services-dialog.h"
@@ -333,34 +333,32 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 }/*online_services_save*/
 
 void online_services_delete_service(OnlineService *service){
-	const gchar *service_key=service->key;
-	debug("Removing old OnlineService: '%s'.", service_key);
-	online_service_disconnect(service, TRUE);
-	if(!services->connected)
+	if(!(services->connected > 1 && services->total > 1))
 		main_window_state_on_connection(FALSE);
+	debug("Removing old OnlineService: '%s'.", service->key);
+	online_service_disconnect(service, TRUE);
 	
-	debug("Rebuilding OnlineServices' key while removing old key: %s.", service_key);
+	debug("Rebuilding OnlineServices' key while removing old key: %s.", service->key);
 	g_slist_free(services->keys);
 	services->keys=g_slist_alloc();
 	GList *accounts=NULL;
 	GSList *keys=NULL;
-	debug("Rebuilding OnlineServices' keys, removing: '%s'.", service_key);
+	debug("Rebuilding OnlineServices' keys, removing: '%s'.", service->key);
 	OnlineService *key=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		key=(OnlineService *)accounts->data;
-		const gchar *account_key=key->key;
-		if(!g_str_equal(account_key, service_key))
-			keys=g_slist_append(keys, (gchar *)account_key);
+		if(!g_str_equal(key->key, service->key))
+			keys=g_slist_append(keys, (gchar *)key->key);
 	}
 	services->keys=keys;
 	
 	debug("Saving re-built OnlineServices' keys.");
 	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
-		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list.", service_key);
+		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list.", service->key);
 		return;
 	}
 	
-	debug("Updating OnlineServices' accounts.  Removing OnlineService: [%s].", service_key);
+	debug("Updating OnlineServices' accounts.  Removing OnlineService: [%s].", service->key);
 	services->accounts=g_list_remove(services->accounts, service);
 	
 	debug("Determining what level of the OnlineService's cache directory to delete.");
@@ -369,7 +367,7 @@ void online_services_delete_service(OnlineService *service){
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		key=(OnlineService *)accounts->data;
 		if(g_str_equal(key->uri, service_uri)){
-			debug("OnlineService: [%s] share's avatars cache, only cookies will be deleted.", service_key);
+			debug("OnlineService: [%s] share's avatars cache, only cookies will be deleted.", service->key);
 			service_cache_rm_rf=FALSE;
 		}
 	}
@@ -389,10 +387,11 @@ void online_services_delete_service(OnlineService *service){
 
 static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListStore *list_store){
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	gtk_list_store_append(list_store, iter);
+	gtk_list_store_prepend(list_store, iter);
 	gtk_list_store_set(
 			list_store, iter,
-				UrlString, "[new account]",
+				OnlineServiceKey, "[new account]",
+				UrlString, NULL,
 				OnlineServicePointer, NULL,
 			-1
 	);
@@ -403,9 +402,9 @@ static void online_services_combo_box_add_new(GtkComboBox *combo_box, GtkListSto
 gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only){
 	if(!list_store) return FALSE;
 	gtk_list_store_clear(list_store);
+	if(!connected_only) online_services_combo_box_add_new(combo_box, list_store);
 	if(!services->total){
 		debug("No services found to load, new accounts need to be setup.");
-		if(!connected_only) online_services_combo_box_add_new(combo_box, list_store);
 		return FALSE;
 	}
 	
@@ -417,11 +416,12 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 		OnlineService *service=(OnlineService *)accounts->data;
 		if(connected_only && !service->connected) continue;
 		
-		debug("Appending account: '%s'; server: %s.", service->key, service->uri);
+		debug("Appending account: <%s>; server: <%s>.", service->key, service->uri);
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
+						OnlineServiceKey, service->key,
 						UrlString, service->uri,
 						OnlineServicePointer, service,
 					-1
@@ -429,10 +429,8 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 		services_loaded++;
 		uber_free(iter);
 	}
-	if(!connected_only)
-		online_services_combo_box_add_new(combo_box, list_store);
-	else if(services_loaded){
-		debug("Accounts & services loaded.  Selecting combo_box's default account.");
+	if(services_loaded){
+		debug("Accounts & services loaded.  %s", (connected_only ?_("Selecting default account.") :_("Setting up combo_box for new account setup.") ) );
 		gtk_combo_box_set_active(combo_box, 0);
 	}
 	
@@ -474,31 +472,17 @@ OnlineService *online_services_connected_get_first(void){
 	return NULL;
 }/*online_services_connected_get_first();*/
 
-OnlineService *online_services_get_online_service_by_guid(const gchar *online_service_guid){
+OnlineService *online_services_get_service_by_key(const gchar *online_service_key){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
-		service=(OnlineService *)accounts->data;
-		if(!strcasecmp( service->guid, online_service_guid))
+		if(g_str_equal( (service=(OnlineService *)accounts->data)->key, online_service_key))
 			return service;
 	}
 	g_list_free(accounts);
 	return NULL;
-}/*online_services_get_online_service_by_guid(Online_services, online_service_guid);*/
-
-OnlineService *online_services_get_online_service_by_uri(const gchar *online_service_uri){
-	GList		*accounts=NULL;
-	OnlineService	*service=NULL;
-	
-	for(accounts=services->accounts; accounts; accounts=accounts->next){
-		service=((OnlineService *)accounts->data);
-		if(!strcasecmp( service->uri, online_service_uri))
-			return service;
-	}
-	g_list_free(accounts);
-	return NULL;
-}/*online_services_get_online_service_by_guid(Online_services, online_service_guid);*/
+}/*online_services_get_service_by_key(Online_services, online_service_guid);*/
 
 void online_services_increment_total(const gchar *service_guid){
 	services->total++;
@@ -687,7 +671,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	uber_free(iter);
 	uber_free(user_at_index);
 	uber_free(user_name_at_index);
-	control_panel_sexy_select();
+	update_viewer_sexy_select();
 	return update_id;
 }/*online_services_best_friends_list_store_mark_as_unread(user_name)*/
 
@@ -728,7 +712,7 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	uber_free(iter);
 	uber_free(user_at_index);
 	uber_free(user_name_at_index);
-	control_panel_sexy_select();
+	update_viewer_sexy_select();
 	return TRUE;
 }/*online_services_best_friends_list_store_mark_as_read(service, user_name, tree_view, list_store);*/
 

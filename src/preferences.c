@@ -73,7 +73,8 @@
 #include "gtkbuilder.h"
 
 #include "main-window.h"
-#include "control-panel.h"
+#include "update-viewer.h"
+//#include "timelines-sexy-tree-view.h"
 #include "preferences.h"
 
 
@@ -123,7 +124,7 @@ struct _PreferencesDialog{
 	GtkCheckButton	*titles_only_checkbutton;
 	GtkCheckButton	*expand_users_checkbutton;
 	
-	GtkCheckButton	*tweets_no_profile_link_checkbutton;
+	GtkCheckButton	*updates_no_profile_link_checkbutton;
 	GtkCheckButton	*post_reply_to_service_only_checkbutton;
 	
 	GList		*notify_ids;
@@ -214,8 +215,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE, prefs->disable_update_length_alert_check_button);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_CONTROL_PANEL_COMPACT, TRUE, prefs->compact_view_toggle_button);
-	preferences_hookup_toggle_button(prefs, PREFS_CONTROL_PANEL_DIALOG, FALSE, prefs->use_dialog_toggle_button);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_COMPACT, FALSE, prefs->compact_view_toggle_button);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_DIALOG, FALSE, prefs->use_dialog_toggle_button);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, FALSE, prefs->disable_system_bell);
 	
@@ -225,7 +226,7 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_NO_PROFILE_LINK, TRUE, prefs->tweets_no_profile_link_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_NO_PROFILE_LINK, TRUE, prefs->updates_no_profile_link_checkbutton);
 	
 	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -251,13 +252,13 @@ static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data
 
 static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs){
 	if(gtk_toggle_button_get_active(check_button))
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->updates_no_profile_link_checkbutton), TRUE);
 	else if(i_changed_no_profile)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton), FALSE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->updates_no_profile_link_checkbutton), FALSE);
 }/*preferences_direct_reply_toggled*/
 
 static void preferences_direct_reply_setup(PreferencesDialog *prefs){
-	i_changed_no_profile=!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prefs->tweets_no_profile_link_checkbutton));
+	i_changed_no_profile=!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prefs->updates_no_profile_link_checkbutton));
 }/*preferences_direct_reply_setup(prefs);*/
 
 static void preferences_timeline_setup(PreferencesDialog *prefs){
@@ -554,8 +555,8 @@ void preferences_dialog_show(GtkWindow *parent){
 					"preferences_dialog", &prefs->dialog,
 					"preferences_notebook", &prefs->notebook,
 					
-					"control_panel_use_dialog_toggle_button", &prefs->use_dialog_toggle_button,
-					"control_panel_compact_view_toggle_button", &prefs->compact_view_toggle_button,
+					"timelines_sexy_tree_view_use_dialog_toggle_button", &prefs->use_dialog_toggle_button,
+					"timelines_sexy_tree_view_compact_view_toggle_button", &prefs->compact_view_toggle_button,
 					
 					"general_look_and_feel_disable_system_bell_check_button", &prefs->disable_system_bell,
 					
@@ -582,7 +583,7 @@ void preferences_dialog_show(GtkWindow *parent){
 					"disable_update_length_alert_check_button", &prefs->disable_update_length_alert_check_button,
 					"replace_me_with_combo_box", &prefs->replace_me_with_combo_box,
 					
-					"tweets_no_profile_link_checkbutton", &prefs->tweets_no_profile_link_checkbutton,
+					"updates_no_profile_link_checkbutton", &prefs->updates_no_profile_link_checkbutton,
 					"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
 				NULL
 	);
@@ -600,8 +601,8 @@ void preferences_dialog_show(GtkWindow *parent){
 				NULL
 	);
 	
-	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)control_panel_compact_view_toggled, NULL );
-	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_control_panel_set_embed, NULL );
+	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL );
+	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL );
 	
 	g_object_unref(ui);
 	

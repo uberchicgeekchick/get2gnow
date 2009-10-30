@@ -65,7 +65,7 @@
 
 #include "program.h"
 #include "online-services-typedefs.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 
 
 G_BEGIN_DECLS
@@ -87,17 +87,17 @@ G_BEGIN_DECLS
  ********************************************************************************/
 void tabs_init(GtkNotebook *notebook);
 
-UpdateViewer *tabs_open_timeline(const gchar *timeline, OnlineService *service);
+TimelinesSexyTreeView *tabs_open_timeline(const gchar *timeline, OnlineService *service);
 void tabs_close_timeline(const gchar *timeline);
 
-UpdateViewer *tabs_view_page(gint page);
-UpdateViewer *tabs_get_page(gint page, gboolean close);
-UpdateViewer *tabs_get_next(void);
-UpdateViewer *tabs_get_current(void);
-UpdateViewer *tabs_get_previous(void);
+TimelinesSexyTreeView *tabs_view_page(gint page);
+TimelinesSexyTreeView *tabs_get_page(gint page, gboolean close);
+TimelinesSexyTreeView *tabs_get_next(void);
+TimelinesSexyTreeView *tabs_get_current(void);
+TimelinesSexyTreeView *tabs_get_previous(void);
 
 void tabs_start(void);
-void tabs_remove_from_update_viewers_list_stores( UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value );
+void tabs_remove_from_timelines_sexy_tree_views_list_stores( TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column, gpointer value );
 void tabs_remove_service(OnlineService *service);
 void tabs_refresh(void);
 void tabs_stop(void);

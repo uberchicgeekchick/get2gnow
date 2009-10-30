@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__HEADER_H__
-#define	__HEADER_H__
+#ifndef	__BEST_FRIENDS_H__
+#define	__BEST_FRIENDS_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -82,7 +82,7 @@ gboolean best_friends_new_update_notify(void);
 
 
 G_END_DECLS
-#endif /* __HEADER_H__*/
+#endif /* __BEST_FRIENDS_H__*/
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/

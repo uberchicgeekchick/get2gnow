@@ -1,14 +1,13 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 [encoding: UTF-8]
-[type: gettext/glade]data/control-panel.ui
-[type: gettext/glade]data/control-panel.ui
 [type: gettext/glade]data/following-viewer.ui
 [type: gettext/glade]data/friends-manager.ui
 [type: gettext/glade]data/main-window.ui
 [type: gettext/glade]data/online-services-dialog.ui
 [type: gettext/glade]data/preferences.ui
 [type: gettext/glade]data/request-popup-dialog.ui
+[type: gettext/glade]data/timelines-sexy-tree-view.ui
 [type: gettext/glade]data/update-viewer.ui
 [type: gettext/glade]data/user-profile-viewer.ui
 
@@ -20,7 +19,6 @@ data/get2gnow.schemas.in
 src/about.c
 src/best-friends.c
 src/cache.c
-src/control-panel.c
 src/debug.c
 src/following-viewer.c
 src/friend-manager.c
@@ -46,6 +44,7 @@ src/program.c
 src/proxy.c
 src/searches.c
 src/tabs.c
+src/timelines-sexy-tree-view.c
 src/timer.c
 src/ui-utils.c
 src/update-viewer.c

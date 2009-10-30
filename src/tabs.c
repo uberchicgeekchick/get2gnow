@@ -62,7 +62,7 @@
 #include "online-services-typedefs.h"
 
 #include "main-window.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 #include "tabs.h"
 
 
@@ -78,8 +78,8 @@ typedef struct _TimelineTabs{
 	GList *tabs;
 	
 	/* These are the 3 default tabs & all other timlines.
-	 * Each page is an embed 'control-panel'
-	 * See: 'data/control-panel.ui', 'src/control-panel.c', & 'src/control-panel.h'.*/
+	 * Each page is an embed 'update-viewer'
+	 * See: 'data/update-viewer.ui', 'src/update-viewer.c', & 'src/update-viewer.h'.*/
 	GtkNotebook *notebook;
 } TimelineTabs;
 
@@ -89,7 +89,7 @@ static TimelineTabs *tabs;
 /********************************************************************************
  *                prototypes for private methods & functions                    *
  ********************************************************************************/
-static UpdateViewer *tabs_new_tab(const gchar *timeline, OnlineService *service);
+static TimelinesSexyTreeView *tabs_new_tab(const gchar *timeline, OnlineService *service);
 
 
 /********************************************************************************
@@ -119,30 +119,30 @@ void tabs_init(GtkNotebook *notebook){
 	tabs->tabs=NULL;
 }/* tabs_init(main_window->private->tabs_notebook); */
 
-static UpdateViewer *tabs_new_tab(const gchar *timeline, OnlineService *service ){
-	UpdateViewer *update_viewer=update_viewer_new(timeline, service);
+static TimelinesSexyTreeView *tabs_new_tab(const gchar *timeline, OnlineService *service ){
+	TimelinesSexyTreeView *timelines_sexy_tree_view=timelines_sexy_tree_view_new(timeline, service);
 	
-	tabs->tabs=g_list_append(tabs->tabs, update_viewer);
+	tabs->tabs=g_list_append(tabs->tabs, timelines_sexy_tree_view);
 	tabs->tabs=g_list_last(tabs->tabs);
-	update_viewer=tabs->tabs->data;
+	timelines_sexy_tree_view=tabs->tabs->data;
 	tabs->tabs=g_list_first(tabs->tabs);
 	
-	gint page=gtk_notebook_append_page_menu(tabs->notebook, GTK_WIDGET(update_viewer_get_child(update_viewer)), GTK_WIDGET(update_viewer_get_tab(update_viewer)), GTK_WIDGET(update_viewer_get_menu(update_viewer)) );
-	update_viewer_set_page(update_viewer, page);
+	gint page=gtk_notebook_append_page_menu(tabs->notebook, GTK_WIDGET(timelines_sexy_tree_view_get_child(timelines_sexy_tree_view)), GTK_WIDGET(timelines_sexy_tree_view_get_tab(timelines_sexy_tree_view)), GTK_WIDGET(timelines_sexy_tree_view_get_menu(timelines_sexy_tree_view)) );
+	timelines_sexy_tree_view_set_page(timelines_sexy_tree_view, page);
 	gtk_notebook_set_current_page( tabs->notebook, page );
 	
-	return update_viewer;
+	return timelines_sexy_tree_view;
 }/*tabs_new_tab("/replies.xml");*/
 
-UpdateViewer *tabs_open_timeline(const gchar *timeline, OnlineService *service){
+TimelinesSexyTreeView *tabs_open_timeline(const gchar *timeline, OnlineService *service){
 	if(G_STR_EMPTY(timeline)) return NULL;
 	GList *t=NULL;
-	UpdateViewer *update_viewer=NULL;
+	TimelinesSexyTreeView *timelines_sexy_tree_view=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		if(g_str_equal(update_viewer_get_timeline((UpdateViewer *)t->data), timeline)){
-			update_viewer=(UpdateViewer *)t->data;
-			gtk_notebook_set_current_page(tabs->notebook, update_viewer_get_page(update_viewer));
-			return update_viewer;
+		if(g_str_equal(timelines_sexy_tree_view_get_timeline((TimelinesSexyTreeView *)t->data), timeline)){
+			timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
+			gtk_notebook_set_current_page(tabs->notebook, timelines_sexy_tree_view_get_page(timelines_sexy_tree_view));
+			return timelines_sexy_tree_view;
 		}
 	g_list_free(t);
 	return tabs_new_tab(timeline, service);
@@ -152,98 +152,98 @@ void tabs_close_timeline(const gchar *timeline){
 	if(G_STR_EMPTY(timeline)) return;
 	GList *t=NULL;
 	gboolean timeline_found=FALSE;
-	UpdateViewer *update_viewer=NULL;
+	TimelinesSexyTreeView *timelines_sexy_tree_view=NULL;
 	for(t=tabs->tabs; t && !timeline_found; t=t->next)
-		if(g_str_equal(update_viewer_get_timeline((UpdateViewer *)t->data), timeline)){
-			update_viewer=(UpdateViewer *)t->data;
-			tabs_close_page(update_viewer_get_page(update_viewer));
+		if(g_str_equal(timelines_sexy_tree_view_get_timeline((TimelinesSexyTreeView *)t->data), timeline)){
+			timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
+			tabs_close_page(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view));
 			timeline_found=TRUE;
 		}
 	g_list_free(t);
 }/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
 
 static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num){
-	update_viewer_mark_as_read(tabs_get_page(page_num, FALSE));
+	timelines_sexy_tree_view_mark_as_read(tabs_get_page(page_num, FALSE));
 }/*tabs_mark_as_read(tabs->notebook, page, 0, main_window);*/
 
-UpdateViewer *tabs_get_next(void){
+TimelinesSexyTreeView *tabs_get_next(void){
 	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
-	UpdateViewer *current=tabs_get_current();
+	TimelinesSexyTreeView *current=tabs_get_current();
 	gtk_notebook_next_page(tabs->notebook);
-	UpdateViewer *next=tabs_get_current();
+	TimelinesSexyTreeView *next=tabs_get_current();
 	if(current!=next) return next;
 	gtk_notebook_set_current_page(tabs->notebook, 0);
 	return tabs_get_current();
 }/*tabs_current()*/
 
-UpdateViewer *tabs_get_current(void){
+TimelinesSexyTreeView *tabs_get_current(void){
 	return tabs_get_page(gtk_notebook_get_current_page(tabs->notebook), FALSE);
 }/*tabs_current()*/
 
-UpdateViewer *tabs_get_previous(void){
+TimelinesSexyTreeView *tabs_get_previous(void){
 	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
-	UpdateViewer *current=tabs_get_current();
+	TimelinesSexyTreeView *current=tabs_get_current();
 	gtk_notebook_prev_page(tabs->notebook);
-	UpdateViewer *previous=tabs_get_current();
+	TimelinesSexyTreeView *previous=tabs_get_current();
 	if(current!=previous) return previous;
 	gtk_notebook_set_current_page(tabs->notebook, (gtk_notebook_get_n_pages(tabs->notebook)-1));
 	return tabs_get_current();
 }/*tabs_current()*/
 
-UpdateViewer *tabs_view_page(gint page){
+TimelinesSexyTreeView *tabs_view_page(gint page){
 	GList *t=NULL;
-	gint update_viewer_page=0;
-	UpdateViewer *update_viewer=NULL;
+	gint timelines_sexy_tree_view_page=0;
+	TimelinesSexyTreeView *timelines_sexy_tree_view=NULL;
 	for(t=tabs->tabs; t; t=t->next){
-		update_viewer_page=update_viewer_get_page((UpdateViewer *)t->data);
-		if(update_viewer_page==page){
-			update_viewer=(UpdateViewer *)t->data;
+		timelines_sexy_tree_view_page=timelines_sexy_tree_view_get_page((TimelinesSexyTreeView *)t->data);
+		if(timelines_sexy_tree_view_page==page){
+			timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
 			gtk_notebook_set_current_page( tabs->notebook, page );
-			return update_viewer;
+			return timelines_sexy_tree_view;
 		}
 	}
 	return NULL;
 }/*tabs_view_page(0);*/
 
-UpdateViewer *tabs_get_page(gint page, gboolean close){
+TimelinesSexyTreeView *tabs_get_page(gint page, gboolean close){
 	GList *t=NULL;
-	gint update_viewer_page=0;
-	UpdateViewer *update_viewer=NULL;
+	gint timelines_sexy_tree_view_page=0;
+	TimelinesSexyTreeView *timelines_sexy_tree_view=NULL;
 	for(t=tabs->tabs; t; t=t->next){
-		update_viewer_page=update_viewer_get_page((UpdateViewer *)t->data);
-		if(update_viewer_page==page){
-			update_viewer=(UpdateViewer *)t->data;
-			if(!close) return update_viewer;
-		}else if(update_viewer_page > page)
-			update_viewer_set_page( (UpdateViewer *)t->data, page-1 );
+		timelines_sexy_tree_view_page=timelines_sexy_tree_view_get_page((TimelinesSexyTreeView *)t->data);
+		if(timelines_sexy_tree_view_page==page){
+			timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
+			if(!close) return timelines_sexy_tree_view;
+		}else if(timelines_sexy_tree_view_page > page)
+			timelines_sexy_tree_view_set_page( (TimelinesSexyTreeView *)t->data, page-1 );
 	}
-	return update_viewer;
+	return timelines_sexy_tree_view;
 }/*tabs_get_page(0, TRUE|FALSE);*/
 
 void tabs_start(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_start((UpdateViewer *)t->data);
+		timelines_sexy_tree_view_start((TimelinesSexyTreeView *)t->data);
 	g_list_free(t);
 }/*tabs_start();*/
 
-void tabs_remove_from_update_viewers_list_stores( UpdateViewerListStoreColumn update_viewer_list_store_column, gpointer value ){
+void tabs_remove_from_timelines_sexy_tree_views_list_stores( TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column, gpointer value ){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_remove_from_list_store((UpdateViewer *)t->data, update_viewer_list_store_column, value);
+		timelines_sexy_tree_view_remove_from_list_store((TimelinesSexyTreeView *)t->data, timelines_sexy_tree_view_list_store_column, value);
 	
 	g_list_free(t);
-}/*tabs_remove_from_update_viewers_list_stores( UpdateViewerStoreColumn, value );*/
+}/*tabs_remove_from_timelines_sexy_tree_views_list_stores( TimelinesSexyTreeViewStoreColumn, value );*/
 
 void tabs_remove_service(OnlineService *service){
 	GList *t=NULL;
-	UpdateViewer *update_viewer;
+	TimelinesSexyTreeView *timelines_sexy_tree_view;
 	for(t=tabs->tabs; t; t=t->next){
-		update_viewer=(UpdateViewer *)t->data;
-		if(update_viewer_get_service(update_viewer) == service)
-			tabs_close_page(update_viewer_get_page(update_viewer));
+		timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
+		if(timelines_sexy_tree_view_get_service(timelines_sexy_tree_view) == service)
+			tabs_close_page(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view));
 		else
-			update_viewer_remove_service(update_viewer, service);
+			timelines_sexy_tree_view_remove_service(timelines_sexy_tree_view, service);
 	}
 	g_list_free(t);
 }/*tabs_remove_service(service);*/
@@ -251,23 +251,23 @@ void tabs_remove_service(OnlineService *service){
 void tabs_refresh(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_refresh((UpdateViewer *)t->data);
+		timelines_sexy_tree_view_refresh((TimelinesSexyTreeView *)t->data);
 	g_list_free(t);
 }/*tabs_refresh();*/
 
 void tabs_stop(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_stop((UpdateViewer *)t->data);
+		timelines_sexy_tree_view_stop((TimelinesSexyTreeView *)t->data);
 	g_list_free(t);
 }/*tabs_stop();*/
 
 void tabs_close(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next){
-		UpdateViewer *update_viewer=(UpdateViewer *)t->data;
-		main_window_tabs_menu_set_active(update_viewer_get_timeline(update_viewer), FALSE);
-		tabs_close_page(update_viewer_get_page(update_viewer));
+		TimelinesSexyTreeView *timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
+		main_window_tabs_menu_set_active(timelines_sexy_tree_view_get_timeline(timelines_sexy_tree_view), FALSE);
+		tabs_close_page(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view));
 	}
 	g_list_free(t);
 }/*tabs_close();*/
@@ -277,41 +277,41 @@ void tabs_close_current_page(void){
 }/*tabs_close_current_page();*/
 
 void tabs_close_page(gint page){
-	UpdateViewer *update_viewer=tabs_get_page(page, TRUE);
+	TimelinesSexyTreeView *timelines_sexy_tree_view=tabs_get_page(page, TRUE);
 	gtk_notebook_remove_page(tabs->notebook, page);
-	tabs->tabs=g_list_remove(tabs->tabs, update_viewer);
-	g_object_unref(update_viewer);
+	tabs->tabs=g_list_remove(tabs->tabs, timelines_sexy_tree_view);
+	g_object_unref(timelines_sexy_tree_view);
 }/*void tabs_close_page(0);*/
 
 void tabs_toggle_toolbars(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_toggle_toolbar((UpdateViewer *)t->data);
+		timelines_sexy_tree_view_toggle_toolbar((TimelinesSexyTreeView *)t->data);
 	g_list_free(t);
 }/*tabs_toggle_toolbars();*/
 
 void tabs_toggle_from_columns(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_toggle_from_column((UpdateViewer *)t->data);
+		timelines_sexy_tree_view_toggle_from_column((TimelinesSexyTreeView *)t->data);
 	g_list_free(t);
 }/*tabs_toggle_from_columns();*/
 
 void tabs_toggle_rcpt_columns(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		update_viewer_toggle_rcpt_column((UpdateViewer *)t->data);
+		timelines_sexy_tree_view_toggle_rcpt_column((TimelinesSexyTreeView *)t->data);
 	g_list_free(t);
 }/*tabs_toggle_rcpt_columns();*/
 
 void tabs_destroy(void){
-	UpdateViewer *update_viewer=NULL;
+	TimelinesSexyTreeView *timelines_sexy_tree_view=NULL;
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next){
-		update_viewer=(UpdateViewer *)t->data;
-		update_viewer_stop(update_viewer);
-		gtk_notebook_remove_page(tabs->notebook, update_viewer_get_page(update_viewer));
-		g_object_unref(update_viewer);
+		timelines_sexy_tree_view=(TimelinesSexyTreeView *)t->data;
+		timelines_sexy_tree_view_stop(timelines_sexy_tree_view);
+		gtk_notebook_remove_page(tabs->notebook, timelines_sexy_tree_view_get_page(timelines_sexy_tree_view));
+		g_object_unref(timelines_sexy_tree_view);
 	}
 	g_list_free(t);
 	g_list_free(tabs->tabs);

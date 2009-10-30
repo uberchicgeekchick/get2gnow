@@ -81,13 +81,13 @@
 
 #include "friends-manager.h"
 #include "following-viewer.h"
-#include "control-panel.h"
+#include "update-viewer.h"
 
 
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"Networking:OnlineServices:Friends:Followers:XML:Parser:UsersGlists:users-glistts.c"
+#define	DEBUG_DOMAINS	"Networking:OnlineServices:Friends:Followers:XML:Parser:UsersGlists:users-glists.c"
 #include "debug.h"
 
 

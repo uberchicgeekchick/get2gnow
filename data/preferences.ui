@@ -91,9 +91,9 @@
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="control_panel_compact_view_toggle_button">
-                                <property name="label" translatable="yes">Only show buttons when they're clickable.
-I.E. Enable's _Compact View</property>
+                              <object class="GtkCheckButton" id="update_viewer_compact_view_toggle_button">
+                                <property name="label" translatable="yes">Enable: _compact update viewer:
+  I.E. Only show buttons when they're clickable.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -107,9 +107,9 @@ I.E. Enable's _Compact View</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="control_panel_use_dialog_toggle_button">
-                                <property name="label" translatable="yes">Use a separate window to view &amp; compose updates/tweets.
-Enable: _Floating Update Viewer</property>
+                              <object class="GtkCheckButton" id="update_viewer_use_dialog_toggle_button">
+                                <property name="label" translatable="yes">Enable: _floating update viewer:
+  I.E. Use a separate window to read &amp; write updates.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -127,7 +127,7 @@ Enable: _Floating Update Viewer</property>
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="control_panel_view_label">
+                      <object class="GtkLabel" id="update_viewer_view_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">&lt;b&gt;_View:&lt;/b&gt;</property>
                         <property name="use_markup">True</property>
@@ -694,7 +694,7 @@ Enable: _Floating Update Viewer</property>
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="tweet_compose_alert_label">
+                      <object class="GtkLabel" id="update_compose_alert_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">&lt;b&gt;Composition&lt;/b&gt;</property>
                         <property name="use_markup">True</property>
@@ -722,7 +722,7 @@ Enable: _Floating Update Viewer</property>
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="tweets_no_profile_link_checkbutton">
+                              <object class="GtkCheckButton" id="updates_no_profile_link_checkbutton">
                                 <property name="label" translatable="yes">Start _replies with @username only.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>

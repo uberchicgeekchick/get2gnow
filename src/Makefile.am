@@ -24,7 +24,6 @@ endif
 get2gnow_SOURCES = 										\
 	about.c						about.h					\
 	best-friends.c					best-friends.h				\
-	control-panel.c					control-panel.h				\
 	cache.c						cache.h					\
 	debug.c						debug.h					\
 	following-viewer.c				following-viewer.h			\
@@ -53,6 +52,7 @@ get2gnow_SOURCES = 										\
 	proxy.c						proxy.h					\
 	searches.c					searches.h				\
 	tabs.c						tabs.h					\
+	timelines-sexy-tree-view.c	timelines-sexy-tree-view.macros.h		timelines-sexy-tree-view.h		\
 	timer.c						timer.h					\
 	ui-utils.c					ui-utils.h				\
 	update-viewer.c					update-viewer.h				\

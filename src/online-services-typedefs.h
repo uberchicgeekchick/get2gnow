@@ -91,6 +91,7 @@ enum _UpdateMonitor{
 };
 
 enum _OnlineServicesListStoreColumns{
+	OnlineServiceKey,
 	UrlString,
 	OnlineServicePointer,
 };

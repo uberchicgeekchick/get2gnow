@@ -93,6 +93,7 @@ static gboolean debug_devel=FALSE;
 static gchar **debug_domains=NULL;
 static gchar *debug_last_domains=NULL;
 static gchar *debug_last_domain=NULL;
+static gint debug_domains_source_code_index=0;
 
 static gchar *debug_environmental_variable=NULL;
 static FILE *debug_log_fp=NULL;
@@ -116,12 +117,20 @@ static guint debug_timeout_id=0;
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
 gboolean debug_if_devel(void){
+#ifdef GNOME_ENABLE_DEBUG
+	return (debug_devel=TRUE);
+#else
 	return debug_devel;
+#endif
 }/*IF_DEVEL==if(debug_if_devel())*/
 
 gboolean debug_check_devel(const gchar *debug_environmental_value){
+#ifdef GNOME_ENABLE_DEBUG
+	return (debug_devel=TRUE);
+#else
 	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
 		return (debug_devel=FALSE);
+#endif
 	
 	if(debug_environment) g_strfreev(debug_environment);
 	
@@ -164,6 +173,7 @@ void debug_deinit(void){
 	g_strfreev(debug_environment);
 	
 	if(debug_last_domains) g_free(debug_last_domains);
+	if(debug_last_domain) g_free(debug_last_domain);
 	if(debug_domains) g_strfreev(debug_domains);
 }/*debug_deinit();*/
 
@@ -194,6 +204,7 @@ static void debug_domains_check(const gchar *domains){
 	
 	if(debug_domains) g_strfreev(debug_domains);
 	debug_domains=g_strsplit(domains, ":", -1);
+	debug_domains_source_code_index=g_strv_length(debug_domains)-1;
 	
 	if(debug_last_domain) uber_free(debug_last_domain);
 }/*debug_domains_check(domain);*/
@@ -237,8 +248,6 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 	FILE *debug_output_fp=NULL;
 	
 	debug_domains_check(domains);
-	/*gchar **debug_domains=g_strsplit(domains, ":", -1);*/
-	gint debug_domains_source_code_index=g_strv_length(debug_domains)-1;
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
 			if(!(debug_domains[x+1] && debug_environment[y+1]))
@@ -255,11 +264,10 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			
 			gboolean error=FALSE, notice=FALSE;
 			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
-				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[debug_domains_source_code_index], _("error"));
+				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[debug_domains_source_code_index], (error ?_("error") :_("notice") ) );
 				va_list args;
 				va_start(args, msg);
-				/*g_vfprintf(stderr, (notice ?g_strrstr(msg, "**NOTICE:**") :msg), args);*/
-				g_vfprintf(stderr, msg, args);
+				g_vfprintf(stderr, g_strrstr(msg, ":** ")+4, args);
 				va_end(args);
 				g_fprintf(stderr, " @ %s", datetime);
 			}
@@ -277,29 +285,31 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			va_end(args);
 			g_fprintf(debug_output_fp, " @ %s", datetime);
 			
-			/*g_strfreev(debug_domains);*/
-
 			return;
 		}
 	}
-	/*g_strfreev(debug_domains);*/
 }/*debug_printf(DEBUG_DOMAINS, "message" __format, format_args...);*/
 
 gboolean debug_if_domain(const gchar *domains){
+#ifdef GNOME_ENABLE_DEBUG
+	return TRUE;
+#endif
 	if(G_STR_EMPTY(domains))
 		return FALSE;
 	
 	debug_domains_check(domains);
+	if(all_domains) return TRUE;
+	
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
-			if(!(all_domains && strcasecmp(debug_domains[x], debug_environment[y]) ))
+			if(strcasecmp(debug_domains[x], debug_environment[y]))
 				continue;
 			
 			return TRUE;
 		}
 	}
 	return FALSE;
-}/*macro:DEBUG_IF==if(debug_if_domain(DEBUG_DOMAINS))*/
+}/*macro:IF_DEBUG if(debug_if_domain(DEBUG_DOMAINS))*/
 
 
 /********************************************************************************

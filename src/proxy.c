@@ -86,7 +86,7 @@ static PROXY_STATUS proxy_status=PROXY_STATUS_UNKNOWN;
 static SoupURI *proxy_suri=NULL;
 static gchar *proxy_uri=NULL;
 
-#define	DEBUG_DOMAINS	"OnlineServices:Network:Requests:Authentication"
+#define	DEBUG_DOMAINS	"OnlineServices:Networking:Requests:Authentication:Settings:Setup:proxy.c"
 #include "debug.h"
 
 

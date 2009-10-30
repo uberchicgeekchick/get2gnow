@@ -65,7 +65,7 @@
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
 #include "config.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 
 #include "online-service.h"
 
@@ -77,7 +77,7 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-void network_get_image(OnlineService *service, UpdateViewer *update_viewer, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
+void network_get_image(OnlineService *service, TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
 void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
 

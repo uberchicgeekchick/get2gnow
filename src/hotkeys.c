@@ -86,8 +86,8 @@
 #include "gconfig.h"
 #include "preferences.h"
 #include "tabs.h"
+#include "timelines-sexy-tree-view.h"
 #include "update-viewer.h"
-#include "control-panel.h"
 #include "ui-utils.h"
 #include "users.h"
 
@@ -100,12 +100,12 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 
 void hotkey_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
 	hotkey_process(widget, event, user_date);
-	control_panel_sexy_select();
+	update_viewer_sexy_select();
 }/*void hotkey(widget, event, user_date){*/
 
 static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
 	if(event->keyval==GDK_Escape){
-		control_panel_hide_previous_updates();
+		update_viewer_hide_previous_updates();
 		return;
 	}
 	
@@ -114,10 +114,10 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 				case GDK_D:	case GDK_d:
-					control_panel_sexy_send_dm();
+					update_viewer_sexy_send_dm();
 					return;
 				case GDK_S:	case GDK_s:
-					control_panel_send(NULL);
+					update_viewer_send(NULL);
 					return;
 				case GDK_N:	case GDK_n:
 					g_signal_emit_by_name(main_window_get_menu("network"), "activate");
@@ -138,10 +138,10 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 					g_signal_emit_by_name(main_window_get_menu("help"), "activate");
 					return;
 				case GDK_Down: case GDK_KP_Down:
-					control_panel_show_previous_updates();
+					update_viewer_show_previous_updates();
 					return;
 				case GDK_R: case GDK_r:
-					update_viewer_refresh(tabs_get_current()); 
+					timelines_sexy_tree_view_refresh(tabs_get_current()); 
 					return;
 				case GDK_I:	case GDK_i:
 				case GDK_question:
@@ -185,7 +185,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 		case GDK_SHIFT_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
-					control_panel_new_dm();
+					update_viewer_new_dm();
 					return;
 				default: break;
 			}
@@ -199,13 +199,13 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 		case GDK_CONTROL_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
-					control_panel_sexy_insert_char('\n');
+					update_viewer_sexy_insert_char('\n');
 					return;
 				case GDK_Tab:
-					control_panel_sexy_insert_char('\t');
+					update_viewer_sexy_insert_char('\t');
 					return;
 				case GDK_N:	case GDK_n:
-					control_panel_new_update();
+					update_viewer_new_update();
 					return;
 				case GDK_Q:	case GDK_q:
 					gtk_main_quit();
@@ -215,7 +215,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 					online_service_request_selected_update_save_fave();
 					return;
 				case GDK_F5:
-					update_viewer_refresh(tabs_get_current()); 
+					timelines_sexy_tree_view_refresh(tabs_get_current()); 
 					return;
 				case GDK_Z:	case GDK_z:
 					online_service_request_selected_update_destroy_fave();
@@ -227,7 +227,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 					online_service_request_selected_update_forward();
 					return;
 				case GDK_D:	case GDK_d:
-					control_panel_new_dm();
+					update_viewer_new_dm();
 					return;
 				case GDK_W: case GDK_w:
 					tabs_close_current_page();
@@ -253,13 +253,13 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 					online_service_request_selected_update_reply();
 					return;
 				case GDK_asciitilde:
-					control_panel_new_dm();
+					update_viewer_new_dm();
 					return;
 				default: break;
 			}
 			break;
 	}
-	update_viewer_key_pressed(tabs_get_current(), event);
+	timelines_sexy_tree_view_key_pressed(tabs_get_current(), event);
 }/*hotkey_process(widget, event, user_date);*/
 
 /********************************************************

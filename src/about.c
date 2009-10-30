@@ -58,8 +58,6 @@
 #include <glib/gi18n.h>
 
 #include "about.h"
-#define	DEBUG_DOMAINS	"ui:gtkbuilder:gtkbuildable:information:settings:artistry:graphics:programming:code:about.c"
-#include "debug.h"
 
 const gchar *authors[] = {
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
@@ -101,7 +99,14 @@ const gchar *license[] = {
 	NULL
 };
 
-static void about_dialog_activate_link_cb( GtkAboutDialog *about, const gchar *link, gpointer data ){
+
+#define	DEBUG_DOMAINS	"ui:gtkbuilder:gtkbuildable:information:settings:artistry:graphics:programming:code:about.c"
+#include "debug.h"
+
+
+static void about_dialog_activate_link_cb(GtkAboutDialog *about, const gchar *link);
+
+static void about_dialog_activate_link_cb(GtkAboutDialog *about, const gchar *link){
 	if(!g_app_info_launch_default_for_uri(link, NULL, NULL))
 		debug("**ERROR:** Can't open URI: <%s>.", link );
 	else
@@ -109,7 +114,7 @@ static void about_dialog_activate_link_cb( GtkAboutDialog *about, const gchar *l
 }
 
 void about_dialog_new (GtkWindow *parent){
-	gtk_about_dialog_set_url_hook(about_dialog_activate_link_cb, NULL, NULL);
+	gtk_about_dialog_set_url_hook((GtkAboutDialogActivateLinkFunc)about_dialog_activate_link_cb, NULL, NULL);
 	
 	gchar *license_trans=g_strconcat( _(license[0]), "\n\n", _(license[1]), "\n\n", _(license[2]), "\n\n", _(license[3]), "\n\n", _(license[4]), NULL );
 	gtk_show_about_dialog(

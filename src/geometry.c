@@ -69,7 +69,7 @@
 #include "geometry.h"
 
 #include "main-window.h"
-#include "control-panel.h"
+#include "update-viewer.h"
 
 
 /********************************************************
@@ -78,7 +78,7 @@
 typedef enum{
 	Embed,
 	MicroBlogging_Viewer_MainWindow,
-	FloatingControlPanel,
+	FloatingUpdateViewer,
 } ViewType;
 
 enum {
@@ -89,7 +89,7 @@ enum {
 	PreferencePositionY,
 	PreferenceTotal,
 };
-#define DEBUG_DOMAINS "Geometry:FloatingControlPanel:MicroBlogging_Viewer_MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainWindow:geometry.c"
+#define DEBUG_DOMAINS "Geometry:FloatingUpdateViewer:MicroBlogging_Viewer_MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainWindow:geometry.c"
 #include"debug.h"
 
 /* Window height, width, & position gconf values. */
@@ -103,7 +103,7 @@ enum {
  *          Static method & function prototypes         *
  ********************************************************/
 static GtkWindow *geometry_get_window(ViewType view);
-static gchar **geometry_get_prefs_path(ViewType view);
+static gchar **geometry_get_prefs_path(ViewType view, gint *w, gint *h, gint *x, gint *y);
 static void prefs_path_free(gchar **prefs_path);
 static void geometry_load_for_window(ViewType view);
 static void geometry_save_for_window(ViewType view);
@@ -113,31 +113,33 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 void geometry_load(void){
-	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
+	if(!gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE))
 		return geometry_load_for_window(Embed);
 	
 	geometry_load_for_window(MicroBlogging_Viewer_MainWindow);
-	geometry_load_for_window(FloatingControlPanel);
+	geometry_load_for_window(FloatingUpdateViewer);
 }/*geometry_load*/
 
 void geometry_save(void){
-	if(!gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE))
+	if(!gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE))
 		return geometry_save_for_window(Embed);
 	
 	geometry_save_for_window(MicroBlogging_Viewer_MainWindow);
-	geometry_save_for_window(FloatingControlPanel);
+	geometry_save_for_window(FloatingUpdateViewer);
 }/*geometry_save();*/
 
 static void geometry_load_for_window(ViewType view){
-	if( gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
-	gint		x=0, y=0, w=0, h=0;
+	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
+	gint		x, y, w, h;
+	gint		default_width, default_height, default_x, default_y;
+	x=y=w=h=default_width=default_height=default_x=default_y=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
-	if(!(prefs_path=geometry_get_prefs_path(view))) return;
-	debug("Loading %s window geometry.", prefs_path[PrefernceWindow]);
+	if(!(prefs_path=geometry_get_prefs_path(view, &default_width, &default_height, &default_x, &default_y))) return;
+	debug("Loading %s's window's geometry.", prefs_path[PrefernceWindow]);
 	
-	gconfig_get_int(prefs_path[PreferenceWidth], &w);
-	gconfig_get_int(prefs_path[PreferenceHeight], &h);
+	gconfig_get_int_or_default(prefs_path[PreferenceWidth], &w, default_width);
+	gconfig_get_int_or_default(prefs_path[PreferenceHeight], &h, default_height);
 	
 	if(!( w >0 && h > 0 )){
 		debug("Unable to resize %s window, either value is less than zero.\n\twidth: %d, height: %d", prefs_path[PrefernceWindow], w, h);
@@ -146,8 +148,8 @@ static void geometry_load_for_window(ViewType view){
 		gtk_window_resize(window, w, h);
 	}
 	
-	gconfig_get_int(prefs_path[PreferencePositionX], &x);
-	gconfig_get_int(prefs_path[PreferencePositionY], &y);
+	gconfig_get_int_or_default(prefs_path[PreferencePositionX], &x, default_x);
+	gconfig_get_int_or_default(prefs_path[PreferencePositionY], &y, default_y);
 	
 	if(!( x >0 && y > 0 )){
 		debug("Unable to move %s window, either value is less than zero.\n\tposition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
@@ -159,17 +161,20 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
-	geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, FALSE);
-	geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, FALSE);
+	geometry_set_paned(main_window_get_timelines_sexy_tree_view_paned(), "timelines_sexy_tree_view", view, FALSE, FALSE);
+	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
-	if( gconfig_if_bool(  PREFS_CONTROL_PANEL_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
+	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	static guint	calls=0;
-	gint		x=0, y=0, w=0, h=0;
+	gint		x, y, w, h;
+	gint		default_width, default_height, default_x, default_y;
+	x=y=w=h=default_width=default_height=default_x=default_y=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
-	if(!(prefs_path=geometry_get_prefs_path(view))) return;
+	if(!(prefs_path=geometry_get_prefs_path(view, &default_width, &default_height, &default_x, &default_y))) return;
+	debug("Saving %s's window's geometry.", prefs_path[PrefernceWindow]);
 	
 	gtk_window_get_size(window, &w, &h);
 	if(!( w >0 && h > 0 )){
@@ -198,8 +203,8 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) calls++;
 	
-	geometry_set_paned(main_window_get_update_viewer_paned(), "update_viewer", view, FALSE, (calls==LOAD_COUNT) );
-	geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, (calls==LOAD_COUNT) );
+	geometry_set_paned(main_window_get_timelines_sexy_tree_view_paned(), "timelines_sexy_tree_view", view, FALSE, (calls==LOAD_COUNT) );
+	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, (calls==LOAD_COUNT) );
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
@@ -210,14 +215,14 @@ static GtkWindow *geometry_get_window(ViewType view){
 			return main_window_get_window();
 		break;
 		
-		case FloatingControlPanel:
-			return control_panel_get_window();
+		case FloatingUpdateViewer:
+			return update_viewer_get_window();
 		break;
 	}
 	return main_window_get_window();
 }//geometry_get_window
 
-static gchar **geometry_get_prefs_path(ViewType view){
+static gchar **geometry_get_prefs_path(ViewType view, gint *w, gint *h, gint *x, gint *y){
 	gchar **prefs_path=NULL;
 	
 	if(!( (prefs_path=g_malloc0(sizeof(G_TYPE_STRING)*PreferenceTotal)) )){
@@ -228,14 +233,17 @@ static gchar **geometry_get_prefs_path(ViewType view){
 	switch(view){
 		case Embed:
 			prefs_path[PrefernceWindow]=g_strdup("embed");
+			*w=1100, *h=700, *x=100, *y=100;
 		break;
 		
 		case MicroBlogging_Viewer_MainWindow:
 			prefs_path[PrefernceWindow]=g_strdup("main_window");
+			*w=1100, *h=500, *x=100, *y=100;
 		break;
 		
-		case FloatingControlPanel:
-			prefs_path[PrefernceWindow]=g_strdup("control_panel");
+		case FloatingUpdateViewer:
+			prefs_path[PrefernceWindow]=g_strdup("update_viewer");
+			*w=700, *h=350, *x=100, *y=600;
 		break;
 		
 		default:
@@ -290,23 +298,18 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 		position=gtk_paned_get_position(paned);
 		gconfig_set_int(paned_position_prefs_path, position);
 	}else{
-		gconfig_get_int(paned_position_prefs_path, &position);
+		gconfig_get_int_or_default(paned_position_prefs_path, &position, (vpaned ?420 :320 ) );
 	}
 	uber_free(paned_position_prefs_path);
 	
 	g_object_get(G_OBJECT(paned), "max-position", &max_position, "min-position", &min_position, NULL);
 	max_position-=padding;
 	
-	/*
-	if(position>max_position) position=max_position-min_position;
-	else if(position<min_position) position=min_position+padding;
-	*/
-	
 	debug("%s %s's paned position to: %d.", (save ?_("Saving") :_("Moving")), widget, position);
 	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
-}/*geometry_set_paned(main_window_get_main_paned(), "control_panel", view, TRUE, FALSE);*/
+}/*geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE);*/
 
 /********************************************************
  *                       eof                            *

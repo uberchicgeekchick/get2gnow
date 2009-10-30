@@ -68,42 +68,43 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 #ifndef	GNOME_ENABLE_DEBUG
 	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
 	gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
-	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		uber_free(gtkbuilder_ui_file);
-		return gtkbuilder_ui_filename;
-	}
-#endif
-	
-	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
-	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename))
 		return gtkbuilder_ui_filename;
 	
-	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", base_filename, NULL );
+	uber_free(gtkbuilder_ui_filename);
+#endif
+	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
+	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
+	uber_free(gtkbuilder_ui_file);
+	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
+		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", gtkbuilder_ui_filename);
+		return gtkbuilder_ui_filename;
+	}
+	uber_free(gtkbuilder_ui_filename);
+	
+	gtkbuilder_ui_file=g_strdup_printf("%s.in.ui", base_filename);
+	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
 	uber_free(gtkbuilder_ui_file);
 	
 	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
+		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", gtkbuilder_ui_filename);
 		debug( "**ERROR:** GtkBuilderUI [%s] needs converted.", gtkbuilder_ui_filename );
 		debug( "**ERROR:** GtkBuilderUI template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename );
 		debug( "**ERROR:** GtkBuilderUI can be converted by running: (cd data/ ; make %s.ui).  Or re-run `make`.", base_filename );
+		return gtkbuilder_ui_filename;
 	}
-	
-	debug("**ERROR:** Unable to load gtkbuilder ui: %s.ui", gtkbuilder_ui_filename);
+	debug("**ERROR:** Unable to load gtkbuilder ui: [%s].", gtkbuilder_ui_filename);
 	uber_free(gtkbuilder_ui_filename);
 	
 	return NULL;
-}/*gtkbuilder_get_path("control-panel");*/
+}/*gtkbuilder_get_path("update-viewer");*/
 
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
 	if(!g_file_test( gtkbuilder_ui_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )){
 		debug("Unable to load GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
-		uber_free(gtkbuilder_ui_filename);
-		
-		/* uber_free releases gtkbuilder_ui_filename's memory & sets it to NULL.
-		 * So it will end up with this function returning NULL as well.
-		 */
+		return NULL;
 	}
 	
 	debug("GtkBuilder UI found filename: %s.", gtkbuilder_ui_filename);
@@ -122,7 +123,10 @@ static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *fir
 	/* Create gtkbuilder & load the xml file */
 	ui=gtk_builder_new ();
 	gtk_builder_set_translation_domain (ui, GETTEXT_PACKAGE);
-	path=gtkbuilder_get_path(filename);
+	if(!(path=gtkbuilder_get_path(filename) )){
+		debug("Unable to load GtkBuilder UI filename: %s", filename);
+		return NULL;
+	}
 	if(!gtk_builder_add_from_file (ui, path, &error)){
 		g_warning ("XML file error: %s", error->message);
 		g_error_free(error);
@@ -136,7 +140,7 @@ static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *fir
 			g_warning ("Widget '%s' at '%s' is missing.", name, path);
 	}
 	
-	uber_free(path);
+	if(path) uber_free(path);
 	
 	return ui;
 }/*gtkbuilder_load_file(GtkBuilderUI, "widget", private_objects_ui->widget, NULL);*/

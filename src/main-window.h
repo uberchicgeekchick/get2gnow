@@ -61,7 +61,7 @@
 #include <gtk/gtk.h>
 
 #include "online-services-typedefs.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 
 G_BEGIN_DECLS
 
@@ -104,16 +104,16 @@ MainWindow *main_window_get(void);
 
 gboolean main_window_tabs_init(void);
 void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open);
-void main_window_control_panel_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
+void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *main_window_get_window(void);
-GtkPaned *main_window_get_update_viewer_paned(void);
+GtkPaned *main_window_get_timelines_sexy_tree_view_paned(void);
 GtkPaned *main_window_get_main_paned(void);
 
 GtkMenuItem *main_window_get_menu(const gchar *menu);
 
 GtkTreeModel *main_window_get_best_friends_tree_model(void);
-gboolean main_window_best_friends_get_selected( OnlineService **service, gchar **user, gchar **user_name );
+gboolean main_window_best_friends_get_selected( OnlineService **service, gchar **user, gchar **user_name, gdouble *unread_update_id );
 
 const gchar *main_window_set_statusbar_default_message(const gchar *default_message);
 void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);

@@ -91,7 +91,7 @@
 #include "label.h"
 
 #include "ui-utils.h"
-#include "control-panel.h"
+#include "update-viewer.h"
 
 
 /********************************************************************************
@@ -263,7 +263,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 			user->following=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(current_node->name, "statuses_count" ))
-			user->tweets=strtoul( content, NULL, 10 );
+			user->updates=strtoul( content, NULL, 10 );
 		
 		else if(g_str_equal(current_node->name, "profile_image_url"))
 			user->image_uri=g_strdup(content);
@@ -315,7 +315,7 @@ static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitor
 	status->service=service;
 	status->user=NULL;
 	status->type=monitoring;
-	status->id_str=status->text=status->tweet=status->notification=status->sexy_tweet=status->created_at_str=status->created_how_long_ago=NULL;
+	status->id_str=status->text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=0;
 	status->created_seconds_ago=0;
@@ -328,9 +328,9 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->id_str ) (*status)->id_str=g_strdup("");
 	if(! (*status)->from ) (*status)->from=g_strdup("");
 	if(! (*status)->rcpt ) (*status)->rcpt=g_strdup("");
-	if(! (*status)->tweet ) (*status)->tweet=g_strdup("");
+	if(! (*status)->update ) (*status)->update=g_strdup("");
 	if(! (*status)->source ) (*status)->source=g_strdup("");
-	if(! (*status)->sexy_tweet ) (*status)->sexy_tweet=g_strdup("");
+	if(! (*status)->sexy_update ) (*status)->sexy_update=g_strdup("");
 	if(! (*status)->notification ) (*status)->notification=g_strdup("");
 	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
@@ -342,7 +342,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 	UserStatus	*status=user_status_new(service, monitoring);
 	
 	/* Begin 'status' or 'direct-messages' loop */
-	debug("Parsing status & tweet at node: %s", root_element->name);
+	debug("Parsing status & update at node: %s", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE) continue;
 		
@@ -396,7 +396,7 @@ static void user_status_format_dates(UserStatus *status){
 	post.tm_isdst=-1;
 	status->created_at=mktime(&post);
 	
-	debug("Parsing tweet's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
+	debug("Parsing update's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
 	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
 	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
@@ -408,10 +408,10 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	
 	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
 	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
-		status->sexy_tweet=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
+		status->sexy_update=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
 		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
 	}else{*/
-		status->sexy_tweet=g_strdup(sexy_status_swap);
+		status->sexy_update=g_strdup(sexy_status_swap);
 		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
 	//}
 	uber_free(sexy_status_swap);
@@ -420,7 +420,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	
 	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", service->nick_name, service->key);
 	
-	status->tweet=g_strdup_printf("%s%s%s%s",
+	status->update=g_strdup_printf("%s%s%s%s\n",
 					( (status->type==DMs)
 					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n"
 						:(status->type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n"
@@ -456,7 +456,7 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 	notify_notification_set_timeout(notify_notification, 10000);
 	
 	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
-		control_panel_beep();
+		update_viewer_beep();
 	
 	notify_notification_show(notify_notification, &error);
 	
@@ -483,16 +483,16 @@ void user_status_free(UserStatus *status){
 	if(status->id_str) uber_free(status->id_str);
 	if(status->from) uber_free(status->from);
 	if(status->rcpt) uber_free(status->rcpt);
-	if(status->tweet) uber_free(status->tweet);
+	if(status->update) uber_free(status->update);
 	if(status->source) uber_free(status->source);
-	if(status->sexy_tweet) uber_free(status->sexy_tweet);
+	if(status->sexy_update) uber_free(status->sexy_update);
 	if(status->notification) uber_free(status->notification);
 	if(status->created_at_str) uber_free(status->created_at_str);
 	if(status->created_how_long_ago) uber_free(status->created_how_long_ago);
 
 	uber_free(status);
 	
-	/*uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->tweet, &status->source, &status->sexy_tweet, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);*/
+	/*uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);*/
 }/*user_status_free*/
 
 
@@ -537,7 +537,7 @@ void user_profile_viewer_show(OnlineService *service, const gchar *user_name, Gt
 	window_present(GTK_WINDOW(user_profile_viewer->dialog), TRUE);
 	
 	online_service_fetch_profile( service, user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)user_profile_viewer_display_profile );
-}/*user_profile_viewer_show( service, "uberChick", control_panel->control_panel );*/
+}/*user_profile_viewer_show( service, "uberChick", update_viewer->update_viewer );*/
 
 static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user){ 
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
@@ -566,7 +566,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	
 	profile_details=g_strdup_printf(
 					"\t<b>Updates:</b> %lu\n\t<b>Following:</b> %lu\n\t<b>Followers:</b> %lu\n\t<b>Location:</b> %s\n",
-					user->tweets,
+					user->updates,
 					user->following,
 					user->followers,
 					user->location
@@ -587,7 +587,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	gtk_label_set_markup(user_profile_viewer->updated_when_label, profile_details);
 	uber_free(profile_details);
 	
-	label_set_text(service, user_profile_viewer->most_recent_update, user->status->id, user->status->sexy_tweet, TRUE, TRUE);
+	label_set_text(service, user_profile_viewer->most_recent_update, user->status->id, user->status->sexy_update, TRUE, TRUE);
 	
 	if(!user_profile_viewer->loading)
 		user_profile_viewer_show_all();

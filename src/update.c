@@ -85,7 +85,7 @@
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define DEBUG_DOMAINS "OnlineServices:UI:Networking:Updates:Requests:Notification:Settings:Setup:Users:Timelines:updates.c"
+#define DEBUG_DOMAINS "OnlineServices:UI:Networking:Updates:Requests:Notification:Settings:Setup:Users:Timelines:update.c"
 
 
 /********************************************************************************
@@ -110,7 +110,7 @@ gboolean update_notify_on_timeout(gpointer data){
 	notify_notification_set_timeout(notify_notification, 10000);
 	
 	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
-		control_panel_beep();
+		update_viewer_beep();
 	
 	notify_notification_show(notify_notification, &error);
 	

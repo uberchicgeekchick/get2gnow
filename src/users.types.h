@@ -92,7 +92,7 @@ struct _User {
 	gchar			*image_uri;
 	gchar			*image_file;
 	
-	gulong			tweets;
+	gulong			updates;
 	gulong			following;
 	gulong			followers;
 	
@@ -117,9 +117,9 @@ struct _UserStatus {
 	gchar		*rcpt;
 	
 	gchar		*text;
-	gchar		*tweet;
+	gchar		*update;
 	gchar		*notification;
-	gchar		*sexy_tweet;
+	gchar		*sexy_update;
 	
 	gchar		*source;
 	

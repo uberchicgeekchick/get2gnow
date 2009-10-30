@@ -121,8 +121,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/scroll_to_top_with_new_updates</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/scroll_to_top_with_new_updates</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/timelines_sexy_tree_view/scroll_to_top_with_new_updates</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/timelines_sexy_tree_view/scroll_to_top_with_new_updates</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -135,8 +135,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/select_update_by_default</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/select_update_by_default</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/timelines_sexy_tree_view/select_update_by_default</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/timelines_sexy_tree_view/select_update_by_default</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -248,8 +248,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/use_dialog</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/use_dialog</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/use_dialog</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/use_dialog</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -260,8 +260,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/enlarged</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/enlarged</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/enlarged</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/enlarged</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -306,8 +306,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/disabled</key>
-			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/disabled</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/update_viewer/url_expansion/disabled</key>
+			<applyto>/apps/@PACKAGE_NAME@/update_viewer/url_expansion/disabled</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -321,8 +321,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/selected_only</key>
-			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/selected_only</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/update_viewer/url_expansion/selected_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/update_viewer/url_expansion/selected_only</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -333,8 +333,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/user_profiles</key>
-			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/user_profiles</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/update_viewer/url_expansion/user_profiles</key>
+			<applyto>/apps/@PACKAGE_NAME@/update_viewer/url_expansion/user_profiles</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
@@ -345,8 +345,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/control_panel/url_expansion/replace_with_titles</key>
-			<applyto>/apps/@PACKAGE_NAME@/control_panel/url_expansion/replace_with_titles</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/update_viewer/url_expansion/replace_with_titles</key>
+			<applyto>/apps/@PACKAGE_NAME@/update_viewer/url_expansion/replace_with_titles</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
@@ -506,18 +506,6 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/height</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/height</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>int</type>
-			<default>700</default>
-			<locale name="C">
-				<short>Embed view height</short>
-				<long>Embed view height.</long>
-			</locale>
-		</schema>
-		
-		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/width</key>
 			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/width</applyto>
 			<owner>@PACKAGE_NAME@</owner>
@@ -526,6 +514,18 @@
 			<locale name="C">
 				<short>Embed view width</short>
 				<long>Embed view width.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/embed_view/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/embed_view/height</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>700</default>
+			<locale name="C">
+				<short>Embed view height</short>
+				<long>Embed view height.</long>
 			</locale>
 		</schema>
 		
@@ -554,8 +554,8 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/position_hpaned</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/position_hpaned</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/timelines_sexy_tree_view/position_hpaned</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/timelines_sexy_tree_view/position_hpaned</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>320</default>
@@ -566,26 +566,14 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/position_vpaned</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/position_vpaned</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/position_vpaned</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/position_vpaned</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>420</default>
 			<locale name="C">
 				<short>Tweet View's vertical slider bar's position</short>
 				<long>Tweet View's vertical slider bar's position.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/main_window/height</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/height</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>int</type>
-			<default>700</default>
-			<locale name="C">
-				<short>Main window height</short>
-				<long>Main window height.</long>
 			</locale>
 		</schema>
 		
@@ -598,6 +586,18 @@
 			<locale name="C">
 				<short>Main window width</short>
 				<long>Main window width.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/main_window/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/main_window/height</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>700</default>
+			<locale name="C">
+				<short>Main window height</short>
+				<long>Main window height.</long>
 			</locale>
 		</schema>
 		
@@ -626,50 +626,50 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/height</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/height</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>int</type>
-			<default>350</default>
-			<locale name="C">
-				<short>Tweet View height</short>
-				<long>Tweet View height.</long>
-			</locale>
-		</schema>
-		
-		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/width</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/width</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/width</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/width</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>700</default>
 			<locale name="C">
-				<short>Tweet View width</short>
-				<long>Tweet View width.</long>
+				<short>UpdateViewer's width</short>
+				<long>UpdateViewer's width.</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/position_x</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/position_x</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/height</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/height</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>350</default>
+			<locale name="C">
+				<short>UpdateViewer's height</short>
+				<long>UpdateViewer's height.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/position_x</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/position_x</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>100</default>
 			<locale name="C">
-				<short>Tweet View X position</short>
-				<long>Tweet View X position.</long>
+				<short>UpdateViewer's X position</short>
+				<long>UpdateViewer's X position.</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/control_panel/position_y</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/control_panel/position_y</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/position_y</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/position_y</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>800</default>
+			<default>600</default>
 			<locale name="C">
-				<short>Tweet View Y position</short>
-				<long>Tweet View Y position.</long>
+				<short>UpdateViewer's Y position</short>
+				<long>UpdateViewer's Y position.</long>
 			</locale>
 		</schema>
 	</schemalist>

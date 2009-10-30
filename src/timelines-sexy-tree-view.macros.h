@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__UPDATE_H__
-#define	__UPDATE_H__
+#ifndef	__TIMELINES_SEXY_TREE_VIEW_MACROS_H__
+#define	__TIMELINES_SEXY_TREE_VIEW_MACROS_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -62,27 +62,44 @@
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <glib.h>
+#include <gtk/gtk.h>
+
 
 G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
+#ifndef	gtk_tree_view_column_toggle_visibility
+#	define	gtk_tree_view_column_toggle_visibility(tree_view_column)								\
+	G_STMT_START{															\
+		if( tree_view_column && GTK_IS_TREE_VIEW_COLUMN(tree_view_column) )							\
+			gtk_tree_view_column_set_visible(tree_view_column, !gtk_tree_view_column_get_visible(tree_view_column) );	\
+	}G_STMT_END
+#endif
 
-
-/********************************************************************************
- *                        objects, structs, and enum typedefs                   *
- ********************************************************************************/
-
-
-/********************************************************************************
- *       prototypes for methods, handlers, callbacks, function, & etc           *
- ********************************************************************************/
-gboolean update_notify_on_timeout(Update *update);
-
+#ifndef gtk_word_wrap_tree_view_column
+#define gtk_word_wrap_tree_view_column(tree_view_column, cell_renderer_text, wrap_width)						\
+	G_STMT_START{															\
+		if(															\
+			tree_view_column && cell_renderer_text										\
+			&& GTK_IS_TREE_VIEW_COLUMN(tree_view_column)									\
+			&& GTK_IS_CELL_RENDERER_TEXT(cell_renderer_text)								\
+			&& gtk_tree_view_column_get_visible(tree_view_column)								\
+			&& gtk_tree_view_column_get_width(tree_view_column) > wrap_width						\
+		){															\
+			g_object_set(													\
+					cell_renderer_text,										\
+						"wrap-width", ((gtk_tree_view_column_get_width(tree_view_column))-wrap_width),		\
+					NULL												\
+			);														\
+			gtk_cell_renderer_text_set_fixed_height_from_font(cell_renderer_text, -1);					\
+		}															\
+}G_STMT_END
+#endif
 
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /*__UPDATE_H__*/
+#endif /*__TIMELINES_SEXY_TREE_VIEW_MACROS_H__*/
 

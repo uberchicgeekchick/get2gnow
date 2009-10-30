@@ -4,7 +4,9 @@
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkListStore" id="online_services_list_store">
     <columns>
-      <!-- column-name url -->
+      <!-- column-name OnlineServiceKey -->
+      <column type="gchararray"/>
+      <!-- column-name UrlString -->
       <column type="gchararray"/>
       <!-- column-name OnlineService -->
       <column type="gpointer"/>

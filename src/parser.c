@@ -80,7 +80,7 @@
 #include "users.h"
 
 #include "main-window.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 #include "preferences.h"
 #include "images.h"
 #include "label.h"
@@ -369,20 +369,24 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 	gchar	*xpath_content=NULL;
 	
 	gchar	**xpathv=g_strsplit(xpath, "->", -1);
-	guint	xpath_index=0, xpath_target_index=g_strv_length(xpathv)-1;
+	guint	xpath_depth=0, xpath_target_depth=g_strv_length(xpathv)-1;
 	
 	debug("Searching for xpath: '%s' content.", xpath);
 	for(current_node=root_element; current_node; current_node=current_node->next){
+		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
-		if(xpath_index>xpath_target_index) break;
+		IF_DEBUG
+			debug("**NOTICE:** Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
+		if(xpath_depth>xpath_target_depth) break;
 		
-		if(!g_str_equal(current_node->name, xpathv[xpath_index])) continue;
+		if(!g_str_equal(current_node->name, xpathv[xpath_depth])) continue;
+		if(xpath_depth==xpath_target_depth) continue;
 		
-		if(xpath_index<xpath_target_index){
-			if(!current_node->children) break;
+		if(xpath_depth<xpath_target_depth){
+			if(!current_node->children) continue;
 			
 			current_node=current_node->children;
-			xpath_index++;
+			xpath_depth++;
 			continue;
 		}
 		
@@ -405,7 +409,7 @@ gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
 
 
 /* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, UpdateViewer *update_viewer, UpdateMonitor monitoring){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -415,7 +419,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);;
 	
 	gboolean	oldest_update_id_saved=FALSE;
-	gboolean	save_oldest_id=(update_viewer_has_loaded(update_viewer)?FALSE:TRUE);
+	gboolean	save_oldest_id=(timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view)?FALSE:TRUE);
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
 	guint		new_updates=0;
@@ -482,9 +486,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	}
 	if(!oldest_update_id && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
-	guint		update_viewer_notify_delay=update_viewer_get_notify_delay(update_viewer);
+	guint		timelines_sexy_tree_view_notify_delay=timelines_sexy_tree_view_get_notify_delay(timelines_sexy_tree_view);
 	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(update_viewer_get_page(update_viewer)-1)*100;
+	const gint	notify_priority=(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, <%s>'s timeline: %s.", service->key, timeline);
@@ -523,20 +527,20 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		new_updates++;
 		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
-		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UpdateViewer.", status->user->user_name, status->id_str, service->key);
-		update_viewer_store(update_viewer, status);
+		debug("Adding UserStatus from: %s, ID: %s, on <%s> to TimelinesSexyTreeView.", status->user->user_name, status->id_str, service->key);
+		timelines_sexy_tree_view_store(timelines_sexy_tree_view, status);
 		if( monitoring!=BestFriends && monitoring!=DMs && online_service_is_user_best_friend(service, status->user->user_name) ){
 			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				update_viewer_notify_delay+=tweet_display_interval;
+				g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				timelines_sexy_tree_view_notify_delay+=tweet_display_interval;
 			}
 		}
 		
 		if( notify && free_status && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			free_status=FALSE;
-			g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			update_viewer_notify_delay+=tweet_display_interval;
+			g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			timelines_sexy_tree_view_notify_delay+=tweet_display_interval;
 		}
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
@@ -561,7 +565,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*parse_timeline(service, xml, timeline, update_viewer, monitoring);*/
+}/*parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);*/
 
 gchar *parser_escape_text(gchar *text){
 	gchar *escaped_text=NULL;

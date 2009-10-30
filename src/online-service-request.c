@@ -86,12 +86,12 @@
 
 #include "tabs.h"
 #include "main-window.h"
-#include "control-panel.h"
+#include "update-viewer.h"
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"OnlineServices:Requests:Settings:UI:GtkBuilder:GtkBuildable:Settings:Popup:OnlineServiceReoqest.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Requests:Settings:UI:GtkBuilder:GtkBuildable:Settings:Popup:OnlineServiceRequest:online-service-request.c"
 #include "debug.h"
 
 #define GtkBuilderUI "online-services-request-popup"
@@ -190,7 +190,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 static void online_service_request_free(OnlineServiceRequest *request);
 
 
-static void online_service_request_selected_update_include_and_begin_to_send(gchar *tweet, gboolean in_response, gboolean release);
+static gboolean online_service_request_selected_update_include_and_begin_to_send(gboolean forwarding);
 
 
 static gchar *online_service_request_action_to_title(RequestAction action);
@@ -409,7 +409,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 			break;
 	}
 	
-	control_panel_sexy_select();
+	update_viewer_sexy_select();
 }/*online_service_request_main(service, parent, Follow|UnFollow|ViewProfile|ViewUpdates|..., user_name);*/
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
@@ -433,7 +433,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	switch(request->action){
 		case UnFollow:
 		case Block:
-			tabs_remove_from_update_viewers_list_stores(STRING_USER, request->user_name);
+			tabs_remove_from_timelines_sexy_tree_views_list_stores(STRING_USER, request->user_name);
 		case Follow:
 		case BestFriendAdd:
 		case BestFriendDrop:
@@ -534,44 +534,39 @@ gdouble online_service_request_selected_update_get_user_id(void){
 	return ( (selected_update && selected_update->user_id) ?selected_update->user_id :0.0 );
 }/*online_service_request_selected_update_get_user_id();*/
 
-gchar *online_service_request_selected_update_reply_to_strdup(gboolean forward_update){
-	if(!(selected_update && selected_update->user_name && G_STR_N_EMPTY(selected_update->user_name))) return NULL;
+gchar *online_service_request_selected_update_reply_to_strdup(gboolean forwarding){
+	if(!( selected_update && selected_update->id )) return NULL;
 	
 	if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
-		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forward_update ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
+		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forwarding ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forwarding ?selected_update->tweet :"" ));
 	
-	return g_strdup_printf("%s@%s %s", (forward_update ?"RT " :""), selected_update->user_name, (forward_update ?selected_update->tweet :"" ));
+	return g_strdup_printf("%s@%s %s", (forwarding ?"RT " :""), selected_update->user_name, (forwarding ?selected_update->tweet :"" ));
 }/*online_service_request_selected_update_reply_to_strdup();*/
 
-void online_service_request_selected_update_reply(void){
-	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(FALSE), TRUE, TRUE);
+gboolean online_service_request_selected_update_reply(void){
+	return online_service_request_selected_update_include_and_begin_to_send(FALSE);
 }/*online_service_request_selected_update_reply();*/
 
-void online_service_request_selected_update_forward(void){
-	online_service_request_selected_update_include_and_begin_to_send(online_service_request_selected_update_reply_to_strdup(TRUE), TRUE, TRUE);
+gboolean online_service_request_selected_update_forward(void){
+	return online_service_request_selected_update_include_and_begin_to_send(TRUE);
 }/*online_service_request_selected_update_forward();*/
 
-static void online_service_request_selected_update_include_and_begin_to_send(gchar *prefix, gboolean in_response, gboolean release){
-	if(G_STR_EMPTY(prefix)){
-		control_panel_beep();
-		if(prefix && release) uber_free(prefix);
-		return;
+static gboolean online_service_request_selected_update_include_and_begin_to_send(gboolean forwarding){
+	gchar *prefix=NULL;
+	if(G_STR_EMPTY( (prefix=online_service_request_selected_update_reply_to_strdup(forwarding)) )){
+		update_viewer_beep();
+		if(prefix) uber_free(prefix);
+		return FALSE;
 	}
 	
-	if(!(selected_update && selected_update->id )){
-		control_panel_beep();
-		if(prefix && release) uber_free(prefix);
-		return;
-	}
-	
-	if(in_response){
+	if(in_reply_to_status_id!=selected_update->id){
 		in_reply_to_status_id=selected_update->id;
 		in_reply_to_service=selected_update->service;
 	}
 	
-	control_panel_sexy_prefix_string(prefix, TRUE);
-	
-	if(release) uber_free(prefix);
+	gboolean prefix_added=update_viewer_sexy_prefix_string(prefix, TRUE);
+	uber_free(prefix);
+	return prefix_added;
 }/*online_service_request_selected_update_include_and_begin_to_send*/
 
 void online_service_request_unset_selected_update(void){
@@ -584,62 +579,62 @@ void online_service_request_unset_selected_update(void){
 
 void online_service_request_selected_update_view_updates_new(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewUpdatesNew, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewUpdatesNew, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_view_updates_new();*/
 
 void online_service_request_selected_update_view_updates(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewUpdates, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewUpdates, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_view_updates();*/
 
 void online_service_request_selected_update_view_profile(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_view_profile*/
 
 void online_service_request_selected_update_best_friend_add(void){
 	if(!(selected_update && selected_update->user_name)) return;
 	if(!online_service_is_user_best_friend( selected_update->service, selected_update->user_name ))
-		online_service_request_main(selected_update->service, BestFriendAdd, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+		online_service_request_main(selected_update->service, BestFriendAdd, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_best_friend_add();*/
 
 void online_service_request_selected_update_best_friend_drop(void){
 	if(!(selected_update && selected_update->user_name)) return;
 	if(online_service_is_user_best_friend( selected_update->service, selected_update->user_name ))
-		online_service_request_main(selected_update->service, BestFriendDrop, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+		online_service_request_main(selected_update->service, BestFriendDrop, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_best_friend_drop();*/
 
 void online_service_request_selected_update_follow(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Follow, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, Follow, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_follow*/
 
 void online_service_request_selected_update_unfollow(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, UnFollow, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, UnFollow, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_unfollow*/
 
 void online_service_request_selected_update_block(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Block, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, Block, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_block*/
 
 void online_service_request_selected_update_unblock(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, UnBlock, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, UnBlock, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_unblock*/
 
 void online_service_request_selected_update_save_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
-	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), fave_tweet_id);
+	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), fave_tweet_id);
 	uber_free(fave_tweet_id);
 }/*online_service_request_selected_update_save_fave*/
 
 void online_service_request_selected_update_destroy_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
-	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() ), fave_tweet_id);
+	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), fave_tweet_id);
 	uber_free(fave_tweet_id);
 }/*online_service_request_selected_update_destroy_fave*/
 
@@ -785,7 +780,7 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *
 	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
 	if(G_STR_EMPTY(user_name)){
-		control_panel_beep();
+		update_viewer_beep();
 		return FALSE;
 	}
 	
@@ -822,9 +817,8 @@ static void online_service_request_popup_set_selected_service(GtkWidget *widget,
 	
 	if(gtk_combo_box_get_active_iter( online_service_request_popup->online_services_combo_box, iter)){
 		gtk_tree_model_get(
-				 online_service_request_popup->online_service_model,
-				iter,
-				OnlineServicePointer, &selected_service,
+				 online_service_request_popup->online_service_model, iter,
+					OnlineServicePointer, &selected_service,
 				-1
 		);
 	}
@@ -971,7 +965,7 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 		online_service_request_popup_destroy_and_free();
 	}
 	
-	GtkWindow *parent=( gconfig_if_bool(PREFS_CONTROL_PANEL_DIALOG, FALSE) ?control_panel_get_window() :main_window_get_window() );
+	GtkWindow *parent=( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() );
 	
 	if(online_service_request_popup_dialog_response) online_service_request_popup_dialog_response=0;
 	

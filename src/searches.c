@@ -77,7 +77,7 @@
 #include "users.h"
 
 #include "main-window.h"
-#include "update-viewer.h"
+#include "timelines-sexy-tree-view.h"
 #include "preferences.h"
 #include "images.h"
 #include "label.h"
@@ -95,7 +95,7 @@
 
 
 /* Parse a timeline XML file */
-guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UpdateViewer *update_viewer){
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -113,13 +113,13 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
 	
-	gboolean	has_loaded=update_viewer_has_loaded(update_viewer);
+	gboolean	has_loaded=timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view);
 	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE) :FALSE );
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
-	guint		update_viewer_notify_delay=update_viewer_get_notify_delay(update_viewer);
+	guint		timelines_sexy_tree_view_notify_delay=timelines_sexy_tree_view_get_notify_delay(timelines_sexy_tree_view);
 	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(update_viewer_get_page(update_viewer)-1)*100;
+	const gint	notify_priority=(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
@@ -159,14 +159,14 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		
 		new_updates++;
 		free_status=TRUE;
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to UpdateViewer.", status->user->user_name, status->id, service->key);
-		update_viewer_store(update_viewer, status);
+		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TimelinesSexyTreeView.", status->user->user_name, status->id, service->key);
+		timelines_sexy_tree_view_store(timelines_sexy_tree_view, status);
 		
 		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			if(notify){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, update_viewer_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				update_viewer_notify_delay+=tweet_display_interval;
+				g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				timelines_sexy_tree_view_notify_delay+=tweet_display_interval;
 			}
 		}
 		
@@ -192,7 +192,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*search_parse_results(service, xml, uri, update_viewer);*/
+}/*search_parse_results(service, xml, uri, timelines_sexy_tree_view);*/
 
 /********************************************************************************
  *                                    eof                                       *

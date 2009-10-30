@@ -16,20 +16,20 @@ gtkbuilderdir = $(datadir)/@PACKAGE_NAME@
 gtkbuilder_DATA =		 				\
 			online-services-dialog.ui		\
 			main-window.ui				\
-			control-panel.ui			\
 			online-services-request-popup.ui	\
 			preferences.ui				\
+			update-viewer.ui			\
 			user-profile-viewer.ui
 
 sexy_DATA =							\
 			main-window.ui				\
-			update-viewer.ui				\
+			timelines-sexy-tree-view.ui		\
 			friends-manager.ui			\
 			following-viewer.ui
 
 un_sexy_DATA =							\
 			main-window.in.ui			\
-			update-viewer.in.ui			\
+			timelines-sexy-tree-view.in.ui		\
 			friends-manager.in.ui			\
 			following-viewer.in.ui
 
@@ -55,7 +55,7 @@ DISTCLEANFILES =						\
 
 
 main-window.ui: sexy_DATA
-update-viewer.ui: sexy_DATA
+timelines-sexy-tree-view.ui: sexy_DATA
 friends-manager.ui: sexy_DATA
 following-viewer.ui: sexy_DATA
 sexy_DATA: $(un_sexy_DATA)
