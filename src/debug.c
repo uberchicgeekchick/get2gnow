@@ -142,8 +142,6 @@ gboolean debug_check_devel(const gchar *debug_environmental_value){
 }/*debug_check_devel(g_getenv("GET2GNOW_DEBUG"));*/
 
 void debug_init(void){
-	/*re-checks GET(2GNOW_DEBUG every 10 minutes.*/
-	debug_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)debug_reinit, NULL);
 	
 	gchar *debug_package=g_utf8_strup(GETTEXT_PACKAGE, -1);
 	debug_environmental_variable=g_strdup_printf("%s_DEBUG", debug_package);
@@ -152,8 +150,12 @@ void debug_init(void){
 	debug_log_filename=cache_file_touch("debug.log");
 	debug_log_filename_swp=g_strdup_printf("%s.swp", debug_log_filename);
 	debug_log_fp=fopen(debug_log_filename, "w");
+	g_fprintf(debug_log_fp, "\t\t\t%s LOGFILE\n\n", debug_environmental_variable);
 	
 	debug_environment_check();
+	
+	/*re-checks GET(2GNOW_DEBUG every 10 minutes.*/
+	debug_timeout_id=g_timeout_add_seconds(60, (GSourceFunc)debug_reinit, NULL);
 }/*debug_init();*/
 
 static gboolean debug_reinit(void){
@@ -234,6 +236,7 @@ static FILE *debug_log_rotate(void){
 	g_remove(debug_log_filename);
 	g_rename(debug_log_filename_swp, debug_log_filename);
 	debug_log_fp=fopen(debug_log_filename, "a");
+	g_fprintf(debug_log_fp, "\t\t\t%s LOGFILE\n\n", debug_environmental_variable);
 	return debug_log_fp;
 }/*debug_log_rotate();*/
 
@@ -250,17 +253,16 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 	debug_domains_check(domains);
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
-			if(!(debug_domains[x+1] && debug_environment[y+1]))
-				debug_output_fp=debug_log_rotate();
-			else if(!(all_domains && strcasecmp(debug_domains[x], debug_environment[y]) ))
-				continue;
-			else{
+			if(all_domains || !strcasecmp(debug_domains[x], debug_environment[y]) ){
 				debug_output_fp=stdout;
 				if(!output_started){
 					output_started=TRUE;
 					g_fprintf(debug_output_fp, "\n");
 				}
-			}
+			}else if(debug_domains[x+1] || debug_environment[y+1])
+				continue;
+			else
+				debug_output_fp=debug_log_rotate();
 			
 			gboolean error=FALSE, notice=FALSE;
 			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
@@ -298,7 +300,7 @@ gboolean debug_if_domain(const gchar *domains){
 		return FALSE;
 	
 	debug_domains_check(domains);
-	if(all_domains) return TRUE;
+	if(all_domains || debug_devel) return TRUE;
 	
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {

@@ -61,6 +61,7 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <libsexy/sexy.h>
+#include <libxml/parser.h>
 
 #include "config.h"
 #include "program.h"
@@ -99,6 +100,8 @@ static gssize find_first_non_user_name(const gchar *str);
 static gchar *label_format_service_hyperlink(OnlineService *service, const gchar *url_prefix, gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean titles_strip_uris);
 static gchar *label_find_user_title(OnlineService *service, const gchar *uri, const gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean titles_strip_uris);
 static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, const gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean titles_strip_uris);
+
+static gchar *label_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath, const gchar *max_nodes_name);
 
 
 G_DEFINE_TYPE (Label, label, SEXY_TYPE_URL_LABEL);
@@ -333,7 +336,7 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, con
 	
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
 	gchar *uri_title=NULL;
-	if(!(uri_title=parse_xpath_content(msg, "html->head->title"))){
+	if(!(uri_title=label_get_uri_dom_xpath_element_content(msg, "html->head->title", "body"))){
 		if(searching)
 			uri_title=g_strdup(service->uri);
 		else if(services_resource && services_resource[0]=='@')
@@ -367,3 +370,62 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, con
 	
 	return temp;
 }/*label_find_uri_title(service, uri, "@user"||"#search||"!tag", expand_hyperlinks, make_hyperlinks, titles_strip_uris);*/
+
+static gchar *label_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath, const gchar *max_nodes_name){
+	xmlDoc		*doc=NULL;
+	xmlNode		*root_element=NULL;
+	debug("Parsing xml document before searching for xpath: '%s' content.", xpath);
+	if(!(doc=parse_xml_doc(xml, &root_element))){
+		debug("Unable to parse xml doc.");
+		xmlCleanupParser();
+		return NULL;
+	}
+	
+	xmlNode	*current_node=NULL;
+	gchar	*xpath_content=NULL;
+	
+	gchar	**xpathv=g_strsplit(xpath, "->", -1);
+	guint	xpath_depth=0, xpath_target_depth=g_strv_length(xpathv)-1;
+	
+	debug("Searching for xpath: '%s' content.", xpath);
+	for(current_node=root_element; current_node; current_node=current_node->next){
+		if(current_node->type != XML_ELEMENT_NODE ) continue;
+		
+		IF_DEBUG
+			debug("**NOTICE:** Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
+		if( xpath_depth>xpath_target_depth || g_str_equal(max_nodes_name, current_node->name) ) break;
+		
+		if(!g_str_equal(current_node->name, xpathv[xpath_depth])){
+			if(xpath_depth==xpath_target_depth && !current_node->next){
+				IF_DEBUG
+					debug("**NOTICE:** Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM.", current_node->name, xpath_depth);
+				current_node=current_node->parent;
+				xpath_depth--;
+			}
+			continue;
+		}
+		
+		if(xpath_depth<xpath_target_depth){
+			if(!(current_node->children && current_node->children->next)) continue;
+			
+			current_node=current_node->children;
+			xpath_depth++;
+			continue;
+		}
+		
+		xpath_content=(gchar *)xmlNodeGetContent(current_node);
+		break;
+	}
+	
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
+	g_strfreev(xpathv);
+	
+	if(!( ((xpath_content)) && (xpath_content=g_strstrip(xpath_content)) && G_STR_N_EMPTY(xpath_content) )){
+		if(xpath_content) g_free(xpath_content);
+		return NULL;
+	}
+	
+	return xpath_content;
+}/*label_get_uri_dom_xpath_element_content(soup_xml_response, "targetted->xpaths->element", "max_xpath_element");*/
+

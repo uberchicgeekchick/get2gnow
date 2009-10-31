@@ -196,7 +196,7 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 			return FALSE;
 		}
 		
-		debug("*NOTICE:* Setting default value for: %s to [%i].", key, default_int);
+		debug("**NOTICE:** Setting default value for: %s to [%i].", key, default_int);
 		if(!(gconfig_set_int(key, default_int))){
 			debug("**ERROR:** failed to set '%s' to default value: '%d'.", key, default_int);
 			return FALSE;

@@ -77,8 +77,6 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
 
-gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath);
-
 void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
 gchar *parser_escape_text(gchar *status);
 gchar *parser_convert_time(const gchar *datetime, gint *my_diff);

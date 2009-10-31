@@ -355,59 +355,6 @@ gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMe
 	return error_free;
 }/*parser_xml_error_check(service, xml);*/
 
-gchar *parse_xpath_content(SoupMessage *xml, const gchar *xpath){
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
-	debug("Parsing xml document before searching for xpath: '%s' content.", xpath);
-	if(!(doc=parse_xml_doc(xml, &root_element))){
-		debug("Unable to parse xml doc.");
-		xmlCleanupParser();
-		return NULL;
-	}
-	
-	xmlNode	*current_node=NULL;
-	gchar	*xpath_content=NULL;
-	
-	gchar	**xpathv=g_strsplit(xpath, "->", -1);
-	guint	xpath_depth=0, xpath_target_depth=g_strv_length(xpathv)-1;
-	
-	debug("Searching for xpath: '%s' content.", xpath);
-	for(current_node=root_element; current_node; current_node=current_node->next){
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
-		
-		IF_DEBUG
-			debug("**NOTICE:** Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
-		if(xpath_depth>xpath_target_depth) break;
-		
-		if(!g_str_equal(current_node->name, xpathv[xpath_depth])) continue;
-		if(xpath_depth==xpath_target_depth) continue;
-		
-		if(xpath_depth<xpath_target_depth){
-			if(!current_node->children) continue;
-			
-			current_node=current_node->children;
-			xpath_depth++;
-			continue;
-		}
-		
-		xpath_content=(gchar *)xmlNodeGetContent(current_node);
-		break;
-	}
-	
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	g_strfreev(xpathv);
-	
-	if(!( ((xpath_content)) && (xpath_content=g_strstrip(xpath_content)) && G_STR_N_EMPTY(xpath_content) )){
-		if(xpath_content) g_free(xpath_content);
-		return NULL;
-	}
-	
-	return xpath_content;
-}/*parser_get_xpath*/
-
-
-
 /* Parse a timeline XML file */
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;

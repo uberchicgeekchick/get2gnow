@@ -131,7 +131,7 @@ void geometry_save(void){
 static void geometry_load_for_window(ViewType view){
 	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	gint		x, y, w, h;
-	gint		default_width, default_height, default_x, default_y;
+	gint		default_width=0, default_height=0, default_x=0, default_y=0;
 	x=y=w=h=default_width=default_height=default_x=default_y=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
@@ -142,7 +142,7 @@ static void geometry_load_for_window(ViewType view){
 	gconfig_get_int_or_default(prefs_path[PreferenceHeight], &h, default_height);
 	
 	if(!( w >0 && h > 0 )){
-		debug("Unable to resize %s window, either value is less than zero.\n\twidth: %d, height: %d", prefs_path[PrefernceWindow], w, h);
+		debug("Unable to resize %s window, either value is less than zero.  width: %d, height: %d", prefs_path[PrefernceWindow], w, h);
 	}else{
 		debug("Resizing %s window to: width: %d, height: %d", prefs_path[PrefernceWindow], w, h);
 		gtk_window_resize(window, w, h);
@@ -152,7 +152,7 @@ static void geometry_load_for_window(ViewType view){
 	gconfig_get_int_or_default(prefs_path[PreferencePositionY], &y, default_y);
 	
 	if(!( x >0 && y > 0 )){
-		debug("Unable to move %s window, either value is less than zero.\n\tposition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
+		debug("Unable to move %s window, either value is less than zero.  position x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
 	}else{
 		debug("Moving %s window to: x: %d, y: %d", prefs_path[PrefernceWindow], x, y);
 		gtk_window_move(window, x, y);
@@ -169,7 +169,7 @@ static void geometry_save_for_window(ViewType view){
 	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
 	static guint	calls=0;
 	gint		x, y, w, h;
-	gint		default_width, default_height, default_x, default_y;
+	gint		default_width=0, default_height=0, default_x=0, default_y=0;
 	x=y=w=h=default_width=default_height=default_x=default_y=0;
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
@@ -178,18 +178,18 @@ static void geometry_save_for_window(ViewType view){
 	
 	gtk_window_get_size(window, &w, &h);
 	if(!( w >0 && h > 0 )){
-		debug("Unable to save height & width for %s, either value is less than zero.\n\twidth: %d, height: %d", prefs_path[PrefernceWindow], w, h);
+		debug("Unable to save height & width for %s, either value is less than zero.  width: %d, height: %d", prefs_path[PrefernceWindow], w, h);
 	}else{
-		debug("Saving height & width for %s\n\twidth: %d, height: %d", prefs_path[PrefernceWindow], w, h);
+		debug("Saving height & width for %s  width: %d, height: %d", prefs_path[PrefernceWindow], w, h);
 		gconfig_set_int(prefs_path[PreferenceWidth], w);
 		gconfig_set_int(prefs_path[PreferenceHeight], h);
 	}
 	
 	gtk_window_get_position(window, &x, &y);
 	if(!( x > 0 && y > 0 )){
-		debug("Unable to save window positions for %s, either value is less than zero.\n\tposition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
+		debug("Unable to save window positions for %s, either value is less than zero.  position x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
 	}else{
-		debug("Saving position for: %s\n\tpostition x: %d, position y: %d.", prefs_path[PrefernceWindow], x, y);
+		debug("Saving position for: %s  postition x: %d, position y: %d.", prefs_path[PrefernceWindow], x, y);
 
 		gconfig_set_int(prefs_path[PreferencePositionX], x);
 		gconfig_set_int(prefs_path[PreferencePositionY], y);
@@ -247,7 +247,7 @@ static gchar **geometry_get_prefs_path(ViewType view, gint *w, gint *h, gint *x,
 		break;
 		
 		default:
-			debug("**ERROR**: Setting gconf preference paths.\n\t\tUnsupported geometry: [%d].", view);
+			debug("**ERROR**: Setting gconf preference paths. Unsupported geometry: [%d].", view);
 			return NULL;
 		break;
 	}
