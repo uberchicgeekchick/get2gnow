@@ -182,8 +182,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -376,16 +376,48 @@
                   <object class="GtkMenu" id="view_menu">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_toolbar_main_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="view_menu_uber_compact_view_check_menu">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Main Toolbar</property>
+                        <property name="tooltip_text" translatable="yes">Hides all possible buttons and areas displaying only compact updates and a compact update composition area.</property>
+                        <property name="label" translatable="yes">Compact _View</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_toolbar_tabs_check_menu_item">
+                      <object class="GtkSeparatorMenuItem" id="view_menu_compact_view_separator">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Tabs Toolbars</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="view_toolbars_submenu">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Toolbars</property>
+                        <property name="use_underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu" id="menu2">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_toolbar_tabs_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">_Tabs Toolbars</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_toolbar_main_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">_Main Toolbar</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_best_friends_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My _Best Friends</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
@@ -395,10 +427,44 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_best_friends_check_menu_item">
+                      <object class="GtkMenuItem" id="view_columns_submenu">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">My Best _Friends</property>
+                        <property name="label" translatable="yes">_Columns</property>
                         <property name="use_underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu" id="menu3">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_menu_detailed_update_column_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="tooltip_text" translatable="yes">Compacts all of an update's details in one formated column.</property>
+                                <property name="label" translatable="yes">Concatenated _updates</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkSeparatorMenuItem" id="view_menu_columns_view_separator">
+                                <property name="visible">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_menu_rcpt_colums_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="tooltip_text" translatable="yes">Hides or displays the 'RCPT' column in all tabs.</property>
+                                <property name="label" translatable="yes">Which _account an update's To/RCPT'.</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_menu_from_colums_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="tooltip_text" translatable="yes">Hides or displays the 'From' column in all tabs.</property>
+                                <property name="label" translatable="yes">_Whom an update's 'From'.</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
@@ -407,38 +473,29 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_update_viewer_floating_check_menu_item">
+                      <object class="GtkMenuItem" id="view_update_view_submenuitem">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">F_loating Control Panel</property>
+                        <property name="label" translatable="yes">_Update Viewer</property>
                         <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_update_viewer_compact_view_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Compact Control Panel</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="view_menu_columns_view_separator">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_menu_from_colums_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Hides or displays the 'From' column in all tabs.</property>
-                        <property name="label" translatable="yes">_Whom an update's 'From'.</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_menu_rcpt_colums_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Hides or displays the 'RCPT' column in all tabs.</property>
-                        <property name="label" translatable="yes">Which _account an update's To/RCPT'.</property>
-                        <property name="use_underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu" id="menu4">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_update_viewer_compact_view_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">_Compact Update Viewer</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckMenuItem" id="view_update_viewer_floating_check_menu_item">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">_Floating Update Viewer</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

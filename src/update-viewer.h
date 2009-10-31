@@ -90,8 +90,8 @@ void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *u
 
 void update_viewer_dm_data_fill(GList *my_followers);
 
-void contol_panel_emulate_embed_toggle(void);
-void contol_panel_emulate_compact_view_toggle(void);
+void update_viewer_emulate_embed_toggle(void);
+void update_viewer_emulate_compact_view_toggle(void);
 void update_viewer_compact_view_toggled(GtkToggleButton *compact_toggle_button);
 void update_viewer_set_embed_toggle_and_image(void);
 

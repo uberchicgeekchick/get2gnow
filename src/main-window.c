@@ -123,11 +123,17 @@ struct _MainWindowPrivate {
         GtkMenuItem		*menu_edit;
 	
         GtkMenuItem		*menu_view;
+	
+	GtkCheckMenuItem	*view_menu_uber_compact_view_check_menu;
+	
 	GtkCheckMenuItem	*view_toolbar_main_check_menu_item;
 	GtkCheckMenuItem	*view_toolbar_tabs_check_menu_item;
 	GtkCheckMenuItem	*view_best_friends_check_menu_item;
+	
 	GtkCheckMenuItem	*view_update_viewer_floating_check_menu_item;
 	GtkCheckMenuItem	*view_update_viewer_compact_view_check_menu_item;
+	
+	GtkCheckMenuItem	*view_menu_detailed_update_column_check_menu_item;
 	GtkCheckMenuItem	*view_menu_from_colums_check_menu_item;
 	GtkCheckMenuItem	*view_menu_rcpt_colums_check_menu_item;
 	
@@ -256,8 +262,9 @@ static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, 
 static void main_window_exit(GtkWidget *window, MainWindow *main_window); 
 static void main_window_services_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_select_service(GtkMenuItem *item, MainWindow *main_window);
-static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, GtkWidget *widget);
+static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, gboolean active, GtkWidget *widget);
 static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item);
+static void main_window_view_menu_advanced_menu_toggled(GtkCheckMenuItem *check_menu_item, gboolean checked);
 static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_window); 
 
 static void main_window_about_cb(GtkWidget *window, MainWindow *main_window); 
@@ -352,11 +359,17 @@ static void main_window_setup(void){
 					"tabs_favorites_timeline", &main_window->private->timeline_favorites,
 					
 					"view", &main_window->private->menu_view,
+					
+					"view_menu_uber_compact_view_check_menu", &main_window->private->view_menu_uber_compact_view_check_menu,
 					"view_toolbar_main_check_menu_item", &main_window->private->view_toolbar_main_check_menu_item,
 					"view_toolbar_tabs_check_menu_item", &main_window->private->view_toolbar_tabs_check_menu_item,
+					
 					"view_best_friends_check_menu_item", &main_window->private->view_best_friends_check_menu_item,
+					
 					"view_update_viewer_floating_check_menu_item", &main_window->private->view_update_viewer_floating_check_menu_item,
 					"view_update_viewer_compact_view_check_menu_item", &main_window->private->view_update_viewer_compact_view_check_menu_item,
+					
+					"view_menu_detailed_update_column_check_menu_item", &main_window->private->view_menu_detailed_update_column_check_menu_item,
 					"view_menu_from_colums_check_menu_item", &main_window->private->view_menu_from_colums_check_menu_item,
 					"view_menu_rcpt_colums_check_menu_item", &main_window->private->view_menu_rcpt_colums_check_menu_item,
 					
@@ -745,28 +758,35 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 
 static void main_window_view_setup(void){
 	/* Best Friends stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, (GtkWidget *)main_window->private->best_friends_vbox );
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE, (GtkWidget *)main_window->private->best_friends_vbox );
 	
 	/* Main Toolbar stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_toolbar_main_check_menu_item, MAIN_WINDOW_MAIN_TOOLBAR_HIDE, (GtkWidget *)main_window->private->main_window_handlebox );
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_toolbar_main_check_menu_item, MAIN_WINDOW_MAIN_TOOLBAR_HIDE, TRUE, (GtkWidget *)main_window->private->main_window_handlebox );
 	
 	/* Tabs Toolbars stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_toolbar_tabs_check_menu_item, UPDATE_VEWER_TOOLBAR_VISIBILITY, NULL);
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_from_colums_check_menu_item, UPDATE_VEWER_FROM_COLUMN_VISIBILITY, NULL);
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_rcpt_colums_check_menu_item, UPDATE_VEWER_RCPT_COLUMN_VISIBILITY, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_toolbar_tabs_check_menu_item, TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY, TRUE, NULL);
+	
+	/* Timeline Columns. */
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_detailed_update_column_check_menu_item, CONCATENATED_UPDATES, FALSE, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_from_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY, TRUE, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_rcpt_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, TRUE, NULL);
 	
 	gtk_check_menu_item_set_active( main_window->private->view_update_viewer_floating_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) );
-	g_signal_connect_after( main_window->private->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)contol_panel_emulate_embed_toggle, NULL );
+	g_signal_connect_after( main_window->private->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle, NULL );
 	
 	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_compact_view_check_menu_item, gconfig_if_bool( PREFS_UPDATE_VIEWER_COMPACT, FALSE) );
-	g_signal_connect_after( main_window->private->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)contol_panel_emulate_compact_view_toggle, NULL );
+	g_signal_connect_after( main_window->private->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)update_viewer_emulate_compact_view_toggle, NULL );
+	
+	/* Over all hidden/visible UI widgets. */
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_uber_compact_view_check_menu, COMPACT_VIEW, FALSE, NULL);
 }/*main_window_view_setup();*/
 
-static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, GtkWidget *widget){
-	gboolean hide=gconfig_if_bool(gconfig_key, FALSE);
+static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, gboolean active, GtkWidget *widget){
+	gboolean hide=!gconfig_if_bool(gconfig_key, active);
 	gtk_check_menu_item_set_active(check_menu_item, !hide);
 	
 	g_object_set_data_full( (GObject *)check_menu_item, "gconfig_key", g_strdup(gconfig_key), g_free );
+	g_object_set_data_full( (GObject *)check_menu_item, "default_value", g_strdup( (active ?"TRUE" :"FALSE" ) ), g_free );
 	
 	if(widget){
 		g_object_set_data( (GObject *)check_menu_item, "widget", widget );
@@ -774,7 +794,7 @@ static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_ke
 	}
 	
 	g_signal_connect_after( check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
-}/*main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, (GtkWidget *)main_window->private->best_friends_vbox );*/
+}/*main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE|FALSE, (GtkWidget *)main_window->private->best_friends_vbox );*/
 
 static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item){
 	/* Any widget's visiblity state is stored as !visibility.  I am going to switch this.
@@ -784,20 +804,57 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
  .	 * 	This is handled by MainWindow's methods: 'main_window_toggle_visibility' & 'main_window_timeout'.
 	 */
 	const gchar *gconfig_key=g_object_get_data( (GObject *)check_menu_item, "gconfig_key");
-	gboolean hide=!gtk_check_menu_item_get_active(check_menu_item);
-	gconfig_set_bool(gconfig_key, hide);
+	gboolean default_value=g_str_equal("TRUE", g_object_get_data( (GObject *)check_menu_item, "default_value" ) );
+	gboolean active=gtk_check_menu_item_get_active(check_menu_item);
+	gboolean hide;
+	if(default_value)
+		hide=active;
+	else
+		hide=!active;
+	gconfig_set_bool(gconfig_key, active);
 	GtkWidget *widget=NULL;
 	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) ){
-		if(hide)
+		if(!active)
 			gtk_widget_hide(widget);
 		else
 			gtk_widget_show(widget);
 	}
-	if(check_menu_item==main_window->private->view_toolbar_tabs_check_menu_item) tabs_toggle_toolbars();
-	if(check_menu_item==main_window->private->view_menu_from_colums_check_menu_item) tabs_toggle_from_columns();
-	if(check_menu_item==main_window->private->view_menu_rcpt_colums_check_menu_item) tabs_toggle_rcpt_columns();
-
+	if(check_menu_item==main_window->private->view_toolbar_tabs_check_menu_item) return tabs_toggle_toolbars();
+	if(check_menu_item==main_window->private->view_menu_from_colums_check_menu_item) return tabs_toggle_from_columns();
+	if(check_menu_item==main_window->private->view_menu_rcpt_colums_check_menu_item) return tabs_toggle_rcpt_columns();
+	
+	if(check_menu_item==main_window->private->view_menu_detailed_update_column_check_menu_item)
+		return main_window_view_menu_advanced_menu_toggled(check_menu_item, active);
+	
+	if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu)
+		return main_window_view_menu_advanced_menu_toggled(check_menu_item, active);
+	
 }/*main_window_view_menu_option_toggled(check_menu_item);*/
+
+static void main_window_view_menu_advanced_menu_toggled(GtkCheckMenuItem *check_menu_item, gboolean checked){
+	if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu){
+		gtk_check_menu_item_set_active(main_window->private->view_toolbar_main_check_menu_item, !checked);
+		gtk_check_menu_item_set_active(main_window->private->view_toolbar_tabs_check_menu_item, !checked);
+		gtk_check_menu_item_set_active(main_window->private->view_best_friends_check_menu_item, !checked);
+		gtk_check_menu_item_set_active(main_window->private->view_menu_detailed_update_column_check_menu_item, checked);
+		if(checked!=gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE))
+			update_viewer_emulate_compact_view_toggle();
+		return;
+	}
+	
+	gtk_check_menu_item_set_active(main_window->private->view_menu_from_colums_check_menu_item, !checked);
+	gtk_check_menu_item_set_active(main_window->private->view_menu_rcpt_colums_check_menu_item, !checked);
+	
+	tabs_toggle_view();
+}/*main_window_view_menu_advanced_menu_toggled(GtkCheckMenuItem *check_menu_item, TRUE|FALSE);*/
+
+void main_window_compact_ui(GtkToggleButton *toggle_button){
+	main_window_view_menu_advanced_menu_toggled(main_window->private->view_menu_uber_compact_view_check_menu, gtk_toggle_button_get_active(toggle_button) );
+}/*main_window_compact_ui();*/
+
+void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button){
+	main_window_view_menu_advanced_menu_toggled(main_window->private->view_menu_detailed_update_column_check_menu_item, gtk_toggle_button_get_active(toggle_button) );
+}/*main_window_concatenate_timeline_columns();*/
 
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
 	gboolean use_update_viewer_dialog=gtk_toggle_button_get_active(toggle_button);

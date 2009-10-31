@@ -86,6 +86,7 @@ typedef enum _TimelinesSexyTreeViewListStoreColumn{	/***************************
 	STRING_TEXT,					/*	Unformated Tweet string.						*/
 	STRING_UPDATE,					/*	Update for display string in the TimelinesSexyTreeView's SexyTreeView.  */
 	STRING_SEXY_UPDATE,				/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
+	STRING_DETAILED_UPDATE,				/*	Upate's string as markup w/full details..				*/
 	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,				/*	Date string.								*/
 	GINT_CREATED_AGO,				/*	How old the post is, in seconds, for sorting.				*/
@@ -93,7 +94,7 @@ typedef enum _TimelinesSexyTreeViewListStoreColumn{	/***************************
 	PIXBUF_AVATAR,					/*	Avatar pixbuf.								*/
 	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
 	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
-	STRING_RCPT,					/* 	OnlineService key To: <user@service>					*/
+	STRING_RCPT,					/* 	OnlineService's key this update's from. E.G. To: <user@service>		*/
 	GINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the sorted tree model.  */
 	GINT_LIST_STORE_INDEX,				/*	The associated order/place this item appears in the list store.         */
 	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
@@ -123,6 +124,7 @@ void timelines_sexy_tree_view_update_list_store( TimelinesSexyTreeView *timeline
 void timelines_sexy_tree_view_remove_from_list_store( TimelinesSexyTreeView *timelines_sexy_tree_view, TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column, gpointer value );
 void timelines_sexy_tree_view_remove_service(TimelinesSexyTreeView *timelines_sexy_tree_view, OnlineService *service);
 
+gboolean timelines_sexy_tree_view_toggle_view(TimelinesSexyTreeView *timelines_sexy_tree_view);
 gboolean timelines_sexy_tree_view_toggle_toolbar(TimelinesSexyTreeView *timelines_sexy_tree_view);
 gboolean timelines_sexy_tree_view_toggle_from_column(TimelinesSexyTreeView *timelines_sexy_tree_view);
 gboolean timelines_sexy_tree_view_toggle_rcpt_column(TimelinesSexyTreeView *timelines_sexy_tree_view);

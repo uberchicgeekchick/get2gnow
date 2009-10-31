@@ -462,13 +462,13 @@ GtkWindow *update_viewer_get_window(void){
 	return update_viewer->update_viewer;
 }/*update_viewer_get_window*/
 
-void contol_panel_emulate_embed_toggle(void){
+void update_viewer_emulate_embed_toggle(void){
 	gtk_toggle_button_set_active(update_viewer->embed_toggle_button, !gtk_toggle_button_get_active(update_viewer->embed_toggle_button) );
-}/*contol_panel_emulate_embed_toggle();*/
+}/*update_viewer_emulate_embed_toggle();*/
 
-void contol_panel_emulate_compact_view_toggle(void){
+void update_viewer_emulate_compact_view_toggle(void){
 	gtk_toggle_button_set_active(update_viewer->compact_view_toggle_button, !gtk_toggle_button_get_active(update_viewer->compact_view_toggle_button) );
-}/*contol_panel_emulate_compact_view_toggle();*/
+}/*update_viewer_emulate_compact_view_toggle();*/
 
 void update_viewer_set_embed_toggle_and_image(void){
 	if(!gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE)){

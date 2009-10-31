@@ -104,6 +104,8 @@ MainWindow *main_window_get(void);
 
 gboolean main_window_tabs_init(void);
 void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open);
+void main_window_compact_ui(GtkToggleButton *toggle_button);
+void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button);
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *main_window_get_window(void);

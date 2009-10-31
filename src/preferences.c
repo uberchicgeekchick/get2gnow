@@ -116,6 +116,9 @@ struct _PreferencesDialog{
 	GtkCheckButton	*notify_beep_updates_check_button;
 	
 	GtkCheckButton	*disable_system_bell;
+	
+	GtkCheckButton	*compact_entire_view_check_button;
+	GtkCheckButton	*concatenated_updates_check_button;
 	GtkCheckButton	*use_dialog_toggle_button;
 	GtkCheckButton	*compact_view_toggle_button;
 	
@@ -215,6 +218,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE, prefs->disable_update_length_alert_check_button);
 	
+	preferences_hookup_toggle_button(prefs, COMPACT_VIEW, FALSE, prefs->compact_entire_view_check_button);
+	preferences_hookup_toggle_button(prefs, CONCATENATED_UPDATES, FALSE, prefs->concatenated_updates_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_COMPACT, FALSE, prefs->compact_view_toggle_button);
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_DIALOG, FALSE, prefs->use_dialog_toggle_button);
 	
@@ -555,8 +560,10 @@ void preferences_dialog_show(GtkWindow *parent){
 					"preferences_dialog", &prefs->dialog,
 					"preferences_notebook", &prefs->notebook,
 					
-					"timelines_sexy_tree_view_use_dialog_toggle_button", &prefs->use_dialog_toggle_button,
-					"timelines_sexy_tree_view_compact_view_toggle_button", &prefs->compact_view_toggle_button,
+					"compact_entire_view_check_button", &prefs->compact_entire_view_check_button,
+					"timelines_sexy_tree_view_concatenated_update_check_button", &prefs->concatenated_updates_check_button,
+					"update_viewer_use_dialog_toggle_button", &prefs->use_dialog_toggle_button,
+					"update_viewer_compact_view_toggle_button", &prefs->compact_view_toggle_button,
 					
 					"general_look_and_feel_disable_system_bell_check_button", &prefs->disable_system_bell,
 					
@@ -603,6 +610,8 @@ void preferences_dialog_show(GtkWindow *parent){
 	
 	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL );
 	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL );
+	g_signal_connect_after( (GtkToggleButton *)prefs->concatenated_updates_check_button, "toggled", (GCallback)main_window_concatenate_timeline_columns, NULL);
+	g_signal_connect_after( (GtkToggleButton *)prefs->compact_entire_view_check_button, "toggled", (GCallback)main_window_compact_ui, NULL);
 	
 	g_object_unref(ui);
 	

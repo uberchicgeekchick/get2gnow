@@ -114,7 +114,8 @@ gboolean proxy_init(void){
 			default: break;
 		}
 	
-	if(!gconfig_if_bool(PROXY_USE, FALSE)){
+	gboolean use_proxy=FALSE;
+	if(!( (gconfig_get_bool(PROXY_USE, &use_proxy)) && use_proxy )){
 		proxy_status=PROXY_STATUS_DISABLED;
 		debug("Connect to the tubes using a proxy\t\t[%s]", _("disable"));
 		return FALSE;
@@ -138,7 +139,8 @@ gboolean proxy_init(void){
 	
 	proxy_uri=NULL;
 	
-	if(!gconfig_if_bool(PROXY_USE_AUTH, FALSE))
+	use_proxy=FALSE;
+	if(!( (gconfig_get_bool(PROXY_USE_AUTH, &use_proxy)) && use_proxy ))
 		proxy_uri=g_strdup_printf("http://%s:%d", server, port);
 	else {
 		gchar *user, *password;

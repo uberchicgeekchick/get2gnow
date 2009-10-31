@@ -126,7 +126,9 @@ gboolean debug_if_devel(void){
 
 gboolean debug_check_devel(const gchar *debug_environmental_value){
 #ifdef GNOME_ENABLE_DEBUG
-	return (debug_devel=TRUE);
+	debug_devel=TRUE;
+	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
+		return FALSE;
 #else
 	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
 		return (debug_devel=FALSE);
@@ -136,7 +138,7 @@ gboolean debug_check_devel(const gchar *debug_environmental_value){
 	
 	debug_output=TRUE;
 	all_domains=TRUE;
-	debug_environment=g_strsplit("All", ":", 1);
+	debug_environment=g_strsplit(debug_environmental_value, ":", -1);
 	
 	return (debug_devel=TRUE);
 }/*debug_check_devel(g_getenv("GET2GNOW_DEBUG"));*/
@@ -181,7 +183,6 @@ void debug_deinit(void){
 
 static void debug_environment_check(void){
 	const gchar *debug_environmental_value=g_getenv(debug_environmental_variable);
-	if(debug_check_devel(debug_environmental_value)) return;
 	
 	if(debug_environment) g_strfreev(debug_environment);
 	if(!debug_environmental_value){
@@ -189,6 +190,8 @@ static void debug_environment_check(void){
 		debug_output=FALSE;
 		return;
 	}
+	
+	if(debug_check_devel(debug_environmental_value)) return;
 	
 	debug_environment=g_strsplit(debug_environmental_value, ":", -1);
 	debug_output=TRUE;

@@ -330,6 +330,7 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->update ) (*status)->update=g_strdup("");
 	if(! (*status)->source ) (*status)->source=g_strdup("");
 	if(! (*status)->sexy_update ) (*status)->sexy_update=g_strdup("");
+	if(! (*status)->sexy_complete ) (*status)->sexy_complete=g_strdup("");
 	if(! (*status)->notification ) (*status)->notification=g_strdup("");
 	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
@@ -429,12 +430,25 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
 	);
 	
+	status->sexy_complete=g_strdup_printf("<span weight=\"bold\" underline=\"single\" size=\"small\">From:</span> <span weight=\"bold\" size=\"small\">%s &lt;@%s on %s&gt;</span>\n<span style=\"italic\" underline=\"single\" size=\"x-small\">To:</span> <span style=\"italic\" size=\"x-small\">%s &lt;%s&gt;</span>\n\n\t%s%s%s%s\n\n<span size=\"small\" variant=\"smallcaps\">Status Updated: %s</span>\n",
+					user->nick_name, user->user_name, service->uri,
+					service->nick_name, service->key,
+					( (status->type==DMs)
+					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n"
+						:(status->type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n"
+							:""
+						)
+					),
+					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :""),
+					status->created_how_long_ago
+	);
+	
 	status->notification=g_strdup_printf(
-						"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n<i><u>To:</u></i> <i>&lt;%s&gt;</i>\n<b>\t%s%s%s</b>",
+						"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n<i><u>To:</u></i> <i>%s &lt;%s&gt;</i>\n<b>\t%s%s%s</b>",
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
 						user->nick_name, user->user_name, service->uri,
-						service->key,
+						service->nick_name, service->key,
 						((status->type==DMs) ?"<b><i>[" :((status->type==Replies) ?"<i>[" :"")), sexy_status_text, ((status->type==DMs) ?"]</i></b>" :((status->type==Replies) ?"]</i>" :""))
 	);
 	
@@ -485,6 +499,7 @@ void user_status_free(UserStatus *status){
 	if(status->update) uber_free(status->update);
 	if(status->source) uber_free(status->source);
 	if(status->sexy_update) uber_free(status->sexy_update);
+	if(status->sexy_complete) uber_free(status->sexy_complete);
 	if(status->notification) uber_free(status->notification);
 	if(status->created_at_str) uber_free(status->created_at_str);
 	if(status->created_how_long_ago) uber_free(status->created_how_long_ago);

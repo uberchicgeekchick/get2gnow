@@ -72,9 +72,9 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
-#define UPDATE_VEWER_TOOLBAR_VISIBILITY		GCONF_PATH "/ui/hide/tabs_toolbars"
-#define UPDATE_VEWER_FROM_COLUMN_VISIBILITY	GCONF_PATH "/ui/hide/columns/from"
-#define UPDATE_VEWER_RCPT_COLUMN_VISIBILITY	GCONF_PATH "/ui/hide/columns/rcpt"
+#define TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY		GCONF_PATH "/ui/hide/tabs_toolbars"
+#define TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY		GCONF_PATH "/ui/hide/columns/from"
+#define TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY		GCONF_PATH "/ui/hide/columns/rcpt"
 
 
 /********************************************************************************
@@ -106,6 +106,7 @@ void tabs_close(void);
 void tabs_close_current_page(void);
 void tabs_close_page(gint page);
 
+void tabs_toggle_view(void);
 void tabs_toggle_toolbars(void);
 void tabs_toggle_from_columns(void);
 void tabs_toggle_rcpt_columns(void);

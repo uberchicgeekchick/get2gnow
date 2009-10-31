@@ -198,17 +198,20 @@ struct _TimelinesSexyTreeViewPrivate {
 	GtkTreeViewColumn	*pixbuf_avatar_tree_view_column;
 	GtkCellRendererPixbuf	*pixbuf_avatar_cell_renderer_pixbuf;
 	
+	GtkTreeViewColumn	*string_detailed_update_tree_view_column;
+	GtkCellRendererText	*string_detailed_update_cell_renderer_text;
+	
 	GtkTreeViewColumn	*string_update_tree_view_column;
 	GtkCellRendererText	*string_update_cell_renderer_text;
-	
-	GtkTreeViewColumn	*created_ago_str_tree_view_column;
-	GtkCellRendererText	*created_ago_str_cell_renderer_text;
 	
 	GtkTreeViewColumn	*string_from_tree_view_column;
 	GtkCellRendererText	*string_from_cell_renderer_text;
 	
 	GtkTreeViewColumn	*string_rcpt_tree_view_column;
 	GtkCellRendererText	*string_rcpt_cell_renderer_text;
+	
+	GtkTreeViewColumn	*created_ago_str_tree_view_column;
+	GtkCellRendererText	*created_ago_str_cell_renderer_text;
 	
 	GtkListStore		*list_store;
 	GtkTreeModel		*tree_model;
@@ -257,6 +260,10 @@ static gboolean timelines_sexy_tree_view_notification(TimelinesSexyTreeView *tim
 static void timelines_sexy_tree_view_grab_focus_cb(GtkWidget *widget, TimelinesSexyTreeView *timelines_sexy_tree_view);
 static void timelines_sexy_tree_view_increment_unread(TimelinesSexyTreeView *timelines_sexy_tree_view);
 static void timelines_sexy_tree_view_mark_as_unread(TimelinesSexyTreeView *timelines_sexy_tree_view);
+
+static gboolean timelines_sexy_tree_view_toggle_update_detailed_column(TimelinesSexyTreeView *timelines_sexy_tree_view);
+static gboolean timelines_sexy_tree_view_toggle_update_column(TimelinesSexyTreeView *timelines_sexy_tree_view);
+static gboolean timelines_sexy_tree_view_toggle_created_ago_str_column(TimelinesSexyTreeView *timelines_sexy_tree_view);
 
 static void timelines_sexy_tree_view_check_updates(TimelinesSexyTreeView *timelines_sexy_tree_view);
 static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration);
@@ -343,14 +350,17 @@ TimelinesSexyTreeView *timelines_sexy_tree_view_new(const gchar *timeline, Onlin
 	gtk_widget_show_all(GTK_WIDGET(GET_PRIVATE(timelines_sexy_tree_view)->vbox));
 	
 	timelines_sexy_tree_view_set_adjustment(timelines_sexy_tree_view);
-	
-	if(gconfig_if_bool( UPDATE_VEWER_TOOLBAR_VISIBILITY, FALSE) )
+	timelines_sexy_tree_view_toggle_update_detailed_column(timelines_sexy_tree_view);
+	if(gconfig_if_bool(CONCATENATED_UPDATES, FALSE) || gconfig_if_bool(COMPACT_VIEW, FALSE) ){
+		timelines_sexy_tree_view_toggle_view(timelines_sexy_tree_view);
 		timelines_sexy_tree_view_toggle_toolbar(timelines_sexy_tree_view);
-	
-	if(gconfig_if_bool( UPDATE_VEWER_FROM_COLUMN_VISIBILITY, FALSE) )
 		timelines_sexy_tree_view_toggle_from_column(timelines_sexy_tree_view);
-	
-	if(gconfig_if_bool( UPDATE_VEWER_RCPT_COLUMN_VISIBILITY, FALSE) )
+		timelines_sexy_tree_view_toggle_rcpt_column(timelines_sexy_tree_view);
+	}else if(!gconfig_if_bool(TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY, FALSE))
+		timelines_sexy_tree_view_toggle_toolbar(timelines_sexy_tree_view);
+	else if(!gconfig_if_bool(TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY, FALSE))
+		timelines_sexy_tree_view_toggle_from_column(timelines_sexy_tree_view);
+	else if(!gconfig_if_bool(TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, FALSE))
 		timelines_sexy_tree_view_toggle_rcpt_column(timelines_sexy_tree_view);
 	
 	timelines_sexy_tree_view_start(timelines_sexy_tree_view);
@@ -776,6 +786,7 @@ const gchar *timelines_sexy_tree_view_list_store_column_to_string(TimelinesSexyT
 		case	STRING_TEXT: return _("STRING_TEXT");
 		case	STRING_UPDATE: return _("STRING_UPDATE");
 		case	STRING_SEXY_UPDATE: return _("STRING_SEXY_UPDATE");
+		case	STRING_DETAILED_UPDATE: return _("STRING_DETAILED_UPDATE");
 		case	STRING_CREATED_AGO: return _("STRING_CREATED_AGO");	
 		case	STRING_CREATED_AT: return _("STRING_CREATED_AT");
 		case	STRING_FROM: return _("STRING_FROM");
@@ -833,6 +844,7 @@ static void timelines_sexy_tree_view_modifiy_updates_list_store( TimelinesSexyTr
 			case	STRING_TEXT:
 			case	STRING_UPDATE:
 			case	STRING_SEXY_UPDATE:
+			case	STRING_DETAILED_UPDATE:
 			case	STRING_CREATED_AGO:	
 			case	STRING_CREATED_AT:
 			case	STRING_FROM:
@@ -843,9 +855,9 @@ static void timelines_sexy_tree_view_modifiy_updates_list_store( TimelinesSexyTr
 				}
 				break;
 			case	PIXBUF_AVATAR:
-				if(value_at_index==value) break;
-				
-				g_object_unref(value_at_index);
+				if(value_at_index==value)
+					g_object_unref(value_at_index);
+				break;
 			case	GUINT_TIMELINES_SEXY_TREE_VIEW_INDEX:
 			case	GDOUBLE_UPDATE_ID:
 			case	GDOUBLE_USER_ID:
@@ -1072,6 +1084,8 @@ static void timelines_sexy_tree_view_create_gui(TimelinesSexyTreeView *timelines
 								"timelines_sexy_tree_view_pixbuf_avatar_tree_view_column", &this->pixbuf_avatar_tree_view_column,
 								"timelines_sexy_tree_view_pixbuf_avatar_cell_renderer_pixbuf", &this->pixbuf_avatar_cell_renderer_pixbuf,
 								
+								"timelines_sexy_tree_view_string_detailed_update_tree_view_column", &this->string_detailed_update_tree_view_column,
+								"timelines_sexy_tree_view_string_detailed_update_cell_renderer_text", &this->string_detailed_update_cell_renderer_text,
 								"timelines_sexy_tree_view_string_update_tree_view_column", &this->string_update_tree_view_column,
 								"timelines_sexy_tree_view_string_update_cell_renderer_text", &this->string_update_cell_renderer_text,
 								
@@ -1270,11 +1284,33 @@ static void timelines_sexy_tree_view_grab_focus_cb(GtkWidget *widget, TimelinesS
 	timelines_sexy_tree_view_mark_as_read(timelines_sexy_tree_view);
 }/*timelines_sexy_tree_view_grab_focus_cb(widget, event, timelines_sexy_tree_view);*/
 
+gboolean timelines_sexy_tree_view_toggle_view(TimelinesSexyTreeView *timelines_sexy_tree_view){
+	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return FALSE;
+	
+	timelines_sexy_tree_view_toggle_update_detailed_column(timelines_sexy_tree_view);
+	timelines_sexy_tree_view_toggle_update_column(timelines_sexy_tree_view);
+	timelines_sexy_tree_view_toggle_created_ago_str_column(timelines_sexy_tree_view);
+	
+	return TRUE;
+}/*timelines_sexy_tree_view_toggle_view(timelines_sexy_tree_view);*/
+
 gboolean timelines_sexy_tree_view_toggle_toolbar(TimelinesSexyTreeView *timelines_sexy_tree_view){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return FALSE;
 	gtk_widget_toggle_visibility( GTK_WIDGET( GET_PRIVATE(timelines_sexy_tree_view)->handlebox ) );
 	return gtk_widget_is_visible( GTK_WIDGET( GET_PRIVATE(timelines_sexy_tree_view)->handlebox ) );
 }/*timelines_sexy_tree_view_toggle_toolbar(timelines_sexy_tree_view);*/
+
+static gboolean timelines_sexy_tree_view_toggle_update_detailed_column(TimelinesSexyTreeView *timelines_sexy_tree_view){
+	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return FALSE;
+	gtk_tree_view_column_toggle_visibility( GET_PRIVATE(timelines_sexy_tree_view)->string_detailed_update_tree_view_column );
+	return gtk_tree_view_column_get_visible( GET_PRIVATE(timelines_sexy_tree_view)->string_detailed_update_tree_view_column );
+}/*timelines_sexy_tree_view_toggle_update_detailed_column(timelines_sexy_tree_view);*/
+
+static gboolean timelines_sexy_tree_view_toggle_update_column(TimelinesSexyTreeView *timelines_sexy_tree_view){
+	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return FALSE;
+	gtk_tree_view_column_toggle_visibility( GET_PRIVATE(timelines_sexy_tree_view)->string_update_tree_view_column );
+	return gtk_tree_view_column_get_visible( GET_PRIVATE(timelines_sexy_tree_view)->string_update_tree_view_column );
+}/*timelines_sexy_tree_view_toggle_update_column(timelines_sexy_tree_view);*/
 
 gboolean timelines_sexy_tree_view_toggle_from_column(TimelinesSexyTreeView *timelines_sexy_tree_view){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return FALSE;
@@ -1288,6 +1324,11 @@ gboolean timelines_sexy_tree_view_toggle_rcpt_column(TimelinesSexyTreeView *time
 	return gtk_tree_view_column_get_visible( GET_PRIVATE(timelines_sexy_tree_view)->string_rcpt_tree_view_column );
 }/*timelines_sexy_tree_view_toggle_rcpt_column(timelines_sexy_tree_view);*/
 
+static gboolean timelines_sexy_tree_view_toggle_created_ago_str_column(TimelinesSexyTreeView *timelines_sexy_tree_view){
+	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return FALSE;
+	gtk_tree_view_column_toggle_visibility( GET_PRIVATE(timelines_sexy_tree_view)->created_ago_str_tree_view_column );
+	return gtk_tree_view_column_get_visible( GET_PRIVATE(timelines_sexy_tree_view)->created_ago_str_tree_view_column );
+}/*timelines_sexy_tree_view_toggle_created_ago_str_column(timelines_sexy_tree_view);*/
 void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_view, UserStatus *status){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
 	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
@@ -1302,26 +1343,27 @@ void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	gtk_list_store_insert(this->list_store, iter, this->list_store_index);
 	gtk_list_store_set(
-				this->list_store, iter,
-					GUINT_TIMELINES_SEXY_TREE_VIEW_INDEX, this->total,
-					GDOUBLE_UPDATE_ID, status->id,				/*Tweet's ID.*/
-					GDOUBLE_USER_ID, status->user->id,			/*User's ID.*/
-					STRING_USER, status->user->user_name,			/*Useruser_name string.*/
-					STRING_NICK, status->user->nick_name,			/*Author user_name string.*/
-					STRING_TEXT, status->text,				/*Tweet string.*/
-					STRING_UPDATE, status->update,				/*Display string.*/
-					STRING_SEXY_UPDATE, status->sexy_update,			/*SexyTreeView's tooltip.*/
-					STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
-					STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
-					GINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
-					ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
-					ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
-					STRING_FROM, status->from,				/*Who the update/update is from.*/
-					STRING_RCPT, status->rcpt,				/*The key for OnlineService displayed as who the update is to.*/
-					GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
-					GINT_LIST_STORE_INDEX, this->list_store_index,		/*The row's unsorted index.*/
-					GBOOLEAN_UNREAD, unread,
-				-1
+			this->list_store, iter,
+				GUINT_TIMELINES_SEXY_TREE_VIEW_INDEX, this->total,
+				GDOUBLE_UPDATE_ID, status->id,				/*Tweet's ID.*/
+				GDOUBLE_USER_ID, status->user->id,			/*User's ID.*/
+				STRING_USER, status->user->user_name,			/*Useruser_name string.*/
+				STRING_NICK, status->user->nick_name,			/*Author user_name string.*/
+				STRING_TEXT, status->text,				/*Update's string as plain text.*/
+				STRING_UPDATE, status->update,				/*Update's string as markup for display..*/
+				STRING_SEXY_UPDATE, status->sexy_update,		/*SexyTreeView's tooltip.*/
+				STRING_DETAILED_UPDATE, status->sexy_complete,		/*Upate's string as markup w/full details.*/
+				STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
+				STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
+				GINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
+				ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
+				ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
+				STRING_FROM, status->from,				/*Who the update/update is from.*/
+				STRING_RCPT, status->rcpt,				/*The OnlineService's key this update's from.*/
+				GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
+				GINT_LIST_STORE_INDEX, this->list_store_index,		/*The row's unsorted index.*/
+				GBOOLEAN_UNREAD, unread,
+			-1
 	);
 	this->total++;
 	
@@ -1605,10 +1647,10 @@ static void timelines_sexy_tree_view_resize_cb(GtkWidget *widget, GtkAllocation 
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
 	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
 	const guint8 wrap_width=10;
+	gtk_word_wrap_tree_view_column(this->string_detailed_update_tree_view_column, this->string_detailed_update_cell_renderer_text, wrap_width);
 	gtk_word_wrap_tree_view_column(this->string_update_tree_view_column, this->string_update_cell_renderer_text, wrap_width);
 	gtk_word_wrap_tree_view_column(this->string_rcpt_tree_view_column, this->string_rcpt_cell_renderer_text, wrap_width);
 	gtk_word_wrap_tree_view_column(this->string_from_tree_view_column, this->string_from_cell_renderer_text, wrap_width);
-	gtk_word_wrap_tree_view_column(this->created_ago_str_tree_view_column, this->created_ago_str_cell_renderer_text, wrap_width);
 }/*timelines_sexy_tree_view_resize_cb(widget, allocation, timelines_sexy_tree_view);*/
 
 void timelines_sexy_tree_view_set_image(TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *image_filename, GtkTreeIter *iter){

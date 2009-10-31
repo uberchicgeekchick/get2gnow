@@ -283,6 +283,13 @@ void tabs_close_page(gint page){
 	g_object_unref(timelines_sexy_tree_view);
 }/*void tabs_close_page(0);*/
 
+void tabs_toggle_view(void){
+	GList *t=NULL;
+	for(t=tabs->tabs; t; t=t->next)
+		timelines_sexy_tree_view_toggle_view((TimelinesSexyTreeView *)t->data);
+	g_list_free(t);
+}/*tabs_toggle_view();*/
+
 void tabs_toggle_toolbars(void){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
