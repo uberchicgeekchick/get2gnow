@@ -256,7 +256,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 			break;
 	}
 	const gchar *notice_suffix=NULL;
-	if( gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) )
+	if( !gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) && !gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) )
 		notice_suffix=_("  URL auto-expansion is enabled loading timelines may take a while.");
 	debug("%s request for %s.%s", notice_prefix, uri, notice_suffix);
 	statusbar_printf("%s request for %s.%s", notice_prefix, uri, (notice_suffix ?_("  This may take several moments.") :"" ) );

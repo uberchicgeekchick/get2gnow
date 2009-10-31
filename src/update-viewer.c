@@ -767,7 +767,6 @@ void update_viewer_view_selected_update(OnlineService *service, const gdouble id
 	uber_free(sexy_text);
 	
 	if(!(G_STR_EMPTY(nick_name) && G_STR_EMPTY(user_name) )){
-		if(! G_STR_EMPTY(user_name) )
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: %s <a href=\"http%s://%s/%s\">&lt;@%s on %s&gt;</a></span>", nick_name, uri_scheme_suffix, service->uri, user_name, user_name, service->uri);
 	}else
 		sexy_text=g_strdup("");

@@ -232,9 +232,9 @@ gchar *label_msg_format_urls(OnlineService *service, const gchar *message, gbool
 		}
 		
 		gchar *url_prefix=g_strdup_printf("http%s://%s%s/%s%s%s%s", (words[i][0]=='@'&&service->https ?"s" :""), ( (words[i][0]=='#' && service->micro_blogging_service==Twitter) ?"search." :"" ), service->uri, (searching ?"search" :""), (searching && service->micro_blogging_service!=Twitter ?"/notice" :"" ), (searching ?"?q=" :""), (words[i][0]=='#' ?"%23" :(words[i][0]=='!' ?"%21" :"") ) );
-		debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], words[i], service->uri);
+		debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri);
 		temp=label_format_service_hyperlink(service, url_prefix, words[i], expand_hyperlinks, make_hyperlinks, titles_strip_uris );
-		debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], words[i], service->uri, temp);
+		debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri, temp);
 		uber_free(url_prefix);
 		g_free(words[i]);
 		words[i]=temp;
@@ -346,13 +346,11 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, con
 	}
 	uber_free(temp);
 	
-	gchar *escaped_title=NULL;
-	escaped_title=parser_escape_text(uri_title);
-	uber_free(uri_title);
+	parser_escape_status(&uri_title);
 	
-	debug("Attempting to display link info. title: %s for uri: '%s'.", escaped_title, uri);
+	debug("Attempting to display link info. title: %s for uri: '%s'.", uri_title, uri);
 	gchar *hyperlink_suffix1=NULL;
-	if(services_resource && searching && !g_strrstr(escaped_title, services_resource))
+	if(services_resource && searching && !g_strrstr(uri_title, services_resource))
 		hyperlink_suffix1=g_strdup_printf("'s search results for %s", services_resource);
 	
 	gchar *hyperlink_suffix2=NULL;
@@ -360,13 +358,13 @@ static gchar *label_find_uri_title(OnlineService *service, const gchar *uri, con
 		hyperlink_suffix2=g_strdup_printf(" &lt;- %s", uri);
 	
 	if(!make_hyperlinks)
-		temp=g_strdup_printf("<u>%s%s%s</u>", escaped_title, (hyperlink_suffix1 ?hyperlink_suffix1 :""), (hyperlink_suffix2 ?hyperlink_suffix2 :""));
+		temp=g_strdup_printf("<u>%s%s%s</u>", uri_title, (hyperlink_suffix1 ?hyperlink_suffix1 :""), (hyperlink_suffix2 ?hyperlink_suffix2 :""));
 	else
-		temp=g_strdup_printf("<a href=\"%s\">%s%s%s</a>", uri, escaped_title, (hyperlink_suffix1 ?hyperlink_suffix1 :""), (hyperlink_suffix2 ?hyperlink_suffix2 :"") );
+		temp=g_strdup_printf("<a href=\"%s\">%s%s%s</a>", uri, uri_title, (hyperlink_suffix1 ?hyperlink_suffix1 :""), (hyperlink_suffix2 ?hyperlink_suffix2 :"") );
 	if(hyperlink_suffix1) g_free(hyperlink_suffix1);
 	if(hyperlink_suffix2) g_free(hyperlink_suffix2);
 	
-	g_free(escaped_title);
+	g_free(uri_title);
 	
 	return temp;
 }/*label_find_uri_title(service, uri, "@user"||"#search||"!tag", expand_hyperlinks, make_hyperlinks, titles_strip_uris);*/
@@ -393,7 +391,7 @@ static gchar *label_get_uri_dom_xpath_element_content(SoupMessage *xml, const gc
 		
 		IF_DEBUG
 			debug("**NOTICE:** Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
-		if( xpath_depth>xpath_target_depth || g_str_equal(max_nodes_name, current_node->name) ) break;
+		if( xpath_depth>xpath_target_depth /*|| g_str_equal(max_nodes_name, current_node->name)*/ ) break;
 		
 		if(!g_str_equal(current_node->name, xpathv[xpath_depth])){
 			if(xpath_depth==xpath_target_depth && !current_node->next){

@@ -118,10 +118,9 @@ struct _UserProfileViewer{
 	Label			*url_hyperlink;
 	Label			*bio_html;
 	
-	GtkHBox			*latest_update_hbox;
-	GtkLabel		*updated_when_label;
-	
 	GtkVBox			*latest_update_vbox;
+	GtkLabel		*latest_update_label;
+	GtkLabel		*updated_when_label;
 	Label			*most_recent_update;
 };
 
@@ -242,13 +241,13 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 			debug("User ID: %s(=%f).", user->id_str, user->id);
 			
 		}else if(g_str_equal(current_node->name, "name" ))
-			user->nick_name=g_strdup(content);
+			user->nick_name=g_markup_printf_escaped("%s", content);
 		
 		else if(g_str_equal(current_node->name, "screen_name" ))
 			user->user_name=g_strdup(content);
 		
 		else if(g_str_equal(current_node->name, "location" ))
-			user->location=g_strdup(content);
+			user->location=g_markup_printf_escaped("%s", content);
 		
 		else if(g_str_equal(current_node->name, "description" ))
 			user->bio=g_markup_printf_escaped( "%s", content );
@@ -624,9 +623,6 @@ static void user_profile_viewer_setup(void){
 							"profile_vbox", &user_profile_viewer->profile_vbox,
 							"user_image", &user_profile_viewer->user_image,
 							
-							"latest_update_hbox", &user_profile_viewer->latest_update_hbox,
-							"updated_when_label", &user_profile_viewer->updated_when_label,
-							
 							"latest_update_vbox", &user_profile_viewer->latest_update_vbox,
 						NULL
 	);
@@ -653,25 +649,42 @@ static void user_profile_viewer_setup(void){
 				TRUE, TRUE, 0
 	);
 	
-	user_profile_viewer->bio_html=label_new();
-	gtk_box_pack_end(
-				GTK_BOX(user_profile_viewer->profile_vbox),
-				GTK_WIDGET(user_profile_viewer->bio_html),
-				TRUE, TRUE, 0
-	);
-	
-	user_profile_viewer->most_recent_update=label_new();
-	gtk_box_pack_end(
-			GTK_BOX(user_profile_viewer->latest_update_vbox),
-			GTK_WIDGET(user_profile_viewer->most_recent_update),
-			TRUE, TRUE, 0
-	);
-	
 	user_profile_viewer->url_hyperlink=label_new();
 	gtk_box_pack_start(
 				GTK_BOX(user_profile_viewer->profile_vbox),
 				GTK_WIDGET(user_profile_viewer->url_hyperlink),
 				TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->bio_html=label_new();
+	gtk_box_pack_start(
+				GTK_BOX(user_profile_viewer->profile_vbox),
+				GTK_WIDGET(user_profile_viewer->bio_html),
+				TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->latest_update_label=(GtkLabel *)gtk_label_new(NULL);
+	gtk_label_set_markup(user_profile_viewer->latest_update_label, "<b><u>Most recent update:</u></b>");
+	g_object_set(user_profile_viewer->latest_update_label, "single-line-mode", TRUE, NULL);
+	gtk_box_pack_start(
+			GTK_BOX(user_profile_viewer->latest_update_vbox),
+			GTK_WIDGET(user_profile_viewer->latest_update_label),
+			TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->most_recent_update=label_new();
+	gtk_box_pack_start(
+			GTK_BOX(user_profile_viewer->latest_update_vbox),
+			GTK_WIDGET(user_profile_viewer->most_recent_update),
+			TRUE, TRUE, 0
+	);
+	
+	user_profile_viewer->updated_when_label=(GtkLabel *)gtk_label_new(NULL);
+	g_object_set(user_profile_viewer->updated_when_label, "xalign", 1.0, "single-line-mode", TRUE, NULL);
+	gtk_box_pack_start(
+			GTK_BOX(user_profile_viewer->latest_update_vbox),
+			GTK_WIDGET(user_profile_viewer->updated_when_label),
+			TRUE, TRUE, 0
 	);
 	
 	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
@@ -717,14 +730,17 @@ static void user_profile_viewer_show_all(void){
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->dialog));
 	gtk_widget_show_all(GTK_WIDGET(user_profile_viewer->dialog));
 	
-	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->user_image));
-	
-	gtk_widget_show(GTK_WIDGET(user_profile_viewer->updated_when_label));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->service_label));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->user_label));
+	
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->user_image));
+	
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->url_hyperlink));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
+	
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->latest_update_label));
 	gtk_widget_show(GTK_WIDGET(user_profile_viewer->most_recent_update));
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->updated_when_label));
 	
 	window_present(GTK_WINDOW(user_profile_viewer->dialog), TRUE);
 }/*user_profile_viewer_show_all();*/
@@ -736,11 +752,17 @@ static void user_profile_viewer_hide_all(void){
 	gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET(images_get_dialog_image_from_stock("gtk-dialog-info") ) );
 	gtk_image_set_from_stock(user_profile_viewer->user_image, "gtk-dialog-info", ImagesDialog );
 	gtk_message_dialog_set_markup( user_profile_viewer->dialog, "" );
-	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->updated_when_label));
+	
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->service_label));
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->user_label));
+	
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->url_hyperlink));
+	
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->latest_update_label));
 	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->most_recent_update));
+	gtk_widget_hide(GTK_WIDGET(user_profile_viewer->updated_when_label));
+	
+	gtk_widget_show(GTK_WIDGET(user_profile_viewer->bio_html));
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", TRUE, NULL );
 	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_profile_viewer->user_name, (user_profile_viewer->service->https?"s":""), user_profile_viewer->service->uri, user_profile_viewer->service->uri );

@@ -514,17 +514,21 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	return new_updates;
 }/*parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);*/
 
-gchar *parser_escape_text(gchar *text){
-	gchar *escaped_text=NULL;
-	gchar *current_character=escaped_text=g_markup_escape_text(text, -1);
+void parser_escape_status(gchar **status){
+	*status=parser_escape_text( *status );
+}/*parser_escape_text(&text);*/
+
+gchar *parser_escape_text(gchar *status){
+	gchar *escaped_status=NULL;
+	gchar *current_character=escaped_status=g_markup_escape_text(status, -1);
 	while((current_character=strstr(current_character, "&amp;"))) {
 		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
 			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
 		else
 			current_character+=5;
 	}
-	return escaped_text;
-}/*parser_escape_text(text);*/
+	return escaped_status;
+}/*parser_escape_text(status);*/
 
 gchar *parser_convert_time(const gchar *datetime, gint *my_diff){
 	struct tm	*ta;
