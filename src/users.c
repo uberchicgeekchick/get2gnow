@@ -415,7 +415,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
 	//}
 	uber_free(sexy_status_swap);
-
+	
 	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>", user->nick_name, user->user_name, service->uri);
 	
 	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", service->nick_name, service->key);
@@ -430,18 +430,12 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
 	);
 	
-	status->sexy_complete=g_strdup_printf("<span weight=\"bold\" underline=\"single\" size=\"small\">From:</span> <span weight=\"bold\" size=\"small\">%s &lt;@%s on %s&gt;</span>\n<span style=\"italic\" underline=\"single\" size=\"x-small\">To:</span> <span style=\"italic\" size=\"x-small\">%s &lt;%s&gt;</span>\n\n\t%s%s%s%s\n\n<span size=\"small\" variant=\"smallcaps\">Status Updated: %s</span>\n",
+	status->sexy_complete=g_strdup("");/*_printf("<span weight=\"bold\" underline=\"single\" size=\"small\">From:</span> <span weight=\"bold\" size=\"small\">%s &lt;@%s on %s&gt;</span>\n<span style=\"italic\" underline=\"single\" size=\"x-small\">To:</span> <span style=\"italic\" size=\"x-small\">%s &lt;%s&gt;</span>\n\t%s\n<span size=\"small\" variant=\"smallcaps\">Status Updated: %s</span>\n",
 					user->nick_name, user->user_name, service->uri,
 					service->nick_name, service->key,
-					( (status->type==DMs)
-					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n"
-						:(status->type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n"
-							:""
-						)
-					),
-					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :""),
+					status->update,
 					status->created_how_long_ago
-	);
+	);*/
 	
 	status->notification=g_strdup_printf(
 						"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n<i><u>To:</u></i> <i>%s &lt;%s&gt;</i>\n<b>\t%s%s%s</b>",

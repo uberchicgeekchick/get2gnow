@@ -260,20 +260,23 @@ static void main_window_view_setup(void);
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window);
 static void main_window_exit(GtkWidget *window, MainWindow *main_window); 
+
 static void main_window_services_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_select_service(GtkMenuItem *item, MainWindow *main_window);
-static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, gboolean active, GtkWidget *widget);
-static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item);
-static void main_window_view_menu_advanced_menu_toggled(GtkCheckMenuItem *check_menu_item, gboolean checked);
 static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_window); 
-
-static void main_window_about_cb(GtkWidget *window, MainWindow *main_window); 
-static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_window); 
 
 static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p);
 static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab);
 
+static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, gboolean active, GtkWidget *widget);
+static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item);
+static void main_window_compact_view_toggled(gboolean checked);
+static void main_window_compact_timelines_toggled(gboolean checked);
+
 static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window);
+
+static void main_window_about_cb(GtkWidget *window, MainWindow *main_window); 
+static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_window); 
 
 static void main_window_connection_items_setup(GtkBuilder *ui);
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui);
@@ -397,9 +400,14 @@ static void main_window_setup(void){
 					"accounts_tool_button", &main_window->private->accounts_tool_button,
 					"main_window_main_tool_bar_exit_tool_button", &main_window->private->exit_tool_button,
 					
-					"timelines_sexy_tree_view_hpaned", &main_window->private->timelines_sexy_tree_view_hpaned,
+					/* the major UI elements. */
+					"main_vpaned", &main_window->private->main_vpaned,
+					
+					/* best friends elements & buttons */
 					"best_friends_vbox", &main_window->private->best_friends_vbox,
 					"best_friends_scrolled_window", &main_window->private->best_friends_scrolled_window,
+					
+					"best_friends_list_store", &main_window->private->best_friends_list_store,
 					
 					"best_friends_sexy_tree_view", &main_window->private->best_friends_sexy_tree_view,
 					"best_friends_user_name_tree_view_column", &main_window->private->best_friends_user_name_tree_view_column,
@@ -407,7 +415,6 @@ static void main_window_setup(void){
 					"best_friends_online_service_tree_view_column", &main_window->private->best_friends_online_service_tree_view_column,
 					"best_friends_online_service_cell_renderer_text", &main_window->private->best_friends_online_service_cell_renderer_text,
 					
-					"best_friends_list_store", &main_window->private->best_friends_list_store,
 					"best_friends_add_button", &main_window->private->best_friends_add_button,
 					"best_friends_drop_button", &main_window->private->best_friends_drop_button,
 					"best_friends_refresh_button", &main_window->private->best_friends_refresh_button,
@@ -419,12 +426,14 @@ static void main_window_setup(void){
 					"best_friends_view_updates_button", &main_window->private->best_friends_view_updates_button,
 					
 					/*tabs_notebook is used to contain get2gnow's timeline tabs.*/
+					"timelines_sexy_tree_view_hpaned", &main_window->private->timelines_sexy_tree_view_hpaned,
 					"tabs_notebook", &tabs_notebook,
 					
-					"main_vpaned", &main_window->private->main_vpaned,
+					/*container elements for the UpdateViewer - when its embed.*/
 					"expand_box", &main_window->private->expand_box,
 					"update_viewer_vbox", &main_window->private->update_viewer_vbox,
 					
+					/* the...well duh, LOL you figure it out.*/
 					"main_statusbar", &main_window->private->statusbar,
 				NULL
 	);
@@ -441,10 +450,18 @@ static void main_window_setup(void){
 					
 					"services_connect", "activate", main_window_reconnect,
 					"services_disconnect", "activate", main_window_disconnect,
+					"quit", "activate", main_window_exit,
+					
 					"accounts_image_menu_item", "activate", main_window_services_cb,
 					"select_service_image_menu_item", "activate", main_window_select_service,
 					"preferences", "activate", main_window_preferences_cb,
-					"quit", "activate", main_window_exit,
+					
+					"tabs_public_timeline", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_friends_timeline", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_my_timeline", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_direct_messages", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_replies", "toggled", main_window_tabs_menu_timeline_selected,
+					"tabs_favorites_timeline", "toggled", main_window_tabs_menu_timeline_selected,
 					
 					"new_update", "activate", update_viewer_new_update,
 					"new_dm", "activate", update_viewer_new_dm,
@@ -457,13 +474,6 @@ static void main_window_setup(void){
 					"selected_update_author_follow_image_menu_item", "activate", online_service_request_selected_update_follow,
 					"selected_update_author_unfollow_image_menu_item", "activate", online_service_request_selected_update_unfollow,
 					"selected_update_author_block_image_menu_item", "activate", online_service_request_selected_update_block,
-					
-					"tabs_public_timeline", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_friends_timeline", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_my_timeline", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_direct_messages", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_replies", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_favorites_timeline", "toggled", main_window_tabs_menu_timeline_selected,
 					
 					"online_service_request_menu_friends_manager", "activate", online_service_request_menu_process,
 					"online_service_request_menu_following_viewer", "activate", online_service_request_menu_process,
@@ -804,14 +814,8 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
  .	 * 	This is handled by MainWindow's methods: 'main_window_toggle_visibility' & 'main_window_timeout'.
 	 */
 	const gchar *gconfig_key=g_object_get_data( (GObject *)check_menu_item, "gconfig_key");
-	gboolean default_value=g_str_equal("TRUE", g_object_get_data( (GObject *)check_menu_item, "default_value" ) );
 	gboolean active=gtk_check_menu_item_get_active(check_menu_item);
-	gboolean hide;
-	if(default_value)
-		hide=active;
-	else
-		hide=!active;
-	gconfig_set_bool(gconfig_key, hide);
+	gconfig_set_bool(gconfig_key, active);
 	GtkWidget *widget=NULL;
 	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) ){
 		if(!active)
@@ -824,36 +828,34 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
 	if(check_menu_item==main_window->private->view_menu_rcpt_colums_check_menu_item) return tabs_toggle_rcpt_columns();
 	
 	if(check_menu_item==main_window->private->view_menu_detailed_update_column_check_menu_item)
-		return main_window_view_menu_advanced_menu_toggled(check_menu_item, active);
+		return main_window_compact_timelines_toggled(active);
 	
 	if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu)
-		return main_window_view_menu_advanced_menu_toggled(check_menu_item, active);
+		return main_window_compact_view_toggled(active);
 	
 }/*main_window_view_menu_option_toggled(check_menu_item);*/
 
-static void main_window_view_menu_advanced_menu_toggled(GtkCheckMenuItem *check_menu_item, gboolean checked){
-	if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu){
-		gtk_check_menu_item_set_active(main_window->private->view_toolbar_main_check_menu_item, !checked);
-		gtk_check_menu_item_set_active(main_window->private->view_toolbar_tabs_check_menu_item, !checked);
-		gtk_check_menu_item_set_active(main_window->private->view_best_friends_check_menu_item, !checked);
-		gtk_check_menu_item_set_active(main_window->private->view_menu_detailed_update_column_check_menu_item, checked);
-		if(checked!=gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE))
-			update_viewer_emulate_compact_view_toggle();
-		return;
-	}
-	
+static void main_window_compact_view_toggled(gboolean checked){
+	gtk_check_menu_item_set_active(main_window->private->view_toolbar_main_check_menu_item, !checked);
+	gtk_check_menu_item_set_active(main_window->private->view_toolbar_tabs_check_menu_item, !checked);
+	gtk_check_menu_item_set_active(main_window->private->view_best_friends_check_menu_item, !checked);
+	gtk_check_menu_item_set_active(main_window->private->view_menu_detailed_update_column_check_menu_item, checked);
+	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_compact_view_check_menu_item, checked);
+}/*main_window_view_compact_view_toggled(TRUE|FALSE);*/
+
+static void main_window_compact_timelines_toggled(gboolean checked){
 	gtk_check_menu_item_set_active(main_window->private->view_menu_from_colums_check_menu_item, !checked);
 	gtk_check_menu_item_set_active(main_window->private->view_menu_rcpt_colums_check_menu_item, !checked);
 	
 	tabs_toggle_view();
-}/*main_window_view_menu_advanced_menu_toggled(GtkCheckMenuItem *check_menu_item, TRUE|FALSE);*/
+}/*main_window_compact_timelines_toggled(TRUE|FALSE);*/
 
 void main_window_compact_ui(GtkToggleButton *toggle_button){
-	main_window_view_menu_advanced_menu_toggled(main_window->private->view_menu_uber_compact_view_check_menu, gtk_toggle_button_get_active(toggle_button) );
+	main_window_compact_view_toggled( gtk_toggle_button_get_active(toggle_button) );
 }/*main_window_compact_ui();*/
 
 void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button){
-	main_window_view_menu_advanced_menu_toggled(main_window->private->view_menu_detailed_update_column_check_menu_item, gtk_toggle_button_get_active(toggle_button) );
+	main_window_compact_timelines_toggled( gtk_toggle_button_get_active(toggle_button) );
 }/*main_window_concatenate_timeline_columns();*/
 
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data){

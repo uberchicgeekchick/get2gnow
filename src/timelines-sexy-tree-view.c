@@ -266,7 +266,8 @@ static gboolean timelines_sexy_tree_view_toggle_update_column(TimelinesSexyTreeV
 static gboolean timelines_sexy_tree_view_toggle_created_ago_str_column(TimelinesSexyTreeView *timelines_sexy_tree_view);
 
 static void timelines_sexy_tree_view_check_updates(TimelinesSexyTreeView *timelines_sexy_tree_view);
-static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration);
+static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration, gboolean rerender);
+static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelines_sexy_tree_view, guint row_index, gint created_ago, const gchar *created_how_long_ago, gboolean rerender);
 static void timelines_sexy_tree_view_check_maximum_updates(TimelinesSexyTreeView *timelines_sexy_tree_view);
 static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timelines_sexy_tree_view);
 
@@ -659,7 +660,7 @@ static void timelines_sexy_tree_view_check_maximum_updates(TimelinesSexyTreeView
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0);
+	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0, TRUE);
 }/*timelines_sexy_tree_view_check_maximum_updates(timelines_sexy_tree_view);*/
 
 static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timelines_sexy_tree_view){
@@ -699,10 +700,10 @@ static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timeline
 			return;
 	}
 	
-	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, update_expiration);
+	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, update_expiration, TRUE);
 }/*timelines_sexy_tree_view_check_inbox(timelines_sexy_tree_view);*/
 
-static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration){
+static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration, gboolean rerender){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
 	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
 	
@@ -760,14 +761,9 @@ static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines
 				index_updated=TRUE;
 				this->index+=this->list_store_index;
 			}
-			gtk_list_store_set(
-					this->list_store, iter,
-						STRING_CREATED_AGO, created_how_long_ago, /* (seconds|minutes|hours|day) ago.*/ 
-						GINT_CREATED_AGO, created_ago, /* How old the post is, in seconds, for sorting.*/
-						GINT_LIST_STORE_INDEX, i, /* the row's list store index..*/
-						GINT_SELECTED_INDEX, -1, /* the row's tree_model_sortable index.*/ 
-				-1
-			);
+			
+			timelines_sexy_tree_view_rerender_row(timelines_sexy_tree_view, i, created_ago, created_how_long_ago, rerender);
+			
 		}
 		uber_free(created_how_long_ago);
 		uber_free(created_at_str);
@@ -777,6 +773,59 @@ static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines
 	}
 	if(this->list_store_index>-1) this->list_store_index=-1;
 }/*timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0);*/
+
+static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelines_sexy_tree_view, guint row_index, gint created_ago, const gchar *created_how_long_ago, gboolean rerender){
+	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
+	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
+	
+	if(!(this->total && row_index<this->total)) return;
+	
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(row_index, -1);
+	if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+		debug("Retrieving iter from path to index %d failed.  Unable to update row's created_ago time.", row_index);
+		gtk_tree_path_free(path);
+		uber_free(iter);
+		return;
+	}
+	
+	OnlineService	*service=NULL;
+	gchar *sexy_status_update=NULL;
+	gchar *user_nick_name=NULL;
+	gchar *user_user_name=NULL;
+	gtk_tree_model_get(
+			this->tree_model, iter,
+				STRING_USER, &user_user_name,			/* Useruser_name string.			*/
+				STRING_NICK, &user_nick_name,			/* Author user_name string.			*/
+				ONLINE_SERVICE, &service,			/* OnlineService pointer.			*/
+				STRING_UPDATE, &sexy_status_update,		/* Update's string as markup for display.	*/
+			-1
+	);
+	
+	gchar *sexy_complete=g_strdup_printf("<span weight=\"bold\" underline=\"single\" size=\"small\">From:</span> <span weight=\"bold\" size=\"small\">%s &lt;@%s on %s&gt;</span>\n<span style=\"italic\" underline=\"single\" size=\"x-small\">To:</span> <span style=\"italic\" size=\"x-small\">%s &lt;%s&gt;</span>\n\t%s<span size=\"small\" variant=\"smallcaps\">Status Updated: %s</span>\n",
+					user_nick_name, user_user_name, service->uri,
+					service->nick_name, service->key,
+					sexy_status_update,
+					created_how_long_ago
+	);
+	
+	gtk_list_store_set(
+			this->list_store, iter,
+				STRING_DETAILED_UPDATE, sexy_complete,		/* Upate's string as markup w/full details.		*/
+				STRING_CREATED_AGO, created_how_long_ago,	/* (seconds|minutes|hours|day) ago.			*/
+				GINT_CREATED_AGO, created_ago,			/* How old the post is, in seconds, for sorting.	*/
+				GINT_LIST_STORE_INDEX, row_index,		/* the row's list store index.				*/
+				GINT_SELECTED_INDEX, -1,			/* the row's tree_model_sortable index.			*/
+			-1
+	);
+	
+	service=NULL;
+	uber_free(user_nick_name);
+	uber_free(user_user_name);
+	uber_free(sexy_status_update);
+	uber_free(sexy_complete);
+	uber_free(iter);
+}/*timelines_sexy_tree_view_rerender_row(timelines_sexy_tree_view, row_index);*/
 
 const gchar *timelines_sexy_tree_view_list_store_column_to_string(TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column){
 	switch(timelines_sexy_tree_view_list_store_column){
@@ -935,7 +984,7 @@ void timelines_sexy_tree_view_complete(TimelinesSexyTreeView *timelines_sexy_tre
 	
 	debug("TimelinesSexyTreeView for %s, timeline: %s, completed processing new %d new updates out of %d total updates.", this->monitoring_string, this->timeline, this->unread_updates, this->total);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
-	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0);
+	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0, FALSE);
 	if(this->unread && this->unread_updates)
 		timelines_sexy_tree_view_mark_as_unread(timelines_sexy_tree_view);	
 }/*timelines_sexy_tree_view_complete(timelines_sexy_tree_view);*/
@@ -1345,23 +1394,23 @@ void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_
 	gtk_list_store_set(
 			this->list_store, iter,
 				GUINT_TIMELINES_SEXY_TREE_VIEW_INDEX, this->total,
-				GDOUBLE_UPDATE_ID, status->id,				/*Tweet's ID.*/
-				GDOUBLE_USER_ID, status->user->id,			/*User's ID.*/
-				STRING_USER, status->user->user_name,			/*Useruser_name string.*/
-				STRING_NICK, status->user->nick_name,			/*Author user_name string.*/
-				STRING_TEXT, status->text,				/*Update's string as plain text.*/
-				STRING_UPDATE, status->update,				/*Update's string as markup for display..*/
-				STRING_SEXY_UPDATE, status->sexy_update,		/*SexyTreeView's tooltip.*/
-				STRING_DETAILED_UPDATE, status->sexy_complete,		/*Upate's string as markup w/full details.*/
-				STRING_CREATED_AGO, status->created_how_long_ago,	/*(seconds|minutes|hours|day) ago.*/
-				STRING_CREATED_AT, status->created_at_str,		/*Date string.*/
-				GINT_CREATED_AGO, status->created_seconds_ago,		/*How old the post is, in seconds, for sorting.*/
-				ULONG_CREATED_AT, status->created_at,			/*Seconds since the post was posted.*/
-				ONLINE_SERVICE, status->service,			/*OnlineService pointer.*/
-				STRING_FROM, status->from,				/*Who the update/update is from.*/
-				STRING_RCPT, status->rcpt,				/*The OnlineService's key this update's from.*/
-				GINT_SELECTED_INDEX, -1,				/*The row's 'selected index'.*/
-				GINT_LIST_STORE_INDEX, this->list_store_index,		/*The row's unsorted index.*/
+				GDOUBLE_UPDATE_ID, status->id,				/* Tweet's ID.					*/
+				GDOUBLE_USER_ID, status->user->id,			/* User's ID.					*/
+				STRING_USER, status->user->user_name,			/* Useruser_name string.			*/
+				STRING_NICK, status->user->nick_name,			/* Author user_name string.			*/
+				STRING_TEXT, status->text,				/* Update's string as plain text.		*/
+				STRING_UPDATE, status->update,				/* Update's string as markup for display.	*/
+				STRING_SEXY_UPDATE, status->sexy_update,		/* SexyTreeView's tooltip.			*/
+				STRING_DETAILED_UPDATE, status->sexy_complete,		/* Upate's string as markup w/full details.	*/
+				STRING_CREATED_AGO, status->created_how_long_ago,	/* (seconds|minutes|hours|day) ago.		*/
+				STRING_CREATED_AT, status->created_at_str,		/* Date string.					*/
+				GINT_CREATED_AGO, status->created_seconds_ago,		/* How old the post is, in seconds, for sorting.*/
+				ULONG_CREATED_AT, status->created_at,			/* Seconds since the post was posted.		*/
+				ONLINE_SERVICE, status->service,			/* OnlineService pointer.			*/
+				STRING_FROM, status->from,				/* Who the update/update is from.		*/
+				STRING_RCPT, status->rcpt,				/* The OnlineService's key this update's from.	*/
+				GINT_SELECTED_INDEX, -1,				/* The row's 'selected index'.			*/
+				GINT_LIST_STORE_INDEX, this->list_store_index,		/* The row's unsorted index.			*/
 				GBOOLEAN_UNREAD, unread,
 			-1
 	);
