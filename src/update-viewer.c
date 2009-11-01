@@ -567,7 +567,7 @@ static void update_viewer_bind_hotkeys(GtkBuilder *ui){
 
 void update_viewer_compact_view_toggled(GtkToggleButton *compact_view_toggle_button){
 	gboolean compact;
-	if((compact=gtk_toggle_button_get_active(compact_view_toggle_button)) != gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE) )
+	if((compact=gtk_toggle_button_get_active(compact_view_toggle_button))!=gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE) )
 		gconfig_set_bool(PREFS_UPDATE_VIEWER_COMPACT, compact);
 	
 	update_viewer_compact_view_display(compact);

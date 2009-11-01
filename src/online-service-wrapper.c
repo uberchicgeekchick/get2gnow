@@ -394,7 +394,6 @@ void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper, g
 	online_service_wrapper->callback=NULL;
 	if(free_queue)
 		service->processing_queue=g_list_remove(service->processing_queue, online_service_wrapper);
-	//online_service_wrapper->service->session=NULL;
 	online_service_wrapper->service=NULL;
 	
 	uber_object_free(&online_service_wrapper->requested_uri, &online_service_wrapper, NULL);
