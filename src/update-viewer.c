@@ -736,6 +736,7 @@ static void update_viewer_reorder(void){
 
 
 void update_viewer_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf){
+	if(!(service && service->session && online_service_validate_session(service, user_name) )) return;
 	if(!id)
 		online_service_request_unset_selected_update();
 	else{

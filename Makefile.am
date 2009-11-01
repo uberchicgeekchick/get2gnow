@@ -36,18 +36,15 @@ DISTCHECK_CONFIGURE_FLAGS =	\
 # uninstall.
 distuninstallcheck_listfiles = find . -type f -print | grep -v '^\./var/scrollkeeper'
 
-clean-debug:
-	-gconftool-2 --recursive-unset /schemas/get2gnow/debug
-	-gconftool-2 --recursive-unset /apps/get2gnow/debug
-	-test -d "~/.gnome2/get2gnow/debug" || rm -rf ~/.gnome2/get2gnow/debug ;
-clean: clean-recursive clean-debug
-
-
+uninstall-debug:
+	-gconftool-2 --recursive-unset /schemas/get2gnow-debug
+	-gconftool-2 --recursive-unset /apps/get2gnow-debug
+	-test -d "~/.gnome2/get2gnow-debug" || rm -rf ~/.gnome2/get2gnow-debug ;
 uninstall-gconf:
 	-gconftool-2 --recursive-unset /schemas/get2gnow
 	-gconftool-2 --recursive-unset /apps/get2gnow
 uninstall-cache-dir:
-	if test -d "~/.gnome2/get2gnow"; then rm -rf ~/.gnome2/get2gnow; fi
-uninstall: uninstall-gconf uninstall-cache-dir uninstall-recursive
-distclean: clean-debug distclean-recursive
+	-test -d "~/.gnome2/get2gnow" || rm -rf ~/.gnome2/get2gnow ;
+uninstall: uninstall-debug uninstall-gconf uninstall-cache-dir uninstall-recursive uninstall-am
+distclean: distclean-recursive distclean-am
 

@@ -266,6 +266,10 @@ void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich u
 static OnlineService *online_service_constructor(const gchar *uri, const gchar *user_name){
 	OnlineService *service=g_new0(OnlineService, 1);
 	
+	service->processing_queue=NULL;
+	service->processing=FALSE;
+	service->processing_timer=0;
+	
 	service->uri=g_strdup(uri);
 	
 	service->user_name=g_strdup(user_name);
@@ -279,9 +283,6 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	service->logins=0;
 	
 	service->password=NULL;
-	
-	service->processing=FALSE;
-	service->processing_timer=0;
 	
 	service->best_friends=NULL;
 	service->best_friends_total=0;
@@ -977,15 +978,8 @@ gboolean online_service_refresh(OnlineService *service){
 }/*online_service_refresh(service);*/
 
 gboolean online_service_validate_session(OnlineService *service, const gchar *requested_uri){
-	if(!service) return FALSE;
-	if(service && service->session && SOUP_IS_SESSION(service->session) ) return TRUE;
-	online_service_reconnect(service);
-	if(service && service->session && SOUP_IS_SESSION(service->session) ) return TRUE;
-	if(service && service->session)
-		online_service_disconnect(service, TRUE);
-	debug("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"Unknown account"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
-	statusbar_printf("OnlineService <%s> cannot process: [%s].  Your libsoup session has been terminated.", (service && G_STR_N_EMPTY(service->key) ?service->key :"Unknown account"), (G_STR_N_EMPTY(requested_uri) ?requested_uri :"Unknown requested URI") );
-	return FALSE;
+	if(!( (service && service->session) && SOUP_IS_SESSION(service->session) )) return FALSE;
+	else return TRUE;
 }/*online_service_validate_session(service, requested_uri);*/
 
 void online_service_disconnect(OnlineService *service, gboolean no_state_change){
@@ -1285,7 +1279,9 @@ void online_service_free(OnlineService *service, gboolean no_state_change){
 	if(!service) return;
 	
 	debug("Unloading instance of: %s service", service->guid);
+	debug("Cancelling any queued requests using <%s>'s connection.", service->key);
 	online_service_disconnect(service, no_state_change);
+	g_list_foreach(service->processing_queue, (GFunc)online_service_wrapper_free, GUINT_TO_POINTER(FALSE));
 	
 	debug("Shutting down network rate-limit timer for OnlineService\t[%s].", service->guid );
 	timer_free(service->timer);

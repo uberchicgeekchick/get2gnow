@@ -93,6 +93,8 @@ guint8 online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wra
 guint8 online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper);
 guint8 online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper);
 
+void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper, gboolean free_queue);
+
 
 G_END_DECLS
 #endif /* __ONLINE_SERVICE_WRAPPER_H__ */

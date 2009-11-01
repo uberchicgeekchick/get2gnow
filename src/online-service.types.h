@@ -87,6 +87,10 @@ enum _MicroBloggingService{
 };
 
 struct _OnlineService{
+	gboolean			processing;
+	guint				processing_timer;
+	GList				*processing_queue;
+	
 	SoupSession			*session;
 	RateLimitTimer			*timer;
 	
@@ -94,9 +98,6 @@ struct _OnlineService{
 	gboolean			connected;
 	gboolean			has_loaded;
 	guint				logins;
-	
-	gboolean			processing;
-	guint				processing_timer;
 	
 	MicroBloggingService		micro_blogging_service;
 	gchar				*micro_blogging_client;

@@ -289,7 +289,7 @@
                 <property name="xscale">0</property>
                 <child>
                   <object class="GtkCheckButton" id="autoconnect_checkbutton">
-                    <property name="label" translatable="yes">Automatically _log-in.</property>
+                    <property name="label" translatable="yes">A_utomatically log-in.</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>

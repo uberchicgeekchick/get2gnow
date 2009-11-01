@@ -811,7 +811,7 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
 		hide=active;
 	else
 		hide=!active;
-	gconfig_set_bool(gconfig_key, active);
+	gconfig_set_bool(gconfig_key, hide);
 	GtkWidget *widget=NULL;
 	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) ){
 		if(!active)
