@@ -85,8 +85,8 @@ G_BEGIN_DECLS
 #define PREFS_UPDATE_VIEWER_DIALOG			GCONF_PATH "/ui/update_viewer/use_dialog"
 #define PREFS_UPDATE_VIEWER_COMPACT			GCONF_PATH "/ui/update_viewer/compact_view"
 
-#define COMPACT_VIEW					GCONF_PATH "/ui/hide/combined"
-#define CONCATENATED_UPDATES				GCONF_PATH "/ui/hide/detailed_updates"
+#define COMPACT_VIEW					GCONF_PATH "/ui/view/compact"
+#define CONCATENATED_UPDATES				GCONF_PATH "/ui/view/detailed_updates"
 #define SCROLL_TO_TOP_WITH_NEW_UPDATES			GCONF_PATH "/ui/timelines_sexy_tree_view/scroll_to_top_with_new_updates"
 #define SELECT_UPDATE_BY_DEFAULT			GCONF_PATH "/ui/timelines_sexy_tree_view/select_update_by_default"
 
