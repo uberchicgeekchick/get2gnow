@@ -281,6 +281,7 @@ static void update_viewer_destroy_cb(GtkWidget *window, UpdateViewer *update_vie
 	
 	if(update_viewer->viewing_user) uber_free(update_viewer->viewing_user);
 	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);
+	if(update_viewer->viewing_update_id) update_viewer->viewing_update_id=0.0;
 	
 	gtk_widget_destroy(GTK_WIDGET(update_viewer->update_viewer) );
 	uber_free(update_viewer);
@@ -760,7 +761,11 @@ void update_viewer_view_selected_update(OnlineService *service, const gdouble id
 	if(update_viewer->viewing_user) uber_free(update_viewer->viewing_user);
 	update_viewer->viewing_user=g_strdup((G_STR_EMPTY(user_name) ?"" :user_name ) );
 	
-	if(!id) main_window_set_statusbar_msg(NULL);
+	if(id) update_viewer->viewing_update_id=id;
+	else{
+		main_window_set_statusbar_msg(NULL);
+		update_viewer->viewing_update_id=0.0;
+	}
 	
 	gchar *sexy_text=NULL;
 	if(!id)
@@ -1047,40 +1052,43 @@ void update_viewer_sexy_send_dm(void){
 static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
 	if(in_reply_to_service) in_reply_to_service=NULL;
 	if(in_reply_to_status_id) in_reply_to_status_id=0.0;
-	update_viewer_previous_updates_append(_("[new update]"), update_viewer);
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
-	update_viewer->max_updates=update_viewer->total_updates=50;
-	while( !gconfig_get_string( previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, update_viewer->total_updates), &previous_update) ){
-		if(update_viewer->total_updates > -1) update_viewer->total_updates--;
-		uber_free(previous_update_gconf_path);
-		if(previous_update) uber_free(previous_update);
-	}
-	while( ((update_viewer->total_updates > -1)) && (gconfig_get_string( previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, update_viewer->total_updates), &previous_update )) && G_STR_N_EMPTY(previous_update) ){
+	update_viewer->max_updates=50;
+	update_viewer->total_updates=51;
+	do{
+		if(update_viewer->total_updates>0) update_viewer->total_updates--;
+		if(!( (((update_viewer->total_updates>=0))) && (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, update_viewer->total_updates)), &previous_update )) && G_STR_N_EMPTY(previous_update) )) continue;
+		
 		gchar **previous_update_details=g_strsplit(previous_update, "->", 3);
-		if(G_STR_N_EMPTY(previous_update_details[2])){
-			OnlineService *service=NULL;
-			if(G_STR_N_EMPTY(previous_update_details[0]))
-				online_services_get_service_by_key(previous_update_details[0]);
-			gdouble update_id=0.0;
-			if(G_STR_N_EMPTY(previous_update_details[1]))
-				update_id=strtod(previous_update_details[1], NULL);
-			
-			GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
-			gtk_list_store_prepend(update_viewer->previous_updates_list_store, iter);
-			gtk_list_store_set(
-					update_viewer->previous_updates_list_store, iter,
-						GSTRING_UPDATE, g_strdup(previous_update_details[1]),
-						IN_REPLY_TO_SERVICE,(service?service:NULL),
-						IN_REPLY_TO_STATUS_ID, (update_id ?update_id :0.0),
-					-1
-			);
-			uber_free(iter);
+		if(G_STR_EMPTY(previous_update_details[2])){
+			uber_free(previous_update);
+			uber_free(previous_update_gconf_path);
+			g_strfreev(previous_update_details);
+			continue;
 		}
+		
+		OnlineService *service=NULL;
+		if(G_STR_N_EMPTY(previous_update_details[0])) service=online_services_get_service_by_key(previous_update_details[0]);
+		
+		gdouble update_id=0.0;
+		if(G_STR_N_EMPTY(previous_update_details[1])) update_id=strtod(previous_update_details[1], NULL);
+		
+		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
+		gtk_list_store_prepend(update_viewer->previous_updates_list_store, iter);
+		gtk_list_store_set(
+				update_viewer->previous_updates_list_store, iter,
+					GSTRING_UPDATE, g_strdup(previous_update_details[2]),
+					IN_REPLY_TO_SERVICE,(service?service:NULL),
+					IN_REPLY_TO_STATUS_ID, (update_id ?update_id :0.0),
+				-1
+		);
+		uber_free(iter);
 		uber_free(previous_update);
 		uber_free(previous_update_gconf_path);
 		g_strfreev(previous_update_details);
-		update_viewer->total_updates--;
-	}
+	}while( update_viewer->total_updates>0 );
+
+	update_viewer_previous_updates_append(_("[new update]"), update_viewer);
 	if(previous_update) uber_free(previous_update);
 	if(previous_update_gconf_path) uber_free(previous_update_gconf_path);
 	if(update_viewer->total_updates > -1) update_viewer->total_updates=-1;
@@ -1094,8 +1102,8 @@ static void update_viewer_previous_updates_append(const gchar *update, UpdateVie
 	gtk_list_store_set(
 				update_viewer->previous_updates_list_store, iter,
 					GSTRING_UPDATE, g_strdup(update),
-					IN_REPLY_TO_SERVICE,(in_reply_to_service?in_reply_to_service:NULL),
-					IN_REPLY_TO_STATUS_ID,(in_reply_to_status_id?in_reply_to_status_id:0.0),
+					IN_REPLY_TO_SERVICE, (update_viewer->viewing_service?update_viewer->viewing_service:NULL),
+					IN_REPLY_TO_STATUS_ID, (update_viewer->viewing_update_id?update_viewer->viewing_update_id:0.0),
 				-1
 	);
 	uber_free(iter);
@@ -1140,7 +1148,7 @@ static void update_viewer_previous_updates_remove(gint list_store_index, UpdateV
 
 static void update_viewer_previous_updates_rotate(UpdateViewer *update_viewer){
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
-	for(gint i=update_viewer->max_updates; i<0; i--){
+	for(gint i=update_viewer->max_updates; i>=0; i--){
 		if( (gconfig_get_string( previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, i-1), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
 			uber_free(previous_update_gconf_path);
 			previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, i);
