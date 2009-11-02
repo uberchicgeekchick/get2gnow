@@ -55,12 +55,18 @@
 #include "config.h"
 #include "program.h"
 
+#include "gtkbuilder.h"
+
 #define	DEBUG_DOMAINS	"Debug:UI:GtkBuilder:GtkBuildable:Setup:gtkbuilder.c"
 #include "debug.h"
-#include "gtkbuilder.h"
+
+
 
 static gchar *gtkbuilder_get_path( const gchar *filename );
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename);
+
+
+
 
 static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	gchar *gtkbuilder_ui_file=NULL, *gtkbuilder_ui_filename=NULL;
@@ -155,28 +161,25 @@ GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widge
 	return ( ui ? ui : NULL );
 }
 
-void gtkbuilder_connect(GtkBuilder *ui, gpointer user_data, gchar *first_widget, ...){
-	GObject     *instance;
-	gpointer    *callback;
-	const gchar *signal;
-	const gchar *name;
-	va_list      args;
-
-	va_start (args, first_widget);
+void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer user_data, gchar *first_widget,...){
+	va_list args;
+	va_start(args, first_widget);
 	
-	for (name = first_widget; name; name = va_arg (args, char *)) {
-		signal = va_arg (args, void *);
-		callback = va_arg (args, void *);
-
-		instance=gtk_builder_get_object(ui, name);
-		if(!instance) {
-			g_warning ("Missing widget '%s'", name);
+	for(const gchar *name=first_widget; name; name=va_arg (args, gchar *)) {
+		GObject *instance=NULL;
+		const gchar *signal=va_arg(args, gchar *);
+		GCallback callback=va_arg(args, GCallback);
+		
+		if(!( instance=gtk_builder_get_object(ui, name) )){
+			debug("**ERROR:** Missing widget '%s'", name);
 			continue;
 		}
-
-		g_signal_connect(instance, signal, G_CALLBACK(callback), user_data);
+		
+		if(!connect_after)
+			g_signal_connect(instance, signal, (GCallback)callback, user_data);
+		else
+			g_signal_connect_after(instance, signal, (GCallback)callback, user_data);
 	}
-
 	va_end(args);
-}
+}/*gtkbuilder_signals_connect((TRUE: use g_signal_connect; FALSE uses g_signal_connec_after), ui, user_data, "widget_name", va_args );*/
 

@@ -95,15 +95,15 @@
 #define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Updates:hotkeys.c"
 #include "debug.h"
 
-static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
+static void hotkey_process(GtkWidget *widget, GdkEventKey *event);
 
 
-void hotkey_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
-	hotkey_process(widget, event, user_date);
+void hotkey_pressed(GtkWidget *widget, GdkEventKey *event){
+	hotkey_process(widget, event);
 	update_viewer_sexy_select();
-}/*void hotkey(widget, event, user_date){*/
+}/*hotkey(widget, event);*/
 
-static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_date){
+static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 	if(event->keyval==GDK_Escape){
 		update_viewer_hide_previous_updates();
 		return;
@@ -260,7 +260,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event, gpointer user_
 			break;
 	}
 	timelines_sexy_tree_view_key_pressed(tabs_get_current(), event);
-}/*hotkey_process(widget, event, user_date);*/
+}/*hotkey_process(widget, event);*/
 
 /********************************************************
  *                       eof                            *

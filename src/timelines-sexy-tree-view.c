@@ -1401,7 +1401,7 @@ void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_
 				STRING_TEXT, status->text,				/* Update's string as plain text.		*/
 				STRING_UPDATE, status->update,				/* Update's string as markup for display.	*/
 				STRING_SEXY_UPDATE, status->sexy_update,		/* SexyTreeView's tooltip.			*/
-				STRING_DETAILED_UPDATE, status->sexy_complete,		/* Upate's string as markup w/full details.	*/
+				STRING_DETAILED_UPDATE, NULL,				/* Upate's string as markup w/full details.	*/
 				STRING_CREATED_AGO, status->created_how_long_ago,	/* (seconds|minutes|hours|day) ago.		*/
 				STRING_CREATED_AT, status->created_at_str,		/* Date string.					*/
 				GINT_CREATED_AGO, status->created_seconds_ago,		/* How old the post is, in seconds, for sorting.*/

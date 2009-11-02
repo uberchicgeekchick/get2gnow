@@ -512,9 +512,9 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="online_service_request_menu_friends_manager">
-                        <property name="label" translatable="yes">Friends _Manager</property>
+                        <property name="label" translatable="yes">_Manager Friends &amp; Followers</property>
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">See who's following you, who you're following, &amp; if you're both following each othe.</property>
+                        <property name="tooltip_text" translatable="yes">Manage your your friends and followers.  And view their updates and/or profile.</property>
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_friends_manager_image</property>
                         <property name="use_stock">False</property>
@@ -523,9 +523,9 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="online_service_request_menu_following_viewer">
-                        <property name="label" translatable="yes">Update _Viewer</property>
+                        <property name="label" translatable="yes">Manage _Followers</property>
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Select someone you follow &amp; view their updates.</property>
+                        <property name="tooltip_text" translatable="yes">Manage your your followers and view their updates and/or profile.</property>
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_update_viewer_image</property>
                         <property name="use_stock">False</property>
@@ -573,8 +573,18 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_menu_unread_updates">
+                        <property name="label" translatable="yes">_Read someone's unread Updates</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View all updates you haven't read from another user.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image11</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="online_service_request_menu_updates">
-                        <property name="label" translatable="yes">View someone's _Tweets</property>
+                        <property name="label" translatable="yes">_View someone's Updates</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">View someone's recent Updates.</property>
                         <property name="use_underline">True</property>
@@ -1323,5 +1333,9 @@
   <object class="GtkImage" id="help_menu_about_image">
     <property name="visible">True</property>
     <property name="stock">gtk-about</property>
+  </object>
+  <object class="GtkImage" id="image11">
+    <property name="visible">True</property>
+    <property name="stock">gtk-indent</property>
   </object>
 </interface>

@@ -37,7 +37,7 @@
 
 G_BEGIN_DECLS
 
-void hotkey_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_date);
+void hotkey_pressed(GtkWidget *widget, GdkEventKey *event);
 
 G_END_DECLS
 

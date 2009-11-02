@@ -144,6 +144,7 @@ struct _MainWindowPrivate {
 	GtkImageMenuItem	*online_service_request_menu_follow;
 	GtkImageMenuItem	*online_service_request_menu_unfollow;
 	GtkImageMenuItem	*online_service_request_menu_block;
+	GtkImageMenuItem	*online_service_request_menu_unread_updates;
 	GtkImageMenuItem	*online_service_request_menu_updates;
 	GtkImageMenuItem	*online_service_request_menu_profile;
 	GtkImageMenuItem	*online_service_request_menu_best_friend;
@@ -382,6 +383,7 @@ static void main_window_setup(void){
 					"online_service_request_menu_follow", &main_window->private->online_service_request_menu_follow,
 					"online_service_request_menu_unfollow", &main_window->private->online_service_request_menu_unfollow,
 					"online_service_request_menu_block", &main_window->private->online_service_request_menu_block,
+					"online_service_request_menu_unread_updates", &main_window->private->online_service_request_menu_unread_updates,
 					"online_service_request_menu_updates", &main_window->private->online_service_request_menu_updates,
 					"online_service_request_menu_profile", &main_window->private->online_service_request_menu_profile,
 					
@@ -480,6 +482,7 @@ static void main_window_setup(void){
 					"online_service_request_menu_follow", "activate", online_service_request_menu_process,
 					"online_service_request_menu_unfollow", "activate", online_service_request_menu_process,
 					"online_service_request_menu_block", "activate", online_service_request_menu_process,
+					"online_service_request_menu_unread_updates", "activate", online_service_request_menu_process,
 					"online_service_request_menu_updates", "activate", online_service_request_menu_process,
 					"online_service_request_menu_profile", "activate", online_service_request_menu_process,
 					
@@ -1115,6 +1118,9 @@ static void online_service_request_menu_process(GtkImageMenuItem *item, MainWind
 	
 	if(item == main_window->private->online_service_request_menu_profile)
 		return online_service_request_popup_friend_profile();
+	
+	if(item == main_window->private->online_service_request_menu_unread_updates)
+		return online_service_request_popup_friend_updates_new();
 	
 	if(item == main_window->private->online_service_request_menu_updates)
 		return online_service_request_popup_friend_updates();

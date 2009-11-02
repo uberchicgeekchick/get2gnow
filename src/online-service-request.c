@@ -196,14 +196,15 @@ static gboolean online_service_request_selected_update_include_and_begin_to_send
 static gchar *online_service_request_action_to_title(RequestAction action);
 static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup);
 static void online_service_request_popup_dialog_show(RequestAction action);
-static void online_service_request_popup_response_cb(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
-static void online_service_request_popup_dialog_process_confirmation(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
-static void online_service_request_popup_set_selected_service(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
-static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup);
-static void online_service_request_popup_destroy_cb(GtkWidget *widget, OnlineServiceRequestPopup *online_service_request_popup);
+static void online_service_request_popup_dialog_process_confirmation(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup);
+static void online_service_request_popup_set_selected_service(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup);
+static gboolean online_service_request_popup_dialog_process_requests(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup);
+static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup);
+static void online_service_request_popup_destroy_cb(GtkMessageDialog *dialog, OnlineServiceRequestPopup *online_service_request_popup);
 static void online_service_request_popup_confirmation_dialog_add_gconfig_key( const gchar *gconfig_key, GFunc func, gpointer user_data );
 static gboolean online_service_request_popup_validate_usage(RequestAction action);
 static void online_service_request_popup_destroy_and_free(void);
+static void online_service_request_user_name_active_cb(GtkEntry *user_name_entry, OnlineServiceRequestPopup *online_service_request_popup);
 
 
 
@@ -380,7 +381,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 			}else{
 				debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", user_name, service->guid, newest_update_id );
 				uber_free( user_timeline );
-				timeline=g_strdup_printf( API_TIMELINE_BEST_FRIEND, user_name, unread_update_id );
+				timeline=g_strdup_printf( API_TIMELINE_USER_UNREAD, user_name, unread_update_id );
 			}
 		}else{
 			debug( "Loading %s's updates, on <%s>.  Displaying all updates.", user_name, service->guid );
@@ -720,7 +721,7 @@ static void online_service_request_popup_set_title_and_label(RequestAction actio
 }/*online_service_request_popup_set_title*/
 
 
-static void online_service_request_popup_response_cb(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup){
+static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	online_service_request_popup_dialog_response=response;
 	debug("Request-Popup-Dialog for %s recieved response: %s(=%i)", online_service_request_action_to_string( online_service_request_popup->action), program_gtk_response_to_string(response), response);
 	switch(response){
@@ -735,19 +736,19 @@ static void online_service_request_popup_response_cb(GtkWidget *widget, gint res
 		case GTK_RESPONSE_CLOSE:
 		case GTK_RESPONSE_NO:
 		default:
-			gtk_widget_destroy(widget);
+			gtk_widget_destroy(GTK_WIDGET(dialog));
 			return;
 	}
 	
 	if( online_service_request_popup->action==SelectService){
-		online_service_request_popup_set_selected_service(widget, response, online_service_request_popup);
-		gtk_widget_destroy(widget);
+		online_service_request_popup_set_selected_service(dialog, response, online_service_request_popup);
+		gtk_widget_destroy(GTK_WIDGET(dialog));
 		return;
 	}
 	
 	if( online_service_request_popup->action==Confirmation){
-		online_service_request_popup_dialog_process_confirmation(widget, response, online_service_request_popup);
-		gtk_widget_destroy(widget);
+		online_service_request_popup_dialog_process_confirmation(dialog, response, online_service_request_popup);
+		gtk_widget_destroy(GTK_WIDGET(dialog));
 		return;
 	}
 	
@@ -761,8 +762,8 @@ static void online_service_request_popup_response_cb(GtkWidget *widget, gint res
 		case ViewUpdatesNew:
 		case BestFriendAdd:
 		case BestFriendDrop:
-			if(online_service_request_popup_dialog_process_requests(widget, response, online_service_request_popup))
-				gtk_widget_destroy(widget);
+			if(online_service_request_popup_dialog_process_requests(dialog, response, online_service_request_popup))
+				gtk_widget_destroy(GTK_WIDGET(dialog));
 			break;
 		case SelectService:
 		case Fave:
@@ -770,12 +771,12 @@ static void online_service_request_popup_response_cb(GtkWidget *widget, gint res
 		case Confirmation:
 		default:
 			/*All to make gcc nice & happy.*/
-			gtk_widget_destroy(widget);
+			gtk_widget_destroy(GTK_WIDGET(dialog));
 			break;
 	}//switch
-}/*online_service_request_popup_response_cb*/
+}/*online_service_request_popup_response_cb(online_service_request_popup->dialog, GTK_RESPONSE_OK|GTK_RESPONSE_CANCEL, online_service_request_popup);*/
 
-static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup){
+static gboolean online_service_request_popup_dialog_process_requests(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	OnlineService		*service=NULL;
 	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
@@ -800,10 +801,10 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkWidget *
 	return TRUE;
 }/*online_service_request_popup_dialog_process_requests(widget, response, popup);*/
 
-static void online_service_request_popup_dialog_process_confirmation(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup){
-	GFunc        func=g_object_get_data(G_OBJECT(widget), "func");
-	gpointer     user_data=g_object_get_data(G_OBJECT(widget), "user_data");
-	const gchar *gconfig_key=g_object_get_data(G_OBJECT(widget), "gconfig_key");
+static void online_service_request_popup_dialog_process_confirmation(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
+	GFunc        func=g_object_get_data(G_OBJECT(dialog), "func");
+	gpointer     user_data=g_object_get_data(G_OBJECT(dialog), "user_data");
+	const gchar *gconfig_key=g_object_get_data(G_OBJECT(dialog), "gconfig_key");
 	
 	gconfig_set_bool(gconfig_key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button)));
 	
@@ -812,7 +813,7 @@ static void online_service_request_popup_dialog_process_confirmation(GtkWidget *
 }/*online_service_request_popup_dialog_process_confirmation(widget, response, popup);*/
 
 
-static void online_service_request_popup_set_selected_service(GtkWidget *widget, gint response, OnlineServiceRequestPopup *online_service_request_popup){
+static void online_service_request_popup_set_selected_service(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	
 	if(gtk_combo_box_get_active_iter( online_service_request_popup->online_services_combo_box, iter)){
@@ -825,7 +826,7 @@ static void online_service_request_popup_set_selected_service(GtkWidget *widget,
 	uber_free(iter);
 }/*online_service_request_popup_set_selected_service*/
 
-static void online_service_request_popup_destroy_cb(GtkWidget *widget, OnlineServiceRequestPopup *online_service_request_popup){
+static void online_service_request_popup_destroy_cb(GtkMessageDialog *dialog, OnlineServiceRequestPopup *online_service_request_popup){
 	online_service_request_popup_destroy_and_free();
 }/*online_service_request_popup_destroy_cb*/
 
@@ -992,8 +993,14 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	);
 	
 	online_service_request_popup->online_service_model=gtk_combo_box_get_model(GTK_COMBO_BOX( online_service_request_popup->online_services_combo_box));
-	
+
 	/* Connect the signals */
+	gtkbuilder_connect_after(
+			ui, online_service_request_popup,
+				"user_name_entry", "activate", online_service_request_user_name_active_cb,
+			NULL
+	);
+	
 	gtkbuilder_connect(
 			ui, online_service_request_popup,
 				"entry_popup", "destroy", online_service_request_popup_destroy_cb,
@@ -1021,6 +1028,10 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	gtk_widget_show_all(GTK_WIDGET( online_service_request_popup->dialog));
 	gtk_window_present(GTK_WINDOW( online_service_request_popup->dialog));
 }/*online_service_request_popup_dialog_show*/
+
+static void online_service_request_user_name_active_cb(GtkEntry *user_name_entry, OnlineServiceRequestPopup *online_service_request_popup){
+	online_service_request_popup_response_cb(online_service_request_popup->dialog, GTK_RESPONSE_OK, online_service_request_popup);
+}/**/
 
 
 /********************************************************************************

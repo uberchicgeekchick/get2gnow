@@ -47,10 +47,6 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
-
 #ifndef __GTKBUILDER_H__
 #define __GTKBUILDER_H__
 
@@ -59,16 +55,33 @@
 
 #include <gtk/gtk.h>
 
+
+#ifndef gtkbuilder_connect
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define gtkbuilder_connect(ui, user_data, first_widget, ...)	gtkbuilder_signals_connect(FALSE, ui, user_data, first_widget, __VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define gtkbuilder_connect(ui, user_data, first_widget, fmt...)	gtkbuilder_signals_connect(FALSE, ui, user_data, first_widget, fmt)
+#	else
+#		define gtkbuilder_connect(ui, user_data, first_widget, x)	gtkbuilder_signals_connect(FALSE, ui, user_data, first_widget, x)
+#	endif
+#endif
+
+
+#ifndef gtkbuilder_connect_after
+#	if defined(G_HAVE_ISO_VARARGS)
+#		define gtkbuilder_connect_after(ui, user_data, first_widget, ...)	gtkbuilder_signals_connect(TRUE, ui, user_data, first_widget, __VA_ARGS__)
+#	elif defined(G_HAVE_GNUC_VARARGS)
+#		define gtkbuilder_connect_after(ui, user_data, first_widget, fmt...)	gtkbuilder_signals_connect(TRUE, ui, user_data, first_widget, fmt)
+#	else
+#		define gtkbuilder_connect_after(ui, user_data, first_widget, x)		gtkbuilder_signals_connect(TRUE, ui, user_data, first_widget, x)
+#	endif
+#endif
+
 G_BEGIN_DECLS
 
-GtkBuilder *gtkbuilder_get_file (const gchar *filename,
-                                 const gchar *first_widget,
-                                 ...);
+GtkBuilder *gtkbuilder_get_file(const gchar *filename, const gchar *first_widget, ...);
 
-void        gtkbuilder_connect  (GtkBuilder  *gui,
-                                 gpointer     user_data,
-                                 gchar       *first_widget,
-                                 ...);
+void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer user_data, gchar *first_widget,...);
 
 G_END_DECLS
 #endif /*  __GTKBUILDER_H__ */

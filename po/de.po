@@ -1,0 +1,329 @@
+# English translation of PACKAGE.
+# Copyright (C) 2007 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# mrigns <julian@saraceni.de>, 2007.
+# , fuzzy
+# mrigns <julian@saraceni.de>, 2007.
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-08-13 09:03-0300\n"
+"PO-Revision-Date: 2007-08-14 15:15+0200\n"
+"Last-Translator: Julian Saraceni <julian@saraceni.de>\n"
+"Language-Team: German <gnome-de@gnome.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: ../src/callbacks.c:199
+msgid "Ok, logged out."
+msgstr "OK, ausgeloggt."
+
+#: ../src/callbacks.c:232
+msgid "Ok, new home timeline saved."
+msgstr "OK, neue persönliche Zeitachse gespeichert."
+
+#: ../src/callbacks.c:603
+msgid "Compressing URL..."
+msgstr "Komprimiere URL..."
+
+#: ../src/callbacks.c:644 ../src/gui.c:301
+msgid "What are you doing?"
+msgstr "Was tust du gerade?"
+
+#. Atrasos de horas respecto al servo
+#: ../src/common.c:211
+msgid "1 second ago"
+msgstr "1 Sekunde her"
+
+#: ../src/common.c:216
+msgid "1 minute ago"
+msgstr "1 Minute her"
+
+#: ../src/common.c:220
+#, c-format
+msgid "%i seconds ago"
+msgstr "%i Sekunden her"
+
+#: ../src/common.c:228
+msgid "1 hour ago"
+msgstr "1 Stunde her"
+
+#: ../src/common.c:232
+#, c-format
+msgid "%i minutes ago"
+msgstr "%i Minuten her"
+
+#: ../src/common.c:240
+msgid "1 day ago"
+msgstr "1 Tag her"
+
+#: ../src/common.c:244
+#, c-format
+msgid "%i hours ago"
+msgstr "%i Stunden her"
+
+#: ../src/common.c:252
+msgid "1 month ago"
+msgstr "1 Monat her"
+
+#: ../src/common.c:256
+#, c-format
+msgid "%i days ago"
+msgstr "%i Tage her"
+
+#: ../src/common.c:260
+#, c-format
+msgid "%i months ago"
+msgstr "%i Monate her"
+
+#. Menu Twitter
+#: ../src/gui.c:289
+msgid "_Twitter"
+msgstr "_Twitter"
+
+#: ../src/gui.c:306
+msgid "Send a direct message..."
+msgstr "Verschicke Direktnachricht..."
+
+#: ../src/gui.c:312
+msgid "Set as home timeline"
+msgstr "Als persönliche Zeitachse einrichten."
+
+#. Menu ver
+#: ../src/gui.c:331
+msgid "_View"
+msgstr "_Ansicht"
+
+#: ../src/gui.c:335
+msgid "Home timeline"
+msgstr "Persönliche Zeitachse"
+
+#: ../src/gui.c:339
+msgid "Public timeline"
+msgstr "Öffentliche Zeitachse"
+
+#: ../src/gui.c:343
+msgid "Friends timeline"
+msgstr "Freundes Zeitachse"
+
+#. Sub menu amigos
+#: ../src/gui.c:351
+msgid "Friends"
+msgstr "Freunde"
+
+#: ../src/gui.c:358
+msgid "Direct messages"
+msgstr "Direktnachrichten"
+
+#: ../src/gui.c:363
+msgid "Replies"
+msgstr "Antworten"
+
+#: ../src/gui.c:368
+msgid "My timeline"
+msgstr "Meine Zeitachse"
+
+#. Submenu opciones avanzadas
+#: ../src/gui.c:376
+msgid "Set advanced options"
+msgstr "Erweiterte Optionen einrichten"
+
+#: ../src/gui.c:380
+msgid "Expand messages"
+msgstr "Nachrichten erweitern"
+
+#: ../src/gui.c:383
+msgid "Show gui notifications"
+msgstr "Zeige grafische Benachrichtigungen"
+
+#: ../src/gui.c:386
+msgid "Auto reload timelines"
+msgstr "Automatisches Neuladen der Zeitachsen"
+
+#: ../src/gui.c:391
+msgid "Status bar"
+msgstr "Statusleiste"
+
+#. Menu ayuda
+#: ../src/gui.c:395
+msgid "H_elp"
+msgstr "H_ilfe"
+
+#: ../src/gui.c:402
+msgid "Report bugs..."
+msgstr "Bugs melden..."
+
+#: ../src/gui.c:507
+#, c-format
+msgid "%s - Log in"
+msgstr "%s - Einloggen"
+
+#: ../src/gui.c:557
+msgid "<b>Username or e-mail:</b>"
+msgstr "<b>Benutzername oder E-Mail:</b>"
+
+#: ../src/gui.c:571
+msgid "<b>Password:</b>"
+msgstr "<b>Passwort:</b>"
+
+#: ../src/gui.c:586
+msgid "Remember user data"
+msgstr "Merke Benutzerdaten"
+
+#: ../src/gui.c:592
+msgid "Twitter login"
+msgstr "Twitter Login"
+
+#: ../src/gui.c:612
+msgid ""
+"This program is free software; you can redistribute it \n"
+"and/or modify it under the terms of the GNU General Public License\n"
+"as published by the Free Software Foundation; either version 2 of\n"
+"the License, or (at your option) any later version.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details. You should have\n"
+"received a copy of the GNU General Public License along with\n"
+"this program; if not, write to the Free Software Foundation, Inc., \n"
+"59 Temple Place, Suite 330, \n"
+"Boston, MA  02111-1307  USA"
+msgstr "Dieses Programm ist freie Software, Sie können sie weitergeben und/oder\n"
+"verändern solange Sie sich an die Regeln der GNU General Public License\n"
+"halten, so wie sie von der Free Software Foundation festgelegt wurden;\n"
+"entweder in Version 2 der Lizenz oder (nach Ihrem Ermessen) in jeder folgenden Lizenz.\n"
+"\n"
+"Dieses Programm wurde mit dem Ziel veröffentlicht, dass Sie es nützlich finden,\n"
+"jedoch OHNE JEDWEDE GARANTIE, sogar ohne eine implizite Garantie\n"
+"der VERKAUFBARKEIT oder der NUTZBARKEIT FÜR EINEN SPEZIELLEN ZWECK.\n"
+"Schauen Sie für weitere Informationen bitten in der GNU General Public License (RPL) nach.\n"
+"\n"
+"Mit diesem Programm sollten Sie außerdem eine Kopie der GNU General Public License erhalten\n"
+"haben. Wenn dem nicht so ist, so schreiben Sie bitte an die\n"
+"Free Software Foundation, Inc.,\n"
+"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA."
+
+#: ../src/gui.c:633
+msgid "A Twitter client for the Gnome desktop"
+msgstr "Ein Twitter-Client für den Gnome-Desktop"
+
+#: ../src/gui.c:636
+msgid "Visit get2gnow web site"
+msgstr "Besuche die get2gnow-Webseite"
+
+#: ../src/gui.c:638
+msgid "translator-credits"
+msgstr "Julian Tobias Saraceni <julian@saraceni.de>"
+
+#: ../src/gui.c:663
+#, c-format
+msgid "%s - What are you doing?"
+msgstr "%s - Was tust du gerade?"
+
+#: ../src/gui.c:706
+msgid "<b>What are you doing?</b>"
+msgstr "<b>Was tust du gerade?</b>"
+
+#: ../src/gui.c:755
+#, c-format
+msgid "%s - Send a direct message"
+msgstr "%s - Verschicke eine Direktnachricht"
+
+#: ../src/gui.c:798
+msgid "<b>Select a friend:</b>"
+msgstr "<b>Wähle einen Freund:</b>"
+
+#: ../src/gui.c:807
+msgid "<b>Write the message:</b>"
+msgstr "<b>Schreibe die Nachricht:</b>"
+
+#: ../src/gui.c:854
+msgid "Url to tinyze:"
+msgstr "URL für tinyurl:"
+
+#: ../src/gui.c:869
+msgid "Ok"
+msgstr "OK"
+
+#: ../src/network.c:75
+msgid "Loading: Direct messages..."
+msgstr "Laden: Direktnachrichten..."
+
+#: ../src/network.c:92
+msgid "Loading: Timeline..."
+msgstr "Laden: Zeitachse..."
+
+#: ../src/network.c:148
+msgid "Conecting..."
+msgstr "Verbinden..."
+
+#: ../src/network.c:172
+msgid "Sending status..."
+msgstr "Verschicke Status..."
+
+#: ../src/network.c:196
+msgid "Sending message..."
+msgstr "Verschicke Nachricht..."
+
+#: ../src/network.c:214
+msgid "Ok, displaying direct messages."
+msgstr "OK, Anzeigen von Direktnachrichten."
+
+#: ../src/network.c:222
+msgid "Messages parser error."
+msgstr "Fehler beim Parsen von Nachrichten."
+
+#: ../src/network.c:256
+msgid "Ok, connected :)"
+msgstr "OK, verbunden :)"
+
+#: ../src/network.c:270
+msgid "Friends parser error."
+msgstr "Fehler beim Parsen von Freunden."
+
+#: ../src/network.c:290
+msgid "Ok, parsing..."
+msgstr "OK, parse..."
+
+#: ../src/network.c:301
+msgid "Ok, timeline loaded."
+msgstr "OK, Zeitachse geladen."
+
+#: ../src/network.c:305
+msgid "Timeline parser error."
+msgstr "Fehler beim Parsen von Zeitachse."
+
+#: ../src/network.c:332
+msgid "Fail, wrong response."
+msgstr "Fehlgeschlagen, falsche Antwort."
+
+#: ../src/network.c:379
+msgid "Ok, status sent! :)"
+msgstr "OK, Status verschickt! :)"
+
+#: ../src/network.c:398
+msgid "Ok, message sent! :)"
+msgstr "OK, Nachricht verschickt! :)"
+
+#: ../src/network.c:531
+msgid "Stopped."
+msgstr "Gestoppt."
+
+#: ../src/network.c:537
+msgid "Access denied. Please login."
+msgstr "Zugriff verweigert. Bitte einloggen."
+
+#: ../src/network.c:543
+msgid "HTTP communication error."
+msgstr "Fehler bei HTTP-Kommunikation."
+
+#: ../src/twitter.c:476
+#, c-format
+msgid "you have %i new tweet(s) to read!"
+msgstr "Du hast %i neue Tweet(s)!"
+

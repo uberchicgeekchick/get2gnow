@@ -119,7 +119,6 @@ struct _UserStatus {
 	gchar		*text;
 	gchar		*update;
 	gchar		*sexy_update;
-	gchar		*sexy_complete;
 	gchar		*notification;
 	
 	gchar		*source;

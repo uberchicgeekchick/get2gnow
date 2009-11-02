@@ -110,9 +110,10 @@ struct _UpdateViewer{
 	GtkImage		*user_image;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
-	GtkButton		*view_user_profile_button;
-	GtkButton		*view_user_updates_button;
 	GtkToggleButton		*best_friend_toggle_button;
+	GtkButton		*view_user_unread_updates_button;
+	GtkButton		*view_user_updates_button;
+	GtkButton		*view_user_profile_button;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkVBox			*user_relationship_controls_hbox;
@@ -321,6 +322,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 					"user_vbox", &update_viewer->user_vbox,
 					"user_image", &update_viewer->user_image,
 					
+					"view_user_unread_updates_button", &update_viewer->view_user_unread_updates_button,
 					"view_user_profile_button", &update_viewer->view_user_profile_button,
 					"view_user_updates_button", &update_viewer->view_user_updates_button,
 					"best_friend_toggle_button", &update_viewer->best_friend_toggle_button,
@@ -391,6 +393,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 				"update_viewer", "configure_event", update_viewer_configure_event_cb,
 
 				"view_user_profile_button", "clicked", online_service_request_selected_update_view_profile,
+				"view_user_unread_updates_button", "clicked", online_service_request_selected_update_view_updates_new,
 				"view_user_updates_button", "clicked", online_service_request_selected_update_view_updates,
 				
 				"user_follow_button", "clicked", online_service_request_selected_update_follow,
