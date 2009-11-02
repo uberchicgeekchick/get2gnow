@@ -508,6 +508,7 @@ static void update_viewer_grab_widgets_compact_update_viewer_hidden(GtkBuilder *
 static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
 		"view_user_profile_button",
+		"view_user_unread_updates_button",
 		"view_user_updates_button",
 		"best_friend_toggle_button",
 		
