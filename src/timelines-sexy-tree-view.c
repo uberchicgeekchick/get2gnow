@@ -182,6 +182,7 @@ struct _TimelinesSexyTreeViewPrivate {
 	GtkProgressBar		*progress_bar;
 	GtkAdjustment		*progress_bar_adjustment;
 	
+	GtkToolItem		*max_updates_custom_tool_button;
 	GtkSpinButton		*max_updates_spin_button;
 	GtkAdjustment		*max_updates_adjustment;
 	
@@ -594,7 +595,7 @@ static void timelines_sexy_tree_view_set_maximum_updates(GtkSpinButton *max_upda
 	
 	if(GTK_WIDGET_IS_SENSITIVE(this->max_updates_spin_button) && (this->monitoring==DMs || this->monitoring==Replies || this->monitoring==Faves) ){
 		gtk_widget_set_sensitive(GTK_WIDGET(this->max_updates_spin_button), FALSE);
-		gtk_widget_hide(GTK_WIDGET(this->max_updates_spin_button));
+		gtk_widget_hide(GTK_WIDGET(this->max_updates_custom_tool_button));
 		max_updates=this->maximum;
 	}
 	uber_free(this->max_updates_str);
@@ -1116,6 +1117,7 @@ static void timelines_sexy_tree_view_create_gui(TimelinesSexyTreeView *timelines
 								"timelines_sexy_tree_view_progress_bar", &this->progress_bar,
 								"timelines_sexy_tree_view_progress_bar_adjustment", &this->progress_bar_adjustment,
 								
+								"timelines_sexy_tree_view_max_updates_custom_tool_button", &this->max_updates_custom_tool_button,
 								"timelines_sexy_tree_view_max_updates_spin_button", &this->max_updates_spin_button,
 								"timelines_sexy_tree_view_max_updates_adjustment", &this->max_updates_adjustment,
 								
