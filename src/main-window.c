@@ -86,7 +86,7 @@
 #include "ui-utils.h"
 #include "geometry.h"
 
-#include "label.h"
+#include "uberchick-label.h"
 #include "preferences.h"
 
 #include "hotkeys.h"
@@ -296,7 +296,7 @@ static gboolean configure_event_timeout_cb(GtkWidget *widget);
 static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, MainWindow *main_window);
 
 static MainWindow  *main_window=NULL;
-/*static guint tabs_init_timeout=0;*/
+static guint tabs_init_timeout=0;
 static guint statusbar_inital_context_id=0;
 
 G_DEFINE_TYPE(MainWindow, main_window, G_TYPE_OBJECT);
@@ -1104,7 +1104,7 @@ gboolean main_window_tabs_init(void){
 		main_window_tabs_menu_set_active(timeline, TRUE);
 	}
 	uber_free(timeline);
-	/*if(tabs_init_timeout) tabs_init_timeout=0;*/
+	if(tabs_init_timeout) tabs_init_timeout=0;
 	tabs_view_page(0);
 	return FALSE;
 }/*main_window_tabs_init();*/
@@ -1280,6 +1280,8 @@ static void main_window_login(void){
 	}
 	
 	main_window_tabs_init();
+	return;
+	tabs_init_timeout=g_timeout_add(300, (GSourceFunc)main_window_tabs_init, NULL);
 }/*main_window_login*/
 
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
@@ -1287,6 +1289,8 @@ static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 		return;
 	
 	main_window_tabs_init();
+	return;
+	tabs_init_timeout=g_timeout_add(300, (GSourceFunc)main_window_tabs_init, NULL);
 }/*main_window_reconnect*/
 
 void main_window_disconnect(void){
@@ -1357,6 +1361,7 @@ void main_window_state_on_connection(gboolean connected){
 		update_viewer_new_update();
 		tabs_refresh();
 	}
+	program_timeout_remove(&tabs_init_timeout, _("tab & timeline initalization.") );
 	
 	GList         *l;
 	for(l=main_window->private->widgets_connected; l; l=l->next)

@@ -54,7 +54,7 @@ int main(const int argc, const char **argv, const char **envp){
 	g_option_context_add_main_entries(option_context, option_entries, NULL);
 	
 	program=gnome_program_init(
-					GETTEXT_PACKAGE, PACKAGE_VERSION,
+					GETTEXT_PACKAGE, PACKAGE_VERSION PACKAGE_RELEASE,
 					LIBGNOMEUI_MODULE,
 					(gint)argc, (gchar **)argv,
 					GNOME_PARAM_GOPTION_CONTEXT, option_context,
@@ -77,4 +77,8 @@ int main(const int argc, const char **argv, const char **envp){
 	
 	return 0;
 }/*int main(int argc, const char **argv, const char **envp);*/
+
+void get2gnow_program_deinit(void){
+	program_deinit();
+}/*get2gnow_program_deinit();*/
 

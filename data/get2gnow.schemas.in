@@ -276,6 +276,35 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/previous_updates/unique_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/previous_updates/unique_only</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whetheer to check if an update's unique prior to storing it.</short>
+				<long>
+					Whetheer to check if an update's unique prior to storing it.
+					Disabling this can fastly increase the speed of spending updates.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/previous_updates/maximum</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/previous_updates/maximum</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>50</default>
+			<locale name="C">
+				<short>How many previous updates to store.</short>
+				<long>
+					How many previous updates to store.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/updates/direct_reply_only</key>
 			<applyto>/apps/@PACKAGE_NAME@/updates/direct_reply_only</applyto>
 			<owner>@PACKAGE_NAME@</owner>

@@ -83,7 +83,6 @@
 #include "timelines-sexy-tree-view.h"
 #include "preferences.h"
 #include "images.h"
-#include "label.h"
 #include "gconfig.h"
 
 #include "best-friends.h"
@@ -260,101 +259,6 @@ const gchar *parser_xml_node_type_to_string(xmlElementType type){
 	}
 }/*parser_xml_node_type_to_string(node->type);*/
 
-gboolean parser_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message){
-	if(!( SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) && xml->status_code>99 )){
-		*error_message=g_strdup_printf("OnlineService: <%s> has returned an invalid or failed libsoup request.  The URI [%s] returned:: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code );
-		return FALSE;
-	}
-	
-	*error_message=g_strdup("");;
-	
-	if(xml->status_code==100||xml->status_code==200){
-		debug("OnlineService: <%s>'s request for: %s has succeed.  HTTP status returned: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code);
-		return TRUE;
-	}
-	
-	if(xml->status_code==401 || xml->status_code==503){
-		debug("**ERROR:** Authentication failed and/or access denied.  OnlineService: <%s> returned. %s(%d) when requesting [%s].", service->key, xml->reason_phrase, xml->status_code, uri );
-		return FALSE;
-	}
-	
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
-	
-	debug("Getting content-type from uri: [%s].", uri);
-	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type & DOM information from: [%s].", uri);
-	gchar *content_info=NULL;
-	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("*ERROR:* Failed to determine content-type for:  [%s].", uri);
-		return FALSE;
-	}
-	
-	debug("Parsing content info: [%s] from: [%s].", content_info, uri);
-	content_v=g_strsplit(content_info, "; ", -1);
-	g_free(content_info);
-	gchar *content_type=NULL;
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("*ERROR:* Failed to determine content-type for:  [%s].", uri);
-		g_strfreev(content_v);
-		return FALSE;
-	}
-	debug("Parsed Content-Type: [%s] for: [%s].", content_type, uri);
-	
-	g_strfreev(content_v);
-	if(!g_str_equal(content_type, "application/xml")){
-		uber_free(content_type);
-		return TRUE;
-	}
-	uber_free(content_type);
-	
-	debug("Parsing xml document to find any authentication errors.");
-	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
-		debug("Unable to parse xml doc.");
-		uber_free( *error_message );
-		*error_message=g_strdup("Unable to parse xml doc.");
-		xmlCleanupParser();
-		return FALSE;
-	}
-	
-	root_element=xmlDocGetRootElement(doc);
-	if(root_element==NULL) {
-		debug("Failed getting first element of xml data.");
-		uber_free( *error_message );
-		*error_message=g_strdup("Failed getting first element of xml data.");
-		xmlFreeDoc(doc);
-		xmlCleanupParser();
-		return FALSE;
-	}
-	
-	gboolean error_free=TRUE;
-	xmlNode	*current_node=NULL;
-	for(current_node = root_element; current_node; current_node = current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
-		
-		if(!( g_str_equal(current_node->name, "error") )) continue;
-		
-		error_free=FALSE;
-		uber_free( *error_message );
-		*error_message=(gchar *)xmlNodeGetContent(current_node);
-		break;
-	}
-	
-	if(!error_free){
-		gchar *error_message_swap=g_strdup_printf("OnlineService: <%s> returned: %s(%d) with the error: %s.", service->key, xml->reason_phrase, xml->status_code, *error_message);
-		uber_free((*error_message) );
-		*error_message=error_message_swap;
-		error_message_swap=NULL;
-		debug("%s", *error_message);
-		statusbar_printf( "%s", *error_message );
-	}
-	
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	
-	return error_free;
-}/*parser_xml_error_check(service, xml);*/
-
 /* Parse a timeline XML file */
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
@@ -500,8 +404,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	}
 	
 	if(new_updates && newest_update_id){
-		/*TODO implement this only once it won't ending up causing bloating.
+		/*TODO implement
 		 *cache_save_page(service, timeline, xml->response_body);
+		 * this only once it won't ending up causing bloating.
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, timeline);
 		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
@@ -514,28 +419,11 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	return new_updates;
 }/*parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);*/
 
-void parser_escape_status(gchar **status){
-	*status=parser_escape_text( *status );
-}/*parser_escape_text(&text);*/
-
-gchar *parser_escape_text(gchar *status){
-	gchar *escaped_status=NULL;
-	gchar *current_character=escaped_status=g_markup_escape_text(status, -1);
-	while((current_character=strstr(current_character, "&amp;"))) {
-		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
-			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
-		else
-			current_character+=5;
-	}
-	return escaped_status;
-}/*parser_escape_text(status);*/
-
-gchar *parser_convert_time(const gchar *datetime, gint *my_diff){
+gint parser_datetime_to_seconds_old(const gchar *datetime){
 	struct tm	*ta;
 	struct tm	post;
 	int		seconds_local;
 	int		seconds_post;
-	int		diff;
 	time_t		t=time(NULL);
 	
 	tzset();
@@ -547,7 +435,14 @@ gchar *parser_convert_time(const gchar *datetime, gint *my_diff){
 	post.tm_isdst=-1;
 	seconds_post=mktime(&post);
 	
-	diff=difftime(seconds_local, seconds_post);
+	return difftime(seconds_local, seconds_post);
+}/*
+	parser_datetime_to_seconds_old("Fri Nov  6 16:30:31 2009");
+	parser_datetime_to_seconds_old(datetime);
+*/
+
+gchar *parser_convert_time(const gchar *datetime, gint *my_diff){
+	gint diff=parser_datetime_to_seconds_old(datetime);
 	if(diff < 0) *my_diff=0;
 	else *my_diff=diff;
 	

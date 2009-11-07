@@ -84,6 +84,8 @@
 
 #include "online-services.defines.h"
 #include "online-services-typedefs.h"
+#include "online-services.h"
+
 #include "online-service-request.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -95,7 +97,6 @@
 #include "gconfig.h"
 #include "preferences.h"
 
-#include "label.h"
 #include "main-window.h"
 #include "tabs.h"
 
@@ -224,7 +225,7 @@ struct _TimelinesSexyTreeViewPrivate {
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Updates:Requests:Notification:Settings:Setup:Start-Up:timelines-sexy-tree-view.c"
+#define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Networking:Updates:Requests:Notification:WWW:Settings:Setup:Start-Up:timelines-sexy-tree-view.c"
 #include "debug.h"
 
 #define GtkBuilderUI "timelines-sexy-tree-view"
@@ -519,10 +520,12 @@ static float timelines_sexy_tree_view_prepare_reload(TimelinesSexyTreeView *time
 	
 	guint seconds=((this->page+1)*5)+(this->monitoring*3)+10;
 	if(!this->minutes){
-		gconfig_get_int(PREFS_TIMELINE_RELOAD_MINUTES, &this->minutes);
+		gconfig_get_int_or_default(PREFS_TIMELINE_RELOAD_MINUTES, &this->minutes, 5);
 		/* With multiple timeline support timeline re-loading interval shouldn't be less than 5 minutes */
 		if(this->minutes < 5)
 			gconfig_set_int(PREFS_TIMELINE_RELOAD_MINUTES, (this->minutes=5) );
+		else if(this->minutes > 60)
+			gconfig_set_int(PREFS_TIMELINE_RELOAD_MINUTES, (this->minutes=60) );
 		
 		this->minutes+=this->page+this->monitoring+1;
 		debug("Setting %s's, timeline: %s, TimelinesSexyTreeView's minutes and initial timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
@@ -803,7 +806,7 @@ static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelin
 			-1
 	);
 	
-	gchar *sexy_complete=g_strdup_printf("<span weight=\"bold\" underline=\"single\" size=\"small\">From:</span> <span weight=\"bold\" size=\"small\">%s &lt;@%s on %s&gt;</span>\n<span style=\"italic\" underline=\"single\" size=\"x-small\">To:</span> <span style=\"italic\" size=\"x-small\">%s &lt;%s&gt;</span>\n\t%s<span size=\"small\" variant=\"smallcaps\">Status Updated: %s</span>\n",
+	gchar *sexy_complete=g_strdup_printf("<span weight=\"bold\" size=\"small\">From:</span> <span weight=\"bold\" size=\"small\" underline=\"single\">%s &lt;%s@%s&gt;</span>\n<span style=\"italic\" size=\"x-small\">To:</span> <span style=\"italic\" size=\"x-small\" underline=\"single\">%s &lt;%s&gt;</span>\n\t%s<span size=\"small\" variant=\"smallcaps\">Status Updated: %s</span>\n",
 					user_nick_name, user_user_name, service->uri,
 					service->nick_name, service->key,
 					sexy_status_update,
@@ -1672,7 +1675,7 @@ static void timelines_sexy_tree_view_find_selected_update_index(TimelinesSexyTre
 		if(this->monitoring!=DMs){
 			if(online_service_is_user_best_friend(service2, user_name))
 				online_services_best_friends_list_store_mark_as_read(service2, user_name, update_id, best_friends_get_list_store() );
-			else if(this->monitoring!=BestFriends && this->monitoring!=Users){
+			if(this->monitoring!=BestFriends && this->monitoring!=Users){
 				gchar *user_timeline=g_strdup_printf("/%s.xml", user_name);
 				online_service_update_ids_check( service2, user_timeline, update_id, FALSE );
 				uber_free(user_timeline);

@@ -80,6 +80,7 @@
 
 #include "images.h"
 #include "cache.h"
+#include "www.h"
 
 
 /********************************************************
@@ -127,13 +128,12 @@ gboolean program_init(int argc, char **argv){
 	proxy_init();
 	online_services_init();
 	
+	www_uri_title_lookup_table_init();
+	
 	main_window_create();
+	
 	return TRUE;
-}/*program_init*/
-
-void get2gnow_program_deinit(void){
-	program_deinit();
-}/*void get2gnow_program_deinit(void);*/
+}/*program_init();*/
 
 void program_deinit(void){
 	/* Close libnotify */
@@ -150,6 +150,8 @@ void program_deinit(void){
 	ipc_deinit();
 	
 	user_profile_viewer_cleanup();
+	
+	www_uri_title_lookup_table_deinit();
 	
 	debug_deinit();
 }/*program_deinit();*/

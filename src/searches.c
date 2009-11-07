@@ -80,7 +80,6 @@
 #include "timelines-sexy-tree-view.h"
 #include "preferences.h"
 #include "images.h"
-#include "label.h"
 #include "gconfig.h"
 
 #include "parser.h"

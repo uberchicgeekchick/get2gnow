@@ -77,6 +77,7 @@
 #include "online-service.h"
 
 #include "network.h"
+#include "www.h"
 #include "parser.h"
 
 #include "friends-manager.h"
@@ -233,7 +234,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service->key, which_glist_str, page_num_str, xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
-	if(!(parser_xml_error_check(service, uri, xml, &error_message))){
+	if(!(www_xml_error_check(service, uri, xml, &error_message))){
 		debug("**ERROR:** No more %s could be downloaded the request was not successful.", which_glist_str);
 		debug("**ERROR:** <%s>'s %s should be refreshed.", service->key, which_glist_str);
 		uber_free(error_message);

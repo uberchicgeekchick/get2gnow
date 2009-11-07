@@ -103,6 +103,9 @@ typedef enum _TimelinesSexyTreeViewListStoreColumn{	/***************************
 
 
 GType timelines_sexy_tree_view_get_type(void) G_GNUC_CONST;
+
+
+
 TimelinesSexyTreeView *timelines_sexy_tree_view_new(const gchar *timeline, OnlineService *service);
 const gchar *timelines_sexy_tree_view_get_timeline(TimelinesSexyTreeView *timelines_sexy_tree_view);
 

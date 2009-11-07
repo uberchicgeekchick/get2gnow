@@ -145,14 +145,19 @@ gboolean ipc_init_check(int argc, char **argv){
 					unlink(filename);
 				}else{
 					/* TODO: validate argumants. */
-					write(fd, "", 1);
+					gboolean write_check=FALSE;
+					if(!(write_check=write(fd, "", 1) ))
+						return write_check;
+					
 					for(int i=0; i < argc; ++i) {
+						to_open=NULL;
 						if(g_path_is_absolute(argv[i]))
 							to_open=gnome_vfs_uri_make_full_from_relative(NULL, argv[i]);
 						else
 							to_open=gnome_vfs_uri_make_full_from_relative(cur_dir, argv[i]);
 						if(to_open) {
-							write(fd, to_open, strlen(to_open) + 1);
+							if(!(write_check=write(fd, to_open, strlen(to_open) + 1) ))
+								g_warning("Failed to write: %s to %s", to_open, filename);
 							g_free(to_open);
 						}
 					}

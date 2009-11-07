@@ -1,8 +1,8 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,50 +48,50 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__WWW_H__
+#define	__WWW_H__
+
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
 
-#ifndef __LABEL_H__
-#define __LABEL_H__
-
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <glib-object.h>
-#include <libsexy/sexy.h>
-#include "online-services.h"
+
+#include "online-services-typedefs.h"
 
 G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
 
 
-/* Label: extended libsexy label.*/ 
-#define TYPE_LABEL         (label_get_type ())
-#define LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), TYPE_LABEL, Label))
-#define LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_LABEL, LabelClass))
-#define IS_LABEL(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), TYPE_LABEL))
-#define IS_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), TYPE_LABEL))
-#define LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), TYPE_LABEL, LabelClass))
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
 
-typedef struct _Label		Label;
-typedef struct _LabelClass	LabelClass;
-typedef struct _LabelPrivate	LabelPrivate;
 
-struct _Label {
-	SexyUrlLabel           parent;
-};
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+void www_uri_title_lookup_table_init(void);
 
-struct _LabelClass {
-	SexyUrlLabelClass      parent_class;
-};
+gchar *www_html_entity_escape_text(gchar *status);
 
-GType label_get_type(void) G_GNUC_CONST;
-Label *label_new(void);
-void label_set_text(OnlineService *service, Label  *label, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
-gchar *label_msg_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
 
+gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+
+void www_uri_title_lookup_table_deinit(void);
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
 G_END_DECLS
-#endif /* __LABEL_H__ */
+#endif /*__WWW_H__*/
 

@@ -272,7 +272,7 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[debug_domains_source_code_index], (error ?_("error") :_("notice") ) );
 				va_list args;
 				va_start(args, msg);
-				g_vfprintf(stderr, g_strrstr(msg, ":** ")+4, args);
+				g_vfprintf(stderr, g_strrstr(msg, ":** ")+sizeof(":** "), args);
 				va_end(args);
 				g_fprintf(stderr, " @ %s", datetime);
 			}

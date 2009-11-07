@@ -78,6 +78,9 @@ typedef struct{
 typedef void (*GConfigNotifyFunc) (const gchar *key, gpointer user_data);
 
 GType gconfig_get_type(void) G_GNUC_CONST;
+
+
+
 void gconfig_start(void);
 void gconfig_shutdown(void);
 guint gconfig_notify_add(const gchar *key, GConfigNotifyFunc func, gpointer user_data);

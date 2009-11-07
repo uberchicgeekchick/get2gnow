@@ -95,9 +95,10 @@ struct _MainWindowClass {
         GObjectClass parent_class;
 };
 
-extern gchar *STATUSBAR_DEFAULT;
-
 GType main_window_get_type(void) G_GNUC_CONST;
+
+
+
 void main_window_disconnect(void);
 void main_window_create(void);
 MainWindow *main_window_get(void);

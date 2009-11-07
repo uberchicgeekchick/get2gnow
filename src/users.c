@@ -88,7 +88,9 @@
 #include "gtkbuilder.h"
 #include "cache.h"
 #include "parser.h"
-#include "label.h"
+
+#include "www.h"
+#include "uberchick-label.h"
 
 #include "ui-utils.h"
 #include "update-viewer.h"
@@ -111,17 +113,17 @@ struct _UserProfileViewer{
 	
 	GtkVBox			*title_vbox;
 	
-	Label			*service_label;
-	Label			*user_label;
+	UberChickLabel		*service_label;
+	UberChickLabel		*user_label;
 	
 	GtkVBox			*profile_vbox;
-	Label			*url_hyperlink;
-	Label			*bio_html;
+	UberChickLabel		*url_hyperlink;
+	UberChickLabel		*bio_html;
 	
 	GtkVBox			*latest_update_vbox;
 	GtkLabel		*latest_update_label;
 	GtkLabel		*updated_when_label;
-	Label			*most_recent_update;
+	UberChickLabel		*most_recent_update;
 };
 
 
@@ -405,13 +407,13 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
 	debug("Formatting status text for display.");
 	
-	gchar *sexy_status_text=NULL, *sexy_status_swap=parser_escape_text(status->text);
+	gchar *sexy_status_text=NULL, *sexy_status_swap=www_html_entity_escape_text(status->text);
 	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
-		status->sexy_update=label_msg_format_urls(service, sexy_status_swap, TRUE, TRUE);
-		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, TRUE, FALSE);
+		status->sexy_update=www_format_urls(service, sexy_status_swap, TRUE, TRUE);
+		sexy_status_text=www_format_urls(service, sexy_status_swap, TRUE, FALSE);
 	}else{*/
 		status->sexy_update=g_strdup(sexy_status_swap);
-		sexy_status_text=label_msg_format_urls(service, sexy_status_swap, FALSE, FALSE);
+		sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
 	//}
 	uber_free(sexy_status_swap);
 	
@@ -430,7 +432,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	);
 	
 	status->notification=g_strdup_printf(
-						"%s<i>[%s]</i>\n\t<u><b>From:</b></u> <b>%s &lt;@%s on %s&gt;</b>\n<i><u>To:</u></i> <i>%s &lt;%s&gt;</i>\n<b>\t%s%s%s</b>",
+						"%s<i>[%s]</i>\n\t<b>From:</b> <b><u>%s &lt;%s@%s&gt;</u></b>\n<i>To:</i> <i><u>%s &lt;%s&gt;</u></i>\n<b>\t%s%s%s</b>",
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
 						user->nick_name, user->user_name, service->uri,
@@ -549,7 +551,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					(service->https?"s":""), service->uri, service->guid
 	);
 	
-	label_set_text(service, LABEL(user_profile_viewer->service_label), user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->service_label, service, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	
@@ -558,7 +560,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					"\t\t<u><b>%s:</b></u> @%s",
 					user->nick_name, user->user_name
 	);
-	label_set_text(service, LABEL(user_profile_viewer->user_label), user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->user_label, service, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	
@@ -574,19 +576,19 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	uber_free(profile_details);
 	
 	profile_details=g_strdup_printf( "\t<b>URL:</b>\t<a href=\"%s\">%s</a>\n", user->url, user->url );
-	label_set_text(service, user_profile_viewer->url_hyperlink, user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->url_hyperlink, service, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", FALSE, NULL );
 	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", user->bio );
-	label_set_text(service, user_profile_viewer->bio_html, user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->bio_html, service, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", user->status->created_how_long_ago);
 	gtk_label_set_markup(user_profile_viewer->updated_when_label, profile_details);
 	uber_free(profile_details);
 	
-	label_set_text(service, user_profile_viewer->most_recent_update, user->status->id, user->status->sexy_update, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->most_recent_update, service, user->status->id, user->status->sexy_update, TRUE, TRUE);
 	
 	if(!user_profile_viewer->loading)
 		user_profile_viewer_show_all();
@@ -602,6 +604,11 @@ static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *us
 	debug("Destroying user profile viewer");
 	user_profile_viewer->service=NULL;
 	if(user_profile_viewer->user_name) uber_free(user_profile_viewer->user_name);
+	if(user_profile_viewer->most_recent_update) g_object_unref(user_profile_viewer->most_recent_update);
+	if(user_profile_viewer->url_hyperlink) g_object_unref(user_profile_viewer->url_hyperlink);
+	if(user_profile_viewer->bio_html) g_object_unref(user_profile_viewer->bio_html);
+	if(user_profile_viewer->service_label) g_object_unref(user_profile_viewer->service_label);
+	if(user_profile_viewer->user_label) g_object_unref(user_profile_viewer->user_label);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(user_profile_viewer);
 }/*user_profile_viewer_destroy(dialog, user_profile_viewer);*/
@@ -635,28 +642,28 @@ static void user_profile_viewer_setup(void){
 				NULL
 	);
 	
-	user_profile_viewer->service_label=label_new();
+	user_profile_viewer->service_label=uberchick_label_new();
 	gtk_box_pack_start(
 				GTK_BOX(user_profile_viewer->title_vbox),
 				GTK_WIDGET(user_profile_viewer->service_label),
 				TRUE, TRUE, 0
 	);
 	
-	user_profile_viewer->user_label=label_new();
+	user_profile_viewer->user_label=uberchick_label_new();
 	gtk_box_pack_start(
 				GTK_BOX(user_profile_viewer->title_vbox),
 				GTK_WIDGET(user_profile_viewer->user_label),
 				TRUE, TRUE, 0
 	);
 	
-	user_profile_viewer->url_hyperlink=label_new();
+	user_profile_viewer->url_hyperlink=uberchick_label_new();
 	gtk_box_pack_start(
 				GTK_BOX(user_profile_viewer->profile_vbox),
 				GTK_WIDGET(user_profile_viewer->url_hyperlink),
 				TRUE, TRUE, 0
 	);
 	
-	user_profile_viewer->bio_html=label_new();
+	user_profile_viewer->bio_html=uberchick_label_new();
 	gtk_box_pack_start(
 				GTK_BOX(user_profile_viewer->profile_vbox),
 				GTK_WIDGET(user_profile_viewer->bio_html),
@@ -672,7 +679,7 @@ static void user_profile_viewer_setup(void){
 			TRUE, TRUE, 0
 	);
 	
-	user_profile_viewer->most_recent_update=label_new();
+	user_profile_viewer->most_recent_update=uberchick_label_new();
 	gtk_box_pack_start(
 			GTK_BOX(user_profile_viewer->latest_update_vbox),
 			GTK_WIDGET(user_profile_viewer->most_recent_update),
@@ -716,7 +723,7 @@ static void *user_profile_viewer_save_avatar(SoupSession *session, SoupMessage *
 	debug("Image download returned: %s(%d).", xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
-	if( parser_xml_error_check(service, image_uri, xml, &error_message) && g_file_set_contents(image_file, xml->response_body->data, xml->response_body->length, NULL) )
+	if( www_xml_error_check(service, image_uri, xml, &error_message) && g_file_set_contents(image_file, xml->response_body->data, xml->response_body->length, NULL) )
 		user_profile_viewer_set_avatar(image_file, image_uri);
 	
 	uber_free(error_message);
@@ -766,7 +773,7 @@ static void user_profile_viewer_hide_all(void){
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", TRUE, NULL );
 	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_profile_viewer->user_name, (user_profile_viewer->service->https?"s":""), user_profile_viewer->service->uri, user_profile_viewer->service->uri );
-	label_set_text(user_profile_viewer->service, user_profile_viewer->bio_html, 0.0, profile_details, FALSE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->bio_html, user_profile_viewer->service, 0.0, profile_details, FALSE, TRUE);
 	uber_free(profile_details);
 	
 	user_profile_viewer->loading=TRUE;

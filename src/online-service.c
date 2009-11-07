@@ -66,12 +66,10 @@
 #include <strings.h>
 #include <libsoup/soup.h>
 #include <openssl/hmac.h>
-#include <libxml/parser.h>
 
-#include "config.h"
 #include "program.h"
 
-#include "parser.h"
+#include "www.h"
 
 #include "online-services.defines.h"
 #include "online-services-typedefs.h"
@@ -866,6 +864,8 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	if(!temporary_connection) online_services_increment_connected(service->guid);
 	
+	online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
+	
 	return TRUE;
 }/*online_service_login(service, TRUE|FALSE);*/
 
@@ -881,16 +881,14 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 	}
 
 	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)){
+	if(!www_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)){
 		debug("Logging on to <%s> failed.  Please check your user name and/or password. %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		statusbar_printf("Logging on to <%s> failed.  Please check your user name and/or password. %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		service->authenticated=FALSE;
-		//service->enabled=FALSE;
 	}else{
 		debug("Logged on to <%s> succesfully.", service->guid);
 		statusbar_printf("Logged on to <%s> succesfully.", service->guid);
-		service->authenticated=TRUE;
-		service->enabled=TRUE;
+		service->authenticated=service->enabled=TRUE;
 		online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
 	}
 	
@@ -902,7 +900,10 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	if(!service) return;
-	if(service->nick_name) uber_free(service->nick_name);
+	if(service->nick_name){
+		if(user) user_free(user);
+		return;
+	}
 	if(!user){
 		debug("Failed to validate user profile for <%s>.  Please check your user name and/or password.  %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		service->nick_name=g_strdup(service->user_name);
@@ -1043,7 +1044,6 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	uber_free(prefs_path);
 	
 	gchar *requested_uri=NULL;
-	/*if(!( g_str_has_prefix(uri, "https") || g_str_has_prefix(uri, "http") || g_str_has_prefix(uri, "ftp") ))*/
 	if(!g_strrstr(uri, "://"))
 		requested_uri=g_strdup_printf("http://%s", uri);
 	else
@@ -1079,7 +1079,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			xml=soup_message_new("POST", requested_uri);
 			
 			soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
-			soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
+			soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION PACKAGE_RELEASE);
 			
 			if(form_data)
 				soup_message_set_request(
@@ -1177,50 +1177,55 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	
 	if(!( (*form_data) && (*user_data) )) return;
 	
-	gchar *reply_form_data=NULL;
-	if(service->user_name && g_strrstr( (gchar *)(*form_data), "/me" ) ){
+	gboolean free_form_data=FALSE;
+	gchar *form_data_swap=NULL;
+	if(service->user_name && service->nick_name && g_strrstr( (gchar *)(*form_data), "/me" ) ){
 		gint replace=0;
 		gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace, 2);
 		if(replace!=-1){
 			debug("Auto-replacement trigger match '/me' to be replaced with user nick.");
 			debug("/me auto-replacement triggered.  Replacing '/me' with: '%s'", service->user_name);
-			gchar **reply_form_data_parts=g_strsplit( (gchar *)(*form_data), "/me", -1);
-			gchar *replace_with=g_strdup_printf("%s", ( replace==1 ? service->nick_name : service->user_name ) );
-			reply_form_data=g_strdup("");
-			gchar *reply_form_data_swap=NULL;
-			for(gint i=0; reply_form_data_parts[i]; i++){
-				reply_form_data_swap=g_strdup_printf("%s%s%s%s", reply_form_data, reply_form_data_parts[i], ((reply_form_data_parts[i+1] && ( ((i>0)) || (service->micro_blogging_service!=Identica && service->micro_blogging_service!=StatusNet))) ?"*" :""), (reply_form_data_parts[i+1]?replace_with:""));
-				g_free(reply_form_data);
-				reply_form_data=reply_form_data_swap;
-				reply_form_data_swap=NULL;
-			}
-			g_strfreev(reply_form_data_parts);
-			(*form_data)=(gpointer)reply_form_data;
-			reply_form_data=NULL;
-			g_free(replace_with);
+			free_form_data=TRUE;
+			gchar **form_data_swap_parts=g_strsplit( (gchar *)(*form_data), "/me", -1);
+			gchar *replace_with=g_strdup_printf("*%s", ( replace==1 ? service->nick_name : service->user_name ) );
+			(*form_data)=g_strjoinv(replace_with, form_data_swap_parts);
+			uber_free(replace_with);
 		}
 	}
 	
-	(*form_data)=(gpointer)g_uri_escape_string((*form_data), NULL, TRUE);
+	form_data_swap=g_strdup( (*form_data) );
+	if( (form_data_swap[0]=='*') && (service->micro_blogging_service==Identica || service->micro_blogging_service==StatusNet) ){
+		form_data_swap=g_strdup_printf(" %s", (gchar *)(*form_data) );
+		if(!free_form_data) free_form_data=TRUE;
+		uber_free( *form_data );
+		(*form_data)=form_data_swap;
+		form_data_swap=NULL;
+	}else
+		uber_free(form_data_swap);
+	form_data_swap=g_uri_escape_string((*form_data), NULL, TRUE);
+	if(!free_form_data) free_form_data=TRUE;
+	else uber_free( *form_data );
+	(*form_data)=(gpointer)form_data_swap;
 	
 	debug("Posting update to: [%s].", service->key);
 	if(!g_str_equal((gchar *)(*user_data), "post->update")){
 		debug("Sending direct message to: <%s@%s> from: <%s>", (gchar *)(*user_data), service->uri, service->key);
-		reply_form_data=g_strdup_printf("source=%s&user=%s&text=%s", service->micro_blogging_client, (gchar *)(*user_data), (gchar *)(*form_data));
+		form_data_swap=g_strdup_printf("source=%s&user=%s&text=%s", service->micro_blogging_client, (gchar *)(*user_data), (gchar *)(*form_data));
 	}else if(!(in_reply_to_status_id && in_reply_to_service==service)){
 		debug("Posting update to: <%s>", service->key);
-		reply_form_data=g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data));
+		form_data_swap=g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data));
 	}else{
 		gchar *in_reply_to_status_id_str=gdouble_to_str(in_reply_to_status_id);
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
-		reply_form_data=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data));
+		form_data_swap=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data));
 		uber_free(in_reply_to_status_id_str);
 		in_reply_to_service=NULL;
 		in_reply_to_status_id=0;
 	}
 	
-	g_free(*form_data);
-	(*form_data)=(gpointer)reply_form_data;
+	uber_free(*form_data);
+	(*form_data)=(gpointer)form_data_swap;
+	form_data_swap=NULL;
 	
 	debug("Update: [%s].", (gchar *)(*form_data));
 }/*online_service_request_validate_form_data(service, &requested_uri, attempt, callback, &user_data, &form_data);*/
@@ -1238,42 +1243,6 @@ static void online_service_message_restarted(SoupMessage *xml, OnlineService *se
 	soup_session_cancel_message(service->session, xml, 401);
 	online_service_disconnect(service, FALSE);
 }/*onlin_service_message_restarted*/
-
-gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml){
-	debug("Downloading headers for: %s to determine its content-type.", uri);
-	*xml=online_service_request_uri(service, GET, uri, 0, NULL, NULL, NULL, NULL);
-	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, uri, *xml, &error_message)){
-		uber_free(error_message);
-		return NULL;
-	}
-	
-	uber_free(error_message);
-	
-	debug("Getting content-type from uri: '%s'.", uri);
-	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type from [%s]'s headers.", uri);
-	gchar *content_info=NULL;
-	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one((*xml)->response_headers, "Content-Type")))){
-		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
-		return NULL;
-	}
-	
-	debug("Parsing content info: [%s] from: %s", content_info, uri);
-	content_v=g_strsplit(content_info, "; ", -1);
-	uber_free(content_info);
-	gchar *content_type=NULL;
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
-		g_strfreev(content_v);
-		return NULL;
-	}
-	debug("Parsed Content-Type: [%s] for: %s", content_type, uri);
-	
-	g_strfreev(content_v);
-	
-	return content_type;
-}/*online_service_get_uri_content_type*/
 
 void online_service_free(OnlineService *service, gboolean no_state_change){
 	if(!service) return;

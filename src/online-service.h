@@ -123,8 +123,6 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request_method, const gchar *uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
-gchar *online_service_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml);
-
 void online_service_free(OnlineService *service, gboolean no_state_change);
 
 G_END_DECLS

@@ -521,9 +521,11 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="online_service_request_menu_friends_manager">
-                        <property name="label" translatable="yes">_Manager Friends &amp; Followers</property>
+                        <property name="label" translatable="yes">Friends &amp; Followers _Manager</property>
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">Manage your your friends and followers.  And view their updates and/or profile.</property>
+			<property name="tooltip_text" translatable="yes">See &amp; manage who you're following &amp; if they're following you back or not.
+See who's following you that you're not back &amp; manage your releationships by managing your friends and followers.
+You can also View their updates and/or profile, follow them back, unfollow them, or block any of them..</property>
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_friends_manager_image</property>
                         <property name="use_stock">False</property>
@@ -532,7 +534,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="online_service_request_menu_following_viewer">
-                        <property name="label" translatable="yes">Manage _Followers</property>
+                        <property name="label" translatable="yes">Manage Follo_wers</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Manage your your followers and view their updates and/or profile.</property>
                         <property name="use_underline">True</property>

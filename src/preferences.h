@@ -105,6 +105,9 @@ G_BEGIN_DECLS
 #define PREFS_UPDATES_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
 #define	PREFS_UPDATES_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
 
+#define	PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY		GCONF_PATH "/updates/previous_updates/unique_only"
+#define	PREFS_PREVIOUS_UPDATES_MAXIMUM_UPDATES		GCONF_PATH "/updates/previous_updates/maximum"
+
 
 void preferences_dialog_show (GtkWindow *parent);
 

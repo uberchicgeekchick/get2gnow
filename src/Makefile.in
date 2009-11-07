@@ -62,7 +62,6 @@ get2gnow_SOURCES = 										\
 	images.c					images.h				\
 	ipc.c						ipc.h					\
 	$(keyring_sources)									\
-	label.c						label.h					\
 	main.c						main.h					\
 	main-window.c					main-window.h				\
 	network.c					network.h				\
@@ -80,10 +79,12 @@ get2gnow_SOURCES = 										\
 	tabs.c						tabs.h					\
 	timelines-sexy-tree-view.c	timelines-sexy-tree-view.macros.h		timelines-sexy-tree-view.h		\
 	timer.c						timer.h					\
+	uberchick-label.c				uber-chicklabel.h			\
 	ui-utils.c					ui-utils.h				\
 	update-viewer.c					update-viewer.h				\
 	users-glists.c					users-glists.h				\
-	users.c				users.types.h			users.h
+	users.c				users.types.h			users.h			\
+	www.c						www.h
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 get2gnow_OBJECTS =					\
 	about.$(OBJEXT)					\
@@ -100,7 +101,6 @@ get2gnow_OBJECTS =					\
 	images.$(OBJEXT)				\
 	ipc.$(OBJEXT)					\
 	$(am__objects_1)				\
-	label.$(OBJEXT)					\
 	main.$(OBJEXT)					\
 	main-window.$(OBJEXT)				\
 	network.$(OBJEXT)				\
@@ -117,10 +117,12 @@ get2gnow_OBJECTS =					\
 	tabs.$(OBJEXT)					\
 	timelines-sexy-tree-view.$(OBJEXT)		\
 	timer.$(OBJEXT)					\
+	uberchick-label.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)				\
 	update-viewer.$(OBJEXT)				\
 	users-glists.$(OBJEXT)				\
-	users.$(OBJEXT)
+	users.$(OBJEXT)					\
+	www.$(OBJEXT)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -241,6 +243,7 @@ PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PACKAGE_RELEASE = @PACKAGE_RELEASE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 POFILES = @POFILES@
@@ -415,7 +418,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hotkeys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/images.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-window.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
@@ -432,10 +434,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tabs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timelines-sexy-tree-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-viewer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/www.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

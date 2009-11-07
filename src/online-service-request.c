@@ -62,8 +62,6 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 
 #include "gconfig.h"
 #include "program.h"
@@ -75,7 +73,9 @@
 #include "online-service.h"
 #include "online-service-wrapper.h"
 
-#include "parser.h"
+#include "online-services.h"
+
+#include "www.h"
 
 #include "gconfig.h"
 #include "preferences.h"
@@ -419,7 +419,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	
 	const gchar *service_guid=service->guid;
 	gchar *error_message=NULL;
-	if(!(parser_xml_error_check(service, request->uri, xml, &error_message))){
+	if(!(www_xml_error_check(service, request->uri, xml, &error_message))){
 		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, xml->status_code);
 		
 		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_guid, xml->reason_phrase, xml->status_code);

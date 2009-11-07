@@ -34,6 +34,7 @@ G_BEGIN_DECLS
 #	define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
 #endif
 
+void get2gnow_program_deinit(void);
 
 G_END_DECLS
 #endif /* _MAIN_H_ */

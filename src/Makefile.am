@@ -36,7 +36,6 @@ get2gnow_SOURCES = 										\
 	images.c					images.h				\
 	ipc.c						ipc.h					\
 	$(keyring_sources)									\
-	label.c						label.h					\
 	main.c						main.h					\
 	main-window.c					main-window.h				\
 	network.c					network.h				\
@@ -54,10 +53,12 @@ get2gnow_SOURCES = 										\
 	tabs.c						tabs.h					\
 	timelines-sexy-tree-view.c	timelines-sexy-tree-view.macros.h		timelines-sexy-tree-view.h		\
 	timer.c						timer.h					\
+	uberchick-label.c				uberchick-label.h			\
 	ui-utils.c					ui-utils.h				\
 	update-viewer.c					update-viewer.h				\
 	users-glists.c							users-glists.h		\
-	users.c				users.types.h			users.h
+	users.c				users.types.h			users.h			\
+	www.c						www.h
 
 
 get2gnow_LDADD=								\

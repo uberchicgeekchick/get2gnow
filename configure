@@ -733,9 +733,12 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#010001a60"
+PACKAGE_VERSION="#010001"
+VERSION="${PACKAGE_VERSION}"
+PACKAGE_RELEASE="a62"
+RELEASE="${PACKAGE_RELEASE}"
 PACKAGE_PREFIX="${prefix}"
-PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
+PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
 
 LIBSOUP_VERSION_REQUIRED=2.24.0
@@ -787,9 +790,12 @@ ac_includes_default="\
 ac_subst_vars='SHELL
 PATH_SEPARATOR
 PACKAGE
+VERSION
+RELEASE
 PACKAGE_NAME
 PACKAGE_TARNAME
 PACKAGE_VERSION
+PACKAGE_RELEASE
 PACKAGE_STRING
 PACKAGE_BUGREPORT
 LIBSOUP_VERSION_REQUIRED
@@ -1592,8 +1598,11 @@ Optional Features:
                                Turn on compiler warnings.
 
   --enable-iso-cxx        Try to warn if code is not ISO C++
-  --enable-gdb            compile with gdb symools
-  --enable-debug          turn on debugging
+  --enable-gdb            compile with gdb symbols
+  --enable-debug          turn on debugging and gdb symbols
+  --enable-gtk-icon-update
+                          forces gtk-icon-update-icon-cache to be ran reguardless
+			  of the packages icon being found of not.
   --enable-gnome-keyring=[no/yes/auto]
                           compile with Gnome Keyring support
 
@@ -1941,6 +1950,11 @@ _ACEOF
 
 cat >>confdefs.h <<_ACEOF
 #define PACKAGE_VERSION "$PACKAGE_VERSION"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE_RELEASE "$PACKAGE_RELEASE"
 _ACEOF
 
 
@@ -10628,7 +10642,7 @@ echo "$as_me: creating $ofile" >&6;}
 #! $SHELL
 
 # `$echo "$cfgfile" | sed 's%^.*/%%'` - Provide generalized library-building support services.
-# Generated automatically by $PROGRAM (GNU $PACKAGE_NAME $PACKAGE_VERSION$TIMESTAMP)
+# Generated automatically by $PROGRAM (GNU $PACKAGE_NAME $PACKAGE_VERSION$PACKAGE_RELEASE$TIMESTAMP)
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
@@ -14745,7 +14759,7 @@ EOF
       ;;
 
     amigaos*)
-      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_F77='-L$libdir'
       hardcode_minus_L_F77=yes
 
@@ -15159,7 +15173,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     amigaos*)
-      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_F77='-L$libdir'
       hardcode_minus_L_F77=yes
       # see comment about different semantics on the GNU ld section
@@ -17346,7 +17360,7 @@ EOF
       ;;
 
     amigaos*)
-      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_GCJ='-L$libdir'
       hardcode_minus_L_GCJ=yes
 
@@ -17780,7 +17794,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     amigaos*)
-      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_GCJ='-L$libdir'
       hardcode_minus_L_GCJ=yes
       # see comment about different semantics on the GNU ld section
@@ -22753,6 +22767,19 @@ echo "${ECHO_T}$complCXXFLAGS" >&6; }
 
 
 
+# Check whether --force-gtk-icon-update was given.
+if test "${enable_gtk_icon_update+set}" = set; then
+  enableval=$enable_gtk_icon_update;
+else
+  enable_gtk_icon_update=no
+fi
+
+
+if test x$enable_gtk_icon_update = xyes ; then
+	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor";
+fi
+
+
 # Check whether --enable-gdb was given.
 if test "${enable_gdb+set}" = set; then
   enableval=$enable_gdb;
@@ -24866,13 +24893,13 @@ Usually this means the macro was only invoked conditionally." >&2;}
 fi
 
 printf "Checking for %s's icon.  Looking for:\n\t%s/share/icons/hicolor/scalable/apps/get2gnow.svg\n" ${PACKAGE_NAME} ${prefix}
-if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` ; then
-	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n"
-	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
+if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` && test x$enable_gtk_icon_update = xno ; then
+	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n";
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"get2gnow icon already installed\"";
 else
-	printf "%s will be install and make install will attempt to update GTK's icon cache.\n"
-	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"
-fi
+	printf "%s will be install and make install will attempt to update GTK's icon cache.\n";
+	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor";
+fi;
 
 
 : ${CONFIG_STATUS=./config.status}
@@ -25419,9 +25446,12 @@ for ac_last_try in false false false false false :; do
 SHELL!$SHELL$ac_delim
 PATH_SEPARATOR!$PATH_SEPARATOR$ac_delim
 PACKAGE!$PACKAGE$ac_delim
+VERSION!$VERSION$ac_delim
+RELEASE!$RELEASE$ac_delim
 PACKAGE_NAME!$PACKAGE_NAME$ac_delim
 PACKAGE_TARNAME!$PACKAGE_TARNAME$ac_delim
 PACKAGE_VERSION!$PACKAGE_VERSION$ac_delim
+PACKAGE_RELEASE!$PACKAGE_RELEASE$ac_delim
 PACKAGE_PREFIX!$PACKAGE_PREFIX$ac_delim
 PACKAGE_STRING!$PACKAGE_STRING$ac_delim
 PACKAGE_BUGREPORT!$PACKAGE_BUGREPORT$ac_delim
@@ -25523,7 +25553,7 @@ CPP!$CPP$ac_delim
 CXX!$CXX$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 105; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 108; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -26275,6 +26305,7 @@ fi
 
 
 printf "\nPrefix:\t\t\t%s\nBUILDDIR:\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$ac_pwd" "$have_gnome_keyring";
+if test x$enable_gtk_icon_update = xyes; then printf "forcing gtk-icon-update-cache\n"; fi;
 if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
 if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\n"; fi;
 

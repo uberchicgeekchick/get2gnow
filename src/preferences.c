@@ -82,8 +82,6 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-static gboolean i_changed_no_profile=FALSE;
-
 #define GtkBuilderUI "preferences"
 
 #define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Updates:Notification:Settings:Setup:Start-Up:Preferences:preferences.c"
@@ -91,6 +89,7 @@ static gboolean i_changed_no_profile=FALSE;
 
 typedef struct _PreferencesDialog PreferencesDialog;
 typedef struct _replace_me_with replace_me_with;
+typedef struct _maximum_previous_updates_struct maximum_previous_updates_struct;
 typedef struct _reload_time reload_time;
 
 struct _PreferencesDialog{
@@ -130,6 +129,9 @@ struct _PreferencesDialog{
 	GtkCheckButton	*updates_no_profile_link_checkbutton;
 	GtkCheckButton	*post_reply_to_service_only_checkbutton;
 	
+	GtkCheckButton	*previous_updates_uniq_check_button;
+	GtkComboBox	*previous_updates_maximum_combo_box;
+	
 	GList		*notify_ids;
 };
 
@@ -148,6 +150,21 @@ reload_time reload_list[]={
 	{0, NULL}
 };
 
+struct _maximum_previous_updates_struct{
+	gint value;
+	gchar *label;
+};
+
+maximum_previous_updates_struct maximum_previous_updates_details[]={
+	{5, N_("5 Updates.")},
+	{15, N_("15 Updates.")},
+	{25, N_("25 Updates.")},
+	{50, N_("50 Updates.")},
+	{75, N_("75 Updates.")},
+	{100, N_("100 Updates.")},
+	{0, NULL}
+};
+
 struct _replace_me_with{
 	gint value;
 	gchar *label;
@@ -161,9 +178,9 @@ replace_me_with replace_me_list[]={
 };
 
 enum {
-	COL_COMBO_VISIBLE_NAME,
-	COL_COMBO_NAME,
-	COL_COMBO_COUNT,
+	COLUMN_COMBO_NAME,
+	COLUMN_COMBO_VALUE,
+	COLUMN_COMBO_COUNT,
 };
 
 
@@ -174,9 +191,8 @@ enum {
 static void preferences_setup_widgets(PreferencesDialog *prefs);
 static void preferences_timeline_setup(PreferencesDialog *prefs);
 static void preferences_replace_with_setup(PreferencesDialog *prefs);
+static void preferences_maximum_previous_updates_setup(PreferencesDialog *prefs);
 static void preferences_reload_setup(PreferencesDialog *prefs);
-static void preferences_direct_reply_setup(PreferencesDialog *prefs);
-static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs);
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button);
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box);
@@ -188,7 +204,7 @@ static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data
 
 static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gchar *key, gboolean bool_default, GtkCheckButton *check_button);
 static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box);
-static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box);
+static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key, const gint default_int, GtkComboBox *combo_box);
 
 static void preferences_toggle_button_toggled_cb(GtkCheckButton *check_button, PreferencesDialog *prefs);
 static void preferences_string_combo_changed_cb(GtkComboBox *combo_box, PreferencesDialog *prefs);
@@ -230,14 +246,17 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_NO_PROFILE_LINK, TRUE, prefs->updates_no_profile_link_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY, TRUE, prefs->previous_updates_uniq_check_button);
 	
 	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
-	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, prefs->combo_reload);
+	preferences_hookup_int_combo(prefs, PREFS_PREVIOUS_UPDATES_MAXIMUM_UPDATES, 50, prefs->previous_updates_maximum_combo_box);
+	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, 5, prefs->combo_reload);
 	
-	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, prefs->replace_me_with_combo_box);
+	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, 2, prefs->replace_me_with_combo_box);
 }/*preferences_setup_widgets(prefs);*/
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
@@ -255,17 +274,6 @@ static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data
 	preferences_widget_sync_int_combo(key, user_data);
 }
 
-static void preferences_direct_reply_toggled(GtkToggleButton *check_button, PreferencesDialog *prefs){
-	if(gtk_toggle_button_get_active(check_button))
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->updates_no_profile_link_checkbutton), TRUE);
-	else if(i_changed_no_profile)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs->updates_no_profile_link_checkbutton), FALSE);
-}/*preferences_direct_reply_toggled*/
-
-static void preferences_direct_reply_setup(PreferencesDialog *prefs){
-	i_changed_no_profile=!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prefs->updates_no_profile_link_checkbutton));
-}/*preferences_direct_reply_setup(prefs);*/
-
 static void preferences_timeline_setup(PreferencesDialog *prefs){
 	debug("Binding timelines to preference.");
 	static const gchar *timelines[] = {
@@ -281,9 +289,9 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_default_timeline), renderer, "text", COLUMN_COMBO_NAME, NULL);
 	
-	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
+	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
 	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_default_timeline), GTK_TREE_MODEL(list_store));
 	
@@ -292,8 +300,8 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_COMBO_VISIBLE_NAME, timelines[i+1],
-						COL_COMBO_NAME, timelines[i],
+						COLUMN_COMBO_NAME, timelines[i+1],
+						COLUMN_COMBO_VALUE, timelines[i],
 					-1
 		);
 		uber_free(iter);
@@ -305,25 +313,53 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 static void preferences_replace_with_setup(PreferencesDialog *prefs){
 	debug("Setting-up /me replacement preference.");
 	
-	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
+	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
 	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->replace_me_with_combo_box), GTK_TREE_MODEL(list_store));
 	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->replace_me_with_combo_box), renderer, "text", COLUMN_COMBO_NAME, NULL);
 	
 	replace_me_with	*replacements=replace_me_list;
-	while(replacements->label != NULL){
+	while(replacements->label){
 		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_COMBO_VISIBLE_NAME, replacements->label,
-						COL_COMBO_NAME, replacements->value,
+						COLUMN_COMBO_NAME, replacements->label,
+						COLUMN_COMBO_VALUE, replacements->value,
 					-1
 		);
 		replacements++;
+		uber_free(iter);
+	}
+	
+	g_object_unref(list_store);
+}/*static void preferences_replace_with_setup(prefs);*/
+
+static void preferences_maximum_previous_updates_setup(PreferencesDialog *prefs){
+	debug("Setting-up /me replacement preference.");
+	
+	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
+	
+	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->previous_updates_maximum_combo_box), GTK_TREE_MODEL(list_store));
+	
+	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->previous_updates_maximum_combo_box), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->previous_updates_maximum_combo_box), renderer, "text", COLUMN_COMBO_NAME, NULL);
+	
+	maximum_previous_updates_struct	*maximum_previous_updates=maximum_previous_updates_details;
+	while(maximum_previous_updates->label){
+		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
+		gtk_list_store_append(list_store, iter);
+		gtk_list_store_set(
+					list_store, iter,
+						COLUMN_COMBO_NAME, maximum_previous_updates->label,
+						COLUMN_COMBO_VALUE, maximum_previous_updates->value,
+					-1
+		);
+		maximum_previous_updates++;
 		uber_free(iter);
 	}
 	
@@ -337,19 +373,19 @@ static void preferences_reload_setup(PreferencesDialog *prefs){
 	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, "text", COL_COMBO_VISIBLE_NAME, NULL);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, "text", COLUMN_COMBO_NAME, NULL);
 	
-	GtkListStore *list_store=gtk_list_store_new(COL_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
+	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
 	
 	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_reload), GTK_TREE_MODEL(list_store));
 	
-	while (options->display_text != NULL) {
+	while (options->display_text) {
 		iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
 		gtk_list_store_set(
 					list_store, iter,
-						COL_COMBO_VISIBLE_NAME, options->display_text,
-						COL_COMBO_NAME, options->minutes,
+						COLUMN_COMBO_NAME, options->display_text,
+						COLUMN_COMBO_VALUE, options->minutes,
 					-1
 		);
 		options++;
@@ -369,61 +405,61 @@ static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box){
 	debug("Binding ComboBox to preference: %s.", key );
 	gchar        *value;
-	GtkTreeModel *model;
-	GtkTreeIter   iter;
-	gboolean      found;
-
-	if (!gconfig_get_string (key, &value)) {
-		return;
-	}
-
-	model = gtk_combo_box_get_model(combo_box);
-
-	found = FALSE;
-	if (value && gtk_tree_model_get_iter_first (model, &iter)) {
-		gchar *name;
-
-		do {
-			gtk_tree_model_get (model, &iter,
-								COL_COMBO_NAME, &name,
-								-1);
-
-			if (strcmp (name, value) == 0) {
-				found = TRUE;
-				gtk_combo_box_set_active_iter(combo_box, &iter);
-				break;
-			} else {
-				found = FALSE;
+	
+	if (!gconfig_get_string(key, &value)) return;
+	
+	GtkTreeModel *model=gtk_combo_box_get_model(combo_box);
+	
+	gboolean found=FALSE;
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	if(value && gtk_tree_model_get_iter_first(model, iter)) {
+		gchar *name=NULL;
+		
+		do{
+			gtk_tree_model_get(
+					model, iter,
+						COLUMN_COMBO_VALUE, &name,
+					-1
+			);
+			
+			if(!strcmp(name, value)){
+				found=TRUE;
+				gtk_combo_box_set_active_iter(combo_box, iter);
 			}
-
-			g_free (name);
-		} while (gtk_tree_model_iter_next (model, &iter));
+			
+			uber_free(name);
+		}while(!found && gtk_tree_model_iter_next(model, iter));
 	}
-
+	
 	/* Fallback to the first one. */
-	if (!found) {
-		if (gtk_tree_model_get_iter_first (model, &iter)) {
-			gtk_combo_box_set_active_iter(combo_box, &iter);
-		}
+	if(!found){
+		uber_free(iter);
+		iter=g_new0(GtkTreeIter, 1);
+		if(gtk_tree_model_get_iter_first(model, iter))
+			gtk_combo_box_set_active_iter(combo_box, iter);
 	}
-
-	g_free (value);
+	
+	uber_free(value);
+	uber_free(iter);
 }
 
 static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *combo_box){
 	debug("Binding ComboBox to preference: %s.", key );
-	gint          value;
-	if(!gconfig_get_int(key, &value)) return;
+	gint          value=0, default_int=GPOINTER_TO_INT( g_object_get_data(G_OBJECT(combo_box), "default_int") );
+	if(!gconfig_get_int_or_default(key, &value, default_int)) return;
 	GtkTreeModel *model=gtk_combo_box_get_model(combo_box);;
 	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
 	gboolean      found=FALSE;
 	
-	if(!( value && gtk_tree_model_get_iter_first(model, iter) )) return;
+	if(!( value && gtk_tree_model_get_iter_first(model, iter) )){
+		uber_free(iter);
+		return;
+	}
 	
 	gint option;
 	do{
 		gtk_tree_model_get(model, iter,
-					COL_COMBO_NAME, &option,
+					COLUMN_COMBO_VALUE, &option,
 				-1
 		);
 		
@@ -470,15 +506,15 @@ static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gcha
 		preferences_add_id(prefs, id);
 }
 
-static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key, GtkComboBox *combo_box){
+static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *key,const gint default_int,  GtkComboBox *combo_box){
 	guint id;
 	
-	preferences_widget_sync_int_combo (key, combo_box);
+	g_object_set_data_full(G_OBJECT(combo_box), "key", g_strdup(key), g_free);
+	g_object_set_data(G_OBJECT(combo_box), "default_int", GINT_TO_POINTER(default_int) );
 	
-	g_object_set_data_full(G_OBJECT (combo_box), "key", g_strdup(key), g_free);
+	preferences_widget_sync_int_combo(key, combo_box);
 	
 	g_signal_connect(combo_box, "changed", (GCallback)preferences_int_combo_changed_cb, prefs);
-	//return;
 	
 	if( (id=gconfig_notify_add(key, preferences_notify_int_combo_cb, combo_box)) )
 		preferences_add_id (prefs, id);
@@ -500,7 +536,7 @@ static void preferences_string_combo_changed_cb (GtkComboBox *combo_box, Prefere
 	if(gtk_combo_box_get_active_iter(combo_box, iter)) {
 		model=gtk_combo_box_get_model(combo_box);
 
-		gtk_tree_model_get(model, iter, COL_COMBO_NAME, &name, -1);
+		gtk_tree_model_get(model, iter, COLUMN_COMBO_VALUE, &name, -1);
 		gconfig_set_string(key, name);
 		g_free(name);
 		g_free(iter);
@@ -518,7 +554,7 @@ static void preferences_int_combo_changed_cb(GtkComboBox *combo_box, Preferences
 	
 	if(gtk_combo_box_get_active_iter(combo_box, iter)) {
 		model=gtk_combo_box_get_model(combo_box);
-		gtk_tree_model_get(model, iter, COL_COMBO_NAME, &value, -1);
+		gtk_tree_model_get(model, iter, COLUMN_COMBO_VALUE, &value, -1);
 		
 		gconfig_set_int(key, value);
 	}
@@ -592,6 +628,9 @@ void preferences_dialog_show(GtkWindow *parent){
 					
 					"updates_no_profile_link_checkbutton", &prefs->updates_no_profile_link_checkbutton,
 					"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
+					
+					"previous_updates_uniq_check_button", &prefs->previous_updates_uniq_check_button,
+					"previous_updates_maximum_combo_box", &prefs->previous_updates_maximum_combo_box,
 				NULL
 	);
 
@@ -604,7 +643,6 @@ void preferences_dialog_show(GtkWindow *parent){
 				ui, prefs,
 					"preferences_dialog", "destroy", preferences_destroy_cb,
 					"preferences_dialog", "response", preferences_response_cb,
-					"post_reply_to_service_only_checkbutton", "toggled", preferences_direct_reply_toggled,
 				NULL
 	);
 	
@@ -619,9 +657,9 @@ void preferences_dialog_show(GtkWindow *parent){
 	gtk_window_set_transient_for(GTK_WINDOW (prefs->dialog), parent);
 	
 	preferences_timeline_setup(prefs);
-	preferences_direct_reply_setup(prefs);
 	preferences_replace_with_setup(prefs);
 	preferences_reload_setup(prefs);
+	preferences_maximum_previous_updates_setup(prefs);
 	
 	preferences_setup_widgets(prefs);
 	

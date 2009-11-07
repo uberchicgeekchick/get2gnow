@@ -34,11 +34,11 @@
       <column type="gchararray"/>
       <!-- column-name STRING_TEXT -->
       <column type="gchararray"/>
-      <!-- column-name STRING_DETAILED_UPDATE -->
-      <column type="gchararray"/>
       <!-- column-name STRING_UPDATE -->
       <column type="gchararray"/>
       <!-- column-name STRING_SEXY_UPDATE -->
+      <column type="gchararray"/>
+      <!-- column-name STRING_DETAILED_UPDATE -->
       <column type="gchararray"/>
       <!-- column-name STRING_CREATED_AGO -->
       <column type="gchararray"/>
@@ -299,7 +299,7 @@
                     <property name="wrap_width">200</property>
                   </object>
                   <attributes>
-                    <attribute name="markup">7</attribute>
+                    <attribute name="markup">6</attribute>
                   </attributes>
                 </child>
               </object>

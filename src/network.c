@@ -80,6 +80,8 @@
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
 
+#include "www.h"
+
 #include "parser.h"
 #include "groups.h"
 #include "searches.h"
@@ -144,7 +146,7 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	}
 	
 	gchar *image_filename=NULL, *error_message=NULL;
-	if(!(parser_xml_error_check(service, requested_uri, xml, &error_message))){
+	if(!(www_xml_error_check(service, requested_uri, xml, &error_message))){
 		debug("Failed to download and save <%s> as <%s>.", requested_uri, image->filename);
 		debug("Detailed error message: %s.", error_message);
 		image_filename=cache_images_get_unknown_image_filename();
@@ -186,7 +188,7 @@ void network_post_status(gchar *update){
 		online_services_request(POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
 	else
 		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
-}/*network_post_status(tweet);*/
+}/*network_post_status("what are you doing");*/
 
 void network_send_message(OnlineService *service, const gchar *friend, gchar *dm){
 	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_update_posted, (gchar *)friend, dm);
@@ -205,7 +207,7 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	else message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, service->uri, service->guid);
 	
 	gchar *error_message=NULL;
-	if(!(parser_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){
+	if(!(www_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){
 		debug("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		debug("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 		
@@ -272,7 +274,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		return NULL;
 	
 	gchar *error_message=NULL;
-	if(!(parser_xml_error_check(service, requested_uri, xml, &error_message)))
+	if(!(www_xml_error_check(service, requested_uri, xml, &error_message)))
 		if(!online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
 			uber_free(error_message);
 			return network_retry(service_wrapper);

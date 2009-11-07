@@ -663,7 +663,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	gtk_list_store_set(
 			list_store, iter,
 				STRING_BEST_FRIEND_USER_NAME, user_name_at_index,
-				GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, update_id,
+				GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, unread_update_id,
 				GUINT_BEST_FRIENDS_UNREAD_UPDATES, unread_updates,
 			-1
 	);

@@ -47,39 +47,53 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
+
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
 
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __UBERCHICK_UBERCHICK_LABEL_H__
+#define __UBERCHICK_UBERCHICK_LABEL_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
 #include <glib.h>
-#include <libxml/parser.h>
-
-#include <libsoup/soup-message.h>
-
-#include "online-services-typedefs.h"
-#include "timelines-sexy-tree-view.h"
-#include "users.h"
+#include <gtk/gtk.h>
+#include <glib-object.h>
+#include <libsexy/sexy.h>
+#include "online-services.h"
 
 G_BEGIN_DECLS
 
-xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring);
-guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view);
+/* UberChickLabel: extended libsexy SexyUrlUberChickLabel.*/ 
+#define TYPE_UBERCHICK_LABEL         (uberchick_label_get_type())
+#define UBERCHICK_LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UBERCHICK_LABEL, UberChickLabel))
+#define UBERCHICK_LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_UBERCHICK_LABEL, UberChickLabelClass))
+#define IS_UBERCHICK_LABEL(o)        (G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UBERCHICK_LABEL))
+#define IS_UBERCHICK_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UBERCHICK_LABEL))
+#define UBERCHICK_LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UBERCHICK_LABEL, UberChickLabelClass))
 
-const gchar *parser_xml_node_type_to_string(xmlElementType type);
+typedef struct _UberChickLabel		UberChickLabel;
+typedef struct _UberChickLabelClass	UberChickLabelClass;
+typedef struct _UberChickLabelPrivate	UberChickLabelPrivate;
 
-void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
+struct _UberChickLabel {
+	SexyUrlLabel           parent;
+};
 
-gint parser_datetime_to_seconds_old(const gchar *datetime);
-gchar *parser_convert_time(const gchar *datetime, gint *my_diff);
+struct _UberChickLabelClass {
+	SexyUrlLabelClass      parent_class;
+};
+
+GType uberchick_label_get_type(void) G_GNUC_CONST;
+
+
+
+UberChickLabel *uberchick_label_new(void);
+void uberchick_label_set_text(UberChickLabel  *uberchick_label, OnlineService *service, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS
-#endif /*  __PARSER_H__ */
+#endif /* __UBERCHICK_UBERCHICK_LABEL_H__ */
 

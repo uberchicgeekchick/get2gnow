@@ -12,5 +12,5 @@ default:
 	breaksw
 endsw
 
-${my_editor} "./data/get2gnow.schemas.in" "./src/main-window.c" "./src/preferences.c" "./src/preferences.h"
+${my_editor} "./src/best-friends.c" "./src/online-service.c" "./src/online-services.c" "./src/parser.c" "./src/preferences.c" "./src/timelines-sexy-tree-view.c" "./src/update-viewer.c"
 

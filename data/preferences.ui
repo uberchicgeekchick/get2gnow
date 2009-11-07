@@ -184,7 +184,7 @@
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="titles_only_checkbutton">
-                                <property name="label" translatable="yes">Display web _page titles instead of addresses/URLs when possible.</property>
+                                <property name="label" translatable="yes">_Replace link addresses/URIs with the web _page's title(when at all possible).</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -210,12 +210,22 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="expand_urls_selected_only_checkbutton">
-                                <property name="label" translatable="yes">Only show link _titles once an update's selected.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_indicator">True</property>
+                                <child>
+                                  <object class="GtkLabel" id="expand_urls_selected_only_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Replace _link addresses/URIs with the web page's title(&lt;b&gt;_when&lt;/b&gt; an update's selected).</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="selectable">True</property>
+                                    <property name="mnemonic_widget">expand_urls_selected_only_checkbutton</property>
+                                  </object>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -684,12 +694,12 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkFrame" id="frame2">
+                              <object class="GtkFrame" id="replace_me_with_frame">
                                 <property name="visible">True</property>
                                 <property name="label_xalign">0</property>
                                 <property name="shadow_type">none</property>
                                 <child>
-                                  <object class="GtkAlignment" id="alignment3">
+                                  <object class="GtkAlignment" id="replace_me_with_alignment">
                                     <property name="visible">True</property>
                                     <property name="left_padding">12</property>
                                     <child>
@@ -702,8 +712,7 @@
                                 <child type="label">
                                   <object class="GtkLabel" id="replace_me_with_label">
                                     <property name="visible">True</property>
-                                    <property name="xpad">6</property>
-                                    <property name="ypad">6</property>
+                                    <property name="ypad">5</property>
                                     <property name="label" translatable="yes">&lt;b&gt;Replace "/_me", (without the quotes) in my updates with:&lt;/b&gt;</property>
                                     <property name="use_markup">True</property>
                                     <property name="use_underline">True</property>
@@ -740,11 +749,11 @@
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">out</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment6">
+                      <object class="GtkAlignment" id="replies_alignment">
                         <property name="visible">True</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox8">
+                          <object class="GtkVBox" id="replies_vbox">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
@@ -765,7 +774,8 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="post_reply_to_service_only_checkbutton">
-                                <property name="label" translatable="yes">Only _post @ replies to the service the user's on.</property>
+                                <property name="label" translatable="yes">Post @ replies _directly &amp; only to the user's service.
+  I.E. @ repling to someone@identi.caonly posts the reply to identi.ca</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -795,6 +805,87 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="previous_updates_frame">
+                    <property name="visible">True</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">out</property>
+                    <child>
+                      <object class="GtkAlignment" id="previous_updates_alignment">
+                        <property name="visible">True</property>
+                        <property name="left_padding">12</property>
+                        <child>
+                          <object class="GtkVBox" id="previous_updates_vbox">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkCheckButton" id="previous_updates_uniq_check_button">
+                                <property name="label" translatable="yes">Only save _unique updates.
+  Unchecking this will make posting updates faster.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="border_width">12</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkFrame" id="previos_updates_maximum_frame">
+                                <property name="visible">True</property>
+                                <property name="border_width">12</property>
+                                <property name="label_xalign">0</property>
+                                <property name="shadow_type">none</property>
+                                <child>
+                                  <object class="GtkAlignment" id="alignment3">
+                                    <property name="visible">True</property>
+                                    <property name="left_padding">12</property>
+                                    <child>
+                                      <object class="GtkComboBox" id="previous_updates_maximum_combo_box">
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child type="label">
+                                  <object class="GtkLabel" id="label1">
+                                    <property name="visible">True</property>
+                                    <property name="ypad">5</property>
+                                    <property name="label" translatable="yes">&lt;b&gt;Maximum _previous updates to save/remember:&lt;/b&gt;</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="use_underline">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="previous_updates_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;b&gt;_Saved Updated:&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">previous_updates_uniq_check_button</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>

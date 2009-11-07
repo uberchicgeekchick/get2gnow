@@ -66,7 +66,7 @@
 #include "online-service.h"
 #include "online-service-wrapper.h"
 
-#include "parser.h"
+#include "www.h"
 #include "main-window.h"
 
 #include "network.h"
@@ -102,6 +102,7 @@ struct _OnlineServiceWrapper {
 	gboolean						can_free;
 	guint8							attempt;
 	guint							process_timeout;
+	guint							process_timeout_id;
 };
 
 static OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
@@ -129,6 +130,7 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMes
 	
 	online_service_wrapper->service=service;
 	online_service_wrapper->process_timeout=0;
+	online_service_wrapper->process_timeout_id=0;
 	online_service_wrapper->xml=xml;
 	online_service_wrapper->request_method=request_method;
 	online_service_wrapper->requested_uri=g_strdup(requested_uri);
@@ -172,6 +174,7 @@ static gboolean online_service_wrapper_process(OnlineServiceWrapper *online_serv
 	
 	service->processing=TRUE;
 	service->processing_queue=g_list_append(service->processing_queue, online_service_wrapper);
+	if(online_service_wrapper->process_timeout_id) online_service_wrapper->process_timeout_id=0;
 	if(service->processing_timer > 0) service->processing_timer--;
 	debug("OnlineService: <%s> has began processing: <%s>.", online_service_wrapper->service->guid, online_service_wrapper->requested_uri);
 	debug("Adding libsoup request to service: <%s> libsoup's message queue.", service->guid );
@@ -197,8 +200,8 @@ static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_servic
 		}
 	}
 	
-	if(!online_service_wrapper->process_timeout) service->processing_timer++;
-	g_timeout_add((online_service_wrapper->process_timeout++)*100, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
+	if(!online_service_wrapper->process_timeout) online_service_wrapper->process_timeout=service->processing_timer++;
+	online_service_wrapper->process_timeout_id=g_timeout_add((online_service_wrapper->process_timeout++)*100, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
 	debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed in %d00 milliseconds.", service->key, online_service_wrapper->requested_uri, online_service_wrapper->process_timeout);
 	return FALSE;
 }/*online_service_wrapper_queue(online_service_wrapper);*/
@@ -227,7 +230,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 	if(service->status) uber_free(service->status);
 	const gchar *status=NULL;
 	gchar *error_message=NULL;
-	if(!parser_xml_error_check(service, requested_uri, xml, &error_message))
+	if(!www_xml_error_check(service, requested_uri, xml, &error_message))
 		status=_("[Failed]");
 	else
 		status=_("[Success]");
@@ -237,7 +240,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 		return NULL;
 	}
 	
-	debug("%s  parser_xml_error_check returned: %s.", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, requested_uri, xml->reason_phrase, xml->status_code)), error_message );
+	debug("%s  www_xml_error_check returned: %s.", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, requested_uri, xml->reason_phrase, xml->status_code)), error_message );
 	statusbar_printf("<%s> loading %s: %s.", service->key, g_strrstr(requested_uri, "/"), status);
 	
 	uber_free(error_message);
@@ -387,6 +390,8 @@ void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper, g
 	debug("OnlineService: <%s> has finished processing: <%s>.", service->guid, online_service_wrapper->requested_uri);
 	if(service->processing) service->processing=FALSE;
 	
+	if(online_service_wrapper->process_timeout_id)
+		program_timeout_remove(&online_service_wrapper->process_timeout_id, "OnlineServiceWrapper timeout");
 	online_service_wrapper_user_data_processor(online_service_wrapper, DataFree);
 	online_service_wrapper_form_data_processor(online_service_wrapper, DataFree);
 	

@@ -104,19 +104,23 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef uber_free
-#	define	uber_free(mem)					{ if(mem){g_free(mem);} mem=NULL; }
+#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
 #endif
 
 #ifndef uber_list_free
-#	define uber_list_free(l)				{ if(l){g_list_free(l);} l=NULL; }
+#	define uber_list_free(l)				{ g_list_free(l); l=NULL; }
 #endif
 
 #ifndef uber_slist_free
-#	define uber_slist_free(sl)				{ if(sl){g_slist_free(sl);} sl=NULL; }
+#	define uber_slist_free(sl)				{ g_slist_free(sl); sl=NULL; }
 #endif
 
 #ifndef uber_object_unref
-#	define	uber_object_unref(o)				{ if(o){g_object_unref(o);} o=NULL; }
+#	define	uber_object_unref(o)				{ g_object_unref(o); o=NULL; }
+#endif
+
+#ifndef	g_strcasecmp
+#	define	g_strcasecmp(str1, str2)			(gboolean)!strcasecmp(str1, str2)
 #endif
 
 #ifndef g_str_n_equal
@@ -190,7 +194,6 @@ gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1,
 gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property);
 void program_timeout_remove(guint *id, const gchar *usage);
 
-void get2gnow_program_deinit(void);
 void program_deinit(void);
 
 

@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#010001a60"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#010001", "a62"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -129,14 +129,17 @@ dnl  ***********************************************************/
 PACKAGE="get2gnow"
 AC_SUBST(PACKAGE)
 
+AM_CONDITIONAL(gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor", test x$enable_gtk_icon_update = xyes)
+
 printf "Checking for %s's icon.  Looking for:\n\t%s/share/icons/hicolor/scalable/apps/get2gnow.svg\n" ${PACKAGE_NAME} ${prefix}
-if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` ; then
-	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n"
-	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME}'s icon is already installed\""
+if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` && test x$enable_gtk_icon_update = xno ; then
+	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n";
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"get2gnow icon already installed\"";
 else
-	printf "%s will be install and make install will attempt to update GTK's icon cache.\n"
-	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor"
-fi
+	printf "%s will be install and make install will attempt to update GTK's icon cache.\n";
+	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor";
+fi;
+
 AC_SUBST(gtk_update_icon_cache)
 
 
@@ -152,5 +155,6 @@ po/Makefile
 ])
 
 printf "\nPrefix:\t\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$have_gnome_keyring";
+if test x$enable_gtk_icon_update = xyes; then printf "forcing gtk-icon-update-cache\n"; fi;
 if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
 if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\nDebug BUILDDIR:\t$ac_pwd\n"; fi;
