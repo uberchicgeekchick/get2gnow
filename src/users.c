@@ -353,7 +353,10 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		}
 		
 		if(g_str_equal(current_node->name, "id")){
-			status->id=strtod(content, NULL);
+			if(!g_strrstr(content, ":"))
+				status->id=strtod(content, NULL);
+			else
+				status->id=strtod(g_strrstr(content, ":")+1, NULL);
 			status->id_str=gdouble_to_str(status->id);
 			debug("Status ID: %s(=%f).", content, status->id);
 			
@@ -363,13 +366,13 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		else if(g_str_equal(current_node->name, "source"))
 			status->source=g_strdup(content);
 		
-		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")) && current_node->children)
+		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user") || g_str_equal(current_node->name, "author")) && current_node->children)
 			status->user=user_parse_node(service, current_node->children);
 		
 		else if(g_str_equal(current_node->name, "text"))
 			status->text=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "created_at")){
+		else if(g_str_equal(current_node->name, "created_at") || g_str_equal(current_node->name, "published")){
 			status->created_at_str=g_strdup(content);
 			user_status_format_dates(status);
 		}

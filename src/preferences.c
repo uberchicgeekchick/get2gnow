@@ -646,8 +646,8 @@ void preferences_dialog_show(GtkWindow *parent){
 				NULL
 	);
 	
+	g_signal_connect( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL );
 	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL );
-	g_signal_connect_after( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL );
 	g_signal_connect_after( (GtkToggleButton *)prefs->concatenated_updates_check_button, "toggled", (GCallback)main_window_concatenate_timeline_columns, NULL);
 	g_signal_connect_after( (GtkToggleButton *)prefs->compact_entire_view_check_button, "toggled", (GCallback)main_window_compact_ui, NULL);
 	

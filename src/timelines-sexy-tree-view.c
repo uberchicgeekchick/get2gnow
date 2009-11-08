@@ -1085,7 +1085,7 @@ static void timelines_sexy_tree_view_set_timeline_label(TimelinesSexyTreeView *t
 		break;
 	}
 	if(!this->menu_label_string){
-		debug("**ERROR:** Unable to determine timeline label to use.");
+		debug("**ERROR:** Unable to determine timeline label to use for the timeline: %s.", this->timeline);
 		this->tab_label_string=g_strdup(timeline_labels->tab_label_string);
 		this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 	}
@@ -1154,24 +1154,30 @@ static void timelines_sexy_tree_view_create_gui(TimelinesSexyTreeView *timelines
 							NULL
 	);
 	
-	gtkbuilder_connect(gtk_builder_ui, timelines_sexy_tree_view,
-								"timelines_sexy_tree_view_refresh_tool_button", "clicked", timelines_sexy_tree_view_refresh_clicked,
-								"timelines_sexy_tree_view_max_updates_spin_button", "value-changed", timelines_sexy_tree_view_set_maximum_updates,
-								"timelines_sexy_tree_view_stop_toggle_tool_button", "toggled", timelines_sexy_tree_view_stop_toggle_tool_button_toggled,
-								"timelines_sexy_tree_view_close_tool_button", "clicked", timelines_sexy_tree_view_close,
-								
-								"timelines_sexy_tree_view_scrolled_window", "grab-focus", timelines_sexy_tree_view_grab_focus_cb,
-								"timelines_sexy_tree_view_scrolled_window", "size-allocate", timelines_sexy_tree_view_resize_cb,
-								
-								"timelines_sexy_tree_view_sexy_tree_view", "grab-focus", timelines_sexy_tree_view_grab_focus_cb,
-								
-								"timelines_sexy_tree_view_sexy_tree_view", "get-tooltip", timelines_sexy_tree_view_set_sexy_tooltip,
-								
-								"timelines_sexy_tree_view_sexy_tree_view", "cursor-changed", timelines_sexy_tree_view_update_selected,
-								"timelines_sexy_tree_view_sexy_tree_view", "size-allocate", timelines_sexy_tree_view_resize_cb,
-								"timelines_sexy_tree_view_sexy_tree_view", "key-press-event", hotkey_pressed,
-							NULL
+	gtkbuilder_connect(
+			gtk_builder_ui, timelines_sexy_tree_view,
+				"timelines_sexy_tree_view_refresh_tool_button", "clicked", timelines_sexy_tree_view_refresh_clicked,
+				"timelines_sexy_tree_view_max_updates_spin_button", "value-changed", timelines_sexy_tree_view_set_maximum_updates,
+				"timelines_sexy_tree_view_stop_toggle_tool_button", "toggled", timelines_sexy_tree_view_stop_toggle_tool_button_toggled,
+				"timelines_sexy_tree_view_close_tool_button", "clicked", timelines_sexy_tree_view_close,
+				
+				"timelines_sexy_tree_view_scrolled_window", "grab-focus", timelines_sexy_tree_view_grab_focus_cb,
+				"timelines_sexy_tree_view_scrolled_window", "size-allocate", timelines_sexy_tree_view_resize_cb,
+				
+				"timelines_sexy_tree_view_sexy_tree_view", "grab-focus", timelines_sexy_tree_view_grab_focus_cb,
+				
+				"timelines_sexy_tree_view_sexy_tree_view", "get-tooltip", timelines_sexy_tree_view_set_sexy_tooltip,
+			NULL
 	);
+	
+	if(this->monitoring!=Searches)
+		gtkbuilder_connect(				
+				gtk_builder_ui, timelines_sexy_tree_view,
+					"timelines_sexy_tree_view_sexy_tree_view", "cursor-changed", timelines_sexy_tree_view_update_selected,
+					"timelines_sexy_tree_view_sexy_tree_view", "size-allocate", timelines_sexy_tree_view_resize_cb,
+					"timelines_sexy_tree_view_sexy_tree_view", "key-press-event", hotkey_pressed,
+				NULL
+		);
 	
 	this->tree_model=GTK_TREE_MODEL(this->list_store);
 	this->tree_model_sort=gtk_tree_model_sort_new_with_model(this->tree_model);

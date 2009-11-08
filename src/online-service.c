@@ -726,7 +726,8 @@ void online_service_update_id_get( OnlineService *service, const gchar *timeline
 	 * 				service->key			/timeline.xml	(newest|oldest)
 	 */
 	if(G_STR_EMPTY(timeline)) return;
-	const gchar *timeline_xml=g_strrstr(timeline, "/");
+	gchar		**uri_split=g_strsplit( g_strrstr(timeline, "/"), "?", 2);
+	const gchar	*timeline_xml=uri_split[0];
 	debug("Getting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gdouble swap_id;
@@ -743,6 +744,7 @@ void online_service_update_id_get( OnlineService *service, const gchar *timeline
 	}
 	if(swap_id>0) *update_id=swap_id;
 	debug("Retrieved %s update ID: %s for [%s] on <%s>.", key, gdouble_to_str(*update_id), timeline_xml, service->uri );
+	g_strfreev(uri_split);
 }/*online_service_update_id_get( service, "/friends.xml", "newest", &newest_update_id );*/
 
 void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id ){
@@ -762,7 +764,8 @@ void online_service_update_id_set( OnlineService *service, const gchar *timeline
 	 * 				service->key			/timeline.xml (newest|oldest)
 	 */
 	if(G_STR_EMPTY(timeline)) return;
-	const gchar *timeline_xml=g_strrstr(timeline, "/");
+	gchar		**uri_split=g_strsplit( g_strrstr(timeline, "/"), "?", 2);
+	const gchar	*timeline_xml=uri_split[0];
 	debug("Setting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gboolean success;
@@ -773,6 +776,7 @@ void online_service_update_id_set( OnlineService *service, const gchar *timeline
 	uber_free(prefs_path);
 	debug("Saved %s update ID: %s for %s on <%s>.", key, swap_id_str, timeline_xml, service->uri );
 	uber_free(swap_id_str);
+	g_strfreev(uri_split);
 }/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
 
 gboolean online_service_connect(OnlineService *service){
@@ -1013,7 +1017,7 @@ gboolean online_service_reconnect(OnlineService *service){
 }/*online_service_reconnect(service);*/
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri){
-	return g_strdup_printf("http%s://%s%s%s", (service->https ?"s" :"" ), service->uri, ( (service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
+	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :"" ), ( g_strrstr(uri, "search.") && service->micro_blogging_service==Twitter ?"search." :"" ), service->uri, ( (service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
 }/*online_service_request_uri_create(service, uri);*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
@@ -1216,6 +1220,12 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		form_data_swap=g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data));
 	}else{
 		gchar *in_reply_to_status_id_str=gdouble_to_str(in_reply_to_status_id);
+		if(service->micro_blogging_service==Twitter && service->micro_blogging_service==StatusNet){
+			uber_free( *requested_uri );
+			gchar *retweet_uri=g_strdup_printf(API_RETWEET_UPDATE, in_reply_to_status_id_str);
+			*requested_uri=online_service_request_uri_create(service, retweet_uri);
+			uber_free(retweet_uri);
+		}
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
 		form_data_swap=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data));
 		uber_free(in_reply_to_status_id_str);

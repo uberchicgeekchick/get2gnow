@@ -91,6 +91,7 @@ const gchar *online_service_request_action_to_string(RequestAction action);
 void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_view_updates_new(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_view_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name);
+void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_follow(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_unfollow(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent, const gchar *user_name);
@@ -104,6 +105,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 
 void online_service_request_selected_update_view_updates_new(void);
 void online_service_request_selected_update_view_updates(void);
+void online_service_request_selected_update_view_forwards(void);
 void online_service_request_selected_update_view_profile(void);
 void online_service_request_selected_update_best_friend_add(void);
 void online_service_request_selected_update_best_friend_drop(void);
@@ -116,7 +118,7 @@ void online_service_request_selected_update_save_fave(void);
 void online_service_request_selected_update_destroy_fave(void);
 
 gboolean online_service_request_is_update_selected(void);
-void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet);
+void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update);
 OnlineService *online_service_request_selected_update_get_service(void);
 gdouble online_service_request_selected_update_get_id(void);
 const gchar *online_service_request_selected_update_get_user_name(void);
@@ -127,15 +129,16 @@ gboolean online_service_request_selected_update_forward(void);
 void online_service_request_unset_selected_update(void);
 
 void online_service_request_popup_select_service(void);
-void online_service_request_popup_friend_profile(void);
-void online_service_request_popup_friend_updates_new(void);
-void online_service_request_popup_friend_updates(void);
-void online_service_request_popup_friend_follow(void);
+void online_service_request_popup_profile(void);
+void online_service_request_popup_updates_new(void);
+void online_service_request_popup_updates(void);
+void online_service_request_popup_forwards(void);
+void online_service_request_popup_follow(void);
 void online_service_request_popup_best_friend_add(void);
 void online_service_request_popup_best_friend_drop(void);
-void online_service_request_popup_friend_unfollow(void);
-void online_service_request_popup_friend_block(void);
-void online_service_request_popup_friend_unblock(void);
+void online_service_request_popup_unfollow(void);
+void online_service_request_popup_block(void);
+void online_service_request_popup_unblock(void);
 gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GFunc func, gpointer user_data);
 
 

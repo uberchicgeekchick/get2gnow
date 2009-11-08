@@ -2,7 +2,6 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="search_list_store"/>
   <object class="GtkListStore" id="best_friends_list_store">
     <columns>
       <!-- column-name ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE -->
@@ -18,6 +17,17 @@
       <!-- column-name GUINT_BEST_FRIENDS_UNREAD_UPDATES -->
       <column type="guint"/>
     </columns>
+  </object>
+  <object class="GtkListStore" id="search_list_store">
+    <columns>
+      <!-- column-name SearchPhrase -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">[new search]</col>
+      </row>
+    </data>
   </object>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
@@ -182,8 +192,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -523,7 +533,7 @@
                       <object class="GtkImageMenuItem" id="online_service_request_menu_friends_manager">
                         <property name="label" translatable="yes">Friends &amp; Followers _Manager</property>
                         <property name="visible">True</property>
-			<property name="tooltip_text" translatable="yes">See &amp; manage who you're following &amp; if they're following you back or not.
+                        <property name="tooltip_text" translatable="yes">See &amp; manage who you're following &amp; if they're following you back or not.
 See who's following you that you're not back &amp; manage your releationships by managing your friends and followers.
 You can also View their updates and/or profile, follow them back, unfollow them, or block any of them..</property>
                         <property name="use_underline">True</property>
@@ -684,6 +694,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                                 <child>
                                   <object class="GtkComboBoxEntry" id="search_combo_box_entry">
                                     <property name="visible">True</property>
+                                    <property name="model">search_list_store</property>
                                   </object>
                                 </child>
                               </object>
@@ -1005,9 +1016,6 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-/
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -1071,9 +1079,6 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-/
                             <property name="position">5</property>
                           </packing>
                         </child>
@@ -1101,9 +1106,6 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-/
                             <property name="position">7</property>
                           </packing>
                         </child>

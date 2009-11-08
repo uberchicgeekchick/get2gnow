@@ -72,12 +72,17 @@ G_BEGIN_DECLS
 #define API_TIMELINE_USER			"/statuses/user_timeline/%s.xml"
 #define API_TIMELINE_USER_UNREAD		API_TIMELINE_USER "?since_id=%f"
 
+#define API_FORWARDS_BY_ID			"/statuses/retweets/%s.xml"
+
+#define API_TIMELINE_SEARCH			"/search.atom?q="
+#define API_TIMELINE_SEARCH_SUBMIT		"/search.atom?q=%s"
+
 #define API_TIMELINE_GROUP			"/statuses/groups.xml"
-#define API_TIMELINE_SEARCH			"/statuses/search.atom"
 #define API_TIMELINE_PUBLIC			"/statuses/public_timeline.xml"
 
 #define API_POST_STATUS				"/statuses/update.xml"
 #define API_SEND_MESSAGE			"/direct_messages/new.xml"
+#define API_RETWEET_UPDATE			"/statuses/retweet/%s.xml"
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/

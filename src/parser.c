@@ -369,7 +369,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
 		
 		status=NULL;
-		debug("Creating tweet's Status *.");
+		debug("Creating Status *.");
 		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;

@@ -121,9 +121,11 @@ typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
 struct _SelectedUpdate{
 	OnlineService	*service;
 	gdouble		id;
+	gchar		*id_str;
 	gdouble		user_id;
+	gchar		*user_id_str;
 	gchar		*user_name;
-	gchar		*tweet;
+	gchar		*update;
 };
 
 enum _RequestAction{
@@ -131,6 +133,7 @@ enum _RequestAction{
 	ViewProfile,
 	ViewUpdates,
 	ViewUpdatesNew,
+	ViewForwards,
 	BestFriendAdd,
 	BestFriendDrop,
 	Follow,
@@ -223,6 +226,10 @@ void online_service_request_view_updates(OnlineService *service, GtkWindow *pare
 	online_service_request_main(service, ViewUpdates, parent, user_name);
 }/*online_service_request_view_updates(service, parent, user_name);*/
 
+void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent, const gchar *user_name){
+	online_service_request_main(service, ViewForwards, parent, user_name);
+}/*online_service_request_view_updates(service, parent, user_name);*/
+
 void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent, const gchar *user_name){
 	online_service_request_main(service, BestFriendAdd, parent, user_name);
 }/*online_service_request_best_friend_add(service, parent, user_name);*/
@@ -268,10 +275,12 @@ const gchar *online_service_request_action_to_string(RequestAction action){
 	switch(action){
 		case Confirmation:
 			return _("confirming action");
-		case ViewUpdatesNew:
-			return _("displaying new updates");
 		case ViewUpdates:
 			return _("displaying recent updates");
+		case ViewUpdatesNew:
+			return _("displaying new updates");
+		case ViewForwards:
+			return _("displaying forwards");
 		case ViewProfile:
 			return _("viewing user profile");
 		case BestFriendAdd:
@@ -312,6 +321,7 @@ static OnlineServiceRequest *online_service_request_new( OnlineService *service,
 	request->message=g_strdup(online_service_request_action_to_string(action));
 	
 	switch(request->action){
+		case ViewForwards:
 		case ViewUpdatesNew:
 		case ViewUpdates:
 			break;
@@ -369,7 +379,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 		return;
 	}
 	
-	if(action==ViewUpdatesNew||action==ViewUpdates){
+	if(action==ViewUpdatesNew||action==ViewUpdates||action==ViewForwards){
 		gchar *timeline=NULL;
 		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
 		if(action==ViewUpdatesNew){
@@ -383,6 +393,9 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 				uber_free( user_timeline );
 				timeline=g_strdup_printf( API_TIMELINE_USER_UNREAD, user_name, unread_update_id );
 			}
+		}else if(action==ViewForwards){
+			uber_free(user_timeline);
+			timeline=g_strdup_printf(API_FORWARDS_BY_ID, user_name);
 		}else{
 			debug( "Loading %s's updates, on <%s>.  Displaying all updates.", user_name, service->guid );
 			timeline=user_timeline;
@@ -480,6 +493,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		case Confirmation:
 		case ViewUpdates:
 		case ViewUpdatesNew:
+		case ViewForwards:
 		default:
 			/*more cases of to make gcc happy.*/
 			debug("Unsupported OnlineServiceRequest action! %s", online_service_request_action_to_string(request->action) );
@@ -505,18 +519,20 @@ gboolean online_service_request_is_update_selected(void){
 	return ( !selected_update ?FALSE :TRUE );
 }/*online_service_request_is_update_selected();*/
 
-void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *tweet){
+void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update){
 	/*	gint id=atoi(string);	*/
 	if(selected_update) online_service_request_unset_selected_update();
 	
 	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", service->guid, id, user_name, service->uri);
-	debug("SelectedUpdate's update: %s.", tweet);
+	debug("SelectedUpdate's update: %s.", update);
 	selected_update=g_new0(SelectedUpdate, 1);
 	selected_update->service=service;
 	selected_update->id=id;
+	selected_update->id_str=gdouble_to_str(id);
 	selected_update->user_id=user_id;
+	selected_update->user_id_str=gdouble_to_str(user_id);
 	selected_update->user_name=g_strdup(user_name);
-	selected_update->tweet=g_uri_unescape_string(tweet, NULL);
+	selected_update->update=g_uri_unescape_string(update, NULL);
 }/*online_service_request_set_selected_update*/
 
 OnlineService *online_service_request_selected_update_get_service(void){
@@ -539,9 +555,9 @@ gchar *online_service_request_selected_update_reply_to_strdup(gboolean forwardin
 	if(!( selected_update && selected_update->id )) return NULL;
 	
 	if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
-		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forwarding ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forwarding ?selected_update->tweet :"" ));
+		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forwarding ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forwarding ?selected_update->update :"" ));
 	
-	return g_strdup_printf("%s@%s %s", (forwarding ?"RT " :""), selected_update->user_name, (forwarding ?selected_update->tweet :"" ));
+	return g_strdup_printf("%s@%s %s", (forwarding ?"RT " :""), selected_update->user_name, (forwarding ?selected_update->update :"" ));
 }/*online_service_request_selected_update_reply_to_strdup();*/
 
 gboolean online_service_request_selected_update_reply(void){
@@ -575,13 +591,18 @@ void online_service_request_unset_selected_update(void){
 	debug("Destroying current selected_update object.");
 	selected_update->service=NULL;
 	
-	uber_object_free(&selected_update->user_name, &selected_update->tweet, &selected_update, NULL);
+	uber_object_free(&selected_update->user_name, &selected_update->id_str, &selected_update->user_id_str, &selected_update->update, &selected_update, NULL);
 }/*online_service_request_unset_selected_update*/
 
 void online_service_request_selected_update_view_updates_new(void){
 	if(!(selected_update && selected_update->user_name)) return;
 	online_service_request_main(selected_update->service, ViewUpdatesNew, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
 }/*online_service_request_selected_update_view_updates_new();*/
+
+void online_service_request_selected_update_view_forwards(void){
+	if(!(selected_update && selected_update->id)) return;
+	online_service_request_main(selected_update->service, ViewForwards, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
+}/*online_service_request_selected_update_view_updates();*/
 
 void online_service_request_selected_update_view_updates(void){
 	if(!(selected_update && selected_update->user_name)) return;
@@ -627,16 +648,12 @@ void online_service_request_selected_update_unblock(void){
 
 void online_service_request_selected_update_save_fave(void){
 	if(!(selected_update && selected_update->id)) return;
-	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
-	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), fave_tweet_id);
-	uber_free(fave_tweet_id);
+	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
 }/*online_service_request_selected_update_save_fave*/
 
 void online_service_request_selected_update_destroy_fave(void){
 	if(!(selected_update && selected_update->id)) return;
-	gchar *fave_tweet_id=gdouble_to_str(selected_update->id);
-	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), fave_tweet_id);
-	uber_free(fave_tweet_id);
+	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
 }/*online_service_request_selected_update_destroy_fave*/
 
 
@@ -651,6 +668,8 @@ static gchar *online_service_request_action_to_title(RequestAction action){
 			return _("Who's newest updates do you want see?");
 		case ViewUpdates:
 			return _("Who's updates do you want see?");
+		case ViewForwards:
+			return _("Which update's forwards would you like to view?");
 		case ViewProfile:
 			return _("Who's user profile would you like to view?");
 		case BestFriendAdd:
@@ -689,22 +708,25 @@ static void online_service_request_popup_set_title_and_label(RequestAction actio
 			break;
 		case ViewUpdates:
 		case ViewUpdatesNew:
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or user id, who's resent updates you would like to view:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or user id, who's resent updates you'd like to view:");
+			break;
+		case ViewForwards:
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the update's id of which forwards/retwees you'd like to view:");
 			break;
 		case ViewProfile:
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to view:");
 			break;
 		case BestFriendAdd:
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd you like to add to your best friends list:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd like to add to your best friends list:");
 			break;
 		case BestFriendDrop:
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd you like to remove from your best friends list:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you'd like to remove from your best friends list:");
 			break;
 		case Block:
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to block?  They'll no longer be able to read your tweets, send you messages, and you'll no longer be notified when they 'mention' you, using the @ symbol:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to block?  They'll no longer be able to read your updates, send you messages, and you'll no longer be notified when they 'mention' you, using the @ symbol:");
 			break;
 		case UnBlock:
-			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-block?  They'll be able to once again read your tweets and you'll see when they mention you, using the @ symbol, again:");
+			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-block?  They'll be able to once again read your updates and you'll see when they mention you, using the @ symbol, again:");
 			break;
 		case UnFollow:
 			gtk_message_dialog_set_markup( online_service_request_popup->dialog, "Please enter the user user_name, or id, of whom you want to un-follow?");
@@ -760,6 +782,7 @@ static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, g
 		case UnBlock:
 		case ViewUpdates:
 		case ViewUpdatesNew:
+		case ViewForwards:
 		case BestFriendAdd:
 		case BestFriendDrop:
 			if(online_service_request_popup_dialog_process_requests(dialog, response, online_service_request_popup))
@@ -891,35 +914,39 @@ void online_service_request_popup_select_service(void){
 	
 	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->user_name_frame));
 	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
-}/*online_service_request_popup_select_service*/
+}/*online_service_request_popup_select_service();*/
 
-void online_service_request_popup_friend_follow(void){
+void online_service_request_popup_follow(void){
 	online_service_request_popup_dialog_show(Follow);
-}/*online_service_request_popup_friend_follow*/
+}/*online_service_request_popup_follow();*/
 
-void online_service_request_popup_friend_unfollow(void){
+void online_service_request_popup_unfollow(void){
 	online_service_request_popup_dialog_show(UnFollow);
-}/*online_service_request_popup_friend_unfollow*/
+}/*online_service_request_popup_unfollow();*/
 
-void online_service_request_popup_friend_block(void){
+void online_service_request_popup_block(void){
 	online_service_request_popup_dialog_show(Block);
-}/*online_service_request_popup_friend_block*/
+}/*online_service_request_popup_block();*/
 
-void online_service_request_popup_friend_unblock(void){
+void online_service_request_popup_unblock(void){
 	online_service_request_popup_dialog_show(UnBlock);
-}/*online_service_request_popup_friend_unblock*/
+}/*online_service_request_popup_unblock();*/
 
-void online_service_request_popup_friend_updates_new(void){
+void online_service_request_popup_updates_new(void){
 	online_service_request_popup_dialog_show(ViewUpdatesNew);
-}/*online_service_request_popup_friend_updates*/
+}/*online_service_request_popup_updates();*/
 
-void online_service_request_popup_friend_updates(void){
+void online_service_request_popup_forwards(void){
+	online_service_request_popup_dialog_show(ViewForwards);
+}/*online_service_request_popup_updates();*/
+
+void online_service_request_popup_updates(void){
 	online_service_request_popup_dialog_show(ViewUpdates);
-}/*online_service_request_popup_friend_updates*/
+}/*online_service_request_popup_updates();*/
 
-void online_service_request_popup_friend_profile(void){
+void online_service_request_popup_profile(void){
 	online_service_request_popup_dialog_show(ViewProfile);
-}/*online_service_request_popup_friend_profile*/
+}/*online_service_request_popup_profile();*/
 
 void online_service_request_popup_best_friend_add(void){
 	online_service_request_popup_dialog_show(BestFriendAdd);
@@ -937,6 +964,7 @@ static gboolean online_service_request_popup_validate_usage(RequestAction action
 		case ViewProfile:
 		case ViewUpdates:
 		case ViewUpdatesNew:
+		case ViewForwards:
 		case BestFriendAdd:
 		case BestFriendDrop:
 		case Follow:

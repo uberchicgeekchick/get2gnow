@@ -113,7 +113,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	newest_update_id=0.0;
 	
 	gboolean	has_loaded=timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view);
-	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE) :FALSE );
+	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE );
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
 	guint		timelines_sexy_tree_view_notify_delay=timelines_sexy_tree_view_get_notify_delay(timelines_sexy_tree_view);
@@ -130,16 +130,10 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
 	gboolean free_status;
-	for(current_node = root_element; current_node; current_node = current_node->next) {
+	for(current_node=current_node->children; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
-		if( g_str_equal(current_node->name, "statuses") || g_str_equal(current_node->name, "direct-messages") ){
-			if(!current_node->children) continue;
-			current_node = current_node->children;
-			continue;
-		}
-		
-		if(!( g_str_equal(current_node->name, "status") || g_str_equal(current_node->name, "direct_message") ))
+		if(!( g_str_equal(current_node->name, "entry") ))
 			continue;
 		
 		if(!current_node->children){
@@ -147,10 +141,10 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 			continue;
 		}
 		
-		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing search result entry." );
 		
 		status=NULL;
-		debug("Creating tweet's Status *.");
+		debug("Creating Status *.");
 		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
@@ -158,10 +152,10 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		
 		new_updates++;
 		free_status=TRUE;
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TimelinesSexyTreeView.", status->user->user_name, status->id, service->key);
+		debug("Adding UserStatus ID: %f, on <%s> to TimelinesSexyTreeView.", status->id, service->key);
 		timelines_sexy_tree_view_store(timelines_sexy_tree_view, status);
 		
-		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
+		if(!save_oldest_id && status->id > last_notified_update ){
 			if(notify){
 				free_status=FALSE;
 				g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);

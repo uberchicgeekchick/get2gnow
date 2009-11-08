@@ -115,11 +115,14 @@ struct _UpdateViewer{
 	GtkVBox			*user_updates_control_hbox;
 	GtkImage		*user_image;
 	
-	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
+	/* Buttons for viewing details about the auther of the current selected/extended Tweet. */
 	GtkToggleButton		*best_friend_toggle_button;
+	GtkButton		*view_user_profile_button;
+	
+	/* Buttons for viewing updates, new & all, update from the selected updates author or the selected update's retweets. */
 	GtkButton		*view_user_unread_updates_button;
 	GtkButton		*view_user_updates_button;
-	GtkButton		*view_user_profile_button;
+	GtkButton		*view_forwards_button;
 	
 	/* Buttons for viewing details about the user of the current selected/extended Tweet. */
 	GtkVBox			*user_relationship_controls_hbox;
@@ -256,7 +259,7 @@ static void update_viewer_grab_widgets_compact_update_viewer_hidden(GtkBuilder *
 static void update_viewer_compact_view_display(gboolean compact);
 static void update_viewer_scale(gboolean compact);
 
-static gshort update_viewer_sexy_entry_update_length(gchar *update);
+static gint update_viewer_sexy_entry_update_length(gchar *update);
 static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter);
 
 static void update_viewer_sexy_send(OnlineService *service, const gchar *user_name);
@@ -336,10 +339,12 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 					"user_vbox", &update_viewer->user_vbox,
 					"user_image", &update_viewer->user_image,
 					
-					"view_user_unread_updates_button", &update_viewer->view_user_unread_updates_button,
-					"view_user_profile_button", &update_viewer->view_user_profile_button,
-					"view_user_updates_button", &update_viewer->view_user_updates_button,
 					"best_friend_toggle_button", &update_viewer->best_friend_toggle_button,
+					"view_user_profile_button", &update_viewer->view_user_profile_button,
+					
+					"view_user_unread_updates_button", &update_viewer->view_user_unread_updates_button,
+					"view_user_updates_button", &update_viewer->view_user_updates_button,
+					"selected_update_view_forwards_button", &update_viewer->view_forwards_button,
 					
 					"user_follow_button", &update_viewer->user_follow_button,
 					"user_unfollow_button", &update_viewer->user_unfollow_button,
@@ -409,6 +414,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 				"view_user_profile_button", "clicked", online_service_request_selected_update_view_profile,
 				"view_user_unread_updates_button", "clicked", online_service_request_selected_update_view_updates_new,
 				"view_user_updates_button", "clicked", online_service_request_selected_update_view_updates,
+				"selected_update_view_forwards_button", "clicked", online_service_request_selected_update_view_forwards,
 				
 				"user_follow_button", "clicked", online_service_request_selected_update_follow,
 				"user_unfollow_button", "clicked", online_service_request_selected_update_unfollow,
@@ -835,11 +841,11 @@ void update_viewer_view_selected_update(OnlineService *service, const gdouble id
 	update_viewer_sexy_select();
 }/*update_viewer_view_selected_update*/
 
-static gshort update_viewer_sexy_entry_update_length(gchar *update){
-	guint8 character_count=0;
+static gint update_viewer_sexy_entry_update_length(gchar *update){
+	guint16 character_count=0;
 	gint replace_me=0;
 	gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace_me, 2);
-	for(guint8 i=0; update[i]; i++){
+	for(guint16 i=0; update[i]; i++){
 		if(update[i]=='<' || update[i]=='>')
 			character_count+=3;
 		if(replace_me!=-1 && update[i]=='/' && update[i+1] && update[i+1]=='m' && update[i+2] && update[i+2]=='e' ){

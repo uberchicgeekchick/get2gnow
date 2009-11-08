@@ -262,6 +262,8 @@ static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window);
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window);
 static void main_window_exit(GtkWidget *window, MainWindow *main_window); 
 
+static void main_window_search_submitted(GtkButton *search_button, MainWindow *main_window);
+
 static void main_window_services_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_select_service(GtkMenuItem *item, MainWindow *main_window);
 static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_window); 
@@ -490,6 +492,8 @@ static void main_window_setup(void){
 					"help_contents", "activate", main_window_help_contents_cb,
 					"help_about", "activate", main_window_about_cb,
 					
+					"search_button", "clicked", main_window_search_submitted,
+					
 					"accounts_tool_button", "clicked", main_window_services_cb,
 					"select_service_tool_button", "clicked", main_window_select_service,
 					"preferences_tool_button", "clicked", main_window_preferences_cb,
@@ -521,7 +525,7 @@ static void main_window_setup(void){
 	gtk_window_set_title(GTK_WINDOW(main_window->private->window), window_title);
 	uber_free(window_title);
 	
-	/*main_window->private->search_tree_model=gtk_combo_box_get_model( (GtkComboBox *)main_window->private->search_combo_box_entry ));*/
+	main_window->private->search_tree_model=gtk_combo_box_get_model( (GtkComboBox *)main_window->private->search_combo_box_entry );
 	g_signal_connect_after( main_window->private->window, "event-after", (GCallback)update_viewer_sexy_select, NULL );
 	
 	main_window_best_friends_setup(ui);
@@ -1118,27 +1122,33 @@ static void online_service_request_menu_process(GtkImageMenuItem *item, MainWind
 		return following_viewer_show(GTK_WINDOW(main_window->private->window) );
 	
 	if(item == main_window->private->online_service_request_menu_profile)
-		return online_service_request_popup_friend_profile();
+		return online_service_request_popup_profile();
 	
 	if(item == main_window->private->online_service_request_menu_unread_updates)
-		return online_service_request_popup_friend_updates_new();
+		return online_service_request_popup_updates_new();
 	
 	if(item == main_window->private->online_service_request_menu_updates)
-		return online_service_request_popup_friend_updates();
+		return online_service_request_popup_updates();
 	
 	if(item == main_window->private->online_service_request_menu_best_friend)
 		return online_service_request_popup_best_friend_add();
 	
 	if(item == main_window->private->online_service_request_menu_follow)
-		return online_service_request_popup_friend_follow();
+		return online_service_request_popup_follow();
 	
 	if(item == main_window->private->online_service_request_menu_unfollow)
-		return online_service_request_popup_friend_unfollow();
+		return online_service_request_popup_unfollow();
 	
 	if(item == main_window->private->online_service_request_menu_block)
-		return online_service_request_popup_friend_block();
+		return online_service_request_popup_block();
 }
 
+static void main_window_search_submitted(GtkButton *search_button, MainWindow *main_window){
+	const gchar *search_phrase=GTK_ENTRY(GTK_BIN(main_window->private->search_combo_box_entry)->child)->text;
+	gchar *search_timeline=g_strdup_printf(API_TIMELINE_SEARCH_SUBMIT, search_phrase);
+	tabs_open_timeline(search_timeline, NULL);
+	uber_free(search_timeline);
+}/*main_window_search_submitted(main_window->private->search_button, main_window);*/
 
 static void main_window_services_cb(GtkWidget *widget, MainWindow *main_window){
 	online_services_dialog_show(GTK_WINDOW(main_window->private->window));
