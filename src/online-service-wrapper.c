@@ -200,6 +200,7 @@ static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_servic
 		}
 	}
 	
+	if(online_service_wrapper->process_timeout_id) return TRUE;
 	if(!online_service_wrapper->process_timeout) online_service_wrapper->process_timeout=service->processing_timer++;
 	online_service_wrapper->process_timeout_id=g_timeout_add((online_service_wrapper->process_timeout++)*100, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
 	debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed in %d00 milliseconds.", service->key, online_service_wrapper->requested_uri, online_service_wrapper->process_timeout);

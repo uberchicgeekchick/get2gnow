@@ -248,6 +248,18 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/hide/main_toolbar</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/hide/main_toolbar</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Hide the best friends 'panel' on start-up</short>
+				<long>Hide the best friends 'panel' on start-up.</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/use_dialog</key>
 			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/use_dialog</applyto>
 			<owner>@PACKAGE_NAME@</owner>
@@ -508,11 +520,10 @@
 			<locale name="C">
 				<short>Confirm closing the main window</short>
 				<long>
-					Whether or not to show the message dialog about
-					closing the main window with the 'x' button in the
-					actually exiting, instead of 'hiding', it until
-					with the tray icon.  This prompt is shown when no
-					tray icon exist to use to restore the windows.
+					Whether or not to show the message dialog that
+					clicking the main window's 'x' button will exit
+					@PACKAGE_NAME@ instead of 'minimizing' it to
+					its tray icon.
 				</long>
 			</locale>
 		</schema>
@@ -527,9 +538,61 @@
 				<short>Confirm hiding the main window</short>
 				<long>
 					Whether or not to show the message dialog about
-					hiding the main window with the 'x' button in the
-					title bar not actually exiting, but instead 'hiding'
-					it until the tray icon is used to restore or quit the program.
+					clickng the main window's 'x' button in its
+					will not exit @PACKAGE_NAME@ but instead 'minimizes'
+					to the tray icon until @PACKAGE_NAME@'s restored or exited.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/accounts</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/accounts</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Confirm deleting accounts, a.ka. OnlineService(s)</short>
+				<long>
+					Whether or not to verify that the user truly meant to delece one of their accounts.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/cleaning_up/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/cleaning_up/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Confirm deletion of best friend when their profile isn't found</short>
+				<long>
+					@PACKAGE_NAME@ can 'reload/refrese' a users best friends.
+					If a best friend's profile isn't found @PACKAGE_NAME@ will
+					remove the best friend from the user's best friends list.
+					Because user profile's cannot be found when, either,
+					1.) The best friend has changed their user name.
+					2.) The best friend deleted their account.
+					or
+					3.) When @PACKAGE_NAME@ has lost its connection with
+						the OnlineService the best friend's on.
+					Mostly because of the 3rd case @PACKAGE_NAME@ confirms
+					deletion of a best friend before 'cleaning-up' a best friend.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/best_friends</key>
+			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/deleting/best_friends</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>false</default>
+			<locale name="C">
+				<short>Confirm the user meant to delete one of their best friends</short>
+				<long>
+					Whether or not to verify that the user truly meant to delece one of their best friends.
 				</long>
 			</locale>
 		</schema>

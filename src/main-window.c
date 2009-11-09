@@ -139,15 +139,7 @@ struct _MainWindowPrivate {
 	
 	/* This is the 'Tools' menu. */
 	GtkMenuItem		*menu_online_service_request;
-	GtkImageMenuItem	*online_service_request_menu_friends_manager;
-	GtkImageMenuItem	*online_service_request_menu_following_viewer;
-	GtkImageMenuItem	*online_service_request_menu_follow;
-	GtkImageMenuItem	*online_service_request_menu_unfollow;
-	GtkImageMenuItem	*online_service_request_menu_block;
-	GtkImageMenuItem	*online_service_request_menu_unread_updates;
-	GtkImageMenuItem	*online_service_request_menu_updates;
-	GtkImageMenuItem	*online_service_request_menu_profile;
-	GtkImageMenuItem	*online_service_request_menu_best_friend;
+	GList			*online_service_request_popup_image_menu_items;
 	
 	/* Timeline menu items */
 	GtkMenuItem		*menu_tabs;
@@ -256,7 +248,7 @@ static void main_window_best_friends_list_store_validate(GtkButton *best_friends
 static void main_window_best_friends_buttons_set_sensitive(void);
 static void main_window_best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_view, MainWindow *main_window);
 static void main_window_best_friends_button_clicked(GtkButton *button);
-static void main_window_view_setup(void);
+static void main_window_view_setup(MainWindowPrivate *m_w_p);
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window); 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window);
@@ -276,7 +268,8 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
 static void main_window_compact_view_toggled(gboolean checked);
 static void main_window_compact_timelines_toggled(gboolean checked);
 
-static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window);
+static void main_window_online_service_request_popup_menu_setup(GtkBuilder *ui);
+static void main_menu_online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window);
 
 static void main_window_about_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_help_contents_cb(GtkWidget *widget, MainWindow *main_window); 
@@ -313,6 +306,8 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window=singleton_main_window;
 	
 	main_window->private=GET_PRIVATE(main_window);
+	main_window->private->online_service_request_popup_image_menu_items=NULL;
+	main_window->private->best_friends_buttons=NULL;
 	main_window->private->widgets_connected=NULL;
 	main_window->private->widgets_disconnected=NULL;
 	main_window->private->statusbar_default_message=g_strdup("");
@@ -328,8 +323,11 @@ static void main_window_finalize(GObject *object){
 	program_timeout_remove(&main_window->private->size_timeout_id, _("main window configuration"));
 	main_window_statusbar_timeouts_free();
 	
+	g_list_free(main_window->private->best_friends_buttons);
+	g_list_free(main_window->private->online_service_request_popup_image_menu_items);
 	g_list_free(main_window->private->widgets_connected);
 	g_list_free(main_window->private->widgets_disconnected);
+	
 	tabs_destroy();
 	uber_free(main_window->private->statusbar_default_message);
 	if(main_window->private->best_friends_tree_model_sort)
@@ -380,14 +378,6 @@ static void main_window_setup(void){
 					"view_menu_rcpt_colums_check_menu_item", &main_window->private->view_menu_rcpt_colums_check_menu_item,
 					
 					"online_service_request", &main_window->private->menu_online_service_request,
-					"online_service_request_menu_friends_manager", &main_window->private->online_service_request_menu_friends_manager,
-					"online_service_request_menu_following_viewer", &main_window->private->online_service_request_menu_following_viewer,
-					"online_service_request_menu_follow", &main_window->private->online_service_request_menu_follow,
-					"online_service_request_menu_unfollow", &main_window->private->online_service_request_menu_unfollow,
-					"online_service_request_menu_block", &main_window->private->online_service_request_menu_block,
-					"online_service_request_menu_unread_updates", &main_window->private->online_service_request_menu_unread_updates,
-					"online_service_request_menu_updates", &main_window->private->online_service_request_menu_updates,
-					"online_service_request_menu_profile", &main_window->private->online_service_request_menu_profile,
 					
 					"help", &main_window->private->menu_help,
 					/* end menu items. */
@@ -480,15 +470,6 @@ static void main_window_setup(void){
 					"selected_update_author_unfollow_image_menu_item", "activate", online_service_request_selected_update_unfollow,
 					"selected_update_author_block_image_menu_item", "activate", online_service_request_selected_update_block,
 					
-					"online_service_request_menu_friends_manager", "activate", online_service_request_menu_process,
-					"online_service_request_menu_following_viewer", "activate", online_service_request_menu_process,
-					"online_service_request_menu_follow", "activate", online_service_request_menu_process,
-					"online_service_request_menu_unfollow", "activate", online_service_request_menu_process,
-					"online_service_request_menu_block", "activate", online_service_request_menu_process,
-					"online_service_request_menu_unread_updates", "activate", online_service_request_menu_process,
-					"online_service_request_menu_updates", "activate", online_service_request_menu_process,
-					"online_service_request_menu_profile", "activate", online_service_request_menu_process,
-					
 					"help_contents", "activate", main_window_help_contents_cb,
 					"help_about", "activate", main_window_about_cb,
 					
@@ -528,8 +509,9 @@ static void main_window_setup(void){
 	main_window->private->search_tree_model=gtk_combo_box_get_model( (GtkComboBox *)main_window->private->search_combo_box_entry );
 	g_signal_connect_after( main_window->private->window, "event-after", (GCallback)update_viewer_sexy_select, NULL );
 	
+	main_window_online_service_request_popup_menu_setup(ui);
 	main_window_best_friends_setup(ui);
-	main_window_view_setup();
+	main_window_view_setup(main_window->private);
 	
 	/* Set up connected related widgets */
 	main_window_connection_items_setup(ui);
@@ -594,7 +576,7 @@ static void main_window_best_friends_setup(GtkBuilder *ui){
 	};
 	
 	GList *list=NULL;
-	for(int i=0; i < G_N_ELEMENTS(best_friends_buttons); i++)
+	for(gint i=0; i < G_N_ELEMENTS(best_friends_buttons); i++)
 		list=g_list_append(list, (gtk_builder_get_object(ui, best_friends_buttons[i])) );
 	main_window->private->best_friends_buttons=list;
 	
@@ -774,30 +756,30 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 	
 }/*main_window_best_friends_button_clicked(button);*/
 
-static void main_window_view_setup(void){
+static void main_window_view_setup(MainWindowPrivate *m_w_p){
 	/* Best Friends stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE, (GtkWidget *)main_window->private->best_friends_vbox );
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( m_w_p->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE, (GtkWidget *)m_w_p->best_friends_vbox );
 	
 	/* Main Toolbar stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_toolbar_main_check_menu_item, MAIN_WINDOW_MAIN_TOOLBAR_HIDE, TRUE, (GtkWidget *)main_window->private->main_window_handlebox );
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( m_w_p->view_toolbar_main_check_menu_item, MAIN_WINDOW_MAIN_TOOLBAR_HIDE, TRUE, (GtkWidget *)m_w_p->main_window_handlebox );
 	
 	/* Tabs Toolbars stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_toolbar_tabs_check_menu_item, TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY, TRUE, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_toolbar_tabs_check_menu_item, TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY, TRUE, NULL);
 	
 	/* Timeline Columns. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_detailed_update_column_check_menu_item, CONCATENATED_UPDATES, FALSE, NULL);
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_from_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY, TRUE, NULL);
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_rcpt_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, TRUE, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_detailed_update_column_check_menu_item, CONCATENATED_UPDATES, FALSE, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_from_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY, TRUE, NULL);
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_rcpt_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, TRUE, NULL);
 	
-	gtk_check_menu_item_set_active( main_window->private->view_update_viewer_floating_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) );
-	g_signal_connect_after( main_window->private->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle, NULL );
+	gtk_check_menu_item_set_active( m_w_p->view_update_viewer_floating_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) );
+	g_signal_connect_after( m_w_p->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle, NULL );
 	
-	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_compact_view_check_menu_item, gconfig_if_bool( PREFS_UPDATE_VIEWER_COMPACT, FALSE) );
-	g_signal_connect_after( main_window->private->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)update_viewer_emulate_compact_view_toggle, NULL );
+	gtk_check_menu_item_set_active(m_w_p->view_update_viewer_compact_view_check_menu_item, gconfig_if_bool( PREFS_UPDATE_VIEWER_COMPACT, FALSE) );
+	g_signal_connect_after( m_w_p->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)update_viewer_emulate_compact_view_toggle, NULL );
 	
 	/* Over all hidden/visible UI widgets. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_menu_uber_compact_view_check_menu, COMPACT_VIEW, FALSE, NULL);
-}/*main_window_view_setup();*/
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_uber_compact_view_check_menu, COMPACT_VIEW, FALSE, NULL);
+}/*main_window_view_setup(main_window->private);*/
 
 static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, gboolean active, GtkWidget *widget){
 	gboolean hide=!gconfig_if_bool(gconfig_key, active);
@@ -1113,34 +1095,70 @@ gboolean main_window_tabs_init(void){
 	return FALSE;
 }/*main_window_tabs_init();*/
 
+static void main_window_online_service_request_popup_menu_setup(GtkBuilder *ui){
+	struct {
+		const char	*gtk_image_menu_item_name;
+		GPointerFunc	func;
+		gpointer	user_data;
+	}
+	
+	online_service_request_popup_image_menu_items[]={
+		{ "online_service_request_popup_friends_manager_image_menu_item",
+			(GPointerFunc)friends_manager_show,
+			main_window->private->window },
+		{ "online_service_request_popup_following_viewer_image_menu_item",
+			(GPointerFunc)following_viewer_show,
+			(gpointer)main_window->private->window },
+		{ "online_service_request_popup_follow_image_menu_item",
+			(GPointerFunc)online_service_request_popup_follow,
+			NULL },
+		{ "online_service_request_popup_unfollow_image_menu_item",
+			(GPointerFunc)online_service_request_popup_unfollow,
+			NULL },
+		{ "online_service_request_popup_block_image_menu_item",
+			(GPointerFunc)online_service_request_popup_block,
+			NULL },
+		{ "online_service_request_popup_unread_updates_image_menu_item",
+			(GPointerFunc)online_service_request_popup_updates_new,
+			NULL },
+		{ "online_service_request_popup_updates_image_menu_item",
+			(GPointerFunc)online_service_request_popup_updates,
+			NULL },
+		{ "online_service_request_popup_profile_image_menu_item",
+			(GPointerFunc)online_service_request_popup_profile,
+			NULL },
+		{ "online_service_request_popup_forwards_image_menu_item",
+			(GPointerFunc)online_service_request_popup_forwards,
+			NULL },
+		{ "online_service_request_popup_menu_best_friends_add_image_menu_item",
+			(GPointerFunc)online_service_request_popup_best_friend_add,
+			NULL },
+		{ "online_service_request_popup_menu_best_friends_drop_image_menu_item",
+			(GPointerFunc)online_service_request_popup_best_friend_drop,
+			NULL },
+	};
+	
+	GList *list=NULL;
+	for(gint i=0; i < G_N_ELEMENTS(online_service_request_popup_image_menu_items); i++){
+		debug("Setting up and connecting OnlineServicRequestPopup: %s", online_service_request_popup_image_menu_items[i].gtk_image_menu_item_name);
+		GtkImageMenuItem *item=(GtkImageMenuItem *)gtk_builder_get_object(ui, online_service_request_popup_image_menu_items[i].gtk_image_menu_item_name);
+		g_object_set_data_full(G_OBJECT(item), "gtk_image_menu_item_name", g_strdup(online_service_request_popup_image_menu_items[i].gtk_image_menu_item_name), g_free);
+		g_object_set_data(G_OBJECT(item), "func", online_service_request_popup_image_menu_items[i].func);
+		g_object_set_data(G_OBJECT(item), "user_data", online_service_request_popup_image_menu_items[i].user_data);
+		g_signal_connect(item, "activate", G_CALLBACK(main_menu_online_service_request_menu_process), NULL);
+		list=g_list_append(list, item);
+	}
+	main_window->private->online_service_request_popup_image_menu_items=list;
+	
+}/*main_window_online_service_request_popup_menu_setup(ui);*/
 
-static void online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
-	if(item == main_window->private->online_service_request_menu_friends_manager)
-		return friends_manager_show(GTK_WINDOW(main_window->private->window) );
-	
-	if(item == main_window->private->online_service_request_menu_following_viewer)
-		return following_viewer_show(GTK_WINDOW(main_window->private->window) );
-	
-	if(item == main_window->private->online_service_request_menu_profile)
-		return online_service_request_popup_profile();
-	
-	if(item == main_window->private->online_service_request_menu_unread_updates)
-		return online_service_request_popup_updates_new();
-	
-	if(item == main_window->private->online_service_request_menu_updates)
-		return online_service_request_popup_updates();
-	
-	if(item == main_window->private->online_service_request_menu_best_friend)
-		return online_service_request_popup_best_friend_add();
-	
-	if(item == main_window->private->online_service_request_menu_follow)
-		return online_service_request_popup_follow();
-	
-	if(item == main_window->private->online_service_request_menu_unfollow)
-		return online_service_request_popup_unfollow();
-	
-	if(item == main_window->private->online_service_request_menu_block)
-		return online_service_request_popup_block();
+
+static void main_menu_online_service_request_menu_process(GtkImageMenuItem *item, MainWindow *main_window){
+	const gchar *gtk_image_menu_item_name=g_object_get_data(G_OBJECT(item), "gtk_image_menu_item_name");
+	debug("Attempting to run OnlineServicRequestPopup: %s", gtk_image_menu_item_name);
+	GPointerFunc	func=g_object_get_data(G_OBJECT(item), "func");
+	gpointer	user_data=g_object_get_data(G_OBJECT(item), "user_data");
+	func( user_data );
 }
 
 static void main_window_search_submitted(GtkButton *search_button, MainWindow *main_window){

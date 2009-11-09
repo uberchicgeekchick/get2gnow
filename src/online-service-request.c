@@ -825,9 +825,9 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkMessageD
 }/*online_service_request_popup_dialog_process_requests(widget, response, popup);*/
 
 static void online_service_request_popup_dialog_process_confirmation(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
-	GFunc        func=g_object_get_data(G_OBJECT(dialog), "func");
-	gpointer     user_data=g_object_get_data(G_OBJECT(dialog), "user_data");
-	const gchar *gconfig_key=g_object_get_data(G_OBJECT(dialog), "gconfig_key");
+	GFunc		func=g_object_get_data(G_OBJECT(dialog), "func");
+	gpointer	user_data=g_object_get_data(G_OBJECT(dialog), "user_data");
+	const gchar	*gconfig_key=g_object_get_data(G_OBJECT(dialog), "gconfig_key");
 	
 	gconfig_set_bool(gconfig_key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button)));
 	
@@ -897,9 +897,9 @@ static void online_service_request_popup_confirmation_dialog_add_gconfig_key( co
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET( online_service_request_popup->check_button), FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG( online_service_request_popup->dialog)->vbox), GTK_WIDGET(vbox), FALSE, FALSE, 0);
 	
-	g_object_set_data_full(G_OBJECT( online_service_request_popup->dialog), "gconfig_key", g_strdup(gconfig_key), g_free);
-	g_object_set_data(G_OBJECT( online_service_request_popup->dialog), "user_data", user_data);
-	g_object_set_data(G_OBJECT( online_service_request_popup->dialog), "func", func);
+	g_object_set_data_full(G_OBJECT(online_service_request_popup->dialog), "gconfig_key", g_strdup(gconfig_key), g_free);
+	g_object_set_data(G_OBJECT(online_service_request_popup->dialog), "user_data", user_data);
+	g_object_set_data(G_OBJECT(online_service_request_popup->dialog), "func", func);
 }/*online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );*/
 
 void online_service_request_popup_select_service(void){
@@ -1044,16 +1044,16 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	else
 		debug("OnlineServices found & loaded.  Selecting active service.");
 	
-	if(!(online_services_has_connected(1) > 0 && online_services_has_total(1) > 0)){
-		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
-		gtk_widget_hide(GTK_WIDGET( online_service_request_popup->online_services_frame));
-	}
-	
 	online_service_request_popup_set_title_and_label(action, online_service_request_popup);
 	
 	g_object_add_weak_pointer(G_OBJECT( online_service_request_popup->dialog), (gpointer)&online_service_request_popup);
 	gtk_window_set_transient_for(GTK_WINDOW( online_service_request_popup->dialog), parent );
 	gtk_widget_show_all(GTK_WIDGET( online_service_request_popup->dialog));
+	if(!(online_services_has_connected(1) > 0 && online_services_has_total(1) > 0)){
+		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
+		gtk_widget_hide(GTK_WIDGET(online_service_request_popup->online_services_frame));
+	}
+	
 	gtk_window_present(GTK_WINDOW( online_service_request_popup->dialog));
 }/*online_service_request_popup_dialog_show*/
 

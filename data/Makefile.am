@@ -64,10 +64,14 @@ sexy_DATA: $(un_sexy_DATA)
 		if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 		f=`echo $$d$$p | sed 's/\.in//'`; \
 		if ! test -f $$f; then \
-			echo "ex -E -n -s -X '+1,$${eol}s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq! $$f' '$$d$$p';'"; \
-			ex -E -n -s -X '+1,${eol}s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' "+wq! $$f" "$$d$$p"; \
-			echo "ex -E -n -s -X '+1,$${eol}s/^\([\t\ ]\+<object class="Gtk[VH]Separator".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name="\""\)\(expand\)\("\"">\)[^<]\+\(<\/property>\)\(\n.*<property name="\""fill"\"">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5\r\/' '+wq' '$$f';" \
-			ex -E -n -s -X '+1,${eol}s/^\([\t\ ]\+<object class="Gtk[VH]Separator".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name="\)\(expand\)\(">\)[^<]\+\(<\/property>\)\(\n.*<property name="fill">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5\r\/' '+wq' "$$f"; \
+			cp "$$d$$p" "$$f"; \
+			if test $$f == "main-window.ui"; then \
+				echo "ex -E -n -s -X --noplugin '+1,s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+1,s/^\([\t\ ]\+<object class=\"Gtk[VH]Separator\".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name=\"\)\(expand\)\(\">\)[^<]\+\(<\/property>\)\(\n.*<property name=\"fill\">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5/' '+wq' '$$f';"; \
+				ex -E -n -s -X --noplugin '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+1,$$s/^\([\t\ ]\+<object class="Gtk[VH]Separator".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name="\)\(expand\)\(">\)[^<]\+\(<\/property>\)\(\n.*<property name="fill">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5/' "+wq" "$$f"; \
+			else \
+				echo "ex -E -n -s -X --noplugin '+1,s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq' '$$f';"; \
+				ex -E -n -s -X --noplugin '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' "+wq" "$$f"; \
+			fi; \
 		fi; \
 	done
 clean-sexy-data:

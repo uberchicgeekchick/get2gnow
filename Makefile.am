@@ -32,6 +32,12 @@ DISTCLEANFILES = 		\
 DISTCHECK_CONFIGURE_FLAGS =	\
 	--disable-scrollkeeper
 
+all: config.h get2gnow.spec
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
+
+get2gnow.spec: $(top_builddir)/config.status $(top_builddir)/get2gnow.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+
 # Workaround broken scrollkeeper that doesn't remove its files on
 # uninstall.
 distuninstallcheck_listfiles = find . -type f -print | grep -v '^\./var/scrollkeeper'

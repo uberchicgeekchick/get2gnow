@@ -35,7 +35,7 @@ host_triplet = @host@
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/get2gnow.spec.in $(top_srcdir)/configure AUTHORS \
+	$(srcdir)/@PACKAGE_NAME@.spec.in $(top_srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL NEWS TODO config.guess config.sub \
 	depcomp install-sh ltmain.sh missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -47,7 +47,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = get2gnow.spec
+CONFIG_CLEAN_FILES = @PACKAGE_NAME@.spec
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -261,7 +261,7 @@ EXTRA_DIST =			\
 	README                  \
 	AUTHORS			\
 	NEWS			\
-	get2gnow.spec		\
+	@PACKAGE_NAME@.spec		\
 	xmldocs.make		\
 	omf.make		\
 	gnome-doc-utils.make	\
@@ -271,15 +271,16 @@ DISTCLEANFILES =		\
 	intltool-extract	\
 	intltool-merge		\
 	intltool-update		\
-	get2gnow.spec		\
+	@PACKAGE_NAME@.spec		\
 	gnome-doc-utils.make
 
+
+all: config.h @PACKAGE_NAME@.spec
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 # Workaround broken scrollkeeper that doesn't remove its files on
 # uninstall.
 distuninstallcheck_listfiles = find . -type f -print | grep -v '^\./var/scrollkeeper'
-all: config.h
-	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 am--refresh:
@@ -329,6 +330,9 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_srcdir) && $(AUTOHEADER)
 	rm -f stamp-h1
 	touch $@
+
+@PACKAGE_NAME@.spec: $(top_builddir)/config.status $(top_builddir)/@PACKAGE_NAME@.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 distclean-hdr:
 	-rm -f config.h stamp-h1

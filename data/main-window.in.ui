@@ -192,8 +192,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                                 <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                                <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -530,7 +530,7 @@
                   <object class="GtkMenu" id="online_service_request_menu">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_friends_manager">
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_friends_manager_image_menu_item">
                         <property name="label" translatable="yes">Friends &amp; Followers _Manager</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">See &amp; manage who you're following &amp; if they're following you back or not.
@@ -543,7 +543,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_following_viewer">
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_following_viewer_image_menu_item">
                         <property name="label" translatable="yes">Manage Follo_wers</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Manage your your followers and view their updates and/or profile.</property>
@@ -554,12 +554,12 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="tools_menue_mini_apps_separator_menu_item">
+                      <object class="GtkSeparatorMenuItem" id="online_service_request_popup_menu_mini_apps_separator_menu_item">
                         <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_follow">
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_follow_image_menu_item">
                         <property name="label" translatable="yes">_Follow a new friend</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Add / Follow a new friend by entering their username.</property>
@@ -569,7 +569,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_unfollow">
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_unfollow_image_menu_item">
                         <property name="label" translatable="yes">_Unfollow a friend</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Stop following a friend by entering their username.</property>
@@ -579,7 +579,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_block">
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_block_image_menu_item">
                         <property name="label" translatable="yes">_Block a user</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Block a friend from seeing any of your tweets or sending youany message by entering their username.</property>
@@ -589,32 +589,37 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSeparatorMenuItem" id="view_menu_relationship_separator">
+                      <object class="GtkSeparatorMenuItem" id="online_service_request_popup_menu_relationship_separator">
                         <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_unread_updates">
-                        <property name="label" translatable="yes">_Read someone's unread Updates</property>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_menu_best_friends_add_image_menu_item">
+                        <property name="label" translatable="yes">_Add a best friend</property>
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">View all updates you haven't read from another user.</property>
+                        <property name="tooltip_text" translatable="yes">Add a user to your list of best friends.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image11</property>
+                        <property name="image">image14</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_updates">
-                        <property name="label" translatable="yes">_View someone's Updates</property>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_menu_best_friends_drop_image_menu_item">
+                        <property name="label" translatable="yes">_Remove a best friend</property>
                         <property name="visible">True</property>
-                        <property name="tooltip_text" translatable="yes">View someone's recent Updates.</property>
+                        <property name="tooltip_text" translatable="yes">Remove a user from your list of best friends.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">friends_menu_view_timeline_image</property>
+                        <property name="image">image15</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_menu_profile">
+                      <object class="GtkSeparatorMenuItem" id="online_service_request_best_friends_menu_separator">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_profile_image_menu_item">
                         <property name="label" translatable="yes">View someone's _Profile</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">View someone's profile including:
@@ -624,6 +629,36 @@ You can also View their updates and/or profile, follow them back, unfollow them,
 	How many other people they're following.</property>
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_view_tweets_image</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_unread_updates_image_menu_item">
+                        <property name="label" translatable="yes">_Read someone's unread Updates</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View all updates you haven't read from another user.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image11</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_updates_image_menu_item">
+                        <property name="label" translatable="yes">_View someone's Updates</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View someone's recent Updates.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">friends_menu_view_timeline_image</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_forwards_image_menu_item">
+                        <property name="label" translatable="yes">View an update's _thread</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">View an updates _threads (i.e. forwards/retweets)</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image13</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
@@ -1016,6 +1051,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -1079,6 +1115,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">5</property>
                           </packing>
                         </child>
@@ -1106,6 +1143,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">7</property>
                           </packing>
                         </child>
@@ -1363,5 +1401,17 @@ You can also View their updates and/or profile, follow them back, unfollow them,
   <object class="GtkImage" id="image12">
     <property name="visible">True</property>
     <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image13">
+    <property name="visible">True</property>
+    <property name="stock">gtk-sort-ascending</property>
+  </object>
+  <object class="GtkImage" id="image14">
+    <property name="visible">True</property>
+    <property name="stock">gnome-stock-about</property>
+  </object>
+  <object class="GtkImage" id="image15">
+    <property name="visible">True</property>
+    <property name="stock">gtk-stop</property>
   </object>
 </interface>
