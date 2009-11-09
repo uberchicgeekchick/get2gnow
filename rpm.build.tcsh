@@ -35,6 +35,7 @@ endif
 mv --verbose "${pkg_path}/tarballs/get2gnow-${version}.tar.gz" "${pkg_path}/tarballs/get2gnow-${version}-${release}.${MACHTYPE}.tar.gz";
 sudo mv --verbose /usr/src/packages/RPMS/*/get2gnow*.rpm "${pkg_path}/rpms/";
 sudo mv --verbose /usr/src/packages/SRPMS/get2gnow*.rpm "${pkg_path}/srpms/";
+sudo chown ${USER}:${GROUP} "${pkg_path}/"*/get2gnow*
 if( ! -d /projects/ssh/uberChicGeekChick.Com/apps/oss-canvas/downloads ) then
 	printf "Cannot copy our packages to uberChicGeekChick.Com.  sshfs has prolly disconnected."
 else
