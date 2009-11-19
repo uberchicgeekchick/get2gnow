@@ -32,10 +32,13 @@ DISTCLEANFILES = 		\
 DISTCHECK_CONFIGURE_FLAGS =	\
 	--disable-scrollkeeper
 
-all: config.h get2gnow.spec
+all: config.h get2gnow.spec @PACKAGE_NAME@.control
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
-get2gnow.spec: $(top_builddir)/config.status $(top_builddir)/get2gnow.spec.in
+@PACKAGE_NAME@.spec: $(top_builddir)/config.status $(top_builddir)/@PACKAGE_NAME@.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+
+@PACKAGE_NAME@.control: $(top_builddir)/config.status $(top_builddir)/@PACKAGE_NAME@.control.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 # Workaround broken scrollkeeper that doesn't remove its files on

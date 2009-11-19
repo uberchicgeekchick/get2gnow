@@ -100,6 +100,8 @@
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
@@ -113,6 +115,8 @@
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
                                 <property name="position">1</property>
                               </packing>
                             </child>
@@ -162,7 +166,9 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">2</property>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -264,8 +270,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="pack_type">end</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -444,7 +449,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="autoload_following_updates_check_button">
-                                <property name="label" translatable="yes">Updates of _whomever I'm following.</property>
+                                <property name="label" translatable="yes">Updates from _any one I follow.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -476,6 +481,91 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="search_history_frame">
+                    <property name="visible">True</property>
+                    <property name="border_width">12</property>
+                    <property name="label_xalign">0</property>
+                    <property name="shadow_type">out</property>
+                    <child>
+                      <object class="GtkAlignment" id="search_history_alignment">
+                        <property name="visible">True</property>
+                        <property name="left_padding">12</property>
+                        <child>
+                          <object class="GtkVBox" id="search_history_vbox">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkCheckButton" id="search_history_uniq_check_button">
+                                <property name="label" translatable="yes">Only save _unique searches.
+  Unchecking this will make posting updates faster.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="border_width">12</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkFrame" id="search_history_maximum_frame">
+                                <property name="visible">True</property>
+                                <property name="border_width">12</property>
+                                <property name="label_xalign">0</property>
+                                <property name="shadow_type">none</property>
+                                <child>
+                                  <object class="GtkAlignment" id="search_history_maximum_alignment">
+                                    <property name="visible">True</property>
+                                    <property name="left_padding">12</property>
+                                    <child>
+                                      <object class="GtkComboBox" id="search_history_maximum_combo_box">
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child type="label">
+                                  <object class="GtkLabel" id="search_history_combo_box_label">
+                                    <property name="visible">True</property>
+                                    <property name="ypad">5</property>
+                                    <property name="label" translatable="yes">&lt;b&gt;Maximum titles to keep in searches _history.:&lt;/b&gt;</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="mnemonic_widget">search_history_maximum_combo_box</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="search_history_uniq_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;b&gt;Search _History:&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">search_history_uniq_check_button</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -810,6 +900,7 @@
                 <child>
                   <object class="GtkFrame" id="previous_updates_frame">
                     <property name="visible">True</property>
+                    <property name="border_width">12</property>
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">out</property>
                     <child>
@@ -838,13 +929,13 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkFrame" id="previos_updates_maximum_frame">
+                              <object class="GtkFrame" id="previous_updates_maximum_frame">
                                 <property name="visible">True</property>
                                 <property name="border_width">12</property>
                                 <property name="label_xalign">0</property>
                                 <property name="shadow_type">none</property>
                                 <child>
-                                  <object class="GtkAlignment" id="alignment3">
+                                  <object class="GtkAlignment" id="previous_updates_maximum_alignment">
                                     <property name="visible">True</property>
                                     <property name="left_padding">12</property>
                                     <child>
@@ -855,7 +946,7 @@
                                   </object>
                                 </child>
                                 <child type="label">
-                                  <object class="GtkLabel" id="label1">
+                                  <object class="GtkLabel" id="previous_updates_combo_box_label">
                                     <property name="visible">True</property>
                                     <property name="ypad">5</property>
                                     <property name="label" translatable="yes">&lt;b&gt;Maximum _previous updates to save/remember:&lt;/b&gt;</property>
@@ -875,9 +966,9 @@
                       </object>
                     </child>
                     <child type="label">
-                      <object class="GtkLabel" id="previous_updates_label">
+                      <object class="GtkLabel" id="previous_updates_uniq_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;b&gt;_Saved Updated:&lt;/b&gt;</property>
+                        <property name="label" translatable="yes">&lt;b&gt;_Remembering Updates:&lt;/b&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="use_underline">True</property>
                         <property name="mnemonic_widget">previous_updates_uniq_check_button</property>
@@ -885,6 +976,8 @@
                     </child>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
                     <property name="position">2</property>
                   </packing>
                 </child>

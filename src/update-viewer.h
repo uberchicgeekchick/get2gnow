@@ -77,12 +77,15 @@ typedef struct _UpdateViewer UpdateViewer;
  *          Global method  & function prototypes        *
  ********************************************************/
 UpdateViewer *update_viewer_new(GtkWindow *parent);
+
 GtkWindow *update_viewer_get_window(void);
 GtkHBox *update_viewer_get_embed(void);
+GtkButton *update_viewer_get_sexy_dm_button(void);
 
 void update_viewer_beep(void);
 
 void update_viewer_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+void update_viewer_set_in_reply_to_data(OnlineService *service, gdouble update_id, gboolean force);
 
 void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
@@ -93,6 +96,7 @@ void update_viewer_emulate_compact_view_toggle(void);
 void update_viewer_compact_view_toggled(GtkToggleButton *compact_toggle_button);
 void update_viewer_set_embed_toggle_and_image(void);
 
+SexySpellEntry *update_viewer_sexy_entry_get_widget(void);
 void update_viewer_sexy_select(void);
 
 void update_viewer_sexy_prefix_char(const char c);
@@ -113,7 +117,6 @@ void update_viewer_hide_previous_updates(void);
 void update_viewer_show_previous_updates(void);
 
 void update_viewer_send(GtkWidget *activated_widget);
-void update_viewer_sexy_send_dm(void);
 
 G_END_DECLS
 #endif /* __CONTROL_VIEWER_H__ */

@@ -94,7 +94,7 @@
 
 
 /* Parse a timeline XML file */
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view){
+guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -159,7 +159,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		new_updates++;
 		free_status=TRUE;
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to TimelinesSexyTreeView.", status->user->user_name, status->id, service->key);
-		timelines_sexy_tree_view_store(timelines_sexy_tree_view, status);
+		timelines_sexy_tree_view_store_update(timelines_sexy_tree_view, status);
 		
 		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			if(notify){

@@ -128,7 +128,7 @@ gboolean program_init(int argc, char **argv){
 	proxy_init();
 	online_services_init();
 	
-	www_uri_title_lookup_table_init();
+	www_init();
 	
 	main_window_create();
 	
@@ -151,7 +151,7 @@ void program_deinit(void){
 	
 	user_profile_viewer_cleanup();
 	
-	www_uri_title_lookup_table_deinit();
+	www_deinit();
 	
 	debug_deinit();
 }/*program_deinit();*/

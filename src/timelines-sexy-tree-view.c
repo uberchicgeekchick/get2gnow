@@ -91,7 +91,9 @@
 #include "online-service.h"
 
 #include "best-friends.h"
+
 #include "network.h"
+#include "searches.h"
 
 #include "gtkbuilder.h"
 #include "gconfig.h"
@@ -268,8 +270,8 @@ static gboolean timelines_sexy_tree_view_toggle_update_column(TimelinesSexyTreeV
 static gboolean timelines_sexy_tree_view_toggle_created_ago_str_column(TimelinesSexyTreeView *timelines_sexy_tree_view);
 
 static void timelines_sexy_tree_view_check_updates(TimelinesSexyTreeView *timelines_sexy_tree_view);
-static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration, gboolean rerender);
-static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelines_sexy_tree_view, guint row_index, gint created_ago, const gchar *created_how_long_ago, gboolean rerender);
+static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration);
+static void timelines_sexy_tree_view_render_detailed_update_for_row(TimelinesSexyTreeView *timelines_sexy_tree_view, guint row_index, gint created_ago, const gchar *created_how_long_ago);
 static void timelines_sexy_tree_view_check_maximum_updates(TimelinesSexyTreeView *timelines_sexy_tree_view);
 static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timelines_sexy_tree_view);
 
@@ -377,6 +379,7 @@ static void timelines_sexy_tree_view_finalize(TimelinesSexyTreeView *timelines_s
 	if(this->timeout_id && G_STR_N_EMPTY(this->timeline))
 		program_timeout_remove(&this->timeout_id, g_strrstr(this->timeline, "/"));
 	
+	if(this->total) gtk_list_store_clear(this->list_store);
 	if(this->user) uber_free(this->user);
 	if(this->timeline) uber_free(this->timeline);
 	if(this->tab_label_string) uber_free(this->tab_label_string);
@@ -496,16 +499,16 @@ void timelines_sexy_tree_view_start(TimelinesSexyTreeView *timelines_sexy_tree_v
 	
 	if(!this->has_loaded)
 		network_set_state_loading_timeline(this->timeline, Load);
-	else if(this->has_loaded){
+	else{
 		timelines_sexy_tree_view_check_updates(timelines_sexy_tree_view);
 		network_set_state_loading_timeline(this->timeline, Reload);
 	}
 	
 	if(this->minutes){
 		if(!this->service){
-			online_services_request(QUEUE, this->timeline, NULL, network_display_timeline, timelines_sexy_tree_view, (gpointer)this->monitoring);
+			online_services_request(QUEUE, this->timeline, NULL, network_display_timeline, timelines_sexy_tree_view, NULL);
 		}else{
-			online_service_request(this->service, QUEUE, this->timeline, NULL, network_display_timeline, timelines_sexy_tree_view, (gpointer)this->monitoring);
+			online_service_request(this->service, QUEUE, this->timeline, NULL, network_display_timeline, timelines_sexy_tree_view, NULL);
 		}
 	}
 }/*timelines_sexy_tree_view_start(TimelinesSexyTreeView *timelines_sexy_tree_view);*/
@@ -626,7 +629,7 @@ static void timelines_sexy_tree_view_check_maximum_updates(TimelinesSexyTreeView
 		gboolean unread=TRUE;
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+		if(!gtk_tree_model_get_iter(this->tree_model, iter, path)){
 			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
@@ -647,15 +650,12 @@ static void timelines_sexy_tree_view_check_maximum_updates(TimelinesSexyTreeView
 		
 		debug( "Removing <%s>'s %s at index %i which exceeds maximum updates: %s.", service->guid, this->monitoring_string, i, this->max_updates_str );
 		
-		if( unread && this->unread_updates )
-			this->unread_updates--;
-		
 		if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
 			index_updated=TRUE;
 			this->index=-1;
 			
 			if(timelines_sexy_tree_view_scroll_to_top(timelines_sexy_tree_view) )
-				debug("TimelinesSexyTreeView for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
+				debug("TimelinesSexyTreeView for %s(timeline %s) focus moved to row 0.", this->monitoring_string, this->timeline );
 		}
 		
 		gtk_list_store_remove(this->list_store, iter);
@@ -664,7 +664,7 @@ static void timelines_sexy_tree_view_check_maximum_updates(TimelinesSexyTreeView
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0, TRUE);
+	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0);
 }/*timelines_sexy_tree_view_check_maximum_updates(timelines_sexy_tree_view);*/
 
 static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timelines_sexy_tree_view){
@@ -691,12 +691,12 @@ static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timeline
 			break;
 		
 		case	BestFriends:
-			/*By default "Best Friends' Updates" from the last 24 hrs are loaded.*/
-			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
+			/*By default "Best Friends' Updates" from the last 7 days are loaded.*/
+			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &update_expiration, 604800);
 			break;
 		
-		case	Updates:	case Users:
-		case	Searches:	case Groups:
+		case	Updates:	case	Users:
+		case	Searches:	case	Groups:
 		case	Timelines:	case	Archive:
 			break;
 		
@@ -704,10 +704,10 @@ static void timelines_sexy_tree_view_check_inbox(TimelinesSexyTreeView *timeline
 			return;
 	}
 	
-	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, update_expiration, TRUE);
+	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, update_expiration);
 }/*timelines_sexy_tree_view_check_inbox(timelines_sexy_tree_view);*/
 
-static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration, gboolean rerender){
+static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines_sexy_tree_view, gint expiration){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
 	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
 	
@@ -718,7 +718,7 @@ static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines
 	for(gint i=0; i<this->total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+		if(!gtk_tree_model_get_iter(this->tree_model, iter, path)){
 			debug("Retrieving iter from path to index %d failed.  Unable to update row's created_ago time.", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
@@ -737,36 +737,38 @@ static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines
 					GINT_SELECTED_INDEX, &selected_index,
 					GINT_LIST_STORE_INDEX, &list_store_index,
 					STRING_CREATED_AT, &created_at_str,
+					GBOOLEAN_UNREAD, &unread,
 				-1
 		);
 		
 		if(this->list_store_index>-1 && i>=this->list_store_index)
 			list_store_index+=this->list_store_index;
 		
-		created_how_long_ago=parser_convert_time(created_at_str, &created_ago);
+		created_how_long_ago=user_status_convert_time(created_at_str, &created_ago);
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
 			if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
 				index_updated=TRUE;
+				debug_method("timelines_sexy_tree_view_update_age", "Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, -1 );
 				this->index=-1;
 				
 				if(timelines_sexy_tree_view_scroll_to_top(timelines_sexy_tree_view) )
-					debug("TimelinesSexyTreeView for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
+					debug("TimelinesSexyTreeView for %s(timeline %s) focus moved to 0.", this->monitoring_string, this->timeline );
 			}
 			
 			debug("Removing TimelinesSexyTreeView iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, selected_index);
 			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
 			this->total--;
-			if( unread && this->unread_updates )
+			if( (this->has_loaded > 1 || ( this->monitoring==DMs || this->monitoring==Replies || this->monitoring==BestFriends ) ) && unread && this->total > -1 && this->unread_updates>=this->total )
 				this->unread_updates--;
 		}else{
 			if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
-				debug("Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, ( this->index ?(this->index+this->list_store_index+1) :(this->index+this->list_store_index) ) );
+				debug("Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, ( (this->index+this->list_store_index>=this->total) ?-1 :(this->index+this->list_store_index) ) );
 				index_updated=TRUE;
-				this->index+=this->list_store_index;
+				if( (this->index+=this->list_store_index) >= this->total ) this->index=-1;
 			}
 			
-			timelines_sexy_tree_view_rerender_row(timelines_sexy_tree_view, i, created_ago, created_how_long_ago, rerender);
+			timelines_sexy_tree_view_render_detailed_update_for_row(timelines_sexy_tree_view, i, created_ago, created_how_long_ago);
 			
 		}
 		uber_free(created_how_long_ago);
@@ -778,7 +780,7 @@ static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines
 	if(this->list_store_index>-1) this->list_store_index=-1;
 }/*timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0);*/
 
-static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelines_sexy_tree_view, guint row_index, gint created_ago, const gchar *created_how_long_ago, gboolean rerender){
+static void timelines_sexy_tree_view_render_detailed_update_for_row(TimelinesSexyTreeView *timelines_sexy_tree_view, guint row_index, gint created_ago, const gchar *created_how_long_ago){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
 	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
 	
@@ -786,7 +788,7 @@ static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelin
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	GtkTreePath *path=gtk_tree_path_new_from_indices(row_index, -1);
-	if(!(gtk_tree_model_get_iter(this->tree_model, iter, path))){
+	if(!gtk_tree_model_get_iter(this->tree_model, iter, path)){
 		debug("Retrieving iter from path to index %d failed.  Unable to update row's created_ago time.", row_index);
 		gtk_tree_path_free(path);
 		uber_free(iter);
@@ -828,8 +830,9 @@ static void timelines_sexy_tree_view_rerender_row(TimelinesSexyTreeView *timelin
 	uber_free(user_user_name);
 	uber_free(sexy_status_update);
 	uber_free(sexy_complete);
+	gtk_tree_path_free(path);
 	uber_free(iter);
-}/*timelines_sexy_tree_view_rerender_row(timelines_sexy_tree_view, row_index);*/
+}/*timelines_sexy_tree_view_render_detailed_update_for_row(timelines_sexy_tree_view, row_index);*/
 
 const gchar *timelines_sexy_tree_view_list_store_column_to_string(TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column){
 	switch(timelines_sexy_tree_view_list_store_column){
@@ -983,14 +986,14 @@ void timelines_sexy_tree_view_complete(TimelinesSexyTreeView *timelines_sexy_tre
 	
 	if(!this->connected_online_services)	return;
 	
-	if(gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ))
-		timelines_sexy_tree_view_scroll_to_top(timelines_sexy_tree_view);
-	
 	debug("TimelinesSexyTreeView for %s, timeline: %s, completed processing new %d new updates out of %d total updates.", this->monitoring_string, this->timeline, this->unread_updates, this->total);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
-	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0, FALSE);
+	timelines_sexy_tree_view_update_age(timelines_sexy_tree_view, 0);
 	if(this->unread && this->unread_updates)
 		timelines_sexy_tree_view_mark_as_unread(timelines_sexy_tree_view);	
+	
+	if(gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ))
+		timelines_sexy_tree_view_scroll_to_top(timelines_sexy_tree_view);
 }/*timelines_sexy_tree_view_complete(timelines_sexy_tree_view);*/
 
 static void timelines_sexy_tree_view_stop_toggle_tool_button_toggled(GtkToggleToolButton *stop_toggle_tool_button, TimelinesSexyTreeView *timelines_sexy_tree_view){
@@ -1167,16 +1170,11 @@ static void timelines_sexy_tree_view_create_gui(TimelinesSexyTreeView *timelines
 				"timelines_sexy_tree_view_sexy_tree_view", "grab-focus", timelines_sexy_tree_view_grab_focus_cb,
 				
 				"timelines_sexy_tree_view_sexy_tree_view", "get-tooltip", timelines_sexy_tree_view_set_sexy_tooltip,
+				
+				"timelines_sexy_tree_view_sexy_tree_view", "cursor-changed", timelines_sexy_tree_view_update_selected,
+				"timelines_sexy_tree_view_sexy_tree_view", "size-allocate", timelines_sexy_tree_view_resize_cb,
+				"timelines_sexy_tree_view_sexy_tree_view", "key-press-event", hotkey_pressed,
 			NULL
-	);
-	
-	if(this->monitoring!=Searches)
-		gtkbuilder_connect(				
-				gtk_builder_ui, timelines_sexy_tree_view,
-					"timelines_sexy_tree_view_sexy_tree_view", "cursor-changed", timelines_sexy_tree_view_update_selected,
-					"timelines_sexy_tree_view_sexy_tree_view", "size-allocate", timelines_sexy_tree_view_resize_cb,
-					"timelines_sexy_tree_view_sexy_tree_view", "key-press-event", hotkey_pressed,
-				NULL
 		);
 	
 	this->tree_model=GTK_TREE_MODEL(this->list_store);
@@ -1319,7 +1317,7 @@ static gboolean timelines_sexy_tree_view_scroll_to_top(TimelinesSexyTreeView *ti
 	
 	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return FALSE;
 	if( timelines_sexy_tree_view_goto(timelines_sexy_tree_view, 0, FALSE) ){
-		debug("TimelinesSexyTreeView for %s(timeline %s) index reset to 0 and perspective scrolled to the top.", this->monitoring_string, this->timeline );
+		debug("TimelinesSexyTreeView for %s(timeline %s) focus moved to index 0.", this->monitoring_string, this->timeline );
 		return TRUE;
 	}
 	return FALSE;
@@ -1389,14 +1387,19 @@ static gboolean timelines_sexy_tree_view_toggle_created_ago_str_column(Timelines
 	gtk_tree_view_column_toggle_visibility( GET_PRIVATE(timelines_sexy_tree_view)->created_ago_str_tree_view_column );
 	return gtk_tree_view_column_get_visible( GET_PRIVATE(timelines_sexy_tree_view)->created_ago_str_tree_view_column );
 }/*timelines_sexy_tree_view_toggle_created_ago_str_column(timelines_sexy_tree_view);*/
-void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_view, UserStatus *status){
+void timelines_sexy_tree_view_store_update( TimelinesSexyTreeView *timelines_sexy_tree_view, UserStatus *status){
 	if(!( timelines_sexy_tree_view && IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view) ))	return;
 	TimelinesSexyTreeViewPrivate *this=GET_PRIVATE(timelines_sexy_tree_view);
 	
 	gtk_progress_bar_pulse(this->progress_bar);
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	online_service_update_ids_get(status->service, this->timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	gchar *timeline;
+	if(this->monitoring!=Searches)
+		timeline=this->timeline;
+	else
+		timeline=searches_format_timeline_from_uri(this->timeline);
+	online_service_update_ids_get(status->service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	gboolean unread=(status->id && status->id > unread_update_id);
 	
 	this->list_store_index++;
@@ -1431,6 +1434,9 @@ void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_
 	debug("Inserting iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", status->service->guid, this->monitoring_string, this->total, this->total, -1);
 	if(unread)
 		timelines_sexy_tree_view_increment_unread(timelines_sexy_tree_view);
+	
+	if(this->monitoring==Searches)
+		uber_free(timeline);
 	
 	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
 	if(!g_file_test(status->user->image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)){
@@ -1538,7 +1544,7 @@ static void timelines_sexy_tree_view_increment_unread(TimelinesSexyTreeView *tim
 	}
 	
 	if(!this->unread) this->unread=TRUE;
-	if(this->unread_updates<this->max_updates)
+	if(this->unread_updates<this->max_updates && this->unread_updates <= this->total)
 		this->unread_updates++;
 }/*timelines_sexy_tree_view_increment_unread(timelines_sexy_tree_view);*/
 

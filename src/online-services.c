@@ -81,6 +81,7 @@
 
 #include "main-window.h"
 #include "update-viewer.h"
+#include "uberchick-label.h"
 #include "preferences.h"
 #include "gconfig.h"
 #include "online-services-dialog.h"
@@ -218,14 +219,56 @@ void online_services_disconnect(void){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	selected_service=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
+		if(selected_service==service)
+			selected_service=NULL;
 		online_service_disconnect(service, TRUE);
 	}
 	main_window_state_on_connection(FALSE);
 	g_list_free(accounts);
 }/*online_services_disconnect*/
+
+
+void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
+	GList		*accounts=NULL;
+	OnlineService	*service=NULL;
+	
+	gboolean service_uri_handled=FALSE;
+	UberChickLabel *uberchick_label;
+	if(!( IS_UBERCHICK_LABEL( (uberchick_label=UBERCHICK_LABEL(widget)) ) ))
+		uberchick_label=NULL;
+	
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
+		if( g_strrstr(uri, "search") || !g_strrstr(uri, service->uri) )
+			continue;
+		
+		service_uri_handled=TRUE;
+		gchar *services_resource=g_strrstr( (g_strrstr(uri, service->uri)), "/");
+		if(!uberchick_label)
+			debug("OnlineServices: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
+		else{
+			update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label), uberchick_label_get_update_id(uberchick_label), FALSE);
+			debug("OnlineServices via UberChick_Label: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
+		}
+		gchar *user_profile_link=NULL;
+		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
+			user_profile_link=g_strdup_printf(" ( http://%s%s )", service->uri, services_resource );
+		gchar *users_at=g_strdup_printf("@%s%s ", &services_resource[1], (user_profile_link ?user_profile_link :""));
+		update_viewer_sexy_insert_string(users_at);
+		uber_free(users_at);
+		if(user_profile_link) uber_free(user_profile_link);
+		break;
+	}
+	g_list_free(accounts);
+	if(!service_uri_handled)
+		if(g_app_info_launch_default_for_uri(uri, NULL, NULL))
+			debug("**NOTICE:** Opening URI: <%s>.", uri );
+		else
+			debug("**ERROR:** Can't handle URI: <%s>.", uri );
+}/*online_services_url_activated_cb(widget, const gchar *uri);*/
+
 
 gint online_services_has_total(guint count){
 	return online_services_cmp_count(services->total, count);
@@ -599,7 +642,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 	for(gint i=0; i<=services->best_friends_total; i++){
 		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, *iter, path))){
+		if(!gtk_tree_model_get_iter( (GtkTreeModel *)list_store, *iter, path)){
 			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path.", user_name, service->guid, i);
 			gtk_tree_path_free(path);
 			uber_free(*iter);

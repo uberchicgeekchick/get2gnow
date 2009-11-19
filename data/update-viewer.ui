@@ -48,8 +48,8 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">best_friend_image</property>
-                        <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                         <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -470,8 +470,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_send_image">
                             <property name="visible">True</property>
@@ -490,8 +490,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="sexy_dm_image">
                             <property name="visible">True</property>
@@ -521,8 +521,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="new_update_image">
                             <property name="visible">True</property>
@@ -552,8 +552,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                         <child>
                           <object class="GtkImage" id="dm_form_active_image">
                             <property name="visible">True</property>
@@ -685,18 +685,13 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkLabel" id="status_control_label">
+              <object class="GtkHSeparator" id="update_viwer_view_controls_upper_hseparator">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">View
-_Controls</property>
-                <property name="use_markup">True</property>
-                <property name="use_underline">True</property>
-                <property name="justify">center</property>
-                <property name="ellipsize">end</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="padding">6</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -742,12 +737,13 @@ _Controls</property>
               </packing>
             </child>
             <child>
-              <object class="GtkHSeparator" id="hseparator2">
+              <object class="GtkHSeparator" id="update_viwer_view_controls_lower_hseparator">
                 <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="padding">6</property>
                 <property name="position">2</property>
               </packing>
             </child>

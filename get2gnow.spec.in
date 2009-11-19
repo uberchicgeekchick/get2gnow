@@ -7,6 +7,7 @@ URL:		http://local.uberchicgeekchick.com/?projects=get2gnow
 Source0:	%{name}-%{version}.tar.gz
 Group:		Applications/Internet
 Packager:	Kaity G. B. <uberChick@uberChicGeekChick.Com>
+Requires:	gnome-doc-utils >= @GNOME_DOC_UTILS_VERSION_REQUIRED@
 Requires:	libsexy
 Requires:	libnotify
 Requires:	gnome-vfs2
@@ -15,6 +16,7 @@ Requires:	gtk2 >= @GTK_VERSION_REQUIRED@
 Requires:	gconf2 >= @GCONF_VERSION_REQUIRED@
 Requires:	gnome-keyring
 Requires:	libsexy
+BuildRequires:	gnome-doc-utils >= @GNOME_DOC_UTILS_VERSION_REQUIRED@
 BuildRequires:	libgnomeui
 BuildRequires:	libopenssl-devel
 BuildRequires:	libsoup-devel >= @LIBSOUP_VERSION_REQUIRED@
@@ -39,7 +41,7 @@ Linux, GTK+, & GNOME.  With our goal for get2gnow being
 to create the very best, most robust, useful, beautiful,
 and feature rich communication platform imaginable while
 remaining yet straight forward & easy to use.
-get2gnow's focus is to createg the most full featured
+get2gnow's focus is to create the most full featured
 online communication platform available one any platform,
 And for Linux/GTK/GNOME open source artists:
 	get2gnow can easily be embeddable into other applications
@@ -53,7 +55,7 @@ any thing from complex ideas to the very simple:
 %setup -q
 
 %build
-%configure
+%configure --enable-gdb --enable-gtk-icon-update
 make
 
 %install

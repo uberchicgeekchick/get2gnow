@@ -288,15 +288,44 @@
 		</schema>
 		
 		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/search_history/unique_only</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/search_history/unique_only</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whether or not to check if a search is unique prior to storing it.</short>
+				<long>
+					Whether or not to check if a search is unique prior to storing it.
+					Disabling this can fastly increase the speed of spending updates.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/search_history/maximum</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/search_history/maximum</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>25</default>
+			<locale name="C">
+				<short>How many searches to remember.</short>
+				<long>
+					How many searches to remember.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/updates/previous_updates/unique_only</key>
 			<applyto>/apps/@PACKAGE_NAME@/updates/previous_updates/unique_only</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Whetheer to check if an update's unique prior to storing it.</short>
+				<short>Whether or not to check if an update's unique prior to storing it.</short>
 				<long>
-					Whetheer to check if an update's unique prior to storing it.
+					Whether or not to check if an update's unique prior to storing it.
 					Disabling this can fastly increase the speed of spending updates.
 				</long>
 			</locale>

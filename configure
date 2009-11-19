@@ -735,12 +735,13 @@ PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
 PACKAGE_VERSION="#010001"
 VERSION="${PACKAGE_VERSION}"
-PACKAGE_RELEASE="a66"
+PACKAGE_RELEASE="a68"
 RELEASE="${PACKAGE_RELEASE}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
 
+GNOME_DOC_UTILS_VERSION_REQUIRED=0.14.0
 LIBSOUP_VERSION_REQUIRED=2.24.0
 LIBXML_VERSION_REQUIRED=2.6.16
 GTK_VERSION_REQUIRED=2.16
@@ -748,7 +749,6 @@ GTHREAD_VERSION_REQUIRED=2.20
 GCONF_VERSION_REQUIRED=1.2.0
 LIBGIO_VERSION_REQUIRED=2.15.5
 GLIB_VERSION_REQUIRED=2.20
-LIBCANBERRA_VERSION_REQUIRED=0.4
 
 ac_unique_file="src/main.c"
 # Factoring default headers for most tests.
@@ -798,12 +798,14 @@ PACKAGE_VERSION
 PACKAGE_RELEASE
 PACKAGE_STRING
 PACKAGE_BUGREPORT
+GNOME_DOC_UTILS_VERSION_REQUIRED
 LIBSOUP_VERSION_REQUIRED
 LIBXML_VERSION_REQUIRED
 GTK_VERSION_REQUIRED
 GCONF_VERSION_REQUIRED
+GLIB_VERSION_REQUIRED
+GTHREAD_VERSION_REQUIRED
 LIBGIO_VERSION_REQUIRED
-LIBCANBERRA_VERSION_REQUIRED
 gtk_update_icon_cache
 exec_prefix
 prefix
@@ -22934,6 +22936,7 @@ if test -n "$get2gnow_CFLAGS"; then
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
+	    gnome-doc-utils >= \$GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
@@ -22942,7 +22945,6 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
 	    glib-2.0 >= \$GLIB_VERSION_REQUIRED
 	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= \$LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -22951,6 +22953,7 @@ if test -n "$get2gnow_CFLAGS"; then
 	    \$gnome_keyring_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -22959,7 +22962,6 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -22971,6 +22973,7 @@ if test -n "$get2gnow_CFLAGS"; then
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
   pkg_cv_get2gnow_CFLAGS=`$PKG_CONFIG --cflags "
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -22979,7 +22982,6 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -22998,6 +23000,7 @@ if test -n "$get2gnow_LIBS"; then
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"
+	    gnome-doc-utils >= \$GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
@@ -23006,7 +23009,6 @@ if test -n "$get2gnow_LIBS"; then
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
 	    glib-2.0 >= \$GLIB_VERSION_REQUIRED
 	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= \$LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -23015,6 +23017,7 @@ if test -n "$get2gnow_LIBS"; then
 	    \$gnome_keyring_pkgconfig
 \"") >&5
   ($PKG_CONFIG --exists --print-errors "
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -23023,7 +23026,6 @@ if test -n "$get2gnow_LIBS"; then
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -23035,6 +23037,7 @@ if test -n "$get2gnow_LIBS"; then
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
   pkg_cv_get2gnow_LIBS=`$PKG_CONFIG --libs "
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -23043,7 +23046,6 @@ if test -n "$get2gnow_LIBS"; then
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -23069,6 +23071,7 @@ else
 fi
         if test $_pkg_short_errors_supported = yes; then
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -23077,7 +23080,6 @@ fi
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -23087,6 +23089,7 @@ fi
 " 2>&1`
         else
 	        get2gnow_PKG_ERRORS=`$PKG_CONFIG --print-errors "
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -23095,7 +23098,6 @@ fi
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -23108,6 +23110,7 @@ fi
 	echo "$get2gnow_PKG_ERRORS" >&5
 
 	{ { echo "$as_me:$LINENO: error: Package requirements (
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -23116,7 +23119,6 @@ fi
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -23135,6 +23137,7 @@ and get2gnow_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
 echo "$as_me: error: Package requirements (
+	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -23143,7 +23146,6 @@ echo "$as_me: error: Package requirements (
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	    libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	    libgnomeui-2.0
 	    gobject-2.0
@@ -24719,7 +24721,7 @@ echo "${ECHO_T}$LINGUAS" >&6; }
 	< $srcdir/po/POTFILES.in > po/POTFILES
 
 
-ac_config_files="$ac_config_files Makefile data/Makefile data/get2gnow.desktop data/get2gnow.schemas help/Makefile src/Makefile po/Makefile get2gnow.spec"
+ac_config_files="$ac_config_files Makefile data/Makefile data/get2gnow.desktop data/get2gnow.schemas help/Makefile src/Makefile po/Makefile get2gnow.control get2gnow.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -24894,10 +24896,10 @@ fi
 
 printf "Checking for %s's icon.  Looking for:\n\t%s/share/icons/hicolor/scalable/apps/get2gnow.svg\n" ${PACKAGE_NAME} ${prefix}
 if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` && test x$enable_gtk_icon_update = xno ; then
-	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n";
-	gtk_update_icon_cache="gtk_update_icon_cache=echo \"get2gnow icon already installed\"";
+	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n" ${PACKAGE_NAME};
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME} icon already installed\"";
 else
-	printf "%s will be install and make install will attempt to update GTK's icon cache.\n";
+	printf "%s will be installed and make install will attempt to update GTK's icon cache.\n" ${PACKAGE_NAME};
 	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor";
 fi;
 
@@ -25379,6 +25381,7 @@ do
     "help/Makefile") CONFIG_FILES="$CONFIG_FILES help/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "po/Makefile.in") CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
+    "get2gnow.control") CONFIG_FILES="$CONFIG_FILES get2gnow.control" ;;
     "get2gnow.spec") CONFIG_FILES="$CONFIG_FILES get2gnow.spec" ;;
     "po/stamp-it") CONFIG_COMMANDS="$CONFIG_COMMANDS po/stamp-it" ;;
 
@@ -25455,13 +25458,15 @@ PACKAGE_RELEASE!$PACKAGE_RELEASE$ac_delim
 PACKAGE_PREFIX!$PACKAGE_PREFIX$ac_delim
 PACKAGE_STRING!$PACKAGE_STRING$ac_delim
 PACKAGE_BUGREPORT!$PACKAGE_BUGREPORT$ac_delim
+GNOME_DOC_UTILS_VERSION_REQUIRED!$GNOME_DOC_UTILS_VERSION_REQUIRED$ac_delim
 LIBSOUP_VERSION_REQUIRED!$LIBSOUP_VERSION_REQUIRED$ac_delim
 LIBXML_VERSION_REQUIRED!$LIBXML_VERSION_REQUIRED$ac_delim
 GTK_VERSION_REQUIRED!$GTK_VERSION_REQUIRED$ac_delim
 GTK_ICON_UPDATE_CACHE!$ac_delim
 GCONF_VERSION_REQUIRED!$GCONF_VERSION_REQUIRED$ac_delim
+GTHREAD_VERSION_REQUIRED!$GTHREAD_VERSION_REQUIRED$ac_delim
+GLIB_VERSION_REQUIRED!$GLIB_VERSION_REQUIRED$ac_delim
 LIBGIO_VERSION_REQUIRED!$LIBGIO_VERSION_REQUIRED$ac_delim
-LIBCANBERRA_VERSION_REQUIRED!$LIBCANBERRA_VERSION_REQUIRED$ac_delim
 gtk_update_icon_cache!$gtk_update_icon_cache$ac_delim
 exec_prefix!$exec_prefix$ac_delim
 prefix!$prefix$ac_delim
@@ -25553,7 +25558,7 @@ CPP!$CPP$ac_delim
 CXX!$CXX$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 108; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 110; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

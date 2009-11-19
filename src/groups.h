@@ -79,7 +79,7 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view);
+guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring);
 
 
 G_END_DECLS

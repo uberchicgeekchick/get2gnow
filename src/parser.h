@@ -71,14 +71,8 @@ G_BEGIN_DECLS
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
 guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring);
-guint parse_group(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view);
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
-
-void parser_format_user_status(OnlineService *service, User *user, UserStatus *status);
-
-gint parser_datetime_to_seconds_old(const gchar *datetime);
-gchar *parser_convert_time(const gchar *datetime, gint *my_diff);
 
 G_END_DECLS
 #endif /*  __PARSER_H__ */

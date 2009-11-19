@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#010001", "a66"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#010001", "a68"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -34,6 +34,7 @@ dnl  *	Library Dependencies,					*
 dnl  *	uses pkg-config, see PKG_CHECK_MODULES.			*
 dnl  ************************************************************/
 
+GNOME_DOC_UTILS_VERSION_REQUIRED=0.14.0
 LIBSOUP_VERSION_REQUIRED=2.24.0
 LIBXML_VERSION_REQUIRED=2.6.16
 GTK_VERSION_REQUIRED=2.16
@@ -41,7 +42,6 @@ GLIB_VERSION_REQUIRED=2.20
 GTHREAD_VERSION_REQUIRED=2.20
 GCONF_VERSION_REQUIRED=1.2.0
 LIBGIO_VERSION_REQUIRED=2.15.5
-LIBCANBERRA_VERSION_REQUIRED=0.4
 
 dnl /************************************************************
 dnl  *	GNOME Keyring						*
@@ -76,6 +76,7 @@ dnl  * Pkg-Config dependency checks				*
 dnl  ************************************************************/
 PKG_CHECK_MODULES(get2gnow,
 [
+	gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	libsexy
 	openssl
 	libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
@@ -84,7 +85,6 @@ PKG_CHECK_MODULES(get2gnow,
 	gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	glib-2.0 >= $GLIB_VERSION_REQUIRED
 	gio-2.0 >= $LIBGIO_VERSION_REQUIRED
-	libcanberra-gtk >= $LIBCANBERRA_VERSION_REQUIRED
 	libxml-2.0 >= $LIBXML_VERSION_REQUIRED
 	libgnomeui-2.0
 	gobject-2.0
@@ -133,10 +133,10 @@ AM_CONDITIONAL(gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cach
 
 printf "Checking for %s's icon.  Looking for:\n\t%s/share/icons/hicolor/scalable/apps/get2gnow.svg\n" ${PACKAGE_NAME} ${prefix}
 if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` && test x$enable_gtk_icon_update = xno ; then
-	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n";
-	gtk_update_icon_cache="gtk_update_icon_cache=echo \"get2gnow icon already installed\"";
+	printf "%s icon already exists.  GTK's icon cache will not be refreshed.\n" ${PACKAGE_NAME};
+	gtk_update_icon_cache="gtk_update_icon_cache=echo \"${PACKAGE_NAME} icon already installed\"";
 else
-	printf "%s will be install and make install will attempt to update GTK's icon cache.\n";
+	printf "%s will be installed and make install will attempt to update GTK's icon cache.\n" ${PACKAGE_NAME};
 	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor";
 fi;
 
@@ -145,6 +145,7 @@ AC_SUBST(gtk_update_icon_cache)
 
 AC_OUTPUT([
 Makefile
+get2gnow.control
 get2gnow.spec
 data/Makefile
 data/get2gnow.desktop

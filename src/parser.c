@@ -269,7 +269,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	/* Count new tweets */
 	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);;
 	
-	gboolean	oldest_update_id_saved=FALSE;
 	gboolean	save_oldest_id=(timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view)?FALSE:TRUE);
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
@@ -370,7 +369,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		
 		status=NULL;
 		debug("Creating Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
+		if(!( (( status=user_status_parse(service, current_node->children, monitoring ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
@@ -379,7 +378,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %s, on <%s> to TimelinesSexyTreeView.", status->user->user_name, status->id_str, service->key);
-		timelines_sexy_tree_view_store(timelines_sexy_tree_view, status);
+		timelines_sexy_tree_view_store_update(timelines_sexy_tree_view, status);
 		if( monitoring!=BestFriends && monitoring!=DMs && online_service_is_user_best_friend(service, status->user->user_name) ){
 			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends){
 				free_status=FALSE;
@@ -395,10 +394,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		}
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
-		if(save_oldest_id && status->id){
-			if(!oldest_update_id_saved) oldest_update_id_saved=TRUE;
-			oldest_update_id=status->id;
-		}
+		if(save_oldest_id && status->id) oldest_update_id=status->id;
 		
 		if(free_status) user_status_free(status);
 	}
@@ -418,61 +414,4 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	
 	return new_updates;
 }/*parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);*/
-
-gint parser_datetime_to_seconds_old(const gchar *datetime){
-	struct tm	*ta;
-	struct tm	post;
-	int		seconds_local;
-	int		seconds_post;
-	time_t		t=time(NULL);
-	
-	tzset();
-	ta=gmtime(&t);
-	ta->tm_isdst=-1;
-	seconds_local=mktime(ta);
-	
-	strptime(datetime, "%a %b %d %T +0000 %Y", &post);
-	post.tm_isdst=-1;
-	seconds_post=mktime(&post);
-	
-	return difftime(seconds_local, seconds_post);
-}/*
-	parser_datetime_to_seconds_old("Fri Nov  6 16:30:31 2009");
-	parser_datetime_to_seconds_old(datetime);
-*/
-
-gchar *parser_convert_time(const gchar *datetime, gint *my_diff){
-	gint diff=parser_datetime_to_seconds_old(datetime);
-	if(diff < 0) *my_diff=0;
-	else *my_diff=diff;
-	
-	/* Up to one minute ago. */
-	
-	if(diff < 2) return g_strdup(_("1 second ago"));
-	if(diff < 60 ) return g_strdup_printf(_("%i seconds ago"), diff);
-	if(diff < 120) return g_strdup(_("1 minute ago"));
-	
-	/* Minutes */
-	diff=diff/60;
-	if(diff < 60) return g_strdup_printf(_("%i minutes ago"), diff);
-	if(diff < 120) return g_strdup(_("1 hour ago"));
-	
-	/* Hours */
-	diff=diff/60;
-	if(diff < 24) return g_strdup_printf(_("%i hours ago"), diff);
-	if(diff < 48) return g_strdup(_("1 day ago"));
-	
-	/* Days */
-	diff=diff/24;
-	if(diff < 30) return g_strdup_printf(_("%i days ago"), diff);
-	if(diff < 365) return g_strdup_printf(_("%i months ago"), (diff/30));
-	
-	return g_strdup_printf(_("%i years ago"), (diff/365));
-	/* NOTE:
-	 * 	About time, month, & year precision, "years aren't...blah blah".
-	 * 	yeah well I agree!
-	 * 	but I'm dealing w/integers not floating point arthmatic.
-	 * 	so we'll all just have to get over is.
-	 */
-}/*parser_convert_time(date_created_string, &created_seconds_ago);*/
 

@@ -93,8 +93,9 @@
 #include "debug.h"
 
 
+
 /* Parse a timeline XML file */
-guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view){
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -103,12 +104,11 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	/* Count new tweets */
 	guint		new_updates=0;
 	
-	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
-	gchar		*timeline=g_strdup(uri_split[0]);
-			g_strfreev(uri_split);
-	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	
+	gchar *timeline=searches_format_timeline_from_uri(uri);
 	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
 	
@@ -128,12 +128,10 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	}
 	
 	/* get tweets or direct messages */
-	debug("Parsing %s timeline.", root_element->name);
+	debug("Parsing searches node %s.", root_element->name);
 	gboolean free_status;
-	for(current_node=current_node->children; current_node; current_node = current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
-		
-		if(!( g_str_equal(current_node->name, "entry") ))
+	for(current_node=root_element->children; current_node; current_node = current_node->next) {
+		if(!( current_node->type == XML_ELEMENT_NODE && g_str_equal(current_node->name, "entry") ))
 			continue;
 		
 		if(!current_node->children){
@@ -141,11 +139,9 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 			continue;
 		}
 		
-		debug("Parsing search result entry." );
-		
+		debug("Parsing searches result's update * entry.");
 		status=NULL;
-		debug("Creating Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
+		if(!( (( status=user_status_parse_from_atom_entry(service, current_node->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
@@ -153,7 +149,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		new_updates++;
 		free_status=TRUE;
 		debug("Adding UserStatus ID: %f, on <%s> to TimelinesSexyTreeView.", status->id, service->key);
-		timelines_sexy_tree_view_store(timelines_sexy_tree_view, status);
+		timelines_sexy_tree_view_store_update(timelines_sexy_tree_view, status);
 		
 		if(!save_oldest_id && status->id > last_notified_update ){
 			if(notify){
@@ -186,6 +182,24 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	return new_updates;
 }/*search_parse_results(service, xml, uri, timelines_sexy_tree_view);*/
+
+gchar *searches_format_timeline_from_uri(const gchar *uri){
+	debug_method("searches_format_timeline_from_uri", "Parsing searches timeline: from uri: <%s>.", uri);
+	gchar **uri_split=g_strsplit_set( g_strrstr(uri, "/"), "?=", 3);
+	gchar *search_phrase_encoded;
+	if(!strstr(uri_split[2], "%"))
+		search_phrase_encoded=g_strdup_printf("_%s", uri_split[2]);
+	else{
+		gchar **search_phrase_parts=g_strsplit( uri_split[2], "%", -1 );
+		search_phrase_encoded=g_strjoinv("_", search_phrase_parts);
+		g_strfreev(search_phrase_parts);
+	}
+	gchar *timeline=g_strdup_printf("%s%s", uri_split[0], search_phrase_encoded);
+	g_strfreev(uri_split);
+	uber_free(search_phrase_encoded);
+	debug_method("searches_format_timeline_from_uri", "Parsed searches timeline: <%s>; from uri: <%s>.", timeline, uri);
+	return timeline;
+}/*gchar *timeline=searches_format_timeline_from_uri(uri);*/
 
 /********************************************************************************
  *                                    eof                                       *

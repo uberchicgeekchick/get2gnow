@@ -275,7 +275,7 @@ DISTCLEANFILES =		\
 	gnome-doc-utils.make
 
 
-all: config.h @PACKAGE_NAME@.spec
+all: config.h @PACKAGE_NAME@.spec @PACKAGE_NAME@.control
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 # Workaround broken scrollkeeper that doesn't remove its files on
@@ -332,6 +332,9 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	touch $@
 
 @PACKAGE_NAME@.spec: $(top_builddir)/config.status $(top_builddir)/@PACKAGE_NAME@.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+
+@PACKAGE_NAME@.control: $(top_builddir)/config.status $(top_builddir)/@PACKAGE_NAME@.control.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 distclean-hdr:

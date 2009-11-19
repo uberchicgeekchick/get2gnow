@@ -1,7 +1,7 @@
 /*
  * oAuth string functions in POSIX-C.
  *
- * Copyright 2007, 2008 Robin Gareus <robin@gareus.org>
+ * Copyright 2007, 2008, 2009 Robin Gareus <robin@gareus.org>
  * 
  * The base64 functions are by Jan-Henrik Haukeland, <hauk@tildeslash.com>
  * and un/escape_url() was inspired by libcurl's curl_escape under ISC-license
@@ -26,8 +26,11 @@
  * THE SOFTWARE.
  * 
  */
-#ifndef __LIBOATH__
-#define __LIBOAUTH__
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#define WIPE_MEMORY ///< overwrite sensitve data before free()ing it.
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -41,9 +44,12 @@
 #include "xmalloc.h"
 #include "oauth.h"
 
-#ifndef WIN // getpid() on POSIX systems
+#ifndef WIN32 // getpid() on POSIX systems
 #include <sys/types.h>
 #include <unistd.h>
+#else
+#define snprintf _snprintf
+#define strncasecmp strnicmp
 #endif
 
 /**
@@ -215,8 +221,8 @@ char *oauth_url_escape(const char *string) {
       newlen += 2; /* this'll become a %XX */
       if(newlen > alloc) {
         alloc *= 2;
-				testing_ptr = (char*) xrealloc(ns, alloc);
-				ns = testing_ptr;
+        testing_ptr = (char*) xrealloc(ns, alloc);
+        ns = testing_ptr;
       }
       snprintf(&ns[strindex], 4, "%%%02X", in);
       strindex+=3;
@@ -246,7 +252,7 @@ char *oauth_url_unescape(const char *string, size_t *olen) {
   unsigned char in;
   long hex;
 
-	if (!string) return NULL;
+  if (!string) return NULL;
   alloc = strlen(string)+1;
   ns = (char*) xmalloc(alloc);
 
@@ -336,21 +342,21 @@ char *oauth_sign_rsa_sha1 (const char *m, const char *k) {
 
   if (pkey == NULL) {
   //fprintf(stderr, "liboauth/ssl: can not read private key\n");
-	  return xstrdup("liboauth/ssl: can not read private key");
+    return xstrdup("liboauth/ssl: can not read private key");
   }
 
   len = EVP_PKEY_size(pkey);
-  sig = xmalloc((len+1)*sizeof(char));
+  sig = (unsigned char*)xmalloc((len+1)*sizeof(char));
 
   EVP_SignInit(&md_ctx, EVP_sha1());
   EVP_SignUpdate(&md_ctx, m, strlen(m));
   if (EVP_SignFinal (&md_ctx, sig, &len, pkey)) {
-	  char *tmp;
+    char *tmp;
     sig[len] = '\0';
-		tmp = oauth_encode_base64(len,sig);
-		OPENSSL_free(sig);
-	  EVP_PKEY_free(pkey);
-		return tmp;
+    tmp = oauth_encode_base64(len,sig);
+    OPENSSL_free(sig);
+    EVP_PKEY_free(pkey);
+    return tmp;
   }
   return xstrdup("liboauth/ssl: rsa-sha1 signing failed");
 }
@@ -371,33 +377,33 @@ int oauth_verify_rsa_sha1 (const char *m, const char *c, const char *s) {
   EVP_PKEY *pkey;
   BIO *in;
   X509 *cert = NULL;
-	unsigned char *b64d;
+  unsigned char *b64d;
   int slen, err;
 
   in = BIO_new_mem_buf((unsigned char*)c, strlen(c));
   cert = PEM_read_bio_X509(in, NULL, 0, NULL);
-	if (cert)  {
+  if (cert)  {
     pkey = (EVP_PKEY *) X509_get_pubkey(cert); 
-		X509_free(cert);
-	} else {
+    X509_free(cert);
+  } else {
     pkey = PEM_read_bio_PUBKEY(in, NULL, 0, NULL);
-	}
+  }
   BIO_free(in);
   if (pkey == NULL) {
   //fprintf(stderr, "could not read cert/pubkey.\n");
-	  return -2;
+    return -2;
   }
 
   b64d= (unsigned char*) xmalloc(sizeof(char)*strlen(s));
   slen = oauth_decode_base64(b64d, s);
 
-	EVP_VerifyInit(&md_ctx, EVP_sha1());
-	EVP_VerifyUpdate(&md_ctx, m, strlen(m));
-	err = EVP_VerifyFinal(&md_ctx, b64d, slen, pkey);
-	EVP_MD_CTX_cleanup(&md_ctx);
-	EVP_PKEY_free(pkey);
-	free(b64d);
-	return (err);
+  EVP_VerifyInit(&md_ctx, EVP_sha1());
+  EVP_VerifyUpdate(&md_ctx, m, strlen(m));
+  err = EVP_VerifyFinal(&md_ctx, b64d, slen, pkey);
+  EVP_MD_CTX_cleanup(&md_ctx);
+  EVP_PKEY_free(pkey);
+  free(b64d);
+  return (err);
 }
 
 /**
@@ -407,7 +413,7 @@ int oauth_verify_rsa_sha1 (const char *m, const char *c, const char *s) {
  * all arguments thereafter must be of type (char *) 
  *
  * @param len the number of arguments to follow this parameter
- * @param ... string to escape and added
+ * @param ... string to escape and added (may be NULL)
  *
  * @return pointer to memory holding the concatenated 
  * strings - needs to be free(d) by the caller. or NULL
@@ -475,32 +481,32 @@ int oauth_split_post_paramters(const char *url, char ***argv, short qesc) {
     if(!strncasecmp("oauth_signature=",token,16)) continue;
     (*argv)=(char**) xrealloc(*argv,sizeof(char*)*(argc+1));
     while (!(qesc&2) && (tmp=strchr(token,'\001'))) *tmp='&';
-    (*argv)[argc]=xstrdup(token);
-	  if (argc==0 && strstr(token, ":/")) {
-			// HTTP does not allow empty absolute paths, so the URL 
-			// 'http://example.com' is equivalent to 'http://example.com/' and should
-			// be treated as such for the purposes of OAuth signing (rfc2616, section 3.2.1)
-			// see http://groups.google.com/group/oauth/browse_thread/thread/c44b6f061bfd98c?hl=en
-			char *slash=strstr(token, ":/");
-			while (slash && *(++slash) == '/')  ; // skip slashes eg /xxx:[\/]*/
+    (*argv)[argc]=oauth_url_unescape(token, NULL);
+    if (argc==0 && strstr(token, ":/")) {
+      // HTTP does not allow empty absolute paths, so the URL 
+      // 'http://example.com' is equivalent to 'http://example.com/' and should
+      // be treated as such for the purposes of OAuth signing (rfc2616, section 3.2.1)
+      // see http://groups.google.com/group/oauth/browse_thread/thread/c44b6f061bfd98c?hl=en
+      char *slash=strstr(token, ":/");
+      while (slash && *(++slash) == '/')  ; // skip slashes eg /xxx:[\/]*/
 #if 0
-			// skip possibly unescaped slashes in the userinfo - they're not allowed by RFC2396 but have been seen.
-			// the hostname/IP may only contain alphanumeric characters - so we're safe there.
-			if (slash && strchr(slash,'@')) slash=strchr(slash,'@'); 
+      // skip possibly unescaped slashes in the userinfo - they're not allowed by RFC2396 but have been seen.
+      // the hostname/IP may only contain alphanumeric characters - so we're safe there.
+      if (slash && strchr(slash,'@')) slash=strchr(slash,'@'); 
 #endif
-			if (slash && !strchr(slash,'/')) {
+      if (slash && !strchr(slash,'/')) {
 #ifdef DEBUG_OAUTH
-			  fprintf(stderr, "\nliboauth: added trailing slash to URL: '%s'\n\n", token);
+        fprintf(stderr, "\nliboauth: added trailing slash to URL: '%s'\n\n", token);
 #endif
-				free((*argv)[argc]);
-				(*argv)[argc]= (char*) xmalloc(sizeof(char)*(2+strlen(token))); 
-				strcpy((*argv)[argc],token);
-				strcat((*argv)[argc],"/");
-		  }
-		}
-	  if (argc==0 && (tmp=strstr((*argv)[argc],":80/"))) {
-			  memmove(tmp, tmp+3, strlen(tmp+2));
-		}
+        free((*argv)[argc]);
+        (*argv)[argc]= (char*) xmalloc(sizeof(char)*(2+strlen(token))); 
+        strcpy((*argv)[argc],token);
+        strcat((*argv)[argc],"/");
+      }
+    }
+    if (argc==0 && (tmp=strstr((*argv)[argc],":80/"))) {
+        memmove(tmp, tmp+3, strlen(tmp+2));
+    }
     tmp=NULL;
     argc++;
   }
@@ -523,7 +529,7 @@ int oauth_split_url_parameters(const char *url, char ***argv) {
  *
  */
 char *oauth_serialize_url (int argc, int start, char **argv) {
-	return oauth_serialize_url_sep( argc, start, argv, "&");
+  return oauth_serialize_url_sep( argc, start, argv, "&");
 }
 
 /**
@@ -538,18 +544,18 @@ char *oauth_serialize_url (int argc, int start, char **argv) {
 char *oauth_serialize_url_sep (int argc, int start, char **argv, char *sep) {
   char  *tmp, *t1;
   int i;
-  int	first=0;
-	int seplen=strlen(sep);
+  int  first=0;
+  int seplen=strlen(sep);
   char *query = (char*) xmalloc(sizeof(char)); 
   *query='\0';
   for(i=start; i< argc; i++) {
     int len = 0;
     if (query) len+=strlen(query);
 
-		if (i==start && i==0 && strstr(argv[i], ":/")) {
+    if (i==start && i==0 && strstr(argv[i], ":/")) {
       tmp=xstrdup(argv[i]);
       len+=strlen(tmp);
-		} else if(!(t1=strchr(argv[i], '='))) {
+    } else if(!(t1=strchr(argv[i], '='))) {
     // see http://oauth.net/core/1.0/#anchor14
     // escape parameter names and arguments but not the '='
       tmp=xstrdup(argv[i]);
@@ -567,15 +573,15 @@ char *oauth_serialize_url_sep (int argc, int start, char **argv, char *sep) {
       free(t1);
       len+=strlen(tmp);
     }
-		len+=seplen+1;
+    len+=seplen+1;
     query=(char*) xrealloc(query,len*sizeof(char));
     strcat(query, ((i==start||first)?"":sep));
-		first=0;
+    first=0;
     strcat(query, tmp);
-		if (i==start && i==0 && strstr(tmp, ":/")) {
-			strcat(query, "?");
-			first=1;
-		}
+    if (i==start && i==0 && strstr(tmp, ":/")) {
+      strcat(query, "?");
+      first=1;
+    }
     free(tmp);
   }
   return (query);
@@ -607,15 +613,15 @@ char *oauth_gen_nonce() {
   char *nc;
   static int rndinit = 1;
   const char *chars = "abcdefghijklmnopqrstuvwxyz"
-  	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789_";
-  unsigned int max = strlen(chars);
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789_";
+  unsigned int max = strlen( chars );
   int i, len;
 
   if(rndinit) {srand(time(NULL) 
-#ifndef WIN // quick windows check.
-  	* getpid()
+#ifndef WIN32 // quick windows check.
+    * getpid()
 #endif
-	); rndinit=0;} // seed random number generator - FIXME: we can do better ;)
+  ); rndinit=0;} // seed random number generator - FIXME: we can do better ;)
 
   len=15+floor(rand()*16.0/(double)RAND_MAX);
   nc = (char*) xmalloc((len+1)*sizeof(char));
@@ -667,19 +673,286 @@ int oauth_cmpstringp(const void *p1, const void *p2) {
 }
 
 /**
- * search array for parameter.
+ * search array for parameter key.
+ * @param argv length of array to search
+ * @param argc parameter array to search
+ * @param key key of parameter to check.
+ *
+ * @return FALSE (0) if array does not contain a paramater with given key, TRUE (1) otherwise.
  */
-int oauth_param_exists(char **argv, int argc, char *param) {
-	int i;
-	size_t l= strlen(param);
-	for (i=0;i<argc;i++)
-		if (strlen(argv[i])>l && !strncmp(argv[i],param,l) && argv[i][l] == '=') return 1;
-	return 0;
+int oauth_param_exists(char **argv, int argc, char *key) {
+  int i;
+  size_t l= strlen(key);
+  for (i=0;i<argc;i++)
+    if (strlen(argv[i])>l && !strncmp(argv[i],key,l) && argv[i][l] == '=') return 1;
+  return 0;
 }
 
-char *oauth_sign_url( const char *url, char **postargs, OAuthMethod method, 
-const char *c_key,const char *c_secret,const char *t_key,  const char *t_secret );
+/**
+ * add query parameter to array
+ *
+ * @param argcp pointer to array length int
+ * @param argvp pointer to array values 
+ * @param addparam parameter to add (eg. "foo=bar")
+ */
+void oauth_add_param_to_array(int *argcp, char ***argvp, const char *addparam) {
+  (*argvp)=(char**) xrealloc(*argvp,sizeof(char*)*((*argcp)+1));
+  (*argvp)[(*argcp)++]= (char*) xstrdup(addparam);
+}
 
-char *oauth_sign_xmpp(const char *xml, OAuthMethod method, const char *c_secret, const char *t_secret );
+/**
+ *
+ */
+void oauth_add_protocol(int *argcp, char ***argvp, 
+  OAuthMethod method, 
+  const char *c_key, //< consumer key - posted plain text
+  const char *t_key //< token key - posted plain text in URL
+ ){
+  char oarg[1024];
 
+  // add oAuth specific arguments
+  if (!oauth_param_exists(*argvp,*argcp,"oauth_nonce")) {
+    char *tmp;
+    snprintf(oarg, 1024, "oauth_nonce=%s", (tmp=oauth_gen_nonce()));
+    oauth_add_param_to_array(argcp, argvp, oarg);
+    free(tmp);
+  }
+
+  if (!oauth_param_exists(*argvp,*argcp,"oauth_timestamp")) {
+    snprintf(oarg, 1024, "oauth_timestamp=%li", (long int) time(NULL));
+    oauth_add_param_to_array(argcp, argvp, oarg);
+  }
+
+  if (t_key) {
+    snprintf(oarg, 1024, "oauth_token=%s", t_key);
+    oauth_add_param_to_array(argcp, argvp, oarg);
+  }
+
+  snprintf(oarg, 1024, "oauth_consumer_key=%s", c_key);
+  oauth_add_param_to_array(argcp, argvp, oarg);
+
+  snprintf(oarg, 1024, "oauth_signature_method=%s",
+      method==0?"HMAC-SHA1":method==1?"RSA-SHA1":"PLAINTEXT");
+  oauth_add_param_to_array(argcp, argvp, oarg);
+
+  if (!oauth_param_exists(*argvp,*argcp,"oauth_version")) {
+    snprintf(oarg, 1024, "oauth_version=1.0");
+    oauth_add_param_to_array(argcp, argvp, oarg);
+  }
+
+#if 0 // oauth_version 1.0 Rev A
+  if (!oauth_param_exists(argv,argc,"oauth_callback")) {
+    snprintf(oarg, 1024, "oauth_callback=oob");
+    oauth_add_param_to_array(argcp, argvp, oarg);
+  }
 #endif
+
+}
+
+char *oauth_sign_url (const char *url, char **postargs, 
+  OAuthMethod method, 
+  const char *c_key, //< consumer key - posted plain text
+  const char *c_secret, //< consumer secret - used as 1st part of secret-key 
+  const char *t_key, //< token key - posted plain text in URL
+  const char *t_secret //< token secret - used as 2st part of secret-key
+  ) {
+  return oauth_sign_url2(url, postargs, 
+    method, NULL,
+    c_key, c_secret,
+    t_key, t_secret);
+} 
+
+char *oauth_sign_url2 (const char *url, char **postargs, 
+  OAuthMethod method, 
+  const char *http_method, //< HTTP request method
+  const char *c_key, //< consumer key - posted plain text
+  const char *c_secret, //< consumer secret - used as 1st part of secret-key 
+  const char *t_key, //< token key - posted plain text in URL
+  const char *t_secret //< token secret - used as 2st part of secret-key
+  ) {
+  int  argc;
+  char **argv = NULL;
+  char *rv;
+
+  if (postargs)
+    argc = oauth_split_post_paramters(url, &argv, 0);
+  else
+    argc = oauth_split_url_parameters(url, &argv);
+
+  rv=oauth_sign_array2(&argc, &argv, postargs, 
+    method, http_method,
+    c_key, c_secret, t_key, t_secret);
+
+  oauth_free_array(&argc, &argv);
+  return(rv);
+}
+
+char *oauth_sign_array (int *argcp, char***argvp,
+  char **postargs,
+  OAuthMethod method, 
+  const char *c_key, //< consumer key - posted plain text
+  const char *c_secret, //< consumer secret - used as 1st part of secret-key 
+  const char *t_key, //< token key - posted plain text in URL
+  const char *t_secret //< token secret - used as 2st part of secret-key
+  ) {
+  return oauth_sign_array2 (argcp, argvp, 
+                            postargs, method,
+                            NULL,
+                            c_key, c_secret,
+                            t_key, t_secret);
+}
+
+char *oauth_sign_array2 (int *argcp, char***argvp,
+  char **postargs,
+  OAuthMethod method, 
+  const char *http_method, //< HTTP request method
+  const char *c_key, //< consumer key - posted plain text
+  const char *c_secret, //< consumer secret - used as 1st part of secret-key 
+  const char *t_key, //< token key - posted plain text in URL
+  const char *t_secret //< token secret - used as 2st part of secret-key
+  ) {
+  char oarg[1024];
+  char *query;
+  char *okey, *odat, *sign;
+  char *result;
+  char *http_request_method;
+
+  if (!http_method) {
+    http_request_method = xstrdup(postargs?"POST":"GET");
+  } else {
+    int i;
+    http_request_method = xstrdup(http_method);
+    for (i=0;i<strlen(http_request_method);i++) 
+      http_request_method[i]=toupper(http_request_method[i]);
+  }
+
+  // add OAuth protocol parameters
+  oauth_add_protocol(argcp, argvp, method, c_key, t_key);
+
+  // sort parameters
+  qsort(&(*argvp)[1], (*argcp)-1, sizeof(char *), oauth_cmpstringp);
+
+  // serialize URL
+  query= oauth_serialize_url_parameters(*argcp, *argvp);
+
+  // generate signature
+  okey = oauth_catenc(2, c_secret, t_secret);
+  odat = oauth_catenc(3, http_request_method, (*argvp)[0], query);
+  free(http_request_method);
+#ifdef DEBUG_OAUTH
+  fprintf (stderr, "\nliboauth: data to sign='%s'\n\n", odat);
+  fprintf (stderr, "\nliboauth: key='%s'\n\n", okey);
+#endif
+  switch(method) {
+    case OA_RSA:
+      sign = oauth_sign_rsa_sha1(odat,okey); // XXX okey needs to be RSA key!
+      break;
+    case OA_PLAINTEXT:
+      sign = oauth_sign_plaintext(odat,okey);
+      break;
+    default:
+      sign = oauth_sign_hmac_sha1(odat,okey);
+  }
+#ifdef WIPE_MEMORY
+  memset(okey,0, strlen(okey));
+  memset(odat,0, strlen(odat));
+#endif
+  free(odat); 
+  free(okey);
+
+  // append signature to query args.
+  snprintf(oarg, 1024, "oauth_signature=%s",sign);
+  oauth_add_param_to_array(argcp, argvp, oarg);
+  free(sign);
+
+  // build URL params
+  result = oauth_serialize_url(*argcp, (postargs?1:0), *argvp);
+
+  if(postargs) { 
+    *postargs = result;
+    result = xstrdup((*argvp)[0]);
+  }
+
+  if(query) free(query);
+
+  return result;
+}
+
+/**
+ * free array args
+ *
+ * @param argcp pointer to array length int
+ * @param argvp pointer to array values to be free()d
+ */
+void oauth_free_array(int *argcp, char ***argvp) {
+  int i;
+  for (i=0;i<(*argcp);i++) {
+    free((*argvp)[i]);
+  }
+  if(*argvp) free(*argvp);
+}
+
+/** 
+ * http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/drafts/4/spec.html
+ */
+char *oauth_body_hash_file(char *filename) {
+  unsigned char fb[BUFSIZ];
+  EVP_MD_CTX ctx;
+  size_t len=0;
+  unsigned char *md;
+  FILE *F= fopen(filename, "r");
+  if (!F) return NULL;
+
+  EVP_MD_CTX_init(&ctx);
+  EVP_DigestInit(&ctx,EVP_sha1());
+  while (!feof(F) && (len=fread(fb,sizeof(char),BUFSIZ, F))>0) {
+    EVP_DigestUpdate(&ctx, fb, len);
+  }
+  fclose(F);
+  len=0;
+  md=(unsigned char*) calloc(EVP_MD_size(EVP_sha1()),sizeof(unsigned char));
+  EVP_DigestFinal(&ctx, md,(unsigned int*) &len);
+  EVP_MD_CTX_cleanup(&ctx);
+  return oauth_body_hash_encode(len, md);
+}
+
+char *oauth_body_hash_data(size_t length, const char *data) {
+  EVP_MD_CTX ctx;
+  size_t len=0;
+  unsigned char *md;
+  md=(unsigned char*) calloc(EVP_MD_size(EVP_sha1()),sizeof(unsigned char));
+  EVP_MD_CTX_init(&ctx);
+  EVP_DigestInit(&ctx,EVP_sha1());
+  EVP_DigestUpdate(&ctx, data, length);
+  EVP_DigestFinal(&ctx, md,(unsigned int*) &len);
+  EVP_MD_CTX_cleanup(&ctx);
+  return oauth_body_hash_encode(len, md);
+}
+
+/**
+ * base64 encode digest, free it and return a URL parameter
+ * with the oauth_body_hash
+ */
+char *oauth_body_hash_encode(size_t len, unsigned char *digest) {
+  char *sign=oauth_encode_base64(len,digest);
+  char *sig_url = (char*)malloc(17+strlen(sign));
+  sprintf(sig_url,"oauth_body_hash=%s", sign);
+  free(sign);
+  free(digest);
+  return sig_url;
+}
+
+
+/**
+ * xep-0235 - TODO
+ */
+char *oauth_sign_xmpp (const char *xml,
+  OAuthMethod method, 
+  const char *c_secret, //< consumer secret - used as 1st part of secret-key 
+  const char *t_secret //< token secret - used as 2st part of secret-key
+  ) {
+
+  return NULL;
+}
+
+// vi: sts=2 sw=2 ts=2

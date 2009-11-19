@@ -18,16 +18,11 @@
       <column type="guint"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="search_list_store">
+  <object class="GtkListStore" id="search_history_list_store">
     <columns>
-      <!-- column-name SearchPhrase -->
+      <!-- column-name GSTRING_SEARCH_PHRASE -->
       <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">[new search]</col>
-      </row>
-    </data>
   </object>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
@@ -727,9 +722,9 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                                 <property name="visible">True</property>
                                 <property name="left_padding">12</property>
                                 <child>
-                                  <object class="GtkComboBoxEntry" id="search_combo_box_entry">
+                                  <object class="GtkComboBoxEntry" id="search_history_combo_box_entry">
                                     <property name="visible">True</property>
-                                    <property name="model">search_list_store</property>
+                                    <property name="model">search_history_list_store</property>
                                   </object>
                                 </child>
                               </object>
@@ -740,7 +735,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                                 <property name="label" translatable="yes">&lt;b&gt;Sear_ch:&lt;/b&gt;</property>
                                 <property name="use_markup">True</property>
                                 <property name="use_underline">True</property>
-                                <property name="mnemonic_widget">search_combo_box_entry</property>
+                                <property name="mnemonic_widget">search_history_combo_box_entry</property>
                               </object>
                             </child>
                           </object>

@@ -243,7 +243,7 @@ static FILE *debug_log_rotate(void){
 	return debug_log_fp;
 }/*debug_log_rotate();*/
 
-void debug_printf(const gchar *domains, const gchar *msg, ...){
+void debug_printf(const gchar *domains, const gchar *method, const gchar *msg, ...){
 	if(!(domains && msg)) return;
 	while(debug_pause){}
 	
@@ -256,20 +256,21 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 	debug_domains_check(domains);
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
-			if(all_domains || !strcasecmp(debug_domains[x], debug_environment[y]) ){
+			if(all_domains || !strcasecmp(debug_domains[x], debug_environment[y]) )
 				debug_output_fp=stdout;
-				if(!output_started){
-					output_started=TRUE;
-					g_fprintf(debug_output_fp, "\n");
-				}
-			}else if(debug_domains[x+1] || debug_environment[y+1])
+			else if(debug_domains[x+1] || debug_environment[y+1])
 				continue;
 			else
 				debug_output_fp=debug_log_rotate();
 			
+			if(!output_started){
+				output_started=TRUE;
+				g_fprintf(debug_output_fp, "\n");
+			}
 			gboolean error=FALSE, notice=FALSE;
+			gchar *debug_in_method=(G_STR_N_EMPTY(method) ? g_strdup_printf("in %s' method: %s", debug_domains[debug_domains_source_code_index], method) :g_strdup(debug_domains[debug_domains_source_code_index]));
 			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
-				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), debug_domains[debug_domains_source_code_index], (error ?_("error") :_("notice") ) );
+				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), (error ?_("error") :_("notice") ), debug_in_method );
 				va_list args;
 				va_start(args, msg);
 				g_vfprintf(stderr, g_strrstr(msg, ":** ")+sizeof(":**"), args);
@@ -280,15 +281,18 @@ void debug_printf(const gchar *domains, const gchar *msg, ...){
 			if(!( debug_last_domain && g_str_equal(debug_last_domain, debug_domains[debug_domains_source_code_index]) )){
 				if(debug_last_domain) g_free(debug_last_domain);
 				debug_last_domain=g_strdup(debug_domains[debug_domains_source_code_index]);
-				g_fprintf(debug_output_fp, "\n%s:\n", debug_last_domain);
-			}
+				g_fprintf(debug_output_fp, "\n%s:\n\t\t", debug_in_method);
+			}else if(G_STR_N_EMPTY(method))
+				g_fprintf(debug_output_fp, "\t\tmethod: %s:\t", method);
+			else
+				g_fprintf(debug_output_fp, "\t\t");
 			
 			va_list args;
 			va_start(args, msg);
-			g_fprintf(debug_output_fp, "\t\t");
 			g_vfprintf(debug_output_fp, msg, args);
 			va_end(args);
 			g_fprintf(debug_output_fp, " @ %s", datetime);
+			uber_free(debug_in_method);
 			
 			return;
 		}

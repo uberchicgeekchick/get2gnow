@@ -122,7 +122,7 @@ gboolean timelines_sexy_tree_view_refresh(TimelinesSexyTreeView *timelines_sexy_
 void timelines_sexy_tree_view_stop(TimelinesSexyTreeView *timelines_sexy_tree_view);
 void timelines_sexy_tree_view_complete(TimelinesSexyTreeView *timelines_sexy_tree_view);
 
-void timelines_sexy_tree_view_store( TimelinesSexyTreeView *timelines_sexy_tree_view, UserStatus *status );
+void timelines_sexy_tree_view_store_update( TimelinesSexyTreeView *timelines_sexy_tree_view, UserStatus *status );
 void timelines_sexy_tree_view_update_list_store( TimelinesSexyTreeView *timelines_sexy_tree_view, TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column, gpointer value );
 void timelines_sexy_tree_view_remove_from_list_store( TimelinesSexyTreeView *timelines_sexy_tree_view, TimelinesSexyTreeViewListStoreColumn timelines_sexy_tree_view_list_store_column, gpointer value );
 void timelines_sexy_tree_view_remove_service(TimelinesSexyTreeView *timelines_sexy_tree_view, OnlineService *service);

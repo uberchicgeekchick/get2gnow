@@ -274,6 +274,7 @@ static void online_services_dialog_delete_service(GtkButton *online_service_dele
 }/*online_services_dialog_delete_service(online_services_dialog->online_service_delete_button, online_services_dialog);*/
 
 static void online_services_dialog_destroy(GtkDialog *dialog){
+	uber_object_unref(online_services_dialog->keys_completion);
 	uber_free(online_services_dialog);
 }/*online_services_dialog_destroy(dialog);*/
 

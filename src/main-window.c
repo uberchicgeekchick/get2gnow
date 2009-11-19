@@ -54,7 +54,6 @@
 #include <sys/stat.h>
 #include <string.h>
 
-#include <canberra-gtk.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
@@ -159,9 +158,14 @@ struct _MainWindowPrivate {
 	/* 'New Tabs' Timeline menu items */
 	GtkMenu			*tabs_menu;
 	
-	GtkComboBoxEntry	*search_combo_box_entry;
-	GtkListStore		*search_list_store;
-	GtkTreeModel		*search_tree_model;
+	GtkComboBoxEntry	*search_history_combo_box_entry;
+	SexySpellEntry		*sexy_search_entry;
+	gint			sexy_position;
+	gint			search_history_total;
+	gint			search_history_maximum;
+	GtkEntryCompletion	*search_history_completion;
+	GtkListStore		*search_history_list_store;
+	GtkTreeModel		*search_history_tree_model;
 	GtkButton		*search_button;
 	
 	GtkToolButton		*preferences_tool_button;
@@ -216,6 +220,10 @@ struct _MainWindowPrivate {
 	gchar			*statusbar_default_message;
 };
 
+typedef enum{
+	GSTRING_SEARCH_PHRASE = 0,
+} PeviousSearches;
+
 /* ui & notification gconf values. */
 #define MAIN_WINDOW_UI_HIDDEN			GCONF_PATH "/ui/hide/main_window"
 #define MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX	GCONF_PATH "/ui/hide/best_friends"
@@ -230,7 +238,7 @@ struct _MainWindowPrivate {
 
 #define	GtkBuilderUI	"main-window"
 
-#define HOTKEYS_MESSAGE "Hotkeys: [CTRL+N] start a new tweet; [CTRL+D] or [SHIFT+Return] to dm; [CTRL+R], [Return], or '@' to reply, [CTRL+F] or '>' to forward/retweet."
+#define SEARCH_HISTORY_PREVIOUS_SEARCHES	GCONF_PATH "/search_history/previous_searches/%d"
 
 
 static void main_window_class_init(MainWindowClass *klass);
@@ -254,7 +262,27 @@ static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window);
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window);
 static void main_window_exit(GtkWidget *window, MainWindow *main_window); 
 
-static void main_window_search_submitted(GtkButton *search_button, MainWindow *main_window);
+static gint main_window_search_history_validate_maxium(MainWindowPrivate *m_w_p);
+static void main_window_sexy_search_setup(MainWindowPrivate *m_w_p);
+static void main_window_search_history_load(MainWindowPrivate *m_w_p);
+
+static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar *update, gint list_store_index);
+#define main_window_search_history_restore(m_w_p, update)			\
+		main_window_search_history_add(m_w_p, update, -3)
+#define main_window_search_history_prepend(m_w_p, update)			\
+		main_window_search_history_add(m_w_p, update, -2)
+#define main_window_search_history_append(m_w_p, update)			\
+		main_window_search_history_add(m_w_p, update, -1)
+#define main_window_search_history_insert(m_w_p, update, list_store_index)	\
+		main_window_search_history_add(m_w_p, update, list_store_index)
+
+static gboolean main_window_search_history_check_unique(MainWindowPrivate *m_w_p, const gchar *search_phrase);
+static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint list_store_index);
+static void main_window_search_history_rotate(MainWindowPrivate *m_w_p);
+
+static void main_window_search_history_selected(GtkComboBoxEntry *search_history_combo_box_entry, MainWindow *main_window);
+static void main_window_sexy_search_entry_set(const gchar *search_phrase);
+static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *main_window);
 
 static void main_window_services_cb(GtkWidget *window, MainWindow *main_window); 
 static void main_window_select_service(GtkMenuItem *item, MainWindow *main_window);
@@ -306,10 +334,15 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window=singleton_main_window;
 	
 	main_window->private=GET_PRIVATE(main_window);
+	main_window->private->sexy_search_entry=NULL;
+	main_window->private->sexy_position=-1;
+	main_window->private->search_history_completion=NULL;
 	main_window->private->online_service_request_popup_image_menu_items=NULL;
 	main_window->private->best_friends_buttons=NULL;
 	main_window->private->widgets_connected=NULL;
 	main_window->private->widgets_disconnected=NULL;
+	main_window->private->search_history_total=0;
+	main_window->private->search_history_maximum=0;
 	main_window->private->statusbar_default_message=g_strdup("");
 	online_service_request_unset_selected_update();
 }/*main_window_init(main_window);*/
@@ -319,6 +352,12 @@ static void main_window_finalize(GObject *object){
 	
 	main_window=MAIN_WINDOW(object);
 	main_window->private=GET_PRIVATE(main_window);
+	
+	gtk_list_store_clear(main_window->private->search_history_list_store);
+	gtk_list_store_clear(main_window->private->best_friends_list_store);
+	
+	uber_object_unref(main_window->private->sexy_search_entry);
+	uber_object_unref(main_window->private->search_history_completion);
 	
 	program_timeout_remove(&main_window->private->size_timeout_id, _("main window configuration"));
 	main_window_statusbar_timeouts_free();
@@ -386,8 +425,8 @@ static void main_window_setup(void){
 					"main_window_handlebox", &main_window->private->main_window_handlebox,
 					"main_toolbar", &main_window->private->main_toolbar,
 					
-					"search_combo_box_entry", &main_window->private->search_combo_box_entry,
-					"search_list_store", &main_window->private->search_list_store,
+					"search_history_combo_box_entry", &main_window->private->search_history_combo_box_entry,
+					"search_history_list_store", &main_window->private->search_history_list_store,
 					"search_button", &main_window->private->search_button,
 					
 					"preferences_tool_button", &main_window->private->preferences_tool_button,
@@ -434,6 +473,7 @@ static void main_window_setup(void){
 	
 	tabs_init(tabs_notebook);
 	main_window_tabs_menu_widgets_setup(main_window->private);
+	main_window_sexy_search_setup(main_window->private);
 	
 	/* Connect the signals */
 	gtkbuilder_connect( ui, main_window,
@@ -473,6 +513,7 @@ static void main_window_setup(void){
 					"help_contents", "activate", main_window_help_contents_cb,
 					"help_about", "activate", main_window_about_cb,
 					
+					"search_history_combo_box_entry", "changed", main_window_search_history_selected,
 					"search_button", "clicked", main_window_search_submitted,
 					
 					"accounts_tool_button", "clicked", main_window_services_cb,
@@ -506,7 +547,6 @@ static void main_window_setup(void){
 	gtk_window_set_title(GTK_WINDOW(main_window->private->window), window_title);
 	uber_free(window_title);
 	
-	main_window->private->search_tree_model=gtk_combo_box_get_model( (GtkComboBox *)main_window->private->search_combo_box_entry );
 	g_signal_connect_after( main_window->private->window, "event-after", (GCallback)update_viewer_sexy_select, NULL );
 	
 	main_window_online_service_request_popup_menu_setup(ui);
@@ -1161,12 +1201,222 @@ static void main_menu_online_service_request_menu_process(GtkImageMenuItem *item
 	func( user_data );
 }
 
-static void main_window_search_submitted(GtkButton *search_button, MainWindow *main_window){
-	const gchar *search_phrase=GTK_ENTRY(GTK_BIN(main_window->private->search_combo_box_entry)->child)->text;
+static void main_window_sexy_search_setup(MainWindowPrivate *m_w_p){
+	m_w_p->search_history_tree_model=gtk_combo_box_get_model( (GtkComboBox *)m_w_p->search_history_combo_box_entry );
+	m_w_p->sexy_search_entry=(SexySpellEntry *)sexy_spell_entry_new();
+	m_w_p->sexy_search_entry=g_object_ref_sink(m_w_p->sexy_search_entry);
+	gtk_container_remove(GTK_CONTAINER(m_w_p->search_history_combo_box_entry), gtk_bin_get_child(GTK_BIN(m_w_p->search_history_combo_box_entry)));
+	gtk_container_add(GTK_CONTAINER(m_w_p->search_history_combo_box_entry), GTK_WIDGET(m_w_p->sexy_search_entry));
+	m_w_p->search_history_completion=gtk_entry_completion_new();
+	gtk_entry_completion_set_model(m_w_p->search_history_completion, m_w_p->search_history_tree_model);
+	gtk_entry_set_completion(GTK_ENTRY(m_w_p->sexy_search_entry), m_w_p->search_history_completion);
+	gtk_combo_box_entry_set_text_column(m_w_p->search_history_combo_box_entry, GSTRING_SEARCH_PHRASE);
+	gtk_entry_completion_set_text_column(m_w_p->search_history_completion, GSTRING_SEARCH_PHRASE);
+	main_window_search_history_load(m_w_p);
+	gtk_widget_show(GTK_WIDGET(m_w_p->sexy_search_entry));
+	
+	g_signal_connect(m_w_p->sexy_search_entry, "activate", G_CALLBACK(main_window_search_submitted), main_window);
+}/*main_window_sexy_search_setup(main_window->private);*/
+
+static gint main_window_search_history_validate_maxium(MainWindowPrivate *m_w_p){
+	if(!m_w_p) return 0;
+	gconfig_get_int_or_default(PREFS_SEARCH_HISTORY_MAXIMUM, &m_w_p->search_history_maximum, 50);
+	if(m_w_p->search_history_maximum < 5)
+		gconfig_set_int(PREFS_SEARCH_HISTORY_MAXIMUM, (m_w_p->search_history_maximum=5));
+	else if(m_w_p->search_history_maximum > 100)
+		gconfig_set_int(PREFS_SEARCH_HISTORY_MAXIMUM, (m_w_p->search_history_maximum=100));
+	return m_w_p->search_history_maximum;
+}/*main_window_search_history_validate_maxium(main_window->private);*/
+
+static void main_window_search_history_load(MainWindowPrivate *m_w_p){
+	gchar *previous_search=NULL, *search_history_gconf_path=NULL;
+	main_window_search_history_validate_maxium(m_w_p);
+	for(m_w_p->search_history_total=0; m_w_p->search_history_total<=m_w_p->search_history_maximum; m_w_p->search_history_total++){
+		if(!( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, m_w_p->search_history_total)), &previous_search )) && G_STR_N_EMPTY(previous_search) )) break;
+		
+		main_window_search_history_restore(m_w_p, previous_search);
+		uber_free(previous_search);
+		uber_free(search_history_gconf_path);
+	}
+
+	main_window_search_history_restore(m_w_p, "[new search]");
+	if(previous_search) uber_free(previous_search);
+	if(search_history_gconf_path) uber_free(search_history_gconf_path);
+}/*main_window_search_history_load(main_window->private);*/
+
+static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar *search_phrase, gint list_store_index){
+	if(G_STR_EMPTY(search_phrase)) return;
+	
+	if(
+		!g_str_equal(search_phrase, "[new search]")
+		&&
+		gconfig_if_bool(PREFS_SEARCH_HISTORY_UNIQUE_ONLY, TRUE)
+		&&
+		!main_window_search_history_check_unique(m_w_p, search_phrase)
+	){
+		debug("Update being sent: %s is already in the search history's and will not be stored again.", search_phrase);
+		return;
+	}
+	
+	main_window_search_history_validate_maxium(m_w_p);
+	
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	if(list_store_index<-1)
+		gtk_list_store_prepend(m_w_p->search_history_list_store, iter);
+	else if(list_store_index==-1)
+		gtk_list_store_append(m_w_p->search_history_list_store, iter);
+	else if(list_store_index>=0)
+		gtk_list_store_insert(m_w_p->search_history_list_store, iter, (list_store_index<m_w_p->search_history_maximum ?list_store_index :m_w_p->search_history_maximum ));
+	gtk_list_store_set(
+			m_w_p->search_history_list_store, iter,
+				GSTRING_SEARCH_PHRASE, g_strdup(search_phrase),
+			-1
+	);
+	uber_free(iter);
+	
+	if(g_str_equal(search_phrase, "[new search]"))
+		return;
+	
+	main_window_search_history_remove(m_w_p, 1);
+	main_window_search_history_add(m_w_p, "[new search]", list_store_index);
+	
+	if(m_w_p->search_history_total<m_w_p->search_history_maximum)
+		m_w_p->search_history_total++;
+	else
+		for(; m_w_p->search_history_total>=m_w_p->search_history_maximum; m_w_p->search_history_total--)
+			main_window_search_history_remove(m_w_p, m_w_p->search_history_total);
+	
+	if(list_store_index==-3) return;
+	
+	main_window_search_history_rotate(m_w_p);
+	gchar *search_history_gconf_path=NULL;
+	gconfig_set_string( search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, 0), search_phrase );
+	uber_free(search_history_gconf_path);
+}/*main_window_search_history_add(main_window->private, GTK_ENTRY(update_viewer->sexy_search_entry)->text, -3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index);*/
+
+static gboolean main_window_search_history_check_unique(MainWindowPrivate *m_w_p, const gchar *search_phrase){
+	if(G_STR_EMPTY(search_phrase)) return TRUE;
+	
+	if(g_str_equal(search_phrase, "[new search]"))
+		return TRUE;
+	
+	debug("Checking uniqueness of search_phrase.  New search_phrase:\t[%s]\n", search_phrase);
+	gboolean uniq=TRUE;
+	gchar *search_phrase_at_index=NULL;
+	for(gint i=1; i<=m_w_p->search_history_total && uniq; i++) {
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!gtk_tree_model_get_iter(m_w_p->search_history_tree_model, iter, path)){
+			debug("Checking search_phrase, at index: %d, failed to get valid iter for the list store.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gtk_tree_model_get(
+				m_w_p->search_history_tree_model, iter,
+					GSTRING_SEARCH_PHRASE, &search_phrase_at_index,
+				-1
+		);
+		
+		if(!strcmp(search_phrase, search_phrase_at_index)){
+			debug("Search phrase is not unique.  Duplicate search_phrase found at index: %d.", i);
+			debug("\tComparing new search_phrase: [%s]", search_phrase);
+			debug("\tAgainst old search_phrase: [%s]", search_phrase_at_index);
+			uniq=FALSE;
+		}
+		
+		uber_free(search_phrase_at_index);
+		gtk_tree_path_free(path);
+		uber_free(iter);
+	}
+	return uniq;
+}/*main_window_search_history_check_unique(main_window->private, search_phrase);*/
+
+static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint list_store_index){
+	if(!(list_store_index > 0 && list_store_index <= m_w_p->search_history_total)) return;
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(list_store_index, -1);
+	debug("Removing saved update %d.  Total update saved: %d", list_store_index, m_w_p->search_history_total);
+	if(!gtk_tree_model_get_iter(m_w_p->search_history_tree_model, iter, path))
+		debug("Removing saved update, at index: %d, failed to get valid iter for the list store.", list_store_index);
+	else{
+		debug("Removing iter at index: %d", list_store_index);
+		gtk_list_store_remove(m_w_p->search_history_list_store, iter);
+	}
+	gtk_tree_path_free(path);
+	uber_free(iter);
+}/*main_window_search_history_remove(main_window->private, m_w_p->search_history_total);*/
+
+static void main_window_search_history_rotate(MainWindowPrivate *m_w_p){
+	gchar *search_history_previous_search=NULL, *search_history_gconf_path=NULL;
+	for(gint i=m_w_p->search_history_maximum; i>=0; i--){
+		if( (gconfig_get_string( search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, i-1), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search) ){
+			uber_free(search_history_gconf_path);
+			search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, i);
+			gconfig_set_string(search_history_gconf_path, search_history_previous_search);
+		}
+		if(search_history_previous_search) uber_free(search_history_previous_search);
+		uber_free(search_history_gconf_path);
+	}
+}/*main_window_search_history_rotate(main_window->private);*/
+
+static void main_window_search_history_selected(GtkComboBoxEntry *search_history_combo_box_entry, MainWindow *main_window){
+	GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
+	if(!gtk_combo_box_get_active_iter(GTK_COMBO_BOX(search_history_combo_box_entry), iter)){
+		uber_free(iter);
+		return;
+	}
+	
+	gchar	*selected_search_phrase=NULL;
+	gtk_tree_model_get(
+				gtk_combo_box_get_model(GTK_COMBO_BOX(search_history_combo_box_entry)), iter,
+					GSTRING_SEARCH_PHRASE, &selected_search_phrase,
+				-1
+	);
+	
+	if(!(G_STR_N_EMPTY(selected_search_phrase) && g_str_n_equal(selected_search_phrase, "[new search]") )){
+		uber_free(selected_search_phrase);
+		uber_free(iter);
+		return;
+	}
+	
+	main_window_sexy_search_entry_set(selected_search_phrase);
+	uber_free(selected_search_phrase);
+	uber_free(iter);
+}/*main_window_search_history_selected(main_window->private->search_history_combo_box_entry, main_window);*/
+
+static void main_window_sexy_search_entry_set(const gchar *search_phrase){
+	gtk_entry_set_text(GTK_ENTRY(main_window->private->sexy_search_entry), (search_phrase==NULL ?(gchar *)"" :search_phrase));
+	main_window_sexy_search_entry_select();
+}/*main_window_sexy_search_entry_set();*/
+
+static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *main_window){
+	gchar *search_phrase=GTK_ENTRY(main_window->private->sexy_search_entry)->text;
+	if( G_STR_EMPTY(search_phrase) ) return;
+	main_window_search_history_prepend(main_window->private, search_phrase);
+	debug("Searching for %s.", search_phrase);
+	search_phrase=g_uri_escape_string(search_phrase, NULL, TRUE);
 	gchar *search_timeline=g_strdup_printf(API_TIMELINE_SEARCH_SUBMIT, search_phrase);
 	tabs_open_timeline(search_timeline, NULL);
+	uber_free(search_phrase);
 	uber_free(search_timeline);
-}/*main_window_search_submitted(main_window->private->search_button, main_window);*/
+}/*main_window_search_submitted(main_window->private->search_button, main_window->private);*/
+
+SexySpellEntry *main_window_sexy_search_entry_get_widget(void){
+	if(! main_window->private->sexy_search_entry ) return NULL;
+	return main_window->private->sexy_search_entry;
+}/*main_window_sexy_search_entry_get_widget();*/
+
+void main_window_sexy_search_entry_select(void){
+	if(gtk_widget_has_focus(GTK_WIDGET(main_window->private->sexy_search_entry))) return;
+	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()))) return;
+	gtk_widget_grab_focus(GTK_WIDGET(main_window->private->sexy_search_entry));
+	gint sexy_position=-1;
+	if( main_window->private->sexy_position > 0 && main_window->private->sexy_position <= gtk_entry_get_text_length((GtkEntry *)main_window->private->sexy_search_entry) )
+		sexy_position=main_window->private->sexy_position;
+	gtk_entry_set_position(GTK_ENTRY(main_window->private->sexy_search_entry), sexy_position );
+}/*main_window_sexy_search_entry_select();*/
 
 static void main_window_services_cb(GtkWidget *widget, MainWindow *main_window){
 	online_services_dialog_show(GTK_WINDOW(main_window->private->window));

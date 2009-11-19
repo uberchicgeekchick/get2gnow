@@ -150,7 +150,7 @@ static void user_validate( User **user );
 
 static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring);
 static void user_status_validate( UserStatus **status );
-static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status);
+static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user);
 static void user_status_format_dates(UserStatus *status);
 
 
@@ -232,10 +232,10 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
 	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE)
+		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE )
 			continue;
 		
-		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ) continue;
+		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) )) continue;
 		
 		if(g_str_equal(current_node->name, "id" )){
 			user->id=strtod(content, NULL);
@@ -272,14 +272,14 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		else if(g_str_equal(current_node->name, "status") && current_node->children)
 			user->status=user_status_parse(service, current_node->children, Updates);
 		
-		xmlFree(content);
+		uber_free(content);
 		
 	}
 	
 	user_validate(&user);
 	
 	if(user->status)
-		user_status_format_updates(service, user, user->status);
+		user_status_format_updates(service, user->status, user);
 	
 	user->image_file=cache_images_get_user_avatar_filename(service, user->user_name, user->image_uri);
 	
@@ -337,28 +337,129 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
 }/*user_status_validate(&status);*/ 
 
+UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
+	xmlNode		*current_node=NULL, *temp_node=NULL;
+	gchar		*content=NULL;
+	UserStatus	*status=user_status_new(service, monitoring);
+	status->user=user_new(service, getting_followers);
+	
+	/* Begin 'status' or 'direct-messages' loop */
+	debug_method( "user_status_parse_from_atom_entry", "Parsing searches result node: %s", root_element->name);
+	for(current_node=root_element; current_node; current_node=current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
+		
+		if( !g_str_equal(current_node->name, "link") && G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ){
+			if(content) uber_free(content);
+			continue;
+		}
+		
+		debug_method( "user_status_parse_from_atom_entry", "Parsing searches.  Parsing current node: %s.", current_node->name );
+		if(g_str_equal(current_node->name, "id")){
+			status->id=strtod((g_strrstr(content, ":")+1), NULL);
+			status->id_str=gdouble_to_str(status->id);
+			debug_method( "user_status_parse_from_atom_entry", "Parsing searches Update ID: %s(=%f).", status->id_str, status->id);
+		}else if(g_str_equal(current_node->name, "published") || g_str_equal(current_node->name, "updated")){
+			if( status->created_at_str && !g_str_equal(status->created_at_str, content) ){
+				uber_free(status->created_at_str);
+				uber_free(status->created_how_long_ago);
+				status->created_at=0;
+			}
+			status->created_at_str=g_strdup(content);
+			user_status_format_dates(status);
+		}else if(g_str_equal(current_node->name, "title")){
+			status->text=g_strdup(content);
+			debug_method( "user_status_parse_from_atom_entry", "Parsing searches update: %s; from: %s.", status->text, current_node->name );
+		}else if(g_str_equal(current_node->name, "link")){
+			if(content) uber_free(content);
+			xmlAttr *attr_node;
+			debug_method( "user_status_parse_from_atom_entry", "Parsing searches link node searching for type=\"image/png\".");
+			for( attr_node=current_node->properties; attr_node; attr_node=attr_node->next ){
+				debug_method( "user_status_parse_from_atom_entry", "Parsing searches node: %s looking for type.", attr_node->name );
+				if(g_str_equal(attr_node->name, "type")) break;
+			}
+			if(!attr_node) continue;
+			
+			for(temp_node=attr_node->children; temp_node; temp_node=temp_node->next){
+				content=(gchar *)xmlNodeGetContent(temp_node);
+				debug_method( "user_status_parse_from_atom_entry", "Parsing searches node: %s looking for image/png.", content );
+				if(g_str_equal(content, "image/png")) break;
+				uber_free(content);
+			}
+			if(content) uber_free(content);
+			if(!temp_node) continue;
+			
+			debug_method( "user_status_parse_from_atom_entry", "Parsed searches type and image/png nodes.  Now searching href node.");
+			for( attr_node=attr_node->next; attr_node; attr_node=attr_node->next ){
+				debug_method( "user_status_parse_from_atom_entry", "Parsing searches node %s looking for href.", attr_node->name );
+				if(g_str_equal(attr_node->name, "href") ) break;
+			}
+			if(!attr_node) continue;
+			
+			debug_method( "user_status_parse_from_atom_entry", "Parsed searches href nodes.  Setting avatar's uri.");
+			status->user->image_uri=(gchar *)xmlNodeGetContent(attr_node->children);
+			debug_method( "user_status_parse_from_atom_entry", "Parsing searches nodes finished.  Setting user->image: %s.", status->user->image_uri );
+			
+			attr_node=NULL;
+			temp_node=NULL;
+			continue;
+		}else if(g_str_equal(current_node->name, "twitter:source")){
+			status->source=g_strdup(content);
+		}else if(g_str_equal(current_node->name, "author")){
+			if(content) uber_free(content);
+			debug_method( "user_status_parse_from_atom_entry", "Parsing searches user_name & user_nick from: %s.", current_node->name );
+			for( temp_node=current_node->children; temp_node; temp_node=temp_node->next ){
+				debug_method( "user_status_parse_from_atom_entry", "Parsing searches for user_name & user_nick: %s.", temp_node->name );
+				if(g_str_equal(temp_node->name, "name") ) break;
+			}
+			if(content) uber_free(content);
+			if(!temp_node) continue;
+			if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(temp_node)) ) )){
+				if(content) uber_free(content);
+				temp_node=NULL;
+				continue;
+			}
+			
+			gchar **user_data=g_strsplit(content, " (", -1);
+			status->user->user_name=g_strdup(user_data[0]);
+			gchar **user_nick_data=g_strsplit(user_data[1], ")", -1);
+			status->user->nick_name=g_strdup(user_nick_data[0]);
+			g_strfreev(user_nick_data);
+			g_strfreev(user_data);
+			debug_method( "user_status_parse_from_atom_entry", "Parsed searches user_name: %s; user_nick: %s.", status->user->user_name, status->user->nick_name);
+			temp_node=NULL;
+		}
+		if(content) uber_free(content);
+	}
+	
+	status->user->image_file=cache_images_get_user_avatar_filename(service, status->user->user_name, status->user->image_uri);
+	
+	user_validate(&status->user);
+	user_status_validate(&status);
+	
+	user_status_format_updates(service, status, status->user);
+	
+	return status;
+}/*user_status_parse_from_atom_entry(service, current_node->children, monitoring);*/
+
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
-	xmlNode		*current_node = NULL;
+	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, monitoring);
 	
 	/* Begin 'status' or 'direct-messages' loop */
-	debug("Parsing status & update at node: %s", root_element->name);
+	debug("Parsing update node: %s", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE) continue;
+		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
 		
-		if( G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ){
-			if(content) g_free(content);
+		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) )){
+			if(content) uber_free(content);
 			continue;
 		}
 		
 		if(g_str_equal(current_node->name, "id")){
-			if(!g_strrstr(content, ":"))
-				status->id=strtod(content, NULL);
-			else
-				status->id=strtod(g_strrstr(content, ":")+1, NULL);
+			status->id=strtod(content, NULL);
 			status->id_str=gdouble_to_str(status->id);
-			debug("Status ID: %s(=%f).", content, status->id);
+			debug("Update ID: %s(=%f).", content, status->id);
 			
 		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
 			status->in_reply_to_status_id=strtod(content, NULL);
@@ -366,25 +467,25 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		else if(g_str_equal(current_node->name, "source"))
 			status->source=g_strdup(content);
 		
-		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user") || g_str_equal(current_node->name, "author")) && current_node->children)
+		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")) && current_node->children )
 			status->user=user_parse_node(service, current_node->children);
 		
 		else if(g_str_equal(current_node->name, "text"))
 			status->text=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "created_at") || g_str_equal(current_node->name, "published")){
+		else if(g_str_equal(current_node->name, "created_at")){
 			status->created_at_str=g_strdup(content);
 			user_status_format_dates(status);
 		}
 		
-		xmlFree(content);
+		uber_free(content);
 		
 	}
 
 	user_status_validate(&status);
 	
 	if(status->user)
-		user_status_format_updates(service, status->user, status);
+		user_status_format_updates(service, status, status->user);
 	
 	return status;
 }/*user_status_parse(service, current_node->children, monitoring);*/
@@ -401,14 +502,70 @@ static void user_status_format_dates(UserStatus *status){
 	status->created_at=mktime(&post);
 	
 	debug("Parsing update's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
-	status->created_how_long_ago=parser_convert_time(status->created_at_str, &status->created_seconds_ago);
+	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago);
 	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
 
+gchar *user_status_convert_time(const gchar *datetime, gint *my_diff){
+	gint diff=update_convert_datetime_to_seconds_old(datetime);
+	if(diff < 0) *my_diff=0;
+	else *my_diff=diff;
+	
+	/* Up to one minute ago. */
+	
+	if(diff < 2) return g_strdup(_("1 second ago"));
+	if(diff < 60 ) return g_strdup_printf(_("%i seconds ago"), diff);
+	if(diff < 120) return g_strdup(_("1 minute ago"));
+	
+	/* Minutes */
+	diff=diff/60;
+	if(diff < 60) return g_strdup_printf(_("%i minutes ago"), diff);
+	if(diff < 120) return g_strdup(_("1 hour ago"));
+	
+	/* Hours */
+	diff=diff/60;
+	if(diff < 24) return g_strdup_printf(_("%i hours ago"), diff);
+	if(diff < 48) return g_strdup(_("1 day ago"));
+	
+	/* Days */
+	diff=diff/24;
+	if(diff < 30) return g_strdup_printf(_("%i days ago"), diff);
+	if(diff < 365) return g_strdup_printf(_("%i months ago"), (diff/30));
+	
+	return g_strdup_printf(_("%i years ago"), (diff/365));
+	/* NOTE:
+	 * 	About time, month, & year precision, "years aren't...blah blah".
+	 * 	yeah well I agree!
+	 * 	but I'm dealing w/integers not floating point arthmatic.
+	 * 	so we'll all just have to get over is.
+	 */
+}/*user_status_convert_time(date_created_string, &created_seconds_ago);*/
 
-static void user_status_format_updates(OnlineService *service, User *user, UserStatus *status){
+gint update_convert_datetime_to_seconds_old(const gchar *datetime){
+	struct tm	*ta;
+	struct tm	post;
+	int		seconds_local;
+	int		seconds_post;
+	time_t		t=time(NULL);
+	
+	tzset();
+	ta=gmtime(&t);
+	ta->tm_isdst=-1;
+	seconds_local=mktime(ta);
+	
+	strptime(datetime, "%a %b %d %T +0000 %Y", &post);
+	post.tm_isdst=-1;
+	seconds_post=mktime(&post);
+	
+	return difftime(seconds_local, seconds_post);
+}/*
+	update_convert_datetime_to_seconds_old("Fri Nov  6 16:30:31 2009");
+	update_convert_datetime_to_seconds_old(datetime);
+*/
+
+
+static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user){
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
-	debug("Formatting status text for display.");
 	
 	gchar *sexy_status_text=NULL, *sexy_status_swap=www_html_entity_escape_text(status->text);
 	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
@@ -418,6 +575,13 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 		status->sexy_update=g_strdup(sexy_status_swap);
 		sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
 	//}
+	if(status->type==Searches){
+		debug("Formatting update for display.");
+		debug("\tstatus->text: [%s],", status->text);
+		debug("\tstatus->update: [%s],", status->update);
+		debug("\tsexy_status_text: [%s],", sexy_status_text);
+		debug("\tsexy_status_swap: [%s],", sexy_status_swap);
+	}
 	uber_free(sexy_status_swap);
 	
 	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>", user->nick_name, user->user_name, service->uri);
@@ -444,7 +608,7 @@ static void user_status_format_updates(OnlineService *service, User *user, UserS
 	);
 	
 	g_free(sexy_status_text);
-}/*user_status_format_updates(service, status, user);*/
+}/*user_status_format_updates(service, user->status, user);*/
 
 gboolean user_status_notify_on_timeout(UserStatus *status){
 	if(!(status && G_STR_N_EMPTY(status->notification) )) return FALSE;

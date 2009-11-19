@@ -97,8 +97,6 @@ enum {
 /********************************************************************************
  *                prototypes for private methods & functions                    *
  ********************************************************************************/
-static void www_html_entity_escape_status(gchar **status);
-
 static gboolean www_uri_check(gchar *url);
 static gssize www_find_first_non_user_name(const gchar *str);
 
@@ -123,22 +121,39 @@ static gchar *www_uri_title_lookup(const gchar *uri);
 #define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:TimelinesSexyTreeView:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:label.c"
 #include "debug.h"
 
-static GtkListStore *www_uri_title_lookup_table_list_store=NULL;
-static GtkTreeModel *www_uri_title_lookup_table_tree_model=NULL;
+static GtkListStore *www_uri_title_lookup_table_list_store;
+static GtkTreeModel *www_uri_title_lookup_table_tree_model;
 static gboolean www_uri_title_lookup_table_processing=FALSE;
 static guint www_uri_title_lookup_table_clean_up_timeout_id=0;
+static GRegex *number_regex;
 
 
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
-static void www_html_entity_escape_status(gchar **status){
-	*status=www_html_entity_escape_text( *status );
-}/*www_html_entity_escape_text(&text);*/
+void www_html_entity_escape_status(gchar **status_text){
+	gchar *new_status=www_html_entity_escape_text( *status_text );
+	uber_free( *status_text );
+	*status_text=new_status;
+	new_status=NULL;
+}/*www_html_entity_escape_status(&status->text);*/
 
-gchar *www_html_entity_escape_text(gchar *status){
+gchar *www_html_entity_escape_text(gchar *status_text){
 	gchar *escaped_status=NULL;
-	gchar *current_character=escaped_status=g_markup_escape_text(status, -1);
+	gchar *regex_status=NULL;
+	gchar *current_character=escaped_status=g_markup_escape_text(status_text, -1);
+	GMatchInfo *match_info;
+	if(g_regex_match(number_regex, current_character, 0, &match_info)){
+		GError *error=NULL;
+		regex_status=g_regex_replace(number_regex, current_character, strlen(current_character), 0, "", 0, &error);
+		if(!(error && G_STR_EMPTY(regex_status) )){
+			uber_free(escaped_status);
+			current_character=escaped_status=regex_status;
+		}else{
+			debug("**ERROR:** Parsing %s through g_regex_replace.  GError message: %s.", current_character, error->message );
+			g_error_free(error);
+		}
+	}
 	while((current_character=strstr(current_character, "&amp;"))) {
 		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
 			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
@@ -146,7 +161,7 @@ gchar *www_html_entity_escape_text(gchar *status){
 			current_character+=5;
 	}
 	return escaped_status;
-}/*www_html_entity_escape_text(status);*/
+}/*www_html_entity_escape_text(status->text);*/
 
 gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message){
 	if(!( SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) && xml->status_code>99 )){
@@ -249,17 +264,33 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 	gboolean titles_strip_uris=gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE);
 	
 	gchar *result=NULL, *temp=NULL;
-	gchar **words=g_strsplit_set(message, " \t\n", 0);
+	gchar **words=g_strsplit_set(message, " \t\n\r", 0);
 	for(gint i=0; words[i]; i++) {
 		if(!( words[i][1] && www_uri_check(words[i]) )) continue;
 		
 		gboolean searching=FALSE;
 		if(words[i][0]!='@' && !(searching=(words[i][0]=='!' || words[i][0]=='#')) ){
+			const gchar *domain=g_strrstr( words[i], "@" );
+			if(G_STR_N_EMPTY(domain) && strstr(domain, ".")){
+				debug("Rendering E-mail address: <%s>", words[i]);
+				if(!make_hyperlinks)
+					temp=g_strdup_printf("<u>%s</u>", words[i]);
+				else
+					temp=g_strdup_printf("<a href=\"mailto:%s\">%s</a>", words[i], words[i]);
+				uber_free(words[i]);
+				words[i]=temp;
+				temp=NULL;
+				domain=NULL;
+				continue;
+			}
+			domain=NULL;
+
 			debug("Rendering URI for display including title.  URI: '%s'.", words[i]);
 			temp=www_find_uri_pages_title(service, words[i], NULL, expand_hyperlinks, make_hyperlinks, titles_strip_uris);
 			debug("Rendered URI for display.  %s will be replaced with %s.", words[i], temp);
 			g_free(words[i]);
 			words[i]=temp;
+			temp=NULL;
 			continue;
 		}
 		
@@ -270,6 +301,7 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 		uber_free(url_prefix);
 		g_free(words[i]);
 		words[i]=temp;
+		temp=NULL;
 	}
 	result=g_strjoinv(" ", words);
 	g_strfreev(words);
@@ -295,6 +327,7 @@ static gboolean www_uri_check(gchar *uri){
 		D("irc://"),
 		D("http://"),
 		D("https://"),
+		D("mailto:"),
 	};
 #undef D
 	guint8 uri_length=strlen(uri);
@@ -637,7 +670,7 @@ static gboolean www_uri_titles_clean_up(void){
 					COLUMN_INSERT_TIME, &datetime,
 				-1
 		);
-		if( (created_ago=parser_datetime_to_seconds_old(datetime)) >= 3600 ){
+		if( (created_ago=update_convert_datetime_to_seconds_old(datetime)) >= 3600 ){
 			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, created_ago);
 			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
 		}
@@ -646,16 +679,24 @@ static gboolean www_uri_titles_clean_up(void){
 	return !(www_uri_title_lookup_table_processing=FALSE);
 }/*www_uri_titles_clean_up();*/
 
-void www_uri_title_lookup_table_init(void){
+void www_init(void){
+	GError *error=NULL;
+	const gchar *g_regex_pattern="/&amp;[0-9]+([ \n\r\t]+)?/";
+	number_regex=g_regex_new(g_regex_pattern, 0, G_REGEX_MATCH_NOTEOL, &error);
+	if(error){
+		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		g_error_free(error);
+	}
 	www_uri_title_lookup_table_tree_model=(GtkTreeModel *)(www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING));
 	www_uri_title_lookup_table_clean_up_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)www_uri_titles_clean_up, NULL);
-}/*www_uri_title_lookup_table_init();*/
+}/*www_init();*/
 
-void www_uri_title_lookup_table_deinit(void){
+void www_deinit(void){
+	g_regex_unref(number_regex);
 	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
 	uber_object_unref(www_uri_title_lookup_table_list_store);
 	www_uri_title_lookup_table_tree_model=NULL;
-}/*www_uri_title_lookup_table_init();*/
+}/*www_init();*/
 
 /********************************************************************************
  *                                    eof                                       *

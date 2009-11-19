@@ -90,6 +90,10 @@ void online_services_disconnect(void);
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
 void online_services_delete_service(OnlineService *service);
 
+
+void online_services_uri_clicked(GtkWidget *widget, const gchar *uri);
+
+
 /**
  * @returns:	-2 if services->total equals 0
  *		services->total if count equals 0

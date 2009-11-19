@@ -268,7 +268,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	TimelinesSexyTreeView *timelines_sexy_tree_view=(TimelinesSexyTreeView *)online_service_wrapper_get_user_data(service_wrapper);
-	UpdateMonitor monitoring=(UpdateMonitor)online_service_wrapper_get_form_data(service_wrapper);
+	UpdateMonitor monitoring=timelines_sexy_tree_view_get_monitoring(timelines_sexy_tree_view);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	if(!IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view))
 		return NULL;
@@ -293,10 +293,10 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
-			new_updates=searches_parse_results(service, xml, timeline, timelines_sexy_tree_view);
+			new_updates=searches_parse_results(service, xml, requested_uri, timelines_sexy_tree_view, monitoring);
 			break;
 		case Groups:
-			new_updates=groups_parse_conversation(service, xml, timeline, timelines_sexy_tree_view);
+			new_updates=groups_parse_conversation(service, xml, timeline, timelines_sexy_tree_view, monitoring);
 			break;
 		case DMs:
 		case Replies:

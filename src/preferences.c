@@ -89,7 +89,6 @@
 
 typedef struct _PreferencesDialog PreferencesDialog;
 typedef struct _replace_me_with replace_me_with;
-typedef struct _maximum_previous_updates_struct maximum_previous_updates_struct;
 typedef struct _reload_time reload_time;
 
 struct _PreferencesDialog{
@@ -132,6 +131,9 @@ struct _PreferencesDialog{
 	GtkCheckButton	*previous_updates_uniq_check_button;
 	GtkComboBox	*previous_updates_maximum_combo_box;
 	
+	GtkCheckButton	*search_history_uniq_check_button;
+	GtkComboBox	*search_history_maximum_combo_box;
+	
 	GList		*notify_ids;
 };
 
@@ -150,19 +152,28 @@ reload_time reload_list[]={
 	{0, NULL}
 };
 
-struct _maximum_previous_updates_struct{
+static const struct {
 	gint value;
-	gchar *label;
-};
+}
 
-maximum_previous_updates_struct maximum_previous_updates_details[]={
-	{5, N_("5 Updates.")},
-	{15, N_("15 Updates.")},
-	{25, N_("25 Updates.")},
-	{50, N_("50 Updates.")},
-	{75, N_("75 Updates.")},
-	{100, N_("100 Updates.")},
-	{0, NULL}
+maximum_entries[]={
+	{5},
+	{10},
+	{15},
+	{25},
+	{35},
+	{45},
+	{50},
+	{55},
+	{60},
+	{65},
+	{70},
+	{75},
+	{80},
+	{85},
+	{90},
+	{95},
+	{100},
 };
 
 struct _replace_me_with{
@@ -191,8 +202,7 @@ enum {
 static void preferences_setup_widgets(PreferencesDialog *prefs);
 static void preferences_timeline_setup(PreferencesDialog *prefs);
 static void preferences_replace_with_setup(PreferencesDialog *prefs);
-static void preferences_maximum_previous_updates_setup(PreferencesDialog *prefs);
-static void preferences_reload_setup(PreferencesDialog *prefs);
+static void preferences_max_int_combo_box_setup(PreferencesDialog *prefs, GtkComboBox *int_combo_box, gint max_int_value, const gchar *int_label);
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button);
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box);
@@ -249,11 +259,14 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_NO_PROFILE_LINK, TRUE, prefs->updates_no_profile_link_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY, TRUE, prefs->previous_updates_uniq_check_button);
-	
 	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
-	preferences_hookup_int_combo(prefs, PREFS_PREVIOUS_UPDATES_MAXIMUM_UPDATES, 50, prefs->previous_updates_maximum_combo_box);
+	preferences_hookup_toggle_button(prefs, PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY, TRUE, prefs->previous_updates_uniq_check_button);
+	preferences_hookup_int_combo(prefs, PREFS_PREVIOUS_UPDATES_MAXIMUM, 50, prefs->previous_updates_maximum_combo_box);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_SEARCH_HISTORY_UNIQUE_ONLY, TRUE, prefs->search_history_uniq_check_button);
+	preferences_hookup_int_combo(prefs, PREFS_SEARCH_HISTORY_MAXIMUM, 25, prefs->search_history_maximum_combo_box);
+	
 	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, 5, prefs->combo_reload);
 	
 	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, 2, prefs->replace_me_with_combo_box);
@@ -338,62 +351,36 @@ static void preferences_replace_with_setup(PreferencesDialog *prefs){
 	g_object_unref(list_store);
 }/*static void preferences_replace_with_setup(prefs);*/
 
-static void preferences_maximum_previous_updates_setup(PreferencesDialog *prefs){
-	debug("Setting-up /me replacement preference.");
+static void preferences_max_int_combo_box_setup(PreferencesDialog *prefs, GtkComboBox *int_combo_box, gint max_int_value, const gchar *int_label){
+	debug("Setting-up maximum %s preference combo box.", int_label);
 	
 	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
 	
-	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->previous_updates_maximum_combo_box), GTK_TREE_MODEL(list_store));
+	gtk_combo_box_set_model(GTK_COMBO_BOX(int_combo_box), GTK_TREE_MODEL(list_store));
 	
 	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->previous_updates_maximum_combo_box), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->previous_updates_maximum_combo_box), renderer, "text", COLUMN_COMBO_NAME, NULL);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(int_combo_box), renderer, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(int_combo_box), renderer, "text", COLUMN_COMBO_NAME, NULL);
 	
-	maximum_previous_updates_struct	*maximum_previous_updates=maximum_previous_updates_details;
-	while(maximum_previous_updates->label){
+	if(max_int_value < maximum_entries[0].value)
+		max_int_value=maximum_entries[G_N_ELEMENTS(maximum_entries)-1].value;
+	
+	for(gint i=0; i<G_N_ELEMENTS(maximum_entries) && maximum_entries[i].value <= max_int_value; i++){
 		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
 		gtk_list_store_append(list_store, iter);
+		gchar *combo_box_rows_label=g_strdup_printf("%d %s", maximum_entries[i].value, int_label);
 		gtk_list_store_set(
 					list_store, iter,
-						COLUMN_COMBO_NAME, maximum_previous_updates->label,
-						COLUMN_COMBO_VALUE, maximum_previous_updates->value,
+						COLUMN_COMBO_NAME, combo_box_rows_label,
+						COLUMN_COMBO_VALUE, maximum_entries[i].value,
 					-1
 		);
-		maximum_previous_updates++;
+		uber_free(combo_box_rows_label);
 		uber_free(iter);
 	}
 	
 	g_object_unref(list_store);
-}/*static void preferences_replace_with_setup(prefs);*/
-
-static void preferences_reload_setup(PreferencesDialog *prefs){
-	debug("Setting-up timeline refresh preference.");
-	GtkTreeIter	*iter=NULL;
-	reload_time	*options=reload_list;
-	
-	GtkCellRenderer *renderer=gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(prefs->combo_reload), renderer, "text", COLUMN_COMBO_NAME, NULL);
-	
-	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
-	
-	gtk_combo_box_set_model(GTK_COMBO_BOX(prefs->combo_reload), GTK_TREE_MODEL(list_store));
-	
-	while (options->display_text) {
-		iter=g_new0(GtkTreeIter, 1);
-		gtk_list_store_append(list_store, iter);
-		gtk_list_store_set(
-					list_store, iter,
-						COLUMN_COMBO_NAME, options->display_text,
-						COLUMN_COMBO_VALUE, options->minutes,
-					-1
-		);
-		options++;
-		uber_free(iter);
-	}
-	
-	g_object_unref(list_store);
-}/*preferences_reload_setup(prefs);*/
+}/*preferences_max_int_combo_box_setup(prefs, GtkComboBox *int_combo_box, const gchar *int_label);*/
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button){
 	gchar *pref_bool_default=(gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default");
@@ -470,10 +457,12 @@ static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *com
 		}
 	}while( gtk_tree_model_iter_next(model, iter));
 	/* Fallback to the first one. */
+	uber_free(iter);
+	iter=g_new0(GtkTreeIter, 1);
 	if( !found && gtk_tree_model_get_iter_first(model, iter) )
 		gtk_combo_box_set_active_iter(combo_box, iter);
 	
-	if(iter) uber_free(iter);
+	uber_free(iter);
 }
 
 static void preferences_add_id (PreferencesDialog *prefs, guint id){
@@ -631,6 +620,9 @@ void preferences_dialog_show(GtkWindow *parent){
 					
 					"previous_updates_uniq_check_button", &prefs->previous_updates_uniq_check_button,
 					"previous_updates_maximum_combo_box", &prefs->previous_updates_maximum_combo_box,
+					
+					"search_history_uniq_check_button", &prefs->search_history_uniq_check_button,
+					"search_history_maximum_combo_box", &prefs->search_history_maximum_combo_box,
 				NULL
 	);
 
@@ -658,8 +650,10 @@ void preferences_dialog_show(GtkWindow *parent){
 	
 	preferences_timeline_setup(prefs);
 	preferences_replace_with_setup(prefs);
-	preferences_reload_setup(prefs);
-	preferences_maximum_previous_updates_setup(prefs);
+	
+	preferences_max_int_combo_box_setup(prefs, prefs->combo_reload, 60, "Minutes");
+	preferences_max_int_combo_box_setup(prefs, prefs->previous_updates_maximum_combo_box, 0, "Updates");
+	preferences_max_int_combo_box_setup(prefs, prefs->search_history_maximum_combo_box, 0, "Searches");
 	
 	preferences_setup_widgets(prefs);
 	

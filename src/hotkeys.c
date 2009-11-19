@@ -114,7 +114,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 				case GDK_D:	case GDK_d:
-					update_viewer_sexy_send_dm();
+					update_viewer_send( GTK_WIDGET(update_viewer_get_sexy_dm_button() ));
 					return;
 				case GDK_S:	case GDK_s:
 					update_viewer_send(NULL);

@@ -52,8 +52,8 @@
 #define _THREAD_SAFE
 
 
-#ifndef __UBERCHICK_UBERCHICK_LABEL_H__
-#define __UBERCHICK_UBERCHICK_LABEL_H__
+#ifndef __UBERCHICK_LABEL_H__
+#define __UBERCHICK_LABEL_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -92,8 +92,11 @@ GType uberchick_label_get_type(void) G_GNUC_CONST;
 
 
 UberChickLabel *uberchick_label_new(void);
+OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label);
+gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label);
+
 void uberchick_label_set_text(UberChickLabel  *uberchick_label, OnlineService *service, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS
-#endif /* __UBERCHICK_UBERCHICK_LABEL_H__ */
+#endif /* __UBERCHICK_LABEL_H__ */
 

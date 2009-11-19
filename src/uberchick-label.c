@@ -100,8 +100,6 @@ static void uberchick_label_class_init(UberChickLabelClass *klass);
 static void uberchick_label_init(UberChickLabel *uberchick_label);
 static void uberchick_label_finalize(UberChickLabel *uberchick_label);
 
-static void uberchick_label_url_activated_cb(UberChickLabel *uberchick_label, const gchar *uri);
-
 
 
 static void uberchick_label_class_init(UberChickLabelClass *klass){
@@ -117,37 +115,27 @@ static void uberchick_label_init(UberChickLabel *uberchick_label){
 	
 	gtk_label_set_line_wrap(GTK_LABEL(uberchick_label), TRUE);
 	g_object_set(uberchick_label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, NULL);
-	g_signal_connect(uberchick_label, "url-activated", (GCallback)uberchick_label_url_activated_cb, NULL);
+	g_signal_connect(uberchick_label, "url-activated", (GCallback)online_services_uri_clicked, NULL);
 }/*uberchick_label_init(gobject);*/
 
 UberChickLabel *uberchick_label_new(void){
 	return g_object_new(TYPE_UBERCHICK_LABEL, NULL);
-}
+}/*uberchick_label_new();*/
 
 static void uberchick_label_finalize(UberChickLabel *uberchick_label){
 	GET_PRIVATE(uberchick_label)->update_id=0.0;
 	G_OBJECT_CLASS(uberchick_label_parent_class)->finalize(G_OBJECT(uberchick_label));
-}
+}/*uberchick_label_finalize(update_viewer->update_label);*/
 
-static void uberchick_label_url_activated_cb(UberChickLabel *uberchick_label, const gchar *uri){
-	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
-	if( g_strrstr(uri, this->service->uri) && !g_strrstr(uri, "search") ){
-		gchar *services_resource=g_strrstr( (g_strrstr(uri, this->service->uri)), "/");
-		debug("MySexyUberChickLabel: Inserting: <%s@%s> in to current update.", &services_resource[1], this->service->uri );
-		if(!in_reply_to_service) in_reply_to_service=this->service;
-		if(!in_reply_to_status_id) in_reply_to_status_id=this->update_id;
-		gchar *user_profile_link=NULL;
-		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
-			user_profile_link=g_strdup_printf(" ( http://%s%s )", this->service->uri, services_resource );
-		gchar *users_at=g_strdup_printf("@%s%s ", &services_resource[1], (user_profile_link ?user_profile_link :""));
-		update_viewer_sexy_insert_string(users_at);
-		uber_free(users_at);
-		if(user_profile_link) uber_free(user_profile_link);
-	}else if(g_app_info_launch_default_for_uri(uri, NULL, NULL))
-		debug("**NOTICE:** Opening URI: <%s>.", uri );
-	else
-		debug("**ERROR:** Can't handle URI: <%s>.", uri );
-}
+OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label){
+	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->service )) return NULL;
+	return GET_PRIVATE(uberchick_label)->service;
+}/*uberchick_label_get_service(widget);*/
+
+gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label){
+	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->update_id )) return 0.0;
+	return GET_PRIVATE(uberchick_label)->update_id;
+}/*uberchick_label_get_service(widget);*/
 
 void uberchick_label_set_text(UberChickLabel *uberchick_label, OnlineService *service, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;

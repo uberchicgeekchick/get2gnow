@@ -88,7 +88,9 @@
 #include "users.types.h"
 #include "users-glists.h"
 #include "users.h"
+
 #include "network.h"
+#include "searches.h"
 
 #include "preferences.h"
 #include "proxy.h"
@@ -127,6 +129,9 @@ static void online_service_cookie_jar_open(OnlineService *service);
 
 static void online_service_request_validate_uri(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
 static void online_service_request_validate_form_data(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data);
+static gboolean online_service_form_data_replace( OnlineService *service, gpointer  **form_data, gchar *form_data_swap );
+
+
 
 /********************************************************
  *          Variable definitions.                       *
@@ -608,7 +613,7 @@ static gboolean online_service_best_friends_list_store_remove( OnlineService *se
 	for(gint i=0; i<=best_friends_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter((GtkTreeModel *)list_store, iter, path))){
+		if(!gtk_tree_model_get_iter((GtkTreeModel *)list_store, iter, path)){
 			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
@@ -649,7 +654,7 @@ void online_service_best_friends_list_store_free( OnlineService *service, GtkLis
 	for(gint i=best_friends_total-1; i>=0; i--){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!(gtk_tree_model_get_iter( (GtkTreeModel *)list_store, iter, path))){
+		if(!gtk_tree_model_get_iter( (GtkTreeModel *)list_store, iter, path)){
 			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
@@ -726,8 +731,16 @@ void online_service_update_id_get( OnlineService *service, const gchar *timeline
 	 * 				service->key			/timeline.xml	(newest|oldest)
 	 */
 	if(G_STR_EMPTY(timeline)) return;
-	gchar		**uri_split=g_strsplit( g_strrstr(timeline, "/"), "?", 2);
-	const gchar	*timeline_xml=uri_split[0];
+	gchar *timeline_xml=NULL;
+	gboolean free_timeline=FALSE;
+	if(!g_strrstr(timeline, "?"))
+		timeline_xml=g_strrstr(timeline, "/");
+	else{
+		free_timeline=TRUE;
+		gchar **uri_split=g_strsplit_set( g_strrstr(timeline, "/"), "?=", 3);
+		timeline_xml=g_strdup_printf("%s/%s", uri_split[0], uri_split[2]);
+		g_strfreev(uri_split);
+	}
 	debug("Getting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gdouble swap_id;
@@ -744,7 +757,8 @@ void online_service_update_id_get( OnlineService *service, const gchar *timeline
 	}
 	if(swap_id>0) *update_id=swap_id;
 	debug("Retrieved %s update ID: %s for [%s] on <%s>.", key, gdouble_to_str(*update_id), timeline_xml, service->uri );
-	g_strfreev(uri_split);
+	if(free_timeline)
+		uber_free(timeline_xml);
 }/*online_service_update_id_get( service, "/friends.xml", "newest", &newest_update_id );*/
 
 void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id ){
@@ -764,8 +778,16 @@ void online_service_update_id_set( OnlineService *service, const gchar *timeline
 	 * 				service->key			/timeline.xml (newest|oldest)
 	 */
 	if(G_STR_EMPTY(timeline)) return;
-	gchar		**uri_split=g_strsplit( g_strrstr(timeline, "/"), "?", 2);
-	const gchar	*timeline_xml=uri_split[0];
+	gchar *timeline_xml=NULL;
+	gboolean free_timeline=FALSE;
+	if(!g_strrstr(timeline, "?"))
+		timeline_xml=g_strrstr(timeline, "/");
+	else{
+		free_timeline=TRUE;
+		gchar **uri_split=g_strsplit_set( g_strrstr(timeline, "/"), "?=", 3);
+		timeline_xml=g_strdup_printf("%s/%s", uri_split[0], uri_split[2]);
+		g_strfreev(uri_split);
+	}
 	debug("Setting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gboolean success;
@@ -776,7 +798,8 @@ void online_service_update_id_set( OnlineService *service, const gchar *timeline
 	uber_free(prefs_path);
 	debug("Saved %s update ID: %s for %s on <%s>.", key, swap_id_str, timeline_xml, service->uri );
 	uber_free(swap_id_str);
-	g_strfreev(uri_split);
+	if(free_timeline)
+		uber_free(timeline_xml);
 }/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
 
 gboolean online_service_connect(OnlineService *service){
@@ -1133,19 +1156,24 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	
 	if(g_strrstr(*requested_uri, "?since_id=")) return;
 	
-	UpdateMonitor monitoring=(UpdateMonitor)*form_data;
 	TimelinesSexyTreeView *timelines_sexy_tree_view=(TimelinesSexyTreeView *)*user_data;
+	UpdateMonitor monitoring=timelines_sexy_tree_view_get_monitoring(timelines_sexy_tree_view);
 	gint8 has_loaded=timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view);
-	if(!( (*form_data) && (*user_data) )) return;
+	if(!( (*user_data) )) return;
 	
-	const gchar *timeline=g_strrstr(*requested_uri, "/");
+	gchar *timeline;
+	if(monitoring!=Searches)
+		timeline=g_strrstr(*requested_uri, "/");
+	else
+		timeline=searches_format_timeline_from_uri(*requested_uri);
+	
 	gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *requested_uri, has_loaded);
-	if( has_loaded && timelines_sexy_tree_view_get_total(timelines_sexy_tree_view) ){
+	if( has_loaded>1 && timelines_sexy_tree_view_get_total(timelines_sexy_tree_view) ){
 		requesting=_("new");
 		since_id=newest_update_id;
 	}else if(monitoring==DMs || monitoring==Replies){
@@ -1156,7 +1184,10 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 		since_id=unread_update_id;
 	}else return;
 	
-	if(!since_id) return;
+	if(!since_id){
+		if(monitoring==Searches) uber_free(timeline);
+		return;
+	}
 	
 	gchar *update_str=gdouble_to_str(since_id);
 	gchar *request_uri_swap=g_strdup_printf("%s?since_id=%s", *requested_uri, update_str);
@@ -1166,6 +1197,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	debug("Requesting <%s>'s timeline: %s; %s updates since: %f (using string: %s).", service->key, timeline, requesting, since_id, update_str);
 	uber_free(update_str);
 	request_uri_swap=NULL;
+	if(monitoring==Searches) uber_free(timeline);
 }/*online_service_request_validate_uri(service, &requested_uri, attempt, callback, &user_data, &form_data);*/
 
 static void online_service_request_validate_form_data(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
@@ -1181,43 +1213,37 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	
 	if(!( (*form_data) && (*user_data) )) return;
 	
-	gboolean free_form_data=FALSE;
-	gchar *form_data_swap=NULL;
+	gboolean free_form_data;
+	if(!(free_form_data=online_service_form_data_replace( service, &form_data, NULL ) ))
+		debug("Resetting form data free gboolean to ensure that only the 3rd & further call will free the orginal form data pointer");
 	if(service->user_name && service->nick_name && g_strrstr( (gchar *)(*form_data), "/me" ) ){
 		gint replace=0;
 		gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace, 2);
 		if(replace!=-1){
 			debug("Auto-replacement trigger match '/me' to be replaced with user nick.");
 			debug("/me auto-replacement triggered.  Replacing '/me' with: '%s'", service->user_name);
-			free_form_data=TRUE;
-			gchar **form_data_swap_parts=g_strsplit( (gchar *)(*form_data), "/me", -1);
+			gchar **form_data_parts=g_strsplit( (gchar *)(*form_data), "/me", -1);
 			gchar *replace_with=g_strdup_printf("*%s", ( replace==1 ? service->nick_name : service->user_name ) );
-			(*form_data)=g_strjoinv(replace_with, form_data_swap_parts);
+			
+			free_form_data=online_service_form_data_replace( service, (&form_data), g_strjoinv(replace_with, form_data_parts) );
+			
+			g_strfreev(form_data_parts);
 			uber_free(replace_with);
 		}
 	}
 	
-	form_data_swap=g_strdup( (*form_data) );
-	if( (form_data_swap[0]=='*') && (service->micro_blogging_service==Identica || service->micro_blogging_service==StatusNet) ){
-		form_data_swap=g_strdup_printf(" %s", (gchar *)(*form_data) );
-		if(!free_form_data) free_form_data=TRUE;
-		uber_free( *form_data );
-		(*form_data)=form_data_swap;
-		form_data_swap=NULL;
-	}else
-		uber_free(form_data_swap);
-	form_data_swap=g_uri_escape_string((*form_data), NULL, TRUE);
-	if(!free_form_data) free_form_data=TRUE;
-	else uber_free( *form_data );
-	(*form_data)=(gpointer)form_data_swap;
+	if( g_str_has_prefix(*form_data, "*") && (service->micro_blogging_service==Identica || service->micro_blogging_service==StatusNet) )
+		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf(" %s", (gchar *)(*form_data) ) );
+	
+	free_form_data=online_service_form_data_replace( service, (&form_data), g_uri_escape_string((*form_data), NULL, TRUE) );
 	
 	debug("Posting update to: [%s].", service->key);
 	if(!g_str_equal((gchar *)(*user_data), "post->update")){
 		debug("Sending direct message to: <%s@%s> from: <%s>", (gchar *)(*user_data), service->uri, service->key);
-		form_data_swap=g_strdup_printf("source=%s&user=%s&text=%s", service->micro_blogging_client, (gchar *)(*user_data), (gchar *)(*form_data));
+		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf("source=%s&user=%s&text=%s", service->micro_blogging_client, (gchar *)(*user_data), (gchar *)(*form_data) ) );
 	}else if(!(in_reply_to_status_id && in_reply_to_service==service)){
 		debug("Posting update to: <%s>", service->key);
-		form_data_swap=g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data));
+		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data) ) );
 	}else{
 		gchar *in_reply_to_status_id_str=gdouble_to_str(in_reply_to_status_id);
 		if(service->micro_blogging_service==Twitter && service->micro_blogging_service==StatusNet){
@@ -1227,19 +1253,31 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 			uber_free(retweet_uri);
 		}
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
-		form_data_swap=g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data));
+		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data) ) );
 		uber_free(in_reply_to_status_id_str);
 		in_reply_to_service=NULL;
 		in_reply_to_status_id=0;
 	}
 	
-	uber_free(*form_data);
-	(*form_data)=(gpointer)form_data_swap;
-	form_data_swap=NULL;
 	
-	debug("Update: [%s].", (gchar *)(*form_data));
+	debug("Posting <%s>'s Status Update: [%s].", service->key, (gchar *)(*form_data));
 }/*online_service_request_validate_form_data(service, &requested_uri, attempt, callback, &user_data, &form_data);*/
 
+static gboolean online_service_form_data_replace( OnlineService *service, gpointer  **form_data, gchar *form_data_swap ){
+	static gboolean free_form_data=FALSE;
+	if(!( service && service->key && (*form_data) && form_data_swap )) return (free_form_data=FALSE);
+	
+	/*debug("Modifing <%s>'s status update.", service->key);
+	debug("\tOrginal POST update value:");
+	debug("\t\t[%s]", (gchar *)(**form_data) );
+	debug("\tis being replaced with:");
+	debug("\t\t[%s].", form_data_swap );*/
+	
+	if(free_form_data) uber_free( **form_data );
+	(**form_data)=form_data_swap;
+	
+	return (free_form_data=TRUE);
+}/*online_service_form_data_replace( service, *form_data, &form_data_swap, &form_data_free );*/
 
 static void online_service_message_restarted(SoupMessage *xml, OnlineService *service){
 	if(!service) return;
