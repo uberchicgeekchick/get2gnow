@@ -1173,7 +1173,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	const gchar *requesting;
 	gdouble since_id=0;
 	debug("Updating request uri for <%s> to new updates posted to %s which has loaded %i.", service->key, *requested_uri, has_loaded);
-	if( has_loaded>1 && timelines_sexy_tree_view_get_total(timelines_sexy_tree_view) ){
+	if( has_loaded && timelines_sexy_tree_view_get_total(timelines_sexy_tree_view) ){
 		requesting=_("new");
 		since_id=newest_update_id;
 	}else if(monitoring==DMs || monitoring==Replies){
