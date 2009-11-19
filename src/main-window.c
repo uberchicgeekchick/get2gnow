@@ -1215,6 +1215,7 @@ static void main_window_sexy_search_setup(MainWindowPrivate *m_w_p){
 	main_window_search_history_load(m_w_p);
 	gtk_widget_show(GTK_WIDGET(m_w_p->sexy_search_entry));
 	
+	g_signal_connect_after(m_w_p->sexy_search_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
 	g_signal_connect(m_w_p->sexy_search_entry, "activate", G_CALLBACK(main_window_search_submitted), main_window);
 }/*main_window_sexy_search_setup(main_window->private);*/
 
