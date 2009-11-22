@@ -758,9 +758,9 @@ static void timelines_sexy_tree_view_update_age(TimelinesSexyTreeView *timelines
 			debug("Removing TimelinesSexyTreeView iter for <%s>'s %s at index: %d; list_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, list_store_index, selected_index);
 			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
 			gtk_list_store_remove(this->list_store, iter);
-			this->total--;
-			if( (this->has_loaded > 1 || ( this->monitoring==DMs || this->monitoring==Replies || this->monitoring==BestFriends ) ) && unread && this->total > -1 && this->unread_updates>=this->total )
+			if( unread && this->total > -1 && this->unread_updates>=this->total && (this->has_loaded > 0 || ( this->monitoring==DMs || this->monitoring==Replies || this->monitoring==BestFriends ) ) )
 				this->unread_updates--;
+			this->total--;
 		}else{
 			if( !index_updated && this->index>-1 && selected_index>-1 && this->list_store_index>-1 && this->index==selected_index ){
 				debug("Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, ( (this->index+this->list_store_index>=this->total) ?-1 :(this->index+this->list_store_index) ) );

@@ -576,12 +576,10 @@ static gboolean online_service_request_selected_update_include_and_begin_to_send
 		return FALSE;
 	}
 	
-	if(in_reply_to_status_id!=selected_update->id){
-		in_reply_to_status_id=selected_update->id;
-		in_reply_to_service=selected_update->service;
-	}
+	if( selected_update && selected_update->id )
+		update_viewer_set_in_reply_to_data(selected_update->service, selected_update->id, FALSE);
 	
-	gboolean prefix_added=update_viewer_sexy_prefix_string(prefix, TRUE);
+	gboolean prefix_added=update_viewer_sexy_prefix_string(prefix, forwarding);
 	uber_free(prefix);
 	return prefix_added;
 }/*online_service_request_selected_update_include_and_begin_to_send*/

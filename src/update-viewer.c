@@ -997,22 +997,21 @@ static void update_viewer_reply_or_forward(GtkButton *update_button){
 	if(update_button!=update_viewer->forward_update_button) okay_to_send=online_service_request_selected_update_reply();
 	else okay_to_send=online_service_request_selected_update_forward();
 	
-	if(!(G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && okay_to_send))
+	if(!( G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && okay_to_send ))
 		return;
 	
 	update_viewer_sexy_send(NULL, NULL);
 }/*update_viewer_reply_or_forward(button);*/
 
 void update_viewer_send(GtkWidget *activated_widget){
+	if(G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text))
+		return update_viewer_reply();
+	
 	if(!activated_widget){
 		if(update_viewer->best_friends_service && update_viewer->best_friends_user_name)
 			return update_viewer_sexy_send(update_viewer->best_friends_service, update_viewer->best_friends_user_name);
 		return update_viewer_sexy_send(NULL, NULL);
 	}
-	
-	if(activated_widget==GTK_WIDGET(update_viewer->sexy_entry))
-		if(G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text))
-			update_viewer_reply();
 	
 	if(activated_widget==GTK_WIDGET(update_viewer->sexy_dm_button) ){
 		const gchar *user_name=NULL;
