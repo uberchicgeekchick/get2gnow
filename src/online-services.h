@@ -110,12 +110,12 @@ gint online_services_has_total(guint count);
 gint online_services_has_connected(guint count);
 
 OnlineService *online_services_get_service_by_key(const gchar *online_service_key);
-gint online_services_best_friends_list_store_fill(GtkListStore *list_store);
-gint online_services_best_friends_list_store_validate(GtkListStore *list_store);
-void online_services_best_friends_list_store_free(GtkListStore *list_store);
+gint online_services_best_friends_tree_store_fill(GtkTreeStore *tree_store);
+gint online_services_best_friends_tree_store_validate(GtkTreeStore *tree_store);
+void online_services_best_friends_tree_store_free(GtkTreeStore *tree_store);
 gint online_services_best_friends_total_update(gint best_friends_to_add);
-gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store);
-gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store);
+gdouble online_services_best_friends_tree_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store);
+gboolean online_services_best_friends_tree_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store);
 gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name);
 
 OnlineService *online_services_connected_get_first(void);

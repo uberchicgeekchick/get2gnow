@@ -61,7 +61,7 @@
 #include <gtk/gtk.h>
 
 #include "online-services-typedefs.h"
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 
 G_BEGIN_DECLS
 
@@ -110,7 +110,7 @@ void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button);
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
 
 GtkWindow *main_window_get_window(void);
-GtkPaned *main_window_get_timelines_sexy_tree_view_paned(void);
+GtkPaned *main_window_get_uberchick_tree_view_paned(void);
 GtkPaned *main_window_get_main_paned(void);
 
 GtkMenuItem *main_window_get_menu(const gchar *menu);
@@ -120,6 +120,9 @@ gboolean main_window_best_friends_get_selected( OnlineService **service, gchar *
 
 SexySpellEntry *main_window_sexy_search_entry_get_widget(void);
 void main_window_sexy_search_entry_select(void);
+void main_window_sexy_search_entry_set(const gchar *search_phrase, gboolean auto_submit);
+void main_window_show_search_history(void);
+void main_window_hide_search_history(void);
 
 const gchar *main_window_set_statusbar_default_message(const gchar *default_message);
 void main_window_statusbar_printf(const gchar *msg, ...) G_GNUC_PRINTF(1, 2);

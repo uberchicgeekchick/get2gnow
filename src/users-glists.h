@@ -72,29 +72,21 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-#define usrglistscasecmp	users_glists_sort_by_user_name
-#define	usrglistscmp		users_glists_sort_by_user_name
-
 extern gboolean getting_followers;
 
 
 /**********************************************************************
  *          Global method & function prototypes                       *
  **********************************************************************/
-GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListLoadFunc func);
+GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func);
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
 
-int users_glists_sort_by_user_name(User *user1, User *user2);
-
-void users_glists_append_friend(OnlineService *service, User *user);
-void users_glists_remove_friend(OnlineService *service, User *user);
-
-void users_glists_remove_follower(OnlineService *service, User *user);
-
-void users_glists_free_lists(OnlineService *service);
+gboolean users_glists_free_lists(OnlineService *service, UsersGListGetWhich users_glist_get_which);
 void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which);
 
+void users_glists_append_friend(OnlineService *service, User *user);
+void users_glists_append_follower(OnlineService *service, User *user);
 
 G_END_DECLS
 #endif /* __USERS_GLISTS_H__ */

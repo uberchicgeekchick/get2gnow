@@ -190,13 +190,20 @@ static User *user_new(OnlineService *service, gboolean a_follower){
 }/*user_new*/
 
 static void user_validate( User **user ){
-	if(! (*user)->user_name ) (*user)->user_name=g_strdup("");
-	if(! (*user)->nick_name ) (*user)->nick_name=g_strdup("");
-	if(! (*user)->location ) (*user)->location=g_strdup("");
-	if(! (*user)->bio ) (*user)->bio=g_strdup("");
-	if(! (*user)->url ) (*user)->url=g_strdup("");
-	if(! (*user)->image_uri ) (*user)->image_uri=g_strdup("");
-	if(! (*user)->image_file ) (*user)->image_file=g_strdup("");
+	if(! G_STR_N_EMPTY( (*user)->user_name ) ) (*user)->user_name=g_strdup("");
+	if(! G_STR_N_EMPTY( (*user)->nick_name ) )
+		if(!( G_STR_EMPTY( (*user)->user_name ) )) (*user)->nick_name=g_strdup( (*user)->user_name );
+		else (*user)->nick_name=g_strdup("");
+	if(! G_STR_N_EMPTY( (*user)->location ) ) (*user)->location=g_strdup("");
+	if(! G_STR_N_EMPTY( (*user)->bio ) ) (*user)->bio=g_strdup("unavailable");
+	if(! G_STR_N_EMPTY( (*user)->url ) )
+		if(G_STR_N_EMPTY( (*user)->user_name ) && (*user)->service && (*user)->service->key )
+			(*user)->url=g_strdup_printf("http://%s/%s", (*user)->service->uri, (*user)->user_name );
+		else
+			(*user)->url=g_strdup("");
+	if(! G_STR_N_EMPTY( (*user)->image_uri ) ) (*user)->image_uri=g_strdup("");
+	if(! G_STR_N_EMPTY( (*user)->image_file ) ) (*user)->image_file=g_strdup("");
+	/*if( (*user)->status ) user_status_validate( &(*user)->status );*/
 }/*user_validate(&user);*/ 
 
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
@@ -210,8 +217,13 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 		return NULL;
 	}
 	
-	if(g_str_equal(root_element->name, "user"))
+	if(g_str_equal(root_element->name, "user")){
 		user=user_parse_node(service, root_element->children);
+		if(!user->status)
+			user->status=user_status_new(service, Timelines);
+		user_status_validate(&user->status);
+		
+	}
 		/*TODO finish caching
 		if((user=user_parse_node(service, root_element->children)))
 			cache_save_page(service, online_service_wrapper_get_requested_uri(service_wrapper), xml->response_body);
@@ -246,15 +258,17 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 			user->nick_name=g_markup_printf_escaped("%s", content);
 		
 		else if(g_str_equal(current_node->name, "screen_name" ))
-			user->user_name=g_strdup(content);
+			user->user_name=g_markup_printf_escaped("%s", content);
 		
 		else if(g_str_equal(current_node->name, "location" ))
 			user->location=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_node->name, "description" ))
-			user->bio=g_markup_printf_escaped( "%s", content );
-		
-		else if(g_str_equal(current_node->name, "url" ))
+		else if(g_str_equal(current_node->name, "description" )){
+			if(G_STR_N_EMPTY(content))
+				user->bio=g_markup_printf_escaped( "%s", content );
+			else
+				user->bio=g_strdup("unavailable");
+		}else if(g_str_equal(current_node->name, "url" ))
 			user->url=g_strdup(content);
 		
 		else if(g_str_equal(current_node->name, "followers_count" ))
@@ -278,8 +292,10 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	
 	user_validate(&user);
 	
-	if(user->status)
+	if(user->status){
+		user_status_validate( &user->status );
 		user_status_format_updates(service, user->status, user);
+	}
 	
 	user->image_file=cache_images_get_user_avatar_filename(service, user->user_name, user->image_uri);
 	
@@ -293,7 +309,7 @@ void user_free(User *user){
 	
 	user->service=NULL;
 	
-	if(user->user_name) uber_free(user->user_name);
+	/*if(user->user_name) uber_free(user->user_name);
 	if(user->nick_name) uber_free(user->nick_name);
 	if(user->location) uber_free(user->location);
 	if(user->bio) uber_free(user->bio);
@@ -301,9 +317,9 @@ void user_free(User *user){
 	if(user->image_uri) uber_free(user->image_uri);
 	if(user->image_file) uber_free(user->image_file);
 
-	uber_free(user);
+	uber_free(user);*/
 	
-	/*uber_object_free(&user->user_name, &user->nick_name, &user->location, &user->bio, &user->url, &user->image_uri, &user->image_file, &user, NULL);*/
+	uber_object_free(&user->user_name, &user->nick_name, &user->location, &user->bio, &user->url, &user->image_uri, &user->image_file, &user, NULL);
 }/*user_free*/
 
 
@@ -335,6 +351,7 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->notification ) (*status)->notification=g_strdup("");
 	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
+	/*if( (*status)->user ) user_validate( &(*status)->user );*/
 }/*user_status_validate(&status);*/ 
 
 UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
@@ -419,12 +436,23 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 				continue;
 			}
 			
-			gchar **user_data=g_strsplit(content, " (", -1);
-			status->user->user_name=g_strdup(user_data[0]);
-			gchar **user_nick_data=g_strsplit(user_data[1], ")", -1);
-			status->user->nick_name=g_strdup(user_nick_data[0]);
-			g_strfreev(user_nick_data);
-			g_strfreev(user_data);
+			debug_method( "user_status_parse_from_atom_entry", "Parsing searches user_name & user_nick from content: %s.", content );
+			if(!g_strrstr(content, "(")){
+				status->user->user_name=g_markup_printf_escaped("%s", content);
+				status->user->nick_name=g_markup_printf_escaped("%s", content);
+			}else{
+				gchar **user_data=g_strsplit(content, " (", -1);
+				status->user->user_name=g_markup_printf_escaped("%s", user_data[0]);
+				if(G_STR_N_EMPTY(user_data[1])){
+					gchar **user_nick_data=g_strsplit(user_data[1], ")", -1);
+					if( user_nick_data[0] && G_STR_N_EMPTY(user_nick_data[0]) )
+						status->user->nick_name=g_markup_printf_escaped("%s", user_nick_data[0]);
+					else
+						status->user->nick_name=g_markup_printf_escaped("%s", user_data[1]);
+					g_strfreev(user_nick_data);
+				}
+				g_strfreev(user_data);
+			}
 			debug_method( "user_status_parse_from_atom_entry", "Parsed searches user_name: %s; user_nick: %s.", status->user->user_name, status->user->nick_name);
 			temp_node=NULL;
 		}
@@ -433,7 +461,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 	
 	status->user->image_file=cache_images_get_user_avatar_filename(service, status->user->user_name, status->user->image_uri);
 	
-	user_validate(&status->user);
+	user_validate( &status->user );
 	user_status_validate(&status);
 	
 	user_status_format_updates(service, status, status->user);
@@ -484,8 +512,10 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 
 	user_status_validate(&status);
 	
-	if(status->user)
+	if(status->user){
+		user_validate( &status->user );
 		user_status_format_updates(service, status, status->user);
+	}
 	
 	return status;
 }/*user_status_parse(service, current_node->children, monitoring);*/
@@ -514,25 +544,26 @@ gchar *user_status_convert_time(const gchar *datetime, gint *my_diff){
 	/* Up to one minute ago. */
 	
 	if(diff < 2) return g_strdup(_("1 second ago"));
-	if(diff < 60 ) return g_strdup_printf(_("%i seconds ago"), diff);
+	if(diff < 60 ) return g_strdup_printf(_("%d seconds ago"), diff);
 	if(diff < 120) return g_strdup(_("1 minute ago"));
 	
 	/* Minutes */
 	diff=diff/60;
-	if(diff < 60) return g_strdup_printf(_("%i minutes ago"), diff);
+	if(diff < 60) return g_strdup_printf(_("%d minutes ago"), diff);
 	if(diff < 120) return g_strdup(_("1 hour ago"));
 	
 	/* Hours */
 	diff=diff/60;
-	if(diff < 24) return g_strdup_printf(_("%i hours ago"), diff);
+	if(diff < 24) return g_strdup_printf(_("%d hours ago"), diff);
 	if(diff < 48) return g_strdup(_("1 day ago"));
 	
 	/* Days */
 	diff=diff/24;
-	if(diff < 30) return g_strdup_printf(_("%i days ago"), diff);
-	if(diff < 365) return g_strdup_printf(_("%i months ago"), (diff/30));
+	if(diff < 30) return g_strdup_printf(_("%d days ago"), diff);
+	if(diff < 365) return g_strdup_printf(_("%d months ago"), (diff/30));
 	
-	return g_strdup_printf(_("%i years ago"), (diff/365));
+	diff=diff/365;
+	return g_strdup_printf(_("%d year%s ago"), diff, (diff==1 ?"" :"s") );
 	/* NOTE:
 	 * 	About time, month, & year precision, "years aren't...blah blah".
 	 * 	yeah well I agree!
@@ -647,7 +678,7 @@ void user_status_free(UserStatus *status){
 	user_status_validate(&status);
 	status->service=NULL;
 	
-	if(status->text) uber_free(status->text);
+	/*if(status->text) uber_free(status->text);
 	if(status->id_str) uber_free(status->id_str);
 	if(status->from) uber_free(status->from);
 	if(status->rcpt) uber_free(status->rcpt);
@@ -658,9 +689,9 @@ void user_status_free(UserStatus *status){
 	if(status->created_at_str) uber_free(status->created_at_str);
 	if(status->created_how_long_ago) uber_free(status->created_how_long_ago);
 
-	uber_free(status);
+	uber_free(status);*/
 	
-	/*uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);*/
+	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);
 }/*user_status_free*/
 
 
@@ -868,31 +899,53 @@ static void user_profile_viewer_set_avatar(const gchar *image_file, const gchar 
 	if( !g_file_test(image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR) && user_profile_viewer->loading )
 		return user_profile_viewer_download_avatar(image_file, image_uri);
 	
-	if(user_profile_viewer->loading)
-		user_profile_viewer_show_all();
-	
 	debug("Avatar: GtkImage created GtkImage for display in UserProfileViewer");
 	debug("Avatar: Downloaded from <%s>", image_uri);
 	debug("Avatar: saved to: [%s]", image_file);
 	gtk_message_dialog_set_image( user_profile_viewer->dialog, GTK_WIDGET(user_profile_viewer->image=images_get_maximized_image_from_filename((gchar *)image_file)) );
+	
+	if(user_profile_viewer->loading)
+		user_profile_viewer_show_all();
 }/*user_profile_viewer_set_avatar(const gchar *image_file, const gchar *image_uri);*/
 
 static void user_profile_viewer_download_avatar(const gchar *image_file, const gchar *image_uri){
 	debug("Downloading Image: %s.  GET: %s", image_file, image_uri);
 	
-	online_service_request_uri(user_profile_viewer->service, QUEUE, image_uri, 0, NULL, user_profile_viewer_save_avatar, g_strdup(image_uri), g_strdup(image_file) );
+	online_service_request_uri(user_profile_viewer->service, QUEUE, image_uri, 0, NULL, user_profile_viewer_save_avatar, g_strdup(image_file), g_strdup(image_uri) );
 }/*user_profile_viewer_download_avatar(user->service, user);*/
 
 static void *user_profile_viewer_save_avatar(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	const gchar *image_uri=online_service_wrapper_get_user_data(service_wrapper);
-	const gchar *image_file=online_service_wrapper_get_form_data(service_wrapper);
+	const gchar *image_file=online_service_wrapper_get_user_data(service_wrapper);
+	const gchar *image_uri=online_service_wrapper_get_form_data(service_wrapper);
 	debug("Image download returned: %s(%d).", xml->reason_phrase, xml->status_code);
 	
-	gchar *error_message=NULL;
-	if( www_xml_error_check(service, image_uri, xml, &error_message) && g_file_set_contents(image_file, xml->response_body->data, xml->response_body->length, NULL) )
-		user_profile_viewer_set_avatar(image_file, image_uri);
+	gchar *image_filename=NULL, *error_message=NULL;
+	if(!(www_xml_error_check(service, image_uri, xml, &error_message))){
+		debug("Failed to download and save avatar: <%s> to file: [%s].", image_uri, image_file);
+		debug("Detailed error message: %s.", error_message);
+		image_filename=cache_images_get_unknown_image_filename();
+		main_window_statusbar_printf("Error adding avatar to UserProfileViewer.  GNOME's unknown-image will be used instead.");
+	}else if(!( g_strrstr( soup_message_headers_get_one( xml->response_headers, "Content-Type"), "image" ) )){
+		debug("Avatar does not appear to be an image: <%s>.  GNOME's unknown-image will be used instead.", image_uri);
+		image_filename=cache_images_get_unknown_image_filename();
+	}else if(!(g_file_set_contents(
+				image_file,
+					xml->response_body->data,
+					xml->response_body->length,
+				NULL
+	))){
+		debug("Failed to download and save avatar: <%s> to file: [%s].", image_uri, image_file);
+		image_filename=cache_images_get_unknown_image_filename();
+	}else{
+		debug("Saved avatar: <%s> to file: [%s]", image_uri, image_file);
+		image_filename=g_strdup(image_file);
+	}
+	main_window_statusbar_printf("Avatar added to UserProfileViewer.");
 	
+	user_profile_viewer_set_avatar(image_filename, image_uri);
+	
+	uber_free(image_filename);
 	uber_free(error_message);
 	
 	return NULL;

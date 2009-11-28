@@ -86,7 +86,7 @@
 #include "gconfig.h"
 #include "preferences.h"
 #include "tabs.h"
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 #include "update-viewer.h"
 #include "ui-utils.h"
 #include "users.h"
@@ -138,10 +138,13 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 					g_signal_emit_by_name(main_window_get_menu("help"), "activate");
 					return;
 				case GDK_Down: case GDK_KP_Down:
-					update_viewer_show_previous_updates();
+					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
+						main_window_show_search_history();
+					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
+						update_viewer_show_previous_updates();
 					return;
 				case GDK_R: case GDK_r:
-					timelines_sexy_tree_view_refresh(tabs_get_current()); 
+					uberchick_tree_view_refresh(tabs_get_current()); 
 					return;
 				case GDK_I:	case GDK_i:
 				case GDK_question:
@@ -215,7 +218,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 					online_service_request_selected_update_save_fave();
 					return;
 				case GDK_F5:
-					timelines_sexy_tree_view_refresh(tabs_get_current()); 
+					uberchick_tree_view_refresh(tabs_get_current()); 
 					return;
 				case GDK_Z:	case GDK_z:
 					online_service_request_selected_update_destroy_fave();
@@ -259,7 +262,7 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 			}
 			break;
 	}
-	timelines_sexy_tree_view_key_pressed(tabs_get_current(), event);
+	uberchick_tree_view_key_pressed(tabs_get_current(), event);
 }/*hotkey_process(widget, event);*/
 
 /********************************************************

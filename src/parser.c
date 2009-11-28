@@ -80,7 +80,7 @@
 #include "users.h"
 
 #include "main-window.h"
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 #include "preferences.h"
 #include "images.h"
 #include "gconfig.h"
@@ -260,7 +260,7 @@ const gchar *parser_xml_node_type_to_string(xmlElementType type){
 }/*parser_xml_node_type_to_string(node->type);*/
 
 /* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -269,7 +269,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	/* Count new tweets */
 	gboolean	notify=gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE);;
 	
-	gboolean	save_oldest_id=(timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view)?FALSE:TRUE);
+	gboolean	save_oldest_id=(uberchick_tree_view_has_loaded(uberchick_tree_view)?FALSE:TRUE);
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
 	guint		new_updates=0;
@@ -336,9 +336,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	}
 	if(!oldest_update_id && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
-	guint		timelines_sexy_tree_view_notify_delay=timelines_sexy_tree_view_get_notify_delay(timelines_sexy_tree_view);
+	guint		uberchick_tree_view_notify_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
 	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view)-1)*100;
+	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, <%s>'s timeline: %s.", service->key, timeline);
@@ -377,20 +377,20 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 		new_updates++;
 		gboolean free_status=TRUE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
-		debug("Adding UserStatus from: %s, ID: %s, on <%s> to TimelinesSexyTreeView.", status->user->user_name, status->id_str, service->key);
-		timelines_sexy_tree_view_store_update(timelines_sexy_tree_view, status);
+		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UberChickTreeView.", status->user->user_name, status->id_str, service->key);
+		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		if( monitoring!=BestFriends && monitoring!=DMs && online_service_is_user_best_friend(service, status->user->user_name) ){
 			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				timelines_sexy_tree_view_notify_delay+=tweet_display_interval;
+				g_timeout_add_seconds_full(notify_priority, uberchick_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				uberchick_tree_view_notify_delay+=tweet_display_interval;
 			}
 		}
 		
 		if( notify && free_status && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
 			free_status=FALSE;
-			g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			timelines_sexy_tree_view_notify_delay+=tweet_display_interval;
+			g_timeout_add_seconds_full(notify_priority, uberchick_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			uberchick_tree_view_notify_delay+=tweet_display_interval;
 		}
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
@@ -413,5 +413,5 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *time
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);*/
+}/*parse_timeline(service, xml, timeline, uberchick_tree_view, monitoring);*/
 

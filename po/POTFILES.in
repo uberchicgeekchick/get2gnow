@@ -7,7 +7,7 @@
 [type: gettext/glade]data/online-services-dialog.ui
 [type: gettext/glade]data/preferences.ui
 [type: gettext/glade]data/request-popup-dialog.ui
-[type: gettext/glade]data/timelines-sexy-tree-view.ui
+[type: gettext/glade]data/uberchick-tree-view.ui
 [type: gettext/glade]data/update-viewer.ui
 [type: gettext/glade]data/user-profile-viewer.ui
 
@@ -29,7 +29,6 @@ src/gtkbuilder.c
 src/images.c
 src/ipc.c
 src/hotkeys.c
-src/label.c
 src/main.c
 src/main-window.c
 src/network.c
@@ -44,8 +43,9 @@ src/program.c
 src/proxy.c
 src/searches.c
 src/tabs.c
-src/timelines-sexy-tree-view.c
 src/timer.c
+src/uberchick-label.c
+src/uberchick-tree-view.c
 src/ui-utils.c
 src/update-viewer.c
 src/users-glists.c

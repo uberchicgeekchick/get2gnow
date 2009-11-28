@@ -124,7 +124,7 @@ enum _UsersGListGetWhich{
  **********************************************************************/
 typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
 typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-typedef void (*UsersGListLoadFunc) (GList *users);
+typedef void (*UsersGListOnLoadFunc) (GList *users);
 typedef void (*GPointerFunc) (gpointer user_data);
 
 

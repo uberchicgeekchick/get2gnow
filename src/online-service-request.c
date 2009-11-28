@@ -286,19 +286,19 @@ const gchar *online_service_request_action_to_string(RequestAction action){
 		case BestFriendAdd:
 			return _("added a best friend");
 		case BestFriendDrop:
-			return _("removed a best friend");
+			return _("removing a best friend");
 		case Follow:
 			return _("following");
 		case UnFollow:
-			return _("unfollowed");
+			return _("unfollowing");
 		case Block:
-			return _("blocked");
+			return _("blocking");
 		case UnBlock:
-			return _("unblocked user");
+			return _("unblocking user");
 		case Fave:
 			return _("star'd an update");
 		case UnFave:
-			return _("un-star'd an update");
+			return _("un-staring an update");
 		case SelectService:
 			return _("selecting default account");
 		default:
@@ -430,12 +430,11 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	OnlineServiceRequest *request=(OnlineServiceRequest *)online_service_wrapper_get_user_data(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
-	const gchar *service_guid=service->guid;
 	gchar *error_message=NULL;
 	if(!(www_xml_error_check(service, request->uri, xml, &error_message))){
-		debug("**ERORR:** OnlineServiceRequest to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service_guid, xml->status_code);
+		debug("OnlineServiceRequest failed to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->user_name, service->guid, xml->status_code);
 		
-		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service_guid, xml->reason_phrase, xml->status_code);
+		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service->guid, xml->reason_phrase, xml->status_code);
 		online_service_request_free(request);
 		uber_free(error_message);
 		return NULL;
@@ -443,36 +442,29 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	uber_free(error_message);
 	
 	User *user=NULL;
-	debug("OnlineServiceRequest to %s %s.  OnlineService: <%s> Loading: <%s>:", request->message, request->user_name, service_guid, request->uri);
 	switch(request->action){
 		case UnFollow:
 		case Block:
-			tabs_remove_from_timelines_sexy_tree_views_list_stores(STRING_USER, request->user_name);
+			tabs_remove_from_uberchick_tree_views_tree_stores(STRING_USER, request->user_name);
 		case Follow:
 		case BestFriendAdd:
 		case BestFriendDrop:
 			if(!(user=user_parse_profile(service->session, xml, service_wrapper))){
 				if(xml->status_code!=403){
-					debug("\t\t[failed]");
-					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_name, service_guid);
+					debug("OnlineServiceRequest to %s %s.  OnlineService: <%s> Loading: <%s>:\t[failed]", request->message, request->user_name, service->guid, request->uri);
+					main_window_statusbar_printf("Failed to %s %s on %s.", request->message, request->user_name, service->guid);
 				}else{
-					debug("\t\t[duplicate request]");
-					debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_name, service_guid);
-					statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_name, service_guid);
+					debug("OnlineServiceRequest to %s %s.  OnlineService: <%s> Loading: <%s>:\t[duplicate request]", request->message, request->user_name, service->guid, request->uri);
+					debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_name, service->guid);
+					statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->user_name, service->guid);
 				}
 			}else{
-				debug("\t\t[succeeded]");
+				debug("OnlineServiceRequest to %s %s.  OnlineService: <%s> Loading: <%s>:\t[succeeded]", request->message, request->user_name, service->guid, request->uri);
 				if(request->action==BestFriendAdd||request->action==BestFriendDrop)
-					online_service_best_friends_list_store_update_check( service_wrapper, xml, user );
+					online_service_best_friends_tree_store_update_check( service_wrapper, xml, user );
 				else if(request->action==Follow)
 					users_glists_append_friend(service, user);
-				else if(request->action==UnFollow)
-					users_glists_remove_friend(service, user);
-				else if(request->action==Block){
-					users_glists_remove_friend(service, user);
-					users_glists_remove_follower(service, user);
-				}
-				main_window_statusbar_printf("Successfully %s %s on %s.", request->message, request->user_name, service_guid);
+				main_window_statusbar_printf("<%s>'s successeded in %s %s.", service->guid, request->message, request->user_name);
 				user_free(user);
 			}
 			
@@ -481,11 +473,11 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		case UnFave:
 		case UnBlock:
 			if(xml->status_code!=403){
-				debug("\t\t[succceed]");
-				main_window_statusbar_printf("Successfully %s on %s.", request->message, service_guid);
+				debug("\t\t[succeeded]");
+				main_window_statusbar_printf("Successfully %s on %s.", request->message, service->guid);
 			}else{
 				debug("\t\t[duplicate request]");
-				main_window_statusbar_printf("You've already %s on %s.", request->message, service_guid);
+				main_window_statusbar_printf("You've already %s on %s.", request->message, service->guid);
 			}
 			break;
 		case SelectService:
@@ -600,7 +592,7 @@ void online_service_request_selected_update_view_updates_new(void){
 void online_service_request_selected_update_view_forwards(void){
 	if(!(selected_update && selected_update->id)) return;
 	online_service_request_main(selected_update->service, ViewForwards, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
-}/*online_service_request_selected_update_view_updates();*/
+}/*online_service_request_selected_update_view_forwards();*/
 
 void online_service_request_selected_update_view_updates(void){
 	if(!(selected_update && selected_update->user_name)) return;

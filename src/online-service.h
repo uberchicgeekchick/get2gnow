@@ -90,16 +90,13 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 
 gboolean online_service_validate_guid(OnlineService *service, const gchar *user_name, const gchar *uri);
 
-gint online_service_best_friends_list_store_fill( OnlineService *service, GtkListStore *list_store );
-gint online_service_best_friends_list_store_validate( OnlineService *service, GtkListStore *list_store );
+gint online_service_best_friends_tree_store_fill( OnlineService *service, GtkTreeStore *tree_store );
+gint online_service_best_friends_tree_store_validate( OnlineService *service, GtkTreeStore *tree_store );
 gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name );
-void online_service_best_friends_list_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
-void online_service_best_friends_list_store_free( OnlineService *service, GtkListStore *list_store );
-
-GList *online_service_users_glist_get(OnlineService *service, UsersGListGetWhich users_glist_get_which);
-void online_service_users_glist_set(OnlineService *service, UsersGListGetWhich users_glist_get_which, GList *new_users);
+void online_service_best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
+void online_service_best_friends_tree_store_free( OnlineService *service, GtkTreeStore *tree_store );
 
 gboolean online_service_connect(OnlineService *service);
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection);

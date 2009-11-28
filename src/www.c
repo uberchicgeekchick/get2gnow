@@ -118,7 +118,7 @@ static gchar *www_uri_title_lookup(const gchar *uri);
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:TimelinesSexyTreeView:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:label.c"
+#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:UberChickTreeView:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:label.c"
 #include "debug.h"
 
 static GtkListStore *www_uri_title_lookup_table_list_store;

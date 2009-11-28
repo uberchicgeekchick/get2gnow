@@ -161,7 +161,7 @@ static void geometry_load_for_window(ViewType view){
 	
 	if(view!=Embed) return;
 	
-	geometry_set_paned(main_window_get_timelines_sexy_tree_view_paned(), "timelines_sexy_tree_view", view, FALSE, FALSE);
+	geometry_set_paned(main_window_get_uberchick_tree_view_paned(), "uberchick_tree_view", view, FALSE, FALSE);
 	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE);
 }//geometry_load_for_window
 
@@ -203,7 +203,7 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) calls++;
 	
-	geometry_set_paned(main_window_get_timelines_sexy_tree_view_paned(), "timelines_sexy_tree_view", view, FALSE, (calls==LOAD_COUNT) );
+	geometry_set_paned(main_window_get_uberchick_tree_view_paned(), "uberchick_tree_view", view, FALSE, (calls==LOAD_COUNT) );
 	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, (calls==LOAD_COUNT) );
 }/*geometry_save_for_window(view);*/
  

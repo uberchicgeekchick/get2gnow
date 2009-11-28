@@ -90,7 +90,7 @@
 
 #include "hotkeys.h"
 #include "tabs.h"
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 
 #include "friends-manager.h"
 #include "following-viewer.h"
@@ -178,7 +178,7 @@ struct _MainWindowPrivate {
 	GList			*selected_update_image_menu_items;
 	
 	/* OnlineServices "best friends" stuff. */
-	GtkHPaned		*timelines_sexy_tree_view_hpaned;
+	GtkHPaned		*uberchick_tree_view_hpaned;
 	GList			*best_friends_buttons;
 	GtkVBox			*best_friends_vbox;
 	GtkScrolledWindow	*best_friends_scrolled_window;
@@ -189,7 +189,7 @@ struct _MainWindowPrivate {
 	GtkTreeViewColumn	*best_friends_online_service_tree_view_column;
 	GtkCellRendererText	*best_friends_online_service_cell_renderer_text;
 	
-	GtkListStore		*best_friends_list_store;
+	GtkTreeStore		*best_friends_tree_store;
 	GtkTreeModel		*best_friends_tree_model;
 	GtkTreeModel		*best_friends_tree_model_sort;
 	
@@ -238,7 +238,7 @@ typedef enum{
 
 #define	GtkBuilderUI	"main-window"
 
-#define SEARCH_HISTORY_PREVIOUS_SEARCHES	GCONF_PATH "/search_history/previous_searches/%d"
+#define SEARCH_HISTORY_PREVIOUS_SEARCHES	GCONF_PATH "/search/history/saved/%d"
 
 
 static void main_window_class_init(MainWindowClass *klass);
@@ -252,7 +252,7 @@ static void main_window_statusbar_timer_remove(void);
 static void main_window_setup(void);
 static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window);
 static void main_window_best_friends_setup(GtkBuilder *ui);
-static void main_window_best_friends_list_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window );
+static void main_window_best_friends_tree_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window );
 static void main_window_best_friends_buttons_set_sensitive(void);
 static void main_window_best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_view, MainWindow *main_window);
 static void main_window_best_friends_button_clicked(GtkButton *button);
@@ -269,19 +269,18 @@ static void main_window_search_history_load(MainWindowPrivate *m_w_p);
 static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar *update, gint list_store_index);
 #define main_window_search_history_restore(m_w_p, update)			\
 		main_window_search_history_add(m_w_p, update, -3)
-#define main_window_search_history_prepend(m_w_p, update)			\
+#define main_window_search_history_apppend(m_w_p, update)			\
 		main_window_search_history_add(m_w_p, update, -2)
-#define main_window_search_history_append(m_w_p, update)			\
+#define main_window_search_history_prepend(m_w_p, update)			\
 		main_window_search_history_add(m_w_p, update, -1)
 #define main_window_search_history_insert(m_w_p, update, list_store_index)	\
 		main_window_search_history_add(m_w_p, update, list_store_index)
 
-static gboolean main_window_search_history_check_unique(MainWindowPrivate *m_w_p, const gchar *search_phrase);
+static gboolean main_window_search_history_is_unique(MainWindowPrivate *m_w_p, const gchar *search_phrase);
 static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint list_store_index);
 static void main_window_search_history_rotate(MainWindowPrivate *m_w_p);
 
 static void main_window_search_history_selected(GtkComboBoxEntry *search_history_combo_box_entry, MainWindow *main_window);
-static void main_window_sexy_search_entry_set(const gchar *search_phrase);
 static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *main_window);
 
 static void main_window_services_cb(GtkWidget *window, MainWindow *main_window); 
@@ -354,7 +353,7 @@ static void main_window_finalize(GObject *object){
 	main_window->private=GET_PRIVATE(main_window);
 	
 	gtk_list_store_clear(main_window->private->search_history_list_store);
-	gtk_list_store_clear(main_window->private->best_friends_list_store);
+	gtk_tree_store_clear(main_window->private->best_friends_tree_store);
 	
 	uber_object_unref(main_window->private->sexy_search_entry);
 	uber_object_unref(main_window->private->search_history_completion);
@@ -440,7 +439,7 @@ static void main_window_setup(void){
 					"best_friends_vbox", &main_window->private->best_friends_vbox,
 					"best_friends_scrolled_window", &main_window->private->best_friends_scrolled_window,
 					
-					"best_friends_list_store", &main_window->private->best_friends_list_store,
+					"best_friends_tree_store", &main_window->private->best_friends_tree_store,
 					
 					"best_friends_sexy_tree_view", &main_window->private->best_friends_sexy_tree_view,
 					"best_friends_user_name_tree_view_column", &main_window->private->best_friends_user_name_tree_view_column,
@@ -459,7 +458,7 @@ static void main_window_setup(void){
 					"best_friends_view_updates_button", &main_window->private->best_friends_view_updates_button,
 					
 					/*tabs_notebook is used to contain get2gnow's timeline tabs.*/
-					"timelines_sexy_tree_view_hpaned", &main_window->private->timelines_sexy_tree_view_hpaned,
+					"uberchick_tree_view_hpaned", &main_window->private->uberchick_tree_view_hpaned,
 					"tabs_notebook", &tabs_notebook,
 					
 					/*container elements for the UpdateViewer - when its embed.*/
@@ -529,7 +528,7 @@ static void main_window_setup(void){
 					"best_friends_add_button", "clicked", online_service_request_popup_best_friend_add,
 					"best_friends_drop_button", "clicked", main_window_best_friends_button_clicked,
 					
-					"best_friends_refresh_button", "clicked", main_window_best_friends_list_store_validate,
+					"best_friends_refresh_button", "clicked", main_window_best_friends_tree_store_validate,
 					
 					"best_friends_view_updates_new_button", "clicked", main_window_best_friends_button_clicked,
 					"best_friends_view_profile_button", "clicked", main_window_best_friends_button_clicked,
@@ -600,10 +599,10 @@ static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scr
 	g_object_set(main_window->private->best_friends_online_service_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(main_window->private->best_friends_online_service_tree_view_column))-10), NULL);
 }/*main_window_best_friends_resized(widget, allocation, main_window);*/
 
-static void main_window_best_friends_list_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window ){
+static void main_window_best_friends_tree_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window ){
 	/* TODO: Add a confirmation dialog that warn of how long this may take. */
-	online_services_best_friends_list_store_validate(main_window->private->best_friends_list_store);
-}/*main_window_best_friends_list_store_validate(button, main_window);*/
+	online_services_best_friends_tree_store_validate(main_window->private->best_friends_tree_store);
+}/*main_window_best_friends_tree_store_validate(button, main_window);*/
 
 static void main_window_best_friends_setup(GtkBuilder *ui){
 	const gchar *best_friends_buttons[]={
@@ -620,12 +619,12 @@ static void main_window_best_friends_setup(GtkBuilder *ui){
 		list=g_list_append(list, (gtk_builder_get_object(ui, best_friends_buttons[i])) );
 	main_window->private->best_friends_buttons=list;
 	
-	best_friends_set_list_store(main_window->private->best_friends_list_store);
-	main_window->private->best_friends_tree_model=(GtkTreeModel *)main_window->private->best_friends_list_store;
+	best_friends_set_tree_store(main_window->private->best_friends_tree_store);
+	main_window->private->best_friends_tree_model=(GtkTreeModel *)main_window->private->best_friends_tree_store;
 	main_window->private->best_friends_tree_model_sort=gtk_tree_model_sort_new_with_model(main_window->private->best_friends_tree_model);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_model_sort), STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, GTK_SORT_DESCENDING);
 	
-	online_services_best_friends_list_store_fill(main_window->private->best_friends_list_store);
+	online_services_best_friends_tree_store_fill(main_window->private->best_friends_tree_store);
 	
 	gtk_tree_view_set_model(GTK_TREE_VIEW(main_window->private->best_friends_sexy_tree_view), main_window->private->best_friends_tree_model_sort);
 	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, STRING_BEST_FRIEND_USER_NAME);
@@ -931,9 +930,9 @@ GtkWindow *main_window_get_window(void){
 	return main_window->private->window;
 }/*main_window_get_window*/
 
-GtkPaned *main_window_get_timelines_sexy_tree_view_paned(void){
-	return GTK_PANED(main_window->private->timelines_sexy_tree_view_hpaned);
-}/*main_window_get_timelines_sexy_tree_view_paned();*/
+GtkPaned *main_window_get_uberchick_tree_view_paned(void){
+	return GTK_PANED(main_window->private->uberchick_tree_view_hpaned);
+}/*main_window_get_uberchick_tree_view_paned();*/
 
 GtkPaned *main_window_get_main_paned(void){
 	return GTK_PANED(main_window->private->main_vpaned);
@@ -956,7 +955,7 @@ GtkTreeModel *main_window_get_best_friends_tree_model(void){
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 	online_service_request_unset_selected_update();
 	/* Add any clean-up code above this function call */
-	online_services_best_friends_list_store_free(main_window->private->best_friends_list_store);
+	online_services_best_friends_tree_store_free(main_window->private->best_friends_tree_store);
 	gtk_widget_destroy(GTK_WIDGET(GET_PRIVATE(main_window)->window) );
 }
 
@@ -1201,6 +1200,10 @@ static void main_menu_online_service_request_menu_process(GtkImageMenuItem *item
 	func( user_data );
 }
 
+
+
+/*BEGIN:UBERCHICK_SEXY_ENTRY_COMPLETION_COMBO_BOX*/
+
 static void main_window_sexy_search_setup(MainWindowPrivate *m_w_p){
 	m_w_p->search_history_tree_model=gtk_combo_box_get_model( (GtkComboBox *)m_w_p->search_history_combo_box_entry );
 	m_w_p->sexy_search_entry=(SexySpellEntry *)sexy_spell_entry_new();
@@ -1240,7 +1243,7 @@ static void main_window_search_history_load(MainWindowPrivate *m_w_p){
 		uber_free(search_history_gconf_path);
 	}
 
-	main_window_search_history_restore(m_w_p, "[new search]");
+	main_window_search_history_prepend(m_w_p, "[new search]");
 	if(previous_search) uber_free(previous_search);
 	if(search_history_gconf_path) uber_free(search_history_gconf_path);
 }/*main_window_search_history_load(main_window->private);*/
@@ -1249,11 +1252,13 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	if(G_STR_EMPTY(search_phrase)) return;
 	
 	if(
-		!g_str_equal(search_phrase, "[new search]")
+		G_STR_N_EMPTY(search_phrase)
+		&&
+		g_str_n_equal(search_phrase, "[new search]")
 		&&
 		gconfig_if_bool(PREFS_SEARCH_HISTORY_UNIQUE_ONLY, TRUE)
 		&&
-		!main_window_search_history_check_unique(m_w_p, search_phrase)
+		!main_window_search_history_is_unique(m_w_p, search_phrase)
 	){
 		debug("Update being sent: %s is already in the search history's and will not be stored again.", search_phrase);
 		return;
@@ -1263,10 +1268,10 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	if(list_store_index<-1)
-		gtk_list_store_prepend(m_w_p->search_history_list_store, iter);
-	else if(list_store_index==-1)
 		gtk_list_store_append(m_w_p->search_history_list_store, iter);
-	else if(list_store_index>=0)
+	else if(list_store_index==-1)
+		gtk_list_store_prepend(m_w_p->search_history_list_store, iter);
+	else if(list_store_index>-1)
 		gtk_list_store_insert(m_w_p->search_history_list_store, iter, (list_store_index<m_w_p->search_history_maximum ?list_store_index :m_w_p->search_history_maximum ));
 	gtk_list_store_set(
 			m_w_p->search_history_list_store, iter,
@@ -1275,8 +1280,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	);
 	uber_free(iter);
 	
-	if(g_str_equal(search_phrase, "[new search]"))
-		return;
+	if(g_str_equal(search_phrase, "[new search]") || list_store_index==-3 ) return;
 	
 	main_window_search_history_remove(m_w_p, 1);
 	main_window_search_history_add(m_w_p, "[new search]", list_store_index);
@@ -1287,15 +1291,13 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 		for(; m_w_p->search_history_total>=m_w_p->search_history_maximum; m_w_p->search_history_total--)
 			main_window_search_history_remove(m_w_p, m_w_p->search_history_total);
 	
-	if(list_store_index==-3) return;
-	
 	main_window_search_history_rotate(m_w_p);
 	gchar *search_history_gconf_path=NULL;
 	gconfig_set_string( search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, 0), search_phrase );
 	uber_free(search_history_gconf_path);
 }/*main_window_search_history_add(main_window->private, GTK_ENTRY(update_viewer->sexy_search_entry)->text, -3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index);*/
 
-static gboolean main_window_search_history_check_unique(MainWindowPrivate *m_w_p, const gchar *search_phrase){
+static gboolean main_window_search_history_is_unique(MainWindowPrivate *m_w_p, const gchar *search_phrase){
 	if(G_STR_EMPTY(search_phrase)) return TRUE;
 	
 	if(g_str_equal(search_phrase, "[new search]"))
@@ -1332,7 +1334,7 @@ static gboolean main_window_search_history_check_unique(MainWindowPrivate *m_w_p
 		uber_free(iter);
 	}
 	return uniq;
-}/*main_window_search_history_check_unique(main_window->private, search_phrase);*/
+}/*main_window_search_history_is_unique(main_window->private, search_phrase);*/
 
 static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint list_store_index){
 	if(!(list_store_index > 0 && list_store_index <= m_w_p->search_history_total)) return;
@@ -1382,14 +1384,15 @@ static void main_window_search_history_selected(GtkComboBoxEntry *search_history
 		return;
 	}
 	
-	main_window_sexy_search_entry_set(selected_search_phrase);
+	main_window_sexy_search_entry_set(selected_search_phrase, FALSE);
 	uber_free(selected_search_phrase);
 	uber_free(iter);
 }/*main_window_search_history_selected(main_window->private->search_history_combo_box_entry, main_window);*/
 
-static void main_window_sexy_search_entry_set(const gchar *search_phrase){
+void main_window_sexy_search_entry_set(const gchar *search_phrase, gboolean auto_submit){
 	gtk_entry_set_text(GTK_ENTRY(main_window->private->sexy_search_entry), (search_phrase==NULL ?(gchar *)"" :search_phrase));
 	main_window_sexy_search_entry_select();
+	if(auto_submit) main_window_search_submitted(GTK_WIDGET(main_window->private->sexy_search_entry), main_window);
 }/*main_window_sexy_search_entry_set();*/
 
 static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *main_window){
@@ -1418,6 +1421,20 @@ void main_window_sexy_search_entry_select(void){
 		sexy_position=main_window->private->sexy_position;
 	gtk_entry_set_position(GTK_ENTRY(main_window->private->sexy_search_entry), sexy_position );
 }/*main_window_sexy_search_entry_select();*/
+
+void main_window_show_search_history(void){
+	g_signal_emit_by_name(main_window->private->search_history_combo_box_entry, "popup");
+}/*main_window_show_search_history();*/
+
+void main_window_hide_search_history(void){
+	g_signal_emit_by_name(main_window->private->search_history_combo_box_entry, "popup");
+}/*main_window_hide_search_history();*/
+
+
+/*END:UBERCHICK_SEXY_ENTRY_COMPLETION_COMBO_BOX*/
+
+
+
 
 static void main_window_services_cb(GtkWidget *widget, MainWindow *main_window){
 	online_services_dialog_show(GTK_WINDOW(main_window->private->window));

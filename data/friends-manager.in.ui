@@ -2,17 +2,19 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="friends_manager_liststore">
+  <object class="GtkTreeStore" id="friends_manager_tree_store">
     <columns>
-      <!-- column-name user_name -->
+      <!-- column-name GSTRING_USER_NAME -->
       <column type="gchararray"/>
-      <!-- column-name user_nick -->
+      <!-- column-name GSTRING_USER_NICK -->
       <column type="gchararray"/>
-      <!-- column-name follower -->
+      <!-- column-name GSTRING_FOLLOWING -->
       <column type="gchararray"/>
-      <!-- column-name following -->
+      <!-- column-name GSTRING_FOLLOWER -->
       <column type="gchararray"/>
-      <!-- column-name User -->
+      <!-- column-name GSTRING_CREATED_AGO -->
+      <column type="gchararray"/>
+      <!-- column-name USER_POINTER -->
       <column type="gpointer"/>
     </columns>
   </object>
@@ -30,14 +32,15 @@
       <object class="GtkVBox" id="dialog-vbox5">
         <property name="visible">True</property>
         <child>
-          <object class="GtkNotebook" id="friendss_manager_notebook">
+          <object class="GtkNotebook" id="friends_manager_notebook">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkVBox" id="vbox_followers">
+              <object class="GtkVBox" id="friends_manager_vbox">
                 <property name="visible">True</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="friends_manager_list_scroll">
+                  <object class="GtkScrolledWindow" id="friends_manager_scrolled_window">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="border_width">6</property>
@@ -47,15 +50,16 @@
                       <object class="GtkTreeView" id="friends_and_followers">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="model">friends_manager_liststore</property>
+                        <property name="model">friends_manager_tree_store</property>
+                        <property name="headers_clickable">False</property>
                         <property name="search_column">1</property>
                         <property name="show_expanders">False</property>
                         <child>
-                          <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                          <object class="GtkTreeViewColumn" id="friends_manager_user_name_tree_view_column">
                             <property name="resizable">True</property>
                             <property name="title">User</property>
                             <child>
-                              <object class="GtkCellRendererText" id="treeviewcolumn1-renderer1"/>
+                              <object class="GtkCellRendererText" id="friends_manager_user_name_tree_cell_renderer_text"/>
                               <attributes>
                                 <attribute name="text">0</attribute>
                               </attributes>
@@ -63,11 +67,11 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                          <object class="GtkTreeViewColumn" id="friends_manager_user_nick_name_tree_view_column">
                             <property name="resizable">True</property>
                             <property name="title">Name</property>
                             <child>
-                              <object class="GtkCellRendererText" id="treeviewcolumn2-renderer1"/>
+                              <object class="GtkCellRendererText" id="friends_manager_user_nick_name_cell_renderer_text"/>
                               <attributes>
                                 <attribute name="text">1</attribute>
                               </attributes>
@@ -75,11 +79,11 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="treeviewcolumn3">
+                          <object class="GtkTreeViewColumn" id="friends_manager_friends_tree_view_column">
                             <property name="resizable">True</property>
                             <property name="title">Am I following them?</property>
                             <child>
-                              <object class="GtkCellRendererText" id="treeviewcolumn3-renderer1"/>
+                              <object class="GtkCellRendererText" id="friends_manager_friends_cell_renderer_text"/>
                               <attributes>
                                 <attribute name="text">2</attribute>
                               </attributes>
@@ -87,13 +91,24 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="treeviewcolumn4">
+                          <object class="GtkTreeViewColumn" id="friends_manager_follower_tree_view_column">
                             <property name="resizable">True</property>
                             <property name="title">Are they following me?</property>
                             <child>
-                              <object class="GtkCellRendererText" id="treeviewcolumn4-renderer1"/>
+                              <object class="GtkCellRendererText" id="friends_manager_follower_cell_renderer_text"/>
                               <attributes>
                                 <attribute name="text">3</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_created_age_tree_view_column">
+                            <property name="title">Last Updated:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_created_age_cell_renderer_text"/>
+                              <attributes>
+                                <attribute name="text">4</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -215,7 +230,7 @@
               </object>
             </child>
             <child type="tab">
-              <object class="GtkLabel" id="label_followers">
+              <object class="GtkLabel" id="friends_manager_notebook_tab_label">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Manage Friends &amp; Followers</property>
                 <property name="use_underline">True</property>
@@ -261,6 +276,10 @@
       <action-widget response="-5">lists_close</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkImage" id="view_timeline_image1">
+    <property name="visible">True</property>
+    <property name="stock">gtk-home</property>
+  </object>
   <object class="GtkImage" id="follow_image">
     <property name="visible">True</property>
     <property name="stock">gtk-add</property>
@@ -281,10 +300,6 @@
     <property name="stock">gtk-info</property>
   </object>
   <object class="GtkImage" id="view_timeline_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-home</property>
-  </object>
-  <object class="GtkImage" id="view_timeline_image1">
     <property name="visible">True</property>
     <property name="stock">gtk-home</property>
   </object>

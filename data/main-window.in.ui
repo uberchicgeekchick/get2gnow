@@ -2,7 +2,7 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="best_friends_list_store">
+  <object class="GtkTreeStore" id="best_friends_tree_store">
     <columns>
       <!-- column-name ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE -->
       <column type="gpointer"/>
@@ -863,7 +863,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
             <property name="position">2</property>
             <property name="position_set">True</property>
             <child>
-              <object class="GtkHPaned" id="timelines_sexy_tree_view_hpaned">
+              <object class="GtkHPaned" id="uberchick_tree_view_hpaned">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child>
@@ -907,7 +907,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           <object class="GtkTreeView" id="best_friends_sexy_tree_view">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="model">best_friends_list_store</property>
+                            <property name="model">best_friends_tree_store</property>
                             <property name="headers_clickable">False</property>
                             <property name="expander_column">best_friends_user_name_tree_view_column</property>
                             <property name="reorderable">True</property>

@@ -88,7 +88,7 @@
 #include "cache.h"
 
 #include "main-window.h"
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 
 #include "preferences.h"
 
@@ -100,10 +100,10 @@
 #define	DEBUG_DOMAINS	"Networking:OnlineServices:Updates:Requests:Users:Images:Authentication:Refreshing:Setup:Start-Up:network.c"
 #include "debug.h"
 
-typedef struct _NetworkTimelinesSexyTreeViewImageDL NetworkTimelinesSexyTreeViewImageDL;
+typedef struct _NetworkImageDL NetworkImageDL;
 
-struct _NetworkTimelinesSexyTreeViewImageDL{
-	TimelinesSexyTreeView	*timelines_sexy_tree_view;
+struct _NetworkImageDL{
+	UberChickTreeView	*uberchick_tree_view;
 	gchar			*filename;
 	GtkTreeIter		*iter;
 };
@@ -111,71 +111,71 @@ struct _NetworkTimelinesSexyTreeViewImageDL{
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static NetworkTimelinesSexyTreeViewImageDL *network_timelines_sexy_tree_view_image_dl_new(TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *filename, GtkTreeIter *iter);
-static void network_timelines_sexy_tree_view_image_dl_free(NetworkTimelinesSexyTreeViewImageDL *image);
+static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeView *uberchick_tree_view, const gchar *filename, GtkTreeIter *iter);
+static void network_uberchick_tree_view_image_dl_free(NetworkImageDL *image_dl);
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-static NetworkTimelinesSexyTreeViewImageDL *network_timelines_sexy_tree_view_image_dl_new(TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *filename, GtkTreeIter *iter){
-	NetworkTimelinesSexyTreeViewImageDL *image=g_new0(NetworkTimelinesSexyTreeViewImageDL, 1);
-	image->timelines_sexy_tree_view=timelines_sexy_tree_view;
-	image->filename=g_strdup(filename);
-	image->iter=iter;
-	return image;
-}/*network_timelines_sexy_tree_view_image_dl_new*/
+static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeView *uberchick_tree_view, const gchar *filename, GtkTreeIter *iter){
+	NetworkImageDL *network_image_dl=g_new0(NetworkImageDL, 1);
+	network_image_dl->uberchick_tree_view=uberchick_tree_view;
+	network_image_dl->filename=g_strdup(filename);
+	network_image_dl->iter=iter;
+	return network_image_dl;
+}/*network_uberchick_tree_view_image_dl_new*/
 
 
-void network_get_image(OnlineService *service, TimelinesSexyTreeView *timelines_sexy_tree_view, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
+void network_get_image(OnlineService *service, UberChickTreeView *uberchick_tree_view, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
 	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
-	NetworkTimelinesSexyTreeViewImageDL *image=network_timelines_sexy_tree_view_image_dl_new(timelines_sexy_tree_view, image_filename, iter);
+	NetworkImageDL *network_image_dl=network_uberchick_tree_view_image_dl_new(uberchick_tree_view, image_filename, iter);
 	
-	online_service_request_uri(service, QUEUE, image_url, 0, NULL, network_cb_on_image, image, NULL);
+	online_service_request_uri(service, QUEUE, image_url, 0, NULL, network_cb_on_image, network_image_dl, NULL);
 }/*network_get_image*/
 
 
 void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	NetworkTimelinesSexyTreeViewImageDL *image=(NetworkTimelinesSexyTreeViewImageDL *)online_service_wrapper_get_user_data(service_wrapper);
-	if(!( image && image->timelines_sexy_tree_view && image->filename && image->iter )){
-		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", image->filename, (image->iter ?"valid" :"unknown") );
+	NetworkImageDL *network_image_dl=(NetworkImageDL *)online_service_wrapper_get_user_data(service_wrapper);
+	if(!( network_image_dl && network_image_dl->uberchick_tree_view && network_image_dl->filename && network_image_dl->iter )){
+		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", network_image_dl->filename, (network_image_dl->iter ?"valid" :"unknown") );
 		return NULL;
 	}
 	
 	gchar *image_filename=NULL, *error_message=NULL;
 	if(!(www_xml_error_check(service, requested_uri, xml, &error_message))){
-		debug("Failed to download and save <%s> as <%s>.", requested_uri, image->filename);
+		debug("Failed to download and save <%s> as <%s>.", requested_uri, network_image_dl->filename);
 		debug("Detailed error message: %s.", error_message);
 		image_filename=cache_images_get_unknown_image_filename();
-		main_window_statusbar_printf("Error adding avatar to TimelinesSexyTreeView.  GNOME's unknown-image will be used instead.");
+		main_window_statusbar_printf("Error adding avatar to UberChickTreeView.  GNOME's unknown-image will be used instead.");
 	}else{
-		debug("Saving avatar to file: %s", image->filename);
+		debug("Saving avatar to file: %s", network_image_dl->filename);
 		if(!(g_file_set_contents(
-					image->filename,
+					network_image_dl->filename,
 						xml->response_body->data,
 						xml->response_body->length,
 					NULL
 		)))
 			image_filename=cache_images_get_unknown_image_filename();
 		else
-			image_filename=g_strdup(image->filename);
-		main_window_statusbar_printf("New avatar added to TimelinesSexyTreeView.");
+			image_filename=g_strdup(network_image_dl->filename);
+		main_window_statusbar_printf("New avatar added to UberChickTreeView.");
 	}
 	
-	timelines_sexy_tree_view_set_image(image->timelines_sexy_tree_view, image_filename, image->iter);
+	uberchick_tree_view_set_image(network_image_dl->uberchick_tree_view, network_image_dl->filename, network_image_dl->iter);
 	
 	uber_free(error_message);
 	uber_free(image_filename);
-	network_timelines_sexy_tree_view_image_dl_free(image);
+	network_uberchick_tree_view_image_dl_free(network_image_dl);
 	return NULL;
 }/*network_cb_on_image(session, xml, user_data);*/
 
-static void network_timelines_sexy_tree_view_image_dl_free(NetworkTimelinesSexyTreeViewImageDL *image){
-	image->timelines_sexy_tree_view=NULL;
-	uber_object_free(&image->filename, &image->iter, &image, NULL);
+static void network_uberchick_tree_view_image_dl_free(NetworkImageDL *network_image_dl){
+	network_image_dl->uberchick_tree_view=NULL;
+	uber_object_free(&network_image_dl->filename, &network_image_dl->iter, &network_image_dl, NULL);
 }/*network_image_free*/
 
 
@@ -267,10 +267,10 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	TimelinesSexyTreeView *timelines_sexy_tree_view=(TimelinesSexyTreeView *)online_service_wrapper_get_user_data(service_wrapper);
-	UpdateMonitor monitoring=timelines_sexy_tree_view_get_monitoring(timelines_sexy_tree_view);
+	UberChickTreeView *uberchick_tree_view=(UberChickTreeView *)online_service_wrapper_get_user_data(service_wrapper);
+	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(uberchick_tree_view);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	if(!IS_TIMELINES_SEXY_TREE_VIEW(timelines_sexy_tree_view))
+	if(!IS_UBERCHICK_TREE_VIEW(uberchick_tree_view))
 		return NULL;
 	
 	gchar *error_message=NULL;
@@ -293,10 +293,10 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
-			new_updates=searches_parse_results(service, xml, requested_uri, timelines_sexy_tree_view, monitoring);
+			new_updates=searches_parse_results(service, xml, requested_uri, uberchick_tree_view, monitoring);
 			break;
 		case Groups:
-			new_updates=groups_parse_conversation(service, xml, timeline, timelines_sexy_tree_view, monitoring);
+			new_updates=groups_parse_conversation(service, xml, timeline, uberchick_tree_view, monitoring);
 			break;
 		case DMs:
 		case Replies:
@@ -307,11 +307,11 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Archive:
 		case BestFriends:
 		default:
-			new_updates=parse_timeline(service, xml, timeline, timelines_sexy_tree_view, monitoring);
+			new_updates=parse_timeline(service, xml, timeline, uberchick_tree_view, monitoring);
 			break;
 	}
 	
-	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(requested_uri, "?since_id=") && timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view) > 0 && xml->status_code==200){
+	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(requested_uri, "?since_id=") && uberchick_tree_view_has_loaded(uberchick_tree_view) > 0 && xml->status_code==200){
 		uber_free(timeline);
 		return network_retry(service_wrapper);
 	}
@@ -319,7 +319,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	if(new_updates)
 		debug("Total tweets in this timeline: %d.", new_updates);
 	
-	timelines_sexy_tree_view_complete(timelines_sexy_tree_view);
+	uberchick_tree_view_complete(uberchick_tree_view);
 	uber_free(timeline);
 	
 	return NULL;

@@ -81,7 +81,7 @@
 #include "www.h"
 #include "uberchick-label.h"
 
-#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:TimelinesSexyTreeView:OnlineServices:Networking:Updates:WWW:XPath:Auto-Magical:label.c"
+#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:UberChickTreeView:OnlineServices:Networking:Updates:WWW:XPath:Auto-Magical:label.c"
 #include "debug.h"
 
 #define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_UBERCHICK_LABEL, UberChickLabelPrivate))

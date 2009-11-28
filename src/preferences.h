@@ -87,8 +87,8 @@ G_BEGIN_DECLS
 
 #define COMPACT_VIEW					GCONF_PATH "/ui/view/compact"
 #define CONCATENATED_UPDATES				GCONF_PATH "/ui/view/detailed_updates"
-#define SCROLL_TO_TOP_WITH_NEW_UPDATES			GCONF_PATH "/ui/timelines_sexy_tree_view/scroll_to_top_with_new_updates"
-#define SELECT_UPDATE_BY_DEFAULT			GCONF_PATH "/ui/timelines_sexy_tree_view/select_update_by_default"
+#define SCROLL_TO_TOP_WITH_NEW_UPDATES			GCONF_PATH "/ui/uberchick_tree_view/scroll_to_top_with_new_updates"
+#define SELECT_UPDATE_BY_DEFAULT			GCONF_PATH "/ui/uberchick_tree_view/select_update_by_default"
 
 #define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
 
@@ -105,11 +105,11 @@ G_BEGIN_DECLS
 #define PREFS_UPDATES_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
 #define	PREFS_UPDATES_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
 
-#define	PREFS_SEARCH_HISTORY_UNIQUE_ONLY		GCONF_PATH "/updates/search_history/unique_only"
-#define	PREFS_SEARCH_HISTORY_MAXIMUM			GCONF_PATH "/updates/search_history/maximum"
+#define	PREFS_SEARCH_HISTORY_UNIQUE_ONLY		GCONF_PATH "/search/history/unique_only"
+#define	PREFS_SEARCH_HISTORY_MAXIMUM			GCONF_PATH "/search/history/maximum"
 
-#define	PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY		GCONF_PATH "/updates/previous_updates/unique_only"
-#define	PREFS_PREVIOUS_UPDATES_MAXIMUM			GCONF_PATH "/updates/previous_updates/maximum"
+#define	PREFS_UPDATES_HISTORY_UNIQUE_ONLY		GCONF_PATH "/updates/history/unique_only"
+#define	PREFS_UPDATES_HISTORY_MAXIMUM			GCONF_PATH "/updates/history/maximum"
 
 
 void preferences_dialog_show (GtkWindow *parent);

@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#010001", "a68"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["#010001", "a70"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -98,10 +98,10 @@ AC_SUBST(get2gnow_LIBS)
 dnl /************************************************************
 dnl *    gdb support                                            *
 dnl /************************************************************
-AM_CONDITIONAL(debug_CFLAGS="-g -ggdb", test x$enable_gdb = xyes)
+AM_CONDITIONAL(debug_CFLAGS="-g3 -ggdb", test x$enable_gdb = xyes)
 
 if test x$enable_gdb = xyes ; then
-	debug_CFLAGS="-g -ggdb"
+	debug_CFLAGS="-g3 -ggdb"
 fi
 
 dnl /************************************************************

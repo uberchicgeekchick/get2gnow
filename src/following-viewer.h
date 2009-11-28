@@ -63,7 +63,6 @@
 G_BEGIN_DECLS
 
 void following_viewer_show(GtkWindow *parent);
-void following_viewer_load_lists(GList *followers);
 
 G_END_DECLS
 #endif /* __FOLLOWING_DIALOG_H__ */

@@ -735,7 +735,7 @@ PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
 PACKAGE_VERSION="#010001"
 VERSION="${PACKAGE_VERSION}"
-PACKAGE_RELEASE="a68"
+PACKAGE_RELEASE="a70"
 RELEASE="${PACKAGE_RELEASE}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_RELEASE}"
@@ -21914,7 +21914,7 @@ fi
 echo "${ECHO_T}Using config source $GCONF_SCHEMA_CONFIG_SOURCE for schema installation" >&6; }
 
   if test "x$GCONF_SCHEMA_FILE_DIR" = "x"; then
-    GCONF_SCHEMA_FILE_DIR='$(sysconfdir)/gconf/schemas'
+    GCONF_SCHEMA_FILE_DIR='$(datarootdir)/gconf/schemas'
   fi
 
 
@@ -22791,7 +22791,7 @@ fi
 
 
 if test x$enable_gdb = xyes ; then
-	debug_CFLAGS="-g -ggdb"
+	debug_CFLAGS="-g3 -ggdb"
 fi
 
 
@@ -22805,7 +22805,7 @@ fi
 
 
 if test x$enable_debug = xyes ; then
-	debug_CFLAGS="-g -ggdb"
+	debug_CFLAGS="-g3 -ggdb"
 	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
 fi
 

@@ -75,8 +75,8 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void best_friends_set_list_store(GtkListStore *list_store);
-GtkListStore *best_friends_get_list_store(void);
+void best_friends_set_tree_store(GtkTreeStore *tree_store);
+GtkTreeStore *best_friends_get_tree_store(void);
 gboolean best_friends_check_update_ids( OnlineService *service, const gchar *best_friends_user_name, gdouble update_id);
 gboolean best_friends_new_update_notify(void);
 

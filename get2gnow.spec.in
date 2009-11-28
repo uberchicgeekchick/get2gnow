@@ -25,7 +25,6 @@ BuildRequires:	glib2-devel >= @GLIB_VERSION_REQUIRED@
 BuildRequires:	libgio-2_0-0 >= @LIBGIO_VERSION_REQUIRED@
 BuildRequires:	gtk2-devel >= @GTK_VERSION_REQUIRED@
 BuildRequires:	gconf2-devel >= @GCONF_VERSION_REQUIRED@
-BuildRequires:	libcanberra-gtk >= @LIBCANBERRA_VERSION_REQUIRED@
 BuildRequires:	libnotify-devel
 BuildRequires:	gnome-vfs2-devel
 BuildRequires:	libgobject-2_0-0
@@ -71,7 +70,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/get2gnow
 %{_datadir}/gnome/help/get2gnow
 %{_datadir}/get2gnow/
-%{_sysconfdir}/gconf/schemas/get2gnow.schemas
+%{_datadir}/gconf/schemas/get2gnow.schemas
 %{_datadir}/locale/ja/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/sv/LC_MESSAGES/get2gnow.mo
 %{_datadir}/locale/es/LC_MESSAGES/get2gnow.mo

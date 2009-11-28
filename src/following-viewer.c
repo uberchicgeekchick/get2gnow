@@ -89,7 +89,7 @@ enum {
 typedef struct {
 	GtkWindow	*viewer;
 	GtkTreeView	*following_tree_view;
-	GtkListStore	*following_list_store;
+	GtkTreeStore	*following_tree_store;
 	GtkTreeModel	*following_model;
 	GtkButton	*refresh;
 	GtkButton	*user_unfollow;
@@ -115,13 +115,17 @@ static FollowingViewer *following_viewer=NULL;
  ********************************************************/
 static User *following_viewer_get_selected_user(GtkTreeIter **iter, FollowingViewer *following_viewer);
 static void following_viewer_setup(GtkWindow *parent);
-static void following_viewer_refresh_response_cb(GtkButton *button, FollowingViewer *following_viewer);
-static void following_viewer_list_clicked(GtkTreeView *tree_view, FollowingViewer *following_viewer);
-static void following_viewer_set_buttons_sensitivity(FollowingViewer *following_viewer, gboolean is_sensitive);
-static void following_viewer_rem_response_cb(GtkButton *button, FollowingViewer *following_viewer);
-static void following_viewer_block_response_cb(GtkButton *button, FollowingViewer *following_viewer);
+
+static void following_viewer_refresh(GtkButton *button, FollowingViewer *following_viewer);
+static void following_viewer_load_lists(GList *followers);
+
 static void following_viewer_response_cb(GtkDialog *dialog, gint response, FollowingViewer *following_viewer);
 static void following_viewer_destroy_cb(GtkDialog *dialog, FollowingViewer *following_viewer);
+
+static void following_viewer_list_clicked(GtkTreeView *tree_view, FollowingViewer *following_viewer);
+static void following_viewer_set_buttons_sensitivity(FollowingViewer *following_viewer, gboolean is_sensitive);
+static void following_viewer_unfollow(GtkButton *button, FollowingViewer *following_viewer);
+static void following_viewer_block(GtkButton *button, FollowingViewer *following_viewer);
 static void following_viewer_view_timeline(GtkButton *button, FollowingViewer *following_viewer);
 static void following_viewer_view_profile(GtkButton *button, FollowingViewer *following_viewer);
 
@@ -133,6 +137,8 @@ static void following_viewer_response_cb(GtkDialog *dialog, gint response, Follo
 }/*following_viewer_response_cb();*/
 
 static void following_viewer_destroy_cb(GtkDialog *dialog, FollowingViewer *following_viewer){
+	debug("Destroying following viewer.");
+	gtk_tree_store_clear(following_viewer->following_tree_store);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(following_viewer);
 }/*following_viewer_destroy_cb(dialog);*/
@@ -168,24 +174,24 @@ static User *following_viewer_get_selected_user(GtkTreeIter **iter, FollowingVie
 	return (user ?user :NULL);
 }/*following_viewer_get_selected_user(following_viewer);*/
 
-static void following_viewer_rem_response_cb(GtkButton *button, FollowingViewer *following_viewer ){
+static void following_viewer_unfollow(GtkButton *button, FollowingViewer *following_viewer ){
 	GtkTreeIter *iter=NULL;
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	
 	if(user){
-		gtk_list_store_remove(following_viewer->following_list_store, iter);
+		gtk_tree_store_remove(following_viewer->following_tree_store, iter);
 		following_viewer_set_buttons_sensitivity(following_viewer, FALSE);
 		online_service_request_unfollow(user->service, following_viewer->viewer, user->user_name);
 	}	
 	uber_free(iter);
 }
 
-static void following_viewer_block_response_cb( GtkButton *button, FollowingViewer *following_viewer ){
+static void following_viewer_block( GtkButton *button, FollowingViewer *following_viewer ){
 	GtkTreeIter *iter=NULL;
 	User *user=following_viewer_get_selected_user(&iter, following_viewer);
 	
 	if(user){
-		gtk_list_store_remove(following_viewer->following_list_store, iter);
+		gtk_tree_store_remove(following_viewer->following_tree_store, iter);
 		following_viewer_set_buttons_sensitivity(following_viewer, FALSE);
 		online_service_request_block(user->service, following_viewer->viewer, user->user_name);
 	}
@@ -218,30 +224,30 @@ static void following_viewer_list_activated_cb(GtkTreeView *tree_view, GtkTreePa
 	uber_free(iter);
 }/*following_viewer_list_activated_cb();*/
 
-void following_viewer_refresh_response_cb(GtkButton *button, FollowingViewer *following_viewer){
+void following_viewer_refresh(GtkButton *button, FollowingViewer *following_viewer){
 	GdkCursor *cursor=gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GTK_WIDGET(following_viewer->viewer)->window, cursor);
 	gtk_widget_set_sensitive(GTK_WIDGET(following_viewer->viewer), FALSE);
 	
 	online_service_request_popup_select_service();
 	users_glist_get(GetFriends, TRUE, following_viewer_load_lists);
-}/*following_viewer_refresh_response_cb*/
+}/*following_viewer_refresh*/
 
-void following_viewer_load_lists(GList *followers){
+static void following_viewer_load_lists(GList *followers){
 	if(!followers) return;
 	
 	gdk_window_set_cursor(GTK_WIDGET(following_viewer->viewer)->window, NULL);
 	following_viewer_set_buttons_sensitivity(following_viewer, FALSE);
-	gtk_list_store_clear(following_viewer->following_list_store);
+	gtk_tree_store_clear(following_viewer->following_tree_store);
 	
 	User *user=NULL;
 	for(followers=g_list_first(followers); followers; followers=followers->next){
 		user = (User *)followers->data;
 		GtkTreeIter	*iter=g_new0(GtkTreeIter, 1);
-		gtk_list_store_append(following_viewer->following_list_store, iter);
+		gtk_tree_store_append(following_viewer->following_tree_store, iter, NULL);
 
-		gtk_list_store_set(
-				following_viewer->following_list_store, iter,
+		gtk_tree_store_set(
+				following_viewer->following_tree_store, iter,
 					FOLLOWER_USER, user->user_name,
 					FOLLOWER_NAME, user->nick_name,
 					USER_POINTER, user,
@@ -272,7 +278,7 @@ static void following_viewer_setup(GtkWindow *parent){
 				GtkBuilderUI,
 					"following_viewer", &following_viewer->viewer,
 					"following_tree_view", &following_viewer->following_tree_view,
-					"following_list_store", &following_viewer->following_list_store,
+					"following_tree_store", &following_viewer->following_tree_store,
 					"refresh", &following_viewer->refresh,
 					"user_unfollow", &following_viewer->user_unfollow,
 					"user_block", &following_viewer->user_block,
@@ -293,9 +299,9 @@ static void following_viewer_setup(GtkWindow *parent){
 				ui, following_viewer,
 					"following_viewer", "destroy", following_viewer_destroy_cb,
 					"following_viewer", "response", following_viewer_response_cb,
-					"refresh", "clicked", following_viewer_refresh_response_cb,
-					"user_unfollow", "clicked", following_viewer_rem_response_cb,
-					"user_block", "clicked", following_viewer_block_response_cb,
+					"refresh", "clicked", following_viewer_refresh,
+					"user_unfollow", "clicked", following_viewer_unfollow,
+					"user_block", "clicked", following_viewer_block,
 					"view_timeline", "clicked", following_viewer_view_timeline,
 					"view_profile", "clicked", following_viewer_view_profile,
 					"following_tree_view", "row-activated", following_viewer_list_activated_cb,

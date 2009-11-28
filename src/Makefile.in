@@ -77,14 +77,16 @@ get2gnow_SOURCES = 										\
 	proxy.c						proxy.h					\
 	searches.c					searches.h				\
 	tabs.c						tabs.h					\
-	timelines-sexy-tree-view.c	timelines-sexy-tree-view.macros.h		timelines-sexy-tree-view.h		\
 	timer.c						timer.h					\
 	uberchick-label.c				uber-chicklabel.h			\
+	uberchick-tree-view.c	uberchick-tree-view.macros.h		uberchick-tree-view.h		\
 	ui-utils.c					ui-utils.h				\
 	update-viewer.c					update-viewer.h				\
 	users-glists.c					users-glists.h				\
 	users.c				users.types.h			users.h			\
-	www.c						www.h
+	www.c						www.h					\
+
+
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
 get2gnow_OBJECTS =					\
 	about.$(OBJEXT)					\
@@ -115,14 +117,16 @@ get2gnow_OBJECTS =					\
 	proxy.$(OBJEXT)					\
 	searches.$(OBJEXT)				\
 	tabs.$(OBJEXT)					\
-	timelines-sexy-tree-view.$(OBJEXT)		\
 	timer.$(OBJEXT)					\
 	uberchick-label.$(OBJEXT)			\
+	uberchick-tree-view.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)				\
 	update-viewer.$(OBJEXT)				\
 	users-glists.$(OBJEXT)				\
 	users.$(OBJEXT)					\
-	www.$(OBJEXT)
+	www.$(OBJEXT)					\
+
+
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -313,7 +317,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb -Wno-parentheses
+UBERCHICK_CFLAGS=-std=gnu99 -g3 -ggdb -Wno-parentheses -ffast-math
 AM_CFLAGS=									\
 		-I$(top_srcdir)                        				\
 		-I${top_builddir}						\
@@ -432,9 +436,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tabs.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timelines-sexy-tree-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-label.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-tree-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-viewer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@

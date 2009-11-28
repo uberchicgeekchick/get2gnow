@@ -89,8 +89,6 @@ void update_viewer_set_in_reply_to_data(OnlineService *service, gdouble update_i
 
 void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
-void update_viewer_dm_data_fill(GList *my_followers);
-
 void update_viewer_emulate_embed_toggle(void);
 void update_viewer_emulate_compact_view_toggle(void);
 void update_viewer_compact_view_toggled(GtkToggleButton *compact_toggle_button);

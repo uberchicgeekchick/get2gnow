@@ -227,7 +227,7 @@ typedef enum{
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define UPDATE_VIEWER_PREVIOUS_UPDATES_STRING			GCONF_PATH "/update_viewer/previous_updates/%d"
+#define PREFS_PREVIOUS_UPDATES_STRING			GCONF_PATH "/updates/history/saved/%d"
 
 #define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Start-Up:update-viewer.c"
 #include "debug.h"
@@ -270,14 +270,14 @@ static void update_viewer_previous_updates_load(UpdateViewer *update_viewer);
 static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const gchar *update, gint list_store_index);
 #define	update_viewer_previous_update_restore(update_viewer, update)				\
 		update_viewer_previous_update_add(update_viewer, update, -3)
-#define	update_viewer_previous_update_prepend(update_viewer, update)				\
-		update_viewer_previous_update_add(update_viewer, update, -2)
 #define	update_viewer_previous_update_append(update_viewer, update)				\
+		update_viewer_previous_update_add(update_viewer, update, -2)
+#define	update_viewer_previous_update_prepend(update_viewer, update)				\
 		update_viewer_previous_update_add(update_viewer, update, -1)
 #define	update_viewer_previous_update_insert(update_viewer, update, list_store_index)		\
 		update_viewer_previous_update_add(update_viewer, update, list_store_index)
 
-static gboolean update_viewer_previous_updates_check_unique(UpdateViewer *update_viewer, const gchar *update);
+static gboolean update_viewer_previous_updates_is_unique(UpdateViewer *update_viewer, const gchar *update);
 static void update_viewer_previous_updates_remove(UpdateViewer *update_viewer, gint list_store_index);
 static void update_viewer_previous_updates_rotate(UpdateViewer *update_viewer);
 static void update_viewer_previous_update_selected(GtkComboBoxEntry *sexy_entry_combo_box_entry, UpdateViewer *update_viewer);
@@ -285,9 +285,11 @@ static void update_viewer_previous_updates_free(UpdateViewer *update_viewer);
 
 static void update_viewer_reply_or_forward(GtkButton *update_button);
 
+static void update_viewer_dm_data_fill(GList *followers);
+static void update_viewer_dm_form_set_loading_label(UpdateViewer *update_viewer);
 static void update_viewer_dm_show(GtkToggleButton *toggle_button);
 static void update_viewer_dm_form_activate(gboolean dm_activate);
-static void update_viewer_dm_refresh(void);
+static void update_viewer_dm_refresh(GtkButton *dm_refresh, UpdateViewer *update_viewer);
 
 
 /********************************************************
@@ -790,7 +792,7 @@ void update_viewer_view_selected_update(OnlineService *service, const gdouble id
 		online_service_request_unset_selected_update();
 	else{
 		online_service_request_set_selected_update(service, id, user_id, user_name, text_update);
-		main_window_set_statusbar_default_message( _("Hotkeys: <CTRL+N> start a new tweet; <CTRL+D> or <SHIFT+Return> to dm; <CTRL+R>, <Return>, or '@' to reply, <CTRL+F> or '>' to forward/retweet.") );
+		main_window_set_statusbar_default_message( _("Hotkeys: <Alt+S> to post your update; <Alt+D> to send your update as a DM.  <CTRL+N> start a new tweet; <CTRL+D> or <SHIFT+Return> to DM your friends; <CTRL+R>, <Return>, or '@' to reply, <CTRL+F> or '>' to forward/retweet.") );
 	}
 	
 	debug("%s the Control Panel.", (id ?_("Enlarging") :"") );
@@ -904,26 +906,6 @@ static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKe
 	uber_free(remaining_characters_markup_label);
 }/*update_viewer_sexy_entry_character_count*/
 
-void update_viewer_beep(void){
-	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
-		gtk_widget_error_bell(GTK_WIDGET(update_viewer->sexy_entry));
-}/*update_viewer_beep*/
-
-SexySpellEntry *update_viewer_sexy_entry_get_widget(void){
-	if(!update_viewer->sexy_entry) return NULL;
-	return update_viewer->sexy_entry;
-}/*update_viewer_sexy_entry_get_widget();*/
-
-void update_viewer_sexy_select(void){
-	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer->sexy_entry))) return;
-	if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))) return;
-	gtk_widget_grab_focus(GTK_WIDGET(update_viewer->sexy_entry));
-	gint sexy_position=-1;
-	if( update_viewer->sexy_position > 0 && update_viewer->sexy_position <= gtk_entry_get_text_length((GtkEntry *)update_viewer->sexy_entry) )
-		sexy_position=update_viewer->sexy_position;
-	gtk_entry_set_position(GTK_ENTRY(update_viewer->sexy_entry), sexy_position );
-}/*update_viewer_sexy_select*/
-
 void update_viewer_sexy_prefix_char(const char c){
 	gchar *prefix=g_strdup_printf("%c", c);
 	update_viewer_sexy_prefix_string((const gchar *)prefix, FALSE);
@@ -972,14 +954,6 @@ gint update_viewer_sexy_puts(const gchar *str, gint position_after){
 	update_viewer_sexy_select();
 	return position_after;
 }/*update_viewer_sexy_puts*/
-
-void update_viewer_hide_previous_updates(void){
-	g_signal_emit_by_name(update_viewer->sexy_entry_combo_box_entry, "popup");
-}/*update_viewer_hide_previous_updates();*/
-
-void update_viewer_show_previous_updates(void){
-	g_signal_emit_by_name(update_viewer->sexy_entry_combo_box_entry, "popup");
-}/*update_viewer_show_previous_updates();*/
 
 void update_viewer_reply(void){
 	update_viewer_reply_or_forward(update_viewer->reply_button);
@@ -1065,6 +1039,8 @@ static void update_viewer_sexy_send(OnlineService *service, const gchar *user_na
 		return;
 	}
 	
+	update_viewer_previous_update_prepend(update_viewer, GTK_ENTRY(update_viewer->sexy_entry)->text);
+	
 	if(update_viewer->viewing_update_id && update_viewer->viewing_service){
 		in_reply_to_status_id=update_viewer->viewing_update_id;
 		in_reply_to_service=update_viewer->viewing_service;
@@ -1076,20 +1052,55 @@ static void update_viewer_sexy_send(OnlineService *service, const gchar *user_na
 	else
 		network_send_message(service, user_name, GTK_ENTRY(update_viewer->sexy_entry)->text);
 	
-	update_viewer_previous_update_prepend(update_viewer, GTK_ENTRY(update_viewer->sexy_entry)->text);
-	
 	update_viewer_sexy_set((gchar *)"");
 }/*update_viewer_sexy_send(online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
+
+static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
+	update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+	
+	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
+	update_viewer_previous_maxium_updates_validate(update_viewer);
+	for(update_viewer->total_updates=0; update_viewer->total_updates<=update_viewer->max_updates; update_viewer->total_updates++){
+		if(!( (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(PREFS_PREVIOUS_UPDATES_STRING, update_viewer->total_updates)), &previous_update )) && G_STR_N_EMPTY(previous_update) )) break;
+		gchar *previous_update_swap=NULL;
+		if(!( (previous_update_swap=strstr(previous_update, "->")) && strstr(previous_update_swap, "->") )) {
+			if(!previous_update_swap)
+				previous_update_swap=g_strdup_printf("->->%s", previous_update);
+			else
+				previous_update_swap=g_strdup_printf("->%s", previous_update);
+			uber_free(previous_update);
+			previous_update=previous_update_swap;
+			previous_update_swap=NULL;
+		}
+		
+		gchar **previous_update_details=g_strsplit(previous_update, "->", 3);
+		if(G_STR_N_EMPTY(previous_update_details[2])){
+			update_viewer_set_in_reply_to_data(online_services_get_service_by_key(previous_update_details[0]), strtod(previous_update_details[1], NULL), TRUE);
+			
+			update_viewer_previous_update_restore(update_viewer, previous_update_details[2]);
+			update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+		}
+		uber_free(previous_update);
+		uber_free(previous_update_gconf_path);
+		g_strfreev(previous_update_details);
+	}
+	
+	update_viewer_previous_update_prepend(update_viewer, "[new update]");
+	if(previous_update) uber_free(previous_update);
+	if(previous_update_gconf_path) uber_free(previous_update_gconf_path);
+}/*update_view_previous_updates_load(update_viewer);*/
 
 static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const gchar *update, gint list_store_index){
 	if(G_STR_EMPTY(update)) return;
 	
 	if(
-		!g_str_equal(update, "[new update]")
+		G_STR_N_EMPTY(update)
 		&&
-		gconfig_if_bool(PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY, TRUE)
+		g_str_n_equal(update, "[new update]")
 		&&
-		!update_viewer_previous_updates_check_unique(update_viewer, update)
+		gconfig_if_bool(PREFS_UPDATES_HISTORY_UNIQUE_ONLY, TRUE)
+		&&
+		!update_viewer_previous_updates_is_unique(update_viewer, update)
 	){
 		debug("Update being sent: %s is already in the previous update's list and will not be stored again.", update);
 		return;
@@ -1099,10 +1110,10 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	if(list_store_index<-1)
-		gtk_list_store_prepend(update_viewer->previous_updates_list_store, iter);
-	else if(list_store_index==-1)
 		gtk_list_store_append(update_viewer->previous_updates_list_store, iter);
-	else if(list_store_index>=0)
+	else if(list_store_index==-1)
+		gtk_list_store_prepend(update_viewer->previous_updates_list_store, iter);
+	else if(list_store_index>-1)
 		gtk_list_store_insert(update_viewer->previous_updates_list_store, iter, (list_store_index<update_viewer->max_updates ?list_store_index :update_viewer->max_updates ));
 	gtk_list_store_set(
 			update_viewer->previous_updates_list_store, iter,
@@ -1113,8 +1124,7 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	);
 	uber_free(iter);
 	
-	if(g_str_equal(update, "[new update]"))
-		return;
+	if(g_str_equal(update, "[new update]") || list_store_index==-3) return;
 	
 	update_viewer_previous_updates_remove(update_viewer, 1);
 	update_viewer_previous_update_add(update_viewer, "[new update]", list_store_index);
@@ -1123,58 +1133,25 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	else
 		for(; update_viewer->total_updates>=update_viewer->max_updates; update_viewer->total_updates--)
 			update_viewer_previous_updates_remove(update_viewer, update_viewer->total_updates);
-	if(list_store_index==-3) return;
 	
 	update_viewer_previous_updates_rotate(update_viewer);
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
-	gconfig_set_string( previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, 0), previous_update=g_strdup_printf("%s->%s->%s", (update_viewer->viewing_service ?update_viewer->viewing_service->key :""), (update_viewer->viewing_update_id_str?update_viewer->viewing_update_id_str:""), update) );
+	gconfig_set_string( previous_update_gconf_path=g_strdup_printf(PREFS_PREVIOUS_UPDATES_STRING, 0), previous_update=g_strdup_printf("%s->%s->%s", (update_viewer->viewing_service ?update_viewer->viewing_service->key :""), (update_viewer->viewing_update_id_str?update_viewer->viewing_update_id_str:""), update) );
 	uber_free(previous_update);
 	uber_free(previous_update_gconf_path);
 }/*update_viewer_previous_update_add(update_viewer, GTK_ENTRY(update_viewer->sexy_entry)->text, -2 to prepend|-1 to append|>0 to instert at this index);*/
 
 static gint update_viewer_previous_maxium_updates_validate(UpdateViewer *update_viewer){
 	if(!update_viewer) return 0;
-	gconfig_get_int_or_default(PREFS_PREVIOUS_UPDATES_MAXIMUM, &update_viewer->max_updates, 50);
+	gconfig_get_int_or_default(PREFS_UPDATES_HISTORY_MAXIMUM, &update_viewer->max_updates, 50);
 	if(update_viewer->max_updates < 5)
-		gconfig_set_int(PREFS_PREVIOUS_UPDATES_MAXIMUM, (update_viewer->max_updates=5));
+		gconfig_set_int(PREFS_UPDATES_HISTORY_MAXIMUM, (update_viewer->max_updates=5));
 	else if(update_viewer->max_updates > 100)
-		gconfig_set_int(PREFS_PREVIOUS_UPDATES_MAXIMUM, (update_viewer->max_updates=100));
+		gconfig_set_int(PREFS_UPDATES_HISTORY_MAXIMUM, (update_viewer->max_updates=100));
 	return update_viewer->max_updates;
 }/*update_viewer_previous_maxium_updates_validate(update_viewer);*/
 
-static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
-	update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
-	
-	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
-	update_viewer_previous_maxium_updates_validate(update_viewer);
-	for(update_viewer->total_updates=0; update_viewer->total_updates<=update_viewer->max_updates; update_viewer->total_updates++){
-		if(!( (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, update_viewer->total_updates)), &previous_update )) && G_STR_N_EMPTY(previous_update) )) break;
-		
-		gchar **previous_update_details=g_strsplit(previous_update, "->", 3);
-		if(G_STR_EMPTY(previous_update_details[2])){
-			uber_free(previous_update);
-			uber_free(previous_update_gconf_path);
-			g_strfreev(previous_update_details);
-			continue;
-		}
-		
-		update_viewer_set_in_reply_to_data(online_services_get_service_by_key(previous_update_details[0]), strtod(previous_update_details[1], NULL), TRUE);
-		
-		update_viewer_previous_update_restore(update_viewer, previous_update_details[2]);
-		update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
-		uber_free(previous_update);
-		uber_free(previous_update_gconf_path);
-		g_strfreev(previous_update_details);
-		update_viewer->viewing_service=NULL;
-		update_viewer->viewing_update_id=0.0;
-	}
-	
-	update_viewer_previous_update_restore(update_viewer, _("[new update]"));
-	if(previous_update) uber_free(previous_update);
-	if(previous_update_gconf_path) uber_free(previous_update_gconf_path);
-}/*update_view_previous_updates_load(update_viewer);*/
-
-static gboolean update_viewer_previous_updates_check_unique(UpdateViewer *update_viewer, const gchar *update){
+static gboolean update_viewer_previous_updates_is_unique(UpdateViewer *update_viewer, const gchar *update){
 	if(G_STR_EMPTY(update)) return FALSE;
 	
 	if(g_str_equal(update, "[new update]"))
@@ -1211,7 +1188,7 @@ static gboolean update_viewer_previous_updates_check_unique(UpdateViewer *update
 		uber_free(iter);
 	}
 	return uniq;
-}/*update_viewer_previous_updates_check_unique(update_viewer, update);*/
+}/*update_viewer_previous_updates_is_unique(update_viewer, update);*/
 
 static void update_viewer_previous_updates_remove(UpdateViewer *update_viewer, gint list_store_index){
 	if(!(list_store_index > 0 && list_store_index <= update_viewer->total_updates)) return;
@@ -1231,9 +1208,9 @@ static void update_viewer_previous_updates_remove(UpdateViewer *update_viewer, g
 static void update_viewer_previous_updates_rotate(UpdateViewer *update_viewer){
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
 	for(gint i=update_viewer->max_updates; i>=0; i--){
-		if( (gconfig_get_string( previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, i-1), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
+		if( (gconfig_get_string( previous_update_gconf_path=g_strdup_printf(PREFS_PREVIOUS_UPDATES_STRING, i-1), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
 			uber_free(previous_update_gconf_path);
-			previous_update_gconf_path=g_strdup_printf(UPDATE_VIEWER_PREVIOUS_UPDATES_STRING, i);
+			previous_update_gconf_path=g_strdup_printf(PREFS_PREVIOUS_UPDATES_STRING, i);
 			gconfig_set_string(previous_update_gconf_path, previous_update);
 		}
 		if(previous_update) uber_free(previous_update);
@@ -1280,20 +1257,41 @@ static void update_viewer_previous_update_selected(GtkComboBoxEntry *sexy_entry_
 
 static void update_viewer_previous_updates_free(UpdateViewer *update_viewer){
 	debug("Removing all %d saved updates from this session.", update_viewer->total_updates);
-	
-	for(guint i=0; i<=update_viewer->total_updates; i++){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!gtk_tree_model_get_iter(update_viewer->previous_updates_tree_model, iter, path))
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
-		else{
-			debug("Destroying saved update #%d.", i);
-			gtk_list_store_remove(update_viewer->previous_updates_list_store, iter);
-		}
-		gtk_tree_path_free(path);
-		uber_free(iter);
-	}
+	gtk_list_store_clear(update_viewer->previous_updates_list_store);
 }/*update_viewer_previous_updates_free(update_viewer);*/
+
+void update_viewer_beep(void){
+	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
+		gtk_widget_error_bell(GTK_WIDGET(update_viewer->sexy_entry));
+}/*update_viewer_beep*/
+
+SexySpellEntry *update_viewer_sexy_entry_get_widget(void){
+	if(!update_viewer->sexy_entry) return NULL;
+	return update_viewer->sexy_entry;
+}/*update_viewer_sexy_entry_get_widget();*/
+
+void update_viewer_sexy_select(void){
+	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer->sexy_entry))) return;
+	if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))) return;
+	gtk_widget_grab_focus(GTK_WIDGET(update_viewer->sexy_entry));
+	gint sexy_position=-1;
+	if( update_viewer->sexy_position > 0 && update_viewer->sexy_position <= gtk_entry_get_text_length((GtkEntry *)update_viewer->sexy_entry) )
+		sexy_position=update_viewer->sexy_position;
+	gtk_entry_set_position(GTK_ENTRY(update_viewer->sexy_entry), sexy_position );
+}/*update_viewer_sexy_select*/
+
+void update_viewer_show_previous_updates(void){
+	g_signal_emit_by_name(update_viewer->sexy_entry_combo_box_entry, "popup");
+}/*update_viewer_show_previous_updates();*/
+
+void update_viewer_hide_previous_updates(void){
+	g_signal_emit_by_name(update_viewer->sexy_entry_combo_box_entry, "popup");
+}/*update_viewer_hide_previous_updates();*/
+
+
+/*END:UBERCHICK_SEXY_ENTRY_COMPLETION_COMBO_BOX*/
+
+
 
 void update_viewer_new_dm(void){
 	gtk_toggle_button_set_active(update_viewer->dm_form_active_togglebutton, !gtk_toggle_button_get_active(update_viewer->dm_form_active_togglebutton));
@@ -1315,15 +1313,17 @@ static void update_viewer_dm_show(GtkToggleButton *toggle_button){
 	
 	debug("Enabling UpdateViewer's dm form.");
 	update_viewer_dm_form_activate(TRUE);
+	update_viewer_dm_form_set_loading_label(update_viewer);
 	users_glist_get(GetFollowers, FALSE, update_viewer_dm_data_fill);
 }/*update_viewer_dm_show*/
 
-static void update_viewer_dm_refresh(void){
+static void update_viewer_dm_refresh(GtkButton *dm_refresh, UpdateViewer *update_viewer){
+	update_viewer_dm_form_set_loading_label(update_viewer);
 	online_service_request_popup_select_service();
 	users_glist_get(GetFollowers, TRUE, update_viewer_dm_data_fill);
-}/*update_viewer_dm_refresh*/
+}/*update_viewer_dm_refresh(update_viewer->dm_refresh, update_viewer);*/
 
-void update_viewer_dm_data_fill(GList *followers){
+static void update_viewer_dm_data_fill(GList *followers){
 	if(!followers) return;
 	static gboolean first_fill=TRUE;
 	
@@ -1344,7 +1344,7 @@ void update_viewer_dm_data_fill(GList *followers){
 	
 	OnlineService *service=NULL;
 	for(followers=g_list_first(followers); followers; followers=followers->next) {
-		user=(User *)followers->data;
+		if(!( (user=(User *)followers->data) )) continue;
 		if(!service) service=user->service;
 		gchar *user_label=g_strdup_printf("%s &lt;%s&gt;", user->user_name, user->nick_name);
 		debug("Adding user: %s <%s> from <%s> to DM form", user->user_name, user->nick_name, service->guid );
@@ -1364,13 +1364,28 @@ void update_viewer_dm_data_fill(GList *followers){
 	followers=g_list_first(followers);
 	
 	gchar *new_label=g_markup_printf_escaped("<b>_DM one of your, &lt;%s&gt;, followers:</b>", service->key);
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->dm_frame_label), new_label);
 	gtk_label_set_markup(update_viewer->dm_frame_label, new_label);
 	gtk_label_set_use_underline(update_viewer->dm_frame_label, TRUE);
 	gtk_label_set_single_line_mode(update_viewer->dm_frame_label, TRUE);
 	uber_free(new_label);
 	
+	new_label=g_markup_printf_escaped("<i><b>Select one of your followers to send a Direct/Private message to...</b></i>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->followers_combo_box), new_label);
+	uber_free(new_label);
+	
 	if(first_fill) first_fill=FALSE;
-}/*update_viewer_dm_data_fill*/
+}/*update_viewer_dm_data_fill( friends );*/
+
+static void update_viewer_dm_form_set_loading_label(UpdateViewer *update_viewer){
+	gchar *new_label=g_markup_printf_escaped("<i><b>Please wait while your followers load.  To be able to send a _DM...</b></i>");
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->followers_combo_box), new_label);
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->dm_frame_label), new_label);
+	gtk_label_set_markup(update_viewer->dm_frame_label, new_label);
+	gtk_label_set_use_underline(update_viewer->dm_frame_label, TRUE);
+	gtk_label_set_single_line_mode(update_viewer->dm_frame_label, TRUE);
+	uber_free(new_label);
+}/*update_viewer_dm_form_set_loading_label(update_viewer);*/
 
 /********************************************************
  *                       eof                            *

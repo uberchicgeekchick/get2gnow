@@ -77,7 +77,7 @@
 #include "users.h"
 
 #include "main-window.h"
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 #include "preferences.h"
 #include "images.h"
 #include "gconfig.h"
@@ -95,7 +95,7 @@
 
 
 /* Parse a timeline XML file */
-guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring){
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -112,13 +112,13 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
 	
-	gboolean	has_loaded=timelines_sexy_tree_view_has_loaded(timelines_sexy_tree_view);
+	gboolean	has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
 	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE );
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
-	guint		timelines_sexy_tree_view_notify_delay=timelines_sexy_tree_view_get_notify_delay(timelines_sexy_tree_view);
+	guint		uberchick_tree_view_notify_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
 	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(timelines_sexy_tree_view_get_page(timelines_sexy_tree_view)-1)*100;
+	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)-1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
@@ -148,14 +148,14 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		
 		new_updates++;
 		free_status=TRUE;
-		debug("Adding UserStatus ID: %f, on <%s> to TimelinesSexyTreeView.", status->id, service->key);
-		timelines_sexy_tree_view_store_update(timelines_sexy_tree_view, status);
+		debug("Adding UserStatus ID: %f, on <%s> to UberChickTreeView.", status->id, service->key);
+		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		
 		if(!save_oldest_id && status->id > last_notified_update ){
 			if(notify){
 				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, timelines_sexy_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				timelines_sexy_tree_view_notify_delay+=tweet_display_interval;
+				g_timeout_add_seconds_full(notify_priority, uberchick_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+				uberchick_tree_view_notify_delay+=tweet_display_interval;
 			}
 		}
 		
@@ -181,7 +181,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*search_parse_results(service, xml, uri, timelines_sexy_tree_view);*/
+}/*search_parse_results(service, xml, uri, uberchick_tree_view);*/
 
 gchar *searches_format_timeline_from_uri(const gchar *uri){
 	debug_method("searches_format_timeline_from_uri", "Parsing searches timeline: from uri: <%s>.", uri);

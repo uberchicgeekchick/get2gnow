@@ -63,7 +63,6 @@
 G_BEGIN_DECLS
 
 void friends_manager_show(GtkWindow *parent);
-void friends_manager_display_following_and_followers(GList *friends_and_followers);
 
 G_END_DECLS
 #endif /* __FRIENDS_MANAGER_H__ */

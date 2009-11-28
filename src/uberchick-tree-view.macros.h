@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__TIMELINES_SEXY_TREE_VIEW_MACROS_H__
-#define	__TIMELINES_SEXY_TREE_VIEW_MACROS_H__
+#ifndef	__UBERCHICK_TREE_VIEW_MACROS_H__
+#define	__UBERCHICK_TREE_VIEW_MACROS_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -101,5 +101,5 @@ G_BEGIN_DECLS
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /*__TIMELINES_SEXY_TREE_VIEW_MACROS_H__*/
+#endif /*__UBERCHICK_TREE_VIEW_MACROS_H__*/
 

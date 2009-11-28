@@ -74,7 +74,7 @@
 
 #include "main-window.h"
 #include "update-viewer.h"
-//#include "timelines-sexy-tree-view.h"
+//#include "uberchick-tree-view.h"
 #include "preferences.h"
 
 
@@ -261,8 +261,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_PREVIOUS_UPDATES_UNIQUE_ONLY, TRUE, prefs->previous_updates_uniq_check_button);
-	preferences_hookup_int_combo(prefs, PREFS_PREVIOUS_UPDATES_MAXIMUM, 50, prefs->previous_updates_maximum_combo_box);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_HISTORY_UNIQUE_ONLY, TRUE, prefs->previous_updates_uniq_check_button);
+	preferences_hookup_int_combo(prefs, PREFS_UPDATES_HISTORY_MAXIMUM, 50, prefs->previous_updates_maximum_combo_box);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_SEARCH_HISTORY_UNIQUE_ONLY, TRUE, prefs->search_history_uniq_check_button);
 	preferences_hookup_int_combo(prefs, PREFS_SEARCH_HISTORY_MAXIMUM, 25, prefs->search_history_maximum_combo_box);
@@ -586,7 +586,7 @@ void preferences_dialog_show(GtkWindow *parent){
 					"preferences_notebook", &prefs->notebook,
 					
 					"compact_entire_view_check_button", &prefs->compact_entire_view_check_button,
-					"timelines_sexy_tree_view_concatenated_update_check_button", &prefs->concatenated_updates_check_button,
+					"uberchick_tree_view_concatenated_update_check_button", &prefs->concatenated_updates_check_button,
 					"update_viewer_use_dialog_toggle_button", &prefs->use_dialog_toggle_button,
 					"update_viewer_compact_view_toggle_button", &prefs->compact_view_toggle_button,
 					

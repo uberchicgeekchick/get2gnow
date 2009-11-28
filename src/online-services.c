@@ -241,8 +241,29 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
-		if( g_strrstr(uri, "search") || !g_strrstr(uri, service->uri) )
-			continue;
+		if( !g_strrstr(uri, service->uri) ) continue;
+
+		if( g_strrstr(uri, "search") ){
+			gchar *search_phrase=g_strrstr(uri, "?q=%");
+			if(!(search_phrase[4] && search_phrase[4] =='2'))
+				if(G_STR_N_EMPTY( (search_phrase=g_strrstr(uri, "=")+sizeof("=")) ))
+					return main_window_sexy_search_entry_set(search_phrase, TRUE);
+				else
+					return;
+			
+			static char tag;
+			if(!search_phrase[7])
+				if(G_STR_N_EMPTY( (search_phrase=g_strrstr(uri, "=")+sizeof("=")) ))
+					return main_window_sexy_search_entry_set(search_phrase, TRUE);
+				else
+					return;
+			if( search_phrase[5] && search_phrase[5] =='1') tag='!';
+			else if( search_phrase[5] && search_phrase[5] =='3') tag='#';
+			search_phrase=g_strdup_printf("%c%s", tag, &search_phrase[7]);
+			main_window_sexy_search_entry_set(search_phrase, TRUE);
+			uber_free(search_phrase);
+			return;
+		}
 		
 		service_uri_handled=TRUE;
 		gchar *services_resource=g_strrstr( (g_strrstr(uri, service->uri)), "/");
@@ -605,36 +626,36 @@ gssize online_services_get_length_of_longest_replacement(void){
 
 
 
-gint online_services_best_friends_list_store_fill(GtkListStore *list_store){
+gint online_services_best_friends_tree_store_fill(GtkTreeStore *tree_store){
 	GList		*accounts=NULL;
-	gtk_list_store_clear(list_store);
+	gtk_tree_store_clear(tree_store);
 	services->best_friends_total=0;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		services->best_friends_total+=online_service_best_friends_list_store_fill((OnlineService *)accounts->data, list_store);
+		services->best_friends_total+=online_service_best_friends_tree_store_fill((OnlineService *)accounts->data, tree_store);
 	g_list_free(accounts);
 	return services->best_friends_total;
-}/*online_services_best_friends_list_store_fill(list_store);*/
+}/*online_services_best_friends_tree_store_fill(tree_store);*/
 
 
-gint online_services_best_friends_list_store_validate(GtkListStore *list_store){
+gint online_services_best_friends_tree_store_validate(GtkTreeStore *tree_store){
 	GList		*accounts=NULL;
-	gtk_list_store_clear(list_store);
+	gtk_tree_store_clear(tree_store);
 	services->best_friends_total=0;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		services->best_friends_total+=online_service_best_friends_list_store_validate((OnlineService *)accounts->data, list_store);
+		services->best_friends_total+=online_service_best_friends_tree_store_validate((OnlineService *)accounts->data, tree_store);
 	g_list_free(accounts);
 	return services->best_friends_total;
-}/*online_services_best_friends_list_store_fill();*/
+}/*online_services_best_friends_tree_store_fill(tree_store);*/
 
 
-void online_services_best_friends_list_store_free(GtkListStore *list_store){
+void online_services_best_friends_tree_store_free(GtkTreeStore *tree_store){
 	GList		*accounts=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
-		online_service_best_friends_list_store_free((OnlineService *)accounts->data, list_store);
+		online_service_best_friends_tree_store_free((OnlineService *)accounts->data, tree_store);
 	g_list_free(accounts);
-}/*online_services_best_friends_list_store_free();*/
+}/*online_services_best_friends_tree_store_free();*/
 
-static gboolean online_services_best_friends_list_store_get_user_iter(OnlineService *service, const gchar *user_name, GtkListStore *list_store, GtkTreeIter **iter){
+static gboolean online_services_best_friends_tree_store_get_user_iter(OnlineService *service, const gchar *user_name, GtkTreeStore *tree_store, GtkTreeIter **iter){
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
 	
 	OnlineService *service_at_index=NULL;
@@ -642,7 +663,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 	for(gint i=0; i<=services->best_friends_total; i++){
 		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!gtk_tree_model_get_iter( (GtkTreeModel *)list_store, *iter, path)){
+		if(!gtk_tree_model_get_iter( (GtkTreeModel *)tree_store, *iter, path)){
 			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path.", user_name, service->guid, i);
 			gtk_tree_path_free(path);
 			uber_free(*iter);
@@ -650,7 +671,7 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 		}
 		
 		gtk_tree_model_get(
-				 (GtkTreeModel *)list_store, *iter,
+				 (GtkTreeModel *)tree_store, *iter,
 				 	ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &service_at_index,
 					STRING_BEST_FRIEND_USER, &user_at_index,
 				-1
@@ -671,13 +692,13 @@ static gboolean online_services_best_friends_list_store_get_user_iter(OnlineServ
 	uber_free(user_at_index);
 	if(*iter) uber_free(*iter);
 	return FALSE;
-}/*online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter);*/
+}/*online_services_best_friends_tree_store_get_user_iter(service, user_name, tree_store, &iter);*/
 
-gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store){
+gdouble online_services_best_friends_tree_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store){
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
 	
 	GtkTreeIter *iter=NULL;
-	if(!online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter)){
+	if(!online_services_best_friends_tree_store_get_user_iter(service, user_name, tree_store, &iter)){
 		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid);
 		return 0.0;
 	}
@@ -686,7 +707,7 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	gdouble unread_update_id=0.0;
 	gchar *user_at_index=NULL, *user_name_at_index=NULL;
 	gtk_tree_model_get(
-			 (GtkTreeModel *)list_store, iter,
+			 (GtkTreeModel *)tree_store, iter,
 				STRING_BEST_FRIEND_USER, &user_at_index,
 				STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
 				GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, &unread_update_id,
@@ -703,8 +724,8 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	}
 	
 	debug("Marking best friend: %s(%s), on service <%s>, as having %d unread updates.  Last read update: %f; current update ID: %f..", user_at_index, user_name_at_index, service->guid, unread_updates, unread_update_id, update_id);
-	gtk_list_store_set(
-			list_store, iter,
+	gtk_tree_store_set(
+			tree_store, iter,
 				STRING_BEST_FRIEND_USER_NAME, user_name_at_index,
 				GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, unread_update_id,
 				GUINT_BEST_FRIENDS_UNREAD_UPDATES, unread_updates,
@@ -716,13 +737,13 @@ gdouble online_services_best_friends_list_store_mark_as_unread(OnlineService *se
 	uber_free(user_name_at_index);
 	update_viewer_sexy_select();
 	return update_id;
-}/*online_services_best_friends_list_store_mark_as_unread(user_name)*/
+}/*online_services_best_friends_tree_store_mark_as_unread(user_name)*/
 
-gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkListStore *list_store){
+gboolean online_services_best_friends_tree_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store){
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
 	
 	GtkTreeIter *iter=NULL;
-	if(!online_services_best_friends_list_store_get_user_iter(service, user_name, list_store, &iter)){
+	if(!online_services_best_friends_tree_store_get_user_iter(service, user_name, tree_store, &iter)){
 		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid);
 		return FALSE;
 	}
@@ -730,7 +751,7 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	guint unread_updates=0;
 	gchar *user_at_index=NULL, *user_name_at_index=NULL;
 	gtk_tree_model_get(
-			 (GtkTreeModel *)list_store, iter,
+			 (GtkTreeModel *)tree_store, iter,
 				STRING_BEST_FRIEND_USER, &user_at_index,
 				STRING_BEST_FRIEND_USER_NAME, &user_name_at_index,
 				GUINT_BEST_FRIENDS_UNREAD_UPDATES, &unread_updates,
@@ -744,8 +765,8 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	uber_free(user_timeline);
 	
 	debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, service->guid);
-	gtk_list_store_set(
-			list_store, iter,
+	gtk_tree_store_set(
+			tree_store, iter,
 				STRING_BEST_FRIEND_USER_NAME, user_at_index,
 				GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0,
 				GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, unread_update_id,
@@ -757,7 +778,7 @@ gboolean online_services_best_friends_list_store_mark_as_read(OnlineService *ser
 	uber_free(user_name_at_index);
 	update_viewer_sexy_select();
 	return TRUE;
-}/*online_services_best_friends_list_store_mark_as_read(service, user_name, tree_view, list_store);*/
+}/*online_services_best_friends_tree_store_mark_as_read(service, user_name, tree_view, tree_store);*/
 
 gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name){
 	if(G_STR_EMPTY(user_name)) return FALSE;

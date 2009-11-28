@@ -34,8 +34,8 @@ host_triplet = @host@
 @ENABLE_SK_TRUE@am__append_1 = help
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/@PACKAGE_NAME@.spec.in $(top_srcdir)/configure AUTHORS \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in $(srcdir)/@PACKAGE_NAME@.spec.in \
+	$(srcdir)/@PACKAGE_NAME@.control.in $(top_srcdir)/configure AUTHORS \
 	COPYING ChangeLog INSTALL NEWS TODO config.guess config.sub \
 	depcomp install-sh ltmain.sh missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -47,7 +47,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = @PACKAGE_NAME@.spec
+CONFIG_CLEAN_FILES = @PACKAGE_NAME@.spec @PACKAGE_NAME@.control
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -261,7 +261,8 @@ EXTRA_DIST =			\
 	README                  \
 	AUTHORS			\
 	NEWS			\
-	@PACKAGE_NAME@.spec		\
+	@PACKAGE_NAME@.spec	\
+	@PACKAGE_NAME@.control	\
 	xmldocs.make		\
 	omf.make		\
 	gnome-doc-utils.make	\
@@ -271,7 +272,8 @@ DISTCLEANFILES =		\
 	intltool-extract	\
 	intltool-merge		\
 	intltool-update		\
-	@PACKAGE_NAME@.spec		\
+	@PACKAGE_NAME@.spec	\
+	@PACKAGE_NAME@.control	\
 	gnome-doc-utils.make
 
 

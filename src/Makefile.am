@@ -1,4 +1,4 @@
-UBERCHICK_CFLAGS=-std=gnu99 -g -ggdb -Wno-parentheses
+UBERCHICK_CFLAGS=-std=gnu99 -g3 -ggdb -Wno-parentheses -ffast-math
 AM_CFLAGS=									\
 		-I$(top_srcdir)                        			  	\
 		-I${top_builddir}						\
@@ -51,14 +51,14 @@ get2gnow_SOURCES = 										\
 	proxy.c						proxy.h					\
 	searches.c					searches.h				\
 	tabs.c						tabs.h					\
-	timelines-sexy-tree-view.c	timelines-sexy-tree-view.macros.h		timelines-sexy-tree-view.h		\
 	timer.c						timer.h					\
 	uberchick-label.c				uberchick-label.h			\
+	uberchick-tree-view.c	uberchick-tree-view.macros.h		uberchick-tree-view.h		\
 	ui-utils.c					ui-utils.h				\
 	update-viewer.c					update-viewer.h				\
 	users-glists.c							users-glists.h		\
 	users.c				users.types.h			users.h			\
-	www.c						www.h
+	www.c						www.h					\
 
 
 get2gnow_LDADD=								\

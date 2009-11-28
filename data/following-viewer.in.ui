@@ -2,7 +2,7 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkListStore" id="following_list_store">
+  <object class="GtkTreeStore" id="following_tree_store">
     <columns>
       <!-- column-name user_name -->
       <column type="gchararray"/>
@@ -41,7 +41,7 @@
                       <object class="GtkTreeView" id="following_tree_view">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="model">following_list_store</property>
+                        <property name="model">following_tree_store</property>
                         <property name="search_column">1</property>
                         <child>
                           <object class="GtkTreeViewColumn" id="treeviewcolumn1">

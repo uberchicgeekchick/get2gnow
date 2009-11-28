@@ -67,7 +67,7 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup-message.h>
 
-#include "timelines-sexy-tree-view.h"
+#include "uberchick-tree-view.h"
 
 
 G_BEGIN_DECLS
@@ -81,7 +81,7 @@ G_BEGIN_DECLS
  ********************************************************************************/
 gchar *searches_format_timeline_from_uri(const gchar *uri);
 
-guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, TimelinesSexyTreeView *timelines_sexy_tree_view, UpdateMonitor monitoring);
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
 
 
 G_END_DECLS

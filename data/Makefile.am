@@ -22,16 +22,19 @@ gtkbuilder_DATA =		 				\
 			user-profile-viewer.ui
 
 sexy_DATA =							\
-			main-window.ui				\
-			timelines-sexy-tree-view.ui		\
+			following-viewer.ui			\
 			friends-manager.ui			\
-			following-viewer.ui
+			uberchick-tree-view.ui			\
+			main-window.ui				\
+
 
 un_sexy_DATA =							\
-			main-window.in.ui			\
-			timelines-sexy-tree-view.in.ui		\
+			following-viewer.in.ui			\
 			friends-manager.in.ui			\
-			following-viewer.in.ui
+			main-window.in.ui			\
+			uberchick-tree-view.in.ui		\
+
+
 
 svgicondir = $(datadir)/icons/hicolor/scalable/apps
 svgicon_DATA = @PACKAGE_NAME@.svg
@@ -55,9 +58,9 @@ DISTCLEANFILES =						\
 
 
 main-window.ui: sexy_DATA
-timelines-sexy-tree-view.ui: sexy_DATA
-friends-manager.ui: sexy_DATA
 following-viewer.ui: sexy_DATA
+friends-manager.ui: sexy_DATA
+uberchick-tree-view.ui: sexy_DATA
 sexy_DATA: $(un_sexy_DATA)
 	@eol='$$'; \
 	list='$(un_sexy_DATA)'; for p in $$list; do \
