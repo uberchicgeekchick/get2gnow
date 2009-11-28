@@ -1009,6 +1009,8 @@ void update_viewer_send(GtkWidget *activated_widget){
 		uber_free(iter);
 		return;
 	}
+	if(update_viewer->best_friends_service && update_viewer->best_friends_user_name)
+		return update_viewer_sexy_send(update_viewer->best_friends_service, update_viewer->best_friends_user_name);
 	update_viewer_sexy_send(NULL, NULL);
 }/*update_viewer_send*/
 
