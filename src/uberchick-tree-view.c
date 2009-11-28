@@ -1241,13 +1241,14 @@ static void uberchick_tree_view_move(UberChickTreeView *uberchick_tree_view, Gdk
 			this->index++;
 			break;
 		case GDK_Page_Up:
-			if(this->index<1)
-				this->index-=6;
-			else
-				this->index-=3;
+			this->index-=3;
 			break;
 		case GDK_Page_Down:
-			this->index+=3; break;
+			if(this->index<1)
+				this->index+=6;
+			else
+				this->index+=3;
+			break;
 		default:
 			supported_keyval=FALSE;
 			break;
