@@ -447,7 +447,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 			NULL
 	);
 	
-	gchar *window_title=g_strdup_printf("%s - %s", _(GETTEXT_PACKAGE), _("Control Panel"));
+	gchar *window_title=g_strdup_printf("%s - %s", _(GETTEXT_PACKAGE), _("Update Viewer"));
 	gtk_window_set_title(update_viewer->update_viewer, window_title);
 	uber_free(window_title);
 	
