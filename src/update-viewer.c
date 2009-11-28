@@ -233,7 +233,7 @@ typedef enum{
 #include "debug.h"
 
 #define GtkBuilderUI "update-viewer"
-#define	TWEET_MAX_CHARS	140
+#define	UPDATE_MAX_LENGTH	140
 
 static UpdateViewer *update_viewer=NULL;
 
@@ -260,7 +260,7 @@ static void update_viewer_compact_view_display(gboolean compact);
 static void update_viewer_scale(gboolean compact);
 
 static gint update_viewer_sexy_entry_update_length(gchar *update);
-static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter);
+static void update_viewer_sexy_entry_character_count(void);
 
 static void update_viewer_sexy_send(OnlineService *service, const gchar *user_name);
 
@@ -740,7 +740,7 @@ static void update_viewer_sexy_init(void){
 	gtk_widget_show(GTK_WIDGET(update_viewer->sexy_entry));
 	
 	g_signal_connect_after(update_viewer->sexy_entry, "key-press-event", G_CALLBACK(hotkey_pressed), NULL);
-	g_signal_connect_after(update_viewer->sexy_entry, "key-release-event", G_CALLBACK(update_viewer_sexy_entry_character_count), update_viewer->char_count);
+	g_signal_connect_after(update_viewer->sexy_entry, "key-release-event", G_CALLBACK(update_viewer_sexy_entry_character_count), NULL);
 	g_signal_connect(update_viewer->sexy_entry, "activate", G_CALLBACK(update_viewer_send), NULL);
 	g_signal_connect_after(update_viewer->followers_combo_box, "changed", G_CALLBACK(update_viewer_sexy_select), update_viewer->followers_combo_box);
 }/*update_viewer_sexy_init();*/
@@ -900,19 +900,19 @@ static gint update_viewer_sexy_entry_update_length(gchar *update){
 		character_count++;
 	}
 	
-	return TWEET_MAX_CHARS-character_count;
+	return UPDATE_MAX_LENGTH-character_count;
 }/*update_viewer_sexy_entry_update_length(update);*/
 
-static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKey *event, GtkLabel *update_character_counter){
-	update_viewer->sexy_position=gtk_editable_get_position(GTK_EDITABLE(entry));
-	gshort remaining_character_count=update_viewer_sexy_entry_update_length(entry->text);
+static void update_viewer_sexy_entry_character_count(void){
+	update_viewer->sexy_position=gtk_editable_get_position(GTK_EDITABLE(GTK_ENTRY(update_viewer->sexy_entry)));
+	gshort remaining_character_count=update_viewer_sexy_entry_update_length(GTK_ENTRY(update_viewer->sexy_entry)->text);
 	gchar *remaining_characters_markup_label=NULL;
 	if(remaining_character_count < 0){
 		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
 			update_viewer_beep();
 		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"red\">%d</span>", remaining_character_count);
 	}else{
-		if(TWEET_MAX_CHARS==remaining_character_count && (update_viewer->best_friends_service ||  update_viewer->viewing_update_id) ){
+		if(remaining_character_count==UPDATE_MAX_LENGTH && (update_viewer->best_friends_service ||  update_viewer->viewing_update_id) ){
 			update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 			if(update_viewer->best_friends_service && G_STR_N_EMPTY(update_viewer->best_friends_user_name) ){
 				update_viewer->best_friends_service=NULL;
@@ -923,9 +923,9 @@ static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKe
 		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"green\">%d</span>", remaining_character_count);
 	}
 	
-	gtk_label_set_markup(update_character_counter, remaining_characters_markup_label);
+	gtk_label_set_markup(update_viewer->char_count, remaining_characters_markup_label);
 	uber_free(remaining_characters_markup_label);
-}/*update_viewer_sexy_entry_character_count*/
+}/*update_viewer_sexy_entry_character_count();*/
 
 void update_viewer_sexy_set(gchar *text){
 	gtk_entry_set_text(GTK_ENTRY(update_viewer->sexy_entry), (text ?text :(gchar *)"") );
@@ -968,11 +968,15 @@ gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, gboolean
 	
 	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry));
 	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), str, -1, &position_after );
-	if(position_after>position_prior)
+	if(position_after<position_prior)
+		update_viewer->sexy_position=position_prior;
+	else{
 		gtk_entry_set_position(GTK_ENTRY(update_viewer->sexy_entry), position_after);
+		update_viewer->sexy_position=position_after;
+	}
+	update_viewer_sexy_entry_character_count();
 	update_viewer_sexy_select();
 	return FALSE;
-	return position_after;
 }/*update_viewer_sexy_puts*/
 
 void update_viewer_reply(void){
@@ -998,7 +1002,7 @@ static void update_viewer_reply_or_forward(GtkButton *update_button){
 }/*update_viewer_reply_or_forward(button);*/
 
 void update_viewer_send(GtkWidget *activated_widget){
-	if(G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text))
+	if( G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) || activated_widget==GTK_WIDGET(update_viewer->sexy_entry) )
 		return update_viewer_reply();
 	
 	if(!activated_widget){
@@ -1007,14 +1011,13 @@ void update_viewer_send(GtkWidget *activated_widget){
 		return update_viewer_sexy_send(NULL, NULL);
 	}
 	
+	const gchar *user_name=NULL;
 	if(activated_widget==GTK_WIDGET(update_viewer->sexy_dm_button) ){
-		const gchar *user_name=NULL;
 		if(!(( user_name=online_service_request_selected_update_get_user_name()) && G_STR_N_EMPTY(user_name) )) return update_viewer_beep();
 		update_viewer_sexy_send(online_service_request_selected_update_get_service(), user_name);
 		return;
 	}
 	
-	gchar *user_name=NULL;
 	if((activated_widget==GTK_WIDGET(update_viewer->followers_send_dm)) &&(GTK_WIDGET_IS_SENSITIVE(update_viewer->followers_combo_box)) && G_STR_N_EMPTY((user_name=gtk_combo_box_get_active_text(update_viewer->followers_combo_box)) ) ){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		User *user=NULL;
