@@ -927,7 +927,11 @@ static void uberchick_tree_view_modifiy_updates_tree_store( UberChickTreeView *u
 		
 		if(!tree_store_remove){
 			debug("Updating iter for <%s>'s %s at index: %d; tree_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, tree_store_index, selected_index);
-			gtk_tree_store_set( this->tree_store, iter, uberchick_tree_view_tree_store_column_to_string(uberchick_tree_view_tree_store_column), value, -1 );
+			gtk_tree_store_set(
+					this->tree_store, iter,
+						uberchick_tree_view_tree_store_column, value,
+					-1
+			);
 		}else{
 			debug("Removing iter for <%s>'s %s at index: %d; tree_store_index: %d; selected_index: %d.", service->guid, this->monitoring_string, i, tree_store_index, selected_index);
 			if(i==this->index){
@@ -936,9 +940,9 @@ static void uberchick_tree_view_modifiy_updates_tree_store( UberChickTreeView *u
 				uberchick_tree_view_scroll_to_top(uberchick_tree_view);
 			}
 			gtk_tree_store_remove(this->tree_store, iter);
-			this->total--;
 			if(unread && this->unread_updates)
 				this->unread_updates--;
+			this->total--;
 		}
 		gtk_tree_path_free(path);
 		uber_free(iter);

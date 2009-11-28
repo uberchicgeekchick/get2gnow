@@ -42,7 +42,6 @@ if( "${status}" != "0" ) then
 	printf "***********ERROR: rpm build failed****************";
 	exit -1;
 endif
-tar --dereference -C ${project_path} -czf "${pkg_path}/tarballs/${project_name}-${version}.tar.gz" "${project_name}";
 set local_tarball="${pkg_path}/tarballs/${project_name}-${version}.tar.gz";
 #set pkg_path=${project_path}/releases/../nfs/releases/;
 mv --verbose "${local_tarball}" "${pkg_path}/tarballs/${project_name}-${version}-${release}.${MACHTYPE}.tar.gz";

@@ -179,7 +179,6 @@ gboolean online_services_login(void){
 		debug("Connected to %d OnlineServices.", services->connected);
 	
 	main_window_state_on_connection(login_okay);
-	g_list_free(accounts);
 	return login_okay;
 }/*online_services_login*/
 
@@ -197,7 +196,6 @@ gboolean online_services_reconnect(void){
 			if(!relogin_okay) relogin_okay=TRUE;
 	}
 	main_window_state_on_connection(relogin_okay);
-	g_list_free(accounts);
 	return relogin_okay;
 }/*online_services_reconnect*/
 
@@ -211,7 +209,6 @@ gboolean online_services_refresh(void){
 		if(online_service_refresh(service))
 			if(!refresh_okay) refresh_okay=TRUE;
 	}
-	g_list_free(accounts);
 	return refresh_okay;
 }/*online_services_refresh();*/
 
@@ -226,7 +223,6 @@ void online_services_disconnect(void){
 		online_service_disconnect(service, TRUE);
 	}
 	main_window_state_on_connection(FALSE);
-	g_list_free(accounts);
 }/*online_services_disconnect*/
 
 
@@ -234,29 +230,29 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	gboolean service_uri_handled=FALSE;
 	UberChickLabel *uberchick_label;
 	if(!( IS_UBERCHICK_LABEL( (uberchick_label=UBERCHICK_LABEL(widget)) ) ))
 		uberchick_label=NULL;
 	
+	debug("OnlineServices URI handeler called for URI: [%s]", uri);
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
 		service=(OnlineService *)accounts->data;
 		if( !g_strrstr(uri, service->uri) ) continue;
-
+		
 		if( g_strrstr(uri, "search") ){
 			gchar *search_phrase=g_strrstr(uri, "?q=%");
 			if(!(search_phrase[4] && search_phrase[4] =='2'))
 				if(G_STR_N_EMPTY( (search_phrase=g_strrstr(uri, "=")+sizeof("=")) ))
 					return main_window_sexy_search_entry_set(search_phrase, TRUE);
 				else
-					return;
+					break;
 			
 			static char tag;
 			if(!search_phrase[7])
 				if(G_STR_N_EMPTY( (search_phrase=g_strrstr(uri, "=")+sizeof("=")) ))
 					return main_window_sexy_search_entry_set(search_phrase, TRUE);
 				else
-					return;
+					break;
 			if( search_phrase[5] && search_phrase[5] =='1') tag='!';
 			else if( search_phrase[5] && search_phrase[5] =='3') tag='#';
 			search_phrase=g_strdup_printf("%c%s", tag, &search_phrase[7]);
@@ -265,7 +261,6 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 			return;
 		}
 		
-		service_uri_handled=TRUE;
 		gchar *services_resource=g_strrstr( (g_strrstr(uri, service->uri)), "/");
 		if(!uberchick_label)
 			debug("OnlineServices: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
@@ -280,14 +275,12 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 		update_viewer_sexy_insert_string(users_at);
 		uber_free(users_at);
 		if(user_profile_link) uber_free(user_profile_link);
-		break;
+		return;
 	}
-	g_list_free(accounts);
-	if(!service_uri_handled)
-		if(g_app_info_launch_default_for_uri(uri, NULL, NULL))
-			debug("**NOTICE:** Opening URI: <%s>.", uri );
-		else
-			debug("**ERROR:** Can't handle URI: <%s>.", uri );
+	if(g_app_info_launch_default_for_uri(uri, NULL, NULL))
+		debug("**NOTICE:** Opening URI: <%s>.", uri );
+	else
+		debug("**ERROR:** Can't handle URI: <%s>.", uri );
 }/*online_services_url_activated_cb(widget, const gchar *uri);*/
 
 
@@ -498,7 +491,6 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 		gtk_combo_box_set_active(combo_box, 0);
 	}
 	
-	g_list_free(accounts);
 	return (services_loaded ?TRUE :FALSE );
 }/*online_services_combo_box_fill*/
 
@@ -532,7 +524,6 @@ OnlineService *online_services_connected_get_first(void){
 			return service;
 	}
 		
-	g_list_free(accounts);
 	return NULL;
 }/*online_services_connected_get_first();*/
 
@@ -544,7 +535,6 @@ OnlineService *online_services_get_service_by_key(const gchar *online_service_ke
 		if(g_str_equal( (service=(OnlineService *)accounts->data)->key, online_service_key))
 			return service;
 	}
-	g_list_free(accounts);
 	return NULL;
 }/*online_services_get_service_by_key(Online_services, online_service_guid);*/
 
@@ -593,7 +583,6 @@ void online_services_request(RequestMethod request, const gchar *uri, OnlineServ
 		debug("Requesting: %s from <%s>.", uri, service->key);
 		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
-	g_list_free(accounts);
 }/*online_services_request*/
 
 
@@ -620,7 +609,6 @@ gssize online_services_get_length_of_longest_replacement(void){
 				longest_replacement_length=replacement_length;
 	}
 	
-	g_list_free(accounts);
 	return longest_replacement_length;
 }/*online_services_get_length_of_longest_replacement();*/
 
@@ -632,7 +620,6 @@ gint online_services_best_friends_tree_store_fill(GtkTreeStore *tree_store){
 	services->best_friends_total=0;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
 		services->best_friends_total+=online_service_best_friends_tree_store_fill((OnlineService *)accounts->data, tree_store);
-	g_list_free(accounts);
 	return services->best_friends_total;
 }/*online_services_best_friends_tree_store_fill(tree_store);*/
 
@@ -643,7 +630,6 @@ gint online_services_best_friends_tree_store_validate(GtkTreeStore *tree_store){
 	services->best_friends_total=0;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
 		services->best_friends_total+=online_service_best_friends_tree_store_validate((OnlineService *)accounts->data, tree_store);
-	g_list_free(accounts);
 	return services->best_friends_total;
 }/*online_services_best_friends_tree_store_fill(tree_store);*/
 
@@ -652,7 +638,6 @@ void online_services_best_friends_tree_store_free(GtkTreeStore *tree_store){
 	GList		*accounts=NULL;
 	for(accounts=services->accounts; accounts; accounts=accounts->next)
 		online_service_best_friends_tree_store_free((OnlineService *)accounts->data, tree_store);
-	g_list_free(accounts);
 }/*online_services_best_friends_tree_store_free();*/
 
 static gboolean online_services_best_friends_tree_store_get_user_iter(OnlineService *service, const gchar *user_name, GtkTreeStore *tree_store, GtkTreeIter **iter){
@@ -787,7 +772,6 @@ gboolean online_services_is_user_best_friend(OnlineService *service, const gchar
 		if((service==(OnlineService *)accounts->data) && online_service_is_user_best_friend((OnlineService *)accounts->data, user_name))
 			return TRUE;
 	
-	g_list_free(accounts);
 	return FALSE;
 }/*online_services_is_user_best_friend(service, user_name);*/
 
