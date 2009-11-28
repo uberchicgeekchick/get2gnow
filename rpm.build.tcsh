@@ -32,7 +32,7 @@ ln -vf "${pkg_path}/specs/${project_name}.spec" "${project_name}/${project_name}
 if( ${?1} && "${1}" != "" && "${1}" == "--clean-up" ) then
 	rm ${pkg_path}/*/"${project_name}"*;
 endif
-printf "Creating tarball\t\t\t";
+printf "Creating tarball: [%s-%s.tar.gz]\t\t\t" "${project_name}" "${version}";
 ln -s "${project_name}" "${project_name}"-${version};
 tar --dereference -C ${project_path} -czf "${pkg_path}/tarballs/${project_name}-${version}.tar.gz" "${project_name}-${version}";
 rm "${project_name}/${project_name}.spec" "${project_name}-${version}";
@@ -44,6 +44,10 @@ if( "${status}" != "0" ) then
 endif
 set local_tarball="${pkg_path}/tarballs/${project_name}-${version}.tar.gz";
 #set pkg_path=${project_path}/releases/../nfs/releases/;
+if( ${?1} && "${1}" != "" && "${1}" == "--clean-up" ) then
+	rm --verbose "${pkg_path}/"*/"${project_name}"*.${MACHTYPE}.*;
+	rm --verbose "${pkg_path}/"*/"${project_name}"*_${deb_arch}.*;
+endif
 mv --verbose "${local_tarball}" "${pkg_path}/tarballs/${project_name}-${version}-${release}.${MACHTYPE}.tar.gz";
 cp --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${project_name}-${version}-${release}.${MACHTYPE}.rpm" ./;
 ${use_sudo}alien --to-deb --keep-version "./${project_name}-${version}-${release}.${MACHTYPE}.rpm";
@@ -53,8 +57,6 @@ if( ${MACHTYPE} == "x86_64" ) then
 else
 	set deb_arch="i386";
 endif
-rm --verbose "${pkg_path}/"*/"${project_name}"*.${MACHTYPE}.*;
-rm --verbose "${pkg_path}/"*/"${project_name}"*_${deb_arch}.*;
 mv --verbose "./${project_name}_${version}-${release}_${deb_arch}.deb" "${pkg_path}/debs/${project_name}_${version}-${release}_${deb_arch}.deb";
 ${use_sudo}mv --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${project_name}-${version}-${release}.${MACHTYPE}.rpm" "${pkg_path}/rpms/";
 ${use_sudo}mv --verbose "/usr/src/packages/SRPMS/${project_name}-${version}-${release}.src.rpm" "${pkg_path}/srpms/"${project_name}"-${version}-${release}.${MACHTYPE}.src.rpm";
