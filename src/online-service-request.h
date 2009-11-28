@@ -123,7 +123,7 @@ OnlineService *online_service_request_selected_update_get_service(void);
 gdouble online_service_request_selected_update_get_id(void);
 const gchar *online_service_request_selected_update_get_user_name(void);
 gdouble online_service_request_selected_update_get_user_id(void);
-gchar *online_service_request_selected_update_reply_to_strdup(gboolean forward_update);
+gchar *online_service_request_selected_update_get_update_text(void);
 gboolean online_service_request_selected_update_reply(void);
 gboolean online_service_request_selected_update_forward(void);
 void online_service_request_unset_selected_update(void);

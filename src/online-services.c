@@ -262,19 +262,13 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 		}
 		
 		gchar *services_resource=g_strrstr( (g_strrstr(uri, service->uri)), "/");
-		if(!uberchick_label)
+		if(!uberchick_label){
+			update_viewer_set_in_reply_to_data(&services_resource[1], NULL, 0.0, FALSE);
 			debug("OnlineServices: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
-		else{
-			update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label), uberchick_label_get_update_id(uberchick_label), FALSE);
+		}else{
+			update_viewer_set_in_reply_to_data(&services_resource[1], uberchick_label_get_service(uberchick_label), uberchick_label_get_update_id(uberchick_label), FALSE);
 			debug("OnlineServices via UberChick_Label: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
 		}
-		gchar *user_profile_link=NULL;
-		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
-			user_profile_link=g_strdup_printf(" ( http://%s%s )", service->uri, services_resource );
-		gchar *users_at=g_strdup_printf("@%s%s ", &services_resource[1], (user_profile_link ?user_profile_link :""));
-		update_viewer_sexy_insert_string(users_at);
-		uber_free(users_at);
-		if(user_profile_link) uber_free(user_profile_link);
 		return;
 	}
 	if(g_app_info_launch_default_for_uri(uri, NULL, NULL))

@@ -85,7 +85,7 @@ GtkButton *update_viewer_get_sexy_dm_button(void);
 void update_viewer_beep(void);
 
 void update_viewer_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
-void update_viewer_set_in_reply_to_data(OnlineService *service, gdouble update_id, gboolean force);
+gboolean update_viewer_set_in_reply_to_data(gchar *user_name, OnlineService *service, gdouble update_id, gboolean force);
 
 void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
@@ -97,14 +97,14 @@ void update_viewer_set_embed_toggle_and_image(void);
 SexySpellEntry *update_viewer_sexy_entry_get_widget(void);
 void update_viewer_sexy_select(void);
 
-void update_viewer_sexy_prefix_char(const char c);
-gboolean update_viewer_sexy_prefix_string(const gchar *prefix, gboolean uniq);
 void update_viewer_sexy_set(gchar *text);
+void update_viewer_sexy_prefix_char(const char c);
+gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean uniq);
 void update_viewer_sexy_insert_char(const char c);
-void update_viewer_sexy_insert_string(const gchar *str);
+gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean uniq);
 void update_viewer_sexy_append_char(const char c);
-void update_viewer_sexy_append_string(const gchar *str);
-gint update_viewer_sexy_puts(const gchar *str, gint position);
+gboolean update_viewer_sexy_append_string(const gchar *str, gboolean uniq);
+gboolean update_viewer_sexy_puts(const gchar *str, gint position, gboolean uniq);
 
 void update_viewer_new_update(void);
 void update_viewer_new_dm(void);

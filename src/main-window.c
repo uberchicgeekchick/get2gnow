@@ -758,20 +758,7 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 	}
 	
 	if(button==main_window->private->best_friends_send_at_message_button){
-		gchar *at_string=NULL;
-		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
-			at_string=g_strdup_printf("@%s ( http://%s/%s ) ", user, service->uri, user );
-		else
-			at_string=g_strdup_printf("@%s ", user);
-		
-		in_reply_to_service=service;
-		update_viewer_sexy_prefix_string(at_string, TRUE);
-		if(unread_update_id && !in_reply_to_status_id){
-			in_reply_to_status_id=unread_update_id;
-			in_reply_to_service=service;
-		}
-		update_viewer_sexy_select();
-		uber_free(at_string);
+		update_viewer_set_in_reply_to_data(user, service, unread_update_id, FALSE);
 		uber_free(user_name);
 		uber_free(user);
 		return;

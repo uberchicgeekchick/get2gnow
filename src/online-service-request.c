@@ -543,15 +543,6 @@ gdouble online_service_request_selected_update_get_user_id(void){
 	return ( (selected_update && selected_update->user_id) ?selected_update->user_id :0.0 );
 }/*online_service_request_selected_update_get_user_id();*/
 
-gchar *online_service_request_selected_update_reply_to_strdup(gboolean forwarding){
-	if(!( selected_update && selected_update->id )) return NULL;
-	
-	if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
-		return g_strdup_printf("%s@%s ( http://%s/%s ) %s", (forwarding ?"RT " :""), selected_update->user_name, selected_update->service->uri, selected_update->user_name, (forwarding ?selected_update->update :"" ));
-	
-	return g_strdup_printf("%s@%s %s", (forwarding ?"RT " :""), selected_update->user_name, (forwarding ?selected_update->update :"" ));
-}/*online_service_request_selected_update_reply_to_strdup();*/
-
 gboolean online_service_request_selected_update_reply(void){
 	return online_service_request_selected_update_include_and_begin_to_send(FALSE);
 }/*online_service_request_selected_update_reply();*/
@@ -561,18 +552,17 @@ gboolean online_service_request_selected_update_forward(void){
 }/*online_service_request_selected_update_forward();*/
 
 static gboolean online_service_request_selected_update_include_and_begin_to_send(gboolean forwarding){
-	gchar *prefix=NULL;
-	if(G_STR_EMPTY( (prefix=online_service_request_selected_update_reply_to_strdup(forwarding)) )){
+	if(!( selected_update && selected_update->id )){
 		update_viewer_beep();
-		if(prefix) uber_free(prefix);
 		return FALSE;
 	}
+	if(forwarding){
+		update_viewer_sexy_set("");
+		update_viewer_sexy_prefix_string("RT ", TRUE);
+	}
+	gboolean prefix_added=update_viewer_set_in_reply_to_data(selected_update->user_name, selected_update->service, selected_update->id, TRUE);
+	if(forwarding) update_viewer_sexy_append_string(selected_update->update, TRUE);
 	
-	if( selected_update && selected_update->id )
-		update_viewer_set_in_reply_to_data(selected_update->service, selected_update->id, FALSE);
-	
-	gboolean prefix_added=update_viewer_sexy_prefix_string(prefix, forwarding);
-	uber_free(prefix);
 	return prefix_added;
 }/*online_service_request_selected_update_include_and_begin_to_send*/
 

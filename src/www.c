@@ -681,7 +681,7 @@ static gboolean www_uri_titles_clean_up(void){
 
 void www_init(void){
 	GError *error=NULL;
-	const gchar *g_regex_pattern="/&amp;[0-9]+([ \n\r\t]+)?/";
+	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]+)?";
 	number_regex=g_regex_new(g_regex_pattern, 0, G_REGEX_MATCH_NOTEOL, &error);
 	if(error){
 		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );

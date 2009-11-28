@@ -776,15 +776,36 @@ static void update_viewer_reorder(void){
 	);
 }/*update_viewer_reorder*/
 
-void update_viewer_set_in_reply_to_data(OnlineService *service, gdouble update_id, gboolean force){
-	if(!update_viewer) return;
-	if(update_viewer->viewing_service && update_viewer->viewing_update_id && !force) return;
+gboolean update_viewer_set_in_reply_to_data(gchar *user_name, OnlineService *service, gdouble update_id, gboolean force){
+	if(!update_viewer) return FALSE;
+	gboolean prefix_added=FALSE;
+	if(user_name && service){
+		gchar *users_at=NULL;
+		gboolean user_name_free=FALSE;
+		if( (user_name_free=g_regex_match_simple("[A-Z]", user_name, 0, 0)) )
+			user_name=g_utf8_strdown(user_name, -1);
+		
+		if( online_services_has_connected(1) > 0 && !gconfig_if_bool(PREFS_UPDATES_NO_PROFILE_LINK, TRUE) )
+			users_at=g_strdup_printf("@%s ( http://%s/%s ) ", user_name, service->uri, user_name);
+		else
+			users_at=g_strdup_printf("@%s ", user_name);
+		prefix_added=update_viewer_sexy_insert_string(users_at, TRUE);
+		uber_free(users_at);
+		if(user_name_free) uber_free(user_name);
+	}
+	
+	if(update_viewer->viewing_service && update_viewer->viewing_update_id && !force){
+		update_viewer_sexy_select();
+		return prefix_added;
+	}
 	
 	update_viewer->viewing_update_id=update_id;
 	if(update_viewer->viewing_update_id_str) uber_free(update_viewer->viewing_update_id_str);
 	if(update_id) update_viewer->viewing_update_id_str=gdouble_to_str(update_id);
 	update_viewer->viewing_service=service;
-}/*update_viewer_set_in_reply_to_data(service, 1212154, TRUE|FALSE);*/
+	update_viewer_sexy_select();
+	return prefix_added;
+}/*update_viewer_set_in_reply_to_data(user->user_name|NULL, service, 1212154, TRUE|FALSE);*/
 
 void update_viewer_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf){
 	if(!(service && service->session && online_service_validate_session(service, user_name) )) return;
@@ -807,10 +828,10 @@ void update_viewer_view_selected_update(OnlineService *service, const gdouble id
 	update_viewer->viewing_user=g_strdup((G_STR_EMPTY(user_name) ?"" :user_name ) );
 	
 	if(id)
-		update_viewer_set_in_reply_to_data(service, id, TRUE);
+		update_viewer_set_in_reply_to_data(NULL, service, id, TRUE);
 	else{
 		main_window_set_statusbar_msg(NULL);
-		update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+		update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 	}
 	
 	gchar *sexy_text=NULL;
@@ -892,7 +913,7 @@ static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKe
 		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"red\">%d</span>", remaining_character_count);
 	}else{
 		if(TWEET_MAX_CHARS==remaining_character_count && (update_viewer->best_friends_service ||  update_viewer->viewing_update_id) ){
-			update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+			update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 			if(update_viewer->best_friends_service && G_STR_N_EMPTY(update_viewer->best_friends_user_name) ){
 				update_viewer->best_friends_service=NULL;
 				if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);
@@ -906,52 +927,51 @@ static void update_viewer_sexy_entry_character_count(GtkEntry *entry, GdkEventKe
 	uber_free(remaining_characters_markup_label);
 }/*update_viewer_sexy_entry_character_count*/
 
-void update_viewer_sexy_prefix_char(const char c){
-	gchar *prefix=g_strdup_printf("%c", c);
-	update_viewer_sexy_prefix_string((const gchar *)prefix, FALSE);
-	uber_free(prefix);
-}/*update_viewer_sexy_prefix_char*/
-
-gboolean update_viewer_sexy_prefix_string(const gchar *prefix, gboolean uniq){
-	if(g_str_has_prefix(GTK_ENTRY(update_viewer->sexy_entry)->text, prefix) && !g_str_equal(GTK_ENTRY(update_viewer->sexy_entry)->text, prefix) )
-		return TRUE;
-	if(!(uniq && g_str_has_prefix(GTK_ENTRY(update_viewer->sexy_entry)->text, prefix) ))
-		update_viewer_sexy_puts(prefix, 0);
-	
-	return FALSE;
-}/*update_viewer_sexy_prefix_string*/
-
 void update_viewer_sexy_set(gchar *text){
-	gtk_entry_set_text(GTK_ENTRY(update_viewer->sexy_entry), (text==NULL ?(gchar *)"" :text));
+	gtk_entry_set_text(GTK_ENTRY(update_viewer->sexy_entry), (text ?text :(gchar *)"") );
 	update_viewer_sexy_select();
 }/*update_viewer_sexy_set*/
 
+void update_viewer_sexy_prefix_char(const char c){
+	gchar *str=g_strdup_printf("%c", c);
+	update_viewer_sexy_prefix_string((const gchar *)str, FALSE);
+	uber_free(str);
+}/*update_viewer_sexy_prefix_char*/
+
+gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean uniq){
+	return update_viewer_sexy_puts(str, 0, uniq);
+}/*update_viewer_sexy_prefix_string*/
+
 void update_viewer_sexy_insert_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
-	update_viewer_sexy_insert_string((const gchar *)str);
+	update_viewer_sexy_insert_string((const gchar *)str, FALSE);
 	uber_free(str);
 }/*update_viewer_sexy_insert_char*/
 
-void update_viewer_sexy_insert_string(const gchar *str){
-	update_viewer_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry)) );
+gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean uniq){
+	return update_viewer_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry)), uniq );
 }/*update_viewer_sexy_insert_string*/
 
 void update_viewer_sexy_append_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
-	update_viewer_sexy_append_string((const gchar *)str);
+	update_viewer_sexy_append_string((const gchar *)str, FALSE);
 	uber_free(str);
 }/*update_viewer_sexy_append_char*/
 
-void update_viewer_sexy_append_string(const gchar *str){
-	update_viewer_sexy_puts(str,(gint)gtk_entry_get_text_length(GTK_ENTRY(update_viewer->sexy_entry)) );
+gboolean update_viewer_sexy_append_string(const gchar *str, gboolean uniq){
+	return update_viewer_sexy_puts(str, (gint)gtk_entry_get_text_length(GTK_ENTRY(update_viewer->sexy_entry)), uniq );
 }/*update_viewer_sexy_append_string*/
 
-gint update_viewer_sexy_puts(const gchar *str, gint position_after){
+gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, gboolean uniq){
+	if(uniq && g_strrstr(GTK_ENTRY(update_viewer->sexy_entry)->text, str) )
+		return !g_str_equal(GTK_ENTRY(update_viewer->sexy_entry)->text, str);
+	
 	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry));
 	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), str, -1, &position_after );
 	if(position_after>position_prior)
 		gtk_entry_set_position(GTK_ENTRY(update_viewer->sexy_entry), position_after);
 	update_viewer_sexy_select();
+	return FALSE;
 	return position_after;
 }/*update_viewer_sexy_puts*/
 
@@ -1021,7 +1041,7 @@ void update_viewer_new_update(void){
 	if(update_viewer->best_friends_service) update_viewer->best_friends_service=NULL;
 	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);
 	
-	update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+	update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 	
 	gtk_widget_hide( (GtkWidget *)update_viewer->best_friend_dm_notification_label );
 	online_service_request_unset_selected_update();
@@ -1046,7 +1066,7 @@ static void update_viewer_sexy_send(OnlineService *service, const gchar *user_na
 	if(update_viewer->viewing_update_id && update_viewer->viewing_service){
 		in_reply_to_status_id=update_viewer->viewing_update_id;
 		in_reply_to_service=update_viewer->viewing_service;
-		update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+		update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 	}
 	
 	if(!(service && user_name && G_STR_N_EMPTY(user_name) ))
@@ -1058,7 +1078,7 @@ static void update_viewer_sexy_send(OnlineService *service, const gchar *user_na
 }/*update_viewer_sexy_send(online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
 
 static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
-	update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+	update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 	
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
 	update_viewer_previous_maxium_updates_validate(update_viewer);
@@ -1077,10 +1097,10 @@ static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
 		
 		gchar **previous_update_details=g_strsplit(previous_update, "->", 3);
 		if(G_STR_N_EMPTY(previous_update_details[2])){
-			update_viewer_set_in_reply_to_data(online_services_get_service_by_key(previous_update_details[0]), strtod(previous_update_details[1], NULL), TRUE);
+			update_viewer_set_in_reply_to_data(NULL, online_services_get_service_by_key(previous_update_details[0]), strtod(previous_update_details[1], NULL), TRUE);
 			
 			update_viewer_previous_update_restore(update_viewer, previous_update_details[2]);
-			update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+			update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 		}
 		uber_free(previous_update);
 		uber_free(previous_update_gconf_path);
@@ -1239,7 +1259,7 @@ static void update_viewer_previous_update_selected(GtkComboBoxEntry *sexy_entry_
 	);
 	
 	if( G_STR_EMPTY(update) || g_str_equal(update, "[new update]") ){
-		update_viewer_set_in_reply_to_data(NULL, 0.0, TRUE);
+		update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, TRUE);
 		update_viewer_new_update();
 		uber_free(update);
 		uber_free(iter);
