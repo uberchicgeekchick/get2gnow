@@ -988,12 +988,14 @@ void update_viewer_forward(void){
 }/*update_viewer_forward();*/
 
 static void update_viewer_reply_or_forward(GtkButton *update_button){
-	gboolean okay_to_send=TRUE;
 	if(G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && !online_service_request_selected_update_get_user_name())
 		update_viewer_beep();
 	
-	if(update_button!=update_viewer->forward_update_button) okay_to_send=online_service_request_selected_update_reply();
-	else okay_to_send=online_service_request_selected_update_forward();
+	gboolean okay_to_send=TRUE;
+	if(online_service_request_selected_update_get_user_name()){
+		if(update_button!=update_viewer->forward_update_button) okay_to_send=online_service_request_selected_update_reply();
+		else okay_to_send=online_service_request_selected_update_forward();
+	}
 	
 	if(!( G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && okay_to_send ))
 		return;
