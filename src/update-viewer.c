@@ -991,20 +991,14 @@ static void update_viewer_reply_or_forward(GtkButton *update_button){
 	if(G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && !online_service_request_selected_update_get_user_name())
 		update_viewer_beep();
 	
-	gboolean okay_to_send=TRUE;
-	if(online_service_request_selected_update_get_user_name()){
-		if(update_button!=update_viewer->forward_update_button) okay_to_send=online_service_request_selected_update_reply();
-		else okay_to_send=online_service_request_selected_update_forward();
-	}
-	
-	if(!( G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && okay_to_send ))
-		return;
-	
-	update_viewer_sexy_send(NULL, NULL);
+	if(update_button!=update_viewer->forward_update_button)
+		online_service_request_selected_update_reply();
+	else
+		online_service_request_selected_update_forward();
 }/*update_viewer_reply_or_forward(button);*/
 
 void update_viewer_send(GtkWidget *activated_widget){
-	if( G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) || activated_widget==GTK_WIDGET(update_viewer->sexy_entry) )
+	if( G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && activated_widget==GTK_WIDGET(update_viewer->sexy_entry) && online_service_request_selected_update_get_user_name() )
 		return update_viewer_reply();
 	
 	if(!activated_widget){
