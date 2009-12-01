@@ -66,6 +66,8 @@
 
 const gchar *authors[] = {
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
+	"Aaron Taddei <aarontaddei@gmail.com>",
+	"Lord Drachenblut <lord.drachenblut@gmail.com>",
 	NULL
 };
 
