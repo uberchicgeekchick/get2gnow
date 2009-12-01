@@ -25,15 +25,6 @@
 
 G_BEGIN_DECLS
 
-#ifndef	G_STR_EMPTY
-#	define		G_STR_EMPTY(string)			((string) == NULL || (string)[0] == '\0')
-#endif
-
-
-#ifndef	G_STR_N_EMPTY
-#	define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
-#endif
-
 void get2gnow_program_deinit(void);
 
 G_END_DECLS

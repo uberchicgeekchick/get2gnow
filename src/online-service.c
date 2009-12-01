@@ -231,8 +231,7 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	service->user_name=g_strdup(user_name);
 	service->nick_name=g_strdup(service->nick_name);
 	
-	service->connected=service->has_loaded=FALSE;
-	service->authenticated=TRUE;
+	service->connected=service->has_loaded=service->authenticated=FALSE;
 	
 	service->session=NULL;
 	service->status=NULL;
@@ -487,29 +486,31 @@ gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *pa
 void online_service_best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
 	if(!service) return;
-	const gchar *user_name=user->user_name;
 	if(!user){
-		debug( "User %s's profile could not be found, on %s.  Their user name has most likely changed.  Though unlikely its possible the netwok connection may have been lost.  Unlikely because prior 'status' checks would have kept this method from being called.", user_name, service->guid );
-		if( online_service_best_friends_confirm_clean_up( service, user_name ) )
-			service->best_friends=g_slist_remove(service->best_friends, user_name);
-	}else if(! online_service_is_user_best_friend(service, user_name ) ){
-		debug( "Adding best friend %s, on %s to the best friends tree_store & GSList.", user_name, service->guid );
-		service->best_friends=g_slist_append( service->best_friends, g_strdup(user_name) );
+		debug( "User %s's profile could not be found, on %s.  Their user name has most likely changed.  Though unlikely its possible the netwok connection may have been lost.  Unlikely because prior 'status' checks would have kept this method from being called.", user->user_name, service->guid );
+		if( online_service_best_friends_confirm_clean_up( service, user->user_name ) )
+			service->best_friends=g_slist_remove(service->best_friends, user->user_name);
+		return;
+	}
+	
+	if(!online_service_is_user_best_friend(service, user->user_name)){
+		debug( "Adding best friend %s, on %s to the best friends tree_store & GSList.", user->user_name, service->guid );
+		service->best_friends=g_slist_append( service->best_friends, g_strdup(user->user_name) );
 		gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user->user_name );
 		gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 		online_service_update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 		online_service_update_ids_set( service, user_timeline, ( (newest_update_id>user->status->id) ?newest_update_id :user->status->id ), ( (unread_update_id>user->status->id) ?unread_update_id :user->status->id ), user->status->id );
 		uber_free(user_timeline);
-		online_service_best_friends_tree_store_append( service, user_name );
+		online_service_best_friends_tree_store_append( service, user->user_name );
 	}else{
-		debug( "Removing best friend %s, on %s from the best friends tree_store & GSList.", user_name, service->guid );
-		online_service_best_friends_tree_store_remove( service, user_name );
+		debug( "Removing best friend %s, on %s from the best friends tree_store & GSList.", user->user_name, service->guid );
+		online_service_best_friends_tree_store_remove( service, user->user_name );
 	}
 	
 	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
 	online_service_best_friends_save(service);
 	service->best_friends=g_slist_nth( service->best_friends, 0 );
-}/*online_service_best_friends_tree_store_update_check( online_service_wrapper, xml, user_name );*/
+}/*online_service_best_friends_tree_store_update_check( online_service_wrapper, xml, user->user_name );*/
 
 static void online_service_best_friends_tree_store_append( OnlineService *service, const gchar *user_name ){
 	if(!service) return;
@@ -634,7 +635,7 @@ void online_service_best_friends_tree_store_free( OnlineService *service, GtkTre
 void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func ){
 	if(!service) return;
 	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, user_name);
-	online_service_request( service, QUEUE, user_profile_uri, online_service_user_parser_func, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL );
+	online_service_request(service, QUEUE, user_profile_uri, online_service_user_parser_func, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL);
 	uber_free(user_profile_uri);
 }/*online_service_best_friend_fetch_profile( OnlineService *service, const gchar *user_name );*/
 
@@ -773,34 +774,18 @@ gboolean online_service_connect(OnlineService *service){
 	if(!( (service->session=soup_session_sync_new_with_options(SOUP_SESSION_MAX_CONNS_PER_HOST, 8, SOUP_SESSION_TIMEOUT, 20, SOUP_SESSION_IDLE_TIMEOUT, 20, NULL)) )){
 		debug("**ERROR:** Failed to creating a new soup session for '%s'.", service->guid);
 		service->session=NULL;
-		return (service->connected=(service->authenticated=FALSE));
+		return (service->connected=FALSE);
 	}
 	
 	debug("Adding authenticating callback for: '%s'. user_name: %s, password: %s", service->guid, service->user_name, service->password);
 	g_signal_connect(service->session, "authenticate", (GCallback)online_service_http_authenticate, service);
 	
-/*#ifdef GNOME_ENABLE_DEBUG
-	
-	SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_HEADERS, -1);
-	soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(logger));
-	g_object_unref(logger);
-	
-#else
-	
-	IF_DEBUG{
-		SoupLogger *logger=soup_logger_new(SOUP_LOGGER_LOG_HEADERS, -1);
-		soup_session_add_feature(service->session, SOUP_SESSION_FEATURE(logger));
-		g_object_unref(logger);
-	}
-	
-#endif*/
-	
 	online_service_cookie_jar_open(service);
 	
-	return (service->connected=(service->authenticated=TRUE));
+	return (service->connected=TRUE);
 	
 	proxy_attach_online_service(service);
-}/*online_service_connect*/
+}/*online_service_connect(service);*/
 
 static void online_service_cookie_jar_open(OnlineService *service){
 	if(!service) return;
@@ -819,7 +804,7 @@ static void online_service_cookie_jar_open(OnlineService *service){
 	
 	uber_free(cookie_jar_filename);
 	uber_object_unref(cookie_jar);
-}/*online_servce_open_cookie_jar*/
+}/*online_servce_open_cookie_jar(service);*/
 
 /* Login to service. */
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection){
@@ -832,7 +817,6 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 		return FALSE;
 	}
 	
-	if(!service->authenticated)	return FALSE;
 	if(!online_service_refresh(service)) return FALSE;
 	
 	statusbar_printf("Connecting to %s...", service->key);
@@ -868,14 +852,13 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 	}else{
 		debug("Logged on to <%s> succesfully.", service->guid);
 		statusbar_printf("Logged on to <%s> succesfully.", service->guid);
-		service->authenticated=service->enabled=TRUE;
-		online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
+		service->authenticated=TRUE;
 	}
 	
 	uber_free(error_message);
 	
 	return NULL;
-}/*online_service_login_check*/
+}/*online_service_login_check(service->session, xml, online_service_wrapper);*/
 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
@@ -887,9 +870,7 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, So
 	if(!user){
 		debug("Failed to validate user profile for <%s>.  Please check your user name and/or password.  %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		service->nick_name=g_strdup(service->user_name);
-		service->has_loaded=FALSE;
-		service->authenticated=FALSE;
-		service->enabled=FALSE;
+		service->has_loaded=service->authenticated=FALSE;
 		return;
 	}
 	service->connected=service->authenticated=TRUE;
@@ -897,7 +878,7 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, So
 	service->nick_name=g_strdup(user->nick_name);
 	debug("Setting nick_name for: %s to %s.", service->key, service->nick_name);
 	user_free(user);
-}/*online_service_set_profile(user);*/
+}/*online_service_set_profile(online_service_wrapper, xml, user);*/
 
 static void online_service_http_authenticate(SoupSession *session, SoupMessage *xml, SoupAuth *auth, gboolean retrying, OnlineService *service){
 	if(!service) return;
@@ -931,14 +912,13 @@ static void online_service_http_authenticate(SoupSession *session, SoupMessage *
 	debug("Authenticating OnlineService: [%s] Attempt #%d of %d maximum allowed attempts. Username: [%s]; Password: [%s]; Server: [%s].", service->key, service->logins, ONLINE_SERVICE_MAX_REQUESTS, service->user_name, service->password, service->uri);
 	soup_auth_update(auth, xml, "WWW-Authenticate");
 	soup_auth_authenticate(auth, service->user_name, service->password);
-	service->authenticated=TRUE;
 }/*online_service_http_authenticate(service);*/
 
 gboolean online_service_refresh(OnlineService *service){
 	if(!service) return FALSE;
-	if(service->enabled && service->connected) return TRUE;
-	
 	if(!(service->enabled && service->auto_connect)) return FALSE;
+	
+	if(service->connected) return TRUE;
 	
 	if(online_service_reconnect(service) && online_service_login(service, FALSE)){
 		debug("Reconnected to: %s.", service->key);
@@ -965,7 +945,7 @@ gboolean online_service_validate_session(OnlineService *service, const gchar *re
 
 void online_service_disconnect(OnlineService *service, gboolean no_state_change){
 	if(!service) return;
-	if(!(service->session && service->authenticated)) return;
+	if(!(service->session && service->enabled && service->connected)) return;
 
 	debug("Closing %s's connection to: %s", service->guid, service->uri);
 	if(service->session){
@@ -979,7 +959,7 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 	service->logins=0;
 	debug("Disconnected from OnlineService [%s].", service->guid);
 	online_services_decrement_connected(service->guid, no_state_change);
-}/*online_service_disconnect*/
+}/*online_service_disconnect(service, TRUE|FALSE);*/
 
 gboolean online_service_reconnect(OnlineService *service){
 	if(!service) return FALSE;
@@ -997,6 +977,7 @@ gchar *online_service_request_uri_create(OnlineService *service, const gchar *ur
 }/*online_service_request_uri_create(service, uri);*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+	if(!service) return NULL;
 	if(!( G_STR_N_EMPTY(uri) && service->enabled )) return NULL;
 	
 	gchar *new_uri=online_service_request_uri_create(service, uri);
@@ -1004,12 +985,13 @@ SoupMessage *online_service_request(OnlineService *service, RequestMethod reques
 	SoupMessage *xml=online_service_request_uri(service, request, (const gchar *)new_uri, 0, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	g_free(new_uri);
 	return xml;
-}/*online_service_request*/
+}/*online_service_request(service, QUEUE, API_LOGIN, NULL, online_service_login_check, API_LOGIN, NULL);*/
 
 SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod request_method, const gchar *uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+	if(!service) return NULL;
 	if(!( G_STR_N_EMPTY(uri) && service->enabled )) return NULL;
 	
-	if(!(service->connected && service->authenticated)){
+	if(!(service->connected)){
 		if(!online_service_refresh(service)){
 			debug("Unable to load: %s.  You're not connected to %s.", uri, service->key);
 			statusbar_printf("Unable to load: %s.  You're not connected to: %s.", uri, service->key);
@@ -1094,7 +1076,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	uber_free(requested_uri);
 	return xml;
 	g_signal_connect(xml, "restarted", (GCallback)online_service_message_restarted, service);
-}/*online_service_request_uri*/
+}/*online_service_request_uri(service, QUEUE, API_LOGIN, 0, NULL, online_service_login_check, API_LOGIN, NULL);*/
 
 static void online_service_request_validate_uri(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
 	if(!service) return;

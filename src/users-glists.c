@@ -140,7 +140,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 		return NULL;
 	}
 	
-	debug_method("users_glist_get", "Loading users_glist; users_glist_get_which type: %s. page #%d; on pass: #%d.", users_glist_get_which_to_string(users_glist_get_which), page, which_pass );
+	debug("Loading users_glist; users_glist_get_which type: %s. page #%d; on pass: #%d.", users_glist_get_which_to_string(users_glist_get_which), page, which_pass );
 	
 	GList *users=NULL;
 	if( (!fetching_users) && (users=users_glist_check( users_glist_get_which, refresh, func)) )
@@ -165,7 +165,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	}
 	
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
-	debug_method("users_glist_get", "Downloading %s page #%d(pass #%d).", users_glist_get_which_str, page, which_pass );
+	debug("Downloading %s page #%d(pass #%d).", users_glist_get_which_str, page, which_pass );
 	main_window_statusbar_printf("Please wait while %s downloads your %s(page #%d on pass #%d).", _(GETTEXT_PACKAGE), users_glist_get_which_str, page, which_pass );
 	
 	debug("Getting users_glist; uri: [%s]; page: %d; pass: %d; users_glist_get_which type: %s", uri, page, which_pass, users_glist_get_which_str );
@@ -189,12 +189,12 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboole
 		switch(users_glist_get_which){
 			case GetFriends:
 				if(!service->friends) break;
-				debug_method("users_glist_get", "Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
+				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
 				users=g_list_sort(service->friends, (GCompareFunc)users_glists_sort_by_user_name);
 				break;
 			case GetFollowers:
 				if(!service->followers) break;
-				debug_method("users_glist_get", "Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
+				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
 				users=g_list_sort(service->followers, (GCompareFunc)users_glists_sort_by_user_name);
 				break;
 			case GetBoth:
@@ -206,7 +206,7 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboole
 					if(which_pass!=1) which_pass=1;
 					break;
 				}
-				debug_method("users_glist_get", "Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
+				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
 				if(!service->friends_and_followers){
 					service->friends_and_followers=g_list_alloc();
 					service->friends_and_followers=g_list_concat(service->friends, service->followers);

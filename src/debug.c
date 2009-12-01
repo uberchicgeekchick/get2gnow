@@ -92,13 +92,13 @@ static gboolean debug_devel=FALSE;
 
 static gchar **debug_domains=NULL;
 static gchar *debug_last_domains=NULL;
-static gchar *debug_last_domain=NULL;
-static gint debug_domains_source_code_index=0;
+static gchar *debug_last_source_code=NULL;
+static gchar *debug_last_method=NULL;
 
 static gchar *debug_environmental_variable=NULL;
 static FILE *debug_log_fp=NULL;
-static const gchar *debug_log_filename=NULL;
-static const gchar *debug_log_filename_swp=NULL;
+static gchar *debug_log_filename=NULL;
+static gchar *debug_log_filename_swp=NULL;
 
 static gboolean debug_pause=FALSE;
 static gboolean debug_output=FALSE;
@@ -147,7 +147,7 @@ void debug_init(void){
 	
 	gchar *debug_package=g_utf8_strup(GETTEXT_PACKAGE, -1);
 	debug_environmental_variable=g_strdup_printf("%s_DEBUG", debug_package);
-	g_free(debug_package);
+	uber_free(debug_package);
 	
 	debug_log_filename=cache_file_touch("debug.log");
 	debug_log_filename_swp=g_strdup_printf("%s.swp", debug_log_filename);
@@ -170,14 +170,15 @@ void debug_deinit(void){
 	program_timeout_remove(&debug_timeout_id, "DEBUG environment testing.");
 	
 	fclose(debug_log_fp);
-	g_free((gchar *)debug_log_filename);
-	g_free((gchar *)debug_log_filename_swp);
+	uber_free(debug_log_filename);
+	uber_free(debug_log_filename_swp);
 	
-	g_free(debug_environmental_variable);
+	uber_free(debug_environmental_variable);
 	g_strfreev(debug_environment);
 	
-	if(debug_last_domains) g_free(debug_last_domains);
-	if(debug_last_domain) g_free(debug_last_domain);
+	if(debug_last_domains) uber_free(debug_last_domains);
+	if(debug_last_source_code) uber_free(debug_last_source_code);
+	if(debug_last_method) uber_free(debug_last_method);
 	if(debug_domains) g_strfreev(debug_domains);
 }/*debug_deinit();*/
 
@@ -204,14 +205,14 @@ static void debug_environment_check(void){
 static void debug_domains_check(const gchar *domains){
 	if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;
 	
-	if(debug_last_domains) g_free(debug_last_domains);
+	if(debug_last_domains) uber_free(debug_last_domains);
 	debug_last_domains=g_strdup(domains);
 	
 	if(debug_domains) g_strfreev(debug_domains);
 	debug_domains=g_strsplit(domains, ":", -1);
-	debug_domains_source_code_index=g_strv_length(debug_domains)-1;
 	
-	if(debug_last_domain) uber_free(debug_last_domain);
+	if(debug_last_source_code) uber_free(debug_last_source_code);
+	if(debug_last_method) uber_free(debug_last_method);
 }/*debug_domains_check(domain);*/
 
 static FILE *debug_log_rotate(void){
@@ -243,12 +244,9 @@ static FILE *debug_log_rotate(void){
 	return debug_log_fp;
 }/*debug_log_rotate();*/
 
-void debug_printf(const gchar *domains, const gchar *method, const gchar *msg, ...){
+void debug_printf(const gchar *domains, const gchar *source_code, const gchar *method, const gint line_number, const gchar *msg, ...){
 	if(!(domains && msg)) return;
 	while(debug_pause){}
-	
-	time_t current_time=time(NULL);
-	const gchar *datetime=ctime(&current_time);
 	
 	static gboolean output_started=FALSE;
 	FILE *debug_output_fp=NULL;
@@ -268,31 +266,41 @@ void debug_printf(const gchar *domains, const gchar *method, const gchar *msg, .
 				g_fprintf(debug_output_fp, "\n");
 			}
 			gboolean error=FALSE, notice=FALSE;
-			gchar *debug_in_method=(G_STR_N_EMPTY(method) ? g_strdup_printf("in %s' method: %s", debug_domains[debug_domains_source_code_index], method) :g_strdup(debug_domains[debug_domains_source_code_index]));
 			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
-				g_fprintf(stderr, "\n**%s %s %s**: ", _(GETTEXT_PACKAGE), (error ?_("error") :_("notice") ), debug_in_method );
+				g_fprintf(stderr, "\n**%s %s in [%s]'s; in method: %s; on line: %d**: ", _(GETTEXT_PACKAGE), (error ?_("error") :_("notice") ), source_code, method, line_number );
 				va_list args;
 				va_start(args, msg);
 				g_vfprintf(stderr, g_strrstr(msg, ":** ")+sizeof(":**"), args);
 				va_end(args);
-				g_fprintf(stderr, " @ %s", datetime);
+				g_fprintf(stderr, ". @ %s %s\n", __DATE__, __TIME__);
 			}
 			
-			if(!( debug_last_domain && g_str_equal(debug_last_domain, debug_domains[debug_domains_source_code_index]) )){
-				if(debug_last_domain) g_free(debug_last_domain);
-				debug_last_domain=g_strdup(debug_domains[debug_domains_source_code_index]);
-				g_fprintf(debug_output_fp, "\n%s:\n\t\t", debug_in_method);
-			}else if(G_STR_N_EMPTY(method))
-				g_fprintf(debug_output_fp, "\t\tmethod: %s:\t", method);
-			else
-				g_fprintf(debug_output_fp, "\t\t");
+			const gchar *newline;
+			const gchar *spacer;
+			if(!( debug_last_source_code && g_str_equal(debug_last_source_code, source_code) )){
+				if(debug_last_source_code) uber_free(debug_last_source_code);
+				debug_last_source_code=g_strdup(source_code);
+				g_fprintf(debug_output_fp, "\n\n[%s]; ", source_code);
+				newline="";
+				spacer="";
+			}else{
+				newline="\n";
+				spacer="\t";
+			}
+			
+			if(!( debug_last_method && g_str_equal(debug_last_method, method) )){
+				if(debug_last_method) uber_free(debug_last_method);
+				debug_last_method=g_strdup(method);
+				g_fprintf(debug_output_fp, "%s%s%sin method: %s; on line: %d:", newline, newline, spacer, method, line_number);
+			}else
+				g_fprintf(debug_output_fp, "%s%son line: %d:", newline, spacer, line_number);
+			g_fprintf(debug_output_fp, "\n\t\t");
 			
 			va_list args;
 			va_start(args, msg);
 			g_vfprintf(debug_output_fp, msg, args);
 			va_end(args);
-			g_fprintf(debug_output_fp, " @ %s", datetime);
-			uber_free(debug_in_method);
+			g_fprintf(debug_output_fp, " @ %s %s", __DATE__, __TIME__);
 			
 			return;
 		}

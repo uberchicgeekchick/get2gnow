@@ -79,7 +79,7 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		debug_method("gtkbuilder_get_path", "%sLoading GtkBuildable UI from: [%s].", debug_prefix, gtkbuilder_ui_filename);
+		debug("%sLoading GtkBuildable UI from: [%s].", debug_prefix, gtkbuilder_ui_filename);
 		return gtkbuilder_ui_filename;
 	}
 	
@@ -89,7 +89,7 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		debug_method("gtkbuilder_get_file", "%sLoading GtkBuildable UI from: [%s].", debug_prefix, gtkbuilder_ui_filename);
+		debug("%sLoading GtkBuildable UI from: [%s].", debug_prefix, gtkbuilder_ui_filename);
 		return gtkbuilder_ui_filename;
 	}
 	uber_free(gtkbuilder_ui_filename);

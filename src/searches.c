@@ -184,7 +184,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 }/*search_parse_results(service, xml, uri, uberchick_tree_view);*/
 
 gchar *searches_format_timeline_from_uri(const gchar *uri){
-	debug_method("searches_format_timeline_from_uri", "Parsing searches timeline: from uri: <%s>.", uri);
+	debug("Parsing searches timeline: from uri: <%s>.", uri);
 	gchar **uri_split=g_strsplit_set( g_strrstr(uri, "/"), "?=", 3);
 	gchar *search_phrase_encoded;
 	if(!strstr(uri_split[2], "%"))
@@ -197,7 +197,7 @@ gchar *searches_format_timeline_from_uri(const gchar *uri){
 	gchar *timeline=g_strdup_printf("%s%s", uri_split[0], search_phrase_encoded);
 	g_strfreev(uri_split);
 	uber_free(search_phrase_encoded);
-	debug_method("searches_format_timeline_from_uri", "Parsed searches timeline: <%s>; from uri: <%s>.", timeline, uri);
+	debug("Parsed searches timeline: <%s>; from uri: <%s>.", timeline, uri);
 	return timeline;
 }/*gchar *timeline=searches_format_timeline_from_uri(uri);*/
 

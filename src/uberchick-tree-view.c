@@ -747,7 +747,7 @@ static void uberchick_tree_view_update_age(UberChickTreeView *uberchick_tree_vie
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
 			if( !index_updated && this->index>-1 && selected_index>-1 && this->tree_store_index>-1 && this->index==selected_index ){
 				index_updated=TRUE;
-				debug_method("uberchick_tree_view_update_age", "Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, -1 );
+				debug("Updating index for <%s>'s %s(timeline %s), previous index: %d; new index: %d.", service->guid, this->monitoring_string, this->timeline, this->index, -1 );
 				this->index=-1;
 				
 				if(uberchick_tree_view_scroll_to_top(uberchick_tree_view) )

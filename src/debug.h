@@ -40,24 +40,13 @@ G_BEGIN_DECLS
 #endif
 
 
-#ifndef debug_method
-#	if defined(G_HAVE_ISO_VARARGS)
-#		define debug_method(method, ...)	debug_printf(DEBUG_DOMAINS, method, __VA_ARGS__)
-#	elif defined(G_HAVE_GNUC_VARARGS)
-#		define debug_method(method, fmt...)	debug_printf(DEBUG_DOMAINS, method, fmt)
-#	else
-#		define debug_method(method, x)	debug_printf(DEBUG_DOMAINS, method, x)
-#	endif
-#endif
-
-
 #ifndef debug
 #	if defined(G_HAVE_ISO_VARARGS)
-#		define debug(...)	debug_printf(DEBUG_DOMAINS, NULL, __VA_ARGS__)
+#		define debug(...)	debug_printf(DEBUG_DOMAINS, __FILE__, __func__, __LINE__, __VA_ARGS__)
 #	elif defined(G_HAVE_GNUC_VARARGS)
-#		define debug(fmt...)	debug_printf(DEBUG_DOMAINS, NULL, fmt)
+#		define debug(fmt...)	debug_printf(DEBUG_DOMAINS, __FILE__, __func__, __LINE__, fmt)
 #	else
-#		define debug(x)		debug_printf(DEBUG_DOMAINS, NULL, x)
+#		define debug(x)		debug_printf(DEBUG_DOMAINS, __FILE__, __func__, __LINE__, x)
 #	endif
 #endif
 
@@ -75,7 +64,7 @@ void debug_init(void);
 gboolean debug_if_devel(void);
 gboolean debug_check_devel(const gchar *debug_environmental_value);
 
-void debug_printf(const gchar *domain, const gchar *method, const gchar *msg, ...) G_GNUC_PRINTF(3, 4);
+void debug_printf(const gchar *domain, const gchar *source_code, const gchar *method, const gint line_number, const gchar *msg, ...) G_GNUC_PRINTF(5, 6);
 
 gboolean debug_if_domain(const gchar *domain);
 

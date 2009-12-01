@@ -171,23 +171,29 @@ static gboolean online_service_wrapper_process(OnlineServiceWrapper *online_serv
 		return FALSE;
 	}
 	
+	gboolean queued=TRUE;
 	if(service->processing)
-		return online_service_wrapper_queue(online_service_wrapper);
+		return (queued=online_service_wrapper_queue(online_service_wrapper));
 	if( !service->authenticated && !g_strrstr(online_service_wrapper->requested_uri, API_LOGIN) )
-		return online_service_wrapper_queue(online_service_wrapper);
-	else if(service->authenticated && !g_strrstr(online_service_wrapper->requested_uri, API_LOGIN) && !(service->has_loaded && service->nick_name) ){
-		const gchar *profile_auth_test;
-		if(!( (profile_auth_test=g_strrstr(online_service_wrapper->requested_uri, service->user_name)) && g_strrstr(profile_auth_test, ".xml") ))
-			if(online_service_wrapper_queue(online_service_wrapper))
-				return TRUE;
-	}
+		return (queued=online_service_wrapper_queue(online_service_wrapper));
+	else
+		queued=FALSE;
+	if(queued && !(service->has_loaded && service->nick_name) ){
+		gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, service->user_name);
+		if(!g_strrstr(online_service_wrapper->requested_uri, user_profile_uri) )
+			queued=online_service_wrapper_queue(online_service_wrapper);
+		uber_free(user_profile_uri);
+		debug("OnlineService: <%s> is re-queuing: [%s] to be re-processed in %d00 milliseconds.", service->key, g_strrstr(online_service_wrapper->requested_uri, "/"), online_service_wrapper->process_timeout);
+		return queued;
+	}else
+		queued=FALSE;
 	
 	service->processing=TRUE;
 	service->processing_queue=g_list_append(service->processing_queue, online_service_wrapper);
 	if(online_service_wrapper->process_timeout_id) online_service_wrapper->process_timeout_id=0;
 	if(service->processing_timer > 0) service->processing_timer--;
-	debug("OnlineService: <%s>'s began processing: <%s>.", online_service_wrapper->service->guid, online_service_wrapper->requested_uri);
-	debug("Adding libsoup request to service: <%s> libsoup's message queue.", service->guid);
+	debug("OnlineService: <%s> has began processing: <%s>.", online_service_wrapper->service->guid, g_strrstr(online_service_wrapper->requested_uri, "/") );
+	debug("Adding libsoup request to service: <%s> libsoup's message queue.", service->guid );
 	soup_session_queue_message(online_service_wrapper->service->session, online_service_wrapper->xml, (SoupSessionCallback)online_service_wrapper_callback, online_service_wrapper);
 	
 	return FALSE;
@@ -211,9 +217,9 @@ static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_servic
 	}
 	
 	if(online_service_wrapper->process_timeout_id) return TRUE;
-	if(!online_service_wrapper->process_timeout) online_service_wrapper->process_timeout=++service->processing_timer;
+	if(!online_service_wrapper->process_timeout) online_service_wrapper->process_timeout=service->processing_timer++;
 	online_service_wrapper->process_timeout_id=g_timeout_add((online_service_wrapper->process_timeout)*100, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
-	debug("OnlineService: <%s>'s re-queuing the requested uri: <%s> to be re-processed in %d00 milliseconds.", service->key, online_service_wrapper->requested_uri, online_service_wrapper->process_timeout);
+	debug("OnlineService: <%s> is already processing another request.  Its request for: [%s] has been requeued and will be processed in %d00 milliseconds.", service->key, online_service_wrapper->requested_uri, online_service_wrapper->process_timeout);
 	return TRUE;
 }/*online_service_wrapper_queue(online_service_wrapper);*/
 

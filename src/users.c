@@ -361,7 +361,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 	status->user=user_new(service, getting_followers);
 	
 	/* Begin 'status' or 'direct-messages' loop */
-	debug_method( "user_status_parse_from_atom_entry", "Parsing searches result node: %s", root_element->name);
+	debug("Parsing searches result node: %s", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
 		
@@ -370,11 +370,11 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 			continue;
 		}
 		
-		debug_method( "user_status_parse_from_atom_entry", "Parsing searches.  Parsing current node: %s.", current_node->name );
+		debug("Parsing searches.  Parsing current node: %s.", current_node->name );
 		if(g_str_equal(current_node->name, "id")){
 			status->id=strtod((g_strrstr(content, ":")+1), NULL);
 			status->id_str=gdouble_to_str(status->id);
-			debug_method( "user_status_parse_from_atom_entry", "Parsing searches Update ID: %s(=%f).", status->id_str, status->id);
+			debug("Parsing searches Update ID: %s(=%f).", status->id_str, status->id);
 		}else if(g_str_equal(current_node->name, "published") || g_str_equal(current_node->name, "updated")){
 			if( status->created_at_str && !g_str_equal(status->created_at_str, content) ){
 				uber_free(status->created_at_str);
@@ -385,36 +385,36 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 			user_status_format_dates(status);
 		}else if(g_str_equal(current_node->name, "title")){
 			status->text=g_strdup(content);
-			debug_method( "user_status_parse_from_atom_entry", "Parsing searches update: %s; from: %s.", status->text, current_node->name );
+			debug("Parsing searches update: %s; from: %s.", status->text, current_node->name );
 		}else if(g_str_equal(current_node->name, "link")){
 			if(content) uber_free(content);
 			xmlAttr *attr_node;
-			debug_method( "user_status_parse_from_atom_entry", "Parsing searches link node searching for type=\"image/png\".");
+			debug("Parsing searches link node searching for type=\"image/png\".");
 			for( attr_node=current_node->properties; attr_node; attr_node=attr_node->next ){
-				debug_method( "user_status_parse_from_atom_entry", "Parsing searches node: %s looking for type.", attr_node->name );
+				debug("Parsing searches node: %s looking for type.", attr_node->name );
 				if(g_str_equal(attr_node->name, "type")) break;
 			}
 			if(!attr_node) continue;
 			
 			for(temp_node=attr_node->children; temp_node; temp_node=temp_node->next){
 				content=(gchar *)xmlNodeGetContent(temp_node);
-				debug_method( "user_status_parse_from_atom_entry", "Parsing searches node: %s looking for image/png.", content );
+				debug("Parsing searches node: %s looking for image/png.", content );
 				if(g_str_equal(content, "image/png")) break;
 				uber_free(content);
 			}
 			if(content) uber_free(content);
 			if(!temp_node) continue;
 			
-			debug_method( "user_status_parse_from_atom_entry", "Parsed searches type and image/png nodes.  Now searching href node.");
+			debug("Parsed searches type and image/png nodes.  Now searching href node.");
 			for( attr_node=attr_node->next; attr_node; attr_node=attr_node->next ){
-				debug_method( "user_status_parse_from_atom_entry", "Parsing searches node %s looking for href.", attr_node->name );
+				debug("Parsing searches node %s looking for href.", attr_node->name );
 				if(g_str_equal(attr_node->name, "href") ) break;
 			}
 			if(!attr_node) continue;
 			
-			debug_method( "user_status_parse_from_atom_entry", "Parsed searches href nodes.  Setting avatar's uri.");
+			debug("Parsed searches href nodes.  Setting avatar's uri.");
 			status->user->image_uri=(gchar *)xmlNodeGetContent(attr_node->children);
-			debug_method( "user_status_parse_from_atom_entry", "Parsing searches nodes finished.  Setting user->image: %s.", status->user->image_uri );
+			debug("Parsing searches nodes finished.  Setting user->image: %s.", status->user->image_uri );
 			
 			attr_node=NULL;
 			temp_node=NULL;
@@ -423,9 +423,9 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 			status->source=g_strdup(content);
 		}else if(g_str_equal(current_node->name, "author")){
 			if(content) uber_free(content);
-			debug_method( "user_status_parse_from_atom_entry", "Parsing searches user_name & user_nick from: %s.", current_node->name );
+			debug("Parsing searches user_name & user_nick from: %s.", current_node->name );
 			for( temp_node=current_node->children; temp_node; temp_node=temp_node->next ){
-				debug_method( "user_status_parse_from_atom_entry", "Parsing searches for user_name & user_nick: %s.", temp_node->name );
+				debug("Parsing searches for user_name & user_nick: %s.", temp_node->name );
 				if(g_str_equal(temp_node->name, "name") ) break;
 			}
 			if(content) uber_free(content);
@@ -436,7 +436,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 				continue;
 			}
 			
-			debug_method( "user_status_parse_from_atom_entry", "Parsing searches user_name & user_nick from content: %s.", content );
+			debug("Parsing searches user_name & user_nick from content: %s.", content );
 			if(!g_strrstr(content, "(")){
 				status->user->user_name=g_markup_printf_escaped("%s", content);
 				status->user->nick_name=g_markup_printf_escaped("%s", content);
@@ -453,7 +453,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 				}
 				g_strfreev(user_data);
 			}
-			debug_method( "user_status_parse_from_atom_entry", "Parsed searches user_name: %s; user_nick: %s.", status->user->user_name, status->user->nick_name);
+			debug("Parsed searches user_name: %s; user_nick: %s.", status->user->user_name, status->user->nick_name);
 			temp_node=NULL;
 		}
 		if(content) uber_free(content);
