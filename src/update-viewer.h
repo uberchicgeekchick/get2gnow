@@ -96,7 +96,10 @@ void update_viewer_set_embed_toggle_and_image(void);
 
 SexySpellEntry *update_viewer_sexy_entry_get_widget(void);
 void update_viewer_sexy_select(void);
+void update_viewer_select_all(void);
 
+gboolean update_viewer_sexy_entry_is_empty(void);
+gboolean update_viewer_sexy_entry_clear(void);
 void update_viewer_sexy_set(gchar *text);
 void update_viewer_sexy_prefix_char(const char c);
 gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean uniq);
@@ -110,6 +113,7 @@ void update_viewer_new_update(void);
 void update_viewer_new_dm(void);
 void update_viewer_reply(void);
 void update_viewer_forward(void);
+void update_viewer_retweet(void);
 
 void update_viewer_hide_previous_updates(void);
 void update_viewer_show_previous_updates(void);

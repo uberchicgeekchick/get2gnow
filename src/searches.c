@@ -71,6 +71,7 @@
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
+#include "update-ids.h"
 #include "network.h"
 
 #include "users.types.h"
@@ -96,6 +97,8 @@
 
 /* Parse a timeline XML file */
 guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
+	const gchar	*timeline=g_strrstr(uri, "/");
+	
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -106,8 +109,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	
-	gchar *timeline=searches_format_timeline_from_uri(uri);
-	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
@@ -123,14 +125,13 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
 		xmlCleanupParser();
-		uber_free(timeline);
 		return 0;
 	}
 	
 	/* get tweets or direct messages */
 	debug("Parsing searches node %s.", root_element->name);
 	gboolean free_status;
-	for(current_node=root_element->children; current_node; current_node = current_node->next) {
+	for(current_node=root_element->children; current_node; current_node=current_node->next) {
 		if(!( current_node->type == XML_ELEMENT_NODE && g_str_equal(current_node->name, "entry") ))
 			continue;
 		
@@ -173,33 +174,14 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
 		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
-		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
+		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
-	uber_free(timeline);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
 	return new_updates;
 }/*search_parse_results(service, xml, uri, uberchick_tree_view);*/
-
-gchar *searches_format_timeline_from_uri(const gchar *uri){
-	debug("Parsing searches timeline: from uri: <%s>.", uri);
-	gchar **uri_split=g_strsplit_set( g_strrstr(uri, "/"), "?=", 3);
-	gchar *search_phrase_encoded;
-	if(!strstr(uri_split[2], "%"))
-		search_phrase_encoded=g_strdup_printf("_%s", uri_split[2]);
-	else{
-		gchar **search_phrase_parts=g_strsplit( uri_split[2], "%", -1 );
-		search_phrase_encoded=g_strjoinv("_", search_phrase_parts);
-		g_strfreev(search_phrase_parts);
-	}
-	gchar *timeline=g_strdup_printf("%s%s", uri_split[0], search_phrase_encoded);
-	g_strfreev(uri_split);
-	uber_free(search_phrase_encoded);
-	debug("Parsed searches timeline: <%s>; from uri: <%s>.", timeline, uri);
-	return timeline;
-}/*gchar *timeline=searches_format_timeline_from_uri(uri);*/
 
 /********************************************************************************
  *                                    eof                                       *

@@ -47,15 +47,16 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
-
 #ifndef __PREFERENCES_H__
 #define __PREFERENCES_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -64,10 +65,13 @@
 #include "program.h"
 
 G_BEGIN_DECLS
+#define	PREFS_TIMELINE_RELOAD_MINUTES			GCONF_PATH "/ui/tabs/reload"
 
 #define	PREFS_AUTOLOAD_DMS				GCONF_PATH "/ui/start-up/tabs/dms"
 #define	PREFS_AUTOLOAD_REPLIES				GCONF_PATH "/ui/start-up/tabs/replies"
 #define PREFS_AUTOLOAD_FOLLOWING			GCONF_PATH "/ui/start-up/tabs/following"
+
+#define	PREFS_UPDATES_HOME_TIMELINE			GCONF_PATH "/ui/start-up/tabs/additional_timeline"
 
 #define PREFS_NOTIFY_BEST_FRIENDS			GCONF_PATH "/notifications/best_friends"
 #define	PREFS_NOTIFY_DMS				GCONF_PATH "/notifications/dms"
@@ -76,10 +80,10 @@ G_BEGIN_DECLS
 #define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
 #define	PREFS_NOTIFY_BEEP				GCONF_PATH "/alerts/beep"
 
-#define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/update_viewer/url_expansion/disabled"
-#define	PREFS_URLS_EXPANSION_SELECTED_ONLY		GCONF_PATH "/update_viewer/url_expansion/selected_only"
-#define PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES	GCONF_PATH "/update_viewer/url_expansion/replace_with_titles"
-#define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/update_viewer/url_expansion/user_profiles"
+#define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/ui/update_viewer/uri_expansion/disabled"
+#define	PREFS_URLS_EXPANSION_SELECTED_ONLY		GCONF_PATH "/ui/update_viewer/uri_expansion/selected_only"
+#define PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES	GCONF_PATH "/ui/update_viewer/uri_expansion/replace_with_titles"
+#define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/ui/update_viewer/uri_expansion/user_profiles"
 
 #define	PREFS_DISABLE_SYSTEM_BELL			GCONF_PATH "/alerts/disable_system_bell"
 #define PREFS_UPDATE_VIEWER_DIALOG			GCONF_PATH "/ui/update_viewer/use_dialog"
@@ -98,12 +102,9 @@ G_BEGIN_DECLS
 #define	PREFS_UPDATES_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/faves"
 #define	PREFS_UPDATES_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 
-#define	PREFS_UPDATES_HOME_TIMELINE			GCONF_PATH "/updates/home_timeline"
-#define	PREFS_TIMELINE_RELOAD_MINUTES			GCONF_PATH "/updates/reload_timeline"
-
 #define	PREFS_UPDATES_REPLACE_ME_W_NICK			GCONF_PATH "/updates/replace_me_w_nick"
-#define PREFS_UPDATES_NO_PROFILE_LINK			GCONF_PATH "/updates/no_link_in_replies"
-#define	PREFS_UPDATES_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/direct_reply_only"
+#define PREFS_UPDATES_ADD_PROFILE_LINK			GCONF_PATH "/updates/reply/add_profile_link"
+#define	PREFS_UPDATES_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/reply/directly_to"
 
 #define	PREFS_SEARCH_HISTORY_UNIQUE_ONLY		GCONF_PATH "/search/history/unique_only"
 #define	PREFS_SEARCH_HISTORY_MAXIMUM			GCONF_PATH "/search/history/maximum"

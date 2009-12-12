@@ -120,7 +120,7 @@ void tabs_init(GtkNotebook *notebook){
 }/* tabs_init(main_window->private->tabs_notebook); */
 
 static UberChickTreeView *tabs_new_tab(const gchar *timeline, OnlineService *service ){
-	UberChickTreeView *uberchick_tree_view=uberchick_tree_view_new(timeline, service);
+	UberChickTreeView *uberchick_tree_view=uberchick_tree_view_new(gtk_notebook_get_n_pages(tabs->notebook), timeline, service);
 	
 	tabs->tabs=g_list_append(tabs->tabs, uberchick_tree_view);
 	tabs->tabs=g_list_last(tabs->tabs);
@@ -128,7 +128,7 @@ static UberChickTreeView *tabs_new_tab(const gchar *timeline, OnlineService *ser
 	tabs->tabs=g_list_first(tabs->tabs);
 	
 	gint page=gtk_notebook_append_page_menu(tabs->notebook, GTK_WIDGET(uberchick_tree_view_get_child(uberchick_tree_view)), GTK_WIDGET(uberchick_tree_view_get_tab(uberchick_tree_view)), GTK_WIDGET(uberchick_tree_view_get_menu(uberchick_tree_view)) );
-	uberchick_tree_view_set_page(uberchick_tree_view, page);
+	gtk_notebook_set_tab_label_packing(tabs->notebook, GTK_WIDGET(uberchick_tree_view), FALSE, FALSE, GTK_PACK_START);
 	gtk_notebook_set_current_page( tabs->notebook, page );
 	
 	return uberchick_tree_view;

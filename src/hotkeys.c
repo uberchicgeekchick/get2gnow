@@ -210,6 +210,12 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_N:	case GDK_n:
 					update_viewer_new_update();
 					return;
+				case GDK_K:	case GDK_k:
+					update_viewer_sexy_entry_clear();
+					return;
+				case GDK_L:	case GDK_l:
+					update_viewer_select_all();
+					return;
 				case GDK_Q:	case GDK_q:
 					gtk_main_quit();
 					return;

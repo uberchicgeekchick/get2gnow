@@ -54,8 +54,6 @@
 #define _THREAD_SAFE
 
 
-
-
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
@@ -70,6 +68,7 @@
 #include "program.h"
 
 #include "www.h"
+#include "update-ids.h"
 
 #include "online-services.defines.h"
 #include "online-services-typedefs.h"
@@ -152,7 +151,6 @@ MicroBloggingServices MicroBloggingServicesList[]={
 };
 
 #define ONLINE_SERVICE_PREFIX				GCONF_PATH "/online-services/%s"
-#define ONLINE_SERVICE_IDS_TWEETS			GCONF_PATH "/online-services/xml-cache/archive/since-ids/%s%s/%s"
 
 #define	ONLINE_SERVICE_PASSWORD				ONLINE_SERVICE_PREFIX "/password"
 #define	ONLINE_SERVICE_AUTO_CONNECT			ONLINE_SERVICE_PREFIX "/auto_connect"
@@ -172,7 +170,7 @@ MicroBloggingServices MicroBloggingServicesList[]={
 #endif
 
 
-#define	DEBUG_DOMAINS	"OnlineServices:Network:Tweets:Requests:Users:Authentication:Settings:Setup:Start-Up:online-service.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Network:Updates:Requests:Users:Authentication:Settings:Setup:Start-Up:online-service.c"
 #include "debug.h"
 
 
@@ -498,8 +496,8 @@ void online_service_best_friends_tree_store_update_check(OnlineServiceWrapper *o
 		service->best_friends=g_slist_append( service->best_friends, g_strdup(user->user_name) );
 		gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user->user_name );
 		gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-		online_service_update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-		online_service_update_ids_set( service, user_timeline, ( (newest_update_id>user->status->id) ?newest_update_id :user->status->id ), ( (unread_update_id>user->status->id) ?unread_update_id :user->status->id ), user->status->id );
+		update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+		update_ids_set( service, user_timeline, ( (newest_update_id>user->status->id) ?newest_update_id :user->status->id ), ( (unread_update_id>user->status->id) ?unread_update_id :user->status->id ), user->status->id );
 		uber_free(user_timeline);
 		online_service_best_friends_tree_store_append( service, user->user_name );
 	}else{
@@ -520,7 +518,7 @@ static void online_service_best_friends_tree_store_append( OnlineService *servic
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	gdouble id_best_friend_newest_update=0.0, id_best_friend_unread_update=0.0, id_best_friend_oldest_update=0.0;
 	gchar *user_timeline=g_strdup_printf("/%s.xml", user_name );
-	online_service_update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_unread_update, &id_best_friend_oldest_update );
+	update_ids_get( service, user_timeline, &id_best_friend_newest_update, &id_best_friend_unread_update, &id_best_friend_oldest_update );
 	uber_free(user_timeline);
 	gtk_tree_store_append( tree_store, iter, NULL );
 	gtk_tree_store_set(
@@ -639,123 +637,6 @@ void online_service_fetch_profile( OnlineService *service, const gchar *user_nam
 	uber_free(user_profile_uri);
 }/*online_service_best_friend_fetch_profile( OnlineService *service, const gchar *user_name );*/
 
-gboolean online_service_update_ids_check( OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest ){
-	if(!service) return FALSE;
-	gboolean	ids_set=FALSE;
-	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	debug("Checking <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f.", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
-	if( update_id > newest_update_id ){
-		ids_set=TRUE;
-		newest_update_id=update_id;
-	}
-	
-	if( update_id > unread_update_id ){
-		if(!ids_set) ids_set=TRUE;
-		unread_update_id=update_id;
-	}
-	
-	if( check_oldest && update_id > oldest_update_id ){
-		if(!ids_set) ids_set=TRUE;
-		oldest_update_id=update_id;
-	}
-	
-	if(ids_set){
-		debug("Saving <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f.", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
-		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
-	}
-	
-	return ids_set;
-}/*online_service_update_ids_check( service, timeline, index_update_id, FALSE );*/
-
-void online_service_update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id){
-	if(!service) return;
-	debug("Retrieving update IDs for [%s] on <%s>.", timeline, service->guid );
-	online_service_update_id_get( service, timeline, "newest", newest_update_id );
-	online_service_update_id_get( service, timeline, "unread", unread_update_id );
-	online_service_update_id_get( service, timeline, "oldest", oldest_update_id );
-	debug("Retrieved update IDs for [%s] on <%s>.", timeline, service->guid );
-}/*online_service_update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
-
-void online_service_update_id_get( OnlineService *service, const gchar *timeline, const gchar *key, gdouble *update_id ){
-	if(!service) return;
-	/* INFO:
-	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_IDS_TWEETS:
-	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
-	 * 				service->key			/timeline.xml	(newest|oldest)
-	 */
-	if(G_STR_EMPTY(timeline)) return;
-	gchar *timeline_xml=NULL;
-	gboolean free_timeline=FALSE;
-	if(!g_strrstr(timeline, "?"))
-		timeline_xml=g_strrstr(timeline, "/");
-	else{
-		free_timeline=TRUE;
-		gchar **uri_split=g_strsplit_set( g_strrstr(timeline, "/"), "?=", 3);
-		timeline_xml=g_strdup_printf("%s/%s", uri_split[0], uri_split[2]);
-		g_strfreev(uri_split);
-	}
-	debug("Getting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
-	gchar *prefs_path=NULL, *swap_id_str=NULL;
-	gdouble swap_id;
-	gboolean success;
-	
-	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline_xml, key);
-	success=gconfig_get_string(prefs_path, &swap_id_str);
-	uber_free(prefs_path);
-	
-	if(!(success && swap_id_str)) swap_id=0.0;
-	else{
-		swap_id=strtod(swap_id_str, NULL);
-		uber_free(swap_id_str);
-	}
-	if(swap_id>0) *update_id=swap_id;
-	debug("Retrieved %s update ID: %s for [%s] on <%s>.", key, gdouble_to_str(*update_id), timeline_xml, service->uri );
-	if(free_timeline)
-		uber_free(timeline_xml);
-}/*online_service_update_id_get( service, "/friends.xml", "newest", &newest_update_id );*/
-
-void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id ){
-	if(!service) return;
-	debug("Saving update IDs for [%s] on <%s>.", timeline, service->guid );
-	online_service_update_id_set( service, timeline, "newest", newest_update_id );
-	online_service_update_id_set( service, timeline, "unread", unread_update_id );
-	online_service_update_id_set( service, timeline, "oldest", oldest_update_id );
-	debug("Savved update IDs for [%s] on <%s>.", timeline, service->guid );
-}/*online_service_update_ids_set(service, "/friends.xml", id_newest_update, id_oldest_update);*/
-
-void online_service_update_id_set( OnlineService *service, const gchar *timeline, const gchar *key, gdouble update_id ){
-	if(!service) return;
-	/* INFO:
-	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_IDS_TWEETS:
-	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
-	 * 				service->key			/timeline.xml (newest|oldest)
-	 */
-	if(G_STR_EMPTY(timeline)) return;
-	gchar *timeline_xml=NULL;
-	gboolean free_timeline=FALSE;
-	if(!g_strrstr(timeline, "?"))
-		timeline_xml=g_strrstr(timeline, "/");
-	else{
-		free_timeline=TRUE;
-		gchar **uri_split=g_strsplit_set( g_strrstr(timeline, "/"), "?=", 3);
-		timeline_xml=g_strdup_printf("%s/%s", uri_split[0], uri_split[2]);
-		g_strfreev(uri_split);
-	}
-	debug("Setting <%s>'s update IDs for %s(xml: %s).", service->key, timeline, timeline_xml );
-	gchar *prefs_path=NULL, *swap_id_str=NULL;
-	gboolean success;
-	
-	prefs_path=g_strdup_printf(ONLINE_SERVICE_IDS_TWEETS, service->key, timeline_xml, key);
-	swap_id_str=gdouble_to_str(update_id);
-	success=gconfig_set_string(prefs_path, swap_id_str);
-	uber_free(prefs_path);
-	debug("Saved %s update ID: %s for %s on <%s>.", key, swap_id_str, timeline_xml, service->uri );
-	uber_free(swap_id_str);
-	if(free_timeline)
-		uber_free(timeline_xml);
-}/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
-
 gboolean online_service_connect(OnlineService *service){
 	if(!service) return FALSE;
 	debug("Loaded account: '%s'.  Validating & connecting.", service->guid);
@@ -826,7 +707,7 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	online_service_request(service, QUEUE, API_LOGIN, NULL, online_service_login_check, API_LOGIN, NULL);
 	
-	if(!temporary_connection) online_services_increment_connected(service->guid);
+	if(!temporary_connection) online_services_increment_connected(service);
 	
 	online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
 	
@@ -958,7 +839,7 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 	service->has_loaded=service->connected=service->authenticated=FALSE;
 	service->logins=0;
 	debug("Disconnected from OnlineService [%s].", service->guid);
-	online_services_decrement_connected(service->guid, no_state_change);
+	online_services_decrement_connected(service, no_state_change);
 }/*online_service_disconnect(service, TRUE|FALSE);*/
 
 gboolean online_service_reconnect(OnlineService *service){
@@ -1096,14 +977,10 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	gint8 has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
 	if(!( (*user_data) )) return;
 	
-	gchar *timeline;
-	if(monitoring!=Searches)
-		timeline=g_strrstr(*requested_uri, "/");
-	else
-		timeline=searches_format_timeline_from_uri(*requested_uri);
+	const gchar *timeline=g_strrstr(*requested_uri, "/");
 	
 	gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	
 	const gchar *requesting;
 	gdouble since_id=0;
@@ -1119,10 +996,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 		since_id=unread_update_id;
 	}else return;
 	
-	if(!since_id){
-		if(monitoring==Searches) uber_free(timeline);
-		return;
-	}
+	if(!since_id) return;
 	
 	gchar *update_str=gdouble_to_str(since_id);
 	gchar *request_uri_swap=g_strdup_printf("%s?since_id=%s", *requested_uri, update_str);
@@ -1132,7 +1006,6 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	debug("Requesting <%s>'s timeline: %s; %s updates since: %f (using string: %s).", service->key, timeline, requesting, since_id, update_str);
 	uber_free(update_str);
 	request_uri_swap=NULL;
-	if(monitoring==Searches) uber_free(timeline);
 }/*online_service_request_validate_uri(service, &requested_uri, attempt, callback, &user_data, &form_data);*/
 
 static void online_service_request_validate_form_data(OnlineService *service, gchar **requested_uri, guint attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer *user_data, gpointer *form_data){
@@ -1181,12 +1054,6 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf("source=%s&status=%s", service->micro_blogging_client, (gchar *)(*form_data) ) );
 	}else{
 		gchar *in_reply_to_status_id_str=gdouble_to_str(in_reply_to_status_id);
-		if(service->micro_blogging_service==Twitter && service->micro_blogging_service==StatusNet){
-			uber_free( *requested_uri );
-			gchar *retweet_uri=g_strdup_printf(API_RETWEET_UPDATE, in_reply_to_status_id_str);
-			*requested_uri=online_service_request_uri_create(service, retweet_uri);
-			uber_free(retweet_uri);
-		}
 		debug("Replying to Update: #%f (using string: %s).", in_reply_to_status_id, in_reply_to_status_id_str);
 		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf("source=%s&in_reply_to_status_id=%s&status=%s", service->micro_blogging_client, in_reply_to_status_id_str, (gchar *)(*form_data) ) );
 		uber_free(in_reply_to_status_id_str);

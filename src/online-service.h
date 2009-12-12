@@ -54,8 +54,13 @@
 #ifndef __ONLINE_SERVICE_H__
 #define __ONLINE_SERVICE_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 
 /**********************************************************************
@@ -69,14 +74,16 @@
 
 #include "timer.h"
 #include "online-services-typedefs.h"
-#include "users.h"
+#include "users.types.h"
 
 
 /*********************************************************************
  *        Objects, structures, and etc typedefs                      *
  *********************************************************************/
 
-#define ONLINE_SERVICE_MAX_REQUESTS 5
+#ifndef ONLINE_SERVICE_MAX_REQUESTS
+#	define ONLINE_SERVICE_MAX_REQUESTS 5
+#endif
 
 G_BEGIN_DECLS
 /********************************************************
@@ -103,12 +110,6 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 gboolean online_service_refresh(OnlineService *service);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean no_state_change);
-
-gboolean online_service_update_ids_check( OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest );
-void online_service_update_ids_get( OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id );
-void online_service_update_id_get( OnlineService *service, const gchar *timeline, const gchar *key, gdouble *update_id );
-void online_service_update_id_set( OnlineService *service, const gchar *timeline, const gchar *key, gdouble update_id );
-void online_service_update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id );
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 

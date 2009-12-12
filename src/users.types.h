@@ -106,6 +106,10 @@ struct _UserStatus {
 	
 	UpdateMonitor	type;
 	
+	gboolean	retweet;
+	gchar		*retweeted_user_name;
+	gchar		*retweeted_by;
+	
 	gdouble		id;
 	gchar		*id_str;
 	

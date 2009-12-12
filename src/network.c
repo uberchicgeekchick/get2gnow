@@ -184,7 +184,7 @@ static void network_uberchick_tree_view_image_dl_free(NetworkImageDL *network_im
 void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
 	
-	if(!( in_reply_to_service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE)))
+	if(!( in_reply_to_service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE)))
 		online_services_request(POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
 	else
 		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
@@ -198,13 +198,15 @@ void network_send_message(OnlineService *service, const gchar *friend, gchar *dm
 void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	gchar *user_data=(gchar *)online_service_wrapper_get_user_data(service_wrapper);
+	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	
 	gboolean direct_message=FALSE;
 	if(!g_str_equal("post->update", user_data)) direct_message=TRUE;
 	
 	gchar *message=NULL;
 	if(!direct_message) message=g_strdup_printf("<%s>'s status", service->guid);
-	else message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, service->uri, service->guid);
+	else if(g_strrstr(requested_uri, API_SEND_MESSAGE)) message=g_strdup_printf("Direct Message. To: <%s@%s> From: <%s>", user_data, service->uri, service->guid);
+	else message=g_strdup_printf("ReTweet: of <%s@%s>'s update by <%s>.", user_data, service->uri, service->key);
 	
 	gchar *error_message=NULL;
 	if(!(www_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){

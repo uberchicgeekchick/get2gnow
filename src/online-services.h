@@ -54,8 +54,13 @@
 #ifndef __ONLINE_SERVICES_H__
 #define __ONLINE_SERVICES_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 
 /**********************************************************************
@@ -108,6 +113,7 @@ gint online_services_has_total(guint count);
  * 		-1, 0, 1, if services->connected is greater than, equal to, or less than count.
  */
 gint online_services_has_connected(guint count);
+gint online_services_has_twitter_connected(guint count);
 
 OnlineService *online_services_get_service_by_key(const gchar *online_service_key);
 gint online_services_best_friends_tree_store_fill(GtkTreeStore *tree_store);
@@ -125,12 +131,13 @@ void online_services_reset_length_of_longest_replacement(void);
 gssize online_services_get_length_of_longest_replacement(void);
 
 void online_services_request(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+void online_services_request_twitter(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 void online_services_increment_total(const gchar *service_guid);
 void online_services_decrement_total(const gchar *service_guid);
 
-void online_services_increment_connected(const gchar *service_guid);
-void online_services_decrement_connected(const gchar *service_guid, gboolean no_state_change);
+void online_services_increment_connected(OnlineService *service);
+void online_services_decrement_connected(OnlineService *service, gboolean no_state_change);
 
 gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *list_store, gboolean connected_only);
 

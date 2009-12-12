@@ -72,6 +72,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "update-ids.h"
 #include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
@@ -93,6 +94,7 @@
 struct _OnlineServices{
 	guint		total;
 	guint		connected;
+	guint		twitter_connected;
 	GSList		*keys;
 	GList		*accounts;
 	gint		best_friends_total;
@@ -130,7 +132,7 @@ OnlineServices *online_services_init(void){
 	gchar		*account_key=NULL;
 	
 	services=g_new0(OnlineServices, 1);
-	services->total=services->connected=0;
+	services->total=services->twitter_connected=services->connected=0;
 	services->best_friends_total=0;
 	
 	gconfig_get_list_string(ONLINE_SERVICES_ACCOUNTS, &services->keys);
@@ -278,9 +280,13 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 }/*online_services_url_activated_cb(widget, const gchar *uri);*/
 
 
+gint online_services_has_twitter_connected(guint count){
+	return online_services_cmp_count(services->twitter_connected, count);
+}/*online_services_has_twitter_connected(0);*/
+
 gint online_services_has_total(guint count){
 	return online_services_cmp_count(services->total, count);
-}/*online_services_has_total(>1);*/
+}/*online_services_has_total(1);*/
 
 gint online_services_has_connected(guint count){
 	return online_services_cmp_count(services->connected, count);
@@ -500,10 +506,11 @@ void online_services_decrement_total(const gchar *service_guid){
 	online_services_dialog_show(main_window_get_window());
 }/*online_services_decrement_total();*/
 
-void online_services_increment_connected(const gchar *service_guid){
+void online_services_increment_connected(OnlineService *service){
 	services->connected++;
-	debug("OnlineServices has connected to OnlineService: <%s>.  Total connected: #%d.", service_guid, services->connected);
-}/*online_services_increment_connected();*/
+	if(service->micro_blogging_service==Twitter) services->twitter_connected++;
+	debug("OnlineServices has connected to OnlineService: <%s>.  Total connected: #%d.", service->guid, services->connected);
+}/*online_services_increment_connected(service);*/
 
 
 
@@ -548,15 +555,18 @@ OnlineService *online_services_connected_get_last(void){
 	return service;
 }/*online_services_connected_get_last();*/
 
-void online_services_decrement_connected(const gchar *service_guid, gboolean no_state_change){
-	if(services->connected) services->connected--;
+void online_services_decrement_connected(OnlineService *service, gboolean no_state_change){
+	if(services->connected){
+		services->connected--;
+		if(service->micro_blogging_service==Twitter) services->twitter_connected--;
+	}
 	
-	debug("OnlineServices has disconnected from OnlineService: <%s>.  Remaining connections: #%d.", service_guid, services->connected);
+	debug("OnlineServices has disconnected from OnlineService: <%s>.  Remaining connections: #%d.", service->guid, services->connected);
 	if(services->connected || no_state_change) return;
 	
 	main_window_state_on_connection(!no_state_change);
 	online_services_dialog_show(main_window_get_window());
-}/*online_services_decrement_connected();*/
+}/*online_services_decrement_connected(service, TRUE|FALSE);*/
 
 
 
@@ -577,7 +587,29 @@ void online_services_request(RequestMethod request, const gchar *uri, OnlineServ
 		debug("Requesting: %s from <%s>.", uri, service->key);
 		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
-}/*online_services_request*/
+}/*online_services_request(QUEUE, API_RETWEETS_TO_ME, NULL, network_display_timeline, uberchick_tree_view, NULL);*/
+
+
+
+void online_services_request_twitter(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
+	if(G_STR_EMPTY(uri)) return;
+	GList		*accounts=NULL;
+	OnlineService	*service=NULL;
+	
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		service=(OnlineService *)accounts->data;
+		if(service->micro_blogging_service!=Twitter) continue;
+		if(!(service->connected && service->authenticated)){
+			if(!online_service_refresh(service)){
+				debug("**ERROR:** Unable to load: %s refreshing: <%s> failed.", uri, service->key);
+				continue;
+			}
+		}
+		
+		debug("Requesting: %s from <%s>.", uri, service->key);
+		online_service_request(service, request, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
+	}
+}/*online_services_request_twitter(QUEUE, API_RETWEETS_TO_ME, NULL, network_display_timeline, uberchick_tree_view, NULL);*/
 
 
 
@@ -716,7 +748,7 @@ gdouble online_services_best_friends_tree_store_mark_as_unread(OnlineService *se
 	uber_free(user_name_at_index);
 	update_viewer_sexy_select();
 	return update_id;
-}/*online_services_best_friends_tree_store_mark_as_unread(user_name)*/
+}/*online_services_best_friends_tree_store_mark_as_unread(service, user_name, unread_update_id, tree_store)*/
 
 gboolean online_services_best_friends_tree_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store){
 	if(!(services->best_friends_total && G_STR_N_EMPTY(user_name))) return FALSE;
@@ -739,8 +771,8 @@ gboolean online_services_best_friends_tree_store_mark_as_read(OnlineService *ser
 	
 	gchar		*user_timeline=g_strdup_printf("/%s.xml", user_at_index);
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	online_service_update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	online_service_update_ids_set(service, user_timeline, ( (update_id>newest_update_id) ?update_id :newest_update_id) , ( (update_id>unread_update_id) ?(unread_update_id=update_id) :unread_update_id ), ( (update_id>oldest_update_id) ?update_id :oldest_update_id));
+	update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	update_ids_set(service, user_timeline, ( (update_id>newest_update_id) ?update_id :newest_update_id) , ( (update_id>unread_update_id) ?(unread_update_id=update_id) :unread_update_id ), ( (update_id>oldest_update_id) ?update_id :oldest_update_id));
 	uber_free(user_timeline);
 	
 	debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, service->guid);
@@ -757,7 +789,7 @@ gboolean online_services_best_friends_tree_store_mark_as_read(OnlineService *ser
 	uber_free(user_name_at_index);
 	update_viewer_sexy_select();
 	return TRUE;
-}/*online_services_best_friends_tree_store_mark_as_read(service, user_name, tree_view, tree_store);*/
+}/*online_services_best_friends_tree_store_mark_as_read(service, user_name, unread_update_id, tree_store);*/
 
 gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name){
 	if(G_STR_EMPTY(user_name)) return FALSE;

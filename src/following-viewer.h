@@ -47,15 +47,16 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
-
 #ifndef __FOLLOWING_DIALOG_H__
 #define __FOLLOWING_DIALOG_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 #include <glib.h>
 #include <gtk/gtk.h>

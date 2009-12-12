@@ -54,8 +54,13 @@
 #ifndef __ONLINE_SERVICE_REQUEST_H__
 #define __ONLINE_SERVICE_REQUEST_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 
 /**********************************************************************
@@ -121,6 +126,7 @@ gboolean online_service_request_is_update_selected(void);
 void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update);
 OnlineService *online_service_request_selected_update_get_service(void);
 gdouble online_service_request_selected_update_get_id(void);
+const gchar *online_service_request_selected_update_get_id_str(void);
 const gchar *online_service_request_selected_update_get_user_name(void);
 gdouble online_service_request_selected_update_get_user_id(void);
 gchar *online_service_request_selected_update_get_update_text(void);

@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,8 +48,11 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __IMAGES_H__
-#define __IMAGES_H__
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__UPDATE_IDS_H__
+#define	__UPDATE_IDS_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -59,57 +62,38 @@
 #	define _THREAD_SAFE
 #endif
 
+
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include "users.h"
+
+#include "online-services-typedefs.h"
 
 G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
 
 
-enum {
-	ImagesMaximum		=	96,
-	ImagesExpanded		=	72,
-	ImagesDefault		=	48,
-	ImagesDialog		=	GTK_ICON_SIZE_DIALOG,
-	ImagesMinimum		=	GTK_ICON_SIZE_BUTTON,
-};
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
 
 
-GtkImage *images_get_image_from_filename(gchar *image_filename);
-GtkImage *images_get_scaled_image_from_filename(gchar *image_filename, gint width, gint height );
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
 
-GtkImage *images_get_expanded_image_from_filename(gchar *image_filename);
-GtkImage *images_get_maximized_image_from_filename(gchar *image_filename);
-GtkImage *images_get_default_image_from_filename(gchar *image_filename);
-GtkImage *images_get_dialog_image_from_filename( gchar *image_filename );
-GtkImage *images_get_minimized_image_from_filename(gchar *image_filename);
-
-GtkImage *images_get_expanded_image_from_stock(const gchar *stock_image_name);
-GtkImage *images_get_maximized_image_from_stock(const gchar *stock_image_name);
-GtkImage *images_get_default_image_from_stock(const gchar *stock_image_name);
-GtkImage *images_get_dialog_image_from_stock( const gchar *stock_image_name );
-GtkImage *images_get_minimized_image_from_stock(const gchar *stock_image_name);
-
-GdkPixbuf *images_get_expanded_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_maximized_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_default_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_dialog_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_minimized_pixbuf_from_filename(gchar *image_filename);
-
-GdkPixbuf *images_expand_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_maximize_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_normalize_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_dialogize_pixbuf( GdkPixbuf *pixbuf );
-GdkPixbuf *images_minimize_pixbuf(GdkPixbuf *pixbuf);
-
-GdkPixbuf *images_scale_pixbuf(GdkPixbuf *pixbuf, gint width, gint height);
-GdkPixbuf *images_get_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_unscaled_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_scaled_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
+gboolean update_ids_check( OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest );
+void update_ids_get( OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id );
+void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id );
 
 
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
 G_END_DECLS
-#endif /* __IMAGES_H__ */
+#endif /*__UPDATE_IDS_H__*/
 

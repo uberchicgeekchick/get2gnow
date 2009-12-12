@@ -150,6 +150,8 @@ static void user_validate( User **user );
 
 static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring);
 static void user_status_validate( UserStatus **status );
+static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
+static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user);
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user);
 static void user_status_format_dates(UserStatus *status);
 
@@ -203,7 +205,6 @@ static void user_validate( User **user ){
 			(*user)->url=g_strdup("");
 	if(! G_STR_N_EMPTY( (*user)->image_uri ) ) (*user)->image_uri=g_strdup("");
 	if(! G_STR_N_EMPTY( (*user)->image_file ) ) (*user)->image_file=g_strdup("");
-	/*if( (*user)->status ) user_status_validate( &(*user)->status );*/
 }/*user_validate(&user);*/ 
 
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
@@ -240,9 +241,11 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	gchar		*content=NULL;
 	
 	User		*user=user_new(service, getting_followers);
+	UserStatus	*retweeted_status=NULL;
 	
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
+	debug("Parsing user beginning at node: %s", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE )
 			continue;
@@ -265,7 +268,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		
 		else if(g_str_equal(current_node->name, "description" )){
 			if(G_STR_N_EMPTY(content))
-				user->bio=g_markup_printf_escaped( "%s", content );
+				user->bio=g_markup_printf_escaped("%s", content);
 			else
 				user->bio=g_strdup("unavailable");
 		}else if(g_str_equal(current_node->name, "url" ))
@@ -283,12 +286,19 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		else if(g_str_equal(current_node->name, "profile_image_url"))
 			user->image_uri=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "status") && current_node->children)
+		else if( g_str_equal(current_node->name, "status") && current_node->children)
 			user->status=user_status_parse(service, current_node->children, Updates);
+		
+		else if( g_str_equal(current_node->name, "retweeted_status") && current_node->children){
+			retweeted_status=user_status_parse_retweeted_status(service, current_node->children, Updates);
+		}
 		
 		uber_free(content);
 		
 	}
+	
+	if(retweeted_status)
+		user_status_format_retweeted_status(service, retweeted_status, &user->status, user);
 	
 	user_validate(&user);
 	
@@ -309,16 +319,6 @@ void user_free(User *user){
 	
 	user->service=NULL;
 	
-	/*if(user->user_name) uber_free(user->user_name);
-	if(user->nick_name) uber_free(user->nick_name);
-	if(user->location) uber_free(user->location);
-	if(user->bio) uber_free(user->bio);
-	if(user->url) uber_free(user->url);
-	if(user->image_uri) uber_free(user->image_uri);
-	if(user->image_file) uber_free(user->image_file);
-
-	uber_free(user);*/
-	
 	uber_object_free(&user->user_name, &user->nick_name, &user->location, &user->bio, &user->url, &user->image_uri, &user->image_file, &user, NULL);
 }/*user_free*/
 
@@ -330,9 +330,10 @@ static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitor
 	UserStatus	*status=g_new0(UserStatus, 1);
 	
 	status->service=service;
+	status->retweet=FALSE;
 	status->user=NULL;
 	status->type=monitoring;
-	status->id_str=status->text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=NULL;
+	status->id_str=status->text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=status->retweeted_by=status->retweeted_user_name=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=0;
 	status->created_seconds_ago=0;
@@ -351,7 +352,8 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->notification ) (*status)->notification=g_strdup("");
 	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
 	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
-	/*if( (*status)->user ) user_validate( &(*status)->user );*/
+	if(! (*status)->retweeted_by ) (*status)->retweeted_by=g_strdup("");
+	if(! (*status)->retweeted_user_name ) (*status)->retweeted_user_name=g_strdup("");
 }/*user_status_validate(&status);*/ 
 
 UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
@@ -361,7 +363,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 	status->user=user_new(service, getting_followers);
 	
 	/* Begin 'status' or 'direct-messages' loop */
-	debug("Parsing searches result node: %s", root_element->name);
+	debug("Parsing searches results beginning at node: %s", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
 		
@@ -370,7 +372,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 			continue;
 		}
 		
-		debug("Parsing searches.  Parsing current node: %s.", current_node->name );
+		debug("Parsing searches beginning at node: %s.", current_node->name );
 		if(g_str_equal(current_node->name, "id")){
 			status->id=strtod((g_strrstr(content, ":")+1), NULL);
 			status->id_str=gdouble_to_str(status->id);
@@ -391,14 +393,14 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 			xmlAttr *attr_node;
 			debug("Parsing searches link node searching for type=\"image/png\".");
 			for( attr_node=current_node->properties; attr_node; attr_node=attr_node->next ){
-				debug("Parsing searches node: %s looking for type.", attr_node->name );
+				debug("Parsing searches at node: %s looking for type.", attr_node->name );
 				if(g_str_equal(attr_node->name, "type")) break;
 			}
 			if(!attr_node) continue;
 			
 			for(temp_node=attr_node->children; temp_node; temp_node=temp_node->next){
 				content=(gchar *)xmlNodeGetContent(temp_node);
-				debug("Parsing searches node: %s looking for image/png.", content );
+				debug("Parsing searches at node: %s looking for image/png.", content );
 				if(g_str_equal(content, "image/png")) break;
 				uber_free(content);
 			}
@@ -439,7 +441,7 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 			debug("Parsing searches user_name & user_nick from content: %s.", content );
 			if(!g_strrstr(content, "(")){
 				status->user->user_name=g_markup_printf_escaped("%s", content);
-				status->user->nick_name=g_markup_printf_escaped("%s", content);
+				/*status->user->nick_name=g_markup_printf_escaped("%s", content);*/
 			}else{
 				gchar **user_data=g_strsplit(content, " (", -1);
 				status->user->user_name=g_markup_printf_escaped("%s", user_data[0]);
@@ -447,8 +449,8 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 					gchar **user_nick_data=g_strsplit(user_data[1], ")", -1);
 					if( user_nick_data[0] && G_STR_N_EMPTY(user_nick_data[0]) )
 						status->user->nick_name=g_markup_printf_escaped("%s", user_nick_data[0]);
-					else
-						status->user->nick_name=g_markup_printf_escaped("%s", user_data[1]);
+					/*else
+						status->user->nick_name=g_markup_printf_escaped("%s", user_data[1]);*/
 					g_strfreev(user_nick_data);
 				}
 				g_strfreev(user_data);
@@ -469,13 +471,21 @@ UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *r
 	return status;
 }/*user_status_parse_from_atom_entry(service, current_node->children, monitoring);*/
 
+static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
+	debug("Parsing retweeted update beginning at node: %s", root_element->name);
+	UserStatus *status=user_status_parse(service, root_element, monitoring);
+	status->retweet=TRUE;
+	return status;
+}/*user_status_parse_retweeted_status(service, current_node->children, Updates);*/
+
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, monitoring);
+	UserStatus	*retweeted_status=NULL;
 	
 	/* Begin 'status' or 'direct-messages' loop */
-	debug("Parsing update node: %s", root_element->name);
+	debug("Parsing update at beginning node: %s", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
 		
@@ -484,7 +494,10 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 			continue;
 		}
 		
-		if(g_str_equal(current_node->name, "id")){
+		if( g_str_equal(current_node->name, "retweeted_status") && current_node->children)
+			retweeted_status=user_status_parse_retweeted_status(service, current_node->children, monitoring);
+		
+		else if(g_str_equal(current_node->name, "id")){
 			status->id=strtod(content, NULL);
 			status->id_str=gdouble_to_str(status->id);
 			debug("Update ID: %s(=%f).", content, status->id);
@@ -512,6 +525,9 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 
 	user_status_validate(&status);
 	
+	if(retweeted_status)
+		user_status_format_retweeted_status(service, retweeted_status, &status, status->user);
+	
 	if(status->user){
 		user_validate( &status->user );
 		user_status_format_updates(service, status, status->user);
@@ -519,6 +535,25 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 	
 	return status;
 }/*user_status_parse(service, current_node->children, monitoring);*/
+
+static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user){
+	gchar *retweeted_user_name=NULL;
+	gchar *retweeted_by=NULL;
+	if(!( (*status) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name) )){
+		retweeted_user_name=g_strdup("unknown");
+		retweeted_by=g_strdup_printf("<b>[%s]:\tAnonymous <u>&lt;unknown@%s&gt;</u></b>", _("retweeted by"), service->uri);
+	}else{
+		retweeted_user_name=g_strdup(user->user_name);
+		retweeted_by=g_strdup_printf("<b>[%s]:\t%s <u>&lt;%s@%s&gt;</u></b>", _("retweeted by"), user->nick_name, user->user_name, service->uri);
+	}
+	user_status_free(*status);
+	
+	*status=retweeted_status;
+	uber_free((*status)->retweeted_by);
+	(*status)->retweeted_by=retweeted_by;
+	uber_free((*status)->retweeted_user_name);
+	(*status)->retweeted_user_name=retweeted_user_name;
+}/*user_status_format_retweeted_status(service, retweeted_status, &status, user);*/
 
 static void user_status_format_dates(UserStatus *status){
 	tzset();
@@ -615,22 +650,35 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 	}
 	uber_free(sexy_status_swap);
 	
-	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>", user->nick_name, user->user_name, service->uri);
+	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>%s%s%s",
+					user->nick_name, user->user_name, service->uri,
+					(status->retweet ?"\n<span size=\"x-small\" weight=\"light\">" :"" ),
+					(status->retweet ?status->retweeted_by :"" ),
+					(status->retweet ?"</span>" :"" )
+	);
 	
 	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", service->nick_name, service->key);
 	
-	status->update=g_strdup_printf("%s%s%s%s\n",
+	status->update=g_strdup_printf("%s%s%s%s%s%s%s\n",
+					(status->retweet ?"<span size=\"x-small\" weight=\"light\">" :"" ),
+					(status->retweet ?status->retweeted_by :"" ),
+					(status->retweet ?"</span>\n" :"" ),
 					( (status->type==DMs)
 					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n"
 						:(status->type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n"
 							:""
 						)
 					),
-					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""), sexy_status_text, ((status->type==DMs) ?"]</span>" :"")
+					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""),
+					sexy_status_text,
+					((status->type==DMs) ?"]</span>" :"")
 	);
 	
 	status->notification=g_strdup_printf(
-						"%s<i>[%s]</i>\n\t<b>From:</b> <b><u>%s &lt;%s@%s&gt;</u></b>\n<i>To:</i> <i><u>%s &lt;%s&gt;</u></i>\n<b>\t%s%s%s</b>",
+						"%s%s%s%s<i>[%s]</i>\n\t<b>From:</b> <b><u>%s &lt;%s@%s&gt;</u></b>\n<i>To:</i> <i><u>%s &lt;%s&gt;</u></i>\n<b>\t%s%s%s</b>",
+						(status->retweet ?"<i>" :"" ),
+						(status->retweet ?status->retweeted_by :"" ),
+						(status->retweet ?"</i>\n" :"" ),
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
 						user->nick_name, user->user_name, service->uri,
@@ -678,20 +726,7 @@ void user_status_free(UserStatus *status){
 	user_status_validate(&status);
 	status->service=NULL;
 	
-	/*if(status->text) uber_free(status->text);
-	if(status->id_str) uber_free(status->id_str);
-	if(status->from) uber_free(status->from);
-	if(status->rcpt) uber_free(status->rcpt);
-	if(status->update) uber_free(status->update);
-	if(status->source) uber_free(status->source);
-	if(status->sexy_update) uber_free(status->sexy_update);
-	if(status->notification) uber_free(status->notification);
-	if(status->created_at_str) uber_free(status->created_at_str);
-	if(status->created_how_long_ago) uber_free(status->created_how_long_ago);
-
-	uber_free(status);*/
-	
-	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status, NULL);
+	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status->retweeted_by, &status->retweeted_user_name, &status, NULL);
 }/*user_status_free*/
 
 

@@ -58,6 +58,7 @@
 
 #include "best-friends.h"
 
+#include "update-ids.h"
 #include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-services.h"
@@ -108,7 +109,7 @@ gboolean best_friends_check_update_ids( OnlineService *service, const gchar *bes
 	gdouble unread_update_id=0.0;
 	gchar *user_timeline=g_strdup_printf("/%s.xml", best_friends_user_name );
 	gdouble best_friends_newest_update_id=0.0, best_friends_unread_update_id=0.0, best_friends_oldest_update_id=0.0;
-	online_service_update_ids_get( service, user_timeline, &best_friends_newest_update_id, &best_friends_unread_update_id, &best_friends_oldest_update_id );
+	update_ids_get( service, user_timeline, &best_friends_newest_update_id, &best_friends_unread_update_id, &best_friends_oldest_update_id );
 	gboolean notify_of_new_update=FALSE, save_update_ids=FALSE;;
 	unread_update_id=online_services_best_friends_tree_store_mark_as_unread(service, best_friends_user_name, update_id, best_friends_tree_store );
 	if( unread_update_id > best_friends_unread_update_id ){

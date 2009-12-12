@@ -23,6 +23,14 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
+
 G_BEGIN_DECLS
 
 void get2gnow_program_deinit(void);

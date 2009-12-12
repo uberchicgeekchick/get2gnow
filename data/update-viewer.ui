@@ -338,6 +338,24 @@
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkButton" id="retweet_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <child>
+                              <object class="GtkImage" id="retweet_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-go-forward</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
                           <object class="GtkVSeparator" id="vseparator1">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
@@ -345,7 +363,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">2</property>
+                            <property name="position">4</property>
                           </packing>
                         </child>
                         <child>
@@ -364,7 +382,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">3</property>
+                            <property name="position">5</property>
                           </packing>
                         </child>
                       </object>
@@ -517,37 +535,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="new_update_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="n" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
-                        <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                        <child>
-                          <object class="GtkImage" id="new_update_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-clear</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkVSeparator" id="update_viewer_update_composition_vseparator">
-                        <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">6</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkToggleButton" id="dm_form_active_togglebutton">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -564,7 +551,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">7</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -776,10 +763,6 @@
     <columns>
       <!-- column-name GSTRING_UPDATE -->
       <column type="gchararray"/>
-      <!-- column-name IN_REPLY_TO_SERVICE -->
-      <column type="gpointer"/>
-      <!-- column-name IN_REPLY_TO_STATUS_ID -->
-      <column type="gdouble"/>
     </columns>
   </object>
   <object class="GtkImage" id="best_friend_image">

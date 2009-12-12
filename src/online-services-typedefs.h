@@ -54,8 +54,13 @@
 #ifndef __ONLINE_SERVICE_TYPEDEFS_H__
 #define __ONLINE_SERVICE_TYPEDEFS_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
@@ -79,15 +84,15 @@ enum _RequestMethod{
 enum _UpdateMonitor{
 	None		=	0,
 	Updates		=	1,
-	Replies		=	3,
-	DMs		=	5,
-	BestFriends	=	7,
-	Users		=	9,
-	Searches	=	11,
-	Groups		=	13,
-	Timelines	=	17,
-	Faves		=	19,
-	Archive		=	23,
+	Replies		=	2,
+	DMs		=	3,
+	BestFriends	=	4,
+	Users		=	5,
+	Searches	=	6,
+	Groups		=	7,
+	Timelines	=	8,
+	Faves		=	9,
+	Archive		=	10,
 };
 
 enum _OnlineServicesListStoreColumns{

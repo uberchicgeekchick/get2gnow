@@ -66,6 +66,7 @@
 #include "gconfig.h"
 #include "program.h"
 
+#include "update-ids.h"
 #include "online-services.defines.h"
 #include "online-services-typedefs.h"
 #include "online-service-request.h"
@@ -170,13 +171,12 @@ struct  _OnlineServiceRequestPopup{
 	GtkEntry		*user_name_entry;
 	
 	GtkFrame		*online_services_frame;
+	GtkLabel		*online_services_label;
 	GtkComboBox		*online_services_combo_box;
 	GtkListStore		*online_services_list_store;
 	GtkTreeModel		*online_service_model;
 	
 	GtkCheckButton		*check_button;
-	
-	GtkButton		*cancel_button;
 };
 
 static SelectedUpdate *selected_update=NULL;
@@ -384,7 +384,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, user_name );
 		if(action==ViewUpdatesNew){
 			gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-			online_service_update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+			update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 			if(!unread_update_id){
 				debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", user_name, service->guid );
 				timeline=user_timeline;
@@ -535,6 +535,10 @@ gdouble online_service_request_selected_update_get_id(void){
 	return ( (selected_update && selected_update->id) ?selected_update->id :0.0 );
 }/*online_service_request_selected_update_get_id();*/
 
+const gchar *online_service_request_selected_update_get_id_str(void){
+	return ( (selected_update && selected_update->id_str) ?selected_update->id_str :NULL );
+}/*online_service_request_selected_update_get_id_str();*/
+
 const gchar *online_service_request_selected_update_get_user_name(void){
 	return ( (selected_update && selected_update->user_name) ?selected_update->user_name :NULL );
 }/*online_service_request_selected_update_get_user_name();*/
@@ -556,12 +560,13 @@ static gboolean online_service_request_selected_update_include_and_begin_to_send
 		update_viewer_beep();
 		return FALSE;
 	}
-	if(forwarding){
-		update_viewer_sexy_set("");
-		update_viewer_sexy_prefix_string("RT ", TRUE);
-	}
+	if(forwarding && !update_viewer_sexy_entry_clear()) return FALSE;
+	
 	gboolean prefix_added=update_viewer_set_in_reply_to_data(selected_update->user_name, selected_update->service, selected_update->id, TRUE);
-	if(forwarding) update_viewer_sexy_append_string(selected_update->update, TRUE);
+	if(forwarding){
+		update_viewer_sexy_prefix_string("RT ", TRUE);
+		update_viewer_sexy_append_string(selected_update->update, TRUE);
+	}
 	
 	return prefix_added;
 }/*online_service_request_selected_update_include_and_begin_to_send*/
@@ -742,19 +747,19 @@ static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, g
 			return;
 	}
 	
-	if( online_service_request_popup->action==SelectService){
+	if(online_service_request_popup->action==SelectService){
 		online_service_request_popup_set_selected_service(dialog, response, online_service_request_popup);
 		gtk_widget_destroy(GTK_WIDGET(dialog));
 		return;
 	}
 	
-	if( online_service_request_popup->action==Confirmation){
+	if(online_service_request_popup->action==Confirmation){
 		online_service_request_popup_dialog_process_confirmation(dialog, response, online_service_request_popup);
 		gtk_widget_destroy(GTK_WIDGET(dialog));
 		return;
 	}
 	
-	switch(  online_service_request_popup->action ){
+	switch(online_service_request_popup->action){
 		case ViewProfile:
 		case Follow:
 		case UnFollow:
@@ -782,6 +787,9 @@ static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, g
 static gboolean online_service_request_popup_dialog_process_requests(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	OnlineService		*service=NULL;
 	const gchar		*user_name=gtk_entry_get_text(online_service_request_popup->user_name_entry);
+	
+	if(!( GTK_WIDGET_IS_SENSITIVE(online_service_request_popup->user_name_entry) && GTK_WIDGET_IS_SENSITIVE(online_service_request_popup->online_services_combo_box) ))
+		return TRUE;
 	
 	if(G_STR_EMPTY(user_name)){
 		update_viewer_beep();
@@ -844,17 +852,20 @@ gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_k
 	
 	online_service_request_popup_dialog_show(Confirmation);
 	
-	gtk_message_dialog_set_markup( online_service_request_popup->dialog, message1 );
-	if( G_STR_N_EMPTY( message2 ) )
-		gtk_message_dialog_format_secondary_text( online_service_request_popup->dialog, "%s", message2 );
+	gtk_label_set_markup( online_service_request_popup->user_name_label, message1 );
+	if(!G_STR_EMPTY(message2))
+		gtk_label_set_markup( online_service_request_popup->online_services_label, message2 );
 	
-	if( G_STR_N_EMPTY( gconfig_key ) )
+	if(!G_STR_EMPTY(gconfig_key))
 		online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );
 	
 	gtk_widget_show_all( GTK_WIDGET( online_service_request_popup->dialog ) );
 	
-	gtk_widget_hide( GTK_WIDGET( online_service_request_popup->user_name_frame ) );
-	gtk_widget_hide( GTK_WIDGET( online_service_request_popup->online_services_frame ) );
+	gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->user_name_entry), FALSE);
+	gtk_widget_hide( GTK_WIDGET(online_service_request_popup->user_name_entry) );
+	
+	gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->online_services_combo_box), FALSE);
+	gtk_widget_hide( GTK_WIDGET(online_service_request_popup->online_services_combo_box));
 	
 	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
 	switch(online_service_request_popup_dialog_response){
@@ -866,24 +877,13 @@ gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_k
 }/*online_service_request_popup_confirm_dialog();*/
 
 static void online_service_request_popup_confirmation_dialog_add_gconfig_key( const gchar *gconfig_key, GFunc func, gpointer user_data ){
-	GtkVBox			*vbox;
-	
-	online_service_request_popup->check_button=(GtkCheckButton *)gtk_check_button_new_with_label(_("Do not show this again"));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button), FALSE);
-	
-	vbox=(GtkVBox *)gtk_vbox_new(FALSE, 6);
-	gtk_container_set_border_width(GTK_CONTAINER(vbox), 6);
-	
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET( online_service_request_popup->check_button), FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG( online_service_request_popup->dialog)->vbox), GTK_WIDGET(vbox), FALSE, FALSE, 0);
-	
 	g_object_set_data_full(G_OBJECT(online_service_request_popup->dialog), "gconfig_key", g_strdup(gconfig_key), g_free);
 	g_object_set_data(G_OBJECT(online_service_request_popup->dialog), "user_data", user_data);
 	g_object_set_data(G_OBJECT(online_service_request_popup->dialog), "func", func);
 }/*online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );*/
 
 void online_service_request_popup_select_service(void){
-	if(!( online_services_has_connected(1) > 0 )){
+	if(!( online_services_has_connected(0) > 1 )){
 		selected_service=online_services_connected_get_first();
 		debug("There is only one connected OnlineService, auto-selecting: %s.", selected_service->guid);
 		return;
@@ -892,8 +892,8 @@ void online_service_request_popup_select_service(void){
 	debug("Prompting to select OnlineService to use as 'selected_service'.");
 	online_service_request_popup_dialog_show(SelectService);
 	
-	gtk_widget_hide(GTK_WIDGET( online_service_request_popup->user_name_frame));
-	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
+	gtk_widget_hide(GTK_WIDGET(online_service_request_popup->user_name_frame));
+	gtk_dialog_run(GTK_DIALOG(online_service_request_popup->dialog));
 }/*online_service_request_popup_select_service();*/
 
 void online_service_request_popup_follow(void){
@@ -989,25 +989,27 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 						"entry_popup", &online_service_request_popup->dialog,
 						
 						"user_name_frame", &online_service_request_popup->user_name_frame,
-						"user_name_entry", &online_service_request_popup->user_name_entry,
 						"user_name_label", &online_service_request_popup->user_name_label,
+						"user_name_entry", &online_service_request_popup->user_name_entry,
 						
 						"online_services_frame", &online_service_request_popup->online_services_frame,
+						"online_services_label", &online_service_request_popup->online_services_label,
 						"online_services_combo_box", &online_service_request_popup->online_services_combo_box,
 						"online_services_list_store", &online_service_request_popup->online_services_list_store,
 						
-						"cancel_button", &online_service_request_popup->cancel_button,
+						"online_service_request_popup_confirmation_disable_check_button", &online_service_request_popup->check_button,
 					NULL
 	);
 	
 	online_service_request_popup->online_service_model=gtk_combo_box_get_model(GTK_COMBO_BOX( online_service_request_popup->online_services_combo_box));
 
 	/* Connect the signals */
-	gtkbuilder_connect_after(
-			ui, online_service_request_popup,
-				"user_name_entry", "activate", online_service_request_user_name_active_cb,
-			NULL
-	);
+	if(action!=Confirmation)
+		gtkbuilder_connect_after(
+				ui, online_service_request_popup,
+					"user_name_entry", "activate", online_service_request_user_name_active_cb,
+				NULL
+		);
 	
 	gtkbuilder_connect(
 			ui, online_service_request_popup,
@@ -1029,7 +1031,13 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	g_object_add_weak_pointer(G_OBJECT( online_service_request_popup->dialog), (gpointer)&online_service_request_popup);
 	gtk_window_set_transient_for(GTK_WINDOW( online_service_request_popup->dialog), parent );
 	gtk_widget_show_all(GTK_WIDGET( online_service_request_popup->dialog));
-	if(!(online_services_has_connected(1) > 0 && online_services_has_total(1) > 0)){
+	
+	if(action!=Confirmation){
+		gtk_widget_hide( GTK_WIDGET(online_service_request_popup->check_button) );
+		gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->check_button), FALSE);
+	}
+	
+	if(!(online_services_has_connected(0) > 1 && online_services_has_total(0) > 1 )){
 		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
 		gtk_widget_hide(GTK_WIDGET(online_service_request_popup->online_services_frame));
 	}
@@ -1038,8 +1046,11 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 }/*online_service_request_popup_dialog_show*/
 
 static void online_service_request_user_name_active_cb(GtkEntry *user_name_entry, OnlineServiceRequestPopup *online_service_request_popup){
-	online_service_request_popup_response_cb(online_service_request_popup->dialog, GTK_RESPONSE_OK, online_service_request_popup);
-}/**/
+	if(!( G_STR_N_EMPTY(online_service_request_popup->user_name_entry->text) ))
+		update_viewer_beep();
+	else
+		online_service_request_popup_response_cb(online_service_request_popup->dialog, GTK_RESPONSE_OK, online_service_request_popup);
+}/*online_service_request_user_name_active_cb(online_service_request_popup->user_name_entry, online_service_request_popup);*/
 
 
 /********************************************************************************

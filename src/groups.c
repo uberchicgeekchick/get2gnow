@@ -71,6 +71,7 @@
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
+#include "update-ids.h"
 #include "network.h"
 
 #include "users.types.h"
@@ -95,6 +96,8 @@
 
 /* Parse a timeline XML file */
 guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
+	const gchar	*timeline=g_strrstr(uri, "/");
+	
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
@@ -103,12 +106,8 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	/* Count new tweets */
 	guint		new_updates=0;
 	
-	gchar		**uri_split=g_strsplit( g_strrstr(uri, "/"), "?", 2);
-	gchar		*timeline=g_strdup(uri_split[0]);
-			g_strfreev(uri_split);
-	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	online_service_update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
 	
@@ -123,7 +122,6 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
 		xmlCleanupParser();
-		uber_free(timeline);
 		return 0;
 	}
 	
@@ -183,10 +181,9 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
 		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
-		online_service_update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
+		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
-	uber_free(timeline);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	

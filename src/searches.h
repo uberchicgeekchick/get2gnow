@@ -54,8 +54,13 @@
 #ifndef	__SEARCHES_H__
 #define	__SEARCHES_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -79,8 +84,6 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-gchar *searches_format_timeline_from_uri(const gchar *uri);
-
 guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
 
 

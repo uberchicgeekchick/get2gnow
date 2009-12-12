@@ -98,6 +98,8 @@ typedef enum _UberChickTreeViewListStoreColumn{	/*******************************
 	GINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the sorted tree model.  */
 	GINT_LIST_STORE_INDEX,				/*	The associated order/place this item appears in the list store.         */
 	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
+	GBOOLEAN_RETWEET,				/*	If the update's a retweet or not					*/
+	GCHARARRY_RETWEETED_BY,				/*	Who retweeted this update.  Its: "" if this update's not a retwwet.	*/
 							/********************************************************************************/
 } UberChickTreeViewListStoreColumn;
 
@@ -106,11 +108,11 @@ GType uberchick_tree_view_get_type(void) G_GNUC_CONST;
 
 
 
-UberChickTreeView *uberchick_tree_view_new(const gchar *timeline, OnlineService *service);
+UberChickTreeView *uberchick_tree_view_new(gint page, const gchar *timeline, OnlineService *service);
 const gchar *uberchick_tree_view_get_timeline(UberChickTreeView *uberchick_tree_view);
 
 GtkVBox *uberchick_tree_view_get_child(UberChickTreeView *uberchick_tree_view);
-GtkLabel *uberchick_tree_view_get_tab(UberChickTreeView *uberchick_tree_view);
+GtkHBox *uberchick_tree_view_get_tab(UberChickTreeView *uberchick_tree_view);
 GtkLabel *uberchick_tree_view_get_menu(UberChickTreeView *uberchick_tree_view);
 
 OnlineService *uberchick_tree_view_get_service(UberChickTreeView *uberchick_tree_view);

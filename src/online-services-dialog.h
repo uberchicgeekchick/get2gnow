@@ -51,8 +51,13 @@
 #ifndef __ONLINE_SERVICES_DIALOG_H__
 #define __ONLINE_SERVICES_DIALOG_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 #include <gtk/gtk.h>
 

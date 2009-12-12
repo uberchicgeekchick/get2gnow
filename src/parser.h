@@ -47,15 +47,16 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-#define _GNU_SOURCE
-#define _THREAD_SAFE
-
-
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
-#define _GNU_SOURCE
-#define _THREAD_SAFE
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
 
 #include <glib.h>
 #include <libxml/parser.h>
@@ -70,7 +71,7 @@ G_BEGIN_DECLS
 
 xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *timeline, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
 

@@ -47,6 +47,7 @@ src/timer.c
 src/uberchick-label.c
 src/uberchick-tree-view.c
 src/ui-utils.c
+src/update-ids.c
 src/update-viewer.c
 src/users-glists.c
 src/users.c

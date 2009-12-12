@@ -64,34 +64,30 @@
 
 static gchar *gtkbuilder_get_path( const gchar *filename );
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename);
+static gboolean gtkbuilder_get_system_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename);
 
 
 
 
 static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	gchar *gtkbuilder_ui_file=NULL, *gtkbuilder_ui_filename=NULL;
-	const gchar *debug_prefix;
-#ifdef	GNOME_ENABLE_DEBUG
-	debug_prefix="**NOTICE:** ";
-#else
-	debug_prefix="";
-	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
-	gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
-	uber_free(gtkbuilder_ui_file);
-	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		debug("%sLoading GtkBuildable UI from: [%s].", debug_prefix, gtkbuilder_ui_filename);
+#ifndef	GNOME_ENABLE_DEBUG
+	if(gtkbuilder_get_system_ui_filename(base_filename, &gtkbuilder_ui_filename))
 		return gtkbuilder_ui_filename;
-	}
-	
 	uber_free(gtkbuilder_ui_filename);
+	return NULL;
 #endif
 	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
 	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		debug("%sLoading GtkBuildable UI from: [%s].", debug_prefix, gtkbuilder_ui_filename);
+		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", gtkbuilder_ui_filename);
 		return gtkbuilder_ui_filename;
 	}
+	uber_free(gtkbuilder_ui_filename);
+	
+	if(gtkbuilder_get_system_ui_filename(base_filename, &gtkbuilder_ui_filename))
+		return gtkbuilder_ui_filename;
 	uber_free(gtkbuilder_ui_filename);
 	
 	gtkbuilder_ui_file=g_strdup_printf("%s.in.ui", base_filename);
@@ -110,6 +106,24 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	
 	return NULL;
 }/*gtkbuilder_get_path("update-viewer");*/
+
+static gboolean gtkbuilder_get_system_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename){
+	gchar *gtkbuilder_ui_file=NULL;
+	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
+	*gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
+	uber_free(gtkbuilder_ui_file);
+	if( gtkbuilder_ui_test_filename(*gtkbuilder_ui_filename)){
+#ifndef	GNOME_ENABLE_DEBUG
+		debug("Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+#else
+		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+#endif
+		return TRUE;
+	}
+	
+	uber_free(*gtkbuilder_ui_filename);
+	return FALSE;
+}/*gtkbuilder_get_system_ui_filename(base_filename, &gtkbuilder_ui_filename);*/
 
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);

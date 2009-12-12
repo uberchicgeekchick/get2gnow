@@ -125,7 +125,7 @@ struct _PreferencesDialog{
 	GtkCheckButton	*titles_only_checkbutton;
 	GtkCheckButton	*expand_users_checkbutton;
 	
-	GtkCheckButton	*updates_no_profile_link_checkbutton;
+	GtkCheckButton	*updates_add_profile_link_checkbutton;
 	GtkCheckButton	*post_reply_to_service_only_checkbutton;
 	
 	GtkCheckButton	*previous_updates_uniq_check_button;
@@ -256,8 +256,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_NO_PROFILE_LINK, TRUE, prefs->updates_no_profile_link_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, TRUE, prefs->post_reply_to_service_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_ADD_PROFILE_LINK, FALSE, prefs->updates_add_profile_link_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE, prefs->post_reply_to_service_only_checkbutton);
 	
 	preferences_hookup_string_combo(prefs, PREFS_UPDATES_HOME_TIMELINE, prefs->combo_default_timeline);
 	
@@ -292,7 +292,6 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 	static const gchar *timelines[] = {
 		API_TIMELINE_FRIENDS,	N_("My Friends' Updates"),
 		API_REPLIES,		N_("@ Replies"),
-		API_MENTIONS,		N_("@ Mentions"),
 		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
 		API_FAVORITES,		N_("My Favorites"),
 		API_TIMELINE_MINE,	N_("My Tweets"),
@@ -615,7 +614,7 @@ void preferences_dialog_show(GtkWindow *parent){
 					"disable_update_length_alert_check_button", &prefs->disable_update_length_alert_check_button,
 					"replace_me_with_combo_box", &prefs->replace_me_with_combo_box,
 					
-					"updates_no_profile_link_checkbutton", &prefs->updates_no_profile_link_checkbutton,
+					"updates_add_profile_link_checkbutton", &prefs->updates_add_profile_link_checkbutton,
 					"post_reply_to_service_only_checkbutton", &prefs->post_reply_to_service_only_checkbutton,
 					
 					"previous_updates_uniq_check_button", &prefs->previous_updates_uniq_check_button,

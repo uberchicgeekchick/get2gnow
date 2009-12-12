@@ -82,6 +82,9 @@ G_BEGIN_DECLS
 
 #define API_POST_STATUS				"/statuses/update.xml"
 #define API_SEND_MESSAGE			"/direct_messages/new.xml"
+
+#define API_RETWEETS_TO_ME			"/statuses/retweeted_to_me.xml"
+#define API_RETWEETS_OF_ME			"/statuses/retweeted_of_me.xml"
 #define API_RETWEET_UPDATE			"/statuses/retweet/%s.xml"
 /********************************************************************************
  *                                    eof                                       *
