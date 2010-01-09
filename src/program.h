@@ -82,30 +82,12 @@ G_BEGIN_DECLS
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
-#ifndef GCONF_PATH
-#	if defined GNOME_ENABLE_DEBUG
-#		define	GCONF_PATH			"/apps/" PACKAGE_TARNAME "-debug"
-#	else
-#		define	GCONF_PATH			"/apps/" PACKAGE_TARNAME
-#	endif
-#endif
-
-
 #ifndef CONFIG_SUBDIR
 #	if defined GNOME_ENABLE_DEBUG
 #		define	CONFIG_SUBDIR		PACKAGE_TARNAME "-debug"
 #	else
 #		define	CONFIG_SUBDIR		PACKAGE_TARNAME
 #	endif
-#endif
-
-#ifndef IPC_PIPE_PREFIX
-#	if defined GNOME_ENABLE_DEBUG
-#		define	IPC_PIPE_PREFIX		"%s-debug-%s-"
-#	else
-#		define	IPC_PIPE_PREFIX		"%s-%s-"
-#	endif
-#	define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "%d"
 #endif
 
 #ifndef	G_STR_EMPTY
@@ -115,6 +97,14 @@ G_BEGIN_DECLS
 
 #ifndef	G_STR_N_EMPTY
 #	define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
+#endif
+
+#ifndef	uber_new
+#	define	uber_new(mem, type)				\
+	G_STMT_START{						\
+		if(mem!=NULL){ g_free(mem); mem=NULL; }		\
+		mem=g_new0(type, 1);				\
+}G_STMT_END
 #endif
 
 #ifndef uber_free

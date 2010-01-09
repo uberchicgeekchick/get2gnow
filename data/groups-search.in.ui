@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkWindow" id="groups_search_window">
+    <child>
+      <object class="GtkVBox" id="groups_search_vbox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkHandleBox" id="main_window_handlebox">
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkToolbar" id="main_toolbar">
+                <property name="visible">True</property>
+                <property name="show_arrow">False</property>
+                <child>
+                  <object class="GtkToolItem" id="toolbar_button_padding">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkHBox" id="search_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkFrame" id="frame1">
+                            <property name="visible">True</property>
+                            <property name="label_xalign">0</property>
+                            <property name="shadow_type">none</property>
+                            <child>
+                              <object class="GtkAlignment" id="alignment1">
+                                <property name="visible">True</property>
+                                <property name="left_padding">12</property>
+                                <child>
+                                  <object class="GtkComboBoxEntry" id="search_history_combo_box_entry">
+                                    <property name="visible">True</property>
+                                    <property name="model">search_history_list_store</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="search_label">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">&lt;b&gt;Sear_ch:&lt;/b&gt;</property>
+                                <property name="use_markup">True</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">search_history_combo_box_entry</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVBox" id="vbox1">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkButton" id="search_button">
+                                <property name="label" translatable="yes">_Go</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="image">image10</property>
+                                <property name="use_underline">True</property>
+                                <property name="image_position">right</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="pack_type">end</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="accounts_tool_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">_Accounts</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-dialog-authentication</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="select_service_tool_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Select Default _Service</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-orientation-portrait</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparatorToolItem" id="main_toolbar_accounts_separator">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="preferences_tool_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Prefere_nces</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-preferences</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparatorToolItem" id="main_toolbar_preferences_separator">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="main_window_main_tool_bar_exit_tool_button">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">E_xit</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-quit</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkNotebook" id="groups_search_notebook">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="groups_search_page0_label">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">- search results</property>
+              </object>
+              <packing>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="image10">
+    <property name="visible">True</property>
+    <property name="stock">gtk-media-next</property>
+  </object>
+</interface>

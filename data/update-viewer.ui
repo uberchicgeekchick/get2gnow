@@ -2,6 +2,32 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy project-wide -->
+  <object class="GtkListStore" id="followers_list_store">
+    <columns>
+      <!-- column-name user_label -->
+      <column type="gchararray"/>
+      <!-- column-name User -->
+      <column type="gpointer"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="previous_updates_list_store">
+    <columns>
+      <!-- column-name GSTRING_UPDATE -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkTreeStore" id="update_viewer_online_services_accounts_tree_store">
+    <columns>
+      <!-- column-name POSTABLE_ONLINE_SERVICE -->
+      <column type="gpointer"/>
+      <!-- column-name POSTABLE_ONLINE_SERVICE_KEY -->
+      <column type="gchararray"/>
+      <!-- column-name POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED -->
+      <column type="gboolean"/>
+      <!-- column-name POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED -->
+      <column type="gboolean"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="update_viewer">
     <child>
       <object class="GtkHBox" id="update_viewer_embed">
@@ -12,219 +38,222 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkImage" id="user_image">
-                <property name="width_request">78</property>
-                <property name="height_request">78</property>
+              <object class="GtkAspectFrame" id="update_viewer_avatar_aspect_frame">
                 <property name="visible">True</property>
-                <property name="xpad">3</property>
-                <property name="ypad">6</property>
-                <property name="pixel_size">70</property>
-                <property name="icon_name">get2gnow</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkVBox" id="update_viewer_avatar_vbox">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkImage" id="user_image">
+                        <property name="width_request">78</property>
+                        <property name="height_request">78</property>
+                        <property name="visible">True</property>
+                        <property name="xpad">3</property>
+                        <property name="ypad">6</property>
+                        <property name="pixel_size">70</property>
+                        <property name="icon_name">get2gnow</property>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkHSeparator" id="selected_updated_author_info_controls_hseparator2">
+              <object class="GtkAspectFrame" id="selected_update_controls_aspect_frame">
                 <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">none</property>
+                <child>
+                  <object class="GtkVBox" id="selected_update_controls_vbox">
+                    <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <object class="GtkHSeparator" id="selected_updated_author_info_controls_hseparator2">
+                        <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkAspectFrame" id="selected_update_update_and_forwards_aspect_frame">
+                        <property name="visible">True</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkHBox" id="selected_update_update_and_forwards_hbox">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkToggleButton" id="best_friend_toggle_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="image">best_friend_image</property>
+                                <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                                <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="view_user_profile_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <accelerator key="question" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                                <child>
+                                  <object class="GtkImage" id="view_user_profile_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-info</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="view_user_updates_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                                <child>
+                                  <object class="GtkImage" id="view_user_updates_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-home</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="view_user_unread_updates_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <child>
+                                  <object class="GtkImage" id="view_user_unread_updates_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-indent</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkAspectFrame" id="selected_update_author_aspect_frame">
+                        <property name="visible">True</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <child>
+                          <object class="GtkHBox" id="selected_update_author_hbox">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkButton" id="user_follow_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <child>
+                                  <object class="GtkImage" id="user_follow_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-add</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="user_unfollow_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <child>
+                                  <object class="GtkImage" id="user_unfollow_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-remove</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="user_block_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <child>
+                                  <object class="GtkImage" id="user_block_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-stop</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkAspectFrame" id="selected_updated_author_info_controls_aspect_frame">
-                <property name="visible">True</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">none</property>
-                <child>
-                  <object class="GtkHBox" id="selected_author_info_controls_hbox">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkToggleButton" id="best_friend_toggle_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="image">best_friend_image</property>
-                        <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
-                        <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="view_user_profile_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="question" signal="clicked" modifiers="GDK_MOD1_MASK"/>
-                        <child>
-                          <object class="GtkImage" id="view_user_profile_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-info</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkAspectFrame" id="selected_update_update_and_forwards_aspect_frame">
-                <property name="visible">True</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">none</property>
-                <child>
-                  <object class="GtkHBox" id="selected_update_update_and_forwards_hbox">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkButton" id="view_user_updates_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                        <child>
-                          <object class="GtkImage" id="view_user_updates_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-home</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="view_user_unread_updates_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage" id="view_user_unread_updates_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-indent</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="selected_update_view_forwards_button">
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="no_show_all">True</property>
-                        <child>
-                          <object class="GtkImage" id="selected_update_view_forwards_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-sort-ascending</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkAspectFrame" id="selected_update_author_aspect_frame">
-                <property name="visible">True</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">none</property>
-                <child>
-                  <object class="GtkHBox" id="selected_update_author_hbox">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkButton" id="user_follow_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage" id="user_follow_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-add</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="user_unfollow_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage" id="user_unfollow_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-remove</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="user_block_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage" id="user_block_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-stop</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">4</property>
               </packing>
             </child>
           </object>
@@ -244,106 +273,275 @@
           </packing>
         </child>
         <child>
-          <object class="GtkVBox" id="status_vbox">
+          <object class="GtkHPaned" id="update_viewer_status_view_hpaned">
             <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">2</property>
+            <property name="can_focus">True</property>
             <child>
-              <object class="GtkVBox" id="status_view_vbox">
+              <object class="GtkVBox" id="status_vbox">
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
+                <property name="spacing">2</property>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="update_datetime_label">
+                  <object class="GtkVBox" id="status_view_vbox">
                     <property name="visible">True</property>
-                    <property name="xalign">1</property>
-                    <property name="use_markup">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="update_datetime_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkVBox" id="update_viewer_update_composition_vbox">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkHSeparator" id="update_viewer_view_controls_hseparator">
-                    <property name="visible">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkAspectFrame" id="update_viewer_view_controls_aspect_frame">
+                  <object class="GtkVBox" id="update_viewer_update_composition_vbox">
                     <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
-                    <property name="xalign">1</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkHBox" id="update_viewer_view_controls_hbox">
+                      <object class="GtkHSeparator" id="update_viewer_view_controls_hseparator">
                         <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkAspectFrame" id="update_viewer_message_controls_aspect_frame">
+                        <property name="visible">True</property>
+                        <property name="label_xalign">0</property>
+                        <property name="shadow_type">none</property>
+                        <property name="xalign">1</property>
                         <child>
-                          <object class="GtkButton" id="reply_button">
+                          <object class="GtkHBox" id="update_viewer_message_controls_hbox">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
-                              <object class="GtkImage" id="reply_button_image">
+                              <object class="GtkButton" id="reply_button">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-undo</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                                <child>
+                                  <object class="GtkImage" id="reply_button_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-undo</property>
+                                  </object>
+                                </child>
                               </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="forward_update_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                                <child>
+                                  <object class="GtkImage" id="forward_update_button_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-media-next</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="retweet_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <child>
+                                  <object class="GtkImage" id="retweet_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-go-forward</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="selected_update_view_forwards_button">
+                                <property name="sensitive">False</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="no_show_all">True</property>
+                                <child>
+                                  <object class="GtkImage" id="selected_update_view_forwards_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-sort-ascending</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkVSeparator" id="vseparator1">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="make_fave_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                                <child>
+                                  <object class="GtkImage" id="make_fave_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-save-as</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">5</property>
+                              </packing>
                             </child>
                           </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkHBox" id="notification_labels_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkLabel" id="best_friend_dm_notification_label">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Direct Message a Best Friend:&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                            <property name="use_underline">True</property>
+                          </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="forward_update_button">
+                          <object class="GtkAspectFrame" id="char_count_aspect_frame">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <property name="label_xalign">1</property>
+                            <property name="shadow_type">none</property>
+                            <property name="xalign">1</property>
                             <child>
-                              <object class="GtkImage" id="forward_update_button_image">
+                              <object class="GtkHBox" id="char_count_hbox">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-media-next</property>
+                                <child>
+                                  <object class="GtkLabel" id="char_count_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">1</property>
+                                    <property name="label" translatable="yes">&lt;small&gt;&lt;u&gt;Remaining Characters:&lt;/u&gt;&lt;/small&gt;</property>
+                                    <property name="use_markup">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="char_count">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">1</property>
+                                    <property name="xpad">10</property>
+                                    <property name="label" translatable="yes">&lt;small&gt;&lt;span color="green"&gt;140&lt;/span&gt;&lt;/small&gt;</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="justify">right</property>
+                                    <property name="single_line_mode">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
                               </object>
                             </child>
                           </object>
                           <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkHBox" id="update_viewer_update_composition_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkImage" id="get2gnow_mini_logo">
+                            <property name="visible">True</property>
+                            <property name="icon_name">get2gnow</property>
+                          </object>
+                          <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
+                            <property name="padding">5</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxEntry" id="update_viewer_sexy_entry_combo_box_entry">
+                            <property name="visible">True</property>
+                            <property name="model">previous_updates_list_store</property>
+                            <property name="add_tearoffs">True</property>
+                            <property name="tearoff_title">Previous Updates</property>
+                          </object>
+                          <packing>
                             <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="retweet_button">
+                          <object class="GtkButton" id="sexy_send">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <child>
-                              <object class="GtkImage" id="retweet_image">
+                              <object class="GtkImage" id="sexy_send_image">
                                 <property name="visible">True</property>
                                 <property name="stock">gtk-go-forward</property>
                               </object>
@@ -356,7 +554,27 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkVSeparator" id="vseparator1">
+                          <object class="GtkButton" id="sexy_dm_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                            <child>
+                              <object class="GtkImage" id="sexy_dm_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-jump-to</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkVSeparator" id="sexy_vseparator">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                           </object>
@@ -367,15 +585,16 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="make_fave_button">
+                          <object class="GtkToggleButton" id="dm_form_active_togglebutton">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
-                              <object class="GtkImage" id="make_fave_image">
+                              <object class="GtkImage" id="dm_form_active_image">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-about</property>
+                                <property name="stock">gtk-edit</property>
                               </object>
                             </child>
                           </object>
@@ -386,42 +605,29 @@
                           </packing>
                         </child>
                       </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkHBox" id="notification_labels_hbox">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkLabel" id="best_friend_dm_notification_label">
-                        <property name="visible">True</property>
-                        <property name="xalign">0</property>
-                        <property name="label" translatable="yes">&lt;b&gt;Direct Message a Best Friend:&lt;/b&gt;</property>
-                        <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
-                      </object>
                       <packing>
-                        <property name="position">0</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkAspectFrame" id="char_count_aspect_frame">
-                        <property name="visible">True</property>
-                        <property name="label_xalign">1</property>
+                      <object class="GtkFrame" id="dm_frame">
+                        <property name="no_show_all">True</property>
+                        <property name="label_xalign">0</property>
                         <property name="shadow_type">none</property>
-                        <property name="xalign">1</property>
                         <child>
-                          <object class="GtkHBox" id="char_count_hbox">
+                          <object class="GtkHBox" id="dm_form_hbox">
                             <property name="visible">True</property>
                             <child>
-                              <object class="GtkLabel" id="char_count_label">
+                              <object class="GtkButton" id="dm_refresh">
                                 <property name="visible">True</property>
-                                <property name="xalign">1</property>
-                                <property name="label" translatable="yes">&lt;small&gt;&lt;u&gt;Remaining Characters:&lt;/u&gt;&lt;/small&gt;</property>
-                                <property name="use_markup">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <child>
+                                  <object class="GtkImage" id="dm_refresh_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-refresh</property>
+                                  </object>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -430,103 +636,54 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="char_count">
+                              <object class="GtkComboBox" id="followers_combo_box">
                                 <property name="visible">True</property>
-                                <property name="xalign">1</property>
-                                <property name="xpad">10</property>
-                                <property name="label" translatable="yes">&lt;small&gt;&lt;span color="green"&gt;140&lt;/span&gt;&lt;/small&gt;</property>
-                                <property name="use_markup">True</property>
-                                <property name="justify">right</property>
-                                <property name="single_line_mode">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">followers_list_store</property>
+                                <property name="add_tearoffs">True</property>
+                                <property name="tearoff_title">Send this message as a Direct Message to:</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
+                                  <attributes>
+                                    <attribute name="markup">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="followers_send_dm">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="relief">half</property>
+                                <child>
+                                  <object class="GtkImage" id="dm_send_image">
+                                    <property name="visible">True</property>
+                                    <property name="tooltip_markup">&lt;b&gt;Send this update as a DM, direct message, to the selected follower:&lt;/b&gt;</property>
+                                    <property name="stock">gtk-goto-last</property>
+                                  </object>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>
                         </child>
-                      </object>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkHBox" id="update_viewer_update_composition_hbox">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkImage" id="get2gnow_mini_logo">
-                        <property name="visible">True</property>
-                        <property name="icon_name">get2gnow</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">5</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBoxEntry" id="update_viewer_sexy_entry_combo_box_entry">
-                        <property name="visible">True</property>
-                        <property name="model">previous_updates_list_store</property>
-                        <property name="add_tearoffs">True</property>
-                        <property name="tearoff_title">Previous Updates</property>
-                      </object>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="sexy_send">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
-                        <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
-                        <child>
-                          <object class="GtkImage" id="sexy_send_image">
+                        <child type="label">
+                          <object class="GtkLabel" id="dm_frame_label">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-go-forward</property>
+                            <property name="label" translatable="yes">_DM a friend:</property>
+                            <property name="use_markup">True</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">followers_combo_box</property>
                           </object>
                         </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="sexy_dm_button">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
-                        <child>
-                          <object class="GtkImage" id="sexy_dm_image">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-jump-to</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkVSeparator" id="sexy_vseparator">
-                        <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -534,50 +691,182 @@
                         <property name="position">4</property>
                       </packing>
                     </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">False</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkVBox" id="controls_vbox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkVPaned" id="update_viwer_view_controls_vpaned">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="position">68</property>
+                    <property name="position_set">True</property>
                     <child>
-                      <object class="GtkToggleButton" id="dm_form_active_togglebutton">
+                      <object class="GtkVBox" id="update_viwer_view_controls_vbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkImage" id="dm_form_active_image">
+                          <object class="GtkHSeparator" id="update_viwer_view_controls_upper_hseparator">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-edit</property>
                           </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="padding">6</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkAspectFrame" id="update_viewer_appearance_controls_aspect_frame">
+                            <property name="visible">True</property>
+                            <property name="label_xalign">0</property>
+                            <property name="shadow_type">none</property>
+                            <child>
+                              <object class="GtkHBox" id="update_viewer_appearance_controls_hbox">
+                                <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkToggleButton" id="update_viewer_compact_view_toggle_button">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">True</property>
+                                    <child>
+                                      <object class="GtkImage" id="update_viewer_compact_view_image">
+                                        <property name="visible">True</property>
+                                        <property name="stock">gtk-leave-fullscreen</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton" id="update_viewer_embed_toggle_button">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">True</property>
+                                    <property name="image">update_viewer_embed_image</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton" id="update_viewer_online_services_view_toggle_button">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">True</property>
+                                    <child>
+                                      <object class="GtkImage" id="update_viewer_online_services_view_toggle_image">
+                                        <property name="visible">True</property>
+                                        <property name="stock">gtk-network</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkHSeparator" id="update_viwer_view_controls_lower_hseparator">
+                            <property name="visible">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="padding">6</property>
+                            <property name="position">2</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">5</property>
+                        <property name="resize">False</property>
+                        <property name="shrink">False</property>
                       </packing>
                     </child>
-                  </object>
-                  <packing>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkFrame" id="dm_frame">
-                    <property name="no_show_all">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkHBox" id="dm_form_hbox">
+                      <object class="GtkVBox" id="update_viewer_online_services_vbox">
                         <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkButton" id="dm_refresh">
+                          <object class="GtkHBox" id="update_viewer_online_services_controls_hbox">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Reload your followers or select a different account to send DMs to.</property>
                             <child>
-                              <object class="GtkImage" id="dm_refresh_image">
+                              <object class="GtkToolbar" id="update_viewer_online_services_controls_toolbar">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-refresh</property>
+                                <property name="toolbar_style">icons</property>
+                                <property name="show_arrow">False</property>
+                                <property name="icon_size">1</property>
+                                <property name="icon_size_set">True</property>
+                                <child>
+                                  <object class="GtkToolButton" id="update_viewer_online_services_controls_edit_accounts_tool_button">
+                                    <property name="visible">True</property>
+                                    <property name="label" translatable="yes">Edit Acc_ounts</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="stock_id">gtk-dialog-authentication</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="homogeneous">True</property>
+                                  </packing>
+                                </child>
                               </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkVSeparator" id="update_viewer_online_services_controls_vseparator">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="update_viewer_online_services_controls_label">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Update my status _on:</property>
+                                <property name="use_markup">True</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
                             </child>
                           </object>
                           <packing>
@@ -587,158 +876,77 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkComboBox" id="followers_combo_box">
+                          <object class="GtkHSeparator" id="update_viewer_online_services_hseparator">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip_text" translatable="yes">Friends you can send direct messages to.</property>
-                            <property name="model">followers_list_store</property>
-                            <property name="add_tearoffs">True</property>
-                            <property name="tearoff_title">Send this message as a Direct Message to:</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="friends_cellrenderertext"/>
-                              <attributes>
-                                <attribute name="markup">0</attribute>
-                              </attributes>
-                            </child>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="followers_send_dm">
+                          <object class="GtkScrolledWindow" id="update_viewer_online_services_accounts_scrolled_window">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Send your message as direct message to
-&lt;-- this user.</property>
-                            <property name="relief">half</property>
+                            <property name="hscrollbar_policy">automatic</property>
+                            <property name="vscrollbar_policy">automatic</property>
                             <child>
-                              <object class="GtkImage" id="dm_send_image">
+                              <object class="GtkTreeView" id="update_viewer_online_services_accounts_tree_view">
                                 <property name="visible">True</property>
-                                <property name="tooltip_markup">&lt;b&gt;Send this update as a DM, direct message, to the selected follower:&lt;/b&gt;</property>
-                                <property name="stock">gtk-goto-last</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">update_viewer_online_services_accounts_tree_store</property>
+                                <property name="headers_visible">False</property>
+                                <property name="headers_clickable">False</property>
+                                <property name="search_column">1</property>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="update_viewer_online_services_accounts_tree_view_post_to_enabled_tree_view_column">
+                                    <property name="title">Post My Update(s) To:</property>
+                                    <child>
+                                      <object class="GtkCellRendererToggle" id="update_viewer_online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle"/>
+                                      <attributes>
+                                        <attribute name="activatable">2</attribute>
+                                        <attribute name="active">3</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn" id="update_viewer_online_services_accounts_tree_view_key_tree_view_column">
+                                    <property name="title">Online Service:</property>
+                                    <child>
+                                      <object class="GtkCellRendererText" id="update_viewer_online_services_accounts_tree_view_key_cell_renderer_text"/>
+                                      <attributes>
+                                        <attribute name="markup">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="dm_frame_label">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_DM a friend:</property>
-                        <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">followers_combo_box</property>
-                      </object>
+                      <packing>
+                        <property name="resize">True</property>
+                        <property name="shrink">True</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">4</property>
+                    <property name="position">68</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
+                <property name="resize">False</property>
+                <property name="shrink">True</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkVSeparator" id="update_viewer_right_vseparator">
-            <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkVBox" id="controls_vbox">
-            <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkHSeparator" id="update_viwer_view_controls_upper_hseparator">
-                <property name="visible">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="padding">6</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkHBox" id="status_control_hbox">
-                <property name="visible">True</property>
-                <child>
-                  <object class="GtkToggleButton" id="update_viewer_compact_view_toggle_button">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <child>
-                      <object class="GtkImage" id="update_viewer_compact_view_image">
-                        <property name="visible">True</property>
-                        <property name="stock">gtk-leave-fullscreen</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToggleButton" id="update_viewer_embed_toggle_button">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="image">update_viewer_embed_image</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkHSeparator" id="update_viwer_view_controls_lower_hseparator">
-                <property name="visible">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="padding">6</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="pack_type">end</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -751,23 +959,9 @@
     <property name="page_increment">10</property>
     <property name="page_size">10</property>
   </object>
-  <object class="GtkListStore" id="followers_list_store">
-    <columns>
-      <!-- column-name user_label -->
-      <column type="gchararray"/>
-      <!-- column-name User -->
-      <column type="gpointer"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="previous_updates_list_store">
-    <columns>
-      <!-- column-name GSTRING_UPDATE -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkImage" id="best_friend_image">
     <property name="visible">True</property>
-    <property name="stock">gnome-stock-about</property>
+    <property name="stock">gtk-about</property>
   </object>
   <object class="GtkImage" id="update_viewer_embed_image">
     <property name="visible">True</property>

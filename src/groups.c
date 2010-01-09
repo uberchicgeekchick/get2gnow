@@ -79,7 +79,7 @@
 
 #include "main-window.h"
 #include "uberchick-tree-view.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "images.h"
 #include "gconfig.h"
 

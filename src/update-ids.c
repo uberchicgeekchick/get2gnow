@@ -63,6 +63,7 @@
 #include "update-ids.h"
 #include "gconfig.h"
 
+#include "preferences.defines.h"
 #include "online-services-typedefs.h"
 #include "online-service.types.h"
 
@@ -101,7 +102,6 @@ static gchar *update_ids_format_timeline_for_gconfig(const gchar *timeline);
 #define	DEBUG_DOMAINS	"OnlineServices:Network:Updates:Requests:GConf:GConfig:Settings:IDs:Update IDs:update-ids.c"
 #include "debug.h"
 
-#define ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY		GCONF_PATH "/online-services/xml-cache/archive/since-ids/%s%s/%s"
 
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *

@@ -149,8 +149,6 @@ void program_deinit(void){
 	
 	ipc_deinit();
 	
-	user_profile_viewer_cleanup();
-	
 	www_deinit();
 	
 	debug_deinit();

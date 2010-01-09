@@ -76,7 +76,7 @@
 			<default>5</default>
 			<locale name="C">
 				<short>Minutes between timeline retrievals</short>
-				<long>Minutes between timeline retrievals. Values supported are 5, 15, 30, and 60</long>
+				<long>Minutes between timeline retrievals. Values supported are 5 to 100. Minutes are incremented by 5 minute interievals.</long>
 			</locale>
 		</schema>
 		
@@ -87,9 +87,9 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<short>Rather or not to open a tab displaying these updates at start-up.</short>
 				<long>
-					Rather or not to notify me of when I recieve these updates.
+					Rather or not to open a tab displaying these updates at start-up.
 				</long>
 			</locale>
 		</schema>
@@ -101,9 +101,9 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<short>Rather or not to open a tab displaying these updates at start-up.</short>
 				<long>
-					Rather or not to notify me of when I recieve these updates.
+					Rather or not to open a tab displaying these updates at start-up.
 				</long>
 			</locale>
 		</schema>
@@ -115,9 +115,23 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<short>Rather or not to open a tab displaying these updates at start-up.</short>
 				<long>
-					Rather or not to notify me of when I recieve these updates.
+					Rather or not to open a tab displaying these updates at start-up.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/additional_timeline</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/additional_timeline</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>string</type>
+			<default></default>
+			<locale name="C">
+				<short>Rather or not to open a specific tab at start-up.</short>
+				<long>
+					Rather or not to open a specific tab displaying a selected timeline's updates at start-up.
 				</long>
 			</locale>
 		</schema>
@@ -129,9 +143,23 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Rather or not to notify me of when I recieve these updates.</short>
+				<short>Rather or not to open a tab displaying these updates at start-up.</short>
 				<long>
-					Rather or not to notify me of when I recieve these updates.
+					Rather or not to open a tab displaying these updates at start-up.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/homepage</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/homepage</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Rather or not to open a tab displaying these updates at start-up.</short>
+				<long>
+					Rather or not to open a tab displaying these updates at start-up.
 				</long>
 			</locale>
 		</schema>
@@ -288,17 +316,33 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/enlarged</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/enlarged</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/compact_view</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/compact_view</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Whether the ControlPanel is enlarged by default.</short>
+				<short>Whether the UpdateViewer is compact by default.</short>
 				<long>
-					Whether the ControlPanel is enlarged by default.
-					If false most of the ControlPanel Widgets are hidden
+					Whether the UpdateViewer is compact by default.
+					If true most of the UpdateViewer Widgets are hidden
 					unless an update is selected.
+				</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/show_services</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/show_services</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Whether to display which OnlineServices to post to by default.</short>
+				<long>
+					Whether to display which OnlineServices to post to by default.
+					If false all enabled services will be posted to, by default.
+					These are effected by @PACKAGE_NAME@'s /updates/reply/directly_to key.
 				</long>
 			</locale>
 		</schema>
@@ -724,8 +768,8 @@
 			<type>int</type>
 			<default>320</default>
 			<locale name="C">
-				<short>Tweet View's vertical slider bar's position</short>
-				<long>Tweet View's vertical slider bar's position.</long>
+				<short>UpdateViewer's vertical slider bar's position</short>
+				<long>UpdateViewer's vertical slider bar's position.</long>
 			</locale>
 		</schema>
 		
@@ -736,8 +780,32 @@
 			<type>int</type>
 			<default>420</default>
 			<locale name="C">
-				<short>Tweet View's vertical slider bar's position</short>
-				<long>Tweet View's vertical slider bar's position.</long>
+				<short>UpdateViewer's vertical slider bar's position</short>
+				<long>UpdateViewer's vertical slider bar's position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/position_hpaned</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/position_hpaned</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>0</default>
+			<locale name="C">
+				<short>UpdateViewer's internal horizontal slider bar's position</short>
+				<long>UpdateViewer's internal horizontal slider bar's position.</long>
+			</locale>
+		</schema>
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/ui/update_viewer/appreance_controls/position_vpaned</key>
+			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/appreance_controls/position_vpaned</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>int</type>
+			<default>68</default>
+			<locale name="C">
+				<short>UpdateViewer's internal vertical slider bar's position</short>
+				<long>UpdateViewer's internal vertical slider bar's position.</long>
 			</locale>
 		</schema>
 		

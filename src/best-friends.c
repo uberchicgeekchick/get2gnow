@@ -107,7 +107,7 @@ GtkTreeStore *best_friends_get_tree_store(void){
 
 gboolean best_friends_check_update_ids( OnlineService *service, const gchar *best_friends_user_name, gdouble update_id){
 	gdouble unread_update_id=0.0;
-	gchar *user_timeline=g_strdup_printf("/%s.xml", best_friends_user_name );
+	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, best_friends_user_name );
 	gdouble best_friends_newest_update_id=0.0, best_friends_unread_update_id=0.0, best_friends_oldest_update_id=0.0;
 	update_ids_get( service, user_timeline, &best_friends_newest_update_id, &best_friends_unread_update_id, &best_friends_oldest_update_id );
 	gboolean notify_of_new_update=FALSE, save_update_ids=FALSE;;

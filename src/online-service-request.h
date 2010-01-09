@@ -93,18 +93,18 @@ G_BEGIN_DECLS
 const gchar *online_service_request_method_to_string(RequestMethod request_method);
 const gchar *online_service_request_action_to_string(RequestAction action);
 
-void online_service_request_view_profile(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_view_updates_new(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_view_updates(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_follow(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_unfollow(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_best_friend_drop(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_block(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_unblock(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_fave(OnlineService *service, GtkWindow *parent, const gchar *user_name);
-void online_service_request_unfave(OnlineService *service, GtkWindow *parent, const gchar *user_name);
+void online_service_request_view_profile(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_view_updates_new(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_view_updates(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_follow(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_unfollow(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_best_friend_drop(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_block(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_unblock(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_fave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_unfave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 

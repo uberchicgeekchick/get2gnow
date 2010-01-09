@@ -152,17 +152,13 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	gchar *uri=NULL;
 	if(users_glist_get_recall_check(users_glist_get_which, service)){
 		if(fetching_users) fetching_users=FALSE;
-		getting_followers=(which_pass>0 ?TRUE : FALSE);
 		return users_glist_get(users_glist_get_which, FALSE, NULL);
 	}
 	
-	if(!which_pass){
-		if(getting_followers) getting_followers=FALSE;
+	if(!which_pass)
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
-	}else{
-		if(!getting_followers) getting_followers=TRUE;
+	else
 		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
-	}
 	
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	debug("Downloading %s page #%d(pass #%d).", users_glist_get_which_str, page, which_pass );
@@ -190,12 +186,12 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboole
 			case GetFriends:
 				if(!service->friends) break;
 				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
-				users=g_list_sort(service->friends, (GCompareFunc)users_glists_sort_by_user_name);
+				users=g_list_sort(g_list_first(service->friends), (GCompareFunc)users_glists_sort_by_user_name);
 				break;
 			case GetFollowers:
 				if(!service->followers) break;
 				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
-				users=g_list_sort(service->followers, (GCompareFunc)users_glists_sort_by_user_name);
+				users=g_list_sort(g_list_first(service->followers), (GCompareFunc)users_glists_sort_by_user_name);
 				break;
 			case GetBoth:
 				if(!service->friends){
@@ -209,7 +205,7 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboole
 				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
 				if(!service->friends_and_followers){
 					service->friends_and_followers=g_list_alloc();
-					service->friends_and_followers=g_list_concat(service->friends, service->followers);
+					service->friends_and_followers=g_list_concat(g_list_first(service->friends), g_list_first(service->followers));
 				}
 				
 				users=g_list_sort(service->friends_and_followers, (GCompareFunc)users_glists_sort_by_user_name);
@@ -277,6 +273,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	}
 	uber_free(error_message);
 	
+	getting_followers=( g_strrstr(uri, API_FOLLOWERS) ? TRUE : FALSE );
 	GList *new_users=NULL;
 	debug("Parsing user list");
 	if(!(new_users=users_glist_parse(service, xml)) ){

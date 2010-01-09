@@ -90,9 +90,9 @@ G_BEGIN_DECLS
  *          Global method  & function prototypes        *
  ********************************************************/
 OnlineService *online_service_open(const gchar *guid);
-OnlineService *online_service_new(const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
+OnlineService *online_service_new(const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default);
 void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action);
-gboolean online_service_save(OnlineService *service, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
+gboolean online_service_save(OnlineService *service, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default);
 gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm_rf);
 
 gboolean online_service_validate_guid(OnlineService *service, const gchar *user_name, const gchar *uri);
@@ -103,7 +103,6 @@ gboolean online_service_is_user_best_friend( OnlineService *service, const gchar
 gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
 gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name );
 void online_service_best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
-void online_service_best_friends_tree_store_free( OnlineService *service, GtkTreeStore *tree_store );
 
 gboolean online_service_connect(OnlineService *service);
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection);

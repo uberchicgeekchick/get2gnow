@@ -79,13 +79,13 @@ struct _UberChickTreeViewClass {
 
 typedef enum _UberChickTreeViewListStoreColumn{	/********************************************************************************/
 	GUINT_UBERCHICK_TREE_VIEW_INDEX,		/*	The update's index in the list-store.                                   */
-	GDOUBLE_UPDATE_ID,				/*	Tweet's ID.								*/
+	GDOUBLE_UPDATE_ID,				/*	Update's ID.								*/
 	GDOUBLE_USER_ID,				/*	User's ID.								*/
 	STRING_USER,					/*	Username string.							*/
 	STRING_NICK,					/*	Author name string.							*/
-	STRING_TEXT,					/*	Unformated Tweet string.						*/
+	STRING_TEXT,					/*	Unformated Update string.						*/
 	STRING_UPDATE,					/*	Update for display string in the UberChickTreeView's SexyTreeView.  */
-	STRING_SEXY_UPDATE,				/*	libsexy formatted Tweet for SexyTreeView's tooltip.			*/
+	STRING_SEXY_UPDATE,				/*	libsexy formatted Update for SexyTreeView's tooltip.			*/
 	STRING_DETAILED_UPDATE,				/*	Upate's string as markup w/full details..				*/
 	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
 	STRING_CREATED_AT,				/*	Date string.								*/
@@ -95,11 +95,11 @@ typedef enum _UberChickTreeViewListStoreColumn{	/*******************************
 	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
 	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
 	STRING_RCPT,					/* 	OnlineService's key this update's from. E.G. To: <user@service>		*/
-	GINT_SELECTED_INDEX,				/*	The associated order/place this item appears in the sorted tree model.  */
 	GINT_LIST_STORE_INDEX,				/*	The associated order/place this item appears in the list store.         */
 	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
 	GBOOLEAN_RETWEET,				/*	If the update's a retweet or not					*/
-	GCHARARRY_RETWEETED_BY,				/*	Who retweeted this update.  Its: "" if this update's not a retwwet.	*/
+	GCHARARRY_RETWEETED_BY,				/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
+	STRING_SEXY_STATUS_UPDATE,			/* Update's string as markup for display.					*/
 							/********************************************************************************/
 } UberChickTreeViewListStoreColumn;
 
@@ -117,7 +117,6 @@ GtkLabel *uberchick_tree_view_get_menu(UberChickTreeView *uberchick_tree_view);
 
 OnlineService *uberchick_tree_view_get_service(UberChickTreeView *uberchick_tree_view);
 GtkTreeStore *uberchick_tree_view_get_tree_store(UberChickTreeView *uberchick_tree_view);
-GtkTreeModel *uberchick_tree_view_get_tree_model(UberChickTreeView *uberchick_tree_view);
 
 void uberchick_tree_view_start(UberChickTreeView *uberchick_tree_view);
 gboolean uberchick_tree_view_refresh(UberChickTreeView *uberchick_tree_view);
@@ -134,7 +133,7 @@ gboolean uberchick_tree_view_toggle_toolbar(UberChickTreeView *uberchick_tree_vi
 gboolean uberchick_tree_view_toggle_from_column(UberChickTreeView *uberchick_tree_view);
 gboolean uberchick_tree_view_toggle_rcpt_column(UberChickTreeView *uberchick_tree_view);
 
-void uberchick_tree_view_mark_as_read(UberChickTreeView *uberchick_tree_view);
+void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_view);
 
 gint8 uberchick_tree_view_has_loaded(UberChickTreeView *uberchick_tree_view);
 

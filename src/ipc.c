@@ -64,7 +64,6 @@
 #include <string.h>
 #include <strings.h>
 
-#include <libgnomevfs/gnome-vfs.h>
 #include <gtk/gtk.h>
 
 
@@ -88,6 +87,15 @@ struct _Input{
 	GByteArray	*buffer;
 	gboolean	ready;
 };
+
+#ifndef IPC_PIPE_PREFIX
+#	if defined GNOME_ENABLE_DEBUG
+#		define	IPC_PIPE_PREFIX		"%s-debug-%s-"
+#	else
+#		define	IPC_PIPE_PREFIX		"%s-%s-"
+#	endif
+#	define	IPC_PIPE_PREFIX_FULL	"%s/" IPC_PIPE_PREFIX "%d"
+#endif
 
 #define DEBUG_DOMAINS "Settings:Setup:Start-Up:CLI:Options:IPC:Threads:Pipe:Arguments:Protocol:ipc.c"
 #include "debug.h"
@@ -120,64 +128,69 @@ gboolean ipc_init_check(int argc, char **argv){
 
 	cur_dir_tmp=g_get_current_dir();
 	cur_dir=g_strdup_printf("%s/", cur_dir_tmp);
-	g_free(cur_dir_tmp);
+	uber_free(cur_dir_tmp);
 	
 	/* if another process creates a pipe while we are doing this,
 	 * we may not get that pipe here. dunno if it's a problem */
 	while((entry=g_dir_read_name(dir)) ){
-		if(!(strncmp( entry, prefix, prefix_len )) ){
-			const char *pid_string;
-			pid_t pid;
-			char *filename;
-			
-			errno=0;
-			pid_string=entry + prefix_len;
-			/* this is not right, but should not cause real problems */
-			pid=strtol(pid_string, NULL, 10);
-			filename=g_build_filename(tmp_path, entry, NULL);
-			
-			if(!errno && pid > 0 && !kill(pid, 0)){
-				/* it would be cool to check that the file is indeed a fifo,
-				 * but again, who cares? */
-				int fd;
-				if((fd=open(filename, O_WRONLY | O_NONBLOCK)) == -1 ){
-					perror("open");
-					unlink(filename);
-				}else{
-					/* TODO: validate argumants. */
-					gboolean write_check=FALSE;
-					if(!(write_check=write(fd, "", 1) ))
-						return write_check;
-					
-					for(int i=0; i < argc; ++i) {
-						to_open=NULL;
-						if(g_path_is_absolute(argv[i]))
-							to_open=gnome_vfs_uri_make_full_from_relative(NULL, argv[i]);
-						else
-							to_open=gnome_vfs_uri_make_full_from_relative(cur_dir, argv[i]);
-						if(to_open) {
-							if(!(write_check=write(fd, to_open, strlen(to_open) + 1) ))
-								g_warning("Failed to write: %s to %s", to_open, filename);
-							g_free(to_open);
-						}
-					}
-					close(fd);
-					g_free(filename);
-					g_dir_close(dir);
-					g_free(prefix);
-					return TRUE;
-				}
-			}else{
-				unlink(filename);
-			}
-			
-			g_free(filename);
+		if(strncmp( entry, prefix, prefix_len ))
+			continue;
+		
+		const char *pid_string;
+		pid_t pid;
+		char *filename;
+		
+		errno=0;
+		pid_string=entry+prefix_len;
+		/* this is not right, but should not cause real problems */
+		pid=strtol(pid_string, NULL, 10);
+		filename=g_build_filename(tmp_path, entry, NULL);
+		
+		if(errno && pid <= 0 && kill(pid, 0)){
+			unlink(filename);
+			uber_free(filename);
+			continue;
 		}
+		/* it would be cool to check that the file is indeed a fifo,
+		 * but again, who cares? */
+		int fd;
+		if((fd=open(filename, O_WRONLY | O_NONBLOCK)) == -1 ){
+			perror("open");
+			unlink(filename);
+			uber_free(filename);
+			continue;
+		}
+		
+		/* TODO: validate argumants. */
+		gboolean write_check=FALSE;
+		if(!(write_check=write(fd, "", 1) )){
+			close(fd);
+			uber_free(filename);
+			g_dir_close(dir);
+			uber_free(prefix);
+			return FALSE;
+		}
+		
+		for(int i=0; i < argc; ++i) {
+			to_open=NULL;
+			if(!g_path_is_absolute(argv[i]))
+				to_open=g_build_filename(cur_dir, argv[1], NULL);
+			else
+				to_open=g_build_filename(argv[i], NULL);
+			if(!(write_check=write(fd, to_open, strlen(to_open) + 1)) )
+				debug("**WARNING:** Failed to write: %s to %s", to_open, filename);
+			uber_free(to_open);
+		}
+		close(fd);
+		uber_free(filename);
+		g_dir_close(dir);
+		uber_free(prefix);
+		return TRUE;
 	}
 	
 	g_dir_close(dir);
+	uber_free(prefix);
 	ipc_main();
-	g_free(prefix);
 	return FALSE;
 }
 
@@ -339,7 +352,7 @@ void ipc_deinit(void){
 	if(input->pipe_name){
 		input->pipe =-1;
 		unlink(input->pipe_name);
-		g_free(input->pipe_name);
+		uber_free(input->pipe_name);
 		input->pipe_name=NULL;
 	}
 	

@@ -733,9 +733,9 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="#010001"
+PACKAGE_VERSION="010001"
 VERSION="${PACKAGE_VERSION}"
-PACKAGE_RELEASE="a72"
+PACKAGE_RELEASE="a74"
 RELEASE="${PACKAGE_RELEASE}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_RELEASE}"
@@ -22941,12 +22941,11 @@ if test -n "$get2gnow_CFLAGS"; then
 	    libsexy
 	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
 	    glib-2.0 >= \$GLIB_VERSION_REQUIRED
 	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= \$GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= \$GCONF_VERSION_REQUIRED
@@ -22958,12 +22957,11 @@ if test -n "$get2gnow_CFLAGS"; then
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -22978,12 +22976,11 @@ if test -n "$get2gnow_CFLAGS"; then
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -23005,12 +23002,11 @@ if test -n "$get2gnow_LIBS"; then
 	    libsexy
 	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
 	    glib-2.0 >= \$GLIB_VERSION_REQUIRED
 	    gio-2.0 >= \$LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= \$LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= \$GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= \$GCONF_VERSION_REQUIRED
@@ -23022,12 +23018,11 @@ if test -n "$get2gnow_LIBS"; then
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -23042,12 +23037,11 @@ if test -n "$get2gnow_LIBS"; then
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -23076,12 +23070,11 @@ fi
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -23094,12 +23087,11 @@ fi
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -23115,12 +23107,11 @@ fi
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED
@@ -23142,12 +23133,11 @@ echo "$as_me: error: Package requirements (
 	    libsexy
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
-	    gnome-vfs-2.0
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	    glib-2.0 >= $GLIB_VERSION_REQUIRED
 	    gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	    libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	    libgnomeui-2.0
+	    libgnome-2.0
 	    gobject-2.0
 	    gthread-2.0 >= $GTHREAD_VERSION_REQUIRED
 	    gconf-2.0 >= $GCONF_VERSION_REQUIRED

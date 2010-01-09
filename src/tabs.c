@@ -101,7 +101,7 @@ static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guin
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Tweets:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:tabs.c"
+#define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Updates:Requests:Users:Authentication:Preferences:Settings:Setup:Start-Up:tabs.c"
 #include "debug.h"
 
 
@@ -163,13 +163,13 @@ void tabs_close_timeline(const gchar *timeline){
 }/*main_window_tweets_list_get( "/direct_messages.xml", (NULL|service) );*/
 
 static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num){
-	uberchick_tree_view_mark_as_read(tabs_get_page(page_num, FALSE));
+	uberchick_tree_view_labels_mark_as_read(tabs_get_page(page_num, FALSE));
 }/*tabs_mark_as_read(tabs->notebook, page, 0, main_window);*/
 
 UberChickTreeView *tabs_get_next(void){
 	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
 	UberChickTreeView *current=tabs_get_current();
-	gtk_notebook_next_page(tabs->notebook);
+	gtk_notebook_set_current_page(tabs->notebook, uberchick_tree_view_get_page(current)+1);
 	UberChickTreeView *next=tabs_get_current();
 	if(current!=next) return next;
 	gtk_notebook_set_current_page(tabs->notebook, 0);
@@ -183,7 +183,7 @@ UberChickTreeView *tabs_get_current(void){
 UberChickTreeView *tabs_get_previous(void){
 	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
 	UberChickTreeView *current=tabs_get_current();
-	gtk_notebook_prev_page(tabs->notebook);
+	gtk_notebook_set_current_page(tabs->notebook, uberchick_tree_view_get_page(current)-1);
 	UberChickTreeView *previous=tabs_get_current();
 	if(current!=previous) return previous;
 	gtk_notebook_set_current_page(tabs->notebook, (gtk_notebook_get_n_pages(tabs->notebook)-1));
@@ -215,7 +215,7 @@ UberChickTreeView *tabs_get_page(gint page, gboolean close){
 			uberchick_tree_view=(UberChickTreeView *)t->data;
 			if(!close) return uberchick_tree_view;
 		}else if(uberchick_tree_view_page > page)
-			uberchick_tree_view_set_page( (UberChickTreeView *)t->data, page-1 );
+			uberchick_tree_view_set_page( (UberChickTreeView *)t->data, uberchick_tree_view_page-1 );
 	}
 	return uberchick_tree_view;
 }/*tabs_get_page(0, TRUE|FALSE);*/

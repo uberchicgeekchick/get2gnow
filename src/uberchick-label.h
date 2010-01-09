@@ -93,9 +93,11 @@ GType uberchick_label_get_type(void) G_GNUC_CONST;
 
 UberChickLabel *uberchick_label_new(void);
 OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_user_name(UberChickLabel *uberchick_label);
+gdouble uberchick_label_get_user_id(UberChickLabel *uberchick_label);
 gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label);
 
-void uberchick_label_set_text(UberChickLabel  *uberchick_label, OnlineService *service, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+void uberchick_label_set_text(UberChickLabel  *uberchick_label, OnlineService *service, const gchar *user_name, gdouble user_id, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS
 #endif /* __UBERCHICK_LABEL_H__ */

@@ -83,16 +83,18 @@ enum _RequestMethod{
 
 enum _UpdateMonitor{
 	None		=	0,
-	Updates		=	1,
+	DMs		=	1,
 	Replies		=	2,
-	DMs		=	3,
-	BestFriends	=	4,
-	Users		=	5,
-	Searches	=	6,
-	Groups		=	7,
-	Timelines	=	8,
-	Faves		=	9,
-	Archive		=	10,
+	Homepage	=	3,
+	Updates		=	4,
+	BestFriends	=	5,
+	Users		=	6,
+	Searches	=	7,
+	Groups		=	8,
+	ReTweets	=	9,
+	Timelines	=	10,
+	Faves		=	11,
+	Archive		=	12,
 };
 
 enum _OnlineServicesListStoreColumns{
@@ -108,6 +110,7 @@ enum{
 	STRING_BEST_FRIEND_USER_NAME,
 	GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID,
 	GUINT_BEST_FRIENDS_UNREAD_UPDATES,
+	STRING_BEST_FRIEND_USER_NAME_AND_ONlINE_SERVICE_KEY,
 } _OnlineServicesBestFriends;
 
 enum _ReloadState{

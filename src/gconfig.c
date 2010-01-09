@@ -63,6 +63,7 @@
  ********************************************************/
 #include "config.h"
 #include "program.h"
+#include "preferences.defines.h"
 
 #include "gconfig.h"
 

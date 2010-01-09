@@ -65,55 +65,8 @@
 #include "program.h"
 
 G_BEGIN_DECLS
-#define	PREFS_TIMELINE_RELOAD_MINUTES			GCONF_PATH "/ui/tabs/reload"
 
-#define	PREFS_AUTOLOAD_DMS				GCONF_PATH "/ui/start-up/tabs/dms"
-#define	PREFS_AUTOLOAD_REPLIES				GCONF_PATH "/ui/start-up/tabs/replies"
-#define PREFS_AUTOLOAD_FOLLOWING			GCONF_PATH "/ui/start-up/tabs/following"
-
-#define	PREFS_UPDATES_HOME_TIMELINE			GCONF_PATH "/ui/start-up/tabs/additional_timeline"
-
-#define PREFS_NOTIFY_BEST_FRIENDS			GCONF_PATH "/notifications/best_friends"
-#define	PREFS_NOTIFY_DMS				GCONF_PATH "/notifications/dms"
-#define PREFS_NOTIFY_FOLLOWING				GCONF_PATH "/notifications/following"
-#define	PREFS_NOTIFY_REPLIES				GCONF_PATH "/notifications/replies"
-#define	PREFS_NOTIFY_ALL				GCONF_PATH "/notifications/all"
-#define	PREFS_NOTIFY_BEEP				GCONF_PATH "/alerts/beep"
-
-#define	PREFS_URLS_EXPANSION_DISABLED			GCONF_PATH "/ui/update_viewer/uri_expansion/disabled"
-#define	PREFS_URLS_EXPANSION_SELECTED_ONLY		GCONF_PATH "/ui/update_viewer/uri_expansion/selected_only"
-#define PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES	GCONF_PATH "/ui/update_viewer/uri_expansion/replace_with_titles"
-#define	PREFS_URLS_EXPANSION_USER_PROFILES		GCONF_PATH "/ui/update_viewer/uri_expansion/user_profiles"
-
-#define	PREFS_DISABLE_SYSTEM_BELL			GCONF_PATH "/alerts/disable_system_bell"
-#define PREFS_UPDATE_VIEWER_DIALOG			GCONF_PATH "/ui/update_viewer/use_dialog"
-#define PREFS_UPDATE_VIEWER_COMPACT			GCONF_PATH "/ui/update_viewer/compact_view"
-
-#define COMPACT_VIEW					GCONF_PATH "/ui/view/compact"
-#define CONCATENATED_UPDATES				GCONF_PATH "/ui/view/detailed_updates"
-#define SCROLL_TO_TOP_WITH_NEW_UPDATES			GCONF_PATH "/ui/uberchick_tree_view/scroll_to_top_with_new_updates"
-#define SELECT_UPDATE_BY_DEFAULT			GCONF_PATH "/ui/uberchick_tree_view/select_update_by_default"
-
-#define	PREFS_DISABLE_UPDATE_LENGTH_ALERT		GCONF_PATH "/alerts/disable_update_length_alert"
-
-#define	PREFS_UPDATES_ARCHIVE_ALL			GCONF_PATH "/online-services/xml-cache/archive/expiration/default"
-#define	PREFS_UPDATES_ARCHIVE_DMS			GCONF_PATH "/online-services/xml-cache/archive/expiration/dms"
-#define	PREFS_UPDATES_ARCHIVE_REPLIES			GCONF_PATH "/online-services/xml-cache/archive/expiration/replies"
-#define	PREFS_UPDATES_ARCHIVE_FAVES			GCONF_PATH "/online-services/xml-cache/archive/expiration/faves"
-#define	PREFS_UPDATES_ARCHIVE_BEST_FRIENDS		GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
-
-#define	PREFS_UPDATES_REPLACE_ME_W_NICK			GCONF_PATH "/updates/replace_me_w_nick"
-#define PREFS_UPDATES_ADD_PROFILE_LINK			GCONF_PATH "/updates/reply/add_profile_link"
-#define	PREFS_UPDATES_DIRECT_REPLY_ONLY			GCONF_PATH "/updates/reply/directly_to"
-
-#define	PREFS_SEARCH_HISTORY_UNIQUE_ONLY		GCONF_PATH "/search/history/unique_only"
-#define	PREFS_SEARCH_HISTORY_MAXIMUM			GCONF_PATH "/search/history/maximum"
-
-#define	PREFS_UPDATES_HISTORY_UNIQUE_ONLY		GCONF_PATH "/updates/history/unique_only"
-#define	PREFS_UPDATES_HISTORY_MAXIMUM			GCONF_PATH "/updates/history/maximum"
-
-
-void preferences_dialog_show (GtkWindow *parent);
+void preferences_dialog_show(GtkWindow *parent);
 
 G_END_DECLS
 

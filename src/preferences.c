@@ -74,7 +74,7 @@
 
 #include "main-window.h"
 #include "update-viewer.h"
-//#include "uberchick-tree-view.h"
+#include "preferences.defines.h"
 #include "preferences.h"
 
 
@@ -104,7 +104,8 @@ struct _PreferencesDialog{
 	GtkCheckButton	*autoload_best_friends_updates_check_button;
 	GtkCheckButton	*autoload_dms_check_button;
 	GtkCheckButton	*autoload_replies_check_button;
-	GtkCheckButton	*autoload_following_updates_check_button;
+	GtkCheckButton	*autoload_homepage_check_button;
+	GtkCheckButton	*autoload_following_check_button;
 	
 	GtkCheckButton	*notify_dms_check_button;
 	GtkCheckButton	*notify_at_mentions_check_button;
@@ -230,10 +231,11 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
  ********************************************************************************/
 static void preferences_setup_widgets(PreferencesDialog *prefs){
 	debug("Binding widgets to preferences.");
-	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEST_FRIENDS, TRUE, prefs->autoload_best_friends_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_BEST_FRIENDS, TRUE, prefs->autoload_best_friends_updates_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_DMS, TRUE, prefs->autoload_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_REPLIES, TRUE, prefs->autoload_replies_check_button);
-	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_FOLLOWING, TRUE, prefs->autoload_following_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_HOMEPAGE, TRUE, prefs->autoload_homepage_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_FOLLOWING, TRUE, prefs->autoload_following_check_button);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
@@ -290,12 +292,16 @@ static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data
 static void preferences_timeline_setup(PreferencesDialog *prefs){
 	debug("Binding timelines to preference.");
 	static const gchar *timelines[] = {
+		"",			N_("Nothing"),
+		API_TIMELINE_HOMEPAGE,	N_("My Homepage"),
 		API_TIMELINE_FRIENDS,	N_("My Friends' Updates"),
 		API_REPLIES,		N_("@ Replies"),
 		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
 		API_FAVORITES,		N_("My Favorites"),
-		API_TIMELINE_MINE,	N_("My Tweets"),
-		API_TIMELINE_PUBLIC,	N_("All Public Tweets"),
+		API_TIMELINE_MINE,	N_("My Updates"),
+		API_RETWEETED_TO_ME,	N_("My Friends' ReTweets"),
+		API_RETWEETS_OF_ME,	N_("ReTweets of My Updates"),
+		API_TIMELINE_PUBLIC,	N_("All Public Updates"),
 		NULL
 	};
 	
@@ -596,13 +602,14 @@ void preferences_dialog_show(GtkWindow *parent){
 					"expand_users_checkbutton", &prefs->expand_users_checkbutton,
 					"expand_urls_disabled_checkbutton", &prefs->expand_urls_disabled_checkbutton,
 					
-					"combobox_timeline", &prefs->combo_default_timeline,
-					"combobox_reload", &prefs->combo_reload,
+					"autoload_addition_timeline_combo_box", &prefs->combo_default_timeline,
+					"refresh_timeline_initial_interval_combo_box", &prefs->combo_reload,
 					
 					"autoload_best_friends_updates_check_button", &prefs->autoload_best_friends_updates_check_button,
 					"autoload_dms_check_button", &prefs->autoload_dms_check_button,
 					"autoload_replies_check_button", &prefs->autoload_replies_check_button,
-					"autoload_following_updates_check_button", &prefs->autoload_following_updates_check_button,
+					"autoload_homepage_check_button", &prefs->autoload_homepage_check_button,
+					"autoload_following_check_button", &prefs->autoload_following_check_button,
 					
 					"notify_dms_check_button", &prefs->notify_dms_check_button,
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,

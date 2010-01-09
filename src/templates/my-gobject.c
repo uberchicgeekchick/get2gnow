@@ -77,8 +77,7 @@
 struct _MyGObjectPrivate {
 	guint			timeout_id;
 	
-	gint			index;
-	guint			total;
+	gint			value;
 };
 
 
@@ -98,8 +97,7 @@ static void my_gobject_class_init(MyGObjectClass *klass);
 static void my_gobject_init(MyGObject *my_gobject);
 static void my_gobject_finalize(MyGObject *my_gobject);
 
-/*G_DEFINE_TYPE(MyGObject, my_gobject, G_TYPE_OBJECT);*/
-G_DEFINE_TYPE(MyGObject, my_gobject, GTK_WIDGET);
+G_DEFINE_TYPE(MyGObject, my_gobject, G_TYPE_OBJECT);
 
 
 /********************************************************************************
@@ -121,36 +119,31 @@ static void my_gobject_init(MyGObject *my_gobject){
 	this->timeout_id=this->index=this->total=0;
 	g_object_set(my_gobject, "expand", TRUE, "fill", TRUE, NULL);
 	g_signal_connect(my_gobject, "grab-focus", G_CALLBACK(my_gobject_grab_focus_cb), my_gobject);
-}/* my_gobject_init */
+}/* my_gobject_init(); */
 
 MyGObject *my_gobject_new(void){
 	return g_object_new(TYPE_MY_GOBJECT, NULL);
-}/*my_gobject_new(timeline);*/
+}/*my_gobject_new();*/
 
 static void my_gobject_finalize(MyGObject *my_gobject){
 	MyGObjectPrivate *this=GET_PRIVATE(my_gobject);
 	
 	program_timeout_remove(&this->timeout_id, g_strrstr(this->string, "/"));
 	
-	G_OBJECT_CLASS(my_gobject_parent_class)->finalize(G_OBJECT(my_object));
-}/* my_gobject_finalized */
+	G_OBJECT_CLASS(my_gobject_parent_class)->finalize(G_OBJECT(my_gobject));
+}/* my_gobject_finalized(my_gobjects); */
 
 
 /*BEGIN: Custom MyGObject methods.*/
-gint my_gobject_get_total(MyGObject *my_gobject){
-	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return -1;
-	return GET_PRIVATE(my_gobject)->total;
-}/*my_gobject_get_page(my_gobject);*/
-
-void my_gobject_increment_total(MyGObject *my_gobject, guint total){
+void my_gobject_set_int_property(MyGObject *my_gobject, gint value){
 	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return;
-	GET_PRIVATE(my_gobject)->total+=total;
-}/*my_gobject_set_page(my_gobject, 2);*/
-
-void my_gobject_set_total(MyGObject *my_gobject, guint total){
-	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return;
-	GET_PRIVATE(my_gobject)->total=total;
+	GET_PRIVATE(my_gobject)->value=value;
 }/*my_gobject_set_page(my_gobject, 0);*/
+
+gint my_gobject_get_int_property(MyGObject *my_gobject){
+	if(!( my_gobject && IS_MY_GOBJECT(my_gobject) ))	return -1;
+	return GET_PRIVATE(my_gobject)->value;
+}/*my_gobject_get_page(my_gobject);*/
 
 
 /********************************************************************************

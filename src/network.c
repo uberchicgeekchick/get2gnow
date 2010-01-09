@@ -90,7 +90,7 @@
 #include "main-window.h"
 #include "uberchick-tree-view.h"
 
-#include "preferences.h"
+#include "preferences.defines.h"
 
 #include "network.h"
 
@@ -106,12 +106,14 @@ struct _NetworkImageDL{
 	UberChickTreeView	*uberchick_tree_view;
 	gchar			*filename;
 	GtkTreeIter		*iter;
+	gboolean		retweet;
 };
 
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeView *uberchick_tree_view, const gchar *filename, GtkTreeIter *iter);
+static gboolean network_test_uberchick_tree_view_image(UberChickTreeView *uberchick_tree_view, const gchar *image_filename, GtkTreeIter *iter);
+static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeView *uberchick_tree_view, const gchar *filename, gboolean retweet, GtkTreeIter *iter);
 static void network_uberchick_tree_view_image_dl_free(NetworkImageDL *image_dl);
 
 static void *network_retry(OnlineServiceWrapper *service_wrapper);
@@ -119,18 +121,32 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper);
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
-static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeView *uberchick_tree_view, const gchar *filename, GtkTreeIter *iter){
+static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeView *uberchick_tree_view, const gchar *filename, gboolean retweet, GtkTreeIter *iter){
 	NetworkImageDL *network_image_dl=g_new0(NetworkImageDL, 1);
 	network_image_dl->uberchick_tree_view=uberchick_tree_view;
 	network_image_dl->filename=g_strdup(filename);
 	network_image_dl->iter=iter;
+	network_image_dl->retweet=retweet;
 	return network_image_dl;
 }/*network_uberchick_tree_view_image_dl_new*/
 
+static gboolean network_test_uberchick_tree_view_image(UberChickTreeView *uberchick_tree_view, const gchar *image_filename, GtkTreeIter *iter){
+	if(!g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+		return FALSE;
+	
+	debug("Image file: [%s] exists and will be added to currect UberChicTreeView.", image_filename);
+	uberchick_tree_view_set_image(uberchick_tree_view, image_filename, iter);
+	return TRUE;
+}/*network_test_uberchick_tree_view_image(uberchick_tree_view, image_filename, iter);*/
 
-void network_get_image(OnlineService *service, UberChickTreeView *uberchick_tree_view, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter){
+void network_get_image(OnlineService *service, UberChickTreeView *uberchick_tree_view, const gchar *image_filename, const gchar *image_url, gboolean retweet, GtkTreeIter *iter){
+	/*if(network_test_uberchick_tree_view_image(uberchick_tree_view, image_filename, iter)){
+		uber_free(iter);
+		return;
+	}*/
+	
 	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
-	NetworkImageDL *network_image_dl=network_uberchick_tree_view_image_dl_new(uberchick_tree_view, image_filename, iter);
+	NetworkImageDL *network_image_dl=network_uberchick_tree_view_image_dl_new(uberchick_tree_view, image_filename, retweet, iter);
 	
 	online_service_request_uri(service, QUEUE, image_url, 0, NULL, network_cb_on_image, network_image_dl, NULL);
 }/*network_get_image*/
@@ -145,7 +161,22 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		return NULL;
 	}
 	
+	if(network_test_uberchick_tree_view_image(network_image_dl->uberchick_tree_view, network_image_dl->filename, network_image_dl->iter)){
+		network_uberchick_tree_view_image_dl_free(network_image_dl);
+		return NULL;
+	}
+	
 	gchar *image_filename=NULL, *error_message=NULL;
+	gboolean new_image=FALSE;
+	gchar *image_filename_dir=NULL;
+	gchar *image_filename_directory=NULL;
+	
+	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(network_image_dl->uberchick_tree_view);
+	if(network_image_dl->retweet||monitoring==Searches){
+		image_filename_dir=g_path_get_dirname(network_image_dl->filename);
+		image_filename_directory=cache_dir_test(image_filename_dir, TRUE);
+	}
+	
 	if(!(www_xml_error_check(service, requested_uri, xml, &error_message))){
 		debug("Failed to download and save <%s> as <%s>.", requested_uri, network_image_dl->filename);
 		debug("Detailed error message: %s.", error_message);
@@ -160,13 +191,24 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 					NULL
 		)))
 			image_filename=cache_images_get_unknown_image_filename();
-		else
+		else{
+			new_image=TRUE;
 			image_filename=g_strdup(network_image_dl->filename);
+		}
 		main_window_statusbar_printf("New avatar added to UberChickTreeView.");
 	}
 	
-	uberchick_tree_view_set_image(network_image_dl->uberchick_tree_view, network_image_dl->filename, network_image_dl->iter);
+	uberchick_tree_view_set_image(network_image_dl->uberchick_tree_view, image_filename, network_image_dl->iter);
 	
+	if(network_image_dl->retweet||monitoring==Searches){
+		if(new_image){
+			debug("Cleaning-up retweeted update avatar's path:");
+			debug("\t[%s]", image_filename);
+			cache_dir_clean_up(image_filename_dir, TRUE);
+		}
+		uber_free(image_filename_directory);
+		uber_free(image_filename_dir);
+	}
 	uber_free(error_message);
 	uber_free(image_filename);
 	network_uberchick_tree_view_image_dl_free(network_image_dl);
@@ -184,13 +226,12 @@ static void network_uberchick_tree_view_image_dl_free(NetworkImageDL *network_im
 void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
 	
-	if(!( in_reply_to_service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE)))
-		online_services_request(POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
-	else
-		online_service_request(in_reply_to_service, POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
+	online_services_request(POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
 }/*network_post_status("what are you doing");*/
 
 void network_send_message(OnlineService *service, const gchar *friend, gchar *dm){
+	if(G_STR_EMPTY(dm)) return;
+	
 	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_update_posted, (gchar *)friend, dm);
 }/*network_send_message(service, friend, dm);*/
 
@@ -217,7 +258,7 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 		statusbar_printf("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 		
 		if(xml->status_code==100 && !online_service_wrapper_get_attempt(service_wrapper)){
-			debug("Resubmitting Tweet/Status update to: [%s] per http response.", service->key);
+			debug("Resubmitting update to: [%s] per http response.", service->key);
 			online_service_wrapper_reattempt(service_wrapper);
 		}
 	}else{
@@ -300,10 +341,12 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Groups:
 			new_updates=groups_parse_conversation(service, xml, timeline, uberchick_tree_view, monitoring);
 			break;
+		case Homepage:
 		case DMs:
 		case Replies:
 		case Faves:
 		case Updates:
+		case ReTweets:
 		case Timelines:
 		case Users:
 		case Archive:

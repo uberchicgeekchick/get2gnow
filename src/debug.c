@@ -265,9 +265,9 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 				output_started=TRUE;
 				g_fprintf(debug_output_fp, "\n");
 			}
-			gboolean error=FALSE, notice=FALSE;
-			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
-				g_fprintf(stderr, "\n**%s %s in [%s]'s; in method: %s; on line: %d**: ", _(GETTEXT_PACKAGE), (error ?_("error") :_("notice") ), source_code, method, line_number );
+			gboolean error=FALSE, warning=FALSE, notice=FALSE;
+			if( (error=g_str_has_prefix(msg, "**ERROR:**")) || (warning=g_str_has_prefix(msg, "**WARNING:**")) || (notice=g_str_has_prefix(msg, "**NOTICE:**")) ){
+				g_fprintf(stderr, "\n**%s %s in [%s]'s; in method: %s; on line: %d**: ", _(GETTEXT_PACKAGE), (error ?_("error") :(warning ?_("warning") :_("notice") ) ), source_code, method, line_number );
 				va_list args;
 				va_start(args, msg);
 				g_vfprintf(stderr, g_strrstr(msg, ":** ")+sizeof(":**"), args);

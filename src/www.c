@@ -73,7 +73,7 @@
 #include "online-service.h"
 
 #include "gconfig.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 
 #include "main-window.h"
 
@@ -122,9 +122,9 @@ static gchar *www_uri_title_lookup(const gchar *uri);
 #include "debug.h"
 
 static GtkListStore *www_uri_title_lookup_table_list_store;
-static GtkTreeModel *www_uri_title_lookup_table_tree_model;
 static gboolean www_uri_title_lookup_table_processing=FALSE;
 static guint www_uri_title_lookup_table_clean_up_timeout_id=0;
+static guint www_uri_title_list_store_total=0;
 static GRegex *number_regex;
 
 
@@ -592,6 +592,7 @@ static gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gcha
 
 static void www_uri_title_append(const gchar *uri, const gchar *title){
 	while(www_uri_title_lookup_table_processing){}
+	www_uri_title_list_store_total++;
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 	
 	time_t current_time=time(NULL);
@@ -609,32 +610,43 @@ static void www_uri_title_append(const gchar *uri, const gchar *title){
 }/*www_uri_title_append("http://twitter.com/uberChick", "uberChick on Twitter");*/
 
 static gchar *www_uri_title_lookup(const gchar *uri){
+	if(!www_uri_title_list_store_total) return NULL;
 	while(www_uri_title_lookup_table_processing){}
 	if(G_STR_EMPTY(uri)) return NULL;
 	
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	if(!gtk_tree_model_get_iter_first(www_uri_title_lookup_table_tree_model, iter)) {
-		uber_free(iter);
-		return NULL;
-	}
+	GtkTreeIter *iter=NULL;
 	gboolean found=FALSE;
 	gchar *key=NULL, *title=NULL;
-	do{
+	for(gint i=www_uri_title_list_store_total; i>=0 && !found; i--){
+		iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter, path)){
+			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
 		gtk_tree_model_get(
-				www_uri_title_lookup_table_tree_model, iter,
+				GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter,
 					COLUMN_URI, &key,
 					COLUMN_URI_TITLE, &title,
 				-1
 		);
 		
-		if(g_strcasecmp(uri, key))
+		if(g_strcasecmp(uri, key)){
 			found=TRUE;
-		else
-			uber_free(title);
+			uber_free(key);
+			break;
+		}
 		
+		uber_free(title);
 		uber_free(key);
-	}while(!found && gtk_tree_model_iter_next(www_uri_title_lookup_table_tree_model, iter));
+		uber_free(iter);
+	}
+	
 	if(!(found && title)){
+		if(title) uber_free(title);
 		uber_free(iter);
 		return NULL;
 	}
@@ -652,30 +664,36 @@ static gchar *www_uri_title_lookup(const gchar *uri){
 }/*www_uri_title_lookup("http://twitter.com/uberChick");*/
 
 static gboolean www_uri_titles_clean_up(void){
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	if(!gtk_tree_model_get_iter_first(www_uri_title_lookup_table_tree_model, iter)) {
-		uber_free(iter);
-		return TRUE;
-	}
-	
+	if(!www_uri_title_list_store_total) return TRUE;
 	www_uri_title_lookup_table_processing=TRUE;
-	gchar *uri=NULL, *title=NULL;
-	const gchar *datetime=NULL;
-	do{
+	for(gint i=www_uri_title_list_store_total; i>=0; i--){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter, path)){
+			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gchar *uri=NULL, *title=NULL;
+		const gchar *datetime=NULL;
 		gint created_ago=0;
 		gtk_tree_model_get(
-				www_uri_title_lookup_table_tree_model, iter,
+				GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter,
 					COLUMN_URI, &uri,
 					COLUMN_URI_TITLE, &title,
 					COLUMN_INSERT_TIME, &datetime,
 				-1
 		);
-		if( (created_ago=update_convert_datetime_to_seconds_old(datetime)) >= 3600 ){
+		if( (created_ago=update_convert_datetime_to_seconds_old(datetime, FALSE)) >= 3600 ){
 			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, created_ago);
 			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
+			if(www_uri_title_list_store_total)
+				www_uri_title_list_store_total--;
 		}
-	}while(gtk_tree_model_iter_next(www_uri_title_lookup_table_tree_model, iter));
-	uber_free(iter);
+		uber_free(iter);
+	}
 	return !(www_uri_title_lookup_table_processing=FALSE);
 }/*www_uri_titles_clean_up();*/
 
@@ -687,7 +705,7 @@ void www_init(void){
 		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
 		g_error_free(error);
 	}
-	www_uri_title_lookup_table_tree_model=(GtkTreeModel *)(www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING));
+	www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	www_uri_title_lookup_table_clean_up_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)www_uri_titles_clean_up, NULL);
 }/*www_init();*/
 
@@ -695,7 +713,6 @@ void www_deinit(void){
 	g_regex_unref(number_regex);
 	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
 	uber_object_unref(www_uri_title_lookup_table_list_store);
-	www_uri_title_lookup_table_tree_model=NULL;
 }/*www_init();*/
 
 /********************************************************************************

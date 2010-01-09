@@ -103,6 +103,7 @@ struct _UserStatus {
 	OnlineService	*service;
 	
 	User		*user;
+	UserStatus	*retweeted_status;
 	
 	UpdateMonitor	type;
 	
@@ -122,6 +123,7 @@ struct _UserStatus {
 	
 	gchar		*text;
 	gchar		*update;
+	gchar		*sexy_status_text;
 	gchar		*sexy_update;
 	gchar		*notification;
 	

@@ -92,7 +92,7 @@ gboolean online_services_reconnect(void);
 gboolean online_services_refresh(void);
 void online_services_disconnect(void);
 
-OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect);
+OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default);
 void online_services_delete_service(OnlineService *service);
 
 
@@ -113,7 +113,9 @@ gint online_services_has_total(guint count);
  * 		-1, 0, 1, if services->connected is greater than, equal to, or less than count.
  */
 gint online_services_has_connected(guint count);
-gint online_services_has_twitter_connected(guint count);
+gint online_services_has_connected_statusnet(guint count);
+gint online_services_has_connected_twitter(guint count);
+gint online_services_has_connected_other(guint count);
 
 OnlineService *online_services_get_service_by_key(const gchar *online_service_key);
 gint online_services_best_friends_tree_store_fill(GtkTreeStore *tree_store);
@@ -130,7 +132,8 @@ OnlineService *online_services_connected_get_last(void);
 void online_services_reset_length_of_longest_replacement(void);
 gssize online_services_get_length_of_longest_replacement(void);
 
-void online_services_request(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+void online_services_request(RequestMethod request_method, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+void online_services_request_statusnet(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 void online_services_request_twitter(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
 void online_services_increment_total(const gchar *service_guid);

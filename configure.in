@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["#010001", "a72"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["010001a74"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -76,17 +76,17 @@ dnl  * Pkg-Config dependency checks				*
 dnl  ************************************************************/
 PKG_CHECK_MODULES(get2gnow,
 [
+	gnome-doc-utils-devel >= $GNOME_DOC_UTILS_DEVEL_VERSION_REQUIRED
 	gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	libsexy
 	openssl
 	libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	libnotify
-	gnome-vfs-2.0
 	gtk+-2.0 >= $GTK_VERSION_REQUIRED
 	glib-2.0 >= $GLIB_VERSION_REQUIRED
 	gio-2.0 >= $LIBGIO_VERSION_REQUIRED
 	libxml-2.0 >= $LIBXML_VERSION_REQUIRED
-	libgnomeui-2.0
+	libgnome-2.0
 	gobject-2.0
 	gthread-2.0 >= $GTHREAD_VERSION_REGUIRED
 	gconf-2.0 >= $GCONF_VERSION_REQUIRED

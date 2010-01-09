@@ -84,7 +84,7 @@
 #include "cache.h"
 
 #include "gconfig.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "gtkbuilder.h"
 #include "cache.h"
 #include "parser.h"
@@ -156,8 +156,8 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 static void user_status_format_dates(UserStatus *status);
 
 
-static void user_profile_viewer_response(GtkDialog *dialog, gint response);
-static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *user_profile_viewer);
+static void user_profile_viewer_response(GtkMessageDialog *message_dialog, gint response);
+static void user_profile_viewer_destroy(GtkMessageDialog *message_dialog);
 
 static void user_profile_viewer_setup(void);
 
@@ -241,7 +241,6 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	gchar		*content=NULL;
 	
 	User		*user=user_new(service, getting_followers);
-	UserStatus	*retweeted_status=NULL;
 	
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
@@ -289,18 +288,18 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		else if( g_str_equal(current_node->name, "status") && current_node->children)
 			user->status=user_status_parse(service, current_node->children, Updates);
 		
-		else if( g_str_equal(current_node->name, "retweeted_status") && current_node->children){
-			retweeted_status=user_status_parse_retweeted_status(service, current_node->children, Updates);
+		else if( g_str_equal(current_node->name, "retweeted_status") && user->status && current_node->children){
+			user->status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, Updates);
 		}
 		
 		uber_free(content);
 		
 	}
 	
-	if(retweeted_status)
-		user_status_format_retweeted_status(service, retweeted_status, &user->status, user);
-	
 	user_validate(&user);
+	
+	if(user && user->status && user->status->retweeted_status)
+		user_status_format_retweeted_status(service, user->status->retweeted_status, &user->status, user);
 	
 	if(user->status){
 		user_status_validate( &user->status );
@@ -314,8 +313,8 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 
 void user_free(User *user){
 	if(!( user && user->id && user->service )) return;
-	if(user->status) user_status_free(user->status);
 	user_validate(&user);
+	if(user->status) user_status_free(user->status);
 	
 	user->service=NULL;
 	
@@ -332,8 +331,9 @@ static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitor
 	status->service=service;
 	status->retweet=FALSE;
 	status->user=NULL;
+	status->retweeted_status=NULL;
 	status->type=monitoring;
-	status->id_str=status->text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=status->retweeted_by=status->retweeted_user_name=NULL;
+	status->id_str=status->text=status->sexy_status_text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=status->retweeted_by=status->retweeted_user_name=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=0;
 	status->created_seconds_ago=0;
@@ -347,6 +347,7 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->from ) (*status)->from=g_strdup("");
 	if(! (*status)->rcpt ) (*status)->rcpt=g_strdup("");
 	if(! (*status)->update ) (*status)->update=g_strdup("");
+	if(! (*status)->sexy_status_text ) (*status)->sexy_status_text=g_strdup("");
 	if(! (*status)->source ) (*status)->source=g_strdup("");
 	if(! (*status)->sexy_update ) (*status)->sexy_update=g_strdup("");
 	if(! (*status)->notification ) (*status)->notification=g_strdup("");
@@ -359,7 +360,7 @@ static void user_status_validate( UserStatus **status ){
 UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	xmlNode		*current_node=NULL, *temp_node=NULL;
 	gchar		*content=NULL;
-	UserStatus	*status=user_status_new(service, monitoring);
+	UserStatus	*status=user_status_new(service, Searches);
 	status->user=user_new(service, getting_followers);
 	
 	/* Begin 'status' or 'direct-messages' loop */
@@ -482,7 +483,6 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, monitoring);
-	UserStatus	*retweeted_status=NULL;
 	
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing update at beginning node: %s", root_element->name);
@@ -495,7 +495,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		}
 		
 		if( g_str_equal(current_node->name, "retweeted_status") && current_node->children)
-			retweeted_status=user_status_parse_retweeted_status(service, current_node->children, monitoring);
+			status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, monitoring);
 		
 		else if(g_str_equal(current_node->name, "id")){
 			status->id=strtod(content, NULL);
@@ -525,8 +525,8 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 
 	user_status_validate(&status);
 	
-	if(retweeted_status)
-		user_status_format_retweeted_status(service, retweeted_status, &status, status->user);
+	if(status && status->user && status->retweeted_status)
+		user_status_format_retweeted_status(service, status->retweeted_status, &status, status->user);
 	
 	if(status->user){
 		user_validate( &status->user );
@@ -537,18 +537,35 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 }/*user_status_parse(service, current_node->children, monitoring);*/
 
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user){
+	if(!( service && (*status) && user && retweeted_status )) return;
 	gchar *retweeted_user_name=NULL;
 	gchar *retweeted_by=NULL;
+	UserStatus *status_swap=(*status);
+	
+	gdouble status_id=(*status)->id;
+	gchar *status_id_str=g_strdup( (*status)->id_str );
+	
+	retweeted_status->created_at=(*status)->created_at;
+	uber_free(retweeted_status->created_at_str);
+	retweeted_status->created_at_str=g_strdup( (*status)->created_at_str );
+	
+	retweeted_status->created_seconds_ago=(*status)->created_seconds_ago;
+	uber_free(retweeted_status->created_how_long_ago);
+	retweeted_status->created_how_long_ago=g_strdup( (*status)->created_how_long_ago );
+	
 	if(!( (*status) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name) )){
 		retweeted_user_name=g_strdup("unknown");
-		retweeted_by=g_strdup_printf("<b>[%s]:\tAnonymous <u>&lt;unknown@%s&gt;</u></b>", _("retweeted by"), service->uri);
+		retweeted_by=g_strdup_printf("Anonymous <u>&lt;unknown@%s&gt;</u>", service->uri);
 	}else{
 		retweeted_user_name=g_strdup(user->user_name);
-		retweeted_by=g_strdup_printf("<b>[%s]:\t%s <u>&lt;%s@%s&gt;</u></b>", _("retweeted by"), user->nick_name, user->user_name, service->uri);
+		retweeted_by=g_strdup_printf("%s <u>&lt;%s@%s&gt;</u>", user->nick_name, user->user_name, service->uri);
 	}
-	user_status_free(*status);
 	
-	*status=retweeted_status;
+	(*status)=retweeted_status;
+	(*status)->retweeted_status=status_swap;
+	(*status)->id=status_id;
+	uber_free( (*status)->id_str );
+	(*status)->id_str=status_id_str;
 	uber_free((*status)->retweeted_by);
 	(*status)->retweeted_by=retweeted_by;
 	uber_free((*status)->retweeted_user_name);
@@ -558,7 +575,11 @@ static void user_status_format_retweeted_status(OnlineService *service, UserStat
 static void user_status_format_dates(UserStatus *status){
 	tzset();
 	time_t		t=time(NULL);
-	struct tm	*ta=gmtime(&t);
+	struct tm	*ta;
+	if(status->type!=Searches)
+		ta=gmtime(&t);
+	else
+		ta=localtime(&t);
 	ta->tm_isdst=-1;
 	
 	struct tm	post;
@@ -567,12 +588,12 @@ static void user_status_format_dates(UserStatus *status){
 	status->created_at=mktime(&post);
 	
 	debug("Parsing update's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
-	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago);
+	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago, (status->type==Searches ?FALSE :TRUE) );
 	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates*/
 
-gchar *user_status_convert_time(const gchar *datetime, gint *my_diff){
-	gint diff=update_convert_datetime_to_seconds_old(datetime);
+gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean use_gmt){
+	gint diff=update_convert_datetime_to_seconds_old(datetime, use_gmt);
 	if(diff < 0) *my_diff=0;
 	else *my_diff=diff;
 	
@@ -607,7 +628,7 @@ gchar *user_status_convert_time(const gchar *datetime, gint *my_diff){
 	 */
 }/*user_status_convert_time(date_created_string, &created_seconds_ago);*/
 
-gint update_convert_datetime_to_seconds_old(const gchar *datetime){
+gint update_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt){
 	struct tm	*ta;
 	struct tm	post;
 	int		seconds_local;
@@ -615,8 +636,12 @@ gint update_convert_datetime_to_seconds_old(const gchar *datetime){
 	time_t		t=time(NULL);
 	
 	tzset();
-	ta=gmtime(&t);
+	if(use_gmt)
+		ta=gmtime(&t);
+	else
+		ta=localtime(&t);
 	ta->tm_isdst=-1;
+	
 	seconds_local=mktime(ta);
 	
 	strptime(datetime, "%a %b %d %T +0000 %Y", &post);
@@ -625,7 +650,7 @@ gint update_convert_datetime_to_seconds_old(const gchar *datetime){
 	
 	return difftime(seconds_local, seconds_post);
 }/*
-	update_convert_datetime_to_seconds_old("Fri Nov  6 16:30:31 2009");
+	update_convert_datetime_to_seconds_old("Fri Nov  6 16:30:31 -0000 2009");
 	update_convert_datetime_to_seconds_old(datetime);
 */
 
@@ -633,60 +658,58 @@ gint update_convert_datetime_to_seconds_old(const gchar *datetime){
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user){
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
 	
-	gchar *sexy_status_text=NULL, *sexy_status_swap=www_html_entity_escape_text(status->text);
+	gchar *sexy_status_swap=www_html_entity_escape_text(status->text);
 	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
 		status->sexy_update=www_format_urls(service, sexy_status_swap, TRUE, TRUE);
-		sexy_status_text=www_format_urls(service, sexy_status_swap, TRUE, FALSE);
+		status->sexy_status_text=www_format_urls(service, sexy_status_swap, TRUE, FALSE);
 	}else{*/
 		status->sexy_update=g_strdup(sexy_status_swap);
-		sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
+		status->sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
 	//}
 	if(status->type==Searches){
 		debug("Formatting update for display.");
 		debug("\tstatus->text: [%s],", status->text);
 		debug("\tstatus->update: [%s],", status->update);
-		debug("\tsexy_status_text: [%s],", sexy_status_text);
+		debug("\tsexy_status_text: [%s],", status->sexy_status_text);
 		debug("\tsexy_status_swap: [%s],", sexy_status_swap);
 	}
 	uber_free(sexy_status_swap);
 	
-	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>%s%s%s",
-					user->nick_name, user->user_name, service->uri,
-					(status->retweet ?"\n<span size=\"x-small\" weight=\"light\">" :"" ),
-					(status->retweet ?status->retweeted_by :"" ),
-					(status->retweet ?"</span>" :"" )
+	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>",
+					user->nick_name, user->user_name, service->uri
 	);
 	
 	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", service->nick_name, service->key);
 	
-	status->update=g_strdup_printf("%s%s%s%s%s%s%s\n",
-					(status->retweet ?"<span size=\"x-small\" weight=\"light\">" :"" ),
+	status->update=g_strdup_printf("%s%s%s%s%s%s%s%s\n",
+					(status->retweet ?"<span size=\"x-small\" weight=\"ultrabold\">":"" ),
+					(status->retweet ?_("retweeted by") :"" ),
+					(status->retweet ?": " :""),
 					(status->retweet ?status->retweeted_by :"" ),
 					(status->retweet ?"</span>\n" :"" ),
 					( (status->type==DMs)
-					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n"
+					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n<span weight=\"ultrabold\" style=\"italic\">["
 						:(status->type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n"
 							:""
 						)
 					),
-					((status->type==DMs) ?"<span weight=\"ultrabold\" style=\"italic\">[" :""),
-					sexy_status_text,
+					status->sexy_status_text,
 					((status->type==DMs) ?"]</span>" :"")
 	);
 	
 	status->notification=g_strdup_printf(
-						"%s%s%s%s<i>[%s]</i>\n\t<b>From:</b> <b><u>%s &lt;%s@%s&gt;</u></b>\n<i>To:</i> <i><u>%s &lt;%s&gt;</u></i>\n<b>\t%s%s%s</b>",
-						(status->retweet ?"<i>" :"" ),
+						"%s%s%s%s%s%s<i>[%s]</i>\n\t<b>From:</b> <b><u>%s &lt;%s@%s&gt;</u></b>\n<i>To:</i> <i><u>%s &lt;%s&gt;</u></i>\n<b>\t%s%s%s</b>",
+						(status->retweet ?"<b><i>[" :"" ),
+						(status->retweet ?_("retweeted by") :"" ),
+						(status->retweet ?"]\n\t" :""),
 						(status->retweet ?status->retweeted_by :"" ),
-						(status->retweet ?"</i>\n" :"" ),
+						(status->retweet ?"</i></b>\n" :"" ),
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
 						user->nick_name, user->user_name, service->uri,
 						service->nick_name, service->key,
-						((status->type==DMs) ?"<b><i>[" :((status->type==Replies) ?"<i>[" :"")), sexy_status_text, ((status->type==DMs) ?"]</i></b>" :((status->type==Replies) ?"]</i>" :""))
+						((status->type==DMs) ?"<b><i>[" :((status->type==Replies) ?"<i>[" :"")), status->sexy_status_text, ((status->type==DMs) ?"]</i></b>" :((status->type==Replies) ?"]</i>" :""))
 	);
-	
-	g_free(sexy_status_text);
 }/*user_status_format_updates(service, user->status, user);*/
 
 gboolean user_status_notify_on_timeout(UserStatus *status){
@@ -707,26 +730,24 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 	
 	notify_notification_show(notify_notification, &error);
 	
-	g_object_unref(G_OBJECT(notify_notification));
-	
 	if(error){
 		debug("Error displaying status->notification: %s.", error->message);
 		g_error_free(error);
-		return FALSE;
 	}
 	
-	gtk_window_set_urgency_hint(main_window_get_window(), FALSE );
+	g_object_unref(G_OBJECT(notify_notification));
 	
 	return FALSE;
-}/*user_status_notify_on_timeout*/
+}/*user_status_notify_on_timeout(status);*/
 
 void user_status_free(UserStatus *status){
 	if(!( status && status->id && status->service )) return;
 	if(status->user) user_free(status->user);
+	else if(status->retweeted_status) user_status_free(status->retweeted_status);
 	user_status_validate(&status);
 	status->service=NULL;
 	
-	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status->retweeted_by, &status->retweeted_user_name, &status, NULL);
+	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_status_text, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status->retweeted_by, &status->retweeted_user_name, &status, NULL);
 }/*user_status_free*/
 
 
@@ -734,15 +755,21 @@ void user_status_free(UserStatus *status){
 /********************************************************************************
  *                       UserProfileViewer methods                              *
  ********************************************************************************/
-void user_profile_viewer_cleanup(void){
-	if(!user_profile_viewer) return;
-	if(user_profile_viewer->service) user_profile_viewer->service=NULL;
+static void user_profile_viewer_response(GtkMessageDialog *message_dialog, gint response){
+	gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->dialog));
+}/*user_profile_viewer_response(message_dialog, response, user_profile_viewer);*/
+
+static void user_profile_viewer_destroy(GtkMessageDialog *message_dialog){
+	debug("Destroying user profile viewer");
+	user_profile_viewer->service=NULL;
 	if(user_profile_viewer->user_name) uber_free(user_profile_viewer->user_name);
-	if(user_profile_viewer->dialog)
-		gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->dialog));
-	if(user_profile_viewer)
-		uber_free(user_profile_viewer);
-}/*user_profile_viewer_cleanup();*/
+	if(user_profile_viewer->most_recent_update) gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->most_recent_update));
+	if(user_profile_viewer->url_hyperlink) gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->url_hyperlink));
+	if(user_profile_viewer->bio_html) gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->bio_html));
+	if(user_profile_viewer->service_label) gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->service_label));
+	if(user_profile_viewer->user_label) gtk_widget_destroy(GTK_WIDGET(user_profile_viewer->user_label));
+	uber_free(user_profile_viewer);
+}/*user_profile_viewer_destroy(dialog);*/
 
 
 void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent){
@@ -784,7 +811,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					(service->https?"s":""), service->uri, service->guid
 	);
 	
-	uberchick_label_set_text(user_profile_viewer->service_label, service, user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->service_label, service, user->user_name, user->id, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	
@@ -793,7 +820,7 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 					"\t\t<u><b>%s:</b></u> @%s",
 					user->nick_name, user->user_name
 	);
-	uberchick_label_set_text(user_profile_viewer->user_label, service, user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->user_label, service, user->user_name, user->id, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	
@@ -809,43 +836,25 @@ static void user_profile_viewer_display_profile(OnlineServiceWrapper *online_ser
 	uber_free(profile_details);
 	
 	profile_details=g_strdup_printf( "\t<b>URL:</b>\t<a href=\"%s\">%s</a>\n", user->url, user->url );
-	uberchick_label_set_text(user_profile_viewer->url_hyperlink, service, user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->url_hyperlink, service, user->user_name, user->id, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", FALSE, NULL );
 	profile_details=g_strdup_printf( "\t<b>Bio:</b>\n\t\t%s\n", user->bio );
-	uberchick_label_set_text(user_profile_viewer->bio_html, service, user->status->id, profile_details, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->bio_html, service, user->user_name, user->id, user->status->id, profile_details, TRUE, TRUE);
 	uber_free(profile_details);
 	
 	profile_details=g_markup_printf_escaped("<b>Last updated:</b> <i>[%s]</i>", user->status->created_how_long_ago);
 	gtk_label_set_markup(user_profile_viewer->updated_when_label, profile_details);
 	uber_free(profile_details);
 	
-	uberchick_label_set_text(user_profile_viewer->most_recent_update, service, user->status->id, user->status->sexy_update, TRUE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->most_recent_update, service, user->user_name, user->id, user->status->id, user->status->sexy_update, TRUE, TRUE);
 	
 	if(!user_profile_viewer->loading)
 		user_profile_viewer_show_all();
 	
 	user_free(user);
 }/*static void user_profile_viewer_display_profile(online_service_wrapper, xml, user);*/
-
-static void user_profile_viewer_response(GtkDialog *dialog, gint response){
-	gtk_widget_hide(GTK_WIDGET(dialog));
-}/*user_profile_viewer_response(dialog, response, user_profile_viewer);*/
-
-static void user_profile_viewer_destroy(GtkDialog *dialog, UserProfileViewer *user_profile_viewer){
-	debug("Destroying user profile viewer");
-	user_profile_viewer->service=NULL;
-	if(user_profile_viewer->user_name) uber_free(user_profile_viewer->user_name);
-	if(user_profile_viewer->most_recent_update) g_object_unref(user_profile_viewer->most_recent_update);
-	if(user_profile_viewer->url_hyperlink) g_object_unref(user_profile_viewer->url_hyperlink);
-	if(user_profile_viewer->bio_html) g_object_unref(user_profile_viewer->bio_html);
-	if(user_profile_viewer->service_label) g_object_unref(user_profile_viewer->service_label);
-	if(user_profile_viewer->user_label) g_object_unref(user_profile_viewer->user_label);
-	gtk_widget_destroy(GTK_WIDGET(dialog));
-	uber_free(user_profile_viewer);
-}/*user_profile_viewer_destroy(dialog, user_profile_viewer);*/
-
 
 static void user_profile_viewer_setup(void){
 	user_profile_viewer=g_new( UserProfileViewer, 1 );
@@ -1028,7 +1037,7 @@ static void user_profile_viewer_hide_all(void){
 	
 	g_object_set(GTK_LABEL(user_profile_viewer->bio_html), "single-line-mode", TRUE, NULL );
 	gchar *profile_details=g_strdup_printf( "<span weight=\"bold\">Please wait for @%s's <a href=\"http%s://%s/\">%s</a> profile to load,</span>", user_profile_viewer->user_name, (user_profile_viewer->service->https?"s":""), user_profile_viewer->service->uri, user_profile_viewer->service->uri );
-	uberchick_label_set_text(user_profile_viewer->bio_html, user_profile_viewer->service, 0.0, profile_details, FALSE, TRUE);
+	uberchick_label_set_text(user_profile_viewer->bio_html, user_profile_viewer->service, NULL, 0.0, 0.0, profile_details, FALSE, TRUE);
 	uber_free(profile_details);
 	
 	user_profile_viewer->loading=TRUE;

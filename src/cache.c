@@ -73,7 +73,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define DEBUG_DOMAINS "OnlineServices:Requests:Tweets:Users:Images:Files:I/O:Setup:Start-Up:Shutdown:Cache:cache.c"
+#define DEBUG_DOMAINS "OnlineServices:Requests:Updates:Users:Images:Files:I/O:Setup:Start-Up:Shutdown:Cache:cache.c"
 #include "debug.h"
 
 static gchar *cache_prefix=NULL;
@@ -108,10 +108,10 @@ void cache_init(void){
 
 void cache_deinit(void){
 	debug("**SHUTDOWN:** releasing memory of cache prefix: %s.", cache_prefix);
-	g_free(cache_prefix);
+	uber_free(cache_prefix);
 	
 	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", unknown_image_filename);
-	g_free(unknown_image_filename);
+	uber_free(unknown_image_filename);
 	unknown_image_filename=NULL;
 }/*cache_deinit*/
 
@@ -173,7 +173,7 @@ gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir){
 		
 		if(g_mkdir_with_parents(cache_path, S_IRUSR|S_IWUSR|S_IXUSR)){
 			debug("***ERROR:*** Unable to create cache directory: [%s].", cache_path);
-			g_free(cache_path);
+			uber_free(cache_path);
 			return NULL;
 		}
 	}
@@ -193,24 +193,24 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm
 	GDir *cache_dir=g_dir_open(cache_dir_path, 0, NULL);
 	while((cache_file=g_dir_read_name(cache_dir)) ){
 		gchar *cache_file_path=g_strdup_printf("%s/%s", cache_dir_path, cache_file);
-		if(g_file_test(cache_file, G_FILE_TEST_IS_REGULAR))
-			cache_file_clean_up(cache_file_path);
-		else if(g_file_test(cache_file_path, G_FILE_TEST_IS_DIR)){
+		if(g_file_test(cache_file_path, G_FILE_TEST_IS_DIR)){
 			cache_dir_absolute_clean_up(cache_file_path, TRUE);
 			if(rm_parent)
 				cache_file_clean_up(cache_file_path);
-		}
-		g_free(cache_file_path);
+		}else
+			cache_file_clean_up(cache_file_path);
+		uber_free(cache_file_path);
 	}
 	g_dir_close(cache_dir);
+	if(rm_parent)
+		cache_file_clean_up(cache_dir_path);
 }/*cache_dir_absolute_clean_up*/
 
 void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent){
 	gchar *cache_dir_path=cache_path_create(cache_subdir, NULL);
+	debug("%s cache directory: [%s].", (rm_parent ?"Removing directory and its contents" :"Cleaning-up"), cache_dir_path);
 	cache_dir_absolute_clean_up(cache_dir_path, rm_parent);
-	g_free(cache_dir_path);
-	if(rm_parent)
-		cache_file_clean_up(cache_dir_path);
+	uber_free(cache_dir_path);
 }/*cache_dir_clean_up*/
 
 static gchar *cache_path_create(const gchar *cache_file, ...){
@@ -227,7 +227,7 @@ static gchar *cache_path_create(const gchar *cache_file, ...){
 	va_start(cache_dirs, cache_file);
 	for(cache_dir=(gchar *)cache_file; cache_dir; cache_dir=va_arg(cache_dirs, gchar *)){
 		cache_path_swap=g_build_filename(cache_path_full, cache_dir, NULL);
-		g_free(cache_path_full);
+		uber_free(cache_path_full);
 		cache_path_full=cache_path_swap;
 		cache_path_swap=NULL;
 	}
@@ -242,7 +242,7 @@ gchar *cache_file_touch(const gchar *cache_file){
 	if(!(g_file_test(cache_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)))
 		if(!(g_creat(cache_filename, S_IRUSR|S_IWUSR))){
 			debug("**ERROR:** Failed to create cache file: [%s].", cache_filename);
-			g_free(cache_filename);
+			uber_free(cache_filename);
 			return NULL;
 		}
 	
@@ -308,12 +308,12 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	va_list cache_subdirs_and_file;
 	va_start(cache_subdirs_and_file, subdir1_or_file);
 	for(subdir_or_filename=(gchar *)subdir1_or_file; subdir_or_filename; subdir_or_filename=va_arg(cache_subdirs_and_file, gchar *)){
-		if(file) g_free(file);
+		if(file) uber_free(file);
 		file=cache_path_create(dir, subdir_or_filename, NULL);
 		
 		if(!(subdir_or_filename=va_arg(cache_subdirs_and_file, gchar *))) break;
 		
-		if(directory) g_free(directory);
+		if(directory) uber_free(directory);
 		directory=cache_path_create(dir, subdir_or_filename, NULL);
 		dir=directory;
 	}
@@ -354,7 +354,7 @@ gchar *cache_images_get_unknown_image_filename(void){
 #ifndef GNOME_ENABLE_DEBUG
 	home_unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
 	if(!(g_file_test(home_unknown_image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR ))){
-		g_free(home_unknown_image_filename);
+		uber_free(home_unknown_image_filename);
 #endif
 		home_unknown_image_filename=g_build_filename(BUILDDIR, "data", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
 #ifndef GNOME_ENABLE_DEBUG
@@ -374,7 +374,7 @@ gchar *cache_images_get_unknown_image_filename(void){
 		}
 	}
 	
-	g_free(home_unknown_image_filename);
+	uber_free(home_unknown_image_filename);
 	
 	return unknown_image_filename;
 }/*cache_images_get_unknown_image_filename*/
@@ -390,7 +390,7 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 	gchar *image_file;
 	cache_get_uri_filename(image_url, FALSE, NULL, TRUE, &image_file, FALSE, NULL);
 	if(G_STR_EMPTY(image_file)){
-		if(image_file) g_free(image_file);
+		if(image_file) uber_free(image_file);
 		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading avatar for user: <%s>; using url: [%s].", user_name, image_url);
 		return cache_images_get_unknown_image_filename();
 	}
@@ -398,17 +398,24 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 	gchar *avatar_dir=cache_path_create("services", service->uri, "avatars", user_name, NULL);
 	gchar *image_filename=NULL;
 	gchar *avatar_path=NULL;
-	if(!( (avatar_path=cache_dir_test(avatar_dir, TRUE)) && (image_filename=cache_path_create(avatar_path, image_file, NULL)) ))
+	if(!( ((avatar_path=cache_dir_test(avatar_dir, TRUE))) && (image_filename=cache_path_create(avatar_path, image_file, NULL)) )){
+		uber_free(image_file);
+		uber_free(avatar_dir);
+		if(avatar_path) uber_free(avatar_path);
 		return cache_images_get_unknown_image_filename();
-	else if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) ))
+	}
+	
+	if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) )){
+		debug("Cleaning up old avatars from: [%s]", avatar_dir);
 		cache_dir_clean_up(avatar_dir, FALSE);
+	}
 	
 	
-	debug("Setting image filename:\n\t\turl: %s\n\t\tfile:%s\n\t\tfull path: %s", image_url, image_file, image_filename);
+	debug("Setting image filename:\n\t\t[%s]", image_filename);
 	
-	g_free(avatar_path);
-	g_free(avatar_dir);
-	g_free(image_file);
+	uber_free(image_file);
+	uber_free(avatar_dir);
+	uber_free(avatar_path);
 	
 	return image_filename;
 }/*cache_images_get_user_avatar_filename(service, user->user_name, user->image_url);*/

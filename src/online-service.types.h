@@ -99,6 +99,9 @@ struct _OnlineService{
 	SoupSession			*session;
 	RateLimitTimer			*timer;
 	
+	gboolean			post_to_by_default;
+	gboolean			post_to_enabled;
+	
 	gboolean			authenticated;
 	gboolean			connected;
 	gboolean			has_loaded;

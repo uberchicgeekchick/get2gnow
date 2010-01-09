@@ -29,7 +29,7 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 
-#include <libgnomeui/libgnomeui.h>
+#include <libgnome/libgnome.h>
 
 #include "config.h"
 #include "program.h"
@@ -55,7 +55,7 @@ int main(const int argc, const char **argv, const char **envp){
 	
 	program=gnome_program_init(
 					GETTEXT_PACKAGE, PACKAGE_VERSION PACKAGE_RELEASE,
-					LIBGNOMEUI_MODULE,
+					LIBGNOME_MODULE,
 					(gint)argc, (gchar **)argv,
 					GNOME_PARAM_GOPTION_CONTEXT, option_context,
 					GNOME_PARAM_NONE

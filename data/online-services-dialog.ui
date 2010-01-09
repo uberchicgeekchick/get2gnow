@@ -16,7 +16,7 @@
           <object class="GtkTable" id="account_table">
             <property name="visible">True</property>
             <property name="border_width">6</property>
-            <property name="n_rows">10</property>
+            <property name="n_rows">11</property>
             <property name="n_columns">4</property>
             <property name="column_spacing">12</property>
             <property name="row_spacing">12</property>
@@ -212,8 +212,8 @@
               </object>
               <packing>
                 <property name="right_attach">4</property>
-                <property name="top_attach">9</property>
-                <property name="bottom_attach">10</property>
+                <property name="top_attach">10</property>
+                <property name="bottom_attach">11</property>
               </packing>
             </child>
             <child>
@@ -248,7 +248,7 @@
               <object class="GtkLabel" id="online_services_service_key_label">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Account's _Label:
+                <property name="label" translatable="yes">Account Na_me:
 (e.g. me@identi.ca)</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">online_services_keys_combo_box</property>
@@ -282,7 +282,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkAlignment" id="alignment1">
+              <object class="GtkAlignment" id="auto_connect_alignment">
                 <property name="visible">True</property>
                 <property name="xalign">1</property>
                 <property name="yalign">1</property>
@@ -302,6 +302,29 @@
                 <property name="right_attach">4</property>
                 <property name="top_attach">8</property>
                 <property name="bottom_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAlignment" id="post_to_by_default_alignment">
+                <property name="visible">True</property>
+                <property name="xalign">1</property>
+                <property name="yalign">1</property>
+                <property name="xscale">0</property>
+                <child>
+                  <object class="GtkCheckButton" id="post_to_by_default_check_button">
+                    <property name="label" translatable="yes">By de_fault post my updates to this account.</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="use_underline">True</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="right_attach">4</property>
+                <property name="top_attach">9</property>
+                <property name="bottom_attach">10</property>
               </packing>
             </child>
           </object>

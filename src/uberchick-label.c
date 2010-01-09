@@ -73,7 +73,7 @@
 #include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 
 #include "main-window.h"
 #include "update-viewer.h"
@@ -88,6 +88,8 @@
 
 struct _UberChickLabelPrivate{
 	OnlineService	*service;
+	gchar		*user_name;
+	gdouble		user_id;
 	gdouble		update_id;
 };
 
@@ -110,8 +112,12 @@ static void uberchick_label_class_init(UberChickLabelClass *klass){
 
 static void uberchick_label_init(UberChickLabel *uberchick_label){
 	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
-	GET_PRIVATE(uberchick_label)->update_id=0.0;
-	GET_PRIVATE(uberchick_label)->service=NULL;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	this->service=NULL;
+	this->user_name=NULL;
+	this->user_id=0.0;
+	this->update_id=0.0;
 	
 	gtk_label_set_line_wrap(GTK_LABEL(uberchick_label), TRUE);
 	g_object_set(uberchick_label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, NULL);
@@ -123,32 +129,53 @@ UberChickLabel *uberchick_label_new(void){
 }/*uberchick_label_new();*/
 
 static void uberchick_label_finalize(UberChickLabel *uberchick_label){
-	GET_PRIVATE(uberchick_label)->update_id=0.0;
+	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(GET_PRIVATE(uberchick_label)->user_name)
+		uber_free( GET_PRIVATE(uberchick_label)->user_name );
 	G_OBJECT_CLASS(uberchick_label_parent_class)->finalize(G_OBJECT(uberchick_label));
 }/*uberchick_label_finalize(update_viewer->update_label);*/
 
 OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label){
 	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->service )) return NULL;
 	return GET_PRIVATE(uberchick_label)->service;
-}/*uberchick_label_get_service(widget);*/
+}/*uberchick_label_get_service(uberchick_label);*/
+
+const gchar *uberchick_label_get_user_name(UberChickLabel *uberchick_label){
+	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->user_name )) return NULL;
+	return GET_PRIVATE(uberchick_label)->user_name;
+}/*uberchick_label_get_user_name(uberchick_label);*/
+
+gdouble uberchick_label_get_user_id(UberChickLabel *uberchick_label){
+	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->user_id )) return 0.0;
+	return GET_PRIVATE(uberchick_label)->user_id;
+}/*uberchick_label_get_user_id(uberchick_label);*/
 
 gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label){
 	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->update_id )) return 0.0;
 	return GET_PRIVATE(uberchick_label)->update_id;
-}/*uberchick_label_get_service(widget);*/
+}/*uberchick_label_get_update_id(uberchick_label);*/
 
-void uberchick_label_set_text(UberChickLabel *uberchick_label, OnlineService *service, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
+void uberchick_label_set_text(UberChickLabel *uberchick_label, OnlineService *service, const gchar *user_name, gdouble user_id, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	if(G_STR_EMPTY(text)){
-		GET_PRIVATE(uberchick_label)->service=NULL;
-		GET_PRIVATE(uberchick_label)->update_id=0.0;
+		this->service=NULL;
+		if(this->user_name)
+			uber_free(this->user_name);
+		this->user_id=0.0;
+		this->update_id=0.0;
 		gtk_label_set_text(GTK_LABEL(uberchick_label), "");
 		return;
 	}
 	
-	GET_PRIVATE(uberchick_label)->service=service;
-	GET_PRIVATE(uberchick_label)->update_id=update_id;
+	this->service=service;
+	if(this->user_name)
+		uber_free(this->user_name);
+	if(G_STR_N_EMPTY(user_name))
+		this->user_name=g_strdup(user_name);
+	this->user_id=user_id;
+	this->update_id=update_id;
 	debug("Rendering sexy markup for <%s>'s update's ID: %f; update's text: %s", service->key, update_id, text);
 	gchar *sexy_text=www_format_urls(service, text, expand_hyperlinks, make_hyperlinks);
 	sexy_url_label_set_markup(SEXY_URL_LABEL(uberchick_label), sexy_text);

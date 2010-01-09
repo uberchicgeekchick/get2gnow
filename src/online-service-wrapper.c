@@ -78,7 +78,7 @@
 /********************************************************
  *          Variable definitions.                       *
  ********************************************************/
-#define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Tweets:Requests:Users:Authentication:online-service-wrapper.c"
+#define	DEBUG_DOMAINS	"OnlineServices:UI:Network:Updates:Requests:Users:Authentication:online-service-wrapper.c"
 #include "debug.h"
 
 

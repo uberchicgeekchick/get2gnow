@@ -116,9 +116,8 @@ MyGObject *my_gobject_new(void);
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-gint my_gobject_get_total(MyGObject *my_gobject);
-void my_gobject_increment_total(MyGObject *my_gobject, guint total);
-void my_gobject_set_total(MyGObject *my_gobject, guint total);
+gint my_gobject_get_int_value(MyGObject *my_gobject);
+void my_gobject_set_int_value(MyGObject *my_gobject, gint value);
 
 
 G_END_DECLS

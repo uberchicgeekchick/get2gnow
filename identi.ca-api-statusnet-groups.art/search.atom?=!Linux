@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:twitter="http://api.twitter.com/" xml:lang="en-US">
+ <id>tag:identi.ca,2009:search/identi.ca</id>
+ <link type="text/html" rel="alternate" href="http://identi.ca/search/notice?q=%21Linux"/>
+ <link type="application/atom+xml" rel="self" href="http://identi.ca/api/search.atom?q=%21Linux"/>
+ <title>!Linux - Identi.ca Search</title>
+ <updated>2009-12-22T08:29:26+00:00</updated>
+ <link type="application/atom+xml" rel="refresh" href="http://identi.ca/api/search.atom?q=%21Linux&amp;since_id=17218557"/>
+ <link type="application/atom+xml" rel="next" href="http://identi.ca/api/search.atom?q=%21Linux&amp;max_id=17218557&amp;page=2"/>
+ <entry>
+  <id>tag:identi.ca,2009:17218557</id>
+  <published>2009-12-22T08:10:23+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17218557"/>
+  <title>Linux, the brave little pinguin: http://verydemotivational.com/2009/12/21/where-did-that-penguin-get-cymbals/</title>
+  <content type="html">Linux, the brave little pinguin: &lt;a href=&quot;http://verydemotivational.com/2009/12/21/where-did-that-penguin-get-cymbals/&quot; title=&quot;http://verydemotivational.com/2009/12/21/where-did-that-penguin-get-cymbals/&quot; rel=&quot;external&quot;&gt;http://verydemotivational.com/2009/12/21/where-did-that-penguin-get-cymbals/&lt;/a&gt;</content>
+  <updated>2009-12-22T08:10:23+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/46348-96-20090614173339.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://launchpad.net/gwibber&amp;quot;&amp;gt;Gwibber&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>toi (Peter Leemans)</name>
+   <uri>http://identi.ca/user/46348</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17218524</id>
+  <published>2009-12-22T08:09:45+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17218524"/>
+  <title>Which tool do you use to modell databases? !linux !gnu</title>
+  <content type="html">Which tool do you use to modell databases? !linux !&lt;span class=&quot;vcard&quot;&gt;&lt;a href=&quot;http://identi.ca/group/33/id&quot; class=&quot;url&quot; title=&quot;GNU's Not Unix (gnu)&quot;&gt;&lt;span class=&quot;fn nickname&quot;&gt;gnu&lt;/span&gt;&lt;/a&gt;&lt;/span&gt;</content>
+  <updated>2009-12-22T08:09:45+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/55363-96-20091022010336.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://launchpad.net/gwibber&amp;quot;&amp;gt;Gwibber&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>deathwarrior (Ivan de Jesús Pompa García)</name>
+   <uri>http://identi.ca/user/55363</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17217918</id>
+  <published>2009-12-22T07:58:47+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17217918"/>
+  <title>Dutch Linux starter magazine (based on Ubuntu 9.10, OS included): http://blog.schauenburg.nl/2009/12/02/linux-starter-magazine-os-included/</title>
+  <content type="html">Dutch Linux starter magazine (based on Ubuntu 9.10, OS included): &lt;a href=&quot;http://blog.schauenburg.nl/2009/12/02/linux-starter-magazine-os-included/&quot; title=&quot;http://blog.schauenburg.nl/2009/12/02/linux-starter-magazine-os-included/&quot; rel=&quot;external&quot;&gt;http://blog.schauenburg.nl/2009/12/02/linux-starter-magazine-os-included/&lt;/a&gt;</content>
+  <updated>2009-12-22T07:58:47+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/48173-96-20090602160451.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://launchpad.net/gwibber&amp;quot;&amp;gt;Gwibber&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>swat (Sebastian Schauenburg)</name>
+   <uri>http://identi.ca/user/48173</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17217382</id>
+  <published>2009-12-22T07:46:45+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17217382"/>
+  <title>Témoignage d'un libriste convaincu passant de Linux à MacOS http://2tu.us/1ain</title>
+  <content type="html">Témoignage d'un libriste convaincu passant de Linux à MacOS &lt;a href=&quot;http://2tu.us/1ain&quot; title=&quot;http://www.lektum.info/2009/12/12/pourquoi-je-suis-passe-de-linux-a-mac-os-x/&quot; rel=&quot;external&quot;&gt;http://2tu.us/1ain&lt;/a&gt;</content>
+  <updated>2009-12-22T07:46:45+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/56978-96-20090526072130.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://choqok.gnufolks.org/&amp;quot;&amp;gt;Choqok&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>noreiller (Aurélien MANCA)</name>
+   <uri>http://identi.ca/user/56978</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17216962</id>
+  <published>2009-12-22T07:39:06+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17216962"/>
+  <title>A good year for desktop Linux http://bit.ly/5QTZ2X</title>
+  <content type="html">A good year for desktop Linux &lt;a href=&quot;http://bit.ly/5QTZ2X&quot; title=&quot;http://www.manilastandardtoday.com/insideBusop.htm?f=2009/december/22/chinwong.isx&amp;amp;d=/2009/december/22&quot; rel=&quot;external&quot;&gt;http://bit.ly/5QTZ2X&lt;/a&gt;</content>
+  <updated>2009-12-22T07:39:06+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/69807-96-20090728143928.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://ping.fm/&amp;quot;&amp;gt;Ping.fm&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>inestdia (iNestdia)</name>
+   <uri>http://identi.ca/user/69807</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17216924</id>
+  <published>2009-12-22T07:38:16+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17216924"/>
+  <title>A good year for desktop Linux http://bit.ly/5QTZ2X</title>
+  <content type="html">A good year for desktop Linux &lt;a href=&quot;http://bit.ly/5QTZ2X&quot; title=&quot;http://www.manilastandardtoday.com/insideBusop.htm?f=2009/december/22/chinwong.isx&amp;amp;d=/2009/december/22&quot; rel=&quot;external&quot;&gt;http://bit.ly/5QTZ2X&lt;/a&gt;</content>
+  <updated>2009-12-22T07:38:16+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/75565-96-20090819054901.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://ping.fm/&amp;quot;&amp;gt;Ping.fm&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>adsite (Blanche)</name>
+   <uri>http://identi.ca/user/75565</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17216674</id>
+  <published>2009-12-22T07:33:37+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17216674"/>
+  <title>[Linux Feed] Cercare File tramite il terminale in Linux: Oggi vedremo come ricercare file direttame.. http://bit.ly/7YwwqG</title>
+  <content type="html">[Linux Feed] Cercare File tramite il terminale in Linux: Oggi vedremo come ricercare file direttame.. &lt;a href=&quot;http://bit.ly/7YwwqG&quot; title=&quot;http://www.linuxfeed.org/feeds-opensource/cercare-file-tramite-il-terminale-in-linux.html?utm_source=feedburner&amp;amp;utm_medium=feed&amp;amp;utm_campaign=Feed%3A+linuxfeed+%28Linux+Feed%29&quot; rel=&quot;external&quot;&gt;http://bit.ly/7YwwqG&lt;/a&gt;</content>
+  <updated>2009-12-22T07:33:37+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/21208-96-20080819134846.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://twitterfeed.com/&amp;quot;&amp;gt;twitterfeed&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>linuxfeed (Linux Feed)</name>
+   <uri>http://identi.ca/user/21208</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17216584</id>
+  <published>2009-12-22T07:31:45+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17216584"/>
+  <title>Free Remote Backup Software For Linux http://www.750gbonlinebackup.co.cc/free-remote-backup-software-for-linux.php</title>
+  <content type="html">Free Remote Backup Software For Linux &lt;a href=&quot;http://www.750gbonlinebackup.co.cc/free-remote-backup-software-for-linux.php&quot; title=&quot;http://www.750gbonlinebackup.co.cc/free-remote-backup-software-for-linux.php&quot; rel=&quot;external&quot;&gt;http://www.750gbonlinebackup.co.cc/free-remote-backup-software-for-linux.php&lt;/a&gt;</content>
+  <updated>2009-12-22T07:31:45+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/62160-96-20090619185028.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://bitbucketlabs.net/laconica-tools/&amp;quot;&amp;gt;Laconica Tools&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>onlinestorage (Online Storage)</name>
+   <uri>http://identi.ca/user/62160</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17216378</id>
+  <published>2009-12-22T07:27:09+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17216378"/>
+  <title>Hot Backup of MySQL on a Linux VM From a Linux Guest Virtual Machine - DABCC.com http://ow.ly/16ccfG</title>
+  <content type="html">Hot Backup of MySQL on a Linux VM From a Linux Guest Virtual Machine - &lt;a href=&quot;http://DABCC.com/&quot; title=&quot;http://DABCC.com/&quot; rel=&quot;external&quot;&gt;DABCC.com&lt;/a&gt; &lt;a href=&quot;http://ow.ly/16ccfG&quot; title=&quot;http://www.dabcc.com/downloadfile.aspx?id=857&quot; rel=&quot;external&quot;&gt;http://ow.ly/16ccfG&lt;/a&gt;</content>
+  <updated>2009-12-22T07:27:09+00:00</updated>
+  <link type="image/png" rel="related" href="http://theme.status.net/0.9.0rc1/identica/default-avatar-profile.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://ping.fm/&amp;quot;&amp;gt;Ping.fm&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>sandeephegde (Sandeep Hegde)</name>
+   <uri>http://identi.ca/user/67850</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17216354</id>
+  <published>2009-12-22T07:26:47+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17216354"/>
+  <title>A good year for desktop Linux - Manila Standard Today http://ow.ly/16ccfF</title>
+  <content type="html">A good year for desktop Linux - Manila Standard Today &lt;a href=&quot;http://ow.ly/16ccfF&quot; title=&quot;http://www.manilastandardtoday.com/insideBusop.htm?f=2009/december/22/chinwong.isx&amp;amp;d=/2009/december/22&quot; rel=&quot;external&quot;&gt;http://ow.ly/16ccfF&lt;/a&gt;</content>
+  <updated>2009-12-22T07:26:47+00:00</updated>
+  <link type="image/png" rel="related" href="http://theme.status.net/0.9.0rc1/identica/default-avatar-profile.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://ping.fm/&amp;quot;&amp;gt;Ping.fm&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>sandeephegde (Sandeep Hegde)</name>
+   <uri>http://identi.ca/user/67850</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17214907</id>
+  <published>2009-12-22T06:58:46+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17214907"/>
+  <title>聽說 TECO WM5123 支援 Linux ? http://htxt.it/ReFo</title>
+  <content type="html">聽說 TECO WM5123 支援 Linux ? &lt;a href=&quot;http://htxt.it/ReFo&quot; title=&quot;http://wimaxtaipei.tw/products_profile.php?id=198&quot; rel=&quot;external&quot;&gt;http://htxt.it/ReFo&lt;/a&gt;</content>
+  <updated>2009-12-22T06:58:46+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/43991-96-20090317060005.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://hellotxt.com/&amp;quot;&amp;gt;HelloTxt&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>chihchun (Rex Tsai)</name>
+   <uri>http://identi.ca/user/43991</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17213418</id>
+  <published>2009-12-22T06:26:19+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17213418"/>
+  <title>Linux Multi Wan Load Balancing ! by PedroQuelhas http://tinyurl.com/yaa7nbc</title>
+  <content type="html">Linux Multi Wan Load Balancing ! by PedroQuelhas &lt;a href=&quot;http://tinyurl.com/yaa7nbc&quot; title=&quot;http://www.getafreelancer.com/projects/mithi_576012.html?utm_source=twitterfeed&amp;amp;utm_medium=laconi&amp;amp;utm_campaign=+Online+Job+News&amp;amp;utm_term=News&amp;amp;utm_content=News&quot; rel=&quot;external&quot;&gt;http://tinyurl.com/yaa7nbc&lt;/a&gt;</content>
+  <updated>2009-12-22T06:26:19+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/80259-96-20091021192348.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://ping.fm/&amp;quot;&amp;gt;Ping.fm&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>mithiworld (Mithiworld™)</name>
+   <uri>http://identi.ca/user/80259</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17213308</id>
+  <published>2009-12-22T06:24:43+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17213308"/>
+  <title>#php: Linux Multi Wan Load Balancing ! by PedroQuelhas: Greetings all! I have 3 ISP. First ISP I need to l.. http://bit.ly/8tXlsu</title>
+  <content type="html">#&lt;span class=&quot;tag&quot;&gt;&lt;a href=&quot;http://identi.ca/tag/php&quot; rel=&quot;tag&quot;&gt;php&lt;/a&gt;&lt;/span&gt;: Linux Multi Wan Load Balancing ! by PedroQuelhas: Greetings all! I have 3 ISP. First ISP I need to l.. &lt;a href=&quot;http://bit.ly/8tXlsu&quot; title=&quot;http://www.getafreelancer.com/projects/masnun_576012.html&quot; rel=&quot;external&quot;&gt;http://bit.ly/8tXlsu&lt;/a&gt;</content>
+  <updated>2009-12-22T06:24:43+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/56497-96-20090523125745.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://twitterfeed.com/&amp;quot;&amp;gt;twitterfeed&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>masnun</name>
+   <uri>http://identi.ca/user/56497</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17212989</id>
+  <published>2009-12-22T06:19:14+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17212989"/>
+  <title>ASUS Eee PC 1201N On Linux: For the past year my netbook of choice has been the Samsung NC10 as while it shippe.. http://bit.ly/7stFz1</title>
+  <content type="html">ASUS Eee PC 1201N On Linux: For the past year my netbook of choice has been the Samsung NC10 as while it shippe.. &lt;a href=&quot;http://bit.ly/7stFz1&quot; title=&quot;http://www.phoronix.com/scan.php?page=article&amp;amp;item=asus_eee_1201n&amp;amp;num=1&quot; rel=&quot;external&quot;&gt;http://bit.ly/7stFz1&lt;/a&gt;</content>
+  <updated>2009-12-22T06:19:14+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/72650-96-20090901162247.jpeg"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://twitterfeed.com/&amp;quot;&amp;gt;twitterfeed&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>lordnaastik (Alok Pai)</name>
+   <uri>http://identi.ca/user/72650</uri>
+</author>
+</entry>
+ <entry>
+  <id>tag:identi.ca,2009:17212896</id>
+  <published>2009-12-22T06:17:22+00:00</published>
+  <link type="text/html" rel="alternate" href="http://identi.ca/notice/17212896"/>
+  <title>System Linux : Un favicon pour tous vos virtualhosts http://bit.ly/817Law</title>
+  <content type="html">System Linux : Un favicon pour tous vos virtualhosts &lt;a href=&quot;http://bit.ly/817Law&quot; title=&quot;http://www.system-linux.eu/index.php?post/2009/12/22/Un-favicon-pour-tous-vos-virtualhosts&quot; rel=&quot;external&quot;&gt;http://bit.ly/817Law&lt;/a&gt;</content>
+  <updated>2009-12-22T06:17:22+00:00</updated>
+  <link type="image/png" rel="related" href="http://avatar.identi.ca/38887-96-20090208143249.png"/>
+  <twitter:source>&amp;lt;a href=&amp;quot;http://twitterfeed.com/&amp;quot;&amp;gt;twitterfeed&amp;lt;/a&amp;gt;</twitter:source>
+  <author>
+   <name>planetlibre (Planet Libre)</name>
+   <uri>http://identi.ca/user/38887</uri>
+</author>
+</entry>
+</feed>

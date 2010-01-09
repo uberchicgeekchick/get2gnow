@@ -81,7 +81,7 @@
 #include "best-friends.h"
 
 #include "images.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "ui-utils.h"
 #include "geometry.h"
 
@@ -116,12 +116,15 @@ struct _MainWindowPrivate {
 	GtkWindow		*update_viewer_window;
 	
 	GtkMenuBar		*menubar;
-        GtkMenuItem		*menu_network;
+	GtkMenuItem		*network_menu_item;
+        GtkMenu			*menu_network;
 	
 	/* Tools / Edit menu items. */
-        GtkMenuItem		*menu_edit;
+	GtkMenuItem		*edit_menu_item;
+        GtkMenu			*menu_edit;
 	
-        GtkMenuItem		*menu_view;
+	GtkMenuItem		*view_menu_item;
+        GtkMenu			*menu_view;
 	
 	GtkCheckMenuItem	*view_menu_uber_compact_view_check_menu;
 	
@@ -137,26 +140,30 @@ struct _MainWindowPrivate {
 	GtkCheckMenuItem	*view_menu_rcpt_colums_check_menu_item;
 	
 	/* This is the 'Tools' menu. */
-	GtkMenuItem		*menu_online_service_request;
+	GtkMenuItem		*online_service_request_menu_item;
+	GtkMenu			*menu_online_service_request;
 	GList			*online_service_request_popup_image_menu_items;
 	
 	/* Timeline menu items */
-	GtkMenuItem		*menu_tabs;
+	GtkMenuItem		*tabs_menu_item;
+	GtkMenu			*menu_tabs;
 	GList			*tabs_menu_widgets;
 	GtkCheckMenuItem	*timeline_public;
+	GtkCheckMenuItem	*timeline_homepage;
 	GtkCheckMenuItem	*timeline_friends;
 	GtkCheckMenuItem	*timeline_mine;
 	GtkCheckMenuItem	*timeline_dm;
 	GtkCheckMenuItem	*timeline_favorites;
 	GtkCheckMenuItem	*timeline_replies;
-								
-	GtkMenuItem		*menu_help;
+	GtkCheckMenuItem	*timeline_retweets_to_me;
+	GtkCheckMenuItem	*timeline_retweets_of_me;
+	GtkSeparatorMenuItem	*timeline_retweets_separator;
+	
+	GtkMenuItem		*help_menu_item;
+	GtkMenu			*menu_help;
 	
 	GtkHandleBox		*main_window_handlebox;
 	GtkToolbar		*main_toolbar;
-	
-	/* 'New Tabs' Timeline menu items */
-	GtkMenu			*tabs_menu;
 	
 	GtkComboBoxEntry	*search_history_combo_box_entry;
 	SexySpellEntry		*sexy_search_entry;
@@ -174,6 +181,7 @@ struct _MainWindowPrivate {
 	
 	/* Widgets that are enabled when we are connected/disconnected */
 	GList			*widgets_connected;
+	GList			*twitter_connected_widgets;
 	GList			*widgets_disconnected;
 	GList			*selected_update_image_menu_items;
 	
@@ -190,8 +198,6 @@ struct _MainWindowPrivate {
 	GtkCellRendererText	*best_friends_online_service_cell_renderer_text;
 	
 	GtkTreeStore		*best_friends_tree_store;
-	GtkTreeModel		*best_friends_tree_model;
-	GtkTreeModel		*best_friends_tree_model_sort;
 	
 	GtkButton		*best_friends_add_button;
 	GtkButton		*best_friends_drop_button;
@@ -224,21 +230,10 @@ typedef enum{
 	GSTRING_SEARCH_PHRASE = 0,
 } PeviousSearches;
 
-/* ui & notification gconf values. */
-#define MAIN_WINDOW_UI_HIDDEN			GCONF_PATH "/ui/hide/main_window"
-#define MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX	GCONF_PATH "/ui/hide/best_friends"
-
-#define MAIN_WINDOW_MAIN_TOOLBAR_HIDE		GCONF_PATH "/ui/hide/main_toolbar"
-
-#define PREFS_HINTS_HIDE_MAIN_WINDOW		GCONF_PATH "/popup_confirmation_dialog/disabled_when/closing/main_window"
-#define PREFS_HINTS_CLOSE_MAIN_WINDOW		GCONF_PATH "/popup_confirmation_dialog/disabled_when/hiding/main_window"
-
 #define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Updates:Requests:Users:Start-Up:main-window.c"
 #include "debug.h"
 
 #define	GtkBuilderUI	"main-window"
-
-#define SEARCH_HISTORY_PREVIOUS_SEARCHES	GCONF_PATH "/search/history/saved/%d"
 
 
 static void main_window_class_init(MainWindowClass *klass);
@@ -256,6 +251,7 @@ static void main_window_best_friends_tree_store_validate(GtkButton *best_friends
 static void main_window_best_friends_buttons_set_sensitive(void);
 static void main_window_best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_view, MainWindow *main_window);
 static void main_window_best_friends_button_clicked(GtkButton *button);
+static void main_window_twitter_connection_items_setup(MainWindowPrivate *m_w_p);
 static void main_window_view_setup(MainWindowPrivate *m_w_p);
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window); 
@@ -288,7 +284,7 @@ static void main_window_select_service(GtkMenuItem *item, MainWindow *main_windo
 static void main_window_preferences_cb(GtkWidget *window, MainWindow *main_window); 
 
 static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p);
-static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab);
+static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab, MainWindowPrivate *m_w_p);
 
 static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(GtkCheckMenuItem *check_menu_item, const gchar *gconfig_key, gboolean active, GtkWidget *widget);
 static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item);
@@ -318,7 +314,6 @@ static gboolean configure_event_timeout_cb(GtkWidget *widget);
 static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, MainWindow *main_window);
 
 static MainWindow  *main_window=NULL;
-static guint tabs_init_timeout=0;
 static guint statusbar_inital_context_id=0;
 
 G_DEFINE_TYPE(MainWindow, main_window, G_TYPE_OBJECT);
@@ -339,6 +334,7 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window->private->online_service_request_popup_image_menu_items=NULL;
 	main_window->private->best_friends_buttons=NULL;
 	main_window->private->widgets_connected=NULL;
+	main_window->private->twitter_connected_widgets=NULL;
 	main_window->private->widgets_disconnected=NULL;
 	main_window->private->search_history_total=0;
 	main_window->private->search_history_maximum=0;
@@ -359,17 +355,19 @@ static void main_window_finalize(GObject *object){
 	uber_object_unref(main_window->private->search_history_completion);
 	
 	program_timeout_remove(&main_window->private->size_timeout_id, _("main window configuration"));
+	
 	main_window_statusbar_timeouts_free();
 	
-	g_list_free(main_window->private->best_friends_buttons);
-	g_list_free(main_window->private->online_service_request_popup_image_menu_items);
-	g_list_free(main_window->private->widgets_connected);
-	g_list_free(main_window->private->widgets_disconnected);
+	uber_list_free(main_window->private->online_service_request_popup_image_menu_items);
+	uber_list_free(main_window->private->tabs_menu_widgets);
+	uber_list_free(main_window->private->widgets_connected);
+	uber_list_free(main_window->private->twitter_connected_widgets);
+	uber_list_free(main_window->private->widgets_disconnected);
+	uber_list_free(main_window->private->selected_update_image_menu_items);
+	uber_list_free(main_window->private->best_friends_buttons);
 	
 	tabs_destroy();
 	uber_free(main_window->private->statusbar_default_message);
-	if(main_window->private->best_friends_tree_model_sort)
-		g_object_unref(main_window->private->best_friends_tree_model_sort);
 	
 	G_OBJECT_CLASS(main_window_parent_class)->finalize(object);
 }/*main_window_finalize(main_window);*/
@@ -389,18 +387,27 @@ static void main_window_setup(void){
 					"main_vbox", &main_window->private->main_vbox,
 					
 					"main_menubar", &main_window->private->menubar,
-					"network", &main_window->private->menu_network,
-					"edit", &main_window->private->menu_edit,
+					"network_menu_item", &main_window->private->network_menu_item,
+					"connections_menu", &main_window->private->menu_network,
 					
-					"tabs", &main_window->private->menu_tabs,
-					"tabs_public_timeline", &main_window->private->timeline_public,
-					"tabs_friends_timeline", &main_window->private->timeline_friends,
-					"tabs_my_timeline", &main_window->private->timeline_mine,
-					"tabs_direct_messages", &main_window->private->timeline_dm,
-					"tabs_replies", &main_window->private->timeline_replies,
-					"tabs_favorites_timeline", &main_window->private->timeline_favorites,
+					"tabs_menu_item", &main_window->private->tabs_menu_item,
+					"tabs_menu", &main_window->private->menu_tabs,
+					"tabs_menu_public_timeline_check_menu_item", &main_window->private->timeline_public,
+					"tabs_menu_hompage_timeline_check_menu_item", &main_window->private->timeline_homepage,
+					"tabs_menu_friends_timeline_check_menu_item", &main_window->private->timeline_friends,
+					"tabs_menu_my_timeline_check_menu_item", &main_window->private->timeline_mine,
+					"tabs_menu_direct_messages_check_menu_item", &main_window->private->timeline_dm,
+					"tabs_menu_replies_check_menu_item", &main_window->private->timeline_replies,
+					"tabs_menu_favorites_timeline_check_menu_item", &main_window->private->timeline_favorites,
+					"tabs_menu_retweets_separator_menu_item", &main_window->private->timeline_retweets_separator,
+					"tabs_menu_retweets_to_me_timeline_check_menu_item", &main_window->private->timeline_retweets_to_me,
+					"tabs_menu_retweets_of_me_timeline_check_menu_item", &main_window->private->timeline_retweets_of_me,
 					
-					"view", &main_window->private->menu_view,
+					"edit_menu_item", &main_window->private->edit_menu_item,
+					"edit_menu", &main_window->private->menu_edit,
+					
+					"view_menu_item", &main_window->private->view_menu_item,
+					"view_menu", &main_window->private->menu_view,
 					
 					"view_menu_uber_compact_view_check_menu", &main_window->private->view_menu_uber_compact_view_check_menu,
 					"view_toolbar_main_check_menu_item", &main_window->private->view_toolbar_main_check_menu_item,
@@ -415,9 +422,11 @@ static void main_window_setup(void){
 					"view_menu_from_colums_check_menu_item", &main_window->private->view_menu_from_colums_check_menu_item,
 					"view_menu_rcpt_colums_check_menu_item", &main_window->private->view_menu_rcpt_colums_check_menu_item,
 					
-					"online_service_request", &main_window->private->menu_online_service_request,
+					"online_service_request_menu_item", &main_window->private->online_service_request_menu_item,
+					"online_service_request_menu", &main_window->private->menu_online_service_request,
 					
-					"help", &main_window->private->menu_help,
+					"help_menu_item", &main_window->private->help_menu_item,
+					"help_menu", &main_window->private->menu_help,
 					/* end menu items. */
 					
 					/* start:main toolbar */
@@ -479,7 +488,6 @@ static void main_window_setup(void){
 					"main_window", "destroy", main_window_destroy_cb,
 					"main_window", "delete_event", main_window_delete_event_cb,
 					"main_window", "configure_event", main_window_window_configure_event_cb,
-					"main_window", "grab-focus", update_viewer_sexy_select,
 					
 					"services_connect", "activate", main_window_reconnect,
 					"services_disconnect", "activate", main_window_disconnect,
@@ -488,13 +496,6 @@ static void main_window_setup(void){
 					"accounts_image_menu_item", "activate", main_window_services_cb,
 					"select_service_image_menu_item", "activate", main_window_select_service,
 					"preferences", "activate", main_window_preferences_cb,
-					
-					"tabs_public_timeline", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_friends_timeline", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_my_timeline", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_direct_messages", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_replies", "toggled", main_window_tabs_menu_timeline_selected,
-					"tabs_favorites_timeline", "toggled", main_window_tabs_menu_timeline_selected,
 					
 					"new_update", "activate", update_viewer_new_update,
 					"new_dm", "activate", update_viewer_new_dm,
@@ -546,11 +547,16 @@ static void main_window_setup(void){
 	gtk_window_set_title(GTK_WINDOW(main_window->private->window), window_title);
 	uber_free(window_title);
 	
-	g_signal_connect_after( main_window->private->window, "event-after", (GCallback)update_viewer_sexy_select, NULL );
+	gtkbuilder_connect_after(ui, main_window,
+					/*"main_window", "grab-focus", update_viewer_sexy_select,*/
+					"main_window", "focus-in-event", update_viewer_sexy_select,
+				NULL
+	);
 	
 	main_window_online_service_request_popup_menu_setup(ui);
 	main_window_best_friends_setup(ui);
 	main_window_view_setup(main_window->private);
+	main_window_twitter_connection_items_setup(main_window->private);
 	
 	/* Set up connected related widgets */
 	main_window_connection_items_setup(ui);
@@ -620,13 +626,10 @@ static void main_window_best_friends_setup(GtkBuilder *ui){
 	main_window->private->best_friends_buttons=list;
 	
 	best_friends_set_tree_store(main_window->private->best_friends_tree_store);
-	main_window->private->best_friends_tree_model=(GtkTreeModel *)main_window->private->best_friends_tree_store;
-	main_window->private->best_friends_tree_model_sort=gtk_tree_model_sort_new_with_model(main_window->private->best_friends_tree_model);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_model_sort), STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, GTK_SORT_DESCENDING);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_store), STRING_BEST_FRIEND_USER_NAME_AND_ONlINE_SERVICE_KEY, GTK_SORT_ASCENDING);
 	
 	online_services_best_friends_tree_store_fill(main_window->private->best_friends_tree_store);
 	
-	gtk_tree_view_set_model(GTK_TREE_VIEW(main_window->private->best_friends_sexy_tree_view), main_window->private->best_friends_tree_model_sort);
 	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, STRING_BEST_FRIEND_USER_NAME);
 }/*main_window_best_friends_setup(ui);*/
 
@@ -662,9 +665,9 @@ gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **
 	gchar *selected_user_name=NULL;
 	gdouble selected_update_id=0.0;
 	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
-	if(gtk_tree_selection_get_selected(sel, &main_window->private->best_friends_tree_model_sort, iter))
+	if(gtk_tree_selection_get_selected(sel, NULL/*&main_window->private->best_friends_tree_model_sort*/, iter))
 		gtk_tree_model_get(
-				main_window->private->best_friends_tree_model_sort, iter,
+				GTK_TREE_MODEL(main_window->private->best_friends_tree_store), iter,
 					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &selected_service,
 					STRING_BEST_FRIEND_USER, &selected_user,
 					STRING_BEST_FRIEND_USER_NAME, &selected_user_name,
@@ -758,7 +761,7 @@ static void main_window_best_friends_button_clicked(GtkButton *button){
 	}
 	
 	if(button==main_window->private->best_friends_send_at_message_button){
-		update_viewer_set_in_reply_to_data(user, service, unread_update_id, FALSE);
+		update_viewer_set_in_reply_to_data(service, user, unread_update_id, unread_update_id, TRUE, FALSE);
 		uber_free(user_name);
 		uber_free(user);
 		return;
@@ -798,7 +801,7 @@ static void main_window_view_setup(MainWindowPrivate *m_w_p){
 	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_rcpt_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, TRUE, NULL);
 	
 	gtk_check_menu_item_set_active( m_w_p->view_update_viewer_floating_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) );
-	g_signal_connect_after( m_w_p->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle, NULL );
+	g_signal_connect_after( m_w_p->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle_via_check_menu_item, NULL );
 	
 	gtk_check_menu_item_set_active(m_w_p->view_update_viewer_compact_view_check_menu_item, gconfig_if_bool( PREFS_UPDATE_VIEWER_COMPACT, FALSE) );
 	g_signal_connect_after( m_w_p->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)update_viewer_emulate_compact_view_toggle, NULL );
@@ -819,7 +822,7 @@ static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_ke
 		if(hide) gtk_widget_hide(widget);
 	}
 	
-	g_signal_connect_after( check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL );
+	g_signal_connect_after(check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL);
 }/*main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE|FALSE, (GtkWidget *)main_window->private->best_friends_vbox );*/
 
 static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item){
@@ -839,16 +842,23 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
 		else
 			gtk_widget_show(widget);
 	}
-	if(check_menu_item==main_window->private->view_toolbar_tabs_check_menu_item) return tabs_toggle_toolbars();
-	if(check_menu_item==main_window->private->view_menu_from_colums_check_menu_item) return tabs_toggle_from_columns();
-	if(check_menu_item==main_window->private->view_menu_rcpt_colums_check_menu_item) return tabs_toggle_rcpt_columns();
 	
-	if(check_menu_item==main_window->private->view_menu_detailed_update_column_check_menu_item)
-		return main_window_compact_timelines_toggled(active);
+	if(check_menu_item==main_window->private->view_toolbar_tabs_check_menu_item)
+		tabs_toggle_toolbars();
 	
-	if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu)
-		return main_window_compact_view_toggled(active);
+	else if(check_menu_item==main_window->private->view_menu_from_colums_check_menu_item)
+		tabs_toggle_from_columns();
 	
+	else if(check_menu_item==main_window->private->view_menu_rcpt_colums_check_menu_item)
+		tabs_toggle_rcpt_columns();
+	
+	else if(check_menu_item==main_window->private->view_menu_detailed_update_column_check_menu_item)
+		main_window_compact_timelines_toggled(active);
+	
+	else if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu)
+		main_window_compact_view_toggled(active);
+	
+	update_viewer_sexy_select();
 }/*main_window_view_menu_option_toggled(check_menu_item);*/
 
 static void main_window_compact_view_toggled(gboolean checked){
@@ -876,18 +886,17 @@ void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button){
 
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
 	gboolean use_update_viewer_dialog=gtk_toggle_button_get_active(toggle_button);
-	if(gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE)==use_update_viewer_dialog)
-		return;
+	if(use_update_viewer_dialog==gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE)) return;
 	
-	debug("TweetView changed:\t[%s].",(use_update_viewer_dialog?_("floating"):_("embed")) );
+	debug("UpdateViewer changed:\t[%s].",(use_update_viewer_dialog?_("floating"):_("embed")) );
 	geometry_save();
 	gconfig_set_bool(PREFS_UPDATE_VIEWER_DIALOG, use_update_viewer_dialog);
 	
 	if(use_update_viewer_dialog){
-		if(gtk_widget_get_parent(GTK_WIDGET(main_window->private->update_viewer_embed))==GTK_WIDGET(main_window->private->update_viewer))
+		if(gtk_widget_get_parent(GTK_WIDGET(main_window->private->update_viewer_embed))==GTK_WIDGET(main_window->private->update_viewer_window))
 			return;
 		
-		debug("Displaying TweetView as a stand alone dialog & setting TweetView's parent window..");
+		debug("Displaying UpdateViewer as a stand alone dialog & setting UpdateViewer's parent window..");
 		gtk_widget_reparent(GTK_WIDGET(main_window->private->update_viewer_embed), GTK_WIDGET(main_window->private->update_viewer_window));
 		window_present(GTK_WINDOW(main_window->private->update_viewer_window), TRUE);
 		g_object_add_weak_pointer(G_OBJECT(main_window->private->update_viewer_window),(gpointer)&main_window->private->update_viewer_window);
@@ -897,7 +906,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 		if(gtk_widget_get_parent(GTK_WIDGET(main_window->private->update_viewer_embed))==GTK_WIDGET(main_window->private->update_viewer_vbox))
 			return;
 		
-		debug("Embeding TweetView's into %s main window.", PACKAGE_NAME);
+		debug("Embeding UpdateViewer's into %s main window.", PACKAGE_NAME);
 		gtk_widget_reparent(GTK_WIDGET(main_window->private->update_viewer_embed), GTK_WIDGET(main_window->private->update_viewer_vbox));
 		gtk_widget_show(GTK_WIDGET(main_window->private->expand_box));
 		gtk_widget_show(GTK_WIDGET(main_window->private->update_viewer_vbox));
@@ -908,7 +917,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 	update_viewer_set_embed_toggle_and_image();
 	
 	debug("Setting MainWindow's embed state indicator, in its 'View' menu, to %s window.", (use_update_viewer_dialog ?"embed UpdateViewer into its main" :"split UpdateViewer off into a floating" ) );
-	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_floating_check_menu_item, !use_update_viewer_dialog);
+	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_floating_check_menu_item, use_update_viewer_dialog);
 	
 	geometry_load();
 }/*main_window_update_viewer_embed*/
@@ -925,7 +934,21 @@ GtkPaned *main_window_get_main_paned(void){
 	return GTK_PANED(main_window->private->main_vpaned);
 }/*main_window_get_main_paned();*/
 
-GtkMenuItem *main_window_get_menu(const gchar *menu){
+GtkMenuBar *main_menu_get_main_main(void){
+	return main_window->private->menubar;
+}/*main_menu_get_main_main();*/
+
+GtkMenuItem *main_window_get_menu_item(const gchar *menu){
+	if((g_str_equal(menu, "network")) ) return GET_PRIVATE(main_window)->network_menu_item;
+	if((g_str_equal(menu, "tabs")) ) return GET_PRIVATE(main_window)->tabs_menu_item;
+	if((g_str_equal(menu, "edit")) ) return GET_PRIVATE(main_window)->edit_menu_item;
+	if((g_str_equal(menu, "view")) ) return GET_PRIVATE(main_window)->view_menu_item;
+	if((g_str_equal(menu, "online_service_request")) ) return GET_PRIVATE(main_window)->online_service_request_menu_item;
+	if((g_str_equal(menu, "help")) ) return GET_PRIVATE(main_window)->help_menu_item;
+	return NULL;
+}/*main_window_get_menu_item("tabs");*/
+
+GtkMenu *main_window_get_menu(const gchar *menu){
 	if((g_str_equal(menu, "network")) ) return GET_PRIVATE(main_window)->menu_network;
 	if((g_str_equal(menu, "tabs")) ) return GET_PRIVATE(main_window)->menu_tabs;
 	if((g_str_equal(menu, "edit")) ) return GET_PRIVATE(main_window)->menu_edit;
@@ -933,11 +956,7 @@ GtkMenuItem *main_window_get_menu(const gchar *menu){
 	if((g_str_equal(menu, "online_service_request")) ) return GET_PRIVATE(main_window)->menu_online_service_request;
 	if((g_str_equal(menu, "help")) ) return GET_PRIVATE(main_window)->menu_help;
 	return NULL;
-}/*main_window_get_menu*/
-
-GtkTreeModel *main_window_get_best_friends_tree_model(void){
-	return main_window->private->best_friends_tree_model_sort;
-}/*main_window_get_best_friends_tree_model();*/
+}/*main_window_get_menu("tabs");*/
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 	online_service_request_unset_selected_update();
@@ -1025,12 +1044,25 @@ static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p){
 	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_replies);
 	g_object_set_data_full(G_OBJECT(m_w_p->timeline_replies), "timeline", API_REPLIES, NULL );
 	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_homepage);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_homepage), "timeline", API_TIMELINE_HOMEPAGE, NULL );
+	
 	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_friends);
 	g_object_set_data_full(G_OBJECT(m_w_p->timeline_friends), "timeline", API_TIMELINE_FRIENDS, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_to_me);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_to_me), "timeline", API_RETWEETED_TO_ME, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_of_me);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_of_me), "timeline", API_RETWEETS_OF_ME, NULL );
+	
+	GList *tabs=NULL;
+	for(tabs=m_w_p->tabs_menu_widgets; tabs; tabs=tabs->next)
+		g_signal_connect(GTK_CHECK_MENU_ITEM(tabs->data), "toggled", G_CALLBACK(main_window_tabs_menu_timeline_selected), m_w_p);
+	g_list_free(tabs);
 }/*main_window_tabs_menu_widgets_setup(main_window);*/
 
-static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab){
-	MainWindowPrivate *m_w_p=main_window->private;
+static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab, MainWindowPrivate *m_w_p){
 	gboolean timeline_found=FALSE;
 	GList *tab_menu_items=NULL;
 	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items && !timeline_found; tab_menu_items=tab_menu_items->next){
@@ -1047,8 +1079,8 @@ static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_t
 	
 	/* just in case, fall back to friends timeline */
 	if(!timeline_found)
-		gtk_check_menu_item_set_active(main_window->private->timeline_friends, TRUE);
-}/*main_window_tabs_menu_timeline_selected(selected_tab);*/
+		gtk_check_menu_item_set_active(main_window->private->timeline_homepage, TRUE);
+}/*main_window_tabs_menu_timeline_selected(selected_tab, main_window->private);*/
 
 /*
  * Function to set the default
@@ -1057,8 +1089,8 @@ static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_t
 void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open){
 	/* This shouldn't happen, but just in case */
 	if(G_STR_EMPTY(timeline_to_open)) {
-		debug("**ERROR:** Default timeline in not set.  Selecting 'timeline_friends' by default.");
-		return gtk_check_menu_item_set_active( main_window->private->timeline_friends, open);
+		debug("**ERROR:** Default timeline in not set.  Selecting 'timeline_homepage' by default.");
+		return gtk_check_menu_item_set_active( main_window->private->timeline_homepage, open);
 	}
 	
 	MainWindowPrivate *m_w_p=main_window->private;
@@ -1074,8 +1106,8 @@ void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean op
 		timeline_found=TRUE;
 	}
 	
-	if(!timeline_found)
-		gtk_check_menu_item_set_active( main_window->private->timeline_friends, open);
+	if(!timeline_found && !gtk_check_menu_item_get_active(main_window->private->timeline_homepage))
+		gtk_check_menu_item_set_active(main_window->private->timeline_homepage, open);
 }/*main_window_tabs_menu_set_active(API_TIMELINE_FRIENDS, TRUE);*/
 
 /* Function to retrieve the users default timeline */
@@ -1085,38 +1117,47 @@ gboolean main_window_tabs_init(void){
 	gconfig_get_string(PREFS_UPDATES_HOME_TIMELINE, &timeline);
 	online_services_refresh();
 	if(G_STR_EMPTY(timeline)){
-		if(timeline) uber_free(timeline);
-		timeline=g_strdup(API_TIMELINE_FRIENDS);
+		uber_free(timeline);
+		open_home_page=FALSE;
+	}else
+		debug("Retrived default timeline: %s.  Auto-loading timeline tabs.", timeline);
+	
+	if(gconfig_if_bool(PREFS_AUTOLOAD_HOMEPAGE, TRUE)){
+		debug("Preparing auto-monitor for My Friends' Updates.");
+		main_window_tabs_menu_set_active(API_TIMELINE_HOMEPAGE, TRUE);
+		if(timeline && open_home_page && g_str_equal(timeline, API_TIMELINE_HOMEPAGE))
+			open_home_page=FALSE;
 	}
-	debug("Retrived default timeline: %s.  Loading timeline tabs.", timeline);
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_FOLLOWING, TRUE)){
-		debug("Preparing auto-monitor for My Friends' Tweets.");
+		debug("Preparing auto-monitor for My Friends' Updates.");
 		main_window_tabs_menu_set_active(API_TIMELINE_FRIENDS, TRUE);
-		if(open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
+		if(timeline && open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
 			open_home_page=FALSE;
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_REPLIES, TRUE)){
 		debug("Preparing auto-monitor for Replies.");
 		main_window_tabs_menu_set_active(API_REPLIES, TRUE);
-		if(open_home_page && g_str_equal(timeline, API_REPLIES))
+		if(timeline && open_home_page && g_str_equal(timeline, API_REPLIES))
 			open_home_page=FALSE;
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_DMS, TRUE)){
 		debug("Preparing auto-monitor for DMs.");
 		main_window_tabs_menu_set_active(API_DIRECT_MESSAGES, TRUE);
-		if(open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
+		if(timeline && open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
 			open_home_page=FALSE;
 	}
 	
-	if(open_home_page){
+	if(timeline && open_home_page){
 		debug("Retriving default timeline: %s", timeline);
 		main_window_tabs_menu_set_active(timeline, TRUE);
 	}
-	uber_free(timeline);
-	if(tabs_init_timeout) tabs_init_timeout=0;
+	
+	if(timeline)
+		uber_free(timeline);
+	
 	tabs_view_page(0);
 	return FALSE;
 }/*main_window_tabs_init();*/
@@ -1223,7 +1264,7 @@ static void main_window_search_history_load(MainWindowPrivate *m_w_p){
 	gchar *previous_search=NULL, *search_history_gconf_path=NULL;
 	main_window_search_history_validate_maxium(m_w_p);
 	for(m_w_p->search_history_total=0; m_w_p->search_history_total<=m_w_p->search_history_maximum; m_w_p->search_history_total++){
-		if(!( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, m_w_p->search_history_total)), &previous_search )) && G_STR_N_EMPTY(previous_search) )) break;
+		if(!( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", m_w_p->search_history_total)), &previous_search )) && G_STR_N_EMPTY(previous_search) )) break;
 		
 		main_window_search_history_restore(m_w_p, previous_search);
 		uber_free(previous_search);
@@ -1280,7 +1321,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	
 	main_window_search_history_rotate(m_w_p);
 	gchar *search_history_gconf_path=NULL;
-	gconfig_set_string( search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, 0), search_phrase );
+	gconfig_set_string(search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", 0), search_phrase);
 	uber_free(search_history_gconf_path);
 }/*main_window_search_history_add(main_window->private, GTK_ENTRY(update_viewer->sexy_search_entry)->text, -3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index);*/
 
@@ -1341,9 +1382,9 @@ static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint lis
 static void main_window_search_history_rotate(MainWindowPrivate *m_w_p){
 	gchar *search_history_previous_search=NULL, *search_history_gconf_path=NULL;
 	for(gint i=m_w_p->search_history_maximum; i>=0; i--){
-		if( (gconfig_get_string( search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, i-1), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search) ){
+		if( (gconfig_get_string( search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i-1), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search) ){
 			uber_free(search_history_gconf_path);
-			search_history_gconf_path=g_strdup_printf(SEARCH_HISTORY_PREVIOUS_SEARCHES, i);
+			search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i);
 			gconfig_set_string(search_history_gconf_path, search_history_previous_search);
 		}
 		if(search_history_previous_search) uber_free(search_history_previous_search);
@@ -1424,7 +1465,7 @@ void main_window_hide_search_history(void){
 
 
 static void main_window_services_cb(GtkWidget *widget, MainWindow *main_window){
-	online_services_dialog_show(GTK_WINDOW(main_window->private->window));
+	online_services_dialog_show(main_window->private->window);
 }
 
 static void main_window_select_service(GtkMenuItem *item, MainWindow *main_window){
@@ -1490,7 +1531,7 @@ static void main_window_status_icon_create_menu(void){
 	main_window->private->popup_menu_show_main_window=gtk_toggle_action_new("tray_show_app", _("_Show "), NULL, NULL);
 	g_signal_connect(G_OBJECT(main_window->private->popup_menu_show_main_window), "toggled", G_CALLBACK(main_window_show_hide_cb), main_window);
 					
-	new_msg=gtk_action_new("tray_new_message", _("_New Tweet"), NULL, "gtk-new");
+	new_msg=gtk_action_new("tray_new_message", _("_New Update"), NULL, "gtk-new");
 	g_signal_connect(G_OBJECT(new_msg), "activate", G_CALLBACK(update_viewer_new_update), main_window);
 	
 	new_dm=gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-jump-to");
@@ -1563,8 +1604,6 @@ static void main_window_login(void){
 	}
 	
 	main_window_tabs_init();
-	return;
-	tabs_init_timeout=g_timeout_add(300, (GSourceFunc)main_window_tabs_init, NULL);
 }/*main_window_login*/
 
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
@@ -1572,8 +1611,6 @@ static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
 		return;
 	
 	main_window_tabs_init();
-	return;
-	tabs_init_timeout=g_timeout_add(300, (GSourceFunc)main_window_tabs_init, NULL);
 }/*main_window_reconnect*/
 
 void main_window_disconnect(void){
@@ -1581,9 +1618,17 @@ void main_window_disconnect(void){
 	online_services_disconnect();
 }/*main_window_disconnect*/
 
+static void main_window_twitter_connection_items_setup(MainWindowPrivate *m_w_p){
+	GList *twitter_connected_widgets=NULL;
+	twitter_connected_widgets=g_list_append(twitter_connected_widgets, m_w_p->timeline_retweets_to_me);
+	twitter_connected_widgets=g_list_append(twitter_connected_widgets, m_w_p->timeline_retweets_of_me);
+	twitter_connected_widgets=g_list_append(twitter_connected_widgets, m_w_p->timeline_retweets_separator);
+	m_w_p->twitter_connected_widgets=twitter_connected_widgets;
+}/*main_window_twitter_connection_items_setup(main_window->private);*/
+
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
-		"selected_update",
+		"selected_update_image_menu_item",
 		"selected_update_reply_image_menu_item",
 		"selected_update_forward_update_image_menu_item",
 		"selected_update_save_fave_image_menu_item",
@@ -1608,9 +1653,9 @@ static void main_window_connection_items_setup(GtkBuilder *ui){
 	
 	const gchar   *widgets_connected[]={
 		"services_disconnect",
-		"compose",
-		"tabs",
-		"online_service_request",
+		"compose_image_menu_item",
+		"tabs_menu_item",
+		"online_service_request_menu_item",
 		"expand_box",
 	};
 	
@@ -1643,8 +1688,19 @@ void main_window_state_on_connection(gboolean connected){
 	}else{
 		update_viewer_new_update();
 		tabs_refresh();
+		GList *twitter_connected_widgets;
+		gboolean has_twitter_connection=TRUE;
+		if(!online_services_has_connected_twitter(0))
+			has_twitter_connection=FALSE;
+		for(twitter_connected_widgets=main_window->private->twitter_connected_widgets; twitter_connected_widgets; twitter_connected_widgets=twitter_connected_widgets->next){
+			gtk_widget_set_sensitive(GTK_WIDGET(twitter_connected_widgets->data), has_twitter_connection);
+			if(!has_twitter_connection)
+				gtk_widget_hide(GTK_WIDGET(twitter_connected_widgets->data));
+			else
+				gtk_widget_show(GTK_WIDGET(twitter_connected_widgets->data));
+		}
 	}
-	program_timeout_remove(&tabs_init_timeout, _("tab & timeline initalization.") );
+	
 	
 	GList         *l;
 	for(l=main_window->private->widgets_connected; l; l=l->next)

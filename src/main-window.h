@@ -118,9 +118,10 @@ GtkWindow *main_window_get_window(void);
 GtkPaned *main_window_get_uberchick_tree_view_paned(void);
 GtkPaned *main_window_get_main_paned(void);
 
-GtkMenuItem *main_window_get_menu(const gchar *menu);
+GtkMenuBar *main_menu_get_main_main(void);
+GtkMenuItem *main_window_get_menu_item(const gchar *menu);
+GtkMenu *main_window_get_menu(const gchar *menu);
 
-GtkTreeModel *main_window_get_best_friends_tree_model(void);
 gboolean main_window_best_friends_get_selected( OnlineService **service, gchar **user, gchar **user_name, gdouble *unread_update_id );
 
 SexySpellEntry *main_window_sexy_search_entry_get_widget(void);

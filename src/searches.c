@@ -79,7 +79,7 @@
 
 #include "main-window.h"
 #include "uberchick-tree-view.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "images.h"
 #include "gconfig.h"
 
@@ -128,7 +128,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		return 0;
 	}
 	
-	/* get tweets or direct messages */
+	/* parse updates from search results. */
 	debug("Parsing searches node %s.", root_element->name);
 	gboolean free_status;
 	for(current_node=root_element->children; current_node; current_node=current_node->next) {

@@ -60,10 +60,11 @@ G_BEGIN_DECLS
  ********************************************************************************/
 #define API_LOGIN				"/account/verify_credentials.xml"
 
+#define API_TIMELINE_HOMEPAGE			"/statuses/home_timeline.xml"
+#define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
 #define API_DIRECT_MESSAGES			"/direct_messages.xml"
 #define API_REPLIES				"/statuses/replies.xml"
 #define API_MENTIONS				"/statuses/mentions.xml"
-#define API_TIMELINE_FRIENDS			"/statuses/friends_timeline.xml"
 #define API_FAVORITES				"/favorites.xml"
 
 
@@ -83,8 +84,8 @@ G_BEGIN_DECLS
 #define API_POST_STATUS				"/statuses/update.xml"
 #define API_SEND_MESSAGE			"/direct_messages/new.xml"
 
-#define API_RETWEETS_TO_ME			"/statuses/retweeted_to_me.xml"
-#define API_RETWEETS_OF_ME			"/statuses/retweeted_of_me.xml"
+#define API_RETWEETED_TO_ME			"/statuses/retweeted_to_me.xml"
+#define API_RETWEETS_OF_ME			"/statuses/retweets_of_me.xml"
 #define API_RETWEET_UPDATE			"/statuses/retweet/%s.xml"
 /********************************************************************************
  *                                    eof                                       *

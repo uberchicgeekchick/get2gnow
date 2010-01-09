@@ -16,6 +16,8 @@
       <column type="gdouble"/>
       <!-- column-name GUINT_BEST_FRIENDS_UNREAD_UPDATES -->
       <column type="guint"/>
+      <!-- column-name STRING_BEST_FRIEND_USER_NAME_AND_ONlINE_SERVICE_KEY -->
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkListStore" id="search_history_list_store">
@@ -39,7 +41,7 @@
           <object class="GtkMenuBar" id="main_menubar">
             <property name="visible">True</property>
             <child>
-              <object class="GtkMenuItem" id="network">
+              <object class="GtkMenuItem" id="network_menu_item">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Network</property>
                 <property name="use_underline">True</property>
@@ -83,7 +85,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="tabs">
+              <object class="GtkMenuItem" id="tabs_menu_item">
                 <property name="visible">True</property>
                 <property name="tooltip_text" translatable="yes">Select what tweets you want to see.</property>
                 <property name="label" translatable="yes">Ta_bs</property>
@@ -91,7 +93,14 @@
                 <child type="submenu">
                   <object class="GtkMenu" id="tabs_menu">
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_friends_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_hompage_timeline_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My _Homepage</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="tabs_menu_friends_timeline_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">My _Friends' Updates</property>
                         <property name="use_underline">True</property>
@@ -103,14 +112,14 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_direct_messages">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_direct_messages_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Direct Messages</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_replies">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_replies_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">@ _Replies</property>
                         <property name="use_underline">True</property>
@@ -122,14 +131,14 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_favorites_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_favorites_timeline_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">My _Favorites</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_my_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_my_timeline_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_My Updates</property>
                         <property name="use_underline">True</property>
@@ -141,7 +150,26 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_public_timeline">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_retweets_to_me_timeline_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">My Friends Re_Tweets</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="tabs_menu_retweets_of_me_timeline_check_menu_item">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">ReTweets of My _Updates</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="tabs_menu_retweets_separator_menu_item">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="tabs_menu_public_timeline_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Public Timeline</property>
                         <property name="use_underline">True</property>
@@ -152,22 +180,22 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="edit">
+              <object class="GtkMenuItem" id="edit_menu_item">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Edit</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="tweets_menu">
+                  <object class="GtkMenu" id="edit_menu">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="compose">
+                      <object class="GtkImageMenuItem" id="compose_image_menu_item">
                         <property name="label" translatable="yes">_Compose</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="image">image1</property>
                         <property name="use_stock">False</property>
                         <child type="submenu">
-                          <object class="GtkMenu" id="menu1">
+                          <object class="GtkMenu" id="compose_menu">
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkImageMenuItem" id="new_update">
@@ -187,8 +215,8 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                                 <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -201,8 +229,8 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="selected_update">
-                        <property name="label" translatable="yes">_Selected Update / Tweet</property>
+                      <object class="GtkImageMenuItem" id="selected_update_image_menu_item">
+                        <property name="label" translatable="yes">_Selected Update:</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
                         <property name="image">image2</property>
@@ -324,9 +352,9 @@
                             </child>
                             <child>
                               <object class="GtkImageMenuItem" id="selected_update_save_fave_image_menu_item">
-                                <property name="label" translatable="yes">Mark as _Star'd</property>
+                                <property name="label" translatable="yes">_Save/Star Update as a favorite</property>
                                 <property name="visible">True</property>
-                                <property name="tooltip_text" translatable="yes">Add the selected/extended tweet to your list of favorite tweets.</property>
+                                <property name="tooltip_markup">Save/star the selected update to mark it as one of your favorites.</property>
                                 <property name="use_underline">True</property>
                                 <property name="image">help_menu_about_image</property>
                                 <property name="use_stock">False</property>
@@ -382,7 +410,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="view">
+              <object class="GtkMenuItem" id="view_menu_item">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
@@ -403,12 +431,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="view_toolbars_submenu">
+                      <object class="GtkMenuItem" id="view_menu_toolbars_sub_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Toolbars</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
-                          <object class="GtkMenu" id="menu2">
+                          <object class="GtkMenu" id="view_menu_toolbars_sub_menu">
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkCheckMenuItem" id="view_toolbar_tabs_check_menu_item">
@@ -441,12 +469,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="view_columns_submenu">
+                      <object class="GtkMenuItem" id="view_menu_columns_sub_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Columns</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
-                          <object class="GtkMenu" id="menu3">
+                          <object class="GtkMenu" id="view_menu_columns_sub_menu">
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkCheckMenuItem" id="view_menu_detailed_update_column_check_menu_item">
@@ -487,12 +515,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="view_update_view_submenuitem">
+                      <object class="GtkMenuItem" id="view_menu_update_viewer_sub_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Update Viewer</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
-                          <object class="GtkMenu" id="menu4">
+                          <object class="GtkMenu" id="view_menu_update_viewer_sub_menu">
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkCheckMenuItem" id="view_update_viewer_compact_view_check_menu_item">
@@ -517,7 +545,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="online_service_request">
+              <object class="GtkMenuItem" id="online_service_request_menu_item">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Tools</property>
                 <property name="use_underline">True</property>
@@ -650,7 +678,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                     <child>
                       <object class="GtkImageMenuItem" id="online_service_request_popup_forwards_image_menu_item">
                         <property name="label" translatable="yes">View an update's _thread</property>
-                        <property name="visible">True</property>
+                        <property name="no_show_all">True</property>
                         <property name="tooltip_text" translatable="yes">View an updates _threads (i.e. forwards/retweets)</property>
                         <property name="use_underline">True</property>
                         <property name="image">image13</property>
@@ -662,7 +690,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="help">
+              <object class="GtkMenuItem" id="help_menu_item">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
@@ -706,6 +734,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
             <child>
               <object class="GtkToolbar" id="main_toolbar">
                 <property name="visible">True</property>
+                <property name="show_arrow">False</property>
                 <child>
                   <object class="GtkToolItem" id="toolbar_button_padding">
                     <property name="visible">True</property>
@@ -713,12 +742,12 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       <object class="GtkHBox" id="search_hbox">
                         <property name="visible">True</property>
                         <child>
-                          <object class="GtkFrame" id="frame1">
+                          <object class="GtkFrame" id="search_frame">
                             <property name="visible">True</property>
                             <property name="label_xalign">0</property>
                             <property name="shadow_type">none</property>
                             <child>
-                              <object class="GtkAlignment" id="alignment1">
+                              <object class="GtkAlignment" id="search_entry_alignment">
                                 <property name="visible">True</property>
                                 <property name="left_padding">12</property>
                                 <child>
@@ -744,7 +773,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkVBox" id="vbox1">
+                          <object class="GtkVBox" id="search_submit_vbox">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <child>
@@ -912,7 +941,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="expander_column">best_friends_user_name_tree_view_column</property>
                             <property name="reorderable">True</property>
                             <property name="rules_hint">True</property>
-                            <property name="search_column">2</property>
+                            <property name="search_column">3</property>
                             <property name="show_expanders">False</property>
                             <property name="level_indentation">1</property>
                             <child>
@@ -1363,7 +1392,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
   </object>
   <object class="GtkImage" id="image4">
     <property name="visible">True</property>
-    <property name="stock">gtk-indent</property>
+    <property name="stock">gtk-home</property>
   </object>
   <object class="GtkImage" id="image6">
     <property name="visible">True</property>
@@ -1395,7 +1424,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
   </object>
   <object class="GtkImage" id="image12">
     <property name="visible">True</property>
-    <property name="stock">gtk-missing-image</property>
+    <property name="stock">gtk-indent</property>
   </object>
   <object class="GtkImage" id="image13">
     <property name="visible">True</property>
@@ -1403,10 +1432,10 @@ You can also View their updates and/or profile, follow them back, unfollow them,
   </object>
   <object class="GtkImage" id="image14">
     <property name="visible">True</property>
-    <property name="stock">gnome-stock-about</property>
+    <property name="stock">gtk-about</property>
   </object>
   <object class="GtkImage" id="image15">
     <property name="visible">True</property>
-    <property name="stock">gtk-stop</property>
+    <property name="stock">gtk-delete</property>
   </object>
 </interface>

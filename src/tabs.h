@@ -77,9 +77,6 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
-#define TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY		GCONF_PATH "/ui/hide/tabs_toolbars"
-#define TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY		GCONF_PATH "/ui/hide/columns/from"
-#define TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY		GCONF_PATH "/ui/hide/columns/rcpt"
 
 
 /********************************************************************************

@@ -82,7 +82,7 @@
 
 #include "main-window.h"
 #include "uberchick-tree-view.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "images.h"
 #include "gconfig.h"
 
@@ -285,11 +285,11 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	newest_update_id=0.0;
 	
 	switch(monitoring){
-		case Searches: case Groups:
+		case	Searches: case	Groups:
 			debug("*ERROR:* Unsupported timeline.  parse_timeline requested to parse %s.  This method sould not have been called.", (monitoring==Groups?"Groups":"Searches"));
 			return 0;
 			
-		case DMs:
+		case	DMs:
 			/*Direct Messages are kept for 4 weeks, by default.*/
 			debug("Parsing DMs.");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_DMS, &update_expiration, 2419200);
@@ -298,7 +298,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			else save_oldest_id=FALSE;
 			break;
 		
-		case Replies:
+		case	Replies:
 			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
 			debug("Parsing Replies and/or @ Mentions.");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_REPLIES, &update_expiration, 604800);
@@ -307,7 +307,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			else save_oldest_id=FALSE;
 			break;
 		
-		case Faves:
+		case	Faves:
 			/*Favorite/Star'd updates are kept for 4 weeks, by default.*/
 			debug("Parsing Faves.");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_FAVES, &update_expiration, 2419200);
@@ -315,7 +315,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			else save_oldest_id=FALSE;
 			break;
 		
-		case BestFriends:
+		case	BestFriends:
 			/*Best Friends' updates are kept for 1 day, by default.*/
 			debug("Parsing best friends updates.");
 			notify=notify_best_friends;
@@ -323,17 +323,18 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			if(!save_oldest_id) save_oldest_id=TRUE;
 			break;
 		
-		case Updates:	case Timelines: case Users:
+		case	Homepage:	case	ReTweets:
+		case	Updates:	case	Timelines: case	Users:
 			debug("Parsing updates from someone I'm following.");
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
 			if(!save_oldest_id) save_oldest_id=TRUE;
 			break;
 			
-		case Archive:
+		case	Archive:
 			debug("Parsing my own updates or favorites.");
 			break;
 		
-		case None: default:
+		case	None:	default:
 			/* These cases are never reached - they're just here to make gcc happy. */
 			return 0;
 	}

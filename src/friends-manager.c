@@ -89,8 +89,7 @@ enum {
 typedef struct {
 	GtkDialog	*dialog;
 	GtkTreeView	*friends_and_followers;
-	GtkTreeStore	*friends_manager_tree_store;
-	GtkTreeModel	*friends_and_followers_model;
+	GtkTreeStore	*tree_store;
 	GtkButton	*refresh;
 	GtkButton	*user_follow;
 	GtkButton	*user_unfollow;
@@ -136,7 +135,7 @@ static void friends_manager_response(GtkDialog *dialog, gint response, FriendsMa
 
 static void friends_manager_destroy(GtkDialog *dialog, FriendsManager *friends_manager){
 	debug("Destroying friends manager.");
-	gtk_tree_store_clear(friends_manager->friends_manager_tree_store);
+	gtk_tree_store_clear(friends_manager->tree_store);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(friends_manager);
 }/*friends_manager_destroy*/
@@ -151,7 +150,7 @@ static User *friends_manager_get_selected_user(GtkTreeIter **iter, FriendsManage
 	}
 	
 	gtk_tree_model_get(
-			friends_manager->friends_and_followers_model, *iter,
+			GTK_TREE_MODEL(friends_manager->tree_store), *iter,
 				USER_POINTER, &user,
 			-1
 	);
@@ -165,14 +164,14 @@ static void friends_manager_follow(GtkButton   *button, FriendsManager *friends_
 	
 	gchar *following=NULL;
 	gtk_tree_model_get(
-			friends_manager->friends_and_followers_model, iter,
+			GTK_TREE_MODEL(friends_manager->tree_store), iter,
 				GSTRING_FOLLOWING, &following,
 			-1
 	);
 	
 	if(g_str_equal(following, "No")){
 		gtk_tree_store_set(
-				friends_manager->friends_manager_tree_store, iter,
+				friends_manager->tree_store, iter,
 					GSTRING_FOLLOWING, "Yes",
 				-1
 		);
@@ -189,7 +188,7 @@ static void friends_manager_unfollow(GtkButton   *button, FriendsManager *friend
 	
 	gchar *follower=NULL, *following=NULL;
 	gtk_tree_model_get(
-			friends_manager->friends_and_followers_model, iter,
+			GTK_TREE_MODEL(friends_manager->tree_store), iter,
 				GSTRING_FOLLOWING, &following,
 				GSTRING_FOLLOWER, &follower,
 			-1
@@ -200,12 +199,12 @@ static void friends_manager_unfollow(GtkButton   *button, FriendsManager *friend
 	
 	if(g_str_equal(follower, "Yes")){
 		gtk_tree_store_set(
-				friends_manager->friends_manager_tree_store, iter,
+				friends_manager->tree_store, iter,
 					GSTRING_FOLLOWING, "No",
 				-1
 		);
 	} else {
-		gtk_tree_store_remove(friends_manager->friends_manager_tree_store, iter);
+		gtk_tree_store_remove(friends_manager->tree_store, iter);
 		friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 	}
 	
@@ -219,7 +218,7 @@ static void friends_manager_block(GtkButton   *button, FriendsManager *friends_m
 	User *user=friends_manager_get_selected_user(&iter, friends_manager);
 	
 	online_service_request_block(user->service, GTK_WINDOW(friends_manager->dialog), user->user_name);
-	gtk_tree_store_remove(friends_manager->friends_manager_tree_store, iter);
+	gtk_tree_store_remove(friends_manager->tree_store, iter);
 	friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 
 	uber_free(iter);
@@ -270,7 +269,7 @@ static void friends_manager_display_following_and_followers(GList *friends_and_f
 	friends_manager_set_buttons_sensitivity(friends_manager, FALSE);
 	
 	gboolean following=FALSE, follower=FALSE;
-	gtk_tree_store_clear(friends_manager->friends_manager_tree_store);
+	gtk_tree_store_clear(friends_manager->tree_store);
 	for( list=friends_and_followers; list; list=list->next ){
 		user1=(User *)list->data;
 		if(!list->next)
@@ -287,14 +286,14 @@ static void friends_manager_display_following_and_followers(GList *friends_and_f
 		}
 		
 		GtkTreeIter *iter=g_new(GtkTreeIter, 1);
-		gtk_tree_store_append(friends_manager->friends_manager_tree_store, iter, NULL );
+		gtk_tree_store_append(friends_manager->tree_store, iter, NULL );
 		const gchar *created_ago;
 		if(!( user1->status && user1->status->created_how_long_ago && G_STR_N_EMPTY(user1->status->created_how_long_ago) ))
 			created_ago="Never";
 		else
 			created_ago=user1->status->created_how_long_ago;
 		gtk_tree_store_set(
-				friends_manager->friends_manager_tree_store, iter,
+				friends_manager->tree_store, iter,
 					GSTRING_USER_NAME, user1->user_name,
 					GSTRING_USER_NICK, user1->nick_name,
 					GSTRING_FOLLOWING, (following?"Yes":"No"),
@@ -322,7 +321,7 @@ static void friends_manager_set_buttons_sensitivity(FriendsManager *friends_mana
 	}else{
 		gchar *following=NULL;
 		gtk_tree_model_get(
-				friends_manager->friends_and_followers_model, iter,
+				GTK_TREE_MODEL(friends_manager->tree_store), iter,
 					GSTRING_FOLLOWING, &following,
 				-1
 		);
@@ -360,7 +359,7 @@ static void friends_manager_setup(GtkWindow *parent){
 				GtkBuilderUI,
 					"friends_manager", &friends_manager->dialog,
 					"friends_and_followers", &friends_manager->friends_and_followers,
-					"friends_manager_tree_store", &friends_manager->friends_manager_tree_store,
+					"friends_manager_tree_store", &friends_manager->tree_store,
 					"refresh", &friends_manager->refresh,
 					"user_follow", &friends_manager->user_follow,
 					"user_unfollow", &friends_manager->user_unfollow,
@@ -371,7 +370,6 @@ static void friends_manager_setup(GtkWindow *parent){
 					"lists_close", &friends_manager->close_button,
 				NULL
 	);
-	friends_manager->friends_and_followers_model=gtk_tree_view_get_model(friends_manager->friends_and_followers);
 	
 	gchar *window_title=g_strdup_printf("%s - <%s>'s %s", _(GETTEXT_PACKAGE), selected_service->key, _("Friends Manager"));
 	gtk_window_set_title(GTK_WINDOW(friends_manager->dialog), window_title);

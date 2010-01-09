@@ -51,8 +51,8 @@
 /********************************************************
  *          My art, code, & programming.                *
  ********************************************************/
-#ifndef __CONTROL_VIEWER_H__
-#define __CONTROL_VIEWER_H__
+#ifndef __UPDATE_VIEWER_H__
+#define __UPDATE_VIEWER_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -80,22 +80,34 @@ UpdateViewer *update_viewer_new(GtkWindow *parent);
 
 GtkWindow *update_viewer_get_window(void);
 GtkHBox *update_viewer_get_embed(void);
+GtkPaned *update_viewer_get_vpaned(void);
+GtkPaned *update_viewer_get_hpaned(void);
 GtkButton *update_viewer_get_sexy_dm_button(void);
 
-void update_viewer_beep(void);
+void update_viewer_postable_online_services_append(OnlineService *service);
+gboolean update_viewer_postable_online_service_delete(OnlineService *service);
 
-void update_viewer_view_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
-gboolean update_viewer_set_in_reply_to_data(gchar *user_name, OnlineService *service, gdouble update_id, gboolean force);
+void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+gboolean update_viewer_set_in_reply_to_data(OnlineService *service, gchar *user_name, gdouble user_id, gdouble update_id, gboolean prefix, gboolean force);
 
 void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 
-void update_viewer_emulate_embed_toggle(void);
+void update_viewer_emulate_embed_toggle_via_check_menu_item(GtkCheckMenuItem *view_update_viewer_floating_check_menu_item);
 void update_viewer_emulate_compact_view_toggle(void);
 void update_viewer_compact_view_toggled(GtkToggleButton *compact_toggle_button);
 void update_viewer_set_embed_toggle_and_image(void);
 
+/* BEGIN: UBERCHICK_HISTORY METHODS */
 SexySpellEntry *update_viewer_sexy_entry_get_widget(void);
+
+void update_viewer_hide_previous_updates(void);
+void update_viewer_show_previous_updates(void);
+
+void update_viewer_send(GtkWidget *activated_widget);
 void update_viewer_sexy_select(void);
+
+void update_viewer_beep(void);
+
 void update_viewer_select_all(void);
 
 gboolean update_viewer_sexy_entry_is_empty(void);
@@ -108,6 +120,7 @@ gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean uniq);
 void update_viewer_sexy_append_char(const char c);
 gboolean update_viewer_sexy_append_string(const gchar *str, gboolean uniq);
 gboolean update_viewer_sexy_puts(const gchar *str, gint position, gboolean uniq);
+/* END: UBERCHICK_HISTORY METHODS */
 
 void update_viewer_new_update(void);
 void update_viewer_new_dm(void);
@@ -115,13 +128,8 @@ void update_viewer_reply(void);
 void update_viewer_forward(void);
 void update_viewer_retweet(void);
 
-void update_viewer_hide_previous_updates(void);
-void update_viewer_show_previous_updates(void);
-
-void update_viewer_send(GtkWidget *activated_widget);
-
 G_END_DECLS
-#endif /* __CONTROL_VIEWER_H__ */
+#endif /* __UPDATE_VIEWER_H__ */
 /********************************************************
  *                       eof                            *
  ********************************************************/

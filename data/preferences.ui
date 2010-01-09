@@ -344,21 +344,6 @@
                             <property name="border_width">5</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkCheckButton" id="autoload_best_friends_updates_check_button">
-                                <property name="label" translatable="yes">My _Best Friends' new update(s).</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkCheckButton" id="autoload_dms_check_button">
                                 <property name="label" translatable="yes">My _Direct Messages(DMs).</property>
                                 <property name="visible">True</property>
@@ -372,7 +357,7 @@
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="padding">6</property>
-                                <property name="position">1</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
@@ -389,12 +374,46 @@
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="padding">6</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkHSeparator" id="autoload_updates_to_me_hseparator">
+                                <property name="visible">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
                                 <property name="position">2</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="autoload_following_updates_check_button">
-                                <property name="label" translatable="yes">Updates from _any one I follow.</property>
+                              <object class="GtkCheckButton" id="autoload_best_friends_updates_check_button">
+                                <property name="label" translatable="yes">My _Best Friends' new update(s).</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkHSeparator" id="autoload_best_friends_hseparator">
+                                <property name="visible">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="autoload_following_check_button">
+                                <property name="label" translatable="yes">All updates from _any one I follow.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -406,21 +425,37 @@
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="padding">6</property>
-                                <property name="position">3</property>
+                                <property name="position">5</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkHSeparator" id="autoload_hseparator">
+                              <object class="GtkCheckButton" id="autoload_homepage_check_button">
+                                <property name="label" translatable="yes">My _hompage's updates.</property>
                                 <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="xalign">0.10000000149011612</property>
+                                <property name="draw_indicator">True</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">4</property>
+                                <property name="padding">6</property>
+                                <property name="position">6</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkTable" id="table1">
+                              <object class="GtkHSeparator" id="autoload_tabs_hseparator">
+                                <property name="visible">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">7</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkTable" id="autoload_addition_timeline_table">
                                 <property name="visible">True</property>
                                 <property name="border_width">6</property>
                                 <property name="n_rows">2</property>
@@ -428,7 +463,7 @@
                                 <property name="column_spacing">6</property>
                                 <property name="row_spacing">6</property>
                                 <child>
-                                  <object class="GtkComboBox" id="combobox_timeline">
+                                  <object class="GtkComboBox" id="autoload_addition_timeline_combo_box">
                                     <property name="visible">True</property>
                                   </object>
                                   <packing>
@@ -438,12 +473,12 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="label11">
+                                  <object class="GtkLabel" id="timeline_reload_timeout_label">
                                     <property name="visible">True</property>
                                     <property name="xalign">0</property>
                                     <property name="label" translatable="yes">Start reloading _every:</property>
                                     <property name="use_underline">True</property>
-                                    <property name="mnemonic_widget">combobox_reload</property>
+                                    <property name="mnemonic_widget">refresh_timeline_initial_interval_combo_box</property>
                                   </object>
                                   <packing>
                                     <property name="top_attach">1</property>
@@ -453,12 +488,12 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="default_timeline_label">
+                                  <object class="GtkLabel" id="autoload_addition_timeline_label">
                                     <property name="visible">True</property>
                                     <property name="xalign">0</property>
                                     <property name="label" translatable="yes">Also dis_play:</property>
                                     <property name="use_underline">True</property>
-                                    <property name="mnemonic_widget">combobox_timeline</property>
+                                    <property name="mnemonic_widget">autoload_addition_timeline_combo_box</property>
                                   </object>
                                   <packing>
                                     <property name="x_options">GTK_FILL</property>
@@ -466,7 +501,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBox" id="combobox_reload">
+                                  <object class="GtkComboBox" id="refresh_timeline_initial_interval_combo_box">
                                     <property name="visible">True</property>
                                   </object>
                                   <packing>
@@ -481,7 +516,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">5</property>
+                                <property name="position">8</property>
                               </packing>
                             </child>
                           </object>
@@ -555,7 +590,7 @@
                                   <object class="GtkLabel" id="search_history_combo_box_label">
                                     <property name="visible">True</property>
                                     <property name="ypad">5</property>
-                                    <property name="label" translatable="yes">&lt;b&gt;Maximum titles to keep in searches _history.:&lt;/b&gt;</property>
+                                    <property name="label" translatable="yes">&lt;b&gt;Ma_ximum titles to keep in searches history.:&lt;/b&gt;</property>
                                     <property name="use_markup">True</property>
                                     <property name="use_underline">True</property>
                                     <property name="mnemonic_widget">search_history_maximum_combo_box</property>
@@ -715,6 +750,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
+                                <property name="padding">6</property>
                                 <property name="position">5</property>
                               </packing>
                             </child>
@@ -979,9 +1015,10 @@
                                   <object class="GtkLabel" id="previous_updates_combo_box_label">
                                     <property name="visible">True</property>
                                     <property name="ypad">5</property>
-                                    <property name="label" translatable="yes">&lt;b&gt;Maximum updates to keep in update _history:&lt;/b&gt;</property>
+                                    <property name="label" translatable="yes">&lt;b&gt;Ma_ximum updates to keep in update history:&lt;/b&gt;</property>
                                     <property name="use_markup">True</property>
                                     <property name="use_underline">True</property>
+                                    <property name="mnemonic_widget">previous_updates_maximum_combo_box</property>
                                   </object>
                                 </child>
                               </object>

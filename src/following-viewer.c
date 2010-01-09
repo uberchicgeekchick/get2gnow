@@ -90,7 +90,6 @@ typedef struct {
 	GtkWindow	*viewer;
 	GtkTreeView	*following_tree_view;
 	GtkTreeStore	*following_tree_store;
-	GtkTreeModel	*following_model;
 	GtkButton	*refresh;
 	GtkButton	*user_unfollow;
 	GtkButton	*user_block;
@@ -166,7 +165,7 @@ static User *following_viewer_get_selected_user(GtkTreeIter **iter, FollowingVie
 	}
 	
 	gtk_tree_model_get(
-				following_viewer->following_model, *iter,
+				GTK_TREE_MODEL(following_viewer->following_tree_store), *iter,
 					USER_POINTER, &user,
 				-1
 	);
@@ -288,7 +287,6 @@ static void following_viewer_setup(GtkWindow *parent){
 					"lists_close", &following_viewer->close_button,
 				NULL
 	);
-	following_viewer->following_model=gtk_tree_view_get_model(following_viewer->following_tree_view);
 	
 	gchar *window_title=g_strdup_printf("%s - %s, <%s>, %s.", _(GETTEXT_PACKAGE), _("People you"), selected_service->key, _("are following"));
 	gtk_window_set_title(GTK_WINDOW(following_viewer->viewer), window_title);

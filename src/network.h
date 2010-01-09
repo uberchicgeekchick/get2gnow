@@ -77,7 +77,7 @@
  **********************************************************************/
 G_BEGIN_DECLS
 
-void network_get_image(OnlineService *service, UberChickTreeView *uberchick_tree_view, const gchar *image_filename, const gchar *image_url, GtkTreeIter *iter);
+void network_get_image(OnlineService *service, UberChickTreeView *uberchick_tree_view, const gchar *image_filename, const gchar *image_url, gboolean retweet, GtkTreeIter *iter);
 void *network_cb_on_image(SoupSession *session, SoupMessage *msg, OnlineServiceWrapper *service_wrapper);
 
 

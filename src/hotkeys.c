@@ -84,7 +84,7 @@
 #include "network.h"
 
 #include "gconfig.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "tabs.h"
 #include "uberchick-tree-view.h"
 #include "update-viewer.h"
@@ -92,96 +92,108 @@
 #include "users.h"
 
 
-#define	DEBUG_DOMAINS	"OnlineServices:Networking:Tweets:Requests:Users:Updates:hotkeys.c"
+#define	DEBUG_DOMAINS	"OnlineServices:Networking:Updates:Requests:Users:Updates:hotkeys.c"
 #include "debug.h"
 
-static void hotkey_process(GtkWidget *widget, GdkEventKey *event);
+static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event);
 
 
 void hotkey_pressed(GtkWidget *widget, GdkEventKey *event){
-	hotkey_process(widget, event);
-	update_viewer_sexy_select();
+	gboolean gui_displayed=FALSE;
+	if(!(gui_displayed=hotkey_process(widget, event)))
+		update_viewer_sexy_select();
 }/*hotkey(widget, event);*/
 
-static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
+static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 	if(event->keyval==GDK_Escape){
-		update_viewer_hide_previous_updates();
-		return;
+		if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))){
+			main_window_hide_search_history();
+			return TRUE;
+		}else if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()))){
+			update_viewer_hide_previous_updates();
+			return TRUE;
+		}
 	}
 	
 	switch(event->state){
+		case GDK_SHIFT_MASK|GDK_CONTROL_MASK:
+			switch(event->keyval){
+				case GDK_asterisk:
+					online_service_request_selected_update_destroy_fave();
+					return FALSE;
+				case GDK_F:	case GDK_f:
+				case GDK_less:		case GDK_minus:
+					online_service_request_selected_update_unfollow();
+					return FALSE;
+			}
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 				case GDK_D:	case GDK_d:
 					update_viewer_send( GTK_WIDGET(update_viewer_get_sexy_dm_button() ));
-					return;
+					return FALSE;
 				case GDK_S:	case GDK_s:
 					update_viewer_send(NULL);
-					return;
+					return FALSE;
 				case GDK_N:	case GDK_n:
-					g_signal_emit_by_name(main_window_get_menu("network"), "activate");
-					return;
+					g_signal_emit_by_name(main_window_get_menu_item("network"), "popup");
+					return TRUE;
 				case GDK_B:	case GDK_b:
-					g_signal_emit_by_name(main_window_get_menu("tabs"), "activate");
-					return;
+					g_signal_emit_by_name(main_window_get_menu_item("tabs"), "popup");
+					return TRUE;
 				case GDK_E:	case GDK_e:
-					g_signal_emit_by_name(main_window_get_menu("edit"), "activate");
-					return;
+					g_signal_emit_by_name(main_window_get_menu_item("edit"), "popup");
+					return TRUE;
 				case GDK_V:	case GDK_v:
-					g_signal_emit_by_name(main_window_get_menu("view"), "activate");
-					return;
+					g_signal_emit_by_name(main_window_get_menu_item("view"), "popup");
+					return TRUE;
 				case GDK_T:	case GDK_t:
-					g_signal_emit_by_name(main_window_get_menu("online_service_request"), "activate");
-					return;
+					g_signal_emit_by_name(main_window_get_menu_item("online_service_request"), "popup");
+					return TRUE;
 				case GDK_H:	case GDK_h:
-					g_signal_emit_by_name(main_window_get_menu("help"), "activate");
-					return;
+					g_signal_emit_by_name(main_window_get_menu_item("help"), "popup");
+					return TRUE;
 				case GDK_Down: case GDK_KP_Down:
 					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
 						main_window_show_search_history();
 					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
 						update_viewer_show_previous_updates();
-					return;
+					return TRUE;
 				case GDK_R: case GDK_r:
 					uberchick_tree_view_refresh(tabs_get_current()); 
-					return;
+					return FALSE;
 				case GDK_I:	case GDK_i:
 				case GDK_question:
 					online_service_request_selected_update_view_profile();
-					return;
+					return TRUE;
 				case GDK_U:	case GDK_u:
 				case GDK_asciitilde:	case GDK_ampersand:
 					online_service_request_selected_update_view_updates();
-					return;
+					return FALSE;
 				case GDK_F:	case GDK_f:
 				case GDK_greater:	case GDK_plus:
 					online_service_request_selected_update_follow();
-					return;
+					return FALSE;
 				case GDK_A:	case GDK_a:
 					online_service_request_popup_best_friend_add();
-					return;
+					return TRUE;
 				case GDK_asterisk:
 				case GDK_colon:	case GDK_exclam:
 					online_service_request_selected_update_best_friend_add();
-					return;
-				case GDK_Z:	case GDK_z:
-				case GDK_less:		case GDK_minus:
-					online_service_request_selected_update_unfollow();
-					return;
+					return FALSE;
 				case GDK_L:	case GDK_l:
 				case GDK_numbersign:	case GDK_semicolon:
 					online_service_request_selected_update_block();
-					return;
+					return FALSE;
 				case GDK_O:	case GDK_o:
 					online_service_request_selected_update_unblock();
-					return;
+					return FALSE;
 				case GDK_Page_Up:
 					tabs_get_previous();
-					return;
+					return FALSE;
 				case GDK_Page_Down:
 					tabs_get_next();
-					return;
+					return FALSE;
 				default: break;
 			}
 			break;
@@ -189,64 +201,58 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_new_dm();
-					return;
+					return FALSE;
 				default: break;
 			}
 			break;
-		case GDK_CONTROL_MASK|GDK_SHIFT_MASK:
-			switch(event->keyval){
-				case GDK_asterisk:
-					online_service_request_selected_update_destroy_fave();
-				return;
-			}
 		case GDK_CONTROL_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_sexy_insert_char('\n');
-					return;
+					return FALSE;
 				case GDK_Tab:
 					update_viewer_sexy_insert_char('\t');
-					return;
+					return FALSE;
 				case GDK_N:	case GDK_n:
 					update_viewer_new_update();
-					return;
+					return TRUE;
 				case GDK_K:	case GDK_k:
 					update_viewer_sexy_entry_clear();
-					return;
+					return TRUE;
 				case GDK_L:	case GDK_l:
 					update_viewer_select_all();
-					return;
+					return TRUE;
 				case GDK_Q:	case GDK_q:
 					gtk_main_quit();
-					return;
+					return TRUE;
 				case GDK_S:	case GDK_s:
 				case GDK_asterisk:
 					online_service_request_selected_update_save_fave();
-					return;
+					return FALSE;
 				case GDK_F5:
 					uberchick_tree_view_refresh(tabs_get_current()); 
-					return;
+					return FALSE;
 				case GDK_Z:	case GDK_z:
 					online_service_request_selected_update_destroy_fave();
-					return;
+					return FALSE;
 				case GDK_R:	case GDK_r:
 					online_service_request_selected_update_reply();
-					return;
+					return FALSE;
 				case GDK_F:	case GDK_f:
 					online_service_request_selected_update_forward();
-					return;
+					return FALSE;
 				case GDK_D:	case GDK_d:
 					update_viewer_new_dm();
-					return;
+					return TRUE;
 				case GDK_W: case GDK_w:
 					tabs_close_current_page();
-					return;
+					return FALSE;
 				case GDK_Page_Up:
 					tabs_get_previous();
-					return;
+					return FALSE;
 				case GDK_Page_Down:
 					tabs_get_next();
-					return;
+					return FALSE;
 				default: break;
 			}
 			break;
@@ -254,21 +260,22 @@ static void hotkey_process(GtkWidget *widget, GdkEventKey *event){
 			switch(event->keyval){
 				case GDK_F1:
 					help_show(main_window_get_window());
-					return;
+					return TRUE;
 				case GDK_greater:
 					online_service_request_selected_update_forward();
-					return;
+					return FALSE;
 				case GDK_at:
 					online_service_request_selected_update_reply();
-					return;
+					return FALSE;
 				case GDK_asciitilde:
 					update_viewer_new_dm();
-					return;
+					return FALSE;
 				default: break;
 			}
 			break;
 	}
 	uberchick_tree_view_key_pressed(tabs_get_current(), event);
+	return FALSE;
 }/*hotkey_process(widget, event);*/
 
 /********************************************************

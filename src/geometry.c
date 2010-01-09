@@ -65,7 +65,7 @@
 #include "gconfig.h"
 
 #include "online-service-request.h"
-#include "preferences.h"
+#include "preferences.defines.h"
 #include "geometry.h"
 
 #include "main-window.h"
@@ -92,11 +92,6 @@ enum {
 #define DEBUG_DOMAINS "Geometry:FloatingUpdateViewer:MicroBlogging_Viewer_MainWindow:Paned:UI:GtkBuilder:GtkBuildable:Settings:Setup:Start-Up:MainWindow:geometry.c"
 #include"debug.h"
 
-/* Window height, width, & position gconf values. */
-#define PREFS_UI_WIDTH				GCONF_PATH "/ui/%s/width"
-#define PREFS_UI_HEIGHT				GCONF_PATH "/ui/%s/height"
-#define PREFS_UI_POSITIONS			GCONF_PATH "/ui/%s/position_%s"
-
 #define	LOAD_COUNT				2
 
 /********************************************************
@@ -107,7 +102,7 @@ static gchar **geometry_get_prefs_path(ViewType view, gint *w, gint *h, gint *x,
 static void prefs_path_free(gchar **prefs_path);
 static void geometry_load_for_window(ViewType view);
 static void geometry_save_for_window(ViewType view);
-static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType view, gboolean vpaned, gboolean save);
+static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType view, gboolean vpaned, gboolean save, gint default_position);
 
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
@@ -159,10 +154,13 @@ static void geometry_load_for_window(ViewType view){
 	}
 	prefs_path_free(prefs_path);
 	
+	geometry_set_paned(main_window_get_uberchick_tree_view_paned(), "uberchick_tree_view", view, FALSE, FALSE, 420);
+	geometry_set_paned(update_viewer_get_hpaned(), "update_viewer", view, FALSE, FALSE, 0);
+	geometry_set_paned(update_viewer_get_vpaned(), "update_viewer/appreance_controls", view, TRUE, FALSE, 68);
+	
 	if(view!=Embed) return;
 	
-	geometry_set_paned(main_window_get_uberchick_tree_view_paned(), "uberchick_tree_view", view, FALSE, FALSE);
-	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE);
+	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE, 360);
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
@@ -196,6 +194,10 @@ static void geometry_save_for_window(ViewType view){
 	}
 	prefs_path_free(prefs_path);
 	
+	geometry_set_paned(main_window_get_uberchick_tree_view_paned(), "uberchick_tree_view", view, FALSE, (calls==LOAD_COUNT), 420);
+	geometry_set_paned(update_viewer_get_hpaned(), "update_viewer", view, FALSE, (calls==LOAD_COUNT), 0);
+	geometry_set_paned(update_viewer_get_vpaned(), "update_viewer/appreance_controls", view, TRUE, (calls==LOAD_COUNT), 96);
+	
 	if(view!=Embed){
 		if(calls) calls=0;
 		return;
@@ -203,8 +205,7 @@ static void geometry_save_for_window(ViewType view){
 	
 	if(calls<LOAD_COUNT) calls++;
 	
-	geometry_set_paned(main_window_get_uberchick_tree_view_paned(), "uberchick_tree_view", view, FALSE, (calls==LOAD_COUNT) );
-	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, (calls==LOAD_COUNT) );
+	geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, (calls==LOAD_COUNT), 360);
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
@@ -286,7 +287,7 @@ static void prefs_path_free(gchar **prefs_path){
 	uber_free(prefs_path);
 }/*prefs_path_free*/
 
-static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType view, gboolean vpaned, gboolean save){
+static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType view, gboolean vpaned, gboolean save, gint default_position){
 	GtkWindow	*window=geometry_get_window(view);
 	gint		h=0, w=0;
 	gtk_window_get_size(window, &w, &h);
@@ -298,9 +299,10 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 		position=gtk_paned_get_position(paned);
 		gconfig_set_int(paned_position_prefs_path, position);
 	}else{
-		gconfig_get_int_or_default(paned_position_prefs_path, &position, (vpaned ?420 :320 ) );
+		gconfig_get_int_or_default(paned_position_prefs_path, &position, default_position );
 	}
 	uber_free(paned_position_prefs_path);
+	if(!position) return;
 	
 	g_object_get(G_OBJECT(paned), "max-position", &max_position, "min-position", &min_position, NULL);
 	max_position-=padding;
@@ -309,7 +311,7 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
-}/*geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE);*/
+}/*geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE, 68|420|360);*/
 
 /********************************************************
  *                       eof                            *
