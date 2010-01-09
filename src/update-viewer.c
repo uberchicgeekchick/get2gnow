@@ -228,6 +228,7 @@ struct _UpdateViewer{
 	
 	GtkScrolledWindow	*online_services_accounts_scrolled_window;
 	gint			online_services_accounts_total;
+	gint			online_services_accounts_post_to_enabled;
 	GtkTreeView		*online_services_accounts_tree_view;
 	GtkTreeStore		*online_services_accounts_tree_store;
 	GtkTreeViewColumn	*online_services_accounts_tree_view_key_tree_view_column;
@@ -581,6 +582,7 @@ static void update_viewer_postable_online_services_setup(UpdateViewer *update_vi
 	
 	g_signal_connect_after(update_viewer->online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle, "toggled", (GCallback)update_viewer_online_service_postable_toggled, update_viewer);
 	update_viewer->online_services_accounts_total=-1;
+	update_viewer->online_services_accounts_post_to_enabled=-1;
 	gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_vbox));
 	gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 }/*update_viewer_postable_online_services_setup(update_viewer);*/
@@ -623,7 +625,7 @@ static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle 
 				POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, &post_to_enabled,
 			-1
 	);
-	if(update_viewer->online_services_accounts_total<1 && post_to_enabled){
+	if(update_viewer->online_services_accounts_post_to_enabled<1 && post_to_enabled){
 		debug("%s cannot disable the only postable OnlineService.", GETTEXT_PACKAGE);
 		return;
 	}
@@ -632,7 +634,10 @@ static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle 
 				POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, !post_to_enabled,
 			-1
 	);
-	service->post_to_enabled=!post_to_enabled;
+	if(!(service->post_to_enabled=!post_to_enabled))
+		update_viewer->online_services_accounts_post_to_enabled--;
+	else
+		update_viewer->online_services_accounts_post_to_enabled++;
 }/*update_viewer_online_service_postable_toggled(online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle, "1", update_viewer);*/
 
 static gboolean update_viewer_postable_online_services_check(OnlineService *service){
@@ -676,6 +681,7 @@ static GtkTreeIter *update_viewer_postable_online_service_get_iter(OnlineService
 }/*update_viewer_postable_online_service_get_iter(service);*/
 
 static void update_viewer_online_services_set_postable_check_buttons(OnlineService *default_service){
+	update_viewer->online_services_accounts_post_to_enabled=-1;
 	for(gint i=0; i<=update_viewer->online_services_accounts_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -710,7 +716,10 @@ static void update_viewer_online_service_check_button_set_status(GtkTreeIter *it
 	if(!(service->enabled && service->connected && service->authenticated))
 		post_to_enabled_toggle_enalbled=FALSE;
 	
-	if(update_viewer->online_services_accounts_total>0 && post_to_enabled && post_to_enabled_toggle_enalbled){
+	if(post_to_enabled)
+		update_viewer->online_services_accounts_post_to_enabled++;
+	
+	if(update_viewer->online_services_accounts_post_to_enabled>0 && post_to_enabled && post_to_enabled_toggle_enalbled){
 		if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_vbox))){
 			gtk_widget_show(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 			debug("Displaying %s's postable OnlineService(s) container.", GETTEXT_PACKAGE);
@@ -732,7 +741,6 @@ static void update_viewer_online_service_check_button_set_status(GtkTreeIter *it
 }/*update_viewer_online_service_check_button_set_status(iter, service, NULL);*/
 
 gboolean update_viewer_postable_online_service_delete(OnlineService *service){
-	
 	for(gint i=0; i<=update_viewer->online_services_accounts_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -761,8 +769,10 @@ gboolean update_viewer_postable_online_service_delete(OnlineService *service){
 		
 		gtk_tree_store_remove(update_viewer->online_services_accounts_tree_store, iter);
 		update_viewer->online_services_accounts_total--;
+		if(post_to_enabled)
+			update_viewer->online_services_accounts_post_to_enabled--;
 		
-		if(!(update_viewer->online_services_accounts_total>0 && post_to_enabled && post_to_enabled_toggle_enalbled)){
+		if(update_viewer->online_services_accounts_post_to_enabled<1){
 			if(gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_vbox))){
 				gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 				debug("Hiding %s's postable OnlineService(s) container.", GETTEXT_PACKAGE);
