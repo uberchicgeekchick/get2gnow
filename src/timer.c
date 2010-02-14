@@ -88,8 +88,9 @@ struct _RateLimitTimer{
 /********************************************************
  *          Static method & function prototypes         *
  ********************************************************/
-static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml);
+static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_method);
 static void timer_process(RateLimitTimer *timer);
+static void timer_pause(RateLimitTimer *timer);
 static void timer_main_quit(RateLimitTimer *timer);
 
 
@@ -112,9 +113,9 @@ RateLimitTimer *timer_new(void){
 	return timer;
 }//timer_new
 
-void timer_main(RateLimitTimer *timer, SoupMessage *xml){
+void timer_main(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_method){
 	debug("Processing RateLimit.");
-	if(!timer_check(timer, xml)) return;
+	if(!timer_check(timer, xml, request_method)) return;
 	
 	while(timer->processing){}
 	
@@ -127,11 +128,11 @@ void timer_main(RateLimitTimer *timer, SoupMessage *xml){
 	g_timer_start(timer->gtimer);
 }/*timer_main(timer);*/
 
-static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml){
+static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_method){
 	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) ))
 		return FALSE;
 	
-	if(g_str_equal("POST", xml->method)){
+	if(request_method==POST){
 		debug("RateLimitTimer is skipped for POST requests.");
 		return FALSE;
 	}
@@ -150,7 +151,7 @@ static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml){
 	
 	uber_free(rate_limit);
 	return TRUE;
-}/*timer_check(timer, xml);*/
+}/*timer_check(timer, xml, POST|GET|QUEUE);*/
 
 static void timer_process(RateLimitTimer *timer){
 	if( timer->requests_remaining < 11 ) timer->pause = 36.0;
@@ -165,20 +166,19 @@ static void timer_process(RateLimitTimer *timer){
 	g_timer_stop(timer->gtimer);
 	g_timer_start(timer->gtimer);
 	
+	timer_pause(timer);
+}/*timer_process(timer);*/
+
+
+static void timer_pause(RateLimitTimer *timer){
 	timer->processing++;
 	main_window_statusbar_printf("You have only %d before being locked out so pauses %s requests.", timer->requests_remaining, _(GETTEXT_PACKAGE));
 	main_window_statusbar_printf("Please wait %f seconds.", timer->pause);
 	while( (timer->elapsed=g_timer_elapsed(timer->gtimer, &timer->microseconds)) < timer->pause )
 		main_window_statusbar_printf("Please wait %f more seconds.", timer->pause);
+	main_window_statusbar_printf(NULL);
 	timer->processing--;
-}/*timer_process(timer);*/
-
-
-void timer_wait(RateLimitTimer *timer, gdouble pause){
-	main_window_statusbar_printf("Please wait %f seconds.", pause);
-	while( (timer->elapsed=g_timer_elapsed(timer->gtimer, &timer->microseconds)) < pause )
-		main_window_statusbar_printf("Please wait %f more seconds.", pause);
-}/*timer_wait(timer, 15.0);*/
+}/*timer_pause(timer);*/
 
 static void timer_main_quit(RateLimitTimer *timer){
 	debug("Stopping network timer.");

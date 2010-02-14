@@ -63,67 +63,71 @@
 
 
 static gchar *gtkbuilder_get_path( const gchar *filename );
+static GtkBuilder *gtkbuilder_load_file(const gchar *filename, const gchar *first_widget, va_list widgets);
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename);
-static gboolean gtkbuilder_get_system_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename);
+static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename, gboolean get_local, gboolean use_template);
 
+static void gtkbuilder_get_objects_from_ui(GtkBuilder *ui, const gchar *filename, const gchar *first_widget, va_list widgets);
 
 
 
 static gchar *gtkbuilder_get_path(const gchar *base_filename){
-	gchar *gtkbuilder_ui_file=NULL, *gtkbuilder_ui_filename=NULL;
+	gchar *gtkbuilder_ui_filename=NULL;
+	
 #ifndef	GNOME_ENABLE_DEBUG
-	if(gtkbuilder_get_system_ui_filename(base_filename, &gtkbuilder_ui_filename))
+	
+	if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, FALSE, FALSE))
 		return gtkbuilder_ui_filename;
-	uber_free(gtkbuilder_ui_filename);
+	
+	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, FALSE))
+		return gtkbuilder_ui_filename;
+	
+	debug("**ERROR:** Unable to load gtkbuilder ui: [%s.ui].", base_filename);
+	
+	return NULL;
+	
+#else
+	if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, FALSE))
+		return gtkbuilder_ui_filename;
+	
+	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, FALSE, FALSE))
+		return gtkbuilder_ui_filename;
+	
+	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, TRUE))
+		return gtkbuilder_ui_filename;
+	
+	debug("**ERROR:** Unable to load gtkbuilder ui: [%s.ui].", base_filename);
+	
 	return NULL;
 #endif
-	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
-	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
-	uber_free(gtkbuilder_ui_file);
-	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", gtkbuilder_ui_filename);
-		return gtkbuilder_ui_filename;
-	}
-	uber_free(gtkbuilder_ui_filename);
-	
-	if(gtkbuilder_get_system_ui_filename(base_filename, &gtkbuilder_ui_filename))
-		return gtkbuilder_ui_filename;
-	uber_free(gtkbuilder_ui_filename);
-	
-	gtkbuilder_ui_file=g_strdup_printf("%s.in.ui", base_filename);
-	gtkbuilder_ui_filename=g_build_filename( BUILDDIR, "data", gtkbuilder_ui_file, NULL );
-	uber_free(gtkbuilder_ui_file);
-	
-	if( gtkbuilder_ui_test_filename(gtkbuilder_ui_filename)){
-		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", gtkbuilder_ui_filename);
-		debug( "**ERROR:** GtkBuilderUI [%s] needs converted.", gtkbuilder_ui_filename );
-		debug( "**ERROR:** GtkBuilderUI template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename );
-		debug( "**ERROR:** GtkBuilderUI can be converted by running: (cd data/ ; make %s.ui).  Or re-run `make`.", base_filename );
-		return gtkbuilder_ui_filename;
-	}
-	debug("**ERROR:** Unable to load gtkbuilder ui: [%s].", gtkbuilder_ui_filename);
-	uber_free(gtkbuilder_ui_filename);
-	
-	return NULL;
 }/*gtkbuilder_get_path("update-viewer");*/
 
-static gboolean gtkbuilder_get_system_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename){
+static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename, gboolean get_local, gboolean use_template){
 	gchar *gtkbuilder_ui_file=NULL;
-	gtkbuilder_ui_file=g_strdup_printf("%s.ui", base_filename);
-	*gtkbuilder_ui_filename=g_build_filename( DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL );
+	gtkbuilder_ui_file=g_strdup_printf("%s%s.ui", (use_template ?".in" :""), base_filename);
+	if(!get_local)
+		*gtkbuilder_ui_filename=g_build_filename(DATADIR, PACKAGE_TARNAME, gtkbuilder_ui_file, NULL);
+	else
+		*gtkbuilder_ui_filename=g_build_filename(BUILDDIR, "data", gtkbuilder_ui_file, NULL);
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(*gtkbuilder_ui_filename)){
-#ifndef	GNOME_ENABLE_DEBUG
-		debug("Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
-#else
-		debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
-#endif
+		if(!get_local)
+			debug("Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+		else
+			debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+		
+		if(use_template){
+			debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+			debug("**NOTICE:** GTK_BUILDER_UI_FILENAME [%s] needs converted.", *gtkbuilder_ui_filename);
+			debug("**NOTICE:** GTK_BUILDER_UI_FILENAME template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename);
+			debug("**NOTICE:** GTK_BUILDER_UI_FILENAME can be converted by running: (cd data/ ; make %s.ui).  Or re-run `make`.", base_filename);
+		}
 		return TRUE;
 	}
 	
 	uber_free(*gtkbuilder_ui_filename);
 	return FALSE;
-}/*gtkbuilder_get_system_ui_filename(base_filename, &gtkbuilder_ui_filename);*/
+}/*gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE|FALSE);*/
 
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
@@ -138,44 +142,60 @@ static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 
 
 
-static GtkBuilder *gtkbuilder_load_file( const gchar *filename, const gchar *first_widget, va_list args ){
-	GtkBuilder  *ui = NULL;
-	GObject    **pointer;
-	const char  *name;
-	gchar       *path;
+static GtkBuilder *gtkbuilder_load_file(const gchar *filename, const gchar *first_widget, va_list widgets){
+	GtkBuilder  *ui=NULL;
+	gchar       *path=NULL;
 	GError      *error=NULL;
 
 	/* Create gtkbuilder & load the xml file */
-	ui=gtk_builder_new ();
-	gtk_builder_set_translation_domain (ui, GETTEXT_PACKAGE);
+	ui=gtk_builder_new();
+	gtk_builder_set_translation_domain(ui, GETTEXT_PACKAGE);
 	if(!(path=gtkbuilder_get_path(filename) )){
 		debug("Unable to load GtkBuilder UI filename: %s", filename);
 		return NULL;
 	}
-	if(!gtk_builder_add_from_file (ui, path, &error)){
-		g_warning ("XML file error: %s", error->message);
+	if(!gtk_builder_add_from_file(ui, path, &error)){
+		debug("**ERROR:** XML file error: %s", error->message);
 		g_error_free(error);
 		g_free(path);
 		return NULL;
 	}
 	
-	for(name=first_widget; name; name=va_arg (args, char *)){
-		pointer=va_arg(args, void *);
-		if(!( *pointer=gtk_builder_get_object(ui, name) ))
-			g_warning ("Widget '%s' at '%s' is missing.", name, path);
-	}
+	gtkbuilder_get_objects_from_ui(ui, path, first_widget, widgets);
 	
 	if(path) uber_free(path);
 	
 	return ui;
-}/*gtkbuilder_load_file(GtkBuilderUI, "widget", private_objects_ui->widget, NULL);*/
+}/*gtkbuilder_load_file(GTK_BUILDER_UI_FILENAME, "widget", private_objects_ui->widget, NULL);*/
+
+void gtkbuilder_get_objects(GtkBuilder *ui, const gchar *filename, const gchar *first_widget, ...){
+	gchar *path=NULL;
+	if(!(path=gtkbuilder_get_path(filename))){
+		debug("Unable to load GtkBuilder UI filename: %s", filename);
+		return;
+	}
+	va_list widgets;
+	va_start(widgets, first_widget);
+	gtkbuilder_get_objects_from_ui(ui, path, first_widget, widgets);
+	va_end(widgets);
+	uber_free(path);
+}/*gtkbuilder_get_objects(ui, "widget", private_objects_ui->widget, NULL);*/
+
+static void gtkbuilder_get_objects_from_ui(GtkBuilder *ui, const gchar *path, const gchar *first_widget, va_list widgets){
+	GObject    **pointer;
+	const char  *name=NULL;
+	for(name=first_widget; name; name=va_arg(widgets, char *)){
+		pointer=va_arg(widgets, void *);
+		if(!( *pointer=gtk_builder_get_object(ui, name) ))
+			debug("**ERROR:** Widget '%s' at '%s' is missing.", name, path);
+	}
+}/*gtkbuilder_get_objects(ui, path, first_widget, widgets);*/
 
 GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widget, ...){
-	va_list args;
-
-	va_start(args, first_widget);
-	GtkBuilder *ui=gtkbuilder_load_file(filename, first_widget, args);
-	va_end(args);
+	va_list widgets;
+	va_start(widgets, first_widget);
+	GtkBuilder *ui=gtkbuilder_load_file(filename, first_widget, widgets);
+	va_end(widgets);
 
 	return ( ui ? ui : NULL );
 }

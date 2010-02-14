@@ -67,12 +67,12 @@
 #include "parser.h"
 
 #include "about.h"
-#include "online-services-typedefs.h"
-#include "online-services.defines.h"
-#include "online-service-request.h"
-#include "online-service.types.h"
+#include "online-services.typedefs.h"
+#include "online-services.rest-uris.defines.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "online-services.h"
+#include "online-service-request.h"
 #include "online-services-dialog.h"
 #include "main-window.h"
 
@@ -90,11 +90,13 @@
 
 #include "hotkeys.h"
 #include "tabs.h"
-#include "uberchick-tree-view.h"
 
+#include "uberchick-tree-view.h"
+#include "update-viewer.h"
+
+#include "profile-manager.h"
 #include "friends-manager.h"
 #include "following-viewer.h"
-#include "update-viewer.h"
 
 
 #define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE(( obj), TYPE_MAIN_WINDOW, MainWindowPrivate ))
@@ -148,16 +150,14 @@ struct _MainWindowPrivate {
 	GtkMenuItem		*tabs_menu_item;
 	GtkMenu			*menu_tabs;
 	GList			*tabs_menu_widgets;
-	GtkCheckMenuItem	*timeline_public;
 	GtkCheckMenuItem	*timeline_homepage;
-	GtkCheckMenuItem	*timeline_friends;
 	GtkCheckMenuItem	*timeline_mine;
 	GtkCheckMenuItem	*timeline_dm;
 	GtkCheckMenuItem	*timeline_favorites;
 	GtkCheckMenuItem	*timeline_replies;
 	GtkCheckMenuItem	*timeline_retweets_to_me;
 	GtkCheckMenuItem	*timeline_retweets_of_me;
-	GtkSeparatorMenuItem	*timeline_retweets_separator;
+	GtkCheckMenuItem	*timeline_public;
 	
 	GtkMenuItem		*help_menu_item;
 	GtkMenu			*menu_help;
@@ -181,34 +181,11 @@ struct _MainWindowPrivate {
 	
 	/* Widgets that are enabled when we are connected/disconnected */
 	GList			*widgets_connected;
-	GList			*twitter_connected_widgets;
 	GList			*widgets_disconnected;
 	GList			*selected_update_image_menu_items;
 	
-	/* OnlineServices "best friends" stuff. */
 	GtkHPaned		*uberchick_tree_view_hpaned;
-	GList			*best_friends_buttons;
 	GtkVBox			*best_friends_vbox;
-	GtkScrolledWindow	*best_friends_scrolled_window;
-	
-	SexyTreeView		*best_friends_sexy_tree_view;
-	GtkTreeViewColumn	*best_friends_user_name_tree_view_column;
-	GtkCellRendererText	*best_friends_user_name_cell_renderer_text;
-	GtkTreeViewColumn	*best_friends_online_service_tree_view_column;
-	GtkCellRendererText	*best_friends_online_service_cell_renderer_text;
-	
-	GtkTreeStore		*best_friends_tree_store;
-	
-	GtkButton		*best_friends_add_button;
-	GtkButton		*best_friends_drop_button;
-	GtkButton		*best_friends_refresh_button;
-	
-	GtkButton		*best_friends_view_updates_new_button;
-	GtkButton		*best_friends_view_profile_button;
-	GtkButton		*best_friends_send_at_message_button;
-	GtkButton		*best_friends_send_dm_button;
-	GtkButton		*best_friends_unfollow_button;
-	GtkButton		*best_friends_view_updates_button;
 	
 	/* user, status, & update widgets.
 	 * Actually they're in the UpdateViewer.
@@ -233,7 +210,7 @@ typedef enum{
 #define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Updates:Requests:Users:Start-Up:main-window.c"
 #include "debug.h"
 
-#define	GtkBuilderUI	"main-window"
+#define	GTK_BUILDER_UI_FILENAME	"main-window"
 
 
 static void main_window_class_init(MainWindowClass *klass);
@@ -245,13 +222,6 @@ static void main_window_statusbar_timeouts_free(void);
 static void main_window_statusbar_timer_remove(void);
 
 static void main_window_setup(void);
-static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window);
-static void main_window_best_friends_setup(GtkBuilder *ui);
-static void main_window_best_friends_tree_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window );
-static void main_window_best_friends_buttons_set_sensitive(void);
-static void main_window_best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_view, MainWindow *main_window);
-static void main_window_best_friends_button_clicked(GtkButton *button);
-static void main_window_twitter_connection_items_setup(MainWindowPrivate *m_w_p);
 static void main_window_view_setup(MainWindowPrivate *m_w_p);
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window); 
@@ -332,9 +302,7 @@ static void main_window_init(MainWindow *singleton_main_window){
 	main_window->private->sexy_position=-1;
 	main_window->private->search_history_completion=NULL;
 	main_window->private->online_service_request_popup_image_menu_items=NULL;
-	main_window->private->best_friends_buttons=NULL;
 	main_window->private->widgets_connected=NULL;
-	main_window->private->twitter_connected_widgets=NULL;
 	main_window->private->widgets_disconnected=NULL;
 	main_window->private->search_history_total=0;
 	main_window->private->search_history_maximum=0;
@@ -349,7 +317,6 @@ static void main_window_finalize(GObject *object){
 	main_window->private=GET_PRIVATE(main_window);
 	
 	gtk_list_store_clear(main_window->private->search_history_list_store);
-	gtk_tree_store_clear(main_window->private->best_friends_tree_store);
 	
 	uber_object_unref(main_window->private->sexy_search_entry);
 	uber_object_unref(main_window->private->search_history_completion);
@@ -361,10 +328,10 @@ static void main_window_finalize(GObject *object){
 	uber_list_free(main_window->private->online_service_request_popup_image_menu_items);
 	uber_list_free(main_window->private->tabs_menu_widgets);
 	uber_list_free(main_window->private->widgets_connected);
-	uber_list_free(main_window->private->twitter_connected_widgets);
 	uber_list_free(main_window->private->widgets_disconnected);
 	uber_list_free(main_window->private->selected_update_image_menu_items);
-	uber_list_free(main_window->private->best_friends_buttons);
+
+	best_friends_clean_up();
 	
 	tabs_destroy();
 	uber_free(main_window->private->statusbar_default_message);
@@ -373,16 +340,13 @@ static void main_window_finalize(GObject *object){
 }/*main_window_finalize(main_window);*/
 
 static void main_window_setup(void){
-	GtkBuilder	*ui;
-	
 	debug("Starting %s...", PACKAGE_NAME);
-	GtkNotebook	*tabs_notebook;
-	
+	GtkNotebook *tabs_notebook=NULL;
 	
 	/* Set up interface */
 	debug("Initialising interface");
-	ui=gtkbuilder_get_file(
-				GtkBuilderUI,
+	GtkBuilder *ui=gtkbuilder_get_file(
+				GTK_BUILDER_UI_FILENAME,
 					"main_window", &main_window->private->window,
 					"main_vbox", &main_window->private->main_vbox,
 					
@@ -392,16 +356,14 @@ static void main_window_setup(void){
 					
 					"tabs_menu_item", &main_window->private->tabs_menu_item,
 					"tabs_menu", &main_window->private->menu_tabs,
-					"tabs_menu_public_timeline_check_menu_item", &main_window->private->timeline_public,
 					"tabs_menu_hompage_timeline_check_menu_item", &main_window->private->timeline_homepage,
-					"tabs_menu_friends_timeline_check_menu_item", &main_window->private->timeline_friends,
 					"tabs_menu_my_timeline_check_menu_item", &main_window->private->timeline_mine,
 					"tabs_menu_direct_messages_check_menu_item", &main_window->private->timeline_dm,
 					"tabs_menu_replies_check_menu_item", &main_window->private->timeline_replies,
 					"tabs_menu_favorites_timeline_check_menu_item", &main_window->private->timeline_favorites,
-					"tabs_menu_retweets_separator_menu_item", &main_window->private->timeline_retweets_separator,
 					"tabs_menu_retweets_to_me_timeline_check_menu_item", &main_window->private->timeline_retweets_to_me,
 					"tabs_menu_retweets_of_me_timeline_check_menu_item", &main_window->private->timeline_retweets_of_me,
+					"tabs_menu_public_timeline_check_menu_item", &main_window->private->timeline_public,
 					
 					"edit_menu_item", &main_window->private->edit_menu_item,
 					"edit_menu", &main_window->private->menu_edit,
@@ -443,28 +405,7 @@ static void main_window_setup(void){
 					
 					/* the major UI elements. */
 					"main_vpaned", &main_window->private->main_vpaned,
-					
-					/* best friends elements & buttons */
 					"best_friends_vbox", &main_window->private->best_friends_vbox,
-					"best_friends_scrolled_window", &main_window->private->best_friends_scrolled_window,
-					
-					"best_friends_tree_store", &main_window->private->best_friends_tree_store,
-					
-					"best_friends_sexy_tree_view", &main_window->private->best_friends_sexy_tree_view,
-					"best_friends_user_name_tree_view_column", &main_window->private->best_friends_user_name_tree_view_column,
-					"best_friends_user_name_cell_renderer_text", &main_window->private->best_friends_user_name_cell_renderer_text,
-					"best_friends_online_service_tree_view_column", &main_window->private->best_friends_online_service_tree_view_column,
-					"best_friends_online_service_cell_renderer_text", &main_window->private->best_friends_online_service_cell_renderer_text,
-					
-					"best_friends_add_button", &main_window->private->best_friends_add_button,
-					"best_friends_drop_button", &main_window->private->best_friends_drop_button,
-					"best_friends_refresh_button", &main_window->private->best_friends_refresh_button,
-					"best_friends_view_updates_new_button", &main_window->private->best_friends_view_updates_new_button,
-					"best_friends_view_profile_button", &main_window->private->best_friends_view_profile_button,
-					"best_friends_send_at_message_button", &main_window->private->best_friends_send_at_message_button,
-					"best_friends_send_dm_button", &main_window->private->best_friends_send_dm_button,
-					"best_friends_unfollow_button", &main_window->private->best_friends_unfollow_button,
-					"best_friends_view_updates_button", &main_window->private->best_friends_view_updates_button,
 					
 					/*tabs_notebook is used to contain get2gnow's timeline tabs.*/
 					"uberchick_tree_view_hpaned", &main_window->private->uberchick_tree_view_hpaned,
@@ -520,28 +461,8 @@ static void main_window_setup(void){
 					"select_service_tool_button", "clicked", main_window_select_service,
 					"preferences_tool_button", "clicked", main_window_preferences_cb,
 					"main_window_main_tool_bar_exit_tool_button", "clicked", main_window_exit,
-					
-					"best_friends_scrolled_window", "size-allocate", main_window_best_friends_resized,
-					
-					"best_friends_sexy_tree_view", "cursor-changed", main_window_best_friends_buttons_set_sensitive,
-					"best_friends_sexy_tree_view", "row-activated", main_window_best_friends_tree_view_row_activated,
-					
-					"best_friends_add_button", "clicked", online_service_request_popup_best_friend_add,
-					"best_friends_drop_button", "clicked", main_window_best_friends_button_clicked,
-					
-					"best_friends_refresh_button", "clicked", main_window_best_friends_tree_store_validate,
-					
-					"best_friends_view_updates_new_button", "clicked", main_window_best_friends_button_clicked,
-					"best_friends_view_profile_button", "clicked", main_window_best_friends_button_clicked,
-					"best_friends_send_at_message_button", "clicked", main_window_best_friends_button_clicked,
-					"best_friends_send_dm_button", "clicked", main_window_best_friends_button_clicked,
-					"best_friends_unfollow_button", "clicked", main_window_best_friends_button_clicked,
-					"best_friends_view_updates_button", "clicked", main_window_best_friends_button_clicked,
 				NULL
 	);
-	
-	/* TODO: fix online_service_best_friends_list_store_validate(); */
-	gtk_widget_hide(GTK_WIDGET(main_window->private->best_friends_refresh_button) );
 	
 	gchar *window_title=g_strdup_printf("%s", _(GETTEXT_PACKAGE));
 	gtk_window_set_title(GTK_WINDOW(main_window->private->window), window_title);
@@ -554,9 +475,8 @@ static void main_window_setup(void){
 	);
 	
 	main_window_online_service_request_popup_menu_setup(ui);
-	main_window_best_friends_setup(ui);
+	best_friends_setup(ui);
 	main_window_view_setup(main_window->private);
-	main_window_twitter_connection_items_setup(main_window->private);
 	
 	/* Set up connected related widgets */
 	main_window_connection_items_setup(ui);
@@ -588,7 +508,7 @@ static void main_window_setup(void){
 	
 	/* Initial status of widgets */
 	main_window_state_on_connection(FALSE);
-	main_window_best_friends_buttons_set_sensitive();
+	best_friends_buttons_set_sensitive();
 
 	/* Ok, set the window state based on the gconf value */
 	if(!gconfig_if_bool(MAIN_WINDOW_UI_HIDDEN, FALSE))
@@ -598,192 +518,6 @@ static void main_window_setup(void){
 	
 	main_window_login();
 }/*main_window_setup();*/
-
-static void main_window_best_friends_resized(GtkScrolledWindow *best_friends_scrolled_window, GtkAllocation *allocation, MainWindow *main_window){
-	return;
-	g_object_set(main_window->private->best_friends_user_name_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(main_window->private->best_friends_user_name_tree_view_column))-10), NULL);
-	g_object_set(main_window->private->best_friends_online_service_cell_renderer_text, "wrap-width", ((gtk_tree_view_column_get_width(main_window->private->best_friends_online_service_tree_view_column))-10), NULL);
-}/*main_window_best_friends_resized(widget, allocation, main_window);*/
-
-static void main_window_best_friends_tree_store_validate(GtkButton *best_friends_refresh_button, MainWindow *main_window ){
-	/* TODO: Add a confirmation dialog that warn of how long this may take. */
-	online_services_best_friends_tree_store_validate(main_window->private->best_friends_tree_store);
-}/*main_window_best_friends_tree_store_validate(button, main_window);*/
-
-static void main_window_best_friends_setup(GtkBuilder *ui){
-	const gchar *best_friends_buttons[]={
-		"best_friends_view_updates_new_button",
-		"best_friends_view_profile_button",
-		"best_friends_send_at_message_button",
-		"best_friends_send_dm_button",
-		"best_friends_unfollow_button",
-		"best_friends_view_updates_button",
-	};
-	
-	GList *list=NULL;
-	for(gint i=0; i < G_N_ELEMENTS(best_friends_buttons); i++)
-		list=g_list_append(list, (gtk_builder_get_object(ui, best_friends_buttons[i])) );
-	main_window->private->best_friends_buttons=list;
-	
-	best_friends_set_tree_store(main_window->private->best_friends_tree_store);
-	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(main_window->private->best_friends_tree_store), STRING_BEST_FRIEND_USER_NAME_AND_ONlINE_SERVICE_KEY, GTK_SORT_ASCENDING);
-	
-	online_services_best_friends_tree_store_fill(main_window->private->best_friends_tree_store);
-	
-	sexy_tree_view_set_tooltip_label_column(main_window->private->best_friends_sexy_tree_view, STRING_BEST_FRIEND_USER_NAME);
-}/*main_window_best_friends_setup(ui);*/
-
-static void main_window_best_friends_buttons_set_sensitive(void){
-	OnlineService *service=NULL;
-	gchar *user=NULL;
-	gchar *user_name=NULL;
-	gboolean sensitive;
-	gdouble unread_update_id=0.0;
-	if(!((main_window_best_friends_get_selected( &service, &user, &user_name, &unread_update_id)) && service && G_STR_N_EMPTY(user) && G_STR_N_EMPTY(user_name) )){
-		sensitive=FALSE;
-		debug("No best friend is selected.  Best Friend buttons will be disabled.");
-	}else{
-		sensitive=TRUE;
-		debug("Selected best friend: %s, on <%s>.  Enabling best friend controls.", user, service->guid );
-		uber_free(user);
-		uber_free(user_name);
-	}
-	
-	GList *buttons=NULL;
-	for(buttons=main_window->private->best_friends_buttons; buttons; buttons=buttons->next)
-		gtk_widget_set_sensitive( (GtkWidget *)buttons->data, sensitive );
-	g_list_free(buttons);
-	
-	update_viewer_sexy_select();
-}/*main_window_best_friends_buttons_set_sensitive();*/
-
-gboolean main_window_best_friends_get_selected(OnlineService **service, gchar **user, gchar **user_name, gdouble *unread_update_id ){
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	gboolean found=FALSE;
-	OnlineService *selected_service=NULL;
-	gchar *selected_user=NULL;
-	gchar *selected_user_name=NULL;
-	gdouble selected_update_id=0.0;
-	GtkTreeSelection *sel=gtk_tree_view_get_selection( (GtkTreeView *)main_window->private->best_friends_sexy_tree_view );
-	if(gtk_tree_selection_get_selected(sel, NULL/*&main_window->private->best_friends_tree_model_sort*/, iter))
-		gtk_tree_model_get(
-				GTK_TREE_MODEL(main_window->private->best_friends_tree_store), iter,
-					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &selected_service,
-					STRING_BEST_FRIEND_USER, &selected_user,
-					STRING_BEST_FRIEND_USER_NAME, &selected_user_name,
-					GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, &selected_update_id,
-				-1
-		);
-	if(!( selected_service && selected_service->connected && G_STR_N_EMPTY(selected_user) && G_STR_N_EMPTY(selected_user_name) )){
-		*service=NULL;
-		*user=NULL;
-		*user_name=NULL;
-	}else{
-		found=TRUE;
-		*user=g_strdup(selected_user);
-		uber_free(selected_user);
-		*user_name=g_strdup(selected_user_name);
-		uber_free(selected_user_name);
-		*service=selected_service;
-		if(selected_update_id) *unread_update_id=selected_update_id;
-		else *unread_update_id=0.0;
-	}
-	
-	uber_free(iter);
-	return found;
-}/*main_window_best_friends_get_selected();*/
-
-static void main_window_best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_view, MainWindow *main_window){
-	OnlineService *service=NULL;
-	gchar *user=NULL;
-	gchar *user_name=NULL;
-	gdouble unread_update_id=0.0;
-	if(!((main_window_best_friends_get_selected( &service, &user, &user_name, &unread_update_id)) && service && G_STR_N_EMPTY(user) && G_STR_N_EMPTY(user_name) )){
-		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
-		update_viewer_sexy_select();
-		return;
-	}
-	
-	if(!g_str_has_prefix(user_name, "<b>"))
-		online_service_request_view_updates(service, main_window->private->window, user);
-	else
-		online_service_request_view_updates_new(service, main_window->private->window, user);
-	uber_free(user);
-	uber_free(user_name);
-	update_viewer_sexy_select();
-}/*main_window_best_friends_tree_view_row_activated(tree_view, path, column, main_window);*/
-
-static void main_window_best_friends_button_clicked(GtkButton *button){
-	OnlineService *service=NULL;
-	gchar *user=NULL;
-	gchar *user_name=NULL;
-	gdouble unread_update_id=0.0;
-	if(!((main_window_best_friends_get_selected( &service, &user, &user_name, &unread_update_id)) && service && G_STR_N_EMPTY(user) && G_STR_N_EMPTY(user_name) )){
-		if(button==main_window->private->best_friends_drop_button){
-			online_service_request_popup_best_friend_drop();
-			return;
-		}
-		debug("Cannot load best friends request.  Invalid OnlineService or empty user_name.");
-		update_viewer_sexy_select();
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_view_updates_new_button){
-		online_service_request_view_updates_new(service, main_window->private->window, user);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_drop_button){
-		online_service_best_friends_drop(service, main_window->private->window, user);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_unfollow_button){
-		online_service_request_unfollow(service, main_window->private->window, user);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_view_profile_button){
-		online_service_request_view_profile(service, main_window->private->window, user);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_send_at_message_button){
-		update_viewer_set_in_reply_to_data(service, user, unread_update_id, unread_update_id, TRUE, FALSE);
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_send_dm_button){
-		update_viewer_best_friends_start_dm(service, user);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-	if(button==main_window->private->best_friends_view_updates_button){
-		online_service_request_view_updates(service, main_window->private->window, user);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		uber_free(user);
-		return;
-	}
-	
-}/*main_window_best_friends_button_clicked(button);*/
 
 static void main_window_view_setup(MainWindowPrivate *m_w_p){
 	/* Best Friends stuff. */
@@ -961,7 +695,6 @@ GtkMenu *main_window_get_menu(const gchar *menu){
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 	online_service_request_unset_selected_update();
 	/* Add any clean-up code above this function call */
-	online_services_best_friends_tree_store_free(main_window->private->best_friends_tree_store);
 	gtk_widget_destroy(GTK_WIDGET(GET_PRIVATE(main_window)->window) );
 }
 
@@ -1029,9 +762,6 @@ static void main_window_exit(GtkWidget  *widget, MainWindow  *main_window){
 }
 
 static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p){
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_public);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_public), "timeline", API_TIMELINE_PUBLIC, NULL );
-	
 	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_mine);
 	g_object_set_data_full(G_OBJECT(m_w_p->timeline_mine), "timeline", API_TIMELINE_MINE, NULL );
 	
@@ -1047,14 +777,14 @@ static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p){
 	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_homepage);
 	g_object_set_data_full(G_OBJECT(m_w_p->timeline_homepage), "timeline", API_TIMELINE_HOMEPAGE, NULL );
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_friends);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_friends), "timeline", API_TIMELINE_FRIENDS, NULL );
-	
 	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_to_me);
 	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_to_me), "timeline", API_RETWEETED_TO_ME, NULL );
 	
 	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_of_me);
 	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_of_me), "timeline", API_RETWEETS_OF_ME, NULL );
+	
+	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_public);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_public), "timeline", API_TIMELINE_PUBLIC, NULL );
 	
 	GList *tabs=NULL;
 	for(tabs=m_w_p->tabs_menu_widgets; tabs; tabs=tabs->next)
@@ -1063,9 +793,9 @@ static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p){
 }/*main_window_tabs_menu_widgets_setup(main_window);*/
 
 static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_tab, MainWindowPrivate *m_w_p){
-	gboolean timeline_found=FALSE;
+	if(!(main_window && main_window->private && main_window->private->tabs_menu_widgets)) return;
 	GList *tab_menu_items=NULL;
-	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items && !timeline_found; tab_menu_items=tab_menu_items->next){
+	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items; tab_menu_items=tab_menu_items->next){
 		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
 		if(check_menu_item!=selected_tab) continue;
 		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
@@ -1074,41 +804,36 @@ static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_t
 			tabs_close_timeline(timeline);
 		else
 			tabs_open_timeline(timeline, NULL);
-		timeline_found=TRUE;
 	}
-	
-	/* just in case, fall back to friends timeline */
-	if(!timeline_found)
-		gtk_check_menu_item_set_active(main_window->private->timeline_homepage, TRUE);
+	g_list_free(tab_menu_items);
 }/*main_window_tabs_menu_timeline_selected(selected_tab, main_window->private);*/
 
 /*
  * Function to set the default
  * timeline in the menu.
  */
-void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open){
+gboolean main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open){
+	if(!(main_window && main_window->private && main_window->private->tabs_menu_widgets)) return FALSE;
 	/* This shouldn't happen, but just in case */
-	if(G_STR_EMPTY(timeline_to_open)) {
-		debug("**ERROR:** Default timeline in not set.  Selecting 'timeline_homepage' by default.");
-		return gtk_check_menu_item_set_active( main_window->private->timeline_homepage, open);
+	if(G_STR_EMPTY(timeline_to_open)){
+		debug("**ERROR:** Cannot open an empty or NULL timeline.");
+		return FALSE;
 	}
 	
 	MainWindowPrivate *m_w_p=main_window->private;
-	gboolean timeline_found=FALSE;
 	GList *tab_menu_items=NULL;
-	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items && !timeline_found; tab_menu_items=tab_menu_items->next){
+	gboolean tab_found=FALSE;
+	for(tab_menu_items=m_w_p->tabs_menu_widgets; tab_menu_items; tab_menu_items=tab_menu_items->next){
 		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
 		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
 		if(!g_str_equal(timeline, timeline_to_open)) continue;
 		debug("%s timeline tab: %s. GtkCheckMenuItem selected: %s.", (open ?_("Opening") :_("Closing") ), timeline, gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)) );
 		gtk_check_menu_item_set_active(check_menu_item, open);
-		tabs_open_timeline(timeline, NULL);
-		timeline_found=TRUE;
+		tab_found=TRUE;
 	}
-	
-	if(!timeline_found && !gtk_check_menu_item_get_active(main_window->private->timeline_homepage))
-		gtk_check_menu_item_set_active(main_window->private->timeline_homepage, open);
-}/*main_window_tabs_menu_set_active(API_TIMELINE_FRIENDS, TRUE);*/
+	g_list_free(tab_menu_items);
+	return tab_found;
+}/*main_window_tabs_menu_set_active(API_TIMELINE_HOMEPAGE, TRUE);*/
 
 /* Function to retrieve the users default timeline */
 gboolean main_window_tabs_init(void){
@@ -1122,17 +847,23 @@ gboolean main_window_tabs_init(void){
 	}else
 		debug("Retrived default timeline: %s.  Auto-loading timeline tabs.", timeline);
 	
+	/* TODO: Remove this check by version 010102a00						*
+	 *	I'm depricating support for							*
+	 *	<friends_timeline.xml> in place of <homepage.xml>				*
+	 *	I'm doing this now; before <friends_timeline.xml> is depricated.		*
+	 *	Twitter already has this planned and I imagine identi.ca will do so too.	*/
+	gboolean open_old_homepage=FALSE;
+	if( (gconfig_get_bool(PREFS_AUTOLOAD_FOLLOWING, &open_old_homepage)) && open_old_homepage ){
+		gconfig_set_bool(PREFS_AUTOLOAD_FOLLOWING, FALSE);
+		gconfig_rm_rf(PREFS_AUTOLOAD_FOLLOWING);
+		if(!gconfig_if_bool(PREFS_AUTOLOAD_HOMEPAGE, TRUE))
+			gconfig_set_bool(PREFS_AUTOLOAD_HOMEPAGE, TRUE);
+	}
+	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_HOMEPAGE, TRUE)){
 		debug("Preparing auto-monitor for My Friends' Updates.");
 		main_window_tabs_menu_set_active(API_TIMELINE_HOMEPAGE, TRUE);
 		if(timeline && open_home_page && g_str_equal(timeline, API_TIMELINE_HOMEPAGE))
-			open_home_page=FALSE;
-	}
-	
-	if(gconfig_if_bool(PREFS_AUTOLOAD_FOLLOWING, TRUE)){
-		debug("Preparing auto-monitor for My Friends' Updates.");
-		main_window_tabs_menu_set_active(API_TIMELINE_FRIENDS, TRUE);
-		if(timeline && open_home_page && g_str_equal(timeline, API_TIMELINE_FRIENDS))
 			open_home_page=FALSE;
 	}
 	
@@ -1170,6 +901,9 @@ static void main_window_online_service_request_popup_menu_setup(GtkBuilder *ui){
 	}
 	
 	online_service_request_popup_image_menu_items[]={
+		{ "online_service_request_popup_manage_profile_image_menu_item",
+			(GPointerFunc)profile_manager_show,
+			main_window->private->window },
 		{ "online_service_request_popup_friends_manager_image_menu_item",
 			(GPointerFunc)friends_manager_show,
 			main_window->private->window },
@@ -1455,7 +1189,7 @@ void main_window_show_search_history(void){
 }/*main_window_show_search_history();*/
 
 void main_window_hide_search_history(void){
-	g_signal_emit_by_name(main_window->private->search_history_combo_box_entry, "popup");
+	g_signal_emit_by_name(main_window->private->search_history_combo_box_entry, "popdown");
 }/*main_window_hide_search_history();*/
 
 
@@ -1505,68 +1239,60 @@ static void main_window_status_icon_activate_cb(GtkStatusIcon *status_icon, Main
 }
 
 static void main_window_status_icon_popup_menu_cb(GtkStatusIcon *status_icon, guint button, guint activate_time, MainWindow *main_window){
-	gboolean       show=window_get_is_visible(GTK_WINDOW(main_window->private->window));
+	gboolean show=window_get_is_visible(GTK_WINDOW(main_window->private->window));
 	
-	g_signal_handlers_block_by_func(main_window->private->popup_menu_show_main_window,
-									 main_window_show_hide_cb, main_window);
-									
+	g_signal_handlers_block_by_func(main_window->private->popup_menu_show_main_window, main_window_show_hide_cb, main_window);
+	
 	gtk_toggle_action_set_active(main_window->private->popup_menu_show_main_window, show);
 	
-	g_signal_handlers_unblock_by_func(main_window->private->popup_menu_show_main_window,
-									   main_window_show_hide_cb, main_window);
-									
-	gtk_menu_popup(GTK_MENU(main_window->private->popup_menu),
-					NULL, NULL,
-					gtk_status_icon_position_menu,
-					main_window->private->status_icon,
-					button,
-					activate_time);
+	g_signal_handlers_unblock_by_func(main_window->private->popup_menu_show_main_window, main_window_show_hide_cb, main_window);
+	
+	gtk_menu_popup(GTK_MENU(main_window->private->popup_menu), NULL, NULL, gtk_status_icon_position_menu, main_window->private->status_icon, button, activate_time);
 }
 
 static void main_window_status_icon_create_menu(void){
-	GtkAction       *new_msg, *new_dm, *about, *quit;
-	GtkWidget       *w;
-	
-	
-	main_window->private->popup_menu_show_main_window=gtk_toggle_action_new("tray_show_app", _("_Show "), NULL, NULL);
-	g_signal_connect(G_OBJECT(main_window->private->popup_menu_show_main_window), "toggled", G_CALLBACK(main_window_show_hide_cb), main_window);
-					
-	new_msg=gtk_action_new("tray_new_message", _("_New Update"), NULL, "gtk-new");
-	g_signal_connect(G_OBJECT(new_msg), "activate", G_CALLBACK(update_viewer_new_update), main_window);
-	
-	new_dm=gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-jump-to");
-	g_signal_connect(G_OBJECT(new_dm), "activate", G_CALLBACK(update_viewer_new_dm), main_window);
-	
-	about=gtk_action_new("tray_about", _("_About"), NULL, "gtk-about");
-	g_signal_connect(G_OBJECT(new_dm), "activate", G_CALLBACK(main_window_about_cb), main_window);
-	
-	quit=gtk_action_new("tray_quit", _("_Quit"), NULL, "gtk-quit");
-	g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(main_window_exit), main_window);
+	GtkWidget *w=NULL;
+	GtkAction *action=NULL;
 	
 	main_window->private->popup_menu=gtk_menu_new();
+	main_window->private->popup_menu_show_main_window=gtk_toggle_action_new("tray_show_app", _("_Show "), NULL, NULL);
+	g_signal_connect(G_OBJECT(main_window->private->popup_menu_show_main_window), "toggled", G_CALLBACK(main_window_show_hide_cb), main_window);
 	w=gtk_action_create_menu_item(GTK_ACTION(main_window->private->popup_menu_show_main_window));
+	gtk_widget_show(w);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
+	
+	
 	w=gtk_separator_menu_item_new();
 	gtk_widget_show(w);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
-	w=gtk_action_create_menu_item(new_msg);
+	
+	action=gtk_action_new("tray_new_message", _("_New Update"), NULL, "gtk-new");
+	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(update_viewer_new_update), main_window);
+	w=gtk_action_create_menu_item(action);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
-	w=gtk_action_create_menu_item(quit);
+	
+	action=gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-jump-to");
+	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(update_viewer_new_dm), main_window);
+	w=gtk_action_create_menu_item(action);
+	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
+	
+	action=gtk_action_new("tray_about", _("_About"), NULL, "gtk-about");
+	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(main_window_about_cb), main_window);
+	w=gtk_action_create_menu_item(action);
+	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
+	
+	action=gtk_action_new("tray_quit", _("_Quit"), NULL, "gtk-quit");
+	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(main_window_exit), main_window);
+	w=gtk_action_create_menu_item(action);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
 }
 
 static void main_window_status_icon_create(void){
-	main_window->private->status_icon=gtk_status_icon_new_from_icon_name("get2gnow");
-	g_signal_connect(main_window->private->status_icon,
-					  "activate",
-					  G_CALLBACK(main_window_status_icon_activate_cb),
-					  main_window);
-					
-	g_signal_connect(main_window->private->status_icon,
-					  "popup_menu",
-					  G_CALLBACK(main_window_status_icon_popup_menu_cb),
-					  main_window);
-					
+	main_window->private->status_icon=gtk_status_icon_new_from_icon_name(_(GETTEXT_PACKAGE));
+	g_signal_connect(main_window->private->status_icon, "activate", G_CALLBACK(main_window_status_icon_activate_cb), main_window);
+	
+	g_signal_connect(main_window->private->status_icon, "popup_menu", G_CALLBACK(main_window_status_icon_popup_menu_cb), main_window);
+	
 	gtk_status_icon_set_visible(main_window->private->status_icon, TRUE);
 }
 
@@ -1617,14 +1343,6 @@ void main_window_disconnect(void){
 	main_window_state_on_connection(FALSE);
 	online_services_disconnect();
 }/*main_window_disconnect*/
-
-static void main_window_twitter_connection_items_setup(MainWindowPrivate *m_w_p){
-	GList *twitter_connected_widgets=NULL;
-	twitter_connected_widgets=g_list_append(twitter_connected_widgets, m_w_p->timeline_retweets_to_me);
-	twitter_connected_widgets=g_list_append(twitter_connected_widgets, m_w_p->timeline_retweets_of_me);
-	twitter_connected_widgets=g_list_append(twitter_connected_widgets, m_w_p->timeline_retweets_separator);
-	m_w_p->twitter_connected_widgets=twitter_connected_widgets;
-}/*main_window_twitter_connection_items_setup(main_window->private);*/
 
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
@@ -1688,17 +1406,6 @@ void main_window_state_on_connection(gboolean connected){
 	}else{
 		update_viewer_new_update();
 		tabs_refresh();
-		GList *twitter_connected_widgets;
-		gboolean has_twitter_connection=TRUE;
-		if(!online_services_has_connected_twitter(0))
-			has_twitter_connection=FALSE;
-		for(twitter_connected_widgets=main_window->private->twitter_connected_widgets; twitter_connected_widgets; twitter_connected_widgets=twitter_connected_widgets->next){
-			gtk_widget_set_sensitive(GTK_WIDGET(twitter_connected_widgets->data), has_twitter_connection);
-			if(!has_twitter_connection)
-				gtk_widget_hide(GTK_WIDGET(twitter_connected_widgets->data));
-			else
-				gtk_widget_show(GTK_WIDGET(twitter_connected_widgets->data));
-		}
 	}
 	
 	

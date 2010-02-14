@@ -69,7 +69,7 @@
 #include "program.h"
 
 #include "online-services.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "update-ids.h"
 #include "network.h"
@@ -104,7 +104,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
-	guint		new_updates=0;
+	guint		new_updates=0, notified_updates=0;
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
@@ -115,9 +115,9 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	gboolean	notify=((oldest_update_id&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE):FALSE);
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
-	guint		uberchick_tree_view_notify_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
-	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)-1)*100;
+	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
+	const gint	update_notification_interval=10;
+	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)+1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
@@ -127,7 +127,6 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	
 	/* get tweets or direct messages */
 	debug("Parsing %s timeline.", root_element->name);
-	gboolean free_status;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
@@ -155,24 +154,25 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		}
 		
 		new_updates++;
-		free_status=TRUE;
+		gboolean notify_of_new_update=FALSE;
 		debug("Adding UserStatus from: %s, ID: %f, on <%s> to uberchick_eeView.", status->user->user_name, status->id, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		
-		if(!save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
-			if(notify){
-				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, uberchick_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				uberchick_tree_view_notify_delay+=tweet_display_interval;
-			}
-		}
+		if(notify && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) )
+			notify_of_new_update=TRUE;
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
 		
 		if(save_oldest_id && status->id)
 			oldest_update_id=status->id;
 		
-		if(free_status) user_status_free(status);
+		if(!notify_of_new_update)
+			user_status_free(status);
+		else{
+			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			update_notification_delay+=update_notification_interval;
+			notified_updates++;
+		}
 	}
 	
 	if(new_updates && newest_update_id){

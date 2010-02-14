@@ -78,8 +78,8 @@
 #include "network.h"
 #include "proxy.h"
 
-#include "images.h"
 #include "cache.h"
+#include "images.h"
 #include "www.h"
 
 
@@ -130,6 +130,8 @@ gboolean program_init(int argc, char **argv){
 	
 	www_init();
 	
+	images_set_unknown_image_file();
+	
 	main_window_create();
 	
 	return TRUE;
@@ -141,8 +143,6 @@ void program_deinit(void){
 	
 	gconfig_shutdown();
 	
-	cache_deinit();
-	
 	online_service_request_unset_selected_update();
 	online_services_deinit();
 	proxy_deinit();
@@ -150,6 +150,10 @@ void program_deinit(void){
 	ipc_deinit();
 	
 	www_deinit();
+	
+	images_unset_unknown_image_file();
+	
+	cache_deinit();
 	
 	debug_deinit();
 }/*program_deinit();*/

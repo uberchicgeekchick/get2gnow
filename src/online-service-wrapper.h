@@ -71,7 +71,7 @@
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *

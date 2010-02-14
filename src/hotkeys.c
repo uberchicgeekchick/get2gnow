@@ -125,6 +125,19 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_less:		case GDK_minus:
 					online_service_request_selected_update_unfollow();
 					return FALSE;
+				case GDK_Return:	case GDK_KP_Enter:
+					update_viewer_sexy_insert_char('\n');
+					return FALSE;
+				case GDK_Tab:		case GDK_KP_Tab:
+					update_viewer_sexy_insert_char('\t');
+					return FALSE;
+#ifdef GNOME_ENABLE_DEBUG
+				case GDK_R:		case GDK_r:
+					if(online_service_request_isset_selected_update()){
+						tabs_remove_from_uberchick_tree_views_tree_stores(STRING_USER, (gchar *)online_service_request_selected_update_get_user_name());
+						return FALSE;
+					}
+#endif
 			}
 		case GDK_MOD1_MASK:
 			switch(event->keyval){
@@ -153,6 +166,12 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_H:	case GDK_h:
 					g_signal_emit_by_name(main_window_get_menu_item("help"), "popup");
 					return TRUE;
+				case GDK_Up: case GDK_KP_Up:
+					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
+						main_window_hide_search_history();
+					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
+						update_viewer_hide_previous_updates();
+					return TRUE;
 				case GDK_Down: case GDK_KP_Down:
 					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
 						main_window_show_search_history();
@@ -162,7 +181,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_R: case GDK_r:
 					uberchick_tree_view_refresh(tabs_get_current()); 
 					return FALSE;
-				case GDK_I:	case GDK_i:
+				case GDK_P:	case GDK_p:
 				case GDK_question:
 					online_service_request_selected_update_view_profile();
 					return TRUE;
@@ -210,7 +229,9 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_sexy_insert_char('\n');
 					return FALSE;
-				case GDK_Tab:
+				case GDK_Tab:		case GDK_KP_Tab:
+				case GDK_Insert:	case GDK_KP_Insert:
+				case GDK_I:		case GDK_i:
 					update_viewer_sexy_insert_char('\t');
 					return FALSE;
 				case GDK_N:	case GDK_n:

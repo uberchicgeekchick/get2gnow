@@ -62,7 +62,7 @@
 #include "config.h"
 #include "program.h"
 
-#include "online-services.defines.h"
+#include "online-services.rest-uris.defines.h"
 #include "online-services.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
@@ -70,10 +70,11 @@
 #include "www.h"
 #include "main-window.h"
 
-#include "network.h"
 #include "online-service-request.h"
 #include "users-glists.h"
 
+#include "network.h"
+#include "profile-manager.h"
 
 /********************************************************
  *          Variable definitions.                       *
@@ -237,7 +238,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 	}
 	if(!(online_service_wrapper->requested_uri && G_STR_N_EMPTY(online_service_wrapper->requested_uri) )) online_service_wrapper->requested_uri=_("Unknown URI");
 	
-	if(service->status) uber_free(service->status);
+	uber_free(service->status);
 	const gchar *status=NULL;
 	gchar *error_message=NULL;
 	if(!www_xml_error_check(service, online_service_wrapper->requested_uri, xml, &error_message))
@@ -265,7 +266,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 		return NULL;
 	}
 	
-	timer_main(service->timer, xml);
+	timer_main(service->timer, xml, online_service_wrapper->request_method);
 	
 	online_service_wrapper_free(online_service_wrapper, TRUE);
 	
@@ -310,6 +311,10 @@ static void online_service_wrapper_form_data_processor(OnlineServiceWrapper *onl
 		online_service_wrapper->form_data!=NULL
 		&&
 		online_service_wrapper->callback!=network_display_timeline
+		&&
+		online_service_wrapper->callback!=profile_manager_save_image
+		&&
+		online_service_wrapper->callback!=users_glist_process
 	))
 		return;
 	

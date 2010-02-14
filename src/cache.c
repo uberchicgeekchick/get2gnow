@@ -59,13 +59,17 @@
 /********************************************************
  *        Project headers, eg #include "config.h"       *
  ********************************************************/
+#include <sys/stat.h>
+#include <gio/gio.h>
+#include <glib/gstdio.h>
+
 #include <errno.h>
 #include <libxml/parser.h>
 
 #include "config.h"
 #include "program.h"
 
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 
 #include "cache.h"
@@ -77,7 +81,6 @@
 #include "debug.h"
 
 static gchar *cache_prefix=NULL;
-static gchar *unknown_image_filename=NULL;
 
 
 /********************************************************
@@ -102,18 +105,12 @@ void cache_init(void){
 		g_error("Unable to access config directory: %s.", cache_prefix);
 	
 	uber_free(cache_path_test);
-	
-	cache_images_get_unknown_image_filename();
-}/*cache_init*/
+}/*cache_init();*/
 
 void cache_deinit(void){
 	debug("**SHUTDOWN:** releasing memory of cache prefix: %s.", cache_prefix);
 	uber_free(cache_prefix);
-	
-	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", unknown_image_filename);
-	uber_free(unknown_image_filename);
-	unknown_image_filename=NULL;
-}/*cache_deinit*/
+}/*cache_deinit();*/
 
 static gchar *cache_file_create_online_service_xml_file(OnlineService *service, const gchar *uri){
 	gchar *subdir, *filename, *query_string;
@@ -164,7 +161,7 @@ static gboolean cache_file_save_online_service_xml(OnlineService *service, const
 	debug("Cache created: %s.", cache_file_xml);
 	uber_free(cache_file_xml);
 	return TRUE;
-}/*cache_file_save_online_service_xml(service, subdir, filename, xml, length)*/
+}/*cache_file_save_online_service_xml(service, subdir, filename, xml, length);*/
 
 gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir){
 	gchar *cache_path=cache_path_create(cache_dir, NULL);
@@ -172,20 +169,22 @@ gchar *cache_dir_test(const gchar *cache_dir, gboolean mkdir){
 		if(!mkdir) return NULL;
 		
 		if(g_mkdir_with_parents(cache_path, S_IRUSR|S_IWUSR|S_IXUSR)){
-			debug("***ERROR:*** Unable to create cache directory: [%s].", cache_path);
+			debug("**ERROR:** Unable to create cache directory: [%s].", cache_path);
 			uber_free(cache_path);
 			return NULL;
 		}
 	}
 	return cache_path;
-}/*cache_dir_test*/
+}/*cache_dir_test("~/gnome2/get2gnow/cache/images", TRUE|FALSE);*/
 
 static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm_parent){
 	if(!(g_str_has_prefix(cache_dir_path, cache_prefix)))
 		return;
 	
-	if(!( (g_file_test(cache_dir_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) ))
+	if(!( (g_file_test(cache_dir_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) )){
+		cache_file_clean_up(cache_dir_path);
 		return;
+	}
 	
 	debug("Cleaning-up cache directory: [%s].", cache_dir_path);
 	
@@ -204,14 +203,14 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm
 	g_dir_close(cache_dir);
 	if(rm_parent)
 		cache_file_clean_up(cache_dir_path);
-}/*cache_dir_absolute_clean_up*/
+}/*cache_dir_absolute_clean_up("~/gnome2/get2gnow/cache/images/", TRUE|FALSE);*/
 
 void cache_dir_clean_up(const gchar *cache_subdir, gboolean rm_parent){
 	gchar *cache_dir_path=cache_path_create(cache_subdir, NULL);
 	debug("%s cache directory: [%s].", (rm_parent ?"Removing directory and its contents" :"Cleaning-up"), cache_dir_path);
 	cache_dir_absolute_clean_up(cache_dir_path, rm_parent);
 	uber_free(cache_dir_path);
-}/*cache_dir_clean_up*/
+}/*cache_dir_clean_up("~/gnome2/get2gnow/cache/images/", TRUE|FALSE);*/
 
 static gchar *cache_path_create(const gchar *cache_file, ...){
 	gchar *cache_path_full=NULL;
@@ -259,9 +258,9 @@ static void cache_file_clean_up(const gchar *cache_file){
 		debug("Cache clean-up, deleting: [%s].", cache_file);
 		g_remove(cache_file);
 	}
-	g_object_unref(cache_gfile);
-	g_object_unref(cache_gfileinfo);
-}/*cache_file_clean_up*/
+	if(cache_gfile) g_object_unref(cache_gfile);
+	if(cache_gfileinfo) g_object_unref(cache_gfileinfo);
+}/*cache_file_clean_up("friends001.xml");*/
 
 /**
  * Do not initalize any of the pointers you want to use prior to sending them as parameters.
@@ -345,44 +344,10 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	return filename;
 }/*cache_file_create_file_for_online_service(service, "users", "uberChick.xml", NULL);*/
 
-gchar *cache_images_get_unknown_image_filename(void){
-	if(unknown_image_filename){
-		return g_strdup(unknown_image_filename);
-	}
-	
-	gchar *home_unknown_image_filename=NULL;
-#ifndef GNOME_ENABLE_DEBUG
-	home_unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-	if(!(g_file_test(home_unknown_image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR ))){
-		uber_free(home_unknown_image_filename);
-#endif
-		home_unknown_image_filename=g_build_filename(BUILDDIR, "data", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-#ifndef GNOME_ENABLE_DEBUG
-	}
-#endif
-	
-	
-	GtkImage *stock_unknown_image=NULL;
-	if(!( (stock_unknown_image=(GtkImage *)gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)) )){
-		unknown_image_filename=g_strdup(home_unknown_image_filename);
-	}else{
-		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
-		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
-		g_object_unref(stock_unknown_image);
-		if(G_STR_EMPTY(unknown_image_filename)){
-			unknown_image_filename=g_strdup(home_unknown_image_filename);
-		}
-	}
-	
-	uber_free(home_unknown_image_filename);
-	
-	return unknown_image_filename;
-}/*cache_images_get_unknown_image_filename*/
-
-gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar *user_name, const gchar *image_url){
+gchar *cache_images_get_user_image_filename(OnlineService *service, const gchar *image_type, const gchar *user_name, const gchar *image_url){
 	if(!(G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(image_url) )){
-		debug("**ERROR** Unable to parse an empty url into an image filename.  Attempting to load avatar for user: <%s>; using url: [%s].", user_name, image_url);
-		return cache_images_get_unknown_image_filename();
+		debug("**ERROR** Unable to parse an empty url into an image filename.  Attempting to load %s for user: <%s>; using url: [%s].", image_type, user_name, image_url);
+		return images_get_unknown_image_file();
 	}
 	
 	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, service->uri, image_url);
@@ -391,31 +356,31 @@ gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar
 	cache_get_uri_filename(image_url, FALSE, NULL, TRUE, &image_file, FALSE, NULL);
 	if(G_STR_EMPTY(image_file)){
 		if(image_file) uber_free(image_file);
-		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading avatar for user: <%s>; using url: [%s].", user_name, image_url);
-		return cache_images_get_unknown_image_filename();
+		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading %s for user: <%s>; using url: [%s].", image_type, user_name, image_url);
+		return images_get_unknown_image_file();
 	}
 	
-	gchar *avatar_dir=cache_path_create("services", service->uri, "avatars", user_name, NULL);
+	gchar *image_dir=cache_path_create("services", service->uri, image_type, user_name, NULL);
 	gchar *image_filename=NULL;
-	gchar *avatar_path=NULL;
-	if(!( ((avatar_path=cache_dir_test(avatar_dir, TRUE))) && (image_filename=cache_path_create(avatar_path, image_file, NULL)) )){
+	gchar *image_path=NULL;
+	if(!( ((image_path=cache_dir_test(image_dir, TRUE))) && (image_filename=cache_path_create(image_path, image_file, NULL)) )){
 		uber_free(image_file);
-		uber_free(avatar_dir);
-		if(avatar_path) uber_free(avatar_path);
-		return cache_images_get_unknown_image_filename();
+		uber_free(image_dir);
+		if(image_path) uber_free(image_path);
+		return images_get_unknown_image_file();
 	}
 	
 	if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) )){
-		debug("Cleaning up old avatars from: [%s]", avatar_dir);
-		cache_dir_clean_up(avatar_dir, FALSE);
+		debug("Cleaning up old %s from: [%s]", image_type, image_dir);
+		cache_dir_clean_up(image_dir, FALSE);
 	}
 	
 	
 	debug("Setting image filename:\n\t\t[%s]", image_filename);
 	
 	uber_free(image_file);
-	uber_free(avatar_dir);
-	uber_free(avatar_path);
+	uber_free(image_dir);
+	uber_free(image_path);
 	
 	return image_filename;
 }/*cache_images_get_user_avatar_filename(service, user->user_name, user->image_url);*/

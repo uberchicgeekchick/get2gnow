@@ -2,16 +2,15 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkMessageDialog" id="profile_dialog">
+  <object class="GtkMessageDialog" id="user-profile-viewer-dialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">User Profile Viewer</property>
     <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
-    <property name="buttons">ok</property>
     <property name="use_markup">True</property>
     <child internal-child="vbox">
-      <object class="GtkVBox" id="dialog-vbox4">
+      <object class="GtkVBox" id="dialog-vbox3">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
@@ -23,7 +22,8 @@
             </child>
           </object>
           <packing>
-            <property name="position">2</property>
+            <property name="pack_type">end</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <child>
@@ -48,8 +48,8 @@
             </child>
           </object>
           <packing>
-            <property name="padding">3</property>
-            <property name="position">4</property>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -61,20 +61,126 @@
           </object>
           <packing>
             <property name="pack_type">end</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToolbar" id="users_tool_bar">
+            <property name="visible">True</property>
+            <property name="icon_size">1</property>
+            <property name="icon_size_set">True</property>
+            <child>
+              <object class="GtkToolButton" id="user_follow_tool_button">
+                <property name="visible">True</property>
+                <property name="tooltip_markup">Start following this user</property>
+                <property name="label" translatable="yes">_Follow</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-add</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="user_unfollow_tool_button">
+                <property name="visible">True</property>
+                <property name="tooltip_markup">Stop following this user</property>
+                <property name="label" translatable="yes">_Unfollow</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-remove</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="user_block_tool_button">
+                <property name="visible">True</property>
+                <property name="tooltip_markup">Block this user from seeing your updates and/or sending you any messages</property>
+                <property name="label" translatable="yes">_Block</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-stop</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="users_updates_separator_tool_item">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="user_view_unread_updates_tool_button">
+                <property name="visible">True</property>
+                <property name="tooltip_markup">View this user's unread updates</property>
+                <property name="label" translatable="yes">Read Ne_w Status Updates</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-indent</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="user_view_recent_updates_tool_button">
+                <property name="visible">True</property>
+                <property name="tooltip_markup">View this user's most recent updates</property>
+                <property name="label" translatable="yes">Read S_tatus Updates</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-home</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">end</property>
             <property name="position">1</property>
           </packing>
         </child>
         <child internal-child="action_area">
-          <object class="GtkHButtonBox" id="dialog-action_area4">
+          <object class="GtkHButtonBox" id="okay_button_action_area">
             <property name="visible">True</property>
+            <property name="has_focus">True</property>
+            <property name="is_focus">True</property>
             <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="okay_button">
+                <property name="label">gtk-ok</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
           </object>
           <packing>
+            <property name="expand">False</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
           </packing>
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="0">okay_button</action-widget>
+    </action-widgets>
   </object>
 </interface>

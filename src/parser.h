@@ -63,7 +63,7 @@
 
 #include <libsoup/soup-message.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "uberchick-tree-view.h"
 #include "users.h"
 

@@ -65,26 +65,29 @@ get2gnow_SOURCES = 													\
 	main.c						main.h								\
 	main-window.c					main-window.h							\
 	network.c					network.h							\
-	online-service.c				online-service.types.h		online-service.h		\
+	online-services.typedefs.h			online-services.rest-uri.defines.h				\
+	online-service.c				online-service.typedefs.h		online-service.h	\
 	online-service-request.c			online-service-request.h					\
 	online-services.c				online-services.h						\
 	online-services-dialog.c			online-services-dialog.h					\
-	online-services-typedefs.h											\
 	online-service-wrapper.c			online-service-wrapper.h					\
 	parser.c					parser.h							\
 	preferences.c					preferences.h							\
+	profile-manager.c				profile-manager.h						\
 	program.c					program.h							\
 	proxy.c						proxy.h								\
 	searches.c					searches.h							\
 	tabs.c						tabs.h								\
 	timer.c						timer.h								\
 	uberchick-label.c				uberchick-label.h						\
-	uberchick-tree-view.c	uberchick-tree-view.macros.h		uberchick-tree-view.h				\
+	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
+	uberchick-tree-view.c		uberchick-tree-view.macros.h		uberchick-tree-view.h			\
 	ui-utils.c					ui-utils.h							\
 	update-ids.c					update-ids.h							\
 	update-viewer.c					update-viewer.h							\
 	users-glists.c					users-glists.h							\
 	users.c				users.types.h			users.h						\
+	user-profile-viewer.c				user-profile-viewer.h						\
 	www.c						www.h								\
 
 
@@ -114,18 +117,21 @@ get2gnow_OBJECTS =					\
 	online-service-wrapper.$(OBJEXT)		\
 	parser.$(OBJEXT)				\
 	preferences.$(OBJEXT)				\
+	profile-manager.$(OBJEXT)			\
 	program.$(OBJEXT)				\
 	proxy.$(OBJEXT)					\
 	searches.$(OBJEXT)				\
 	tabs.$(OBJEXT)					\
 	timer.$(OBJEXT)					\
 	uberchick-label.$(OBJEXT)			\
+	uberchick-sexy-entry-completion.$(OBJEXT)	\
 	uberchick-tree-view.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)				\
 	update-ids.$(OBJEXT)				\
 	update-viewer.$(OBJEXT)				\
 	users-glists.$(OBJEXT)				\
 	users.$(OBJEXT)					\
+	user-profile-viewer.$(OBJEXT)			\
 	www.$(OBJEXT)					\
 
 
@@ -336,6 +342,7 @@ AM_CFLAGS=									\
 		$(get2gnow_CFLAGS)						\
 		$(UBERCHICK_CFLAGS)						\
 
+
 get2gnow_LDADD =								\
 	$(get2gnow_LIBS)
 
@@ -434,18 +441,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-wrapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/profile-manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tabs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-label.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-sexy-entry-completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-tree-view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-ids.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update-viewer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user-profile-viewer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/www.Po@am__quote@
 
 .c.o:

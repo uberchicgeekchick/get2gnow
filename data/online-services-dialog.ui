@@ -105,7 +105,8 @@
               <object class="GtkLabel" id="service_type_label">
                 <property name="sensitive">False</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Type of service</property>
+                <property name="label" translatable="yes">_Micro-blogging Service:</property>
+                <property name="use_markup">True</property>
                 <property name="use_underline">True</property>
                 <property name="mnemonic_widget">service_type_combo_box</property>
               </object>
@@ -134,12 +135,38 @@
             </child>
             <child>
               <object class="GtkButton" id="online_service_delete_button">
-                <property name="label">gtk-delete</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Delete this account.</property>
-                <property name="use_stock">True</property>
+                <child>
+                  <object class="GtkHBox" id="online_service_delete_button_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImage" id="online_service_delete_button_image">
+                        <property name="visible">True</property>
+                        <property name="stock">gtk-delete</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="online_service_delete_button_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;i&gt;_Delete&lt;/i&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">online_service_delete_button</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left_attach">2</property>
@@ -181,39 +208,44 @@
             </child>
             <child>
               <object class="GtkButton" id="online_service_new_button">
-                <property name="label">gtk-new</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
                 <accelerator key="n" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <child>
+                  <object class="GtkHBox" id="online_service_new_button_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImage" id="online_service_new_button_image">
+                        <property name="visible">True</property>
+                        <property name="stock">gtk-new</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="online_service_new_button_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">&lt;b&gt;_New&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">online_service_new_button</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left_attach">3</property>
                 <property name="right_attach">4</property>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkAlignment" id="online_service_connect_alignment">
-                <property name="visible">True</property>
-                <property name="xalign">1</property>
-                <property name="yalign">1</property>
-                <property name="xscale">0</property>
-                <child>
-                  <object class="GtkButton" id="online_service_connect_button">
-                    <property name="label">gtk-connect</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="right_attach">4</property>
-                <property name="top_attach">10</property>
-                <property name="bottom_attach">11</property>
               </packing>
             </child>
             <child>
@@ -327,6 +359,50 @@
                 <property name="bottom_attach">10</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkAlignment" id="online_service_connect_alignment">
+                <property name="visible">True</property>
+                <property name="xalign">1</property>
+                <property name="yalign">1</property>
+                <property name="xscale">0</property>
+                <child>
+                  <object class="GtkButton" id="online_service_connect_button">
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <child>
+                      <object class="GtkHBox" id="online_service_connect_button_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkImage" id="online_service_connect_button_image">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-connect</property>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="online_service_connect_button_label">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">Connec_t</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">online_service_connect_button</property>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="right_attach">4</property>
+                <property name="top_attach">10</property>
+                <property name="bottom_attach">11</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="position">2</property>
@@ -337,13 +413,38 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="cancel_button">
-                <property name="label">gtk-close</property>
+              <object class="GtkButton" id="online_services_close_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_stock">True</property>
+                <child>
+                  <object class="GtkHBox" id="online_services_close_button_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImage" id="online_services_close_button_image">
+                        <property name="visible">True</property>
+                        <property name="stock">gtk-close</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Close</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">online_services_close_button</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -353,12 +454,35 @@
             </child>
             <child>
               <object class="GtkButton" id="online_services_okay_button">
-                <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_stock">True</property>
+                <child>
+                  <object class="GtkHBox" id="online_services_okay_button_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImage" id="online_services_okay_button_image">
+                        <property name="visible">True</property>
+                        <property name="stock">gtk-ok</property>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="online_services_okay_button_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Okay</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">online_services_okay_button</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -367,12 +491,37 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="online_service_save_button">
-                <property name="label">gtk-save</property>
+              <object class="GtkButton" id="online_services_save_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <child>
+                  <object class="GtkHBox" id="online_service_save_button_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkImage" id="online_service_save_button_image">
+                        <property name="visible">True</property>
+                        <property name="stock">gtk-save</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="online_service_save_button_label">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Save</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">online_services_save_button</property>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -390,9 +539,9 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-6">cancel_button</action-widget>
+      <action-widget response="-6">online_services_close_button</action-widget>
       <action-widget response="-5">online_services_okay_button</action-widget>
-      <action-widget response="0">online_service_save_button</action-widget>
+      <action-widget response="0">online_services_save_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkListStore" id="service_type_list_store">
@@ -417,11 +566,6 @@
     <property name="stock">gtk-dialog-authentication</property>
   </object>
   <object class="GtkActionGroup" id="services_actiongroup"/>
-  <object class="GtkAction" id="services_save_action">
-    <property name="label">_Save</property>
-    <property name="tooltip">Save changes to the selected service and/or save a new service</property>
-    <property name="stock_id">gtk-save</property>
-  </object>
   <object class="GtkListStore" id="online_services_keys_list_store">
     <columns>
       <!-- column-name OnlineServiceKey -->

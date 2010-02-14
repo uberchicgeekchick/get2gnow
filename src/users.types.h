@@ -64,16 +64,13 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.types.h"
 
 
 G_BEGIN_DECLS
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-typedef struct _User User;
-typedef struct _UserStatus UserStatus;
-
 struct _User {
 	OnlineService		*service;
 	
@@ -87,10 +84,20 @@ struct _User {
 	
 	gchar			*location;
 	gchar			*bio;
-	gchar			*url;
+	gchar			*uri;
 	
 	gchar			*image_uri;
 	gchar			*image_file;
+	
+	gboolean		profile_background_tile;
+	gchar			*profile_background_uri;
+	gchar			*profile_background_file;
+	
+	gchar			*profile_background_color;
+	gchar			*profile_text_color;
+	gchar			*profile_link_color;
+	gchar			*profile_sidebar_fill_color;
+	gchar			*profile_sidebar_border_color;
 	
 	gulong			updates;
 	gulong			following;

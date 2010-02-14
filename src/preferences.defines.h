@@ -64,11 +64,11 @@ G_BEGIN_DECLS
 
 #define	PREFS_TIMELINE_RELOAD_MINUTES				GCONF_PATH "/ui/tabs/reload"
 
+#define PREFS_AUTOLOAD_FOLLOWING				GCONF_PATH "/ui/start-up/tabs/following"
+#define PREFS_AUTOLOAD_HOMEPAGE					GCONF_PATH "/ui/start-up/tabs/homepage"
 #define	PREFS_AUTOLOAD_DMS					GCONF_PATH "/ui/start-up/tabs/dms"
 #define	PREFS_AUTOLOAD_REPLIES					GCONF_PATH "/ui/start-up/tabs/replies"
 #define PREFS_AUTOLOAD_BEST_FRIENDS				GCONF_PATH "/ui/start-up/tabs/best_friends"
-#define PREFS_AUTOLOAD_FOLLOWING				GCONF_PATH "/ui/start-up/tabs/following"
-#define PREFS_AUTOLOAD_HOMEPAGE					GCONF_PATH "/ui/start-up/tabs/homepage"
 
 #define	PREFS_UPDATES_HOME_TIMELINE				GCONF_PATH "/ui/start-up/tabs/additional_timeline"
 

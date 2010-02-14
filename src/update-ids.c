@@ -64,8 +64,8 @@
 #include "gconfig.h"
 
 #include "preferences.defines.h"
-#include "online-services-typedefs.h"
-#include "online-service.types.h"
+#include "online-services.typedefs.h"
+#include "online-service.typedefs.h"
 
 
 /********************************************************************************

@@ -62,6 +62,9 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <sys/stat.h>
+#include <glib/gstdio.h>
+
 #include <glib.h>
 #include <glib/gprintf.h>
 

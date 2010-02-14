@@ -137,20 +137,6 @@
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/following</key>
-			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/following</applyto>
-			<owner>@PACKAGE_NAME@</owner>
-			<type>bool</type>
-			<default>true</default>
-			<locale name="C">
-				<short>Rather or not to open a tab displaying these updates at start-up.</short>
-				<long>
-					Rather or not to open a tab displaying these updates at start-up.
-				</long>
-			</locale>
-		</schema>
-		
-		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/ui/start-up/tabs/homepage</key>
 			<applyto>/apps/@PACKAGE_NAME@/ui/start-up/tabs/homepage</applyto>
 			<owner>@PACKAGE_NAME@</owner>
@@ -780,8 +766,8 @@
 			<type>int</type>
 			<default>420</default>
 			<locale name="C">
-				<short>UpdateViewer's vertical slider bar's position</short>
-				<long>UpdateViewer's vertical slider bar's position.</long>
+				<short>@PACKAGE_NAME@'s UpdateViewer's size/position within the Main Window</short>
+				<long>@PACKAGE_NAME@'s UpdateViewer's size/position within the Main Window.</long>
 			</locale>
 		</schema>
 		

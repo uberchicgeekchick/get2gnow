@@ -69,7 +69,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.types.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
@@ -86,9 +86,9 @@ G_BEGIN_DECLS
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
 
-gboolean update_ids_check( OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest );
-void update_ids_get( OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id );
-void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id );
+gboolean update_ids_check(OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest);
+void update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id);
+void update_ids_set(OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id);
 
 
 /********************************************************************************

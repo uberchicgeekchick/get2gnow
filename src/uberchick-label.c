@@ -70,7 +70,7 @@
 #include "parser.h"
 #include "gconfig.h"
 #include "online-services.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "online-service-request.h"
 #include "preferences.defines.h"

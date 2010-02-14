@@ -70,15 +70,16 @@
 #include "www.h"
 #include "update-ids.h"
 
-#include "online-services.defines.h"
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
+#include "online-services.rest-uris.defines.h"
 #include "online-services.h"
-#include "online-service-wrapper.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 
-#include "online-services-dialog.h"
+#include "online-service-wrapper.h"
 #include "online-service-request.h"
+
+#include "online-services-dialog.h"
 
 #include "best-friends.h"
 
@@ -117,12 +118,6 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, User *user);
 
-static gboolean online_service_best_friends_load( OnlineService *service );
-static gboolean online_service_best_friends_save( OnlineService *service );
-static void online_service_best_friends_append( OnlineService *service, const gchar *user_name, gdouble user_status_id, gboolean save_gslist);
-static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name );
-static gboolean online_service_best_friends_remove( OnlineService *service, const gchar *user_name );
-
 static void online_service_message_restarted(SoupMessage *xml, OnlineService *service);
 
 static void online_service_cookie_jar_open(OnlineService *service);
@@ -157,8 +152,6 @@ MicroBloggingServices MicroBloggingServicesList[]={
 #define	ONLINE_SERVICE_ENABLED				PREFS_ONLINE_SERVICE "/enabled"
 #define	ONLINE_SERVICE_POST_TO_BY_DEFAULT		PREFS_ONLINE_SERVICE "/post_to_by_default"
 #define	ONLINE_SERVICE_LAST_REQUEST			PREFS_ONLINE_SERVICE "/timestamps/last_request"
-
-#define	ONLINE_SERVICE_BEST_FRIENDS			PREFS_ONLINE_SERVICE "/best_friends"
 
 
 #ifdef GNOME_ENABLE_DEBUG
@@ -225,13 +218,16 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	service->uri=g_strdup(uri);
 	
 	service->user_name=g_strdup(user_name);
-	service->nick_name=g_strdup(service->nick_name);
+	service->user_profile=NULL;
+	service->nick_name=NULL;
 	
+	service->enabled=TRUE;
 	service->post_to_enabled=service->post_to_by_default=TRUE;
 	service->connected=service->has_loaded=service->authenticated=FALSE;
 	
 	service->session=NULL;
-	service->status=NULL;
+	/* service->status is set in 'online-service-wrapper.c' after processing a request. */
+	service->status=g_strdup("newly constructed");
 	service->logins=0;
 	
 	service->password=NULL;
@@ -282,7 +278,8 @@ OnlineService *online_service_open(const gchar *account_key){
 	uber_free(prefs_auth_path);
 	
 #ifdef HAVE_GNOME_KEYRING
-	if(!(keyring_get_password(&service))) service->password=NULL;
+	if(!(keyring_get_password(&service)))
+		service->password=g_strdup("");
 #else
 	prefs_auth_path=g_strdup_printf(ONLINE_SERVICE_PASSWORD, service->key);
 	gconfig_get_string(prefs_auth_path, &service->password);
@@ -303,7 +300,7 @@ OnlineService *online_service_open(const gchar *account_key){
 	
 	online_service_display_debug_details(service, FALSE, "opened");
 	
-	online_service_best_friends_load(service);
+	best_friends_load(service);
 	
 	return service;
 }/*online_service_open*/
@@ -312,11 +309,11 @@ OnlineService *online_service_new(const gchar *uri, const gchar *user_name, cons
 	debug("Creating new OnlineService for '%s@%s'.", user_name, uri);
 	OnlineService *service=online_service_constructor(uri, user_name);
 	
-	service->post_to_enabled=service->post_to_by_default=post_to_by_default;
 	service->enabled=enabled;
-	service->auto_connect=auto_connect;
 	service->password=g_strdup(password);
 	service->https=https;
+	service->post_to_enabled=service->post_to_by_default=post_to_by_default;
+	service->auto_connect=auto_connect;
 	
 	online_service_display_debug_details(service, TRUE, "created");
 	
@@ -325,11 +322,12 @@ OnlineService *online_service_new(const gchar *uri, const gchar *user_name, cons
 
 gboolean online_service_save(OnlineService *service, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default){
 	if(!service) return FALSE;
+	
 	service->enabled=enabled;
-	service->https=https;
 	service->password=g_strdup(password);
-	service->auto_connect=auto_connect;
+	service->https=https;
 	service->post_to_enabled=service->post_to_by_default=post_to_by_default;
+	service->auto_connect=auto_connect;
 	
 	debug("Preparing to save OnlineService.  GUID: <%s>; key: (%s).", service->guid, service->key);
 	
@@ -402,232 +400,21 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action){
 	if(!service) return;
 	gchar *prefs_auth_path=g_strdup_printf(PREFS_ONLINE_SERVICE, service->key);
-	debug("OnlineService: %s %s service.  GCONF path: [%s]", action, (new_service ?"created" :"existing"), prefs_auth_path );
+	debug("OnlineService: <%s>, or a child request, has been <%s>.  GCONF path: [%s]", action, (new_service ?"created" :"existing"), prefs_auth_path );
+	g_free(prefs_auth_path);
 	debug("OnlineService account details guid: %s; key: %s.'\n\t\t\t[%sabled]", service->guid, service->key, (service->enabled?"en":"dis") );
 	debug("Micro-Blogging Service: %s @ service uri: %s", micro_blogging_service_to_string(service->micro_blogging_service), service->uri );
 	debug("Connectng using: https: [%s]; user_name: %s; password: %s; auto_connect: [%s]", (service->https ?_("TRUE") :_("FALSE")), service->user_name, (DEBUG_DISPLAY_PASSWORDS ?service->password :"[*passwords are hidden out side of debug mode*]"), (service->auto_connect ?_("TRUE") :_("FALSE") ) );
 	debug("By default all updates will%s be posted to this OnlineService.", (service->post_to_by_default?"" :" not"));
 	debug("Posting updates to <%s> is %sabled.", service->key, (service->post_to_enabled?"en" :" dis"));
-	g_free(prefs_auth_path);
 }/*online_service_display_debug_details(service, "action");*/
 
-static gboolean online_service_best_friends_load( OnlineService *service ){
-	if(!service) return FALSE;
-	gchar *gconf_prefs_path=g_strdup_printf( ONLINE_SERVICE_BEST_FRIENDS, service->key );
-	gboolean loaded=gconfig_get_list_string( gconf_prefs_path, &service->best_friends );
-	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
-	uber_free(gconf_prefs_path);
-	return loaded;
-}/*online_service_best_friends_load(service);*/
-
-static gboolean online_service_best_friends_save( OnlineService *service ){
-	if(!service) return FALSE;
-	gchar *gconf_prefs_path=g_strdup_printf( ONLINE_SERVICE_BEST_FRIENDS, service->key );
-	service->best_friends=g_slist_sort( service->best_friends, (GCompareFunc)strcasecmp );
-	gboolean saved=gconfig_set_list_string( gconf_prefs_path, service->best_friends );
-	uber_free(gconf_prefs_path);
-	service->best_friends=g_slist_nth( service->best_friends, 0 );
-	return saved;
-}/*online_service_best_friends_save(service);*/
-
-gint online_service_best_friends_tree_store_fill( OnlineService *service, GtkTreeStore *tree_store ){
-	GSList *best_friends=NULL;
-	debug("Loading <%s>'s best_friends.", service->key );
-	service->best_friends_total=0;
-	for( best_friends=g_slist_nth(service->best_friends, 0); best_friends; best_friends=best_friends->next, service->best_friends_total++ )
-		online_service_best_friends_append( service, (const gchar *)best_friends->data, 0.0, FALSE);
-	
-	return service->best_friends_total;
-}/*online_service_best_friends_tree_store_fill(service);*/
-
-gint online_service_best_friends_tree_store_validate( OnlineService *service, GtkTreeStore *tree_store ){
-	GSList *best_friends=NULL;
-	service->best_friends_total=0;
-	for( best_friends=g_slist_nth( service->best_friends, 0 ); best_friends; best_friends=best_friends->next)
-		online_service_fetch_profile( service, (const gchar *)best_friends->data, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_best_friends_tree_store_update_check );
-	
-	return service->best_friends_total;
-}/*online_service_best_friends_tree_store_validate( service, tree_store );*/
-
-gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name ){
-	if(!service) return FALSE;
-	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return FALSE;
-	GSList *best_friends=NULL;
-	for( best_friends=g_slist_nth(service->best_friends, 0); best_friends; best_friends=best_friends->next )
-		if(!strcasecmp( user_name, (gchar *)best_friends->data ))
-			return TRUE;
-	
-	return FALSE;
-}/*online_service_is_user_best_friend( service, user_name );*/
-
-gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name ){
-	if(!service) return FALSE;
-	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return FALSE;
-	gboolean found=online_service_is_user_best_friend( service, user_name );
-	
-	if(found){
-		debug( "Cannot add: %s to <%s>'s best_friends.  %s is already listed in <%s>'s best friends list.", user_name, service->guid, user_name, service->guid );
-		statusbar_printf( "%s is already one of your, <%s>'s, best friends.", user_name, service->guid );
-	}else{
-		debug( "Attempting to load: %s's profile to add them to <%s>'s best_friends.", user_name, service->guid );
-		statusbar_printf( "Adding %s's to your, <%s>, best friends.", user_name, service->guid );
-		online_service_fetch_profile( service, user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_best_friends_tree_store_update_check );
-	}
-	
-	return !found;
-}/*online_service_best_friends_add( OnlineService *service, const gchar *user_name );*/
-
-gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name ){
-	if(!service) return FALSE;
-	if(!(service->best_friends && G_STR_N_EMPTY(user_name) )) return FALSE;
-	gboolean found=online_service_is_user_best_friend( service, user_name );
-	
-	if(!found){
-		debug( "Cannot remove: %s from <%s>'s best_friends.  %s was not found in <%s>'s best friends list.", user_name, service->guid, user_name, service->guid );
-		statusbar_printf( "%s is not one of your, <%s>'s, best friends.", user_name, service->guid );
-		online_service_request_best_friend_drop(service, parent, user_name);
-	}else{
-		debug( "Attempting to load: %s's profile to remove them from <%s>'s best_friends.", user_name, service->guid );
-		statusbar_printf( "Removing %s's from your, <%s>, best friends.", user_name, service->guid );
-		online_service_fetch_profile( service, user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_best_friends_tree_store_update_check );
-	}
-	
-	return found;
-}/*online_service_best_friends_drop( service, user_name );*/
-
-void online_service_best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user){
-	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
-	if(!service) return;
-	if(!user){
-		debug( "User %s's profile could not be found, on %s.  Their user name has most likely changed.  Though unlikely its possible the netwok connection may have been lost.  Unlikely because prior 'status' checks would have kept this method from being called.", user->user_name, service->guid );
-		online_service_best_friends_confirm_clean_up( service, user->user_name );
-		return;
-	}
-	
-	if(!online_service_is_user_best_friend(service, user->user_name)){
-		debug( "Adding best friend %s, on %s to the best friends tree_store & GSList.", user->user_name, service->guid );
-		online_service_best_friends_append( service, user->user_name, user->status->id, TRUE);
-	}else{
-		debug( "Removing best friend %s, on %s from the best friends tree_store & GSList.", user->user_name, service->guid );
-		online_service_best_friends_remove( service, user->user_name );
-	}
-}/*online_service_best_friends_tree_store_update_check( online_service_wrapper, xml, user );*/
-
-static void online_service_best_friends_append( OnlineService *service, const gchar *user_name, gdouble user_status_id, gboolean save_gslist){
-	if(!service) return;
-	static GtkTreeStore *tree_store=NULL;
-	if(!tree_store) tree_store=best_friends_get_tree_store();
-	
-	if(save_gslist){
-		service->best_friends=g_slist_append( service->best_friends, g_strdup(user_name) );
-		online_service_best_friends_save(service);
-	}
-	
-	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user_name );
-	gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-	update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	if(save_gslist)
-		update_ids_set( service, user_timeline, ( (newest_update_id>user_status_id) ?newest_update_id :user_status_id ), ( (unread_update_id>user_status_id) ?unread_update_id :user_status_id ), user_status_id );
-	uber_free(user_timeline);
-	
-	gchar *best_friend_user_name_and_onLine_service_key=g_strdup_printf("%s@%s", user_name, service->uri);
-	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	gtk_tree_store_append(tree_store, iter, NULL);
-	gtk_tree_store_set(
-				tree_store, iter,
-					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, service,
-					STRING_BEST_FRIEND_USER, user_name,
-					STRING_BEST_FRIEND_ONlINE_SERVICE_GUID, service->guid,
-					STRING_BEST_FRIEND_USER_NAME, user_name,
-					GUINT_BEST_FRIENDS_UNREAD_UPDATES, 0,
-					GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID, ( (unread_update_id>user_status_id) ?unread_update_id :user_status_id ),
-					STRING_BEST_FRIEND_USER_NAME_AND_ONlINE_SERVICE_KEY, best_friend_user_name_and_onLine_service_key,
-				-1
-	);
-	uber_free(best_friend_user_name_and_onLine_service_key);
-	uber_free(iter);
-	online_services_best_friends_total_update(1);
-}/*online_service_best_friends_append(service, user->name, user->status->id, TRUE|FALSE);*/
-
-static gboolean online_service_best_friends_confirm_clean_up( OnlineService *service, const gchar *user_name ){
-	if(!service) return FALSE;
-	gchar *message=NULL;
-	debug( "Failed to fetch <%s>'s best_friend: %s.", service->guid, user_name );
-	statusbar_printf( "<%s> loading best friend from: %s [failed]", service->guid, user_name );
-	if(online_service_request_popup_confirmation_dialog(
-			ONLINE_SERVICE_CONFIRM_BEST_FRIENDS_CLEAN_UP,
-			_("Unable to find a best friend:"),
-			(message=g_strdup_printf( "%s was unable to load one of your best friends.\n%s could not be found on <%s>.\nThis usually means you're not connected to <%s>\nOr your best friend may have changed their user name.\n\nWould you like to remove %s from <%s>'s best friends?", _(GETTEXT_PACKAGE), user_name, service->guid, service->guid, user_name, service->guid )),
-			NULL, NULL
-	)){
-		uber_free(message);
-		return online_service_best_friends_remove( service, user_name );
-	}
-	
-	uber_free(message);
-	return FALSE;
-}/*online_service_best_friends_confirm_clean_up( service, user_name );*/
-
-static gboolean online_service_best_friends_remove( OnlineService *service, const gchar *user_name ){
-	if(!service) return FALSE;
-	static GtkTreeStore *tree_store=NULL;
-	if(!tree_store) tree_store=best_friends_get_tree_store();
-	
-	GSList *best_friends=NULL;
-	for(best_friends=g_slist_nth(service->best_friends, 0); best_friends; best_friends=best_friends->next)
-		if(g_str_equal((gchar *)best_friends->data, user_name)){
-			service->best_friends=g_slist_remove(service->best_friends, best_friends->data);
-			break;
-		}
-	online_service_best_friends_save(service);
-	
-	OnlineService *service_at_index=NULL;
-	gchar *user_name_at_index=NULL;
-	gint best_friends_total=online_services_best_friends_total_update(0);
-	for(gint i=0; i<=best_friends_total; i++){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(tree_store), iter, path)){
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		gtk_tree_model_get(
-				GTK_TREE_MODEL(tree_store), iter,
-					ONLINE_SERVICE_BEST_FRIEND_ONLINE_SERVICE, &service_at_index,
-					STRING_BEST_FRIEND_USER, &user_name_at_index,
-				-1
-		);
-		
-		if(!(service==service_at_index && g_str_equal(user_name, user_name_at_index))){
-			uber_free(user_name_at_index);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		debug("Removing best friend: %s from iter at index: %d", user_name_at_index, i);
-		online_services_best_friends_total_update(-1);
-		service->best_friends_total--;
-		gtk_tree_store_remove(tree_store, iter);
-		
-		uber_free(user_name_at_index);
-		gtk_tree_path_free(path);
-		uber_free(iter);
-		return TRUE;
-	}
-	debug("Could not remove %s, on %s.  The user could not be found.", user_name, service->guid);
-	return FALSE;
-}/*online_service_best_friends_remove( service, user_name );*/
-
-void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func ){
+void online_service_fetch_profile(OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func){
 	if(!service) return;
 	gchar *user_profile_uri=g_strdup_printf(API_USER_PROFILE, user_name);
 	online_service_request(service, QUEUE, user_profile_uri, online_service_user_parser_func, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, NULL, NULL);
 	uber_free(user_profile_uri);
-}/*online_service_best_friend_fetch_profile( OnlineService *service, const gchar *user_name );*/
+}/*online_service_fetch_profile(OnlineService *service, const gchar *user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile);*/
 
 gboolean online_service_connect(OnlineService *service){
 	if(!service) return FALSE;
@@ -701,7 +488,7 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	if(!temporary_connection) online_services_increment_connected(service);
 	
-	online_service_fetch_profile( service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile );
+	online_service_fetch_profile(service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile);
 	
 	return TRUE;
 }/*online_service_login(service, TRUE|FALSE);*/
@@ -736,7 +523,7 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	if(!service) return;
-	if(service->nick_name){
+	if(service->user_profile && service->nick_name){
 		if(user) user_free(user);
 		return;
 	}
@@ -744,6 +531,7 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, So
 		debug("Failed to validate user profile for <%s>.  Please check your user name and/or password.  %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		service->nick_name=g_strdup(service->user_name);
 		service->has_loaded=service->authenticated=FALSE;
+		service->user_profile=NULL;
 		return;
 	}
 	service->connected=service->authenticated=TRUE;
@@ -751,7 +539,7 @@ static void online_service_set_profile(OnlineServiceWrapper *service_wrapper, So
 	service->nick_name=g_strdup(user->nick_name);
 	update_viewer_postable_online_services_append(service);
 	debug("Setting nick_name for: %s to %s.", service->key, service->nick_name);
-	user_free(user);
+	service->user_profile=user;
 }/*online_service_set_profile(online_service_wrapper, xml, user);*/
 
 static void online_service_http_authenticate(SoupSession *session, SoupMessage *xml, SoupAuth *auth, gboolean retrying, OnlineService *service){
@@ -813,8 +601,13 @@ gboolean online_service_refresh(OnlineService *service){
 }/*online_service_refresh(service);*/
 
 gboolean online_service_validate_session(OnlineService *service, const gchar *requested_uri){
-	if(!( (service && service->session) && SOUP_IS_SESSION(service->session) )) return FALSE;
-	else return TRUE;
+	if(!( ((service && service->enabled && service->auto_connect && service->connected)) && (service->session && SOUP_IS_SESSION(SOUP_SESSION(service->session))) )){
+		debug("OnlineService <%s> has become invalid/disconnected while requesting: <%s> and will be cancelled.", (service? (G_STR_N_EMPTY(service->key) ?service->key :"") :""), requested_uri);
+		if(service && service->key)
+			online_service_display_debug_details(service, FALSE, "canceled");
+		return FALSE;
+	}
+	return TRUE;
 }/*online_service_validate_session(service, requested_uri);*/
 
 void online_service_disconnect(OnlineService *service, gboolean no_state_change){
@@ -829,6 +622,10 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 		uber_object_unref(service->session);
 	}
 	if(service->nick_name) uber_free(service->nick_name);
+	if(service->user_profile){
+		user_free(service->user_profile);
+		service->user_profile=NULL;
+	}
 	service->has_loaded=service->connected=service->authenticated=FALSE;
 	service->logins=0;
 	debug("Disconnected from OnlineService [%s].", service->guid);
@@ -916,8 +713,10 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			debug("form_data: [%s]", (gchar *)form_data);
 			xml=soup_message_new("POST", requested_uri);
 			
-			soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
-			soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION PACKAGE_RELEASE);
+			if(g_strrstr(requested_uri, service->uri)){
+				soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
+				soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION PACKAGE_RELEASE);
+			}
 			
 			if(form_data)
 				soup_message_set_request(
@@ -1101,12 +900,12 @@ void online_service_free(OnlineService *service, gboolean no_state_change){
 	timer_free(service->timer);
 	service->timer=NULL;
 	
+	if(service->user_profile){
+		user_free(service->user_profile);
+		service->user_profile=NULL;
+	}
+	
 	debug("Closing %s account", service->guid );
-	/*
-	 * service->status maybe NULL.
-	 * so it needs to be last to make sure every thing else is released.
-	 * see: program.c::program_uber_free();
-	 */
 	if(!users_glists_free_lists(service, GetBoth)){
 		users_glists_free_lists(service, GetFriends);
 		users_glists_free_lists(service, GetFollowers);

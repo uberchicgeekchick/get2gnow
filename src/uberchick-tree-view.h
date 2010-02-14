@@ -51,7 +51,7 @@
 
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "users.types.h"
 
 G_BEGIN_DECLS
@@ -80,6 +80,7 @@ struct _UberChickTreeViewClass {
 typedef enum _UberChickTreeViewListStoreColumn{	/********************************************************************************/
 	GUINT_UBERCHICK_TREE_VIEW_INDEX,		/*	The update's index in the list-store.                                   */
 	GDOUBLE_UPDATE_ID,				/*	Update's ID.								*/
+	GSTRING_UPDATE_ID_STR,				/*	Update's ID string.							*/
 	GDOUBLE_USER_ID,				/*	User's ID.								*/
 	STRING_USER,					/*	Username string.							*/
 	STRING_NICK,					/*	Author name string.							*/
@@ -99,7 +100,7 @@ typedef enum _UberChickTreeViewListStoreColumn{	/*******************************
 	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
 	GBOOLEAN_RETWEET,				/*	If the update's a retweet or not					*/
 	GCHARARRY_RETWEETED_BY,				/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
-	STRING_SEXY_STATUS_UPDATE,			/* Update's string as markup for display.					*/
+	STRING_SEXY_STATUS_UPDATE,			/*	Update's string as markup for display.					*/
 							/********************************************************************************/
 } UberChickTreeViewListStoreColumn;
 
@@ -109,11 +110,13 @@ GType uberchick_tree_view_get_type(void) G_GNUC_CONST;
 
 
 UberChickTreeView *uberchick_tree_view_new(gint page, const gchar *timeline, OnlineService *service);
+void uberchick_tree_view_null_and_void_catch_all_method(UberChickTreeView *uberchick_tree_view);
+
 const gchar *uberchick_tree_view_get_timeline(UberChickTreeView *uberchick_tree_view);
 
-GtkVBox *uberchick_tree_view_get_child(UberChickTreeView *uberchick_tree_view);
-GtkHBox *uberchick_tree_view_get_tab(UberChickTreeView *uberchick_tree_view);
-GtkLabel *uberchick_tree_view_get_menu(UberChickTreeView *uberchick_tree_view);
+GtkWidget *uberchick_tree_view_get_child_widget(UberChickTreeView *uberchick_tree_view);
+GtkWidget *uberchick_tree_view_get_tab_widget(UberChickTreeView *uberchick_tree_view);
+GtkWidget *uberchick_tree_view_get_menu_widget(UberChickTreeView *uberchick_tree_view);
 
 OnlineService *uberchick_tree_view_get_service(UberChickTreeView *uberchick_tree_view);
 GtkTreeStore *uberchick_tree_view_get_tree_store(UberChickTreeView *uberchick_tree_view);

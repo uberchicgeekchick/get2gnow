@@ -72,10 +72,10 @@
 
 #include "gconfig.h"
 
-#include "online-services-typedefs.h"
-#include "online-services.defines.h"
+#include "online-services.typedefs.h"
+#include "online-services.rest-uris.defines.h"
 #include "online-services.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
@@ -166,10 +166,11 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		return NULL;
 	}
 	
-	gchar *image_filename=NULL, *error_message=NULL;
-	gboolean new_image=FALSE;
 	gchar *image_filename_dir=NULL;
 	gchar *image_filename_directory=NULL;
+	
+	gchar *image_filename=NULL;
+	gboolean new_image=images_save_image(service, xml, requested_uri, network_image_dl->filename, &image_filename);
 	
 	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(network_image_dl->uberchick_tree_view);
 	if(network_image_dl->retweet||monitoring==Searches){
@@ -177,26 +178,8 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		image_filename_directory=cache_dir_test(image_filename_dir, TRUE);
 	}
 	
-	if(!(www_xml_error_check(service, requested_uri, xml, &error_message))){
-		debug("Failed to download and save <%s> as <%s>.", requested_uri, network_image_dl->filename);
-		debug("Detailed error message: %s.", error_message);
-		image_filename=cache_images_get_unknown_image_filename();
-		main_window_statusbar_printf("Error adding avatar to UberChickTreeView.  GNOME's unknown-image will be used instead.");
-	}else{
-		debug("Saving avatar to file: %s", network_image_dl->filename);
-		if(!(g_file_set_contents(
-					network_image_dl->filename,
-						xml->response_body->data,
-						xml->response_body->length,
-					NULL
-		)))
-			image_filename=cache_images_get_unknown_image_filename();
-		else{
-			new_image=TRUE;
-			image_filename=g_strdup(network_image_dl->filename);
-		}
+	if(!network_image_dl->retweet && monitoring!=Searches)
 		main_window_statusbar_printf("New avatar added to UberChickTreeView.");
-	}
 	
 	uberchick_tree_view_set_image(network_image_dl->uberchick_tree_view, image_filename, network_image_dl->iter);
 	
@@ -209,7 +192,6 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 		uber_free(image_filename_directory);
 		uber_free(image_filename_dir);
 	}
-	uber_free(error_message);
 	uber_free(image_filename);
 	network_uberchick_tree_view_image_dl_free(network_image_dl);
 	return NULL;
@@ -225,13 +207,11 @@ static void network_uberchick_tree_view_image_dl_free(NetworkImageDL *network_im
 
 void network_post_status(gchar *update){
 	if(G_STR_EMPTY(update)) return;
-	
 	online_services_request(POST, API_POST_STATUS, NULL, network_update_posted, "post->update", update);
 }/*network_post_status("what are you doing");*/
 
 void network_send_message(OnlineService *service, const gchar *friend, gchar *dm){
 	if(G_STR_EMPTY(dm)) return;
-	
 	online_service_request(service, POST, API_SEND_MESSAGE, NULL, network_update_posted, (gchar *)friend, dm);
 }/*network_send_message(service, friend, dm);*/
 
@@ -310,7 +290,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	UberChickTreeView *uberchick_tree_view=(UberChickTreeView *)online_service_wrapper_get_user_data(service_wrapper);
+	UberChickTreeView *uberchick_tree_view=UBERCHICK_TREE_VIEW(online_service_wrapper_get_user_data(service_wrapper));
 	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(uberchick_tree_view);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	if(!IS_UBERCHICK_TREE_VIEW(uberchick_tree_view))
@@ -345,7 +325,6 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case DMs:
 		case Replies:
 		case Faves:
-		case Updates:
 		case ReTweets:
 		case Timelines:
 		case Users:

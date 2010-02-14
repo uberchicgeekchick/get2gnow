@@ -64,7 +64,7 @@
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "users.types.h"
 
 
@@ -80,15 +80,13 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element);
 
 void user_free(User *user);
 
-UserStatus *user_status_parse_from_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
+UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
 gboolean user_status_notify_on_timeout(UserStatus *status);
 gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean use_gmt);
 gint update_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt);
 
 void user_status_free(UserStatus *status);
-
-void user_profile_viewer_show(OnlineService *service, const gchar *user_name, GtkWindow *parent);
 
 #endif /*__USERS_H__*/
 /**********************************************************************

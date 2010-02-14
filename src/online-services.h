@@ -73,7 +73,7 @@
 #include <libsoup/soup.h>
 
 #include "online-service.h"
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 
 
 /*********************************************************************
@@ -92,12 +92,13 @@ gboolean online_services_reconnect(void);
 gboolean online_services_refresh(void);
 void online_services_disconnect(void);
 
+void online_services_uri_clicked(GtkWidget *widget, const gchar *uri);
+
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default);
 void online_services_delete_service(OnlineService *service);
 
-
-void online_services_uri_clicked(GtkWidget *widget, const gchar *uri);
-
+GList *online_services_get_accounts(void);
+gboolean online_services_is_user_name_mine(OnlineService *selected_online_service, const gchar *user_name);
 
 /**
  * @returns:	-2 if services->total equals 0
@@ -118,14 +119,6 @@ gint online_services_has_connected_twitter(guint count);
 gint online_services_has_connected_other(guint count);
 
 OnlineService *online_services_get_service_by_key(const gchar *online_service_key);
-gint online_services_best_friends_tree_store_fill(GtkTreeStore *tree_store);
-gint online_services_best_friends_tree_store_validate(GtkTreeStore *tree_store);
-void online_services_best_friends_tree_store_free(GtkTreeStore *tree_store);
-gint online_services_best_friends_total_update(gint best_friends_to_add);
-gdouble online_services_best_friends_tree_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store);
-gboolean online_services_best_friends_tree_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id, GtkTreeStore *tree_store);
-gboolean online_services_is_user_best_friend(OnlineService *service, const gchar *user_name);
-
 OnlineService *online_services_connected_get_first(void);
 OnlineService *online_services_connected_get_last(void);
 

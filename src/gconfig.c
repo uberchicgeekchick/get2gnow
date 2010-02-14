@@ -73,12 +73,36 @@
  ********************************************************/
 typedef struct {
 	GConfClient *gconf_client;
+	
+	gchar		*cached_key_bool;
+	gboolean	cached_value_bool;
+
+	gchar		*cached_key_int;
+	gint		cached_value_int;
+
+	gchar		*cached_key_float;
+	gfloat		cached_value_float;
+
+	gchar		*cached_key_string;
+	gchar		*cached_value_string;
+
+	gchar		*cached_key_list;
+	GSList		*cached_value_list;
+	GConfValueType	cached_type_list;
 } GConfigPriv;
 
 typedef struct {
 	GConfigNotifyFunc	func;
 	gpointer		user_data;
 } GConfigNotifyData;
+
+typedef enum {
+	GConfigBool,
+	GConfigInt,
+	GConfigFloat,
+	GConfigString,
+	GConfigList,
+} GConfigSupportedValue;
 
 #define DEBUG_DOMAINS "OnlineServices:Authentication:Preferences:Settings:Setup:Start-Up:gconfig.c"
 #include "debug.h"
@@ -88,21 +112,8 @@ typedef struct {
 #define	GET_PRIV(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_GCONFIG, GConfigPriv))
 G_DEFINE_TYPE(GConfig, gconfig, G_TYPE_OBJECT);
 
-static GConfig *gconfig=NULL;
-static GConfigPriv *gconfig_priv=NULL;
-
-static gchar *cached_bool_key=NULL;
-static gboolean cached_bool_value=FALSE;
-
-static gchar *cached_int_key=NULL;
-static int cached_int_value=0;
-
-static gchar *cached_float_key=NULL;
-static float cached_float_value=0.0;
-
-static gchar *cached_string_key=NULL;
-static gchar *cached_string_value=NULL;
-
+static GConfig		*gconfig=NULL;
+static GConfigPriv	*gconfig_priv=NULL;
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -110,6 +121,13 @@ static gchar *cached_string_value=NULL;
 static void gconfig_class_init(GConfigClass *class);
 static void gconfig_init(GConfig *gconfig);
 static void gconfig_finalize(GObject *object);
+
+static gboolean gconfig_check_cached_bool(const gchar *key, gboolean *value);
+static gboolean gconfig_check_cached_int(const gchar *key, gint *value);
+static gboolean gconfig_check_cached_float(const gchar *key, gfloat *value);
+static gboolean gconfig_check_cached_string(const gchar *key, gchar **value);
+static gboolean gconfig_check_cached_list(const gchar *key, GSList **value);
+static gboolean gconfig_check_cached(GConfigSupportedValue which_cache, const gchar *key);
 
 static void gconfig_suggest_sync(const gchar *gtype, const gchar *key);
 static void gconfig_print_list_values(const gchar *key, GSList *value, GConfValueType list_type);
@@ -130,33 +148,68 @@ static void gconfig_init(GConfig *gconfig){
 
 	gconf_client_add_dir(gconfig_priv->gconf_client, GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
 	gconf_client_add_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, GCONF_CLIENT_PRELOAD_NONE, NULL);
-}
+
+	gconfig_priv->cached_key_bool=NULL;
+	gconfig_priv->cached_value_bool=FALSE;
+
+	gconfig_priv->cached_key_int=NULL;
+	gconfig_priv->cached_value_int=0;
+
+	gconfig_priv->cached_key_float=NULL;
+	gconfig_priv->cached_value_float=0.0;
+
+	gconfig_priv->cached_key_string=NULL;
+	gconfig_priv->cached_value_string=NULL;
+
+	gconfig_priv->cached_key_list=NULL;
+	gconfig_priv->cached_value_list=NULL;
+}/*gconfig_init(gconfig);*/
 
 static void gconfig_finalize(GObject *object){
-	if(gconfig && gconfig_priv && gconfig_priv->gconf_client){
+	if((!(gconfig && gconfig_priv))){
+		G_OBJECT_CLASS(gconfig_parent_class)->finalize(object);
+		return;
+	}
+	
+	if(gconfig_priv->cached_key_bool)
+		uber_free(gconfig_priv->cached_key_bool);
+	
+	if(gconfig_priv->cached_key_int)
+		uber_free(gconfig_priv->cached_key_int);
+	
+	if(gconfig_priv->cached_key_float)
+		uber_free(gconfig_priv->cached_key_float);
+	
+	if(gconfig_priv->cached_key_list)
+		uber_free(gconfig_priv->cached_key_list);
+	
+	if(gconfig_priv->cached_value_list)
+		uber_slist_free(gconfig_priv->cached_value_list);
+	
+	if(gconfig_priv->cached_key_string)
+		uber_free(gconfig_priv->cached_key_string);
+	
+	if(gconfig_priv->cached_value_string)
+		uber_free(gconfig_priv->cached_value_string);
+	
+	if(gconfig_priv->gconf_client){
 		gconf_client_remove_dir(gconfig_priv->gconf_client, GCONF_PATH, NULL);
 		gconf_client_remove_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, NULL);
 		g_object_unref(gconfig_priv->gconf_client);
 	}
+	
 	G_OBJECT_CLASS(gconfig_parent_class)->finalize(object);
 }/*gconfig_finalize*/
 
 void gconfig_start(void){
 	if(!gconfig) gconfig=g_object_new(TYPE_GCONFIG, NULL);
-	cached_bool_key=g_strdup("");
-	cached_int_key=g_strdup("");
-	cached_float_key=g_strdup("");
-	cached_string_key=g_strdup("");
-	cached_string_value=g_strdup("");
 }/*gconfig_start();*/
 
 void gconfig_shutdown(void){
-	uber_free(cached_bool_key);
-	uber_free(cached_int_key);
-	uber_free(cached_float_key);
-	uber_free(cached_string_key);
-	uber_free(cached_string_value);
-	if(gconfig) uber_object_unref(gconfig);
+	if(!gconfig)
+		return;
+	
+	uber_object_unref(gconfig);
 }/*gconfig_shutdown();*/
 
 static void gconfig_suggest_sync(const gchar *gtype, const gchar *key){
@@ -167,11 +220,11 @@ static void gconfig_suggest_sync(const gchar *gtype, const gchar *key){
 		debug("**ERROR:** \t\tGConf deamon return: [%s] after saving: %s (%s).", key, error->message, gtype);
 		g_error_free(error);
 	}
-}/*gconfig_suggest_sync(key);*/
+}/*gconfig_suggest_sync("bool", key);*/
 
 gboolean gconfig_set_int(const gchar *key, gint value){
-	if(G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
-		cached_int_value=value;
+	if(G_STR_N_EMPTY(gconfig_priv->cached_key_int) && g_str_equal(gconfig_priv->cached_key_int, key) )
+		gconfig_priv->cached_value_int=value;
 	debug("Setting int:'%s' to %d", key, value);
 	GError *error=NULL;
 	gboolean success=gconf_client_set_int(gconfig_priv->gconf_client, key, value, &error);
@@ -181,11 +234,11 @@ gboolean gconfig_set_int(const gchar *key, gint value){
 	}else
 		gconfig_suggest_sync("int", key);
 	return success;
-}/*gconfig_get_int(key, int);*/
+}/*gconfig_set_int(key, int);*/
 
 gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_int){
-	if(G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) )
-		return cached_int_value;
+	if(gconfig_check_cached_int(key, value))
+		return TRUE;
 	
 	GConfValue *gconf_value=NULL;
 	GError *error=NULL;
@@ -204,9 +257,7 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 		}
 		
 		gconfig_suggest_sync("int", key);
-		uber_free(cached_int_key);
-		cached_int_key=g_strdup(key);
-		cached_int_value=default_int;
+		gconfig_priv->cached_value_int=default_int;
 		
 		return FALSE;
 	}
@@ -220,19 +271,16 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 	}
 	gconf_value_free(gconf_value);
 	
-	uber_free(cached_int_key);
-	cached_int_key=g_strdup(key);
-	cached_int_value=*value;
+	gconfig_priv->cached_value_int=*value;
 	
 	return TRUE;
 }/*gconfig_get_int_or_default(key, default_boolean);*/
 
 
 gboolean gconfig_get_int(const gchar *key, gint *value){
-	if(G_STR_N_EMPTY(cached_int_key) && g_str_equal(cached_int_key, key) ){
-		*value=cached_int_value;
+	if(gconfig_check_cached_int(key, value))
 		return TRUE;
-	}
+	
 	*value=0;
 	GError         *error=NULL;
 	*value=gconf_client_get_int(gconfig_priv->gconf_client, key, &error);
@@ -245,15 +293,14 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 	
 	debug("Retrieved int:'%s'(=%d)", key, *value);
 		
-	uber_free(cached_int_key);
-	cached_int_key=g_strdup(key);
-	cached_int_value=(*value);
+	gconfig_priv->cached_value_int=(*value);
 	return TRUE;
 }/*gconfig_get_int(key, &int);*/
 
 gboolean gconfig_set_float(const gchar *key, gfloat value){
-	if(G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) )
-		cached_float_value=value;
+	if(G_STR_N_EMPTY(gconfig_priv->cached_key_float) && g_str_equal(gconfig_priv->cached_key_float, key) )
+		gconfig_priv->cached_value_float=value;
+	
 	debug("Setting: '%s' to %f [type: float]", key, value);
 	GError *error=NULL;
 	gboolean success=gconf_client_set_float(gconfig_priv->gconf_client, key, value, &error);
@@ -263,19 +310,13 @@ gboolean gconfig_set_float(const gchar *key, gfloat value){
 	}else
 		gconfig_suggest_sync("float", key);
 	return success;
-}/*gconfig_get_float(key, float);*/
+}/*gconfig_set_float(key, float);*/
 
 gboolean gconfig_get_float(const gchar *key, gfloat *value){
-	if(G_STR_N_EMPTY(cached_float_key) && g_str_equal(cached_float_key, key) ){
-		*value=cached_float_value;
+	if(gconfig_check_cached_float(key, value))
 		return TRUE;
-	}
+	
 	GError         *error=NULL;
-	
-	*value=0.0;
-	
-	g_return_val_if_fail(value != NULL, FALSE);
-	
 	*value=gconf_client_get_float(gconfig_priv->gconf_client, key, &error);
 	
 	if(error){
@@ -286,15 +327,14 @@ gboolean gconfig_get_float(const gchar *key, gfloat *value){
 	
 	debug("Retrieved: '%s'(=%f) [type: float]", key, *value);
 		
-	uber_free(cached_float_key);
-	cached_float_key=g_strdup(key);
-	cached_float_value=(*value);
+	gconfig_priv->cached_value_float=(*value);
 	return TRUE;
 }/*gconfig_get_float(key, &float);*/
 
 gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
-	if(G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
-		return cached_bool_value;
+	gboolean value=default_boolean;
+	if(gconfig_check_cached_bool(key, &value))
+		return value;
 	
 	GConfValue *gconf_value=NULL;
 	GError *error=NULL;
@@ -312,14 +352,11 @@ gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
 		}
 		
 		gconfig_suggest_sync("bool", key);
-		uber_free(cached_bool_key);
-		cached_bool_key=g_strdup(key);
-		cached_bool_value=default_boolean;
+		gconfig_priv->cached_value_bool=default_boolean;
 		
 		return default_boolean;
 	}
 	
-	gboolean value;
 	if(gconf_value->type!=GCONF_VALUE_BOOL){
 		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value.", key);
 		value=default_boolean;
@@ -329,16 +366,14 @@ gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
 	}
 	gconf_value_free(gconf_value);
 	
-	uber_free(cached_bool_key);
-	cached_bool_key=g_strdup(key);
-	cached_bool_value=value;
+	gconfig_priv->cached_value_bool=value;
 	
 	return value;
 }/*gconfig_if_bool(key, default_boolean);*/
 
 gboolean gconfig_set_bool(const gchar *key, gboolean value){
-	if(G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) )
-		cached_bool_value=value;
+	if(G_STR_N_EMPTY(gconfig_priv->cached_key_bool) && g_str_equal(gconfig_priv->cached_key_bool, key) )
+		gconfig_priv->cached_value_bool=value;
 	
 	debug("Setting bool:'%s' to %s.", key, (value ? "TRUE" : "FALSE"));
 	GError *error=NULL;
@@ -353,10 +388,8 @@ gboolean gconfig_set_bool(const gchar *key, gboolean value){
 }/*gconfig_set_bool(key, boolean);*/
 
 gboolean gconfig_get_bool(const gchar *key, gboolean *value){
-	if(G_STR_N_EMPTY(cached_bool_key) && g_str_equal(cached_bool_key, key) ){
-		(*value)=cached_bool_value;
+	if(gconfig_check_cached_bool(key, value))
 		return TRUE;
-	}
 	
 	GError *error=NULL;
 	*value=FALSE;
@@ -376,9 +409,9 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 }/*gconfig_get_bool(key, &boolean);*/
 
 gboolean gconfig_set_string(const gchar *key, const gchar *value){
-	if(G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
-		uber_free(cached_string_value);
-		cached_string_value=g_strdup(value);
+	if(G_STR_N_EMPTY(gconfig_priv->cached_key_string) && g_str_equal(gconfig_priv->cached_key_string, key) ){
+		uber_free(gconfig_priv->cached_value_string);
+		gconfig_priv->cached_value_string=g_strdup(value);
 	}
 	
 	debug("Setting string:'%s' to '%s'", key, value);
@@ -393,10 +426,8 @@ gboolean gconfig_set_string(const gchar *key, const gchar *value){
 }/*gconfig_set_string(key, string);*/
 
 gboolean gconfig_get_string(const gchar *key, gchar **value){
-	if(G_STR_N_EMPTY(cached_string_key) && g_str_equal(cached_string_key, key) ){
-		*value=g_strdup(cached_string_value);
+	if(gconfig_check_cached_string(key, value))
 		return TRUE;
-	}
 	
 	GError         *error=NULL;
 	*value=NULL;
@@ -410,10 +441,8 @@ gboolean gconfig_get_string(const gchar *key, gchar **value){
 	
 	debug("Retrieved string: '%s'(='%s').", key, *value);
 	
-	uber_free(cached_string_key);
-	cached_string_key=g_strdup(key);
-	uber_free(cached_string_value);
-	cached_string_value=g_strdup(*value);
+	uber_free(gconfig_priv->cached_key_string);
+	gconfig_priv->cached_value_string=g_strdup(*value);
 	
 	return TRUE;
 }/*gconfig_get_string(key, &string);*/
@@ -460,6 +489,12 @@ static void gconfig_print_list_values(const gchar *key, GSList *value, GConfValu
 }/*gconfig_print_list_values(list, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_type){
+	if(G_STR_N_EMPTY(gconfig_priv->cached_key_list) && g_str_equal(gconfig_priv->cached_key_list, key) ){
+		uber_slist_free(gconfig_priv->cached_value_list);
+		gconfig_priv->cached_value_list=g_slist_copy(value);
+		gconfig_priv->cached_type_list=list_type;
+	}
+	
 	IF_DEBUG{
 		debug("Saving list:");
 		gconfig_print_list_values(key, value, list_type);
@@ -475,6 +510,9 @@ gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_t
 }/*gconfig_set_list(key, value, GCONF_VALUE_STRING);*/
 
 gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list_type){
+	if(gconfig_check_cached_list(key, value))
+		return TRUE;
+	
 	GError *error=NULL;
 	*value=NULL;
 	
@@ -489,6 +527,89 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 	}
 	return TRUE;
 }/*gconfig_get_list(key, &list, GCONF_VALUE_STRING);*/
+
+static gboolean gconfig_check_cached_bool(const gchar *key, gboolean *value){
+	if(!gconfig_check_cached(GConfigBool, key))
+		return FALSE;
+	*value=gconfig_priv->cached_value_bool;
+	return TRUE;
+}/*gconfig_check_cached_bool(const gchar *key, gboolean *value);*/
+
+static gboolean gconfig_check_cached_int(const gchar *key, gint *value){
+	if(!gconfig_check_cached(GConfigInt, key))
+		return FALSE;
+	*value=gconfig_priv->cached_value_int;
+	return TRUE;
+}/*gconfig_check_cached_int(const gchar *key, gint *value);*/
+
+static gboolean gconfig_check_cached_float(const gchar *key, gfloat *value){
+	if(!gconfig_check_cached(GConfigFloat, key))
+		return FALSE;
+	*value=gconfig_priv->cached_value_float;
+	return TRUE;
+}/*gconfig_check_cached_float(const gchar *key, gfloat *value);*/
+
+static gboolean gconfig_check_cached_string(const gchar *key, gchar **value){
+	if(!gconfig_check_cached(GConfigString, key))
+		return FALSE;
+	*value=g_strdup(gconfig_priv->cached_value_string);
+	return TRUE;
+}/*gconfig_check_cached_string(const gchar *key, gstring *value);*/
+
+static gboolean gconfig_check_cached_list(const gchar *key, GSList **value){
+	if(!gconfig_check_cached(GConfigList, key))
+		return FALSE;
+	*value=gconfig_priv->cached_value_list;
+	return TRUE;
+}/*gconfig_check_cached_list(const gchar *key, GSList **value);*/
+
+static gboolean gconfig_check_cached(GConfigSupportedValue which_cache, const gchar *key){
+	gchar *cached_key=NULL;
+	switch(which_cache){
+		case	GConfigBool:
+			cached_key=gconfig_priv->cached_key_bool;
+			break;
+		case	GConfigInt:
+			cached_key=gconfig_priv->cached_key_int;
+			break;
+		case	GConfigFloat:
+			cached_key=gconfig_priv->cached_key_float;
+			break;
+		case	GConfigString:
+			cached_key=gconfig_priv->cached_key_string;
+			break;
+		case	GConfigList:
+			cached_key=gconfig_priv->cached_key_list;
+			break;
+	}
+	
+	if(G_STR_N_EMPTY(cached_key) && g_str_equal(cached_key, key))
+		return TRUE;
+	
+	switch(which_cache){
+		case	GConfigBool:
+			uber_free(gconfig_priv->cached_key_bool);
+			gconfig_priv->cached_key_bool=g_strdup(key);
+			break;
+		case	GConfigInt:
+			uber_free(gconfig_priv->cached_key_int);
+			gconfig_priv->cached_key_int=g_strdup(key);
+			break;
+		case	GConfigFloat:
+			uber_free(gconfig_priv->cached_key_float);
+			gconfig_priv->cached_key_float=g_strdup(key);
+			break;
+		case	GConfigString:
+			uber_free(gconfig_priv->cached_key_string);
+			gconfig_priv->cached_key_string=g_strdup(key);
+			break;
+		case	GConfigList:
+			uber_free(gconfig_priv->cached_key_list);
+			gconfig_priv->cached_key_list=g_strdup(key);
+			break;
+	}
+	return FALSE;
+}/*gconfig_check_cached(GConfigBool|GConfigInt|GConfigFloat|GConfigString, "/apps/"GETTEXT_PACKAGE"/settings/value", &value);*/
 
 gboolean gconfig_rm_rf(const gchar *key){
 	GError *error=NULL;
@@ -505,7 +626,7 @@ gboolean gconfig_rm_rf(const gchar *key){
 		return FALSE;
 	}
 	
-	gconfig_suggest_sync("list", key);
+	gconfig_suggest_sync("unsetting", key);
 	return TRUE;
 }/*gconfig_rm_rf*/
 

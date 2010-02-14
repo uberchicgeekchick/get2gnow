@@ -65,7 +65,7 @@
 
 #include <gtk/gtk.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "uberchick-tree-view.h"
 
 G_BEGIN_DECLS
@@ -109,7 +109,7 @@ void main_window_create(void);
 MainWindow *main_window_get(void);
 
 gboolean main_window_tabs_init(void);
-void main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open);
+gboolean main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolean open);
 void main_window_compact_ui(GtkToggleButton *toggle_button);
 void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button);
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data);
@@ -121,8 +121,6 @@ GtkPaned *main_window_get_main_paned(void);
 GtkMenuBar *main_menu_get_main_main(void);
 GtkMenuItem *main_window_get_menu_item(const gchar *menu);
 GtkMenu *main_window_get_menu(const gchar *menu);
-
-gboolean main_window_best_friends_get_selected( OnlineService **service, gchar **user, gchar **user_name, gdouble *unread_update_id );
 
 SexySpellEntry *main_window_sexy_search_entry_get_widget(void);
 void main_window_sexy_search_entry_select(void);

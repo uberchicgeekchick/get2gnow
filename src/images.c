@@ -56,6 +56,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "www.h"
 #include "cache.h"
 #include "images.h"
 
@@ -63,19 +64,94 @@
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up:Cache:UpdateViewer:Graphics:images.c"
 #include "debug.h"
 
+static gchar *unknown_image_file=NULL;
+
 
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
 static void images_validate_filename(gchar **image_filename);
 
 
+gchar *images_get_unknown_image_file(void){
+	if(!unknown_image_file)
+		images_set_unknown_image_file();
+	return g_strdup(unknown_image_file);
+}/*images_get_unknown_image_file();*/
+
+void images_set_unknown_image_file(void){
+	GtkImage *stock_unknown_image=NULL;
+	gchar *unknown_image_filename=NULL;
+	if((stock_unknown_image=GTK_IMAGE(gtk_image_new_from_icon_name("gtk-missing-image", ImagesDialog)))){
+		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
+		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
+		g_object_unref(stock_unknown_image);
+		if(!G_STR_EMPTY(unknown_image_filename)){
+			debug("**notice:** images_unknown_image_file has been set to <%s>.", unknown_image_filename);
+			unknown_image_file=unknown_image_filename;
+			return;
+		}
+		
+		if(unknown_image_filename)
+			uber_free(unknown_image_filename);
+	}
+	
+	unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
+	if(!(g_file_test(unknown_image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR ))){
+		uber_free(unknown_image_filename);
+		unknown_image_filename=g_strdup("");
+		debug("**error:** images_unknown_image_file could not be set.");
+	}else
+		debug("**notice:** images_unknown_image_file has been set to <%s>.", unknown_image_file);
+	
+	unknown_image_file=unknown_image_filename;
+}/*images_get_unknown_image_file();*/
+
+void images_unset_unknown_image_file(void){
+	if(!unknown_image_file) return;
+	
+	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", unknown_image_file);
+	uber_free(unknown_image_file);
+}/*images_unset_unknown_image_file();*/
+
+gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename){
+	gchar *error_message=NULL;
+	if(!(www_xml_error_check(service, image_uri, xml, &error_message))){
+		debug("Failed to download and save image: <%s> to file: [%s].", image_uri, image_file);
+		debug("Detailed error message: %s.", error_message);
+		uber_free(error_message);
+		(*image_filename)=images_get_unknown_image_file();
+		return FALSE;
+	}
+	uber_free(error_message);
+	
+	if(!( g_strrstr( soup_message_headers_get_one( xml->response_headers, "Content-Type"), "image" ) )){
+		debug("Downloaded content does not appear to be an image: <%s>.  GNOME's unknown-image will be used instead.", image_uri);
+		(*image_filename)=images_get_unknown_image_file();
+		return FALSE;
+	}
+	
+	if(!(g_file_set_contents(
+				image_file,
+					xml->response_body->data,
+					xml->response_body->length,
+				NULL
+	))){
+		debug("Failed to download and save image: <%s> to file: [%s].", image_uri, image_file);
+		(*image_filename)=images_get_unknown_image_file();
+		return FALSE;
+	}
+	
+	debug("Saved image: <%s> to file: [%s]", image_uri, image_file);
+	(*image_filename)=g_strdup(image_file);
+	return TRUE;
+}/*images_save_image(service, xml, image_uri, image_file);*/
 
 static void images_validate_filename(gchar **image_filename){
 	if(!G_STR_EMPTY(*image_filename))
 		return;
 	
 	if(*image_filename) g_free(*image_filename);
-	*image_filename=cache_images_get_unknown_image_filename();
+	*image_filename=images_get_unknown_image_file();
 }/*images_validate_filename*/
 
 GtkImage *images_get_expanded_image_from_filename( gchar *image_filename ){

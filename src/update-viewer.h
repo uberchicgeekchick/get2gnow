@@ -87,7 +87,7 @@ GtkButton *update_viewer_get_sexy_dm_button(void);
 void update_viewer_postable_online_services_append(OnlineService *service);
 gboolean update_viewer_postable_online_service_delete(OnlineService *service);
 
-void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf );
+void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf, UpdateMonitor monitoring);
 gboolean update_viewer_set_in_reply_to_data(OnlineService *service, gchar *user_name, gdouble user_id, gdouble update_id, gboolean prefix, gboolean force);
 
 void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
@@ -114,12 +114,12 @@ gboolean update_viewer_sexy_entry_is_empty(void);
 gboolean update_viewer_sexy_entry_clear(void);
 void update_viewer_sexy_set(gchar *text);
 void update_viewer_sexy_prefix_char(const char c);
-gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean uniq);
+gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean to_lower, gboolean uniq);
 void update_viewer_sexy_insert_char(const char c);
-gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean uniq);
+gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean to_lower, gboolean uniq);
 void update_viewer_sexy_append_char(const char c);
-gboolean update_viewer_sexy_append_string(const gchar *str, gboolean uniq);
-gboolean update_viewer_sexy_puts(const gchar *str, gint position, gboolean uniq);
+gboolean update_viewer_sexy_append_string(const gchar *str, gboolean to_lower, gboolean uniq);
+gboolean update_viewer_sexy_puts(const gchar *str, gint position, gboolean to_lower, gboolean uniq);
 /* END: UBERCHICK_HISTORY METHODS */
 
 void update_viewer_new_update(void);

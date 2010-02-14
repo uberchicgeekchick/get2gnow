@@ -15,24 +15,26 @@ schemas_DATA 	 = $(schemas_in_files:.schemas.in=.schemas)
 gtkbuilderdir = $(datadir)/@PACKAGE_NAME@
 gtkbuilder_DATA =		 				\
 			online-services-dialog.ui		\
-			main-window.ui				\
 			online-services-request-popup.ui	\
 			preferences.ui				\
-			update-viewer.ui			\
-			user-profile-viewer.ui
+			profile-manager.ui			\
+			user-profile-viewer.ui			\
+
 
 sexy_DATA =							\
-			following-viewer.ui			\
-			friends-manager.ui			\
-			uberchick-tree-view.ui			\
 			main-window.ui				\
+			uberchick-tree-view.ui			\
+			update-viewer.ui			\
+			friends-manager.ui			\
+			following-viewer.ui			\
 
 
 un_sexy_DATA =							\
-			following-viewer.in.ui			\
-			friends-manager.in.ui			\
 			main-window.in.ui			\
 			uberchick-tree-view.in.ui		\
+			update-viewer.in.ui			\
+			friends-manager.in.ui			\
+			following-viewer.in.ui			\
 
 
 
@@ -41,16 +43,16 @@ svgicon_DATA = @PACKAGE_NAME@.svg
 
 EXTRA_DIST =							\
 			$(sexy_DATA)				\
-			$(gtkbuilder_DATA)			\
 			$(svgicon_DATA)				\
+			$(gtkbuilder_DATA)			\
 			$(desktop_in_files)			\
-			$(schemas_in_files)
-	
+			$(schemas_in_files)			\
 
+	
 DISTCLEANFILES =						\
 			$(sexy_DATA)				\
 			$(desktop_DATA)				\
-			$(schemas_DATA)
+			$(schemas_DATA)				\
 
 
 @gtk_update_icon_cache@
@@ -66,14 +68,13 @@ sexy_DATA: $(un_sexy_DATA)
 	list='$(un_sexy_DATA)'; for p in $$list; do \
 		if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 		f=`echo $$d$$p | sed 's/\.in//'`; \
-		if ! test -f $$f; then \
-			cp "$$d$$p" "$$f"; \
-			if test $$f == "main-window.ui"; then \
-				echo "ex -E -n -s -X --noplugin '+1,s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+1,s/^\([\t\ ]\+<object class=\"Gtk[VH]Separator\".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name=\"\)\(expand\)\(\">\)[^<]\+\(<\/property>\)\(\n.*<property name=\"fill\">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5/' '+wq' '$$f';"; \
-				ex -E -n -s -X --noplugin '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+1,$$s/^\([\t\ ]\+<object class="Gtk[VH]Separator".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name="\)\(expand\)\(">\)[^<]\+\(<\/property>\)\(\n.*<property name="fill">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5/' "+wq" "$$f"; \
-			else \
-				echo "ex -E -n -s -X --noplugin '+1,s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq' '$$f';"; \
-				ex -E -n -s -X --noplugin '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' "+wq" "$$f"; \
+		if ! test -f "$$f" || test "$$d$$p" -nt "$$f"; then \
+			cp -f "$$d$$p" "$$f"; \
+			echo "ex -E -n -s -X --noplugin '+1,$$eols/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' '+wq' '$$f';"; \
+			ex -E -n -s -X --noplugin '+1,$$s/\(class="\)Gtk\(TreeView"\)/\1Sexy\2/g' "+wq" "$$f"; \
+			if test "$$f" == "main-window.ui"; then \
+				echo "ex -E -n -s -X --noplugin '+1,$$s/^\([\t\ ]\+<object class=\"Gtk[VH]Separator\".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name=\"\)\(expand\)\(\">\)[^<]\+\(<\/property>\)\(\n.*<property name=\"fill\">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5/' '+wq' '$$f';"; \
+				ex -E -n -s -X --noplugin '+1,$$s/^\([\t\ ]\+<object class="Gtk[VH]Separator".*\n.*\n.*\n.*\n.*<packing>\n\)\(.*<property name="\)\(expand\)\(">\)[^<]\+\(<\/property>\)\(\n.*<property name="fill">[^<]*<\/property>\)\?/\1\2\3\4True\5\r\2fill\4True\5/' "+wq" "$$f"; \
 			fi; \
 		fi; \
 	done

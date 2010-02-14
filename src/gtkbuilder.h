@@ -86,6 +86,8 @@ G_BEGIN_DECLS
 
 GtkBuilder *gtkbuilder_get_file(const gchar *filename, const gchar *first_widget, ...);
 
+void gtkbuilder_get_objects(GtkBuilder *ui, const gchar *filename, const gchar *first_widget, ...);
+
 void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer user_data, gchar *first_widget,...);
 
 G_END_DECLS

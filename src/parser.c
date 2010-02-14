@@ -70,9 +70,9 @@
 #include "config.h"
 #include "program.h"
 
-#include "online-services.defines.h"
+#include "online-services.rest-uris.defines.h"
 #include "online-services.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "update-ids.h"
 #include "network.h"
@@ -275,7 +275,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gboolean	save_oldest_id=(uberchick_tree_view_has_loaded(uberchick_tree_view)?FALSE:TRUE);
 	gboolean	notify_best_friends=gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE);
 	
-	guint		new_updates=0;
+	guint		new_updates=0, notified_updates=0;
 	gint		update_expiration=0, best_friends_expiration=0;
 	gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &best_friends_expiration, 86400);
 	
@@ -324,7 +324,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			break;
 		
 		case	Homepage:	case	ReTweets:
-		case	Updates:	case	Timelines: case	Users:
+		case	Timelines:	case	Users:
 			debug("Parsing updates from someone I'm following.");
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
 			if(!save_oldest_id) save_oldest_id=TRUE;
@@ -340,9 +340,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	}
 	if(!oldest_update_id && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
-	guint		uberchick_tree_view_notify_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
-	const gint	tweet_display_interval=10;
-	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)-1)*100;
+	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
+	const gint	update_notification_interval=10;
+	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)+1)*100;
 	
 	if(!(doc=parse_xml_doc(xml, &root_element))){
 		debug("Failed to parse xml document, <%s>'s timeline: %s.", service->key, timeline);
@@ -379,28 +379,28 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		}
 		
 		new_updates++;
-		gboolean free_status=TRUE;
+		gboolean notify_of_new_update=FALSE;
 		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UberChickTreeView.", status->user->user_name, status->id_str, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
-		if( monitoring!=BestFriends && monitoring!=DMs && ( online_service_is_user_best_friend(service, status->user->user_name) || ( status->retweet && online_service_is_user_best_friend(service, status->retweeted_user_name) ) ) ){
-			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends){
-				free_status=FALSE;
-				g_timeout_add_seconds_full(notify_priority, uberchick_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-				uberchick_tree_view_notify_delay+=tweet_display_interval;
-			}
-		}
+		if( monitoring!=BestFriends && monitoring!=DMs && ( best_friends_is_user_best_friend(service, status->user->user_name) || ( status->retweet && best_friends_is_user_best_friend(service, status->retweeted_user_name) ) ) )
+			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends)
+				notify_of_new_update=TRUE;
+			
 		
-		if( notify && free_status && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) ){
-			free_status=FALSE;
-			g_timeout_add_seconds_full(notify_priority, uberchick_tree_view_notify_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			uberchick_tree_view_notify_delay+=tweet_display_interval;
-		}
+		if( notify && !notify_of_new_update && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) )
+			notify_of_new_update=TRUE;
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
 		if(save_oldest_id && status->id) oldest_update_id=status->id;
 		
-		if(free_status) user_status_free(status);
+		if(!notify_of_new_update)
+			user_status_free(status);
+		else{
+			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			update_notification_delay+=update_notification_interval;
+			notified_updates++;
+		}
 	}
 	
 	if(new_updates && newest_update_id){

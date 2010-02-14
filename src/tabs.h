@@ -69,7 +69,7 @@
 #include <gtk/gtk.h>
 
 #include "program.h"
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "uberchick-tree-view.h"
 
 
@@ -93,7 +93,7 @@ UberChickTreeView *tabs_open_timeline(const gchar *timeline, OnlineService *serv
 void tabs_close_timeline(const gchar *timeline);
 
 UberChickTreeView *tabs_view_page(gint page);
-UberChickTreeView *tabs_get_page(gint page, gboolean close);
+
 UberChickTreeView *tabs_get_next(void);
 UberChickTreeView *tabs_get_current(void);
 UberChickTreeView *tabs_get_previous(void);

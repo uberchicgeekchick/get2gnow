@@ -30,6 +30,7 @@
             <child>
               <object class="GtkVBox" id="vbox_following">
                 <property name="visible">True</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkScrolledWindow" id="following_list_scroll">
                     <property name="visible">True</property>
@@ -38,7 +39,7 @@
                     <property name="hscrollbar_policy">never</property>
                     <property name="shadow_type">in</property>
                     <child>
-                      <object class="GtkTreeView" id="following_tree_view">
+                      <object class="GtkTreeView" id="following_sexy_tree_view">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">following_tree_store</property>
@@ -75,93 +76,119 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkHBox" id="hbox2">
+                  <object class="GtkToolbar" id="users_tool_bar">
                     <property name="visible">True</property>
-                    <property name="spacing">5</property>
+                    <property name="icon_size">1</property>
+                    <property name="icon_size_set">True</property>
                     <child>
-                      <object class="GtkButton" id="refresh">
-                        <property name="label">gtk-refresh</property>
+                      <object class="GtkToolButton" id="user_view_profile_tool_button">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_stock">True</property>
+                        <property name="tooltip_markup">View the selected user's profile &amp;amp; most recent update</property>
+                        <property name="label" translatable="yes">View _Profile</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-info</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="user_unfollow">
+                      <object class="GtkSeparatorToolItem" id="user_relationship_separator_tool_item">
+                        <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_unfollow_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Stop following the selected user</property>
                         <property name="label" translatable="yes">_Unfollow</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="image">unfollow_image</property>
                         <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-remove</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">5</property>
-                        <property name="position">1</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="user_block">
+                      <object class="GtkToolButton" id="user_block_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Block the selected user from seeing your updates and/or sending you any messages</property>
                         <property name="label" translatable="yes">_Block</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
-                        <property name="image">block_image</property>
                         <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-stop</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">6</property>
-                        <property name="position">2</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="view_profile">
-                        <property name="label" translatable="yes">_Profile</property>
+                      <object class="GtkSeparatorToolItem" id="users_updates_separator_tool_item">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="image">view_profile_image</property>
-                        <property name="use_underline">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="view_timeline">
-                        <property name="label" translatable="yes">_Tweets/Updates</property>
+                      <object class="GtkToolButton" id="user_view_unread_updates_tool_button">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="image">view_timeline_image</property>
+                        <property name="tooltip_markup">View the selected user's unread updates</property>
+                        <property name="label" translatable="yes">Read Ne_w Status Updates</property>
                         <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-indent</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">5</property>
-                        <property name="position">5</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_view_recent_updates_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">View the selected user's most recent updates</property>
+                        <property name="label" translatable="yes">Read S_tatus Updates</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-home</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem" id="refresh_separator_tool_item">
+                        <property name="visible">True</property>
+                        <property name="draw">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="refresh_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Refresh your friends &amp; followers by reloading them from the server.</property>
+                        <property name="label" translatable="yes">_Refresh</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-refresh</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="padding">4</property>
-                    <property name="pack_type">end</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -172,7 +199,7 @@
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Who you're _following</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">following_tree_view</property>
+                <property name="mnemonic_widget">following_sexy_tree_view</property>
               </object>
               <packing>
                 <property name="tab_fill">False</property>
@@ -188,7 +215,7 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="lists_close">
+              <object class="GtkButton" id="viewer_close_button">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -211,28 +238,9 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="-5">lists_close</action-widget>
+      <action-widget response="-5">viewer_close_button</action-widget>
     </action-widgets>
   </object>
   <object class="GtkAction" id="action1"/>
   <object class="GtkAction" id="action2"/>
-  <object class="GtkImage" id="block_image">
-    <property name="width_request">24</property>
-    <property name="height_request">24</property>
-    <property name="visible">True</property>
-    <property name="tooltip_text" translatable="yes">Block this user from being able to see your tweets or send you messages.</property>
-    <property name="stock">gtk-stop</property>
-  </object>
-  <object class="GtkImage" id="unfollow_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-remove</property>
-  </object>
-  <object class="GtkImage" id="view_profile_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-info</property>
-  </object>
-  <object class="GtkImage" id="view_timeline_image">
-    <property name="visible">True</property>
-    <property name="stock">gtk-home</property>
-  </object>
 </interface>

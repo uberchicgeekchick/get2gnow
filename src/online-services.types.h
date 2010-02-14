@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef __ONLINE_SERVICE_TYPES_H__
-#define __ONLINE_SERVICE_TYPES_H__
+#ifndef __ONLINE_SERVICES_TYPES_H__
+#define __ONLINE_SERVICES_TYPES_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -67,6 +67,8 @@
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <glib.h>
+#include <gtk/gtk.h>
+#include <libsoup/soup-message.h>
 
 G_BEGIN_DECLS
 /********************************************************************************
@@ -76,18 +78,34 @@ typedef struct _OnlineServices OnlineServices;
 typedef struct _OnlineService OnlineService;
 typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
 
+typedef struct _User User;
+typedef struct _UserStatus UserStatus;
+
 typedef struct _RateLimitTimer RateLimitTimer;
 typedef enum _UpdateMonitor UpdateMonitor;
 
-typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
-typedef enum _OnlineServicesBestFriends OnlineServicesBestFriends;
+typedef enum _MicroBloggingService MicroBloggingService;
 
 typedef enum _ReloadState ReloadState;
 typedef enum _RequestMethod RequestMethod;
 
 typedef enum _UsersGListGetWhich UsersGListGetWhich;
+
+typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
+
+
+/**********************************************************************
+ *                         Macros & methods.                          *
+ **********************************************************************/
+typedef void (*OnlineServiceRequestFunc) (OnlineService *service, GtkWindow *parent_window, const gchar *user_data);
+typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
+typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
+typedef void (*UsersGListOnLoadFunc) (GList *users);
+typedef void (*GPointerFunc) (gpointer user_data);
+
+
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /* __ONLINE_SERVICE_TYPES_H__ */
+#endif /* __ONLINE_SERVICES_TYPES_H__ */

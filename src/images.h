@@ -62,6 +62,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+/*#include "online-services.types.h"*/
 #include "users.h"
 
 G_BEGIN_DECLS
@@ -71,10 +72,19 @@ enum {
 	ImagesMaximum		=	96,
 	ImagesExpanded		=	72,
 	ImagesDefault		=	48,
+	ImagesMinimum		=	GTK_ICON_SIZE_MENU,
+	ImagesSmall		=	GTK_ICON_SIZE_SMALL_TOOLBAR,
+	ImagesLarge		=	GTK_ICON_SIZE_LARGE_TOOLBAR,
+	ImagesButton		=	GTK_ICON_SIZE_BUTTON,
+	ImageDND		=	GTK_ICON_SIZE_DND,
 	ImagesDialog		=	GTK_ICON_SIZE_DIALOG,
-	ImagesMinimum		=	GTK_ICON_SIZE_BUTTON,
 };
 
+void images_set_unknown_image_file(void);
+gchar *images_get_unknown_image_file(void);
+void images_unset_unknown_image_file(void);
+
+gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename);
 
 GtkImage *images_get_image_from_filename(gchar *image_filename);
 GtkImage *images_get_scaled_image_from_filename(gchar *image_filename, gint width, gint height );

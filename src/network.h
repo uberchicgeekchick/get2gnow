@@ -69,7 +69,7 @@
 
 #include "online-service.h"
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 
 
 /**********************************************************************

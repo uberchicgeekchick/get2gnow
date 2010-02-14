@@ -66,21 +66,26 @@
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
-#include <sys/stat.h>
 #include <glib.h>
-#include <gio/gio.h>
-#include <glib/gstdio.h>
-
 #include <libsoup/soup-message-body.h>
 #include <libxml/tree.h>
 
-#include "online-service.h"
+#include "online-service.typedefs.h"
 #include "users.h"
 #include "images.h"
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
+#ifndef cache_images_get_user_avatar_filename
+#	define	cache_images_get_user_avatar_filename(service, user_name, image_url)	\
+		cache_images_get_user_image_filename(service, "avatars", user_name, image_url)
+#endif
+
+#ifndef cache_images_get_user_profile_background_filename
+#	define	cache_images_get_user_profile_background_filename(service, user_name, image_url)	\
+		cache_images_get_user_image_filename(service, "profile_backgrounds", user_name, image_url)
+#endif
 
 
 /**********************************************************************
@@ -101,8 +106,7 @@ gboolean cache_save_page(OnlineService *service, const gchar *uri, SoupMessageBo
 
 gchar *cache_file_create_file_for_online_service(OnlineService *service, const gchar *subdir1_or_file, ...);
 
-gchar *cache_images_get_unknown_image_filename(void);
-gchar *cache_images_get_user_avatar_filename(OnlineService *service, const gchar *user_name, const gchar *image_url);
+gchar *cache_images_get_user_image_filename(OnlineService *service, const gchar *image_type, const gchar *user_name, const gchar *image_url);
 
 G_END_DECLS
 #endif /* __CACHE_H__ */

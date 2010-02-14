@@ -51,6 +51,10 @@
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
+#include <sys/stat.h>
+#include <gio/gio.h>
+#include <glib/gstdio.h>
+
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -104,6 +108,7 @@ static Input *input=NULL;
 
 
 static void ipc_main(void);
+static gboolean ipc_filename_touch(const gchar *ipc_filename);
 static void ipc_commit(Input *input);
 static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition, Input *input);
 
@@ -116,11 +121,12 @@ gboolean ipc_init_check(int argc, char **argv){
 	char *cur_dir;
 	char *to_open;
 	
-	g_return_val_if_fail(input == NULL, FALSE);
+	if(input)
+		return FALSE;
 	
 	tmp_path=g_get_tmp_dir();
-	dir=g_dir_open(tmp_path, 0, NULL);
-	g_return_val_if_fail(dir != NULL, FALSE);
+	if(!(dir=g_dir_open(tmp_path, 0, NULL)))
+		return FALSE;
 	
 	user_name=g_get_user_name();
 	prefix=g_strdup_printf(IPC_PIPE_PREFIX, user_name, GETTEXT_PACKAGE);
@@ -133,7 +139,7 @@ gboolean ipc_init_check(int argc, char **argv){
 	/* if another process creates a pipe while we are doing this,
 	 * we may not get that pipe here. dunno if it's a problem */
 	while((entry=g_dir_read_name(dir)) ){
-		if(strncmp( entry, prefix, prefix_len ))
+		if(strncmp(entry, prefix, prefix_len))
 			continue;
 		
 		const char *pid_string;
@@ -151,10 +157,17 @@ gboolean ipc_init_check(int argc, char **argv){
 			uber_free(filename);
 			continue;
 		}
+		
+		if(!ipc_filename_touch(filename)){
+			perror("open");
+			unlink(filename);
+			uber_free(filename);
+			continue;
+		}
 		/* it would be cool to check that the file is indeed a fifo,
 		 * but again, who cares? */
 		int fd;
-		if((fd=open(filename, O_WRONLY | O_NONBLOCK)) == -1 ){
+		if((fd=open(filename,O_WRONLY|O_NONBLOCK)) == -1 ){
 			perror("open");
 			unlink(filename);
 			uber_free(filename);
@@ -195,6 +208,26 @@ gboolean ipc_init_check(int argc, char **argv){
 }
 
 
+static gboolean ipc_filename_touch(const gchar *ipc_filename){
+	gchar *ipc_dirname=g_path_get_dirname(ipc_filename);
+	if(!g_file_test(ipc_dirname, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)){
+		if(g_mkdir_with_parents(ipc_dirname, S_IRUSR|S_IWUSR|S_IXUSR)){
+			debug("**ERROR:** Unable to create cache directory: [%s].", ipc_dirname);
+			uber_free(ipc_dirname);
+			return FALSE;
+		}
+	}
+	uber_free(ipc_dirname);
+	
+	if(!(g_file_test(ipc_filename,G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR)))
+		if(!(g_creat(ipc_filename, S_IRUSR|S_IWUSR))){
+			debug("**ERROR:** Failed to create cache file: [%s].", ipc_filename);
+			return FALSE;
+		}
+	
+	return TRUE;
+}/*ipc_filename_touch(ipc_filename);*/
+
 static void ipc_commit(Input *input){
 	g_assert(input->buffer->len > 0 && input->buffer->data[input->buffer->len-1] == 0);
 	
@@ -212,13 +245,13 @@ static void ipc_commit(Input *input){
 }
 
 
-static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition, Input *input ){
+static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition condition, Input *input){
 	gboolean error_occured=FALSE;
 	GError *err=NULL;
 	gboolean again=TRUE;
 	gboolean got_zero=FALSE;
 	
-	if(condition &(G_IO_ERR | G_IO_HUP))
+	if(condition &(G_IO_ERR|G_IO_HUP))
 		if(errno != EINTR && errno != EAGAIN)
 			error_occured=TRUE;
 	
@@ -226,7 +259,7 @@ static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition conditio
 		char c;
 		int bytes_read;
 		
-		struct pollfd fd={input->pipe, POLLIN | POLLPRI, 0};
+		struct pollfd fd={input->pipe,POLLIN|POLLPRI, 0};
 		
 		int res=poll(&fd, 1, 0);
 		
@@ -290,7 +323,8 @@ static gboolean ipc_read(G_GNUC_UNUSED GIOChannel *source, GIOCondition conditio
 
 
 static void ipc_main(void){
-	g_return_if_fail(input == NULL);
+	if(input)
+		return;
 	
 	input=g_new0(Input, 1);
 	
@@ -305,18 +339,18 @@ static void ipc_main(void){
 					IPC_PIPE_PREFIX_FULL,
 					g_get_tmp_dir(),
 					g_get_user_name(),
-					PACKAGE_TARNAME,
+					GETTEXT_PACKAGE,
 					getpid()
 	);
 	unlink(input->pipe_name);
 	
-	if((mkfifo( input->pipe_name, S_IRUSR | S_IWUSR )) ){
+	if((mkfifo(input->pipe_name, S_IRUSR|S_IWUSR))){
 		perror("mkfifo");
 		ipc_deinit();
 		return;
 	}
 	
-	if((input->pipe=open(input->pipe_name, O_RDWR | O_NONBLOCK))==-1 ){
+	if((input->pipe=open(input->pipe_name,O_RDWR|O_NONBLOCK))==-1){
 		perror("open");
 		ipc_deinit();
 		return;
@@ -326,7 +360,7 @@ static void ipc_main(void){
 	g_io_channel_set_encoding(input->io, NULL, NULL);
 	input->io_watch=g_io_add_watch(
 						input->io,
-						G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+						G_IO_IN|G_IO_PRI|G_IO_ERR|G_IO_HUP,
 						(GIOFunc) ipc_read,
 						input
 	);

@@ -64,7 +64,7 @@
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "users.h"
 
 /**********************************************************************
@@ -80,7 +80,7 @@ extern gboolean getting_followers;
  **********************************************************************/
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func);
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
+void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, GList *new_users);
 
 gboolean users_glists_free_lists(OnlineService *service, UsersGListGetWhich users_glist_get_which);
 void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_get_which);

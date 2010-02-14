@@ -14,6 +14,8 @@
       <column type="gchararray"/>
       <!-- column-name GDOUBLE_BEST_FRIENDS_NEWEST_UPDATE_ID -->
       <column type="gdouble"/>
+      <!-- column-name GDOUBLE_BEST_FRIENDS_UNREAD_UPDATE_ID -->
+      <column type="gdouble"/>
       <!-- column-name GUINT_BEST_FRIENDS_UNREAD_UPDATES -->
       <column type="guint"/>
       <!-- column-name STRING_BEST_FRIEND_USER_NAME_AND_ONlINE_SERVICE_KEY -->
@@ -37,6 +39,7 @@
     <child>
       <object class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkMenuBar" id="main_menubar">
             <property name="visible">True</property>
@@ -54,6 +57,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">accounts_menue_connect_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -63,6 +67,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">accounts_menu_diconnect_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -77,6 +82,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">accounts_menu_quit_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                         <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
@@ -96,13 +102,6 @@
                       <object class="GtkCheckMenuItem" id="tabs_menu_hompage_timeline_check_menu_item">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">My _Homepage</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="tabs_menu_friends_timeline_check_menu_item">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">My _Friends' Updates</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
@@ -131,16 +130,16 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_menu_favorites_timeline_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_my_timeline_check_menu_item">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">My _Favorites</property>
+                        <property name="label" translatable="yes">_My Updates</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_menu_my_timeline_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_favorites_timeline_check_menu_item">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_My Updates</property>
+                        <property name="label" translatable="yes">My _Favorites</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
@@ -194,6 +193,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">image1</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                         <child type="submenu">
                           <object class="GtkMenu" id="compose_menu">
                             <property name="visible">True</property>
@@ -204,6 +204,7 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_update_image</property>
                                 <property name="use_stock">False</property>
+                                <property name="always_show_image">True</property>
                                 <accelerator key="n" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
@@ -215,8 +216,9 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compose_menu_new_dm_image</property>
                                 <property name="use_stock">False</property>
-                                <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <property name="always_show_image">True</property>
                                 <accelerator key="Return" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                                <accelerator key="d" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
@@ -235,6 +237,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">image2</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                         <child type="submenu">
                           <object class="GtkMenu" id="selected_update_menu">
                             <property name="visible">True</property>
@@ -245,6 +248,7 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">image7</property>
                                 <property name="use_stock">False</property>
+                                <property name="always_show_image">True</property>
                                 <child type="submenu">
                                   <object class="GtkMenu" id="selected_update_author_menu">
                                     <property name="visible">True</property>
@@ -256,6 +260,7 @@
                                         <property name="use_underline">True</property>
                                         <property name="image">image3</property>
                                         <property name="use_stock">False</property>
+                                        <property name="always_show_image">True</property>
                                       </object>
                                     </child>
                                     <child>
@@ -265,6 +270,7 @@
                                         <property name="use_underline">True</property>
                                         <property name="image">image12</property>
                                         <property name="use_stock">False</property>
+                                        <property name="always_show_image">True</property>
                                       </object>
                                     </child>
                                     <child>
@@ -274,6 +280,7 @@
                                         <property name="use_underline">True</property>
                                         <property name="image">image4</property>
                                         <property name="use_stock">False</property>
+                                        <property name="always_show_image">True</property>
                                       </object>
                                     </child>
                                     <child>
@@ -300,6 +307,7 @@
                                         <property name="use_underline">True</property>
                                         <property name="image">image6</property>
                                         <property name="use_stock">False</property>
+                                        <property name="always_show_image">True</property>
                                       </object>
                                     </child>
                                     <child>
@@ -309,6 +317,7 @@
                                         <property name="use_underline">True</property>
                                         <property name="image">image8</property>
                                         <property name="use_stock">False</property>
+                                        <property name="always_show_image">True</property>
                                       </object>
                                     </child>
                                     <child>
@@ -318,6 +327,7 @@
                                         <property name="use_underline">True</property>
                                         <property name="image">image9</property>
                                         <property name="use_stock">False</property>
+                                        <property name="always_show_image">True</property>
                                       </object>
                                     </child>
                                   </object>
@@ -336,6 +346,7 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">image5</property>
                                 <property name="use_stock">False</property>
+                                <property name="always_show_image">True</property>
                                 <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
@@ -347,6 +358,7 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">compos_menu_forward_update_image</property>
                                 <property name="use_stock">False</property>
+                                <property name="always_show_image">True</property>
                                 <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
@@ -358,6 +370,7 @@
                                 <property name="use_underline">True</property>
                                 <property name="image">help_menu_about_image</property>
                                 <property name="use_stock">False</property>
+                                <property name="always_show_image">True</property>
                                 <accelerator key="asterisk" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
@@ -378,6 +391,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">accounts_menu_accounts_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -388,6 +402,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">accounts_menu_select_default_account_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -403,6 +418,7 @@
                         <property name="use_underline">True</property>
                         <property name="image">accounts_menu_preferences_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                   </object>
@@ -553,6 +569,22 @@
                   <object class="GtkMenu" id="online_service_request_menu">
                     <property name="visible">True</property>
                     <child>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_manage_profile_image_menu_item">
+                        <property name="label" translatable="yes">_Manage my profile</property>
+                        <property name="visible">True</property>
+                        <property name="tooltip_text" translatable="yes">Manage, Update, and/o Edit one of your accounts online profiles.</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image16</property>
+                        <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="online_services_profile_manager_menu_separator_item">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="online_service_request_popup_friends_manager_image_menu_item">
                         <property name="label" translatable="yes">Friends &amp; Followers _Manager</property>
                         <property name="visible">True</property>
@@ -562,6 +594,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_friends_manager_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                         <accelerator key="m" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
@@ -573,6 +606,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_update_viewer_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                         <accelerator key="t" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
@@ -589,6 +623,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_follow_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -599,6 +634,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_unfollow_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -609,6 +645,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_block_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -624,6 +661,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">image14</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -634,6 +672,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">image15</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -653,6 +692,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_view_tweets_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -663,6 +703,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">image11</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -673,6 +714,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">friends_menu_view_timeline_image</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                     <child>
@@ -683,6 +725,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="image">image13</property>
                         <property name="use_stock">False</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                   </object>
@@ -705,6 +748,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="image">help_manu_help_image</property>
                         <property name="use_stock">False</property>
                         <property name="accel_group">accelgroup1</property>
+                        <property name="always_show_image">True</property>
                         <accelerator key="F1" signal="activate"/>
                       </object>
                     </child>
@@ -715,6 +759,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <property name="accel_group">accelgroup1</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                   </object>
@@ -902,6 +947,55 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                     <property name="border_width">6</property>
                     <property name="orientation">vertical</property>
                     <child>
+                      <object class="GtkToolbar" id="best_friends_toolbar">
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkToolItem" id="best_friends_toolbar_hseparator_custom_tool_item">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkHSeparator" id="hseparator1">
+                                <property name="visible">True</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolButton" id="best_friends_open_all_unread_updates_tool_button">
+                            <property name="visible">True</property>
+                            <property name="tooltip_markup">Open all of your best friends' unread udates. Each best friend is opened in its own tab.</property>
+                            <property name="label" translatable="yes">Open all unread udates.</property>
+                            <property name="use_underline">True</property>
+                            <property name="stock_id">gtk-unindent</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolButton" id="best_friends_mark_all_unread_updates_as_read_tool_button">
+                            <property name="visible">True</property>
+                            <property name="tooltip_markup">Mark all of your best friends' as having no unread udates.</property>
+                            <property name="label" translatable="yes">Mark all unread updates as read.</property>
+                            <property name="use_underline">True</property>
+                            <property name="stock_id">gtk-clear</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkHBox" id="best_friends_label_hbox">
                         <property name="visible">True</property>
                         <child>
@@ -922,7 +1016,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">0</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -972,7 +1066,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         </child>
                       </object>
                       <packing>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -983,6 +1077,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Add a user to your best friends list.</property>
                             <child>
                               <object class="GtkImage" id="best_friends_add_image">
                                 <property name="visible">True</property>
@@ -1001,8 +1096,9 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Remove someone from your best friends list.</property>
                             <child>
-                              <object class="GtkImage" id="best_friends_delete_image">
+                              <object class="GtkImage" id="best_friends_drop_image">
                                 <property name="visible">True</property>
                                 <property name="stock">gtk-remove</property>
                               </object>
@@ -1015,7 +1111,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkHSeparator" id="bast_friends_tree_view_hseparator">
+                          <object class="GtkHSeparator" id="bast_friends_add_and_remove_hseparator">
                             <property name="visible">True</property>
                           </object>
                           <packing>
@@ -1027,6 +1123,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Reload your list of best friends; updating their newest &amp; unread updates.</property>
                             <property name="use_underline">True</property>
                             <child>
                               <object class="GtkImage" id="best_friends_refresh_image">
@@ -1045,7 +1142,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
@@ -1056,6 +1153,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Read the selected best friend's unread updates.</property>
                             <child>
                               <object class="GtkImage" id="best_friends_view_new_updates_image">
                                 <property name="visible">True</property>
@@ -1070,13 +1168,32 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkButton" id="best_friends_view_updates_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Read the selected best friend's 20 most recent updates.</property>
+                            <child>
+                              <object class="GtkImage" id="best_friends_view_updates_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-home</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
                           <object class="GtkVSeparator" id="best_friends_left_vseparator">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                         <child>
@@ -1084,6 +1201,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Read the selected best friend's online profile &amp;amp; most recent update..</property>
                             <child>
                               <object class="GtkImage" id="best_friends_view_profile_image">
                                 <property name="visible">True</property>
@@ -1094,25 +1212,17 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">2</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="best_friends_send_at_message_button">
+                          <object class="GtkVSeparator" id="best_friends_middle_vseparator">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <child>
-                              <object class="GtkImage" id="best_friends_send_at_reply_image">
-                                <property name="visible">True</property>
-                                <property name="stock">gtk-undo</property>
-                              </object>
-                            </child>
+                            <property name="orientation">vertical</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">3</property>
+                            <property name="position">4</property>
                           </packing>
                         </child>
                         <child>
@@ -1120,6 +1230,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Direct Message the best friend you've selected.</property>
                             <child>
                               <object class="GtkImage" id="best_friends_send_dm_image">
                                 <property name="visible">True</property>
@@ -1130,28 +1241,19 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkVSeparator" id="best_friends_middle_vseparator">
-                            <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
                             <property name="position">5</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="best_friends_unfollow_button">
+                          <object class="GtkButton" id="best_friends_send_at_message_button">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">@ Mention your selected best friend.</property>
                             <child>
-                              <object class="GtkImage" id="best_friends_unfollow_image">
+                              <object class="GtkImage" id="best_friends_send_at_reply_image">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-remove</property>
+                                <property name="stock">gtk-undo</property>
                               </object>
                             </child>
                           </object>
@@ -1172,14 +1274,15 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="best_friends_view_updates_button">
+                          <object class="GtkButton" id="best_friends_mark_as_read_button">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_markup">Mark your selected best friend as if you've read all of their updates.</property>
                             <child>
-                              <object class="GtkImage" id="best_friends_view_updates_image">
+                              <object class="GtkImage" id="best_friends_mark_as_read_image">
                                 <property name="visible">True</property>
-                                <property name="stock">gtk-home</property>
+                                <property name="stock">gtk-clear</property>
                               </object>
                             </child>
                           </object>
@@ -1193,11 +1296,11 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">3</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkHBox" id="hbox1">
+                      <object class="GtkHBox" id="best_friends_bottom_separator_hbox">
                         <property name="visible">True</property>
                         <property name="homogeneous">True</property>
                         <child>
@@ -1212,7 +1315,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -1308,71 +1411,88 @@ You can also View their updates and/or profile, follow them back, unfollow them,
   <object class="GtkImage" id="accounts_menue_connect_image">
     <property name="visible">True</property>
     <property name="stock">gtk-connect</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="accounts_menu_diconnect_image">
     <property name="visible">True</property>
     <property name="stock">gtk-disconnect</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="friends_menu_friends_manager_image">
     <property name="visible">True</property>
     <property name="stock">gtk-page-setup</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="friends_menu_update_viewer_image">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="friends_menu_follow_image">
     <property name="visible">True</property>
     <property name="stock">gtk-add</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="friends_menu_unfollow_image">
     <property name="visible">True</property>
     <property name="stock">gtk-remove</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="friends_menu_block_image">
     <property name="visible">True</property>
     <property name="stock">gtk-stop</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkImage" id="friends_menu_view_timeline_image">
     <property name="visible">True</property>
     <property name="stock">gtk-home</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="friends_menu_view_tweets_image">
     <property name="visible">True</property>
     <property name="stock">gtk-info</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="help_manu_help_image">
     <property name="visible">True</property>
     <property name="stock">gtk-help</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="accounts_menu_quit_image">
     <property name="visible">True</property>
     <property name="stock">gtk-quit</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="accounts_menu_accounts_image">
     <property name="visible">True</property>
     <property name="stock">gtk-dialog-authentication</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="accounts_menu_select_default_account_image">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="stock">gtk-justify-fill</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="compose_menu_new_dm_image">
     <property name="visible">True</property>
     <property name="stock">gtk-leave-fullscreen</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="compose_menu_new_update_image">
     <property name="visible">True</property>
     <property name="stock">gtk-edit</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="accounts_menu_preferences_image">
     <property name="visible">True</property>
     <property name="stock">gtk-preferences</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image10">
     <property name="visible">True</property>
@@ -1381,61 +1501,81 @@ You can also View their updates and/or profile, follow them back, unfollow them,
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image7">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="stock">gtk-info</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image4">
     <property name="visible">True</property>
     <property name="stock">gtk-home</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image6">
     <property name="visible">True</property>
     <property name="stock">gtk-add</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image8">
     <property name="visible">True</property>
     <property name="stock">gtk-remove</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image9">
     <property name="visible">True</property>
     <property name="stock">gtk-stop</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image5">
     <property name="visible">True</property>
     <property name="stock">gtk-undo</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="compos_menu_forward_update_image">
     <property name="visible">True</property>
     <property name="stock">gtk-media-next</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="help_menu_about_image">
     <property name="visible">True</property>
     <property name="stock">gtk-about</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image11">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image12">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image13">
     <property name="visible">True</property>
     <property name="stock">gtk-sort-ascending</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image14">
     <property name="visible">True</property>
     <property name="stock">gtk-about</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkImage" id="image15">
     <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
+    <property name="icon-size">1</property>
+  </object>
+  <object class="GtkImage" id="image16">
+    <property name="visible">True</property>
+    <property name="stock">gtk-edit</property>
+    <property name="icon-size">1</property>
   </object>
 </interface>

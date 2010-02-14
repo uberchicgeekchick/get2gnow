@@ -33,7 +33,7 @@
 #endif
 
 #include <glib.h>
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 
 
 G_BEGIN_DECLS

@@ -15,6 +15,7 @@ AM_CFLAGS=									\
 		$(get2gnow_CFLAGS)						\
 		$(UBERCHICK_CFLAGS)						\
 
+
 bin_PROGRAMS = get2gnow
 
 if HAVE_GNOME_KEYRING
@@ -39,26 +40,29 @@ get2gnow_SOURCES = 													\
 	main.c						main.h								\
 	main-window.c					main-window.h							\
 	network.c					network.h							\
-	online-service.c				online-service.types.h		online-service.h		\
+	online-services.typedefs.h			online-services.rest-uri.defines.h				\
+	online-service.c				online-service.typedefs.h		online-service.h	\
 	online-service-request.c			online-service-request.h					\
 	online-services.c				online-services.h						\
 	online-services-dialog.c			online-services-dialog.h					\
-	online-services-typedefs.h											\
 	online-service-wrapper.c			online-service-wrapper.h					\
 	parser.c					parser.h							\
 	preferences.c					preferences.h							\
+	profile-manager.c				profile-manager.h						\
 	program.c					program.h							\
 	proxy.c						proxy.h								\
 	searches.c					searches.h							\
 	tabs.c						tabs.h								\
 	timer.c						timer.h								\
 	uberchick-label.c				uberchick-label.h						\
-	uberchick-tree-view.c	uberchick-tree-view.macros.h		uberchick-tree-view.h				\
+	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
+	uberchick-tree-view.c		uberchick-tree-view.macros.h		uberchick-tree-view.h			\
 	ui-utils.c					ui-utils.h							\
 	update-ids.c					update-ids.h							\
 	update-viewer.c					update-viewer.h							\
 	users-glists.c							users-glists.h					\
 	users.c				users.types.h			users.h						\
+	user-profile-viewer.c				user-profile-viewer.h						\
 	www.c						www.h								\
 
 

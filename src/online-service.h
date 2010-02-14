@@ -72,9 +72,9 @@
 #include <gtk/gtk.h>
 #include <libsoup/soup.h>
 
-#include "timer.h"
-#include "online-services-typedefs.h"
-#include "users.types.h"
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
+#include "online-service.typedefs.h"
 
 
 /*********************************************************************
@@ -97,13 +97,6 @@ gboolean online_service_delete(OnlineService *service, gboolean service_cache_rm
 
 gboolean online_service_validate_guid(OnlineService *service, const gchar *user_name, const gchar *uri);
 
-gint online_service_best_friends_tree_store_fill( OnlineService *service, GtkTreeStore *tree_store );
-gint online_service_best_friends_tree_store_validate( OnlineService *service, GtkTreeStore *tree_store );
-gboolean online_service_is_user_best_friend( OnlineService *service, const gchar *user_name );
-gboolean online_service_best_friends_add( OnlineService *service, const gchar *user_name );
-gboolean online_service_best_friends_drop( OnlineService *service, GtkWindow *parent, const gchar *user_name );
-void online_service_best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
-
 gboolean online_service_connect(OnlineService *service);
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection);
 gboolean online_service_refresh(OnlineService *service);
@@ -112,7 +105,7 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 
-void online_service_fetch_profile( OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func );
+void online_service_fetch_profile(OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func);
 
 gboolean online_service_validate_session(OnlineService *service, const gchar *requested_uri);
 

@@ -69,7 +69,6 @@
 #include <libsoup/soup.h>
 
 #include "online-services.types.h"
-#include "online-services-typedefs.h"
 
 /********************************************************
  *        Objects, structures, and etc typedefs         *
@@ -80,8 +79,7 @@ G_BEGIN_DECLS
  *          Global method  & function prototypes        *
  ********************************************************/
 RateLimitTimer *timer_new(void);
-void timer_main(RateLimitTimer *timer, SoupMessage *xml);
-void timer_wait(RateLimitTimer *timer, gdouble pause);
+void timer_main(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_method);
 void timer_free(RateLimitTimer *timer);
 
 G_END_DECLS

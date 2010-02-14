@@ -65,7 +65,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
@@ -80,11 +80,25 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void best_friends_set_tree_store(GtkTreeStore *tree_store);
-GtkTreeStore *best_friends_get_tree_store(void);
+void best_friends_setup(GtkBuilder *ui);
+
+gboolean best_friends_load(OnlineService *service);
+
+void best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
+gboolean best_friends_add(OnlineService *service, const gchar *user_name);
+gboolean best_friends_drop(OnlineService *service, GtkWindow *parent, const gchar *user_name);
+
+gboolean best_friends_is_user_best_friend(OnlineService *service, const gchar *user_name);
 gboolean best_friends_check_update_ids( OnlineService *service, const gchar *best_friends_user_name, gdouble update_id);
+gdouble best_friends_tree_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id);
+gboolean best_friends_tree_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id);
 gboolean best_friends_new_update_notify(void);
 
+gint best_friends_adjust_total_by(gint best_friends_adjustment);
+
+void best_friends_buttons_set_sensitive(void);
+
+void best_friends_clean_up(void);
 
 G_END_DECLS
 #endif /* __BEST_FRIENDS_H__*/

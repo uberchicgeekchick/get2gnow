@@ -64,8 +64,8 @@
 #include "config.h"
 #include "program.h"
 
-#include "online-services.defines.h"
-#include "online-services-typedefs.h"
+#include "online-services.rest-uris.defines.h"
+#include "online-services.typedefs.h"
 #include "online-services.h"
 
 #include "network.h"
@@ -82,7 +82,7 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define GtkBuilderUI "preferences"
+#define GTK_BUILDER_UI_FILENAME "preferences"
 
 #define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Updates:Notification:Settings:Setup:Start-Up:Preferences:preferences.c"
 #include "debug.h"
@@ -105,7 +105,6 @@ struct _PreferencesDialog{
 	GtkCheckButton	*autoload_dms_check_button;
 	GtkCheckButton	*autoload_replies_check_button;
 	GtkCheckButton	*autoload_homepage_check_button;
-	GtkCheckButton	*autoload_following_check_button;
 	
 	GtkCheckButton	*notify_dms_check_button;
 	GtkCheckButton	*notify_at_mentions_check_button;
@@ -235,7 +234,6 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_DMS, TRUE, prefs->autoload_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_REPLIES, TRUE, prefs->autoload_replies_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_HOMEPAGE, TRUE, prefs->autoload_homepage_check_button);
-	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_FOLLOWING, TRUE, prefs->autoload_following_check_button);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
@@ -294,7 +292,6 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 	static const gchar *timelines[] = {
 		"",			N_("Nothing"),
 		API_TIMELINE_HOMEPAGE,	N_("My Homepage"),
-		API_TIMELINE_FRIENDS,	N_("My Friends' Updates"),
 		API_REPLIES,		N_("@ Replies"),
 		API_DIRECT_MESSAGES,	N_("My DMs Inbox"),
 		API_FAVORITES,		N_("My Favorites"),
@@ -586,7 +583,7 @@ void preferences_dialog_show(GtkWindow *parent){
 
 	/* Get widgets */
 	ui=gtkbuilder_get_file(
-				GtkBuilderUI,
+				GTK_BUILDER_UI_FILENAME,
 					"preferences_dialog", &prefs->dialog,
 					"preferences_notebook", &prefs->notebook,
 					
@@ -609,7 +606,6 @@ void preferences_dialog_show(GtkWindow *parent){
 					"autoload_dms_check_button", &prefs->autoload_dms_check_button,
 					"autoload_replies_check_button", &prefs->autoload_replies_check_button,
 					"autoload_homepage_check_button", &prefs->autoload_homepage_check_button,
-					"autoload_following_check_button", &prefs->autoload_following_check_button,
 					
 					"notify_dms_check_button", &prefs->notify_dms_check_button,
 					"notify_at_mentions_check_button", &prefs->notify_at_mentions_check_button,

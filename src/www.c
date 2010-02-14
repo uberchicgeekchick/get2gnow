@@ -75,7 +75,9 @@
 #include "gconfig.h"
 #include "preferences.defines.h"
 
+#include "uberchick-label.h"
 #include "main-window.h"
+#include "update-viewer.h"
 
 
 /********************************************************************************
@@ -105,10 +107,10 @@ static gchar *www_find_user_title(OnlineService *service, const gchar *uri, cons
 static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri, const gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks, gboolean titles_strip_uris);
 
 static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml);
-static gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath, const gchar *max_nodes_name);
 
 static void www_uri_title_append(const gchar *uri, const gchar *title);
 static gchar *www_uri_title_lookup(const gchar *uri);
+static gboolean www_uri_titles_clean_up(void);
 
 /********************************************************************************
  *               object methods, handlers, callbacks, & etc.                    *
@@ -131,6 +133,58 @@ static GRegex *number_regex;
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
+void www_init(void){
+	GError *error=NULL;
+	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]+)?";
+	number_regex=g_regex_new(g_regex_pattern, 0, G_REGEX_MATCH_NOTEOL, &error);
+	if(error){
+		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		g_error_free(error);
+	}
+	www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	www_uri_title_lookup_table_clean_up_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)www_uri_titles_clean_up, NULL);
+}/*www_init();*/
+
+static gboolean www_uri_titles_clean_up(void){
+	if(!www_uri_title_list_store_total) return TRUE;
+	www_uri_title_lookup_table_processing=TRUE;
+	for(gint i=www_uri_title_list_store_total; i>=0; i--){
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter, path)){
+			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gchar *uri=NULL, *title=NULL;
+		const gchar *datetime=NULL;
+		gint created_ago=0;
+		gtk_tree_model_get(
+				GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter,
+					COLUMN_URI, &uri,
+					COLUMN_URI_TITLE, &title,
+					COLUMN_INSERT_TIME, &datetime,
+				-1
+		);
+		if( (created_ago=update_convert_datetime_to_seconds_old(datetime, TRUE)) >= 3600 ){
+			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, created_ago);
+			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
+			if(www_uri_title_list_store_total)
+				www_uri_title_list_store_total--;
+		}
+		uber_free(iter);
+	}
+	return !(www_uri_title_lookup_table_processing=FALSE);
+}/*www_uri_titles_clean_up();*/
+
+void www_deinit(void){
+	g_regex_unref(number_regex);
+	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
+	uber_object_unref(www_uri_title_lookup_table_list_store);
+}/*www_init();*/
+
 void www_html_entity_escape_status(gchar **status_text){
 	gchar *new_status=www_html_entity_escape_text( *status_text );
 	uber_free( *status_text );
@@ -284,7 +338,7 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 				continue;
 			}
 			domain=NULL;
-
+			
 			debug("Rendering URI for display including title.  URI: '%s'.", words[i]);
 			temp=www_find_uri_pages_title(service, words[i], NULL, expand_hyperlinks, make_hyperlinks, titles_strip_uris);
 			debug("Rendered URI for display.  %s will be replaced with %s.", words[i], temp);
@@ -435,12 +489,12 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 		return temp;
 	}
 	
-	SoupMessage *msg=NULL;
+	SoupMessage *xml=NULL;
 	gchar *content_type=NULL;
 	
 	main_window_statusbar_printf("Please wait while %s's title is found.", uri);
 	debug("Attempting to determine content-type for: %s.", uri);
-	if(!(content_type=www_get_uri_content_type(service, uri, &msg))){
+	if(!(content_type=www_get_uri_content_type(service, uri, &xml))){
 		debug("Unable to determine the content-type from uri: '%s'.", uri);
 		www_uri_title_append(uri, uri);
 		return temp;
@@ -455,7 +509,7 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 	uber_free(content_type);
 	
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
-	if(!(uri_title=www_get_uri_dom_xpath_element_content(msg, "html->head->title", "body"))){
+	if(!(uri_title=www_get_uri_dom_xpath_element_content(xml, "html->head->title"))){
 		if(searching)
 			uri_title=g_strdup(service->uri);
 		else if(services_resource && services_resource[0]=='@')
@@ -532,7 +586,7 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	return content_type;
 }/*www_get_uri_content_type*/
 
-static gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath, const gchar *max_nodes_name){
+gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	debug("Parsing xml document before searching for xpath: '%s' content.", xpath);
@@ -554,7 +608,7 @@ static gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gcha
 		
 		IF_DEBUG
 			debug("**NOTICE:** Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
-		if( xpath_depth>xpath_target_depth /*|| g_str_equal(max_nodes_name, current_node->name)*/ ) break;
+		if( xpath_depth>xpath_target_depth ) break;
 		
 		if(!g_str_equal(current_node->name, xpathv[xpath_depth])){
 			if(xpath_depth==xpath_target_depth && !current_node->next){
@@ -662,58 +716,6 @@ static gchar *www_uri_title_lookup(const gchar *uri){
 	uber_free(iter);
 	return title;
 }/*www_uri_title_lookup("http://twitter.com/uberChick");*/
-
-static gboolean www_uri_titles_clean_up(void){
-	if(!www_uri_title_list_store_total) return TRUE;
-	www_uri_title_lookup_table_processing=TRUE;
-	for(gint i=www_uri_title_list_store_total; i>=0; i--){
-		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter, path)){
-			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
-			gtk_tree_path_free(path);
-			uber_free(iter);
-			continue;
-		}
-		
-		gchar *uri=NULL, *title=NULL;
-		const gchar *datetime=NULL;
-		gint created_ago=0;
-		gtk_tree_model_get(
-				GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter,
-					COLUMN_URI, &uri,
-					COLUMN_URI_TITLE, &title,
-					COLUMN_INSERT_TIME, &datetime,
-				-1
-		);
-		if( (created_ago=update_convert_datetime_to_seconds_old(datetime, FALSE)) >= 3600 ){
-			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, created_ago);
-			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
-			if(www_uri_title_list_store_total)
-				www_uri_title_list_store_total--;
-		}
-		uber_free(iter);
-	}
-	return !(www_uri_title_lookup_table_processing=FALSE);
-}/*www_uri_titles_clean_up();*/
-
-void www_init(void){
-	GError *error=NULL;
-	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]+)?";
-	number_regex=g_regex_new(g_regex_pattern, 0, G_REGEX_MATCH_NOTEOL, &error);
-	if(error){
-		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
-		g_error_free(error);
-	}
-	www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	www_uri_title_lookup_table_clean_up_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)www_uri_titles_clean_up, NULL);
-}/*www_init();*/
-
-void www_deinit(void){
-	g_regex_unref(number_regex);
-	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
-	uber_object_unref(www_uri_title_lookup_table_list_store);
-}/*www_init();*/
 
 /********************************************************************************
  *                                    eof                                       *

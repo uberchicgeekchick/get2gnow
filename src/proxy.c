@@ -64,9 +64,9 @@
 
 #include "gconfig.h"
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "online-services.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "proxy.h"
 

@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkHBox" id="uberchick_sexy_entry_completion_hbox">
+    <property name="visible">True</property>
+    <child>
+      <object class="GtkFrame" id="uberchick_sexy_entry_completion_frame">
+        <property name="visible">True</property>
+        <property name="label_xalign">0</property>
+        <property name="shadow_type">none</property>
+        <child>
+          <object class="GtkAlignment" id="uberchick_sexy_entry_completion_alignment">
+            <property name="visible">True</property>
+            <property name="left_padding">12</property>
+            <child>
+              <object class="GtkComboBoxEntry" id="uberchick_sexy_entry_completion_combo_box_entry">
+                <property name="visible">True</property>
+                <property name="model">search_history_list_store</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child type="label">
+          <object class="GtkLabel" id="uberchick_sexy_entry_completion_label">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">&lt;b&gt;Sear_ch:&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
+            <property name="use_underline">True</property>
+            <property name="mnemonic_widget">search_history_combo_box_entry</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkVBox" id="uberchick_sexy_entry_completion_submit_vbox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkButton" id="uberchick_sexy_entry_completion_submit_button">
+            <property name="label" translatable="yes">_Ok</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="image">uberchick_sexy_entry_completion_submit_image</property>
+            <property name="use_underline">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">False</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkImage" id="uberchick_sexy_entry_completion_submit_image">
+    <property name="visible">True</property>
+    <property name="stock">gtk-media-next</property>
+  </object>
+</interface>

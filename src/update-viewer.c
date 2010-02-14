@@ -69,14 +69,16 @@
 
 #include "gconfig.h"
 
-#include "online-services-typedefs.h"
-#include "online-services.defines.h"
+#include "online-services.rest-uris.defines.h"
+#include "online-services.typedefs.h"
 #include "online-services.types.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-services.h"
 
 #include "online-service.h"
 #include "online-service-request.h"
+
+#include "best-friends.h"
 
 #include "online-services-dialog.h"
 
@@ -176,6 +178,8 @@ struct _UpdateViewer{
 	OnlineService		*best_friends_service;
 	gchar			*best_friends_user_name;
 	
+	GtkButton		*shorten_uri_button;
+	
 	GtkButton		*sexy_send;
 	GtkButton		*sexy_dm_button;
 	GtkVSeparator		*sexy_vseparator;
@@ -189,7 +193,7 @@ struct _UpdateViewer{
 	GtkListStore		*followers_list_store;
 	GtkButton		*followers_send_dm;
 	
-	GtkToggleButton		*dm_form_active_togglebutton;
+	GtkToggleButton		*dm_form_active_toggle_button;
 	GtkImage		*dm_form_active_image;
 	
 	/* Container for UpdateViewer's right side widgets. */
@@ -202,6 +206,7 @@ struct _UpdateViewer{
 	GtkButton		*forward_update_button;
 	GtkButton		*retweet_button;
 	GtkButton		*make_fave_button;
+	GtkButton		*destroy_update_button;
 	
 	
 	/* ToggleButtons for controlling the update viewer's appearance. */
@@ -225,16 +230,17 @@ struct _UpdateViewer{
 	GtkLabel		*online_services_controls_label;
 	GtkToolbar		*online_services_controls_toolbar;
 	GtkToolButton		*online_services_controls_edit_accounts_tool_button;
+	GtkToolButton		*online_services_controls_reset_accounts_tool_button;
 	
 	GtkScrolledWindow	*online_services_accounts_scrolled_window;
 	gint			online_services_accounts_total;
-	gint			online_services_accounts_post_to_enabled;
-	GtkTreeView		*online_services_accounts_tree_view;
+	gint			online_services_accounts_with_post_to_enabled;
+	SexyTreeView		*online_services_accounts_sexy_tree_view;
 	GtkTreeStore		*online_services_accounts_tree_store;
-	GtkTreeViewColumn	*online_services_accounts_tree_view_key_tree_view_column;
-	GtkCellRendererText	*online_services_accounts_tree_view_key_cell_renderer_text;
-	GtkTreeViewColumn	*online_services_accounts_tree_view_post_to_enabled_tree_view_column;
-	GtkCellRendererToggle	*online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle;
+	GtkTreeViewColumn	*online_services_accounts_sexy_tree_view_key_tree_view_column;
+	GtkCellRendererText	*online_services_accounts_sexy_tree_view_key_cell_renderer_text;
+	GtkTreeViewColumn	*online_services_accounts_sexy_tree_view_post_to_enabled_tree_view_column;
+	GtkCellRendererToggle	*online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle;
 };
 
 typedef enum{
@@ -242,6 +248,8 @@ typedef enum{
       POSTABLE_ONLINE_SERVICE_KEY,
       POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED,
       POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED,
+      POSTABLE_ONLINE_SERVICE_URI,
+      POSTABLE_ONLINE_SERVICE_INFO_STRING,
 }UpdateViewerPostToEnabledTreeStoreColumns;
 
 typedef enum{
@@ -261,7 +269,7 @@ typedef enum{
 #define	DEBUG_DOMAINS	"UI:GtkBuilder:GtkBuildable:OnlineServices:Networking:Updates:Requests:Users:Start-Up:update-viewer.c"
 #include "debug.h"
 
-#define GtkBuilderUI "update-viewer"
+#define GTK_BUILDER_UI_FILENAME "update-viewer"
 #define	UPDATE_MAX_LENGTH	140
 
 static UpdateViewer *update_viewer=NULL;
@@ -316,6 +324,7 @@ static void update_viewer_previous_update_selected(GtkComboBoxEntry *sexy_entry_
 static void update_viewer_previous_updates_free(UpdateViewer *update_viewer);
 
 static void update_viewer_reply_or_forward(GtkButton *update_button);
+static void update_viewer_insert_shortened_uri(GtkButton *shorten_uri_button, UpdateViewer *update_viewer);
 
 static void update_viewer_dm_data_fill(GList *followers);
 static void update_viewer_dm_form_set_loading_label(UpdateViewer *update_viewer);
@@ -328,9 +337,9 @@ static void update_viewer_online_services_controls_edit_accounts_clicked(GtkTool
 static void update_viewer_postable_online_services_setup(UpdateViewer *update_viewer);
 static gboolean update_viewer_postable_online_services_check(OnlineService *service);
 static GtkTreeIter *update_viewer_postable_online_service_get_iter(OnlineService *service);
-static void update_viewer_online_services_set_postable_check_buttons(OnlineService *default_service);
+static void update_viewer_online_services_set_postable_check_buttons(GtkToolButton *online_services_controls_reset_accounts_tool_button, OnlineService *default_service);
 static void update_viewer_online_services_postable_form_viewable_toggled(GtkToggleButton *online_services_view_toggle_button, UpdateViewer *update_viewer);
-static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle *online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle, gchar *path, UpdateViewer *update_viewer);
+static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle *online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle, gchar *path, UpdateViewer *update_viewer);
 static void update_viewer_online_service_check_button_set_status(GtkTreeIter *iter, OnlineService *service, OnlineService *default_service);
 
 /********************************************************
@@ -369,15 +378,13 @@ static gboolean update_viewer_delete_event_cb(GtkWidget *window, GdkEvent *event
 }/*update_viewer_delete_event_cb*/
 
 static gboolean update_viewer_configure_event_timeout_cb(GtkWidget *widget){
-	if(gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE))
-		geometry_save();
+	geometry_save();
 	update_viewer->size_timeout_id=0;
 	return FALSE;
 }
 
 static gboolean update_viewer_configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, UpdateViewer *update_viewer){
-	if(!gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE)) return FALSE;
-	program_timeout_remove(&update_viewer->size_timeout_id, _("updater viewer geometry & configuration saving"));
+	program_timeout_remove(&update_viewer->size_timeout_id, _("window(s), vbar, & hbar, geometry & postions"));
 	update_viewer->size_timeout_id=g_timeout_add_seconds(1, (GSourceFunc)update_viewer_configure_event_timeout_cb, widget );
 	return FALSE;
 }
@@ -408,7 +415,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 	update_viewer=update_viewer_init();
 	
 	ui=gtkbuilder_get_file(
-				GtkBuilderUI,
+				GTK_BUILDER_UI_FILENAME,
 					"update_viewer", &update_viewer->update_viewer,
 					"update_viewer_embed", &update_viewer->update_viewer_embed,
 					
@@ -440,6 +447,9 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 					"update_viewer_update_composition_hbox", &update_viewer->update_composition_hbox,
 					"update_viewer_sexy_entry_combo_box_entry", &update_viewer->sexy_entry_combo_box_entry,
 					"previous_updates_list_store", &update_viewer->previous_updates_list_store,
+					
+					"update_viewer_shorten_uri_button", &update_viewer->shorten_uri_button,
+					
 					"sexy_send", &update_viewer->sexy_send,
 					"sexy_dm_button", &update_viewer->sexy_dm_button,
 					"sexy_vseparator", &update_viewer->sexy_vseparator,
@@ -459,7 +469,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 					"update_viewer_online_services_view_toggle_button", &update_viewer->online_services_view_toggle_button,
 					"update_viewer_online_services_view_toggle_image", &update_viewer->online_services_view_toggle_image,
 					
-					"dm_form_active_togglebutton", &update_viewer->dm_form_active_togglebutton,
+					"dm_form_active_toggle_button", &update_viewer->dm_form_active_toggle_button,
 					"dm_form_active_image", &update_viewer->dm_form_active_image,
 					
 					"controls_vbox", &update_viewer->controls_vbox,
@@ -471,20 +481,22 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 					"forward_update_button", &update_viewer->forward_update_button,
 					"retweet_button", &update_viewer->retweet_button,
 					"make_fave_button", &update_viewer->make_fave_button,
+					"update_viewer_destroy_update_button", &update_viewer->destroy_update_button,
 					
 					"update_viewer_online_services_vbox", &update_viewer->online_services_vbox,
 					"update_viewer_online_services_controls_hbox", &update_viewer->online_services_controls_hbox,
 					"update_viewer_online_services_controls_label", &update_viewer->online_services_controls_label,
 					"update_viewer_online_services_controls_toolbar", &update_viewer->online_services_controls_toolbar,
 					"update_viewer_online_services_controls_edit_accounts_tool_button", &update_viewer->online_services_controls_edit_accounts_tool_button,
+					"update_viewer_online_services_controls_reset_accounts_tool_button", &update_viewer->online_services_controls_reset_accounts_tool_button,
 					
 					"update_viewer_online_services_accounts_scrolled_window", &update_viewer->online_services_accounts_scrolled_window,
 					"update_viewer_online_services_accounts_tree_store", &update_viewer->online_services_accounts_tree_store,
-					"update_viewer_online_services_accounts_tree_view", &update_viewer->online_services_accounts_tree_view,
-					"update_viewer_online_services_accounts_tree_view_key_tree_view_column", &update_viewer->online_services_accounts_tree_view_key_tree_view_column,
-					"update_viewer_online_services_accounts_tree_view_key_cell_renderer_text", &update_viewer->online_services_accounts_tree_view_key_cell_renderer_text,
-					"update_viewer_online_services_accounts_tree_view_post_to_enabled_tree_view_column", &update_viewer->online_services_accounts_tree_view_post_to_enabled_tree_view_column,
-					"update_viewer_online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle", &update_viewer->online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle,
+					"update_viewer_online_services_accounts_sexy_tree_view", &update_viewer->online_services_accounts_sexy_tree_view,
+					"update_viewer_online_services_accounts_sexy_tree_view_key_tree_view_column", &update_viewer->online_services_accounts_sexy_tree_view_key_tree_view_column,
+					"update_viewer_online_services_accounts_sexy_tree_view_key_cell_renderer_text", &update_viewer->online_services_accounts_sexy_tree_view_key_cell_renderer_text,
+					"update_viewer_online_services_accounts_sexy_tree_view_post_to_enabled_tree_view_column", &update_viewer->online_services_accounts_sexy_tree_view_post_to_enabled_tree_view_column,
+					"update_viewer_online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle", &update_viewer->online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle,
 				NULL
 	);
 	
@@ -497,13 +509,15 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 	update_viewer_grab_widgets_compact_update_viewer_hidden(ui);
 	
 	debug("UpdateViewer's hotkey connected.  Connecting signal handlers.");
+	g_signal_connect(update_viewer->online_services_controls_reset_accounts_tool_button, "clicked", (GCallback)update_viewer_online_services_set_postable_check_buttons, NULL);
 	update_viewer_bind_hotkeys(ui);
 	
-	gtkbuilder_connect( ui, update_viewer,
+	gtkbuilder_connect(
+			ui, update_viewer,
 				"update_viewer", "destroy", update_viewer_destroy_cb,
 				"update_viewer", "delete_event", update_viewer_delete_event_cb,
 				"update_viewer", "configure_event", update_viewer_configure_event_cb,
-
+				
 				"view_user_profile_button", "clicked", online_service_request_selected_update_view_profile,
 				"view_user_unread_updates_button", "clicked", online_service_request_selected_update_view_updates_new,
 				"view_user_updates_button", "clicked", online_service_request_selected_update_view_updates,
@@ -514,9 +528,12 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 				"user_block_button", "clicked", online_service_request_selected_update_block,
 				
 				"update_viewer_sexy_entry_combo_box_entry", "changed", update_viewer_previous_update_selected,
+				
+				"update_viewer_shorten_uri_button", "clicked", online_service_request_popup_shorten_uri,
+				
 				"sexy_send", "clicked", update_viewer_send,
 				"sexy_dm_button", "clicked", update_viewer_send,
-				"dm_form_active_togglebutton", "toggled", update_viewer_dm_show,
+				"dm_form_active_toggle_button", "toggled", update_viewer_dm_show,
 				
 				"dm_refresh", "clicked", update_viewer_dm_refresh,
 				"followers_send_dm", "clicked", update_viewer_send,
@@ -525,6 +542,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 				"forward_update_button", "clicked", update_viewer_forward,
 				"retweet_button", "clicked", update_viewer_retweet,
 				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
+				"update_viewer_destroy_update_button", "clicked", online_service_request_selected_update_destroy,
 				
 				"update_viewer_online_services_controls_edit_accounts_tool_button", "clicked", update_viewer_online_services_controls_edit_accounts_clicked,
 			NULL
@@ -559,12 +577,14 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 	online_service_request_unset_selected_update();
 	
 	gboolean compact;
-	if((compact=gconfig_if_bool( PREFS_UPDATE_VIEWER_COMPACT, FALSE)) != gtk_toggle_button_get_active(update_viewer->compact_view_toggle_button) )
+	if((compact=gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE)) != gtk_toggle_button_get_active(update_viewer->compact_view_toggle_button) )
 		gtk_toggle_button_set_active(update_viewer->compact_view_toggle_button, compact);
 	else
 		update_viewer_compact_view_display(compact);
 	
 	return update_viewer;
+	
+	update_viewer_insert_shortened_uri(update_viewer->shorten_uri_button, update_viewer);
 }/*update_viewer_new();*/
 
 GtkPaned *update_viewer_get_vpaned(void){
@@ -580,9 +600,14 @@ static void update_viewer_postable_online_services_setup(UpdateViewer *update_vi
 	
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(update_viewer->online_services_view_toggle_button), gconfig_if_bool(PREFS_UPDATE_VIEWER_SHOW_SERVICES, TRUE));
 	
-	g_signal_connect_after(update_viewer->online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle, "toggled", (GCallback)update_viewer_online_service_postable_toggled, update_viewer);
+	g_signal_connect_after(update_viewer->online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle, "toggled", (GCallback)update_viewer_online_service_postable_toggled, update_viewer);
+	
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(update_viewer->online_services_accounts_tree_store), POSTABLE_ONLINE_SERVICE_URI, GTK_SORT_ASCENDING);
+	sexy_tree_view_set_tooltip_label_column(update_viewer->online_services_accounts_sexy_tree_view, POSTABLE_ONLINE_SERVICE_INFO_STRING);
+	
 	update_viewer->online_services_accounts_total=-1;
-	update_viewer->online_services_accounts_post_to_enabled=-1;
+	update_viewer->online_services_accounts_with_post_to_enabled=-1;
+	
 	gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_vbox));
 	gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 }/*update_viewer_postable_online_services_setup(update_viewer);*/
@@ -610,7 +635,7 @@ void update_viewer_postable_online_services_append(OnlineService *service){
 	uber_free(iter);
 }/*update_viewer_postable_online_services_append(service);*/
 
-static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle *online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle, gchar *path, UpdateViewer *update_viewer){
+static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle *online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle, gchar *path, UpdateViewer *update_viewer){
 	GtkTreeIter iter;
 	if(!gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(update_viewer->online_services_accounts_tree_store), &iter, path)){
 		debug("Looing for postable online service, from path: %s, failed to get valid iter for the tree store.", path);
@@ -625,20 +650,24 @@ static void update_viewer_online_service_postable_toggled(GtkCellRendererToggle 
 				POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, &post_to_enabled,
 			-1
 	);
-	if(update_viewer->online_services_accounts_post_to_enabled<1 && post_to_enabled){
+	if(update_viewer->online_services_accounts_with_post_to_enabled<1 && post_to_enabled){
 		debug("%s cannot disable the only postable OnlineService.", GETTEXT_PACKAGE);
 		return;
 	}
+	
+	gchar *post_to_enabled_info_string=g_strdup_printf("<%s>&lt;%s&gt;'s status will%s be updated.</%s>", (!post_to_enabled ?"b" :"i"), service->key, (!post_to_enabled ?"" :" not"), (!post_to_enabled ?"b" :"i"));
 	gtk_tree_store_set(
 			update_viewer->online_services_accounts_tree_store, &iter,
 				POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, !post_to_enabled,
+				POSTABLE_ONLINE_SERVICE_INFO_STRING, post_to_enabled_info_string,
 			-1
 	);
+	uber_free(post_to_enabled_info_string);
 	if(!(service->post_to_enabled=!post_to_enabled))
-		update_viewer->online_services_accounts_post_to_enabled--;
+		update_viewer->online_services_accounts_with_post_to_enabled--;
 	else
-		update_viewer->online_services_accounts_post_to_enabled++;
-}/*update_viewer_online_service_postable_toggled(online_services_accounts_tree_view_post_to_enabled_cell_renderer_toggle, "1", update_viewer);*/
+		update_viewer->online_services_accounts_with_post_to_enabled++;
+}/*update_viewer_online_service_postable_toggled(online_services_accounts_sexy_tree_view_post_to_enabled_cell_renderer_toggle, "1", update_viewer);*/
 
 static gboolean update_viewer_postable_online_services_check(OnlineService *service){
 	GtkTreeIter *iter=update_viewer_postable_online_service_get_iter(service);
@@ -680,8 +709,8 @@ static GtkTreeIter *update_viewer_postable_online_service_get_iter(OnlineService
 	return NULL;
 }/*update_viewer_postable_online_service_get_iter(service);*/
 
-static void update_viewer_online_services_set_postable_check_buttons(OnlineService *default_service){
-	update_viewer->online_services_accounts_post_to_enabled=-1;
+static void update_viewer_online_services_set_postable_check_buttons(GtkToolButton *online_services_controls_reset_accounts_tool_button, OnlineService *default_service){
+	update_viewer->online_services_accounts_with_post_to_enabled=-1;
 	for(gint i=0; i<=update_viewer->online_services_accounts_total; i++){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
@@ -703,7 +732,7 @@ static void update_viewer_online_services_set_postable_check_buttons(OnlineServi
 		gtk_tree_path_free(path);
 		uber_free(iter);
 	}
-}/*update_viewer_online_services_set_postable_check_buttons(service);*/
+}/*update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, service);*/
 
 static void update_viewer_online_service_check_button_set_status(GtkTreeIter *iter, OnlineService *service, OnlineService *default_service){
 	gboolean post_to_enabled=TRUE;
@@ -712,32 +741,39 @@ static void update_viewer_online_service_check_button_set_status(GtkTreeIter *it
 	else
 		post_to_enabled=service->post_to_by_default;
 	
+	if(service->post_to_enabled!=post_to_enabled)
+		service->post_to_enabled=post_to_enabled;
+	
 	gboolean post_to_enabled_toggle_enalbled=TRUE;
 	if(!(service->enabled && service->connected && service->authenticated))
 		post_to_enabled_toggle_enalbled=FALSE;
 	
 	if(post_to_enabled)
-		update_viewer->online_services_accounts_post_to_enabled++;
+		update_viewer->online_services_accounts_with_post_to_enabled++;
 	
-	if(update_viewer->online_services_accounts_post_to_enabled>0 && post_to_enabled && post_to_enabled_toggle_enalbled){
-		if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_vbox))){
+	if(update_viewer->online_services_accounts_with_post_to_enabled>0 && post_to_enabled && post_to_enabled_toggle_enalbled){
+		if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_view_toggle_button))){
 			gtk_widget_show(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 			debug("Displaying %s's postable OnlineService(s) container.", GETTEXT_PACKAGE);
 		}
-		if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_vbox))){
+		if(gconfig_if_bool(PREFS_UPDATE_VIEWER_SHOW_SERVICES, TRUE) && !gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_vbox))){
 			gtk_widget_show(GTK_WIDGET(update_viewer->online_services_vbox));
 			debug("Displaying %s's postable OnlineService(s) toggle button.", GETTEXT_PACKAGE);
 		}
 	}
 	
+	gchar *post_to_enabled_info_string=g_strdup_printf("<%s>&lt;%s&gt;'s status will%s be updated.</%s>", (!post_to_enabled ?"i" :"b"), service->key, (!post_to_enabled ?" not" :""), (!post_to_enabled ?"i" :"b"));
 	gtk_tree_store_set(
 				update_viewer->online_services_accounts_tree_store, iter,
 					POSTABLE_ONLINE_SERVICE, service,
 					POSTABLE_ONLINE_SERVICE_KEY, service->key,
       					POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED, post_to_enabled_toggle_enalbled,
 					POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, post_to_enabled,
+					POSTABLE_ONLINE_SERVICE_URI, service->uri,
+					POSTABLE_ONLINE_SERVICE_INFO_STRING, post_to_enabled_info_string,
 				-1
 	);
+	uber_free(post_to_enabled_info_string);
 }/*update_viewer_online_service_check_button_set_status(iter, service, NULL);*/
 
 gboolean update_viewer_postable_online_service_delete(OnlineService *service){
@@ -770,10 +806,10 @@ gboolean update_viewer_postable_online_service_delete(OnlineService *service){
 		gtk_tree_store_remove(update_viewer->online_services_accounts_tree_store, iter);
 		update_viewer->online_services_accounts_total--;
 		if(post_to_enabled)
-			update_viewer->online_services_accounts_post_to_enabled--;
+			update_viewer->online_services_accounts_with_post_to_enabled--;
 		
-		if(update_viewer->online_services_accounts_post_to_enabled<1){
-			if(gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_vbox))){
+		if(update_viewer->online_services_accounts_with_post_to_enabled<1){
+			if(gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_view_toggle_button))){
 				gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 				debug("Hiding %s's postable OnlineService(s) container.", GETTEXT_PACKAGE);
 			}
@@ -820,7 +856,7 @@ static void update_viewer_selected_update_author_best_friend_toggled(GtkToggleBu
 		return;
 	}
 	
-	if(!online_service_is_user_best_friend(service, user_name) )
+	if(!best_friends_is_user_best_friend(service, user_name) )
 		online_service_request_selected_update_best_friend_add();
 	else
 		online_service_request_selected_update_best_friend_drop();
@@ -922,6 +958,7 @@ static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateVi
 		
 		"user_image",
 		"update_viewer_left_vseparator",
+		"update_viewer_destroy_update_button",
 		
 		"view_user_profile_button",
 		"view_user_unread_updates_button",
@@ -975,9 +1012,19 @@ static void update_viewer_selected_update_buttons_show(gboolean selected_update,
 					gtk_widget_show(GTK_WIDGET(l->data));
 				break;
 			
+			case 4:
+				if(!selected_update)
+					gtk_widget_hide(GTK_WIDGET(l->data));
+				else{
+					if(!(update_viewer->viewing_service && update_viewer->viewing_user_name && online_services_is_user_name_mine(update_viewer->viewing_service, update_viewer->viewing_user_name)))
+						gtk_widget_hide(GTK_WIDGET(l->data));
+					else
+						gtk_widget_show(GTK_WIDGET(l->data));
+				}
+				break;
 			default:
 				if( GTK_BUTTON(l->data) == update_viewer->retweet_button )
-					if(!( service && service->micro_blogging_service==Twitter )){
+					if(!(selected_update && service)){
 						gtk_widget_hide(GTK_WIDGET(l->data));
 						gtk_widget_set_sensitive(GTK_WIDGET(l->data), FALSE);
 					}else{
@@ -994,7 +1041,7 @@ static void update_viewer_selected_update_buttons_show(gboolean selected_update,
 	g_list_free(l);
 	
 	if(selected_update && G_STR_N_EMPTY(user_name) )
-		gtk_toggle_button_set_active( update_viewer->best_friend_toggle_button, (online_service_is_user_best_friend(service, user_name)) );
+		gtk_toggle_button_set_active( update_viewer->best_friend_toggle_button, (best_friends_is_user_best_friend(service, user_name)) );
 	if(!GTK_WIDGET_IS_SENSITIVE(update_viewer->update_composition_vbox))
 		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->update_composition_vbox), TRUE);
 	
@@ -1031,7 +1078,7 @@ static void update_viewer_bind_hotkeys(GtkBuilder *ui){
 	for(int i=0; i<G_N_ELEMENTS(hotkey_widgets); i++){
 		widget=NULL;
 		if(!(widget=gtk_builder_get_object(ui, hotkey_widgets[i]))){
-			debug("**ERROR:** Cannot bind %s's hotkeys to %s, the widget could not be found in %s", _(GETTEXT_PACKAGE), hotkey_widgets[i], GtkBuilderUI);
+			debug("**ERROR:** Cannot bind %s's hotkeys to %s, the widget could not be found in %s", _(GETTEXT_PACKAGE), hotkey_widgets[i], GTK_BUILDER_UI_FILENAME);
 			continue;
 		}
 		
@@ -1051,13 +1098,13 @@ void update_viewer_best_friends_start_dm(OnlineService *service, const gchar *us
 }/*void update_viewer_best_friends_start_dm(service, user_name);*/
 
 static void update_viewer_dm_form_set_toggle_and_image(void){
-	if(!gtk_toggle_button_get_active(update_viewer->dm_form_active_togglebutton)){
+	if(!gtk_toggle_button_get_active(update_viewer->dm_form_active_toggle_button)){
 		debug("Setting UpdateViewer's dm form toggle button to enable the DM form.");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->dm_form_active_togglebutton), "<span weight=\"bold\">Compose DM's to any of your friends.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->dm_form_active_toggle_button), "<span weight=\"bold\">Compose DM's to any of your friends.</span>");
 		gtk_image_set_from_icon_name(update_viewer->dm_form_active_image, "gtk-edit", ImagesMinimum);
 	}else{
 		debug("Setting UpdateViewer's dm form toggle button to disable the DM form.");
-		gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->dm_form_active_togglebutton), "<span weight=\"light\">Hide the DM form &amp; area.  You'll still be able to send DMs in the future by clicking this button again.</span>");
+		gtk_widget_set_tooltip_markup(GTK_WIDGET(update_viewer->dm_form_active_toggle_button), "<span weight=\"light\">Hide the DM form &amp; area.  You'll still be able to send DMs in the future by clicking this button again.</span>");
 		gtk_image_set_from_icon_name(update_viewer->dm_form_active_image, "gtk-close", ImagesMinimum);
 	}
 }/*update_viewer_dm_form_set_toggle_and_image*/
@@ -1213,31 +1260,27 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, gchar *user_
 	gboolean prefix_added=FALSE;
 	if(user_name && service){
 		gchar *users_at=NULL;
-		gboolean user_name_free=FALSE;
-		if( (user_name_free=g_regex_match_simple("[A-Z]", user_name, 0, 0)) )
-			user_name=g_utf8_strdown(user_name, -1);
 		
 		if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_ADD_PROFILE_LINK, TRUE) ))
 			users_at=g_strdup_printf("@%s ", user_name);
 		else
 			users_at=g_strdup_printf("@%s ( http://%s/%s ) ", user_name, service->uri, user_name);
-		prefix_added=update_viewer_sexy_prefix_string(users_at, TRUE);
+		prefix_added=update_viewer_sexy_prefix_string(users_at, TRUE, TRUE);
 		uber_free(users_at);
-		if(user_name_free) uber_free(user_name);
 	}
 	
 	update_viewer_sexy_select();
 	return prefix_added;
 }/*update_viewer_set_in_reply_to_data(user->user_name|NULL, service, 1212154, TRUE|FALSE, TRUE|FALSE);*/
 
-void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf){
+void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateMonitor monitoring){
 	if(!(service && service->session && online_service_validate_session(service, user_name) )) return;
 	g_object_set(GTK_LABEL(update_viewer->sexy_update), "yalign", 0.00, "xalign", 0.00, "wrap-mode", PANGO_WRAP_WORD_CHAR, "single-line-mode", FALSE, NULL);
 	
 	if(!(service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE)))
-		update_viewer_online_services_set_postable_check_buttons(NULL);
+		update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, NULL);
 	else
-		update_viewer_online_services_set_postable_check_buttons(service);
+		update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, service);
 	
 	if(!id)
 		online_service_request_unset_selected_update();
@@ -1254,12 +1297,12 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	
 	const gchar *uri_scheme_suffix=(service->https?"s":"");
 	
+	main_window_set_statusbar_msg(NULL);
+	
 	if(id)
 		update_viewer_set_in_reply_to_data(service, (gchar *)user_name, user_id, id, FALSE, TRUE);
-	else{
-		main_window_set_statusbar_msg(NULL);
+	else
 		update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, 0.0, FALSE, TRUE);
-	}
 	
 	gchar *sexy_text=NULL;
 	
@@ -1325,7 +1368,12 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	
 	debug("Selecting 'sexy_entry' for entering a new update.");
 	update_viewer_sexy_select();
-}/*update_viewer_view_update*/
+}/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None);*/
+
+static void update_viewer_insert_shortened_uri(GtkButton *shorten_uri_button, UpdateViewer *update_viewer){
+	gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), FALSE);
+	online_service_request_popup_shorten_uri();
+}/*update_viewer_insert_shortened_uri(update_viewer->shorten_uri_button, update_viewer);*/
 
 static gint update_viewer_sexy_entry_update_length(gchar *update){
 	guint16 character_count=0;
@@ -1391,46 +1439,54 @@ void update_viewer_sexy_set(gchar *text){
 
 void update_viewer_sexy_prefix_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
-	update_viewer_sexy_prefix_string((const gchar *)str, FALSE);
+	update_viewer_sexy_prefix_string((const gchar *)str, FALSE, FALSE);
 	uber_free(str);
 }/*update_viewer_sexy_prefix_char*/
 
-gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean uniq){
-	return update_viewer_sexy_puts(str, 0, uniq);
+gboolean update_viewer_sexy_prefix_string(const gchar *str, gboolean to_lower, gboolean uniq){
+	return update_viewer_sexy_puts(str, 0, to_lower, uniq);
 }/*update_viewer_sexy_prefix_string*/
 
 void update_viewer_sexy_insert_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
-	update_viewer_sexy_insert_string((const gchar *)str, FALSE);
+	update_viewer_sexy_insert_string((const gchar *)str, FALSE, FALSE);
 	uber_free(str);
 }/*update_viewer_sexy_insert_char*/
 
-gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean uniq){
-	return update_viewer_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry)), uniq );
+gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean to_lower, gboolean uniq){
+	if(gtk_widget_is_sensitive(GTK_WIDGET(update_viewer->sexy_entry)))
+		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), TRUE);
+	return update_viewer_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry)), to_lower, uniq);
 }/*update_viewer_sexy_insert_string*/
 
 void update_viewer_sexy_append_char(const char c){
 	gchar *str=g_strdup_printf("%c", c);
-	update_viewer_sexy_append_string((const gchar *)str, FALSE);
+	update_viewer_sexy_append_string((const gchar *)str, FALSE, FALSE);
 	uber_free(str);
 }/*update_viewer_sexy_append_char*/
 
-gboolean update_viewer_sexy_append_string(const gchar *str, gboolean uniq){
-	return update_viewer_sexy_puts(str, (gint)gtk_entry_get_text_length(GTK_ENTRY(update_viewer->sexy_entry)), uniq );
+gboolean update_viewer_sexy_append_string(const gchar *str, gboolean to_lower, gboolean uniq){
+	return update_viewer_sexy_puts(str, (gint)gtk_entry_get_text_length(GTK_ENTRY(update_viewer->sexy_entry)), to_lower, uniq);
 }/*update_viewer_sexy_append_string*/
 
-gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, gboolean uniq){
-	if(uniq && g_strrstr(GTK_ENTRY(update_viewer->sexy_entry)->text, str) )
+gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, gboolean to_lower, gboolean uniq){
+	gchar *string=NULL;
+	if( to_lower && g_regex_match_simple("[A-Z]", str, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0) )
+		string=g_utf8_strdown(str, -1);
+	if(uniq && g_strrstr(GTK_ENTRY(update_viewer->sexy_entry)->text, str) ){
+		if(string) uber_free(string);
 		return FALSE;
+	}
 	
 	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry));
-	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), str, -1, &position_after );
+	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), (string ?string :str), -1, &position_after );
 	if(position_after<position_prior)
 		update_viewer->sexy_position=position_prior;
 	else{
 		gtk_entry_set_position(GTK_ENTRY(update_viewer->sexy_entry), position_after);
 		update_viewer->sexy_position=position_after;
 	}
+	if(string) uber_free(string);
 	update_viewer_sexy_entry_update_remaining_character_count();
 	update_viewer_sexy_select();
 	return TRUE;
@@ -1466,10 +1522,8 @@ static void update_viewer_reply_or_forward(GtkButton *update_button){
 
 void update_viewer_retweet(void){
 	OnlineService *service=online_service_request_selected_update_get_service();
-	if(!( service && service->micro_blogging_service==Twitter )){
-		if(service) update_viewer_beep();
-		return;
-	}
+	if(!service) return;
+	
 	gchar *retweet_uri=g_strdup_printf(API_RETWEET_UPDATE, online_service_request_selected_update_get_id_str());
 	online_service_request(service, POST, retweet_uri, NULL, network_update_posted, (gchar *)online_service_request_selected_update_get_user_name(), NULL);
 	uber_free(retweet_uri);
@@ -1478,6 +1532,9 @@ void update_viewer_retweet(void){
 void update_viewer_send(GtkWidget *activated_widget){
 	if( G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && activated_widget==GTK_WIDGET(update_viewer->sexy_entry) && online_service_request_selected_update_get_user_name() )
 		return update_viewer_reply();
+	
+	if(g_regex_match_simple("^@[^ ]+ $", GTK_ENTRY(update_viewer->sexy_entry)->text, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0))
+		return update_viewer_beep();
 	
 	if(!activated_widget){
 		if(update_viewer->best_friends_service && update_viewer->best_friends_user_name)
@@ -1513,8 +1570,8 @@ void update_viewer_send(GtkWidget *activated_widget){
 
 void update_viewer_new_update(void){
 	update_viewer_sexy_entry_clear();
-	main_window_set_statusbar_default_message( _("Hotkeys: Press Up, Down, Page Up, or Page Down to browse updates.  Press & Hold <CTRL+SHIFT> while browsing to select the update.") );
-	update_viewer_view_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+	main_window_set_statusbar_default_message( _("Hotkeys: Press Up, Down, Page Up, or Page Down to browse updates.  Press & Hold <ALT+CTRL> while browsing to select the update.") );
+	update_viewer_view_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, None);
 	
 	if(update_viewer->best_friends_service) update_viewer->best_friends_service=NULL;
 	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);
@@ -1755,7 +1812,7 @@ void update_viewer_show_previous_updates(void){
 }/*update_viewer_show_previous_updates();*/
 
 void update_viewer_hide_previous_updates(void){
-	g_signal_emit_by_name(update_viewer->sexy_entry_combo_box_entry, "popup");
+	g_signal_emit_by_name(update_viewer->sexy_entry_combo_box_entry, "popdown");
 }/*update_viewer_hide_previous_updates();*/
 
 
@@ -1764,11 +1821,11 @@ void update_viewer_hide_previous_updates(void){
 
 
 void update_viewer_new_dm(void){
-	gtk_toggle_button_set_active(update_viewer->dm_form_active_togglebutton, !gtk_toggle_button_get_active(update_viewer->dm_form_active_togglebutton));
+	gtk_toggle_button_set_active(update_viewer->dm_form_active_toggle_button, !gtk_toggle_button_get_active(update_viewer->dm_form_active_toggle_button));
 }/*update_viewer_new_dm*/
 
 static void update_viewer_dm_show(GtkToggleButton *toggle_button){
-	if(!gtk_toggle_button_get_active(update_viewer->dm_form_active_togglebutton)){
+	if(!gtk_toggle_button_get_active(update_viewer->dm_form_active_toggle_button)){
 		debug("Disabled UpdateViewer's dm form.");
 		update_viewer_dm_form_activate(FALSE);
 		return;
@@ -1776,8 +1833,8 @@ static void update_viewer_dm_show(GtkToggleButton *toggle_button){
 	online_service_request_popup_select_service();
 	
 	if(!( selected_service)) {
-		if(gtk_toggle_button_get_active(update_viewer->dm_form_active_togglebutton))
-			gtk_toggle_button_set_active(update_viewer->dm_form_active_togglebutton, FALSE);
+		if(gtk_toggle_button_get_active(update_viewer->dm_form_active_toggle_button))
+			gtk_toggle_button_set_active(update_viewer->dm_form_active_toggle_button, FALSE);
 		return;
 	}
 	

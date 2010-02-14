@@ -32,10 +32,10 @@
 #include "config.h"
 #include "program.h"
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "online-services-dialog.h"
 #include "online-services.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 #include "online-service-request.h"
 
@@ -48,7 +48,7 @@
 #include "ui-utils.h"
 
 
-#define GtkBuilderUI "online-services-dialog"
+#define GTK_BUILDER_UI_FILENAME "online-services-dialog"
 
 #define DEBUG_DOMAINS "OnlineServices:UI:GtkBuilder:GtkBuildable:Requests:Authentication:Preferences:Accounts:Settings:Setup:OnlineServicesDialog:online-services-dialog.c"
 #include "debug.h"
@@ -70,7 +70,6 @@ typedef struct {
 	/*currently unused
 	GtkComboBox		*service_type_combo_box;
 	GtkListStore		*service_type_list_store;
-	GtkTreeModel		*service_type_model;
 	*/
 	GtkEntry		*uri;
 	
@@ -83,6 +82,7 @@ typedef struct {
 	GtkButton		*online_service_connect_button;
 	
 	/*Buttons in services-dialog 'action-area.*/
+	GtkButton		*online_services_close_button;
 	GtkButton		*online_services_okay_button;
 	GtkButton		*online_services_save_button;
 } OnlineServicesDialog;
@@ -335,11 +335,11 @@ static void online_services_dialog_check_service(OnlineServicesDialog *online_se
 		service_exists=TRUE;
 	}
 	
-	if( service && enabled==service->enabled && G_STR_N_EMPTY(uri) && g_str_equal(service->uri, uri) && https==service->https && G_STR_N_EMPTY(user_name) && g_str_equal(service->user_name, user_name) && G_STR_N_EMPTY(password) && g_str_equal(service->password, password) && auto_connect==service->auto_connect && service->post_to_by_default==post_to_by_default ){
+	if( service && enabled==service->enabled && G_STR_N_EMPTY(uri) && service->uri && g_str_equal(service->uri, uri) && G_STR_N_EMPTY(user_name) && service->user_name && g_str_equal(service->user_name, user_name) && G_STR_N_EMPTY(password) && service->password && g_str_equal(service->password, password) && https==service->https && auto_connect==service->auto_connect && service->post_to_by_default==post_to_by_default ){
 		debug("Services is up to date, no changes need saved.");
 		service_is_saved=TRUE;
 		service_okay_to_save=FALSE;
-	}else if( service && ( enabled!=service->enabled || ( G_STR_N_EMPTY(uri) && !g_str_equal(service->uri, uri) ) || https!=service->https || ( G_STR_N_EMPTY(user_name) && !g_str_equal(service->user_name, user_name) ) || ( G_STR_N_EMPTY(password) && !g_str_equal(service->password, password) ) || auto_connect!=service->auto_connect || post_to_by_default!=service->post_to_by_default ) ){
+	}else if( service && ( enabled!=service->enabled || ( G_STR_N_EMPTY(uri) && service->uri && !g_str_equal(service->uri, uri) ) || ( G_STR_N_EMPTY(user_name) && service->user_name && !g_str_equal(service->user_name, user_name) ) || ( G_STR_N_EMPTY(password) && service->password && !g_str_equal(service->password, password) ) || https!=service->https || auto_connect!=service->auto_connect || post_to_by_default!=service->post_to_by_default ) ){
 		debug("Existing service has changes that need to be saved.");
 		service_okay_to_save=TRUE;
 	}else if(!service && (G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(password)) ){
@@ -382,12 +382,12 @@ void online_services_dialog_show(GtkWindow *parent){
 static void online_services_dialog_setup(GtkWindow *parent){
 	GtkBuilder		*ui;
 	
-	debug("Creating Services Dialog from: '%s'.", GtkBuilderUI);
+	debug("Creating Services Dialog from: '%s'.", GTK_BUILDER_UI_FILENAME);
 	online_services_dialog=g_new0(OnlineServicesDialog, 1);
 	
 	/* Get widgets */
 	ui=gtkbuilder_get_file(
-				GtkBuilderUI,
+				GTK_BUILDER_UI_FILENAME,
 					"online_services_dialog", &online_services_dialog->online_services_dialog,
 					"online_service_enabled", &online_services_dialog->enabled,
 					
@@ -410,7 +410,8 @@ static void online_services_dialog_setup(GtkWindow *parent){
 					
 					"online_service_connect_button", &online_services_dialog->online_service_connect_button,
 					
-					"online_service_save_button", &online_services_dialog->online_services_save_button,
+					"online_services_close_button", &online_services_dialog->online_services_close_button,
+					"online_services_save_button", &online_services_dialog->online_services_save_button,
 					"online_services_okay_button", &online_services_dialog->online_services_okay_button,
 				NULL
 	);

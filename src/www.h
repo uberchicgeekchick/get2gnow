@@ -69,7 +69,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services-typedefs.h"
+#include "online-services.types.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
@@ -87,14 +87,15 @@ G_BEGIN_DECLS
  ********************************************************************************/
 void www_init(void);
 
+void www_deinit(void);
+
 gchar *www_html_entity_escape_text(gchar *status_text);
 void www_html_entity_escape_status(gchar **status_text);
 
 gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
 
+gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath);
 gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
-
-void www_deinit(void);
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/

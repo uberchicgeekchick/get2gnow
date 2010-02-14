@@ -124,7 +124,7 @@ void geometry_save(void){
 }/*geometry_save();*/
 
 static void geometry_load_for_window(ViewType view){
-	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
+	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_isset_selected_update() ) return;
 	gint		x, y, w, h;
 	gint		default_width=0, default_height=0, default_x=0, default_y=0;
 	x=y=w=h=default_width=default_height=default_x=default_y=0;
@@ -164,7 +164,7 @@ static void geometry_load_for_window(ViewType view){
 }//geometry_load_for_window
 
 static void geometry_save_for_window(ViewType view){
-	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_is_update_selected() ) return;
+	if( gconfig_if_bool(  PREFS_UPDATE_VIEWER_COMPACT, TRUE ) && online_service_request_isset_selected_update() ) return;
 	static guint	calls=0;
 	gint		x, y, w, h;
 	gint		default_width=0, default_height=0, default_x=0, default_y=0;

@@ -412,8 +412,8 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="autoload_following_check_button">
-                                <property name="label" translatable="yes">All updates from _any one I follow.</property>
+                              <object class="GtkCheckButton" id="autoload_homepage_check_button">
+                                <property name="label" translatable="yes">My _hompage's updates.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -429,29 +429,12 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="autoload_homepage_check_button">
-                                <property name="label" translatable="yes">My _hompage's updates.</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="xalign">0.10000000149011612</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="padding">6</property>
-                                <property name="position">6</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkHSeparator" id="autoload_tabs_hseparator">
                                 <property name="visible">True</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
-                                <property name="position">7</property>
+                                <property name="position">6</property>
                               </packing>
                             </child>
                             <child>
@@ -516,7 +499,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">8</property>
+                                <property name="position">7</property>
                               </packing>
                             </child>
                           </object>

@@ -70,10 +70,10 @@
 
 #include "main-window.h"
 
-#include "online-services-typedefs.h"
+#include "online-services.typedefs.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
-#include "online-service.types.h"
+#include "online-service.typedefs.h"
 #include "online-service.h"
 
 #include "network.h"
@@ -165,11 +165,11 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	main_window_statusbar_printf("Please wait while %s downloads your %s(page #%d on pass #%d).", _(GETTEXT_PACKAGE), users_glist_get_which_str, page, which_pass );
 	
 	debug("Getting users_glist; uri: [%s]; page: %d; pass: %d; users_glist_get_which type: %s", uri, page, which_pass, users_glist_get_which_str );
-	online_service_request(service, QUEUE, uri, users_glist_save, users_glist_process, (gpointer)users_glist_get_which, NULL);
+	online_service_request(service, QUEUE, uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)users_glist_save, users_glist_process, GINT_TO_POINTER(users_glist_get_which), GINT_TO_POINTER(which_pass));
 	
 	g_free(uri);
 	return NULL;
-}/*users_glist_get(users_glist_get_which, (refresh ?TRUE: FALSE), NULL)*/
+}/*users_glist_get(users_glist_get_which, (refresh ?TRUE: FALSE), NULL);*/
 
 static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func){
 	if(!which_pass){
@@ -258,7 +258,7 @@ static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
+	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
@@ -284,11 +284,10 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	return new_users;
 }/*users_glist_process(session, xml, service_wrapper);*/
 
-void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer){
-	GList *new_users=(GList *)soup_session_callback_return_gpointer;
+void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, GList *new_users){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)online_service_wrapper_get_user_data(service_wrapper);
+	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	
 	if(!new_users){
