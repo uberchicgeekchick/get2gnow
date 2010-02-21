@@ -105,7 +105,7 @@ void online_service_request_block(OnlineService *service, GtkWindow *parent_wind
 void online_service_request_unblock(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_fave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_unfave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
-void online_service_request_destroy(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_delete(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
@@ -137,8 +137,8 @@ void online_service_request_selected_update_unblock(void);
 /* END: SelectedUpdate's request handlers. */
 
 void online_service_request_selected_update_save_fave(void);
-void online_service_request_selected_update_destroy_fave(void);
-void online_service_request_selected_update_destroy(void);
+void online_service_request_selected_update_unfave(void);
+void online_service_request_selected_update_delete(void);
 
 void online_service_request_popup_select_service(void);
 void online_service_request_popup_profile(void);
@@ -151,6 +151,9 @@ void online_service_request_popup_best_friend_drop(void);
 void online_service_request_popup_unfollow(void);
 void online_service_request_popup_block(void);
 void online_service_request_popup_unblock(void);
+void online_service_request_popup_fave(void);
+void online_service_request_popup_unfave(void);
+void online_service_request_popup_delete(void);
 void online_service_request_popup_shorten_uri(void);
 gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GFunc func, gpointer user_data);
 

@@ -98,48 +98,50 @@
 #include "friends-manager.h"
 #include "following-viewer.h"
 
+#include "uberchick-sexy-entry-completion.h"
+
 
 #define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE(( obj), TYPE_MAIN_WINDOW, MainWindowPrivate ))
 
 struct _MainWindowPrivate {
 	/* Misc */
-	guint			size_timeout_id;
-	guint			timeout_id_status_bar_message_default;
-	gboolean		connected;
+	guint				size_timeout_id;
+	guint				timeout_id_status_bar_message_default;
+	gboolean			connected;
 	
 	/* Status Icon Stuff. */
-	GtkStatusIcon		*status_icon;
-	GtkWidget		*popup_menu;
-	GtkToggleAction		*popup_menu_show_main_window;
+	GtkStatusIcon			*status_icon;
+	GtkWidget			*popup_menu;
+	GtkToggleAction			*popup_menu_show_main_window;
 	
 	/* Main widgets */
-	GtkWindow		*window;
-	GtkVBox			*main_vbox;
-	GtkWindow		*update_viewer_window;
+	GtkWindow			*window;
+	GtkVBox				*main_vbox;
+	GtkWindow			*update_viewer_window;
 	
-	GtkMenuBar		*menubar;
-	GtkMenuItem		*network_menu_item;
-        GtkMenu			*menu_network;
+	GtkMenuBar			*menubar;
+	GtkMenuItem			*network_menu_item;
+        GtkMenu				*menu_network;
 	
 	/* Tools / Edit menu items. */
-	GtkMenuItem		*edit_menu_item;
-        GtkMenu			*menu_edit;
+	GtkMenuItem			*edit_menu_item;
+        GtkMenu				*menu_edit;
 	
-	GtkMenuItem		*view_menu_item;
-        GtkMenu			*menu_view;
+	GtkMenuItem			*view_menu_item;
+        GtkMenu				*menu_view;
 	
-	GtkCheckMenuItem	*view_menu_uber_compact_view_check_menu;
+	GtkCheckMenuItem		*view_menu_uber_compact_view_check_menu;
 	
-	GtkCheckMenuItem	*view_toolbar_main_check_menu_item;
-	GtkCheckMenuItem	*view_toolbar_tabs_check_menu_item;
-	GtkCheckMenuItem	*view_best_friends_check_menu_item;
+	GtkCheckMenuItem		*view_toolbar_main_check_menu_item;
+	GtkCheckMenuItem		*view_toolbar_tabs_check_menu_item;
+	GtkCheckMenuItem		*view_best_friends_check_menu_item;
 	
-	GtkCheckMenuItem	*view_update_viewer_floating_check_menu_item;
-	GtkCheckMenuItem	*view_update_viewer_compact_view_check_menu_item;
+	GtkCheckMenuItem		*view_update_viewer_floating_check_menu_item;
+	GtkCheckMenuItem		*view_update_viewer_compact_view_check_menu_item;
 	
-	GtkCheckMenuItem	*view_menu_detailed_update_column_check_menu_item;
-	GtkCheckMenuItem	*view_menu_from_colums_check_menu_item;
-	GtkCheckMenuItem	*view_menu_rcpt_colums_check_menu_item;
+	GtkCheckMenuItem		*view_menu_detailed_update_column_check_menu_item;
+	GtkCheckMenuItem		*view_menu_from_colums_check_menu_item;
+	GtkCheckMenuItem		*view_menu_rcpt_colums_check_menu_item;
 	
 	/* This is the 'Tools' menu. */
 	GtkMenuItem		*online_service_request_menu_item;
@@ -147,60 +149,65 @@ struct _MainWindowPrivate {
 	GList			*online_service_request_popup_image_menu_items;
 	
 	/* Timeline menu items */
-	GtkMenuItem		*tabs_menu_item;
-	GtkMenu			*menu_tabs;
-	GList			*tabs_menu_widgets;
-	GtkCheckMenuItem	*timeline_homepage;
-	GtkCheckMenuItem	*timeline_mine;
-	GtkCheckMenuItem	*timeline_dm;
-	GtkCheckMenuItem	*timeline_favorites;
-	GtkCheckMenuItem	*timeline_replies;
-	GtkCheckMenuItem	*timeline_retweets_to_me;
-	GtkCheckMenuItem	*timeline_retweets_of_me;
-	GtkCheckMenuItem	*timeline_public;
+	GtkMenuItem			*tabs_menu_item;
+	GtkMenu				*menu_tabs;
+	GList				*tabs_menu_widgets;
+	GtkCheckMenuItem		*timeline_homepage;
+	GtkCheckMenuItem		*timeline_mine;
+	GtkCheckMenuItem		*timeline_dm;
+	GtkCheckMenuItem		*timeline_favorites;
+	GtkCheckMenuItem		*timeline_replies;
+	GtkCheckMenuItem		*timeline_retweets_to_me;
+	GtkCheckMenuItem		*timeline_retweets_of_me;
+	GtkCheckMenuItem		*timeline_public;
 	
-	GtkMenuItem		*help_menu_item;
-	GtkMenu			*menu_help;
+	GtkMenuItem			*help_menu_item;
+	GtkMenu				*menu_help;
 	
-	GtkHandleBox		*main_window_handlebox;
-	GtkToolbar		*main_toolbar;
+	GtkHandleBox			*main_window_handlebox;
+	GtkToolbar			*main_toolbar;
 	
-	GtkComboBoxEntry	*search_history_combo_box_entry;
-	SexySpellEntry		*sexy_search_entry;
-	gint			sexy_position;
-	gint			search_history_total;
-	gint			search_history_maximum;
-	GtkEntryCompletion	*search_history_completion;
-	GtkListStore		*search_history_list_store;
-	GtkTreeModel		*search_history_tree_model;
-	GtkButton		*search_button;
+	UberChickSexyEntryCompletion	*sexy_search_entry_completion;
 	
-	GtkToolButton		*preferences_tool_button;
-	GtkToolButton		*accounts_tool_button;
-	GtkToolButton		*exit_tool_button;
+	GtkFrame			*search_frame;
+	GtkAlignment			*search_entry_alignment;
+	GtkLabel			*search_label;
+	GtkComboBoxEntry		*search_history_combo_box_entry;
+	SexySpellEntry			*sexy_search_entry;
+	gint				sexy_position;
+	gint				search_history_total;
+	gint				search_history_maximum;
+	GtkEntryCompletion		*search_history_completion;
+	GtkListStore			*search_history_list_store;
+	GtkTreeModel			*search_history_tree_model;
+	GtkButton			*search_button;
+	
+	GtkToolButton			*preferences_tool_button;
+	GtkToolButton			*accounts_tool_button;
+	GtkToolButton			*exit_tool_button;
 	
 	/* Widgets that are enabled when we are connected/disconnected */
-	GList			*widgets_connected;
-	GList			*widgets_disconnected;
-	GList			*selected_update_image_menu_items;
+	GList				*widgets_connected;
+	GList				*widgets_disconnected;
+	GList				*selected_update_image_menu_items;
 	
-	GtkHPaned		*uberchick_tree_view_hpaned;
-	GtkVBox			*best_friends_vbox;
+	GtkHPaned			*uberchick_tree_view_hpaned;
+	GtkVBox				*best_friends_vbox;
 	
 	/* user, status, & update widgets.
 	 * Actually they're in the UpdateViewer.
 	 * The main-window's GtkVBox contains them.
 	 */
-	GtkVPaned		*main_vpaned;
-	GtkHBox			*expand_box;
-	GtkVBox			*update_viewer_vbox;
+	GtkVPaned			*main_vpaned;
+	GtkHBox				*expand_box;
+	GtkVBox				*update_viewer_vbox;
 	
 	/*These are or part of 'UpdateViewer'.*/
-	UpdateViewer		*update_viewer;
-	GtkHBox			*update_viewer_embed;
+	UpdateViewer			*update_viewer;
+	GtkHBox				*update_viewer_embed;
 	
-	GtkStatusbar		*statusbar;
-	gchar			*statusbar_default_message;
+	GtkStatusbar			*statusbar;
+	gchar				*statusbar_default_message;
 };
 
 typedef enum{
@@ -318,8 +325,8 @@ static void main_window_finalize(GObject *object){
 	
 	gtk_list_store_clear(main_window->private->search_history_list_store);
 	
-	uber_object_unref(main_window->private->sexy_search_entry);
-	uber_object_unref(main_window->private->search_history_completion);
+	gtk_widget_destroy(GTK_WIDGET(main_window->private->sexy_search_entry));
+	gtk_widget_destroy(GTK_WIDGET(main_window->private->search_history_completion));
 	
 	program_timeout_remove(&main_window->private->size_timeout_id, _("main window configuration"));
 	
@@ -395,6 +402,9 @@ static void main_window_setup(void){
 					"main_window_handlebox", &main_window->private->main_window_handlebox,
 					"main_toolbar", &main_window->private->main_toolbar,
 					
+					"search_frame", &main_window->private->search_frame,
+					"search_entry_alignment", &main_window->private->search_entry_alignment,
+                              		"search_label", &main_window->private->search_label,
 					"search_history_combo_box_entry", &main_window->private->search_history_combo_box_entry,
 					"search_history_list_store", &main_window->private->search_history_list_store,
 					"search_button", &main_window->private->search_button,
@@ -1042,7 +1052,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	);
 	uber_free(iter);
 	
-	if(g_str_equal(search_phrase, "[new search]") || list_store_index==-3 ) return;
+	if( list_store_index==-3 || g_str_equal(search_phrase, "[new search]") ) return;
 	
 	main_window_search_history_remove(m_w_p, 1);
 	main_window_search_history_add(m_w_p, "[new search]", list_store_index);
@@ -1055,7 +1065,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	
 	main_window_search_history_rotate(m_w_p);
 	gchar *search_history_gconf_path=NULL;
-	gconfig_set_string(search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", 0), search_phrase);
+	gconfig_set_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", 0)), search_phrase);
 	uber_free(search_history_gconf_path);
 }/*main_window_search_history_add(main_window->private, GTK_ENTRY(update_viewer->sexy_search_entry)->text, -3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index);*/
 
@@ -1116,7 +1126,7 @@ static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint lis
 static void main_window_search_history_rotate(MainWindowPrivate *m_w_p){
 	gchar *search_history_previous_search=NULL, *search_history_gconf_path=NULL;
 	for(gint i=m_w_p->search_history_maximum; i>=0; i--){
-		if( (gconfig_get_string( search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i-1), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search) ){
+		if( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i-1)), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search) ){
 			uber_free(search_history_gconf_path);
 			search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i);
 			gconfig_set_string(search_history_gconf_path, search_history_previous_search);

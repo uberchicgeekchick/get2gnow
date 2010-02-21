@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<interface>
+  <!-- interface-requires gtk+ 2.12 -->
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkTreeStore" id="friends_manager_tree_store">
+    <columns>
+      <!-- column-name GSTRING_USER_NAME -->
+      <column type="gchararray"/>
+      <!-- column-name GSTRING_USER_NICK -->
+      <column type="gchararray"/>
+      <!-- column-name GSTRING_FOLLOWING -->
+      <column type="gchararray"/>
+      <!-- column-name GSTRING_FOLLOWER -->
+      <column type="gchararray"/>
+      <!-- column-name GSTRING_CREATED_AGO -->
+      <column type="gchararray"/>
+      <!-- column-name USER_POINTER -->
+      <column type="gpointer"/>
+    </columns>
+  </object>
+  <object class="GtkDialog" id="friends_manager">
+    <property name="width_request">780</property>
+    <property name="height_request">300</property>
+    <property name="visible">True</property>
+    <property name="title" translatable="yes">Friends Manager</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="default_width">775</property>
+    <property name="default_height">425</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <child internal-child="vbox">
+      <object class="GtkVBox" id="dialog-vbox5">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkNotebook" id="friends_manager_notebook">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <child>
+              <object class="GtkVBox" id="friends_manager_vbox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkToolbar" id="users_tool_bar">
+                    <property name="visible">True</property>
+                    <property name="icon_size">1</property>
+                    <property name="icon_size_set">True</property>
+                    <child>
+                      <object class="GtkToolButton" id="user_view_profile_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">View the selected user's profile &amp;amp; most recent update</property>
+                        <property name="label" translatable="yes">View _Profile</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-info</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem" id="user_relationship_separator_tool_item">
+                        <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_follow_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Start following the selected user</property>
+                        <property name="label" translatable="yes">_Follow</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-add</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_unfollow_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Stop following the selected user</property>
+                        <property name="label" translatable="yes">_Unfollow</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-remove</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_block_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Block the selected user from seeing your updates and/or sending you any messages</property>
+                        <property name="label" translatable="yes">_Block</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-stop</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem" id="users_updates_separator_tool_item">
+                        <property name="visible">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_view_unread_updates_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">View the selected user's unread updates</property>
+                        <property name="label" translatable="yes">Read Ne_w Status Updates</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-indent</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="user_view_recent_updates_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">View the selected user's most recent updates</property>
+                        <property name="label" translatable="yes">Read S_tatus Updates</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-home</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem" id="refresh_separator_tool_item">
+                        <property name="visible">True</property>
+                        <property name="draw">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="refresh_tool_button">
+                        <property name="visible">True</property>
+                        <property name="tooltip_markup">Refresh your friends &amp; followers by reloading them from the server.</property>
+                        <property name="label" translatable="yes">_Refresh</property>
+                        <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-refresh</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="friends_manager_scrolled_window">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="border_width">6</property>
+                    <property name="hscrollbar_policy">never</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="SexyTreeView" id="friends_and_followers_sexy_tree_view">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">friends_manager_tree_store</property>
+                        <property name="expander_column">friends_manager_user_name_tree_view_column</property>
+                        <property name="reorderable">True</property>
+                        <property name="search_column">1</property>
+                        <property name="fixed_height_mode">True</property>
+                        <property name="enable_grid_lines">both</property>
+                        <property name="enable_tree_lines">True</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_user_name_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">58</property>
+                            <property name="title">User Name:</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_user_name_tree_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_user_nick_name_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">58</property>
+                            <property name="title">Name:</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_user_nick_name_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_friends_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">76</property>
+                            <property name="title">Friend:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_friends_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">2</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_follower_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">84</property>
+                            <property name="title">Follower:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_follower_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">3</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_created_age_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">124</property>
+                            <property name="title">Last Updated:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_created_age_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">4</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="friends_manager_notebook_tab_label">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Manage Friends &amp; Followers</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">friends_and_followers_sexy_tree_view</property>
+              </object>
+              <packing>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child internal-child="action_area">
+          <object class="GtkHButtonBox" id="dialog-action_area5">
+            <property name="visible">True</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="viewer_close_button">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-5">viewer_close_button</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkImage" id="view_timeline_image1">
+    <property name="visible">True</property>
+    <property name="stock">gtk-home</property>
+  </object>
+</interface>

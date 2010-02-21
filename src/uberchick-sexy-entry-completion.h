@@ -1,14 +1,14 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberchick@uberChicGeekChick.Com>
  * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
  *
- * Writen by an uberChick, other uberChicks please meet me & others @:
- * 	http://uberChicks.Net/
+ * Writen by an uberchick, other uberchicks please meet me & others @:
+ * 	http://uberchicks.Net/
  *
  * I'm also disabled. I live with a progressive neuro-muscular disease.
  * DYT1+ Early-Onset Generalized Dystonia, a type of Generalized Dystonia.
@@ -71,24 +71,24 @@
 G_BEGIN_DECLS
 
 #define TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION					\
-			(uberChick_sexy_entry_completion_get_type())
+			(uberchick_sexy_entry_completion_get_type())
 #define UBERCHICK_SEXY_ENTRY_COMPLETION(o)					\
-			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChick_Sexy_Entry_Completion))
+			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletion))
 #define UBERCHICK_SEXY_ENTRY_COMPLETION_CLASS(k)				\
-			(G_TYPE_CHECK_CLASS_CAST((k), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChick_Sexy_Entry_CompletionClass))
+			(G_TYPE_CHECK_CLASS_CAST((k), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionClass))
 #define IS_UBERCHICK_SEXY_ENTRY_COMPLETION(o)					\
 			(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION))
 #define IS_UBERCHICK_SEXY_ENTRY_COMPLETION_CLASS(k)				\
 			(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION))
 #define UBERCHICK_SEXY_ENTRY_COMPLETION_GET_CLASS(o)				\
-			(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChick_Sexy_Entry_CompletionClass))
+			(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionClass))
 
-typedef struct _UberChick_Sexy_Entry_Completion      UberChick_Sexy_Entry_Completion;
-typedef struct _UberChick_Sexy_Entry_CompletionClass UberChick_Sexy_Entry_CompletionClass;
-typedef struct _UberChick_Sexy_Entry_CompletionPrivate  UberChick_Sexy_Entry_CompletionPrivate;
+typedef struct _UberChickSexyEntryCompletion      UberChickSexyEntryCompletion;
+typedef struct _UberChickSexyEntryCompletionClass UberChickSexyEntryCompletionClass;
+typedef struct _UberChickSexyEntryCompletionPrivate  UberChickSexyEntryCompletionPrivate;
 
-struct _UberChick_Sexy_Entry_Completion {
-	GtkEntryCompletion		parent; /*What other Extends/Implements/Interfaces.*/
+struct _UberChickSexyEntryCompletion {
+	GtkFrame		parent; /*What other Extends/Implements/Interfaces.*/
 	/* Commonly Used:
 	 * 	GObject			parent;
 	 * 	GtkObject		parent;
@@ -101,8 +101,8 @@ struct _UberChick_Sexy_Entry_Completion {
 	 */
 };
 
-struct _UberChick_Sexy_Entry_CompletionClass {
-	GtkEntryCompletionClass		parent_class;
+struct _UberChickSexyEntryCompletionClass {
+	GtkFrameClass		parent_class;
 	/* Commonly Used:
 	 * 	GObjectClass		parent_class;
 	 * 	GtkObjectClass		parent_class;
@@ -115,16 +115,16 @@ struct _UberChick_Sexy_Entry_CompletionClass {
 	 */
 };
 
-GType uberChick_sexy_entry_completion_get_type(void) G_GNUC_CONST;
-UberChick_Sexy_Entry_Completion *uberChick_sexy_entry_completion_new(void);
+GType uberchick_sexy_entry_completion_get_type(void) G_GNUC_CONST;
+UberChickSexyEntryCompletion *uberchick_sexy_entry_completion_new(void);
 
 
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-gint uberChick_sexy_entry_completion_get_total(UberChick_Sexy_Entry_Completion *uberChick_sexy_entry_completion);
-void uberChick_sexy_entry_completion_increment_total(UberChick_Sexy_Entry_Completion *uberChick_sexy_entry_completion, guint total);
-void uberChick_sexy_entry_completion_set_total(UberChick_Sexy_Entry_Completion *uberChick_sexy_entry_completion, guint total);
+gint uberchick_sexy_entry_completion_get_total(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+void uberchick_sexy_entry_completion_increment_total(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, guint total);
+void uberchick_sexy_entry_completion_set_total(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, guint total);
 
 
 G_END_DECLS

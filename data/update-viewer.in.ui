@@ -106,8 +106,8 @@
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="image">best_friend_image</property>
-                                <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                                 <accelerator key="exclam" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                                <accelerator key="asterisk" signal="activate" modifiers="GDK_MOD1_MASK"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -410,7 +410,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkVSeparator" id="vseparator1">
+                              <object class="GtkVSeparator" id="update_viewer_update_controls_vseparator">
                                 <property name="visible">True</property>
                                 <property name="orientation">vertical</property>
                               </object>
@@ -440,6 +440,33 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkButton" id="update_viewer_unfave_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip_markup">Remove this update from your favorites list.</property>
+                                <child>
+                                  <object class="GtkImage" id="update_viewer_unfave_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-revert-to-saved</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">6</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkVSeparator" id="update_viewer_fave_controls_vseparator">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">7</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkButton" id="update_viewer_destroy_update_button">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -452,7 +479,7 @@
                                 </child>
                               </object>
                               <packing>
-                                <property name="position">6</property>
+                                <property name="position">8</property>
                               </packing>
                             </child>
                           </object>
@@ -586,8 +613,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                             <child>
                               <object class="GtkImage" id="sexy_send_image">
                                 <property name="visible">True</property>
@@ -607,8 +634,8 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="tooltip_markup">&lt;b&gt;Send your update as a direct message, DM, to your friend/follower who sent this update:&lt;/b&gt;</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <accelerator key="d" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="sexy_dm_image">
                                 <property name="visible">True</property>
@@ -639,8 +666,8 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="tooltip_markup">&lt;i&gt;Display/hide your list of followers to whom you can direct message&lt;/i&gt;</property>
-                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <accelerator key="d" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                            <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                             <child>
                               <object class="GtkImage" id="dm_form_active_image">
                                 <property name="visible">True</property>

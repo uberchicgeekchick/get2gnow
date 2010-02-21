@@ -297,6 +297,8 @@ static void online_service_wrapper_user_data_processor(OnlineServiceWrapper *onl
 		online_service_wrapper->callback!=users_glist_process
 		&&
 		online_service_wrapper->callback!=network_display_timeline
+		&&
+		online_service_wrapper->online_service_soup_session_callback_return_processor_func!=(OnlineServiceSoupSessionCallbackReturnProcessorFunc)profile_manager_edit_profile
 	))
 		return;
 	

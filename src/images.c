@@ -70,6 +70,7 @@ static gchar *unknown_image_file=NULL;
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
 static void images_validate_filename(gchar **image_filename);
+static GdkPixbuf *images_get_scaled_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
 
 
 gchar *images_get_unknown_image_file(void){
@@ -312,8 +313,8 @@ GdkPixbuf *images_get_unscaled_pixbuf_from_filename( gchar *image_filename ){
 
 
 /* GNOME 2.6 - future prep. but GNOME 2.6 isn't in enough distros yet */
-/*
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
+
+static GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
 	images_validate_filename(&image_filename);
 	
 	if( width == ImagesUnscaled || height == ImagesUnscaled )
@@ -325,30 +326,36 @@ GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint w
 	GError *error=NULL;
 	GdkPixbuf *pixbuf;
 	
-	if( (pixbuf=gdk_pixbuf_new_from_file_at_scale(image_filename, width, height, &error )) )
+	if( (pixbuf=gdk_pixbuf_new_from_file_at_scale(image_filename, width, height, TRUE, &error )) )
 		return pixbuf;
 	
 	debug("Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
 	if(error) g_error_free(error);
 	return NULL;
-}*//*images_get_scaled_pixbuf_from_file(image_filename, width, height);*/
+}/*images_get_scaled_pixbuf_from_file(image_filename, width, height);*/
 
-GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
-	return images_get_and_scale_pixbuf_from_filename( image_filename, width, height );
-}//images_get_scaled_pixbuf_from_file
-
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename( gchar *image_filename, gint width, gint height ){
-	images_validate_filename(&image_filename);
+gboolean images_set_file_chooser_preview_image(GtkImage *preview_image, GtkFileChooser *file_chooser){
+	gchar *filename=gtk_file_chooser_get_preview_filename(file_chooser);
+	if(G_STR_EMPTY(filename)){
+		if(filename)
+			uber_free(filename);
+		filename=gtk_file_chooser_get_filename(file_chooser);
+	}
 	
-	images_validate_width(&width);
-	images_validate_height(&height);
+	if(G_STR_EMPTY(filename)){
+		if(filename)
+			uber_free(filename);
+		return FALSE;
+	}
 	
-	GdkPixbuf *pixbuf, *resized;
-	if(!(pixbuf=images_get_unscaled_pixbuf_from_filename(image_filename)))
-		return NULL;
+	GdkPixbuf *pixbuf=gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+	uber_free(filename);
+	if(!pixbuf)
+		return FALSE;
 	
-	resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR );
+	gtk_image_set_from_pixbuf(preview_image, pixbuf);
 	g_object_unref(pixbuf);
-	return resized;
-}//images_get_and_scale_pixbuf_from_file
-
+	gtk_file_chooser_set_preview_widget_active(file_chooser, TRUE);
+	
+	return TRUE;
+}/*images_set_file_chooser_preview_image(preview_image, file_chooser);*/

@@ -107,10 +107,10 @@ void hotkey_pressed(GtkWidget *widget, GdkEventKey *event){
 static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 	if(event->keyval==GDK_Escape){
 		if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))){
-			main_window_hide_search_history();
+			main_window_show_search_history();
 			return TRUE;
 		}else if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()))){
-			update_viewer_hide_previous_updates();
+			update_viewer_show_previous_updates();
 			return TRUE;
 		}
 	}
@@ -119,7 +119,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 		case GDK_SHIFT_MASK|GDK_CONTROL_MASK:
 			switch(event->keyval){
 				case GDK_asterisk:
-					online_service_request_selected_update_destroy_fave();
+					online_service_request_selected_update_unfave();
 					return FALSE;
 				case GDK_F:	case GDK_f:
 				case GDK_less:		case GDK_minus:
@@ -186,6 +186,9 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 					online_service_request_selected_update_view_profile();
 					return TRUE;
 				case GDK_U:	case GDK_u:
+					/* calls: update_viewer_sexy_select(); */
+					gtk_widget_grab_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()));
+					return FALSE;
 				case GDK_asciitilde:	case GDK_ampersand:
 					online_service_request_selected_update_view_updates();
 					return FALSE;
@@ -254,7 +257,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 					uberchick_tree_view_refresh(tabs_get_current()); 
 					return FALSE;
 				case GDK_Z:	case GDK_z:
-					online_service_request_selected_update_destroy_fave();
+					online_service_request_selected_update_unfave();
 					return FALSE;
 				case GDK_R:	case GDK_r:
 					online_service_request_selected_update_reply();

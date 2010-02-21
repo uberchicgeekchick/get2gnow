@@ -91,12 +91,12 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef	G_STR_EMPTY
-#	define		G_STR_EMPTY(string)			((string) == NULL || (string)[0] == '\0')
+#	define		G_STR_EMPTY(string)			( ((string)==NULL) || (string)[0]=='\0' )
 #endif
 
 
 #ifndef	G_STR_N_EMPTY
-#	define		G_STR_N_EMPTY(string)			((string) != NULL && (string)[0] != '\0')
+#	define		G_STR_N_EMPTY(string)			( ((string)!=NULL) && (string)[0]!='\0' )
 #endif
 
 #ifndef	uber_new

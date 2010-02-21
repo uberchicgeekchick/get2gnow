@@ -129,9 +129,6 @@ void online_services_request(RequestMethod request_method, const gchar *uri, Onl
 void online_services_request_statusnet(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 void online_services_request_twitter(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
 
-void online_services_increment_total(const gchar *service_guid);
-void online_services_decrement_total(const gchar *service_guid);
-
 void online_services_increment_connected(OnlineService *service);
 void online_services_decrement_connected(OnlineService *service, gboolean no_state_change);
 

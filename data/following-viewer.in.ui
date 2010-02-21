@@ -32,50 +32,6 @@
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="following_list_scroll">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="border_width">6</property>
-                    <property name="hscrollbar_policy">never</property>
-                    <property name="shadow_type">in</property>
-                    <child>
-                      <object class="GtkTreeView" id="following_sexy_tree_view">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="model">following_tree_store</property>
-                        <property name="search_column">1</property>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="treeviewcolumn1">
-                            <property name="resizable">True</property>
-                            <property name="title">User</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="treeviewcolumn1-renderer1"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="treeviewcolumn2">
-                            <property name="resizable">True</property>
-                            <property name="title">Name</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="treeviewcolumn2-renderer1"/>
-                              <attributes>
-                                <attribute name="text">1</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkToolbar" id="users_tool_bar">
                     <property name="visible">True</property>
                     <property name="icon_size">1</property>
@@ -189,6 +145,50 @@
                   </object>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="following_list_scroll">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="border_width">6</property>
+                    <property name="hscrollbar_policy">never</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="following_sexy_tree_view">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">following_tree_store</property>
+                        <property name="search_column">1</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                            <property name="resizable">True</property>
+                            <property name="title">User</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="treeviewcolumn1-renderer1"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                            <property name="resizable">True</property>
+                            <property name="title">Name</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="treeviewcolumn2-renderer1"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
                     <property name="position">1</property>
                   </packing>
                 </child>

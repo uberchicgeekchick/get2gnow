@@ -15,56 +15,6 @@
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
-          <object class="GtkVBox" id="title_vbox">
-            <property name="orientation">vertical</property>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkVBox" id="profile_vbox">
-            <property name="orientation">vertical</property>
-            <property name="spacing">1</property>
-            <child>
-              <object class="GtkImage" id="user_image">
-                <property name="width_request">78</property>
-                <property name="height_request">78</property>
-                <property name="visible">True</property>
-                <property name="xpad">3</property>
-                <property name="ypad">3</property>
-                <property name="pixel_size">70</property>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkVBox" id="latest_update_vbox">
-            <property name="orientation">vertical</property>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkToolbar" id="users_tool_bar">
             <property name="visible">True</property>
             <property name="icon_size">1</property>
@@ -146,8 +96,57 @@
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkVBox" id="title_vbox">
+            <property name="orientation">vertical</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
             <property name="pack_type">end</property>
-            <property name="position">1</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkVBox" id="profile_vbox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">1</property>
+            <child>
+              <object class="GtkImage" id="user_image">
+                <property name="width_request">78</property>
+                <property name="height_request">78</property>
+                <property name="visible">True</property>
+                <property name="xpad">3</property>
+                <property name="ypad">3</property>
+                <property name="pixel_size">70</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkVBox" id="latest_update_vbox">
+            <property name="orientation">vertical</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child internal-child="action_area">
@@ -174,7 +173,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
-            <property name="position">0</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>

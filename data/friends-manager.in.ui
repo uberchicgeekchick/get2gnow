@@ -40,123 +40,6 @@
                 <property name="visible">True</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="friends_manager_scrolled_window">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="border_width">6</property>
-                    <property name="hscrollbar_policy">never</property>
-                    <property name="shadow_type">in</property>
-                    <child>
-                      <object class="GtkTreeView" id="friends_and_followers_sexy_tree_view">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="model">friends_manager_tree_store</property>
-                        <property name="expander_column">friends_manager_user_name_tree_view_column</property>
-                        <property name="reorderable">True</property>
-                        <property name="search_column">1</property>
-                        <property name="fixed_height_mode">True</property>
-                        <property name="enable_grid_lines">both</property>
-                        <property name="enable_tree_lines">True</property>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="friends_manager_user_name_tree_view_column">
-                            <property name="resizable">True</property>
-                            <property name="sizing">fixed</property>
-                            <property name="fixed_width">58</property>
-                            <property name="title">User Name:</property>
-                            <property name="expand">True</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="friends_manager_user_name_tree_cell_renderer_text">
-                                <property name="width">1</property>
-                                <property name="wrap_mode">word-char</property>
-                                <property name="wrap_width">0</property>
-                              </object>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="friends_manager_user_nick_name_tree_view_column">
-                            <property name="resizable">True</property>
-                            <property name="sizing">fixed</property>
-                            <property name="fixed_width">58</property>
-                            <property name="title">Name:</property>
-                            <property name="expand">True</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="friends_manager_user_nick_name_cell_renderer_text">
-                                <property name="width">1</property>
-                                <property name="wrap_mode">word-char</property>
-                                <property name="wrap_width">0</property>
-                              </object>
-                              <attributes>
-                                <attribute name="text">1</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="friends_manager_friends_tree_view_column">
-                            <property name="resizable">True</property>
-                            <property name="sizing">fixed</property>
-                            <property name="fixed_width">76</property>
-                            <property name="title">Friend:</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="friends_manager_friends_cell_renderer_text">
-                                <property name="width">1</property>
-                                <property name="wrap_mode">word-char</property>
-                                <property name="wrap_width">0</property>
-                              </object>
-                              <attributes>
-                                <attribute name="text">2</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="friends_manager_follower_tree_view_column">
-                            <property name="resizable">True</property>
-                            <property name="sizing">fixed</property>
-                            <property name="fixed_width">84</property>
-                            <property name="title">Follower:</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="friends_manager_follower_cell_renderer_text">
-                                <property name="width">1</property>
-                                <property name="wrap_mode">word-char</property>
-                                <property name="wrap_width">0</property>
-                              </object>
-                              <attributes>
-                                <attribute name="text">3</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkTreeViewColumn" id="friends_manager_created_age_tree_view_column">
-                            <property name="resizable">True</property>
-                            <property name="sizing">fixed</property>
-                            <property name="fixed_width">124</property>
-                            <property name="title">Last Updated:</property>
-                            <child>
-                              <object class="GtkCellRendererText" id="friends_manager_created_age_cell_renderer_text">
-                                <property name="width">1</property>
-                                <property name="wrap_mode">word-char</property>
-                                <property name="wrap_width">0</property>
-                              </object>
-                              <attributes>
-                                <attribute name="text">4</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkToolbar" id="users_tool_bar">
                     <property name="visible">True</property>
                     <property name="icon_size">1</property>
@@ -283,6 +166,123 @@
                   </object>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="friends_manager_scrolled_window">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="border_width">6</property>
+                    <property name="hscrollbar_policy">never</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="friends_and_followers_sexy_tree_view">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">friends_manager_tree_store</property>
+                        <property name="expander_column">friends_manager_user_name_tree_view_column</property>
+                        <property name="reorderable">True</property>
+                        <property name="search_column">1</property>
+                        <property name="fixed_height_mode">True</property>
+                        <property name="enable_grid_lines">both</property>
+                        <property name="enable_tree_lines">True</property>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_user_name_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">58</property>
+                            <property name="title">User Name:</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_user_name_tree_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_user_nick_name_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">58</property>
+                            <property name="title">Name:</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_user_nick_name_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_friends_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">76</property>
+                            <property name="title">Friend:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_friends_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">2</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_follower_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">84</property>
+                            <property name="title">Follower:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_follower_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">3</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="friends_manager_created_age_tree_view_column">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed_width">124</property>
+                            <property name="title">Last Updated:</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="friends_manager_created_age_cell_renderer_text">
+                                <property name="width">1</property>
+                                <property name="wrap_mode">word-char</property>
+                                <property name="wrap_width">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">4</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
                     <property name="position">1</property>
                   </packing>
                 </child>

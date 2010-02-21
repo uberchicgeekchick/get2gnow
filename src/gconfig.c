@@ -76,16 +76,16 @@ typedef struct {
 	
 	gchar		*cached_key_bool;
 	gboolean	cached_value_bool;
-
+	
 	gchar		*cached_key_int;
 	gint		cached_value_int;
-
+	
 	gchar		*cached_key_float;
 	gfloat		cached_value_float;
-
+	
 	gchar		*cached_key_string;
 	gchar		*cached_value_string;
-
+	
 	gchar		*cached_key_list;
 	GSList		*cached_value_list;
 	GConfValueType	cached_type_list;
@@ -145,22 +145,22 @@ static void gconfig_class_init(GConfigClass *class){
 static void gconfig_init(GConfig *gconfig){
 	gconfig_priv=GET_PRIV(gconfig);
 	gconfig_priv->gconf_client=gconf_client_get_default();
-
+	
 	gconf_client_add_dir(gconfig_priv->gconf_client, GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
 	gconf_client_add_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, GCONF_CLIENT_PRELOAD_NONE, NULL);
-
+	
 	gconfig_priv->cached_key_bool=NULL;
 	gconfig_priv->cached_value_bool=FALSE;
-
+	
 	gconfig_priv->cached_key_int=NULL;
 	gconfig_priv->cached_value_int=0;
-
+	
 	gconfig_priv->cached_key_float=NULL;
 	gconfig_priv->cached_value_float=0.0;
-
+	
 	gconfig_priv->cached_key_string=NULL;
 	gconfig_priv->cached_value_string=NULL;
-
+	
 	gconfig_priv->cached_key_list=NULL;
 	gconfig_priv->cached_value_list=NULL;
 }/*gconfig_init(gconfig);*/
@@ -393,16 +393,16 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 	
 	GError *error=NULL;
 	*value=FALSE;
-
+	
 	g_return_val_if_fail(value != NULL, FALSE);
 	*value=gconf_client_get_bool(gconfig_priv->gconf_client, key, &error);
-
+	
 	if(error) {
 		debug("**ERROR:** %s", error->message);
 		g_error_free(error);
 		return FALSE;
 	}
-
+	
 	debug("Retrieved bool:'%s' to %s(=%d).", key, (*value ? "TRUE" : "FALSE"), *value);
 		
 	return TRUE;
@@ -432,7 +432,7 @@ gboolean gconfig_get_string(const gchar *key, gchar **value){
 	GError         *error=NULL;
 	*value=NULL;
 	*value=gconf_client_get_string(gconfig_priv->gconf_client, key, &error);
-
+	
 	if(error){
 		debug("**ERROR:** %s", error->message);
 		g_error_free(error);
@@ -642,11 +642,11 @@ static void gconfig_notify_func(GConfClient *client, guint id, GConfEntry  *entr
 
 guint gconfig_notify_add(const gchar *key, GConfigNotifyFunc func, gpointer user_data){
 	GConfigNotifyData *data;
-
+	
 	data=g_slice_new0(GConfigNotifyData);
 	data->func=func;
 	data->user_data=user_data;
-
+	
 	return gconf_client_notify_add(gconfig_priv->gconf_client, key, gconfig_notify_func, data, (GFreeFunc)gconfig_notify_data_free, NULL);
 }/*gconfig_notify_add(key, (*GconfigNotifyFunc), user_data);*/
 
@@ -659,4 +659,3 @@ gboolean gconfig_notify_remove(guint id){
 /********************************************************
  *                       eof                            *
  ********************************************************/
-

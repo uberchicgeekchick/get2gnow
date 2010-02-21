@@ -160,7 +160,7 @@ OnlineServices *online_services_init(void){
 		debug("%d services found and loaded.", services->total);
 	
 	return services;
-}/*online_services_init*/
+}/*online_services_init();*/
 
 /* Login to services. */
 gboolean online_services_login(void){
@@ -181,7 +181,7 @@ gboolean online_services_login(void){
 	
 	main_window_state_on_connection(login_okay);
 	return login_okay;
-}/*online_services_login*/
+}/*online_services_login();*/
 
 /* Login to services. */
 gboolean online_services_reconnect(void){
@@ -198,7 +198,7 @@ gboolean online_services_reconnect(void){
 	}
 	main_window_state_on_connection(relogin_okay);
 	return relogin_okay;
-}/*online_services_reconnect*/
+}/*online_services_reconnect();*/
 
 gboolean online_services_refresh(void){
 	GList		*accounts=NULL;
@@ -224,7 +224,7 @@ void online_services_disconnect(void){
 		online_service_disconnect(service, TRUE);
 	}
 	main_window_state_on_connection(FALSE);
-}/*online_services_disconnect*/
+}/*online_services_disconnect();*/
 
 
 void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
@@ -412,7 +412,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	
 	uber_free(decoded_key);
 	return service;
-}/*online_services_save*/
+}/*online_services_save_service(service, "uri", "user_name", "password", TRUE|FALSE, TRUE|FALSE, TRUE|FALSE, TRUE|FALSE)*/
 
 void online_services_delete_service(OnlineService *service){
 	if(!(services->connected > 1 && services->total > 1))
@@ -463,7 +463,7 @@ void online_services_delete_service(OnlineService *service){
 		online_services_dialog_show(main_window_get_window());
 	}
 	longest_replacement_length=0;
-}/*online_services_delete(service);*/
+}/*online_services_delete_service(service);*/
 
 
 
@@ -517,27 +517,7 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 	}
 	
 	return (services_loaded ?TRUE :FALSE );
-}/*online_services_combo_box_fill*/
-
-
-
-void online_services_decrement_total(const gchar *service_guid){
-	if(services->total) services->total--;
-	
-	debug("OnlineServices has had OnlineService: <%s> removed.  Remaining services: #%d.", service_guid, services->total);
-	if(services->total) return;
-	
-	main_window_state_on_connection(FALSE);
-	online_services_dialog_show(main_window_get_window());
-}/*online_services_decrement_total();*/
-
-void online_services_increment_connected(OnlineService *service){
-	services->connected++;
-	if(service->micro_blogging_service==StatusNet) services->connected_statusnet++;
-	else if(service->micro_blogging_service==Twitter) services->connected_twitter++;
-	else services->connected_other++;
-	debug("OnlineServices has connected to OnlineService: <%s>.  Total connected: #%d.", service->guid, services->connected);
-}/*online_services_increment_connected(service);*/
+}/*online_services_combo_box_fill(combo_box, list_store);*/
 
 gboolean online_services_is_user_name_mine(OnlineService *selected_online_service, const gchar *user_name){
 	GList *accounts=NULL;
@@ -558,6 +538,17 @@ GList *online_services_get_accounts(void){
 	return g_list_first(services->accounts);
 }/*GList *accounts=online_services_get_accounts();*/
 
+OnlineService *online_services_get_service_by_key(const gchar *online_service_key){
+	GList		*accounts=NULL;
+	OnlineService	*service=NULL;
+	
+	for(accounts=services->accounts; accounts; accounts=accounts->next){
+		if(g_str_equal( (service=(OnlineService *)accounts->data)->key, online_service_key))
+			return service;
+	}
+	return NULL;
+}/*online_services_get_service_by_key(Online_services, online_service_guid);*/
+
 OnlineService *online_services_connected_get_first(void){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
@@ -572,22 +563,6 @@ OnlineService *online_services_connected_get_first(void){
 	return NULL;
 }/*online_services_connected_get_first();*/
 
-OnlineService *online_services_get_service_by_key(const gchar *online_service_key){
-	GList		*accounts=NULL;
-	OnlineService	*service=NULL;
-	
-	for(accounts=services->accounts; accounts; accounts=accounts->next){
-		if(g_str_equal( (service=(OnlineService *)accounts->data)->key, online_service_key))
-			return service;
-	}
-	return NULL;
-}/*online_services_get_service_by_key(Online_services, online_service_guid);*/
-
-void online_services_increment_total(const gchar *service_guid){
-	services->total++;
-	debug("OnlineServices has enabled the OnlineService: <%s>.  Total services: #%d.", service_guid, services->total);
-}/*online_services_increment_total();*/
-
 OnlineService *online_services_connected_get_last(void){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
@@ -598,6 +573,15 @@ OnlineService *online_services_connected_get_last(void){
 	}
 	return service;
 }/*online_services_connected_get_last();*/
+
+
+void online_services_increment_connected(OnlineService *service){
+	services->connected++;
+	if(service->micro_blogging_service==StatusNet) services->connected_statusnet++;
+	else if(service->micro_blogging_service==Twitter) services->connected_twitter++;
+	else services->connected_other++;
+	debug("OnlineServices has connected to OnlineService: <%s>.  Total connected: #%d.", service->guid, services->connected);
+}/*online_services_increment_connected(service);*/
 
 void online_services_decrement_connected(OnlineService *service, gboolean no_state_change){
 	if(services->connected){
@@ -635,7 +619,6 @@ void online_services_request(RequestMethod request_method, const gchar *uri, Onl
 		online_service_request(service, request_method, uri, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	}
 }/*online_services_request(QUEUE, API_RETWEETS_TO_ME, NULL, network_display_timeline, uberchick_tree_view, NULL);*/
-
 
 
 void online_services_request_statusnet(RequestMethod request, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){

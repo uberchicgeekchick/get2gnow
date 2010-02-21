@@ -136,7 +136,7 @@ enum _RequestAction{
 	UnBlock,
 	Fave,
 	UnFave,
-	Destroy,
+	Delete,
 	ShortenURI,
 	Confirmation,
 };
@@ -184,6 +184,7 @@ static gint online_service_request_popup_dialog_response=0;
  ********************************************************************************/
 static OnlineServiceRequest *online_service_request_new(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml);
 static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml);
+static void online_service_request_open_timeline_tab(OnlineService *service, RequestAction action, const gchar *get_rest_xml);
 static gboolean online_service_request_set_post_method_data(OnlineServiceRequest **request);
 static void online_service_request_free(OnlineServiceRequest *request);
 
@@ -257,9 +258,9 @@ void online_service_request_unfave(OnlineService *service, GtkWindow *parent_win
 	online_service_request_main(service, UnFave, parent_window, user_name);
 }/*online_service_request_view_unfave(service, parent_window, user_name);*/
 
-void online_service_request_destroy(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
-	online_service_request_main(service, Destroy, parent_window, user_name);
-}/*online_service_request_view_destroy(service, parent_window, user_name);*/
+void online_service_request_delete(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
+	online_service_request_main(service, Delete, parent_window, user_name);
+}/*online_service_request_view_delete(service, parent_window, user_name);*/
 
 const gchar *online_service_request_method_to_string(RequestMethod request_method){
 	switch(request_method){
@@ -295,10 +296,10 @@ const gchar *online_service_request_action_to_string(RequestAction action){
 		case UnBlock:
 			return _("unblocking user");
 		case Fave:
-			return _("star'd an update");
+			return _("saving an update to favorites");
 		case UnFave:
-			return _("un-staring an update");
-		case Destroy:
+			return _("removing an update from favorites");
+		case Delete:
 			return _("delete one of your updates");
 		case SelectService:
 			return _("selecting default account");
@@ -311,12 +312,6 @@ const gchar *online_service_request_action_to_string(RequestAction action){
 }/*online_service_request_action_to_string*/
 
 static OnlineServiceRequest *online_service_request_new(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml){
-	if(action==SelectService || action==ViewProfile || action == Confirmation || G_STR_EMPTY(get_rest_xml)) return NULL;
-	
-	if(action==Destroy)
-		if(!online_services_is_user_name_mine(service, get_rest_xml))
-			return NULL;
-	
 	OnlineServiceRequest *request=g_new(OnlineServiceRequest, 1);
 	
 	request->parent_window=parent_window;
@@ -342,7 +337,7 @@ static OnlineServiceRequest *online_service_request_new(OnlineService *service, 
 		case UnBlock:
 		case Fave:
 		case UnFave:
-		case Destroy:
+		case Delete:
 		case ShortenURI:
 			if(online_service_request_set_post_method_data(&request))
 				break;
@@ -379,7 +374,7 @@ static gboolean online_service_request_set_post_method_data(OnlineServiceRequest
 		case UnFave:
 			(*request)->uri=g_strdup_printf(API_UNFAVE, (*request)->get_rest_xml);
 			break;
-		case Destroy:
+		case Delete:
 			(*request)->uri=g_strdup_printf(API_DESTROY, (*request)->get_rest_xml);
 			break;
 		case ShortenURI:
@@ -423,32 +418,15 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 		return;
 	}
 	
-	if(action==ViewUpdatesNew||action==ViewUpdates||action==ViewForwards){
-		gchar *timeline=NULL;
-		gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, get_rest_xml );
-		if(action==ViewUpdatesNew){
-			gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
-			update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-			if(!unread_update_id){
-				debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", get_rest_xml, service->guid );
-				timeline=user_timeline;
-			}else{
-				debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", get_rest_xml, service->guid, newest_update_id );
-				uber_free( user_timeline );
-				timeline=g_strdup_printf( API_TIMELINE_USER_UNREAD, get_rest_xml, unread_update_id );
-			}
-		}else if(action==ViewForwards){
-			uber_free(user_timeline);
-			timeline=g_strdup_printf(API_FORWARDS_BY_ID, get_rest_xml);
-		}else{
-			debug( "Loading %s's updates, on <%s>.  Displaying all updates.", get_rest_xml, service->guid );
-			timeline=user_timeline;
-		}
-		
-		tabs_open_timeline(timeline, service);
-		uber_free(timeline);
+	if(action==ViewUpdatesNew||action==ViewUpdates||action==ViewForwards)
+		return online_service_request_open_timeline_tab(service, action, get_rest_xml);
+	
+	if(action==SelectService || action==ViewProfile || action == Confirmation || G_STR_EMPTY(get_rest_xml))
 		return;
-	}
+	
+	if(action==Delete||action==UnFave)
+		if(!online_services_is_user_name_mine(service, get_rest_xml))
+			return;
 	
 	OnlineServiceRequest *request=NULL;
 	if(!(request=online_service_request_new(service, action, parent_window, get_rest_xml)))
@@ -465,6 +443,32 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	
 	update_viewer_sexy_select();
 }/*online_service_request_main(service, parent_window, Follow|UnFollow|ViewProfile|ViewUpdates|..., user_name|update_id);*/
+
+static void online_service_request_open_timeline_tab(OnlineService *service, RequestAction action, const gchar *get_rest_xml){
+	gchar *timeline=NULL;
+	gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, get_rest_xml );
+	if(action==ViewUpdatesNew){
+		gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+		update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+		if(!unread_update_id){
+			debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", get_rest_xml, service->guid );
+			timeline=user_timeline;
+		}else{
+			debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", get_rest_xml, service->guid, newest_update_id );
+			uber_free(user_timeline);
+			timeline=g_strdup_printf(API_TIMELINE_USER_UNREAD, get_rest_xml, unread_update_id);
+		}
+	}else if(action==ViewForwards){
+		uber_free(user_timeline);
+		timeline=g_strdup_printf(API_FORWARDS_BY_ID, get_rest_xml);
+	}else{
+		debug( "Loading %s's updates, on <%s>.  Displaying all updates.", get_rest_xml, service->guid );
+		timeline=user_timeline;
+	}
+	
+	tabs_open_timeline(timeline, service);
+	uber_free(timeline);
+}/*online_service_request_open_timeline_tab(service, action, get_rest_xml);*/
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	const glong uri_shortener_uri_strlen=g_utf8_strlen(URI_SHORTENER_URI, -1);
@@ -518,11 +522,11 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 			main_window_statusbar_printf("<%s>'s successeded in %s <%s@%s>.", service->guid, request->message, request->get_rest_xml, service->uri);
 			user_free(user);
 			break;
-		case Destroy:
+		case Delete:
 		case Fave:
 		case UnFave:
 			if(xml->status_code!=403){
-				if(request->action==Destroy){
+				if(request->action!=Fave){
 					tabs_remove_from_uberchick_tree_views_tree_stores(GSTRING_UPDATE_ID_STR, request->get_rest_xml);
 					update_viewer_new_update();
 				}
@@ -711,15 +715,15 @@ void online_service_request_selected_update_save_fave(void){
 	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
 }/*online_service_request_selected_update_save_fave*/
 
-void online_service_request_selected_update_destroy_fave(void){
+void online_service_request_selected_update_unfave(void){
 	if(!(selected_update && selected_update->id)) return;
 	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
-}/*online_service_request_selected_update_destroy_fave*/
+}/*online_service_request_selected_update_unfave();*/
 
-void online_service_request_selected_update_destroy(void){
+void online_service_request_selected_update_delete(void){
 	if(!(selected_update && selected_update->id && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Destroy, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
-}/*online_service_request_selected_update_destroy_fave*/
+	online_service_request_main(selected_update->service, Delete, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
+}/*online_service_request_selected_update_delete();*/
 
 
 /********************************************************************************
@@ -753,7 +757,7 @@ static gchar *online_service_request_action_to_title(RequestAction action){
 			return _("What update ID # do you want to star?");
 		case UnFave:
 			return _("What update ID # do you want to un-star?");
-		case Destroy:
+		case Delete:
 			return _("What update's ID do you to delete?");
 		case ShortenURI:
 			return _("What URL would you like to shorten?");
@@ -811,7 +815,7 @@ static void online_service_request_popup_set_title_and_label(RequestAction actio
 			return;
 		case Fave:
 		case UnFave:
-		case Destroy:
+		case Delete:
 			label_markup=g_strdup_printf("Please enter the update ID of the update you want to %s:", online_service_request_action_to_title(action));
 			gtk_message_dialog_set_markup(online_service_request_popup->dialog, label_markup);
 			uber_free(label_markup);
@@ -869,7 +873,7 @@ static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, g
 		case BestFriendDrop:
 		case Fave:
 		case UnFave:
-		case Destroy:
+		case Delete:
 		case ShortenURI:
 			if(online_service_request_popup_dialog_process_requests(dialog, response, online_service_request_popup))
 				gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -1007,6 +1011,18 @@ void online_service_request_popup_block(void){
 	online_service_request_popup_dialog_show(Block);
 }/*online_service_request_popup_block();*/
 
+void online_service_request_popup_fave(void){
+	online_service_request_popup_dialog_show(Fave);
+}/*online_service_request_popup_fave();*/
+
+void online_service_request_popup_unfave(void){
+	online_service_request_popup_dialog_show(UnFave);
+}/*online_service_request_popup_unfave();*/
+
+void online_service_request_popup_delete(void){
+	online_service_request_popup_dialog_show(Delete);
+}/*online_service_request_popup_delete();*/
+
 void online_service_request_popup_unblock(void){
 	online_service_request_popup_dialog_show(UnBlock);
 }/*online_service_request_popup_unblock();*/
@@ -1056,7 +1072,7 @@ static gboolean online_service_request_popup_validate_usage(RequestAction action
 		case UnBlock:
 		case Fave:
 		case UnFave:
-		case Destroy:
+		case Delete:
 		case ShortenURI:
 			return TRUE;
 		default:
@@ -1073,7 +1089,7 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	if(online_service_request_popup){
 		if(online_service_request_popup->action==action){
 			debug("Displaying existing popup instance.");
-			return gtk_window_present(GTK_WINDOW( online_service_request_popup->dialog));
+			return gtk_window_present(GTK_WINDOW(online_service_request_popup->dialog));
 		}
 		
 		online_service_request_popup_destroy_and_free();
@@ -1138,6 +1154,9 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	if(action!=Confirmation){
 		gtk_widget_hide( GTK_WIDGET(online_service_request_popup->check_button) );
 		gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->check_button), FALSE);
+	}else{
+		gtk_widget_show( GTK_WIDGET(online_service_request_popup->check_button) );
+		gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->check_button), TRUE);
 	}
 	
 	if(!(online_services_has_connected(0) > 1 && online_services_has_total(0) > 1 )){

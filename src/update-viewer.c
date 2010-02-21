@@ -96,6 +96,7 @@
 
 #include "www.h"
 #include "uberchick-label.h"
+#include "uberchick-sexy-entry-completion.h"
 
 #include "ui-utils.h"
 #include "update-viewer.h"
@@ -206,6 +207,7 @@ struct _UpdateViewer{
 	GtkButton		*forward_update_button;
 	GtkButton		*retweet_button;
 	GtkButton		*make_fave_button;
+	GtkButton		*unfave_button;
 	GtkButton		*destroy_update_button;
 	
 	
@@ -481,6 +483,8 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 					"forward_update_button", &update_viewer->forward_update_button,
 					"retweet_button", &update_viewer->retweet_button,
 					"make_fave_button", &update_viewer->make_fave_button,
+					"update_viewer_unfave_button", &update_viewer->unfave_button,
+					
 					"update_viewer_destroy_update_button", &update_viewer->destroy_update_button,
 					
 					"update_viewer_online_services_vbox", &update_viewer->online_services_vbox,
@@ -542,7 +546,8 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 				"forward_update_button", "clicked", update_viewer_forward,
 				"retweet_button", "clicked", update_viewer_retweet,
 				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
-				"update_viewer_destroy_update_button", "clicked", online_service_request_selected_update_destroy,
+				"update_viewer_unfave_button", "clicked", online_service_request_selected_update_unfave,
+				"update_viewer_destroy_update_button", "clicked", online_service_request_selected_update_delete,
 				
 				"update_viewer_online_services_controls_edit_accounts_tool_button", "clicked", update_viewer_online_services_controls_edit_accounts_clicked,
 			NULL
@@ -974,12 +979,17 @@ static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateVi
 		"reply_button",
 		"forward_update_button",
 		"make_fave_button",
+		"update_viewer_unfave_button",
+		
+		"update_viewer_destroy_update_button",
 	};
 	
 	GList *list=NULL;
 	for(int i=0; i < G_N_ELEMENTS(selected_update_buttons); i++)
 		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_buttons[i])) );
+	
 	list=g_list_append(list, update_viewer->retweet_button);
+	
 	update_viewer->selected_update_buttons=list;
 }/*update_viewer_selected_widgets_setup*/
 
@@ -1294,6 +1304,10 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
 	update_viewer_selected_update_buttons_show((id ?TRUE :FALSE), (G_STR_EMPTY(user_name) ?NULL :user_name ) );
+	if(!(monitoring==Faves && online_services_is_user_name_mine(service, user_name) ))
+		gtk_widget_hide(GTK_WIDGET(update_viewer->unfave_button));
+	else
+		gtk_widget_show(GTK_WIDGET(update_viewer->unfave_button));
 	
 	const gchar *uri_scheme_suffix=(service->https?"s":"");
 	
@@ -1656,7 +1670,7 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	);
 	uber_free(iter);
 	
-	if(g_str_equal(update, "[new update]") || list_store_index==-3) return;
+	if( list_store_index==-3 || g_str_equal(update, "[new update]") ) return;
 	
 	update_viewer_previous_updates_remove(update_viewer, 1);
 	update_viewer_previous_update_add(update_viewer, "[new update]", list_store_index);
@@ -1668,7 +1682,7 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	
 	update_viewer_previous_updates_rotate(update_viewer);
 	gchar *previous_update_gconf_path=NULL;
-	gconfig_set_string( previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", 0), update );
+	gconfig_set_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", 0)), update);
 	uber_free(previous_update_gconf_path);
 }/*update_viewer_previous_update_add(update_viewer, GTK_ENTRY(update_viewer->sexy_entry)->text, -2 to prepend|-1 to append|>0 to instert at this index);*/
 
@@ -1739,7 +1753,7 @@ static void update_viewer_previous_updates_remove(UpdateViewer *update_viewer, g
 static void update_viewer_previous_updates_rotate(UpdateViewer *update_viewer){
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
 	for(gint i=update_viewer->max_updates; i>=0; i--){
-		if( (gconfig_get_string( previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i-1), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
+		if( (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i-1)), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
 			uber_free(previous_update_gconf_path);
 			previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i);
 			gconfig_set_string(previous_update_gconf_path, previous_update);

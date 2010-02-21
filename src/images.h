@@ -69,6 +69,7 @@ G_BEGIN_DECLS
 
 
 enum {
+	ImagesUnscaled		=	0,
 	ImagesMaximum		=	96,
 	ImagesExpanded		=	72,
 	ImagesDefault		=	48,
@@ -116,9 +117,8 @@ GdkPixbuf *images_minimize_pixbuf(GdkPixbuf *pixbuf);
 GdkPixbuf *images_scale_pixbuf(GdkPixbuf *pixbuf, gint width, gint height);
 GdkPixbuf *images_get_pixbuf_from_filename(gchar *image_filename);
 GdkPixbuf *images_get_unscaled_pixbuf_from_filename(gchar *image_filename);
-GdkPixbuf *images_get_scaled_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
-GdkPixbuf *images_get_and_scale_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
 
+gboolean images_set_file_chooser_preview_image(GtkImage *preview_image, GtkFileChooser *file_chooser);
 
 G_END_DECLS
 #endif /* __IMAGES_H__ */
