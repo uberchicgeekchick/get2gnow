@@ -1,4 +1,0 @@
-#!/bin/tcsh -f
-cp -v "/projects/gtk/get2gnow/data/preferences.ui" "data/";
-cp -v "/projects/gtk/get2gnow/src/network.c" "/projects/gtk/get2gnow/src/online-service.c" "/projects/gtk/get2gnow/src/online-services.c" "/projects/gtk/get2gnow/src/online-service-wrapper.c" "/projects/gtk/get2gnow/src/preferences.c" "/projects/gtk/get2gnow/src/update-viewer.c" "/projects/gtk/get2gnow/src/users.c" "/projects/gtk/get2gnow/src/www.c" "/projects/gtk/get2gnow/src/www.h" "/projects/gtk/get2gnow/src/www.new.c" "src/";
-
