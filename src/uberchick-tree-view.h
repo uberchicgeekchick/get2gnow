@@ -81,7 +81,7 @@ typedef enum _UberChickTreeViewListStoreColumn{	/*******************************
 	GUINT_UBERCHICK_TREE_VIEW_INDEX,		/*	The update's index in the list-store.                                   */
 	GDOUBLE_UPDATE_ID,				/*	Update's ID.								*/
 	GSTRING_UPDATE_ID_STR,				/*	Update's ID string.							*/
-	GDOUBLE_USER_ID,				/*	User's ID.								*/
+	GDOUBLE_USER_ID,					/*	User's ID.								*/
 	STRING_USER,					/*	Username string.							*/
 	STRING_NICK,					/*	Author name string.							*/
 	STRING_TEXT,					/*	Unformated Update string.						*/

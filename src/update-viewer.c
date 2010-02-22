@@ -169,11 +169,13 @@ struct _UpdateViewer{
 	
 	/* Info on the update being viewed to avoid issues with the 'best friends' toggle button. */
 	OnlineService		*viewing_service;
+	UpdateMonitor		viewing_updates;
 	gchar			*viewing_user_name;
 	gdouble			viewing_user_id;
 	gchar			*viewing_user_id_str;
 	gdouble			viewing_update_id;
 	gchar			*viewing_update_id_str;
+	gchar			*viewing_update_text;
 	
 	/* For sending one of your best friends a dm. */
 	OnlineService		*best_friends_service;
@@ -289,11 +291,11 @@ static UpdateViewer *update_viewer_init(void);
 static void update_viewer_sexy_init(void);
 static void update_viewer_reorder(void);
 
-static void update_viewer_selected_update_author_best_friend_toggled(GtkToggleButton *best_friend_toggle_button);
+static void update_viewer_selected_update_author_best_friend_toggled(GtkToggleButton *best_friend_toggle_button, UpdateViewer *update_viewer);
 
 static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateViewer *update_viewer);
 static void update_viewer_bind_hotkeys(GtkBuilder *ui);
-static void update_viewer_selected_update_buttons_show(gboolean selected_update, const gchar *user_name);
+static void update_viewer_selected_update_buttons_show(OnlineService *service, const gchar *user_name, gboolean selected_update);
 
 static void update_viewer_grab_widgets_compact_update_viewer_hidden(GtkBuilder *ui);
 static void update_viewer_compact_view_display(gboolean compact);
@@ -571,7 +573,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 	
 	
 	debug("Disabling 'selected widgets' since no update could be selected when we 1st start.");
-	update_viewer_selected_update_buttons_show(FALSE, NULL);
+	update_viewer_selected_update_buttons_show(NULL, NULL, FALSE);
 	
 	debug("Disabling & hiding UpdateViewer's dm form since friends have not yet been loaded.");
 	update_viewer_dm_form_activate(FALSE);
@@ -853,7 +855,7 @@ GtkButton *update_viewer_get_sexy_dm_button(void){
 	return update_viewer->sexy_dm_button;
 }/*update_viewer_get_sexy_dm_button();*/
 
-static void update_viewer_selected_update_author_best_friend_toggled(GtkToggleButton *best_friend_toggle_button){
+static void update_viewer_selected_update_author_best_friend_toggled(GtkToggleButton *best_friend_toggle_button, UpdateViewer *update_viewer){
 	OnlineService *service=online_service_request_selected_update_get_service();
 	const gchar *user_name=online_service_request_selected_update_get_user_name();
 	if(!( G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(update_viewer->viewing_user_name) && service && update_viewer->viewing_service==service && g_str_equal(update_viewer->viewing_user_name, user_name) )) {
@@ -865,7 +867,7 @@ static void update_viewer_selected_update_author_best_friend_toggled(GtkToggleBu
 		online_service_request_selected_update_best_friend_add();
 	else
 		online_service_request_selected_update_best_friend_drop();
-}/*update_viewer_selected_update_author_best_friend_toggled(best_friend_toggle_widget);*/
+}/*update_viewer_selected_update_author_best_friend_toggled(best_friend_toggle_widget, update_viewer);*/
 
 void update_viewer_emulate_embed_toggle_via_check_menu_item(GtkCheckMenuItem *view_update_viewer_floating_check_menu_item){
 	if(gtk_check_menu_item_get_active(view_update_viewer_floating_check_menu_item)!=gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE))
@@ -907,12 +909,12 @@ void update_viewer_compact_view_toggled(GtkToggleButton *compact_view_toggle_but
 		gtk_image_set_from_icon_name(update_viewer->compact_view_image, "gtk-fullscreen", ImagesMinimum);
 	}
 	
-	const gchar *user_name;
-	if(user_name=online_service_request_selected_update_get_user_name())
-		update_viewer_selected_update_buttons_show(TRUE, user_name);
+	const gchar *user_name=NULL;
+	if(!(user_name=online_service_request_selected_update_get_user_name()))
+		update_viewer_selected_update_buttons_show(online_service_request_selected_update_get_service(), NULL, FALSE);
 	else
-		update_viewer_selected_update_buttons_show(FALSE, NULL);
-}/*update_viewer_compact_view_toggled(update_viewer->compact_view_toggle_button); */
+		update_viewer_selected_update_buttons_show(online_service_request_selected_update_get_service(), user_name, TRUE);
+}/*update_viewer_compact_view_toggled(update_viewer->compact_view_toggle_button);*/
 
 static void update_viewer_grab_widgets_compact_update_viewer_hidden(GtkBuilder *ui){
 	const gchar *update_view_containers[]={
@@ -963,7 +965,9 @@ static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateVi
 		
 		"user_image",
 		"update_viewer_left_vseparator",
+		
 		"update_viewer_destroy_update_button",
+		"update_viewer_unfave_button",
 		
 		"view_user_profile_button",
 		"view_user_unread_updates_button",
@@ -979,9 +983,6 @@ static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateVi
 		"reply_button",
 		"forward_update_button",
 		"make_fave_button",
-		"update_viewer_unfave_button",
-		
-		"update_viewer_destroy_update_button",
 	};
 	
 	GList *list=NULL;
@@ -993,8 +994,7 @@ static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateVi
 	update_viewer->selected_update_buttons=list;
 }/*update_viewer_selected_widgets_setup*/
 
-static void update_viewer_selected_update_buttons_show(gboolean selected_update, const gchar *user_name){
-	OnlineService *service=online_service_request_selected_update_get_service();
+static void update_viewer_selected_update_buttons_show(OnlineService *service, const gchar *user_name, gboolean selected_update){
 	main_window_selected_update_image_menu_items_show(selected_update);
 	GList *l=NULL;
 	guint8 i=0;
@@ -1023,14 +1023,11 @@ static void update_viewer_selected_update_buttons_show(gboolean selected_update,
 				break;
 			
 			case 4:
-				if(!selected_update)
+			case 5:
+				if(!(selected_update && service && G_STR_N_EMPTY(user_name) && online_services_is_user_name_mine(service, user_name) && ( i==4 || update_viewer->viewing_updates==Faves) ))
 					gtk_widget_hide(GTK_WIDGET(l->data));
-				else{
-					if(!(update_viewer->viewing_service && update_viewer->viewing_user_name && online_services_is_user_name_mine(update_viewer->viewing_service, update_viewer->viewing_user_name)))
-						gtk_widget_hide(GTK_WIDGET(l->data));
-					else
-						gtk_widget_show(GTK_WIDGET(l->data));
-				}
+				else
+					gtk_widget_show(GTK_WIDGET(l->data));
 				break;
 			default:
 				if( GTK_BUTTON(l->data) == update_viewer->retweet_button )
@@ -1050,8 +1047,11 @@ static void update_viewer_selected_update_buttons_show(gboolean selected_update,
 	}
 	g_list_free(l);
 	
-	if(selected_update && G_STR_N_EMPTY(user_name) )
-		gtk_toggle_button_set_active( update_viewer->best_friend_toggle_button, (best_friends_is_user_best_friend(service, user_name)) );
+	if(!(selected_update && service && G_STR_N_EMPTY(user_name) && best_friends_is_user_best_friend(service, user_name) ))
+		gtk_toggle_button_set_active(update_viewer->best_friend_toggle_button, FALSE);
+	else
+		gtk_toggle_button_set_active(update_viewer->best_friend_toggle_button, TRUE);
+	
 	if(!GTK_WIDGET_IS_SENSITIVE(update_viewer->update_composition_vbox))
 		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->update_composition_vbox), TRUE);
 	
@@ -1059,12 +1059,12 @@ static void update_viewer_selected_update_buttons_show(gboolean selected_update,
 		gtk_widget_show(GTK_WIDGET(update_viewer->update_composition_vbox));
 	
 	update_viewer_sexy_select();
-}/*update_viewer_selected_update_buttons_show(TRUE|FALSE, user->user_name|NULL);*/
+}/*update_viewer_selected_update_buttons_show(service|NULL, user_name|NULL, TRUE|FALSE);*/
 
 static void update_viewer_bind_hotkeys(GtkBuilder *ui){
 	g_signal_connect_after( update_viewer->embed_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL );
-	g_signal_connect_after( update_viewer->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL );
-	g_signal_connect_after( update_viewer->best_friend_toggle_button, "toggled", (GCallback)update_viewer_selected_update_author_best_friend_toggled, NULL );
+	g_signal_connect_after( update_viewer->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL);
+	g_signal_connect_after( update_viewer->best_friend_toggle_button, "toggled", (GCallback)update_viewer_selected_update_author_best_friend_toggled, update_viewer);
 	
 	const gchar *hotkey_widgets[]={
 		/*"update_viewer",
@@ -1249,9 +1249,9 @@ static void update_viewer_reorder(void){
 	);
 }/*update_viewer_reorder*/
 
-gboolean update_viewer_set_in_reply_to_data(OnlineService *service, gchar *user_name, gdouble user_id, gdouble update_id, gboolean prefix, gboolean save_reply_to_data){
+gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateMonitor viewing_updates, gchar *user_name, gchar *update_text, gdouble user_id, gdouble update_id, gboolean reply, gboolean forwarding, gboolean save_reply_to_data){
 	if(!update_viewer) return FALSE;
-	if(!save_reply_to_data && !prefix) return FALSE;
+	if(!save_reply_to_data && !reply) return FALSE;
 	
 	if(save_reply_to_data){
 		if(update_viewer->viewing_user_name) uber_free(update_viewer->viewing_user_name);
@@ -1261,27 +1261,51 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, gchar *user_
 		if(update_id) update_viewer->viewing_user_id_str=gdouble_to_str(user_id);
 		update_viewer->viewing_update_id=update_id;
 		if(update_viewer->viewing_update_id_str) uber_free(update_viewer->viewing_update_id_str);
-		if(update_id) update_viewer->viewing_update_id_str=gdouble_to_str(update_id);
-		update_viewer->viewing_service=service;
+		if(update_id)
+			update_viewer->viewing_update_id_str=gdouble_to_str(update_id);
+		
+		if(!(G_STR_N_EMPTY(update_text) && G_STR_N_EMPTY(update_viewer->viewing_update_text) && g_str_equal(update_viewer->viewing_update_text, update_text)))
+			uber_free(update_viewer->viewing_update_text);
+		
+		if(!(G_STR_EMPTY(update_text)))
+			update_viewer->viewing_update_text=g_strdup(update_text);
+		
+		if(update_viewer->viewing_service!=service)
+			update_viewer->viewing_service=service;
+		if(update_viewer->viewing_updates!=viewing_updates)
+			update_viewer->viewing_updates=viewing_updates;
 	}
 	
-	if(!prefix) return FALSE;
+	if(!((reply || forwarding) && user_name && service)){
+		update_viewer_sexy_select();
+		return FALSE;
+	}
 	
 	gboolean prefix_added=FALSE;
-	if(user_name && service){
-		gchar *users_at=NULL;
-		
-		if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_ADD_PROFILE_LINK, TRUE) ))
-			users_at=g_strdup_printf("@%s ", user_name);
-		else
-			users_at=g_strdup_printf("@%s ( http://%s/%s ) ", user_name, service->uri, user_name);
-		prefix_added=update_viewer_sexy_prefix_string(users_at, TRUE, TRUE);
-		uber_free(users_at);
+	if(forwarding && !update_viewer_sexy_entry_clear())
+		return FALSE;
+	
+	gchar *users_at=NULL;
+	if(!( online_services_has_connected(1) > 0 && gconfig_if_bool(PREFS_UPDATES_ADD_PROFILE_LINK, TRUE) ))
+		users_at=g_strdup_printf("%s@%s ", (forwarding ?"RT: " :""), user_name);
+	else
+		users_at=g_strdup_printf("%s@%s, http://%s/%s, ", (forwarding ?"RT: " :""), user_name, service->uri, user_name);
+	
+	if(!(prefix_added=update_viewer_sexy_prefix_string(users_at, TRUE, TRUE))){
+		update_viewer_sexy_insert_string(" ", FALSE, FALSE);
+		update_viewer_sexy_insert_string(users_at, TRUE, FALSE);
+	}
+	uber_free(users_at);
+	
+	if(forwarding){
+		update_viewer_sexy_append_string("\"", FALSE, FALSE);
+		update_viewer_sexy_append_string(update_viewer->viewing_update_text, FALSE, FALSE);
+		update_viewer_sexy_append_string(" \"", FALSE, FALSE);
 	}
 	
 	update_viewer_sexy_select();
 	return prefix_added;
-}/*update_viewer_set_in_reply_to_data(user->user_name|NULL, service, 1212154, TRUE|FALSE, TRUE|FALSE);*/
+}/*update_viewer_set_in_reply_to_data(user->user_name|NULL, None|Homepage|Replies|DMs|etc, service, 1212154, TRUE|FALSE, TRUE|FALSE);*/
 
 void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateMonitor monitoring){
 	if(!(service && service->session && online_service_validate_session(service, user_name) )) return;
@@ -1292,31 +1316,27 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	else
 		update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, service);
 	
-	if(!id)
-		online_service_request_unset_selected_update();
-	else{
-		online_service_request_set_selected_update(service, id, user_id, user_name, text_update);
-		main_window_set_statusbar_default_message( _("Hotkeys: <Alt+S> to post your update; <Alt+D> to send your update as a DM.  <CTRL+N> start a new tweet; <CTRL+D> or <SHIFT+Return> to DM your friends; <CTRL+R>, <Return>, or '@' to reply, <CTRL+F> or '>' to forward/retweet.") );
-	}
+	if(id)
+		update_viewer_set_in_reply_to_data(service, monitoring, (gchar *)user_name, (gchar *)text_update, user_id, id, FALSE, FALSE, TRUE);
+	else
+		update_viewer_set_in_reply_to_data(NULL, None, NULL, NULL, 0.0, 0.0, FALSE, FALSE, TRUE);
 	
 	debug("%s the UpdateViewer.", (id ?_("Enlarging") :"") );
 	update_viewer_compact_view_display( gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE) );
 	
 	debug("%sabling 'selected_update_buttons'.", (id ?"En" :"Dis") );
-	update_viewer_selected_update_buttons_show((id ?TRUE :FALSE), (G_STR_EMPTY(user_name) ?NULL :user_name ) );
-	if(!(monitoring==Faves && online_services_is_user_name_mine(service, user_name) ))
-		gtk_widget_hide(GTK_WIDGET(update_viewer->unfave_button));
-	else
-		gtk_widget_show(GTK_WIDGET(update_viewer->unfave_button));
+	update_viewer_selected_update_buttons_show((service? service :NULL), (G_STR_EMPTY(user_name) ?NULL :user_name ), (id ?TRUE :FALSE));
 	
-	const gchar *uri_scheme_suffix=(service->https?"s":"");
+	if(!id)
+		online_service_request_unset_selected_update();
+	else{
+		online_service_request_set_selected_update(service, monitoring, id, user_id, user_name, text_update);
+		main_window_set_statusbar_default_message( _("Hotkeys: <Alt+S> to post your update; <Alt+D> to send your update as a DM.  <CTRL+N> start a new tweet; <CTRL+D> or <SHIFT+Return> to DM your friends; <CTRL+R>, <Return>, or '@' to reply, <CTRL+F> or '>' to forward/retweet.") );
+	}
 	
 	main_window_set_statusbar_msg(NULL);
 	
-	if(id)
-		update_viewer_set_in_reply_to_data(service, (gchar *)user_name, user_id, id, FALSE, TRUE);
-	else
-		update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, 0.0, FALSE, TRUE);
+	const gchar *uri_scheme_suffix=(service->https?"s":"");
 	
 	gchar *sexy_text=NULL;
 	
@@ -1362,9 +1382,9 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	 * So we just set it as a SexyLable & bypass UberChickLabel
 	 */
 	debug("Setting 'sexy_update' for 'selected_update':\n\t\t%s.", sexy_update);
-	if(!(gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)))
+	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE))
 		sexy_url_label_set_markup(SEXY_URL_LABEL(update_viewer->sexy_update), sexy_update);
-	else
+	else*/
 		uberchick_label_set_text(update_viewer->sexy_update, service, user_name, user_id, id, sexy_update, TRUE, TRUE);
 	
 	if(!pixbuf)
@@ -1383,6 +1403,10 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	debug("Selecting 'sexy_entry' for entering a new update.");
 	update_viewer_sexy_select();
 }/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None);*/
+
+UpdateMonitor update_viewer_get_update_monitoring(void){
+	return update_viewer->viewing_updates;
+}/*update_viewer_get_update_monitoring();*/
 
 static void update_viewer_insert_shortened_uri(GtkButton *shorten_uri_button, UpdateViewer *update_viewer){
 	gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), FALSE);
@@ -1590,12 +1614,12 @@ void update_viewer_new_update(void){
 	if(update_viewer->best_friends_service) update_viewer->best_friends_service=NULL;
 	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);
 	
-	update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, 0.0, FALSE, TRUE);
+	update_viewer_set_in_reply_to_data(NULL, None, NULL, NULL, 0.0, 0.0, FALSE, FALSE, TRUE);
 	
 	gtk_widget_hide( (GtkWidget *)update_viewer->best_friend_dm_notification_label );
 	online_service_request_unset_selected_update();
 	
-	if(gtk_toggle_button_get_active(update_viewer->best_friend_toggle_button) )
+	if(gtk_toggle_button_get_active(update_viewer->best_friend_toggle_button))
 		gtk_toggle_button_set_active(update_viewer->best_friend_toggle_button, FALSE);
 	
 	geometry_load();
@@ -1620,7 +1644,7 @@ static void update_viewer_sexy_send(OnlineService *service, const gchar *user_na
 }/*update_viewer_sexy_send(online_service_request_selected_update_get_service(), online_service_request_selected_update_get_user_name() );*/
 
 static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
-	update_viewer_set_in_reply_to_data(NULL, NULL, 0.0, 0.0, FALSE, TRUE);
+	update_viewer_set_in_reply_to_data(NULL, None, NULL, NULL, 0.0, 0.0, FALSE, FALSE, TRUE);
 	
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
 	update_viewer_previous_maxium_updates_validate(update_viewer);

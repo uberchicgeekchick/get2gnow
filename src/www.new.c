@@ -71,6 +71,7 @@
 #include "www.h"
 
 #include "online-service.h"
+#include "online-service-wrapper.h"
 
 #include "gconfig.h"
 #include "preferences.defines.h"
@@ -113,7 +114,7 @@ static gboolean www_uri_titles_clean_up(void);
  *               object methods, handlers, callbacks, & etc.                    *
  ********************************************************************************/
 static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const gchar *services_resource);
-static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml);
+static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage *xml);
 static void www_uri_title_append(const gchar *uri, const gchar *title);
 
 
@@ -488,62 +489,77 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 		return temp;
 	}
 	
-	SoupMessage *xml=NULL;
-	gchar *content_type=NULL;
+	online_service_request_uri(service, QUEUE, uri, 0, NULL, www_uri_title_save, GINT_TO_POINTER(make_hyperlinks), (gpointer)services_resource);
+	return temp;
+}/*www_find_uri_pages_title(service, uri, "@user"||"#search||"!tag", expand_hyperlinks, make_hyperlinks);*/
+
+void *www_uri_title_save(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *online_service_wrapper){
+	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
+	const gchar *requested_uri=online_service_wrapper_get_requested_uri(online_service_wrapper);
+	gboolean make_hyperlinks=GPOINTER_TO_INT(online_service_wrapper_get_user_data(online_service_wrapper));
+	const gchar *services_resource=online_service_wrapper_get_form_data(online_service_wrapper);
 	
-	main_window_statusbar_printf("Please wait while %s's title is found.", uri);
-	debug("Attempting to determine content-type for: %s.", uri);
-	if(!(content_type=www_get_uri_content_type(service, uri, &xml))){
-		debug("Unable to determine the content-type from uri: '%s'.", uri);
-		www_uri_title_append(uri, uri);
+	gchar *content_type=NULL;
+	gchar *temp=NULL;
+	if(!make_hyperlinks)
+		temp=g_strdup_printf("<u>%s</u>", requested_uri);
+	else
+		temp=g_strdup_printf("<a href=\"%s\">%s</a>", requested_uri, requested_uri);
+	
+	main_window_statusbar_printf("Please wait while %s's title is found.", requested_uri);
+	debug("Attempting to determine content-type for: %s.", requested_uri);
+	if(!(content_type=www_get_uri_content_type(service, requested_uri, xml))){
+		debug("Unable to determine the content-type from uri: '%s'.", requested_uri);
+		www_uri_title_append(requested_uri, requested_uri);
 		return temp;
 	}
 	
 	if(!g_str_equal(content_type, "text/html")){
-		debug("Non-XHTML content-type from uri: '%s'.", uri);
+		debug("Non-XHTML content-type from uri: '%s'.", requested_uri);
 		uber_free(content_type);
-		www_uri_title_append(uri, uri);
+		www_uri_title_append(requested_uri, requested_uri);
 		return temp;
 	}
 	uber_free(content_type);
 	
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
+	gchar *uri_title=NULL;
 	if(!(uri_title=www_get_uri_dom_xpath_element_content(xml, "html->head->title"))){
 		if(searching)
 			uri_title=g_strdup(service->uri);
 		else if(services_resource && services_resource[0]=='@')
 			uri_title=g_strdup_printf("<%s@%s>", &services_resource[1], service->uri);
 		else{
-			www_uri_title_append(uri, uri);
+			www_uri_title_append(requested_uri, requested_uri);
 			return temp;
 		}
 	}
 	uber_free(temp);
 	
 	www_html_entity_escape_status(&uri_title);
-	www_uri_title_append(uri, uri_title);
+	www_uri_title_append(requested_uri, uri_title);
 	
-	www_format_uri_with_title(&uri_title, uri, services_resource);
+	www_format_uri_with_title(&uri_title, requested_uri, services_resource);
 	
 	if(!make_hyperlinks)
 		temp=g_strdup_printf("<u>%s</u>", uri_title);
 	else
-		temp=g_strdup_printf("<a href=\"%s\">%s</a>", uri, uri_title);
+		temp=g_strdup_printf("<a href=\"%s\">%s</a>", requested_uri, uri_title);
 	
 	uber_free(uri_title);
 	
 	return temp;
-}/*www_find_uri_pages_title(service, uri, "@user"||"#search||"!tag", expand_hyperlinks, make_hyperlinks);*/
+}/*www_uri_title_save(service, uri, "@user"||"#search||"!tag", expand_hyperlinks, make_hyperlinks);*/
 
 static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const gchar *services_resource){
 	debug("Attempting to display link info. title: %s for uri: '%s'.", *uri_title, uri);
 	gchar *hyperlink_suffix1=NULL;
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
-	
 	if(services_resource && searching && !g_strrstr(*uri_title, services_resource))
 		hyperlink_suffix1=g_strdup_printf("'s search results for %s", services_resource);
 	
 	gchar *hyperlink_suffix2=NULL;
+	
 	if(!gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE))
 		hyperlink_suffix2=g_strdup_printf(" &lt;- %s", uri);
 	
@@ -558,11 +574,10 @@ static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const
 		uber_free(hyperlink_suffix2);
 }/*www_format_uri_with_title(&uri_title, uri, services_resource);*/
 
-static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml){
+static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage *xml){
 	debug("Downloading headers for: %s to determine its content-type.", uri);
-	*xml=online_service_request_uri(service, GET, uri, 0, NULL, NULL, NULL, NULL);
 	gchar *error_message=NULL;
-	if(!www_xml_error_check(service, uri, *xml, &error_message)){
+	if(!www_xml_error_check(service, uri, xml, &error_message)){
 		uber_free(error_message);
 		return NULL;
 	}
@@ -573,7 +588,7 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	gchar **content_v=NULL;
 	debug("Parsing xml document's content-type from [%s]'s headers.", uri);
 	gchar *content_info=NULL;
-	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one((*xml)->response_headers, "Content-Type")))){
+	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
 		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
 		return NULL;
 	}

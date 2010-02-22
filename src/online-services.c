@@ -264,16 +264,10 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 		
 		gchar *services_resource=g_strrstr( (g_strrstr(uri, service->uri)), "/");
 		if(!uberchick_label){
-			if(!update_viewer_set_in_reply_to_data(service, &services_resource[1], 0.0, 0.0, TRUE, FALSE)){
-				update_viewer_sexy_insert_string(" @", FALSE, FALSE);
-				update_viewer_sexy_insert_string(&services_resource[1], TRUE, FALSE);
-			}
+			update_viewer_set_in_reply_to_data(service, Users, &services_resource[1], NULL, 0.0, 0.0, TRUE, FALSE, FALSE);
 			debug("OnlineServices: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
 		}else{
-			if(update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label),&services_resource[1], uberchick_label_get_user_id(uberchick_label), uberchick_label_get_update_id(uberchick_label), TRUE, FALSE)){
-				update_viewer_sexy_insert_string(" @", FALSE, FALSE);
-				update_viewer_sexy_insert_string(&services_resource[1], TRUE, FALSE);
-			}
+			update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label), Users, &services_resource[1], NULL, uberchick_label_get_user_id(uberchick_label), uberchick_label_get_update_id(uberchick_label), TRUE, FALSE, FALSE);
 			debug("OnlineServices via UberChick_Label: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
 		}
 		return;

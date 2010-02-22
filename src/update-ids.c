@@ -164,7 +164,7 @@ static void update_id_get( OnlineService *service, const gchar *timelines_gconfi
 	success=gconfig_get_string(prefs_path, &swap_id_str);
 	
 	if(!(success && swap_id_str)) swap_id=0.0;
-	else swap_id=strtod(swap_id_str, NULL);
+	else swap_id=g_ascii_strtod(swap_id_str, NULL);
 	
 	if(swap_id>0) *update_id=swap_id;
 	debug("Retrieved <%s>'s %s update ID: %f(from string %s) from gconf key: [%s].", service->key, key, *update_id, swap_id_str, prefs_path);

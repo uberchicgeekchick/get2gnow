@@ -471,6 +471,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="tooltip_markup">Delete your update.</property>
                                 <child>
                                   <object class="GtkImage" id="update_viewer_destroy_update_button_image">
                                     <property name="visible">True</property>

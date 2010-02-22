@@ -88,7 +88,9 @@ void update_viewer_postable_online_services_append(OnlineService *service);
 gboolean update_viewer_postable_online_service_delete(OnlineService *service);
 
 void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf, UpdateMonitor monitoring);
-gboolean update_viewer_set_in_reply_to_data(OnlineService *service, gchar *user_name, gdouble user_id, gdouble update_id, gboolean prefix, gboolean force);
+gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateMonitor viewing_updates, gchar *user_name, gchar *update_text, gdouble user_id, gdouble update_id, gboolean reply, gboolean forwarding, gboolean force);
+
+UpdateMonitor update_viewer_get_update_monitoring(void);
 
 void update_viewer_best_friends_start_dm( OnlineService *service, const gchar *user_name );
 

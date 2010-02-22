@@ -303,7 +303,7 @@ OnlineService *online_service_open(const gchar *account_key){
 	best_friends_load(service);
 	
 	return service;
-}/*online_service_open*/
+}/*online_service_open("user@service.uri");*/
 
 OnlineService *online_service_new(const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default){
 	debug("Creating new OnlineService for '%s@%s'.", user_name, uri);
@@ -679,7 +679,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	uber_free(prefs_path);
 	
 	gchar *requested_uri=NULL;
-	if(!g_strrstr(uri, "://"))
+	if(!g_strstr_len(uri, 10, "://"))
 		requested_uri=g_strdup_printf("http://%s", uri);
 	else
 		requested_uri=g_strdup(uri);
@@ -694,22 +694,15 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 	
 	debug("Creating libsoup request for service: '%s'.", service->guid);
 	switch(request_method){
+		case GET:
 		case QUEUE:
 			online_service_request_validate_uri(service, &requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
-			break;
-		case POST:
-			online_service_request_validate_form_data(service, &requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
-		case GET: default: break;
-	}
-	
-	switch(request_method){
-		case QUEUE:
-		case GET:
 			debug("%s: %s", request_string, requested_uri);
 			xml=soup_message_new("GET", requested_uri);
 			break;
 		
 		case POST:
+			online_service_request_validate_form_data(service, &requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, &user_data, &form_data);
 			debug("form_data: [%s]", (gchar *)form_data);
 			xml=soup_message_new("POST", requested_uri);
 			
@@ -744,7 +737,9 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			
 		case GET:
 			debug("Sending <%s>'s libsoup %s request for: [%s].", service->guid, request_string, requested_uri );
+			OnlineService *new_service=online_service_open(service->key);
 			soup_session_send_message(service->session, xml);
+			online_service_free(new_service, TRUE);
 			break;
 	}
 	
@@ -788,7 +783,8 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	}else if(monitoring==BestFriends){
 		requesting=_("best friend's newest");
 		since_id=unread_update_id;
-	}else return;
+	}else
+		return;
 	
 	if(!since_id) return;
 	
@@ -815,7 +811,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	
 	if(!( (*form_data) && (*user_data) )) return;
 	
-	gboolean free_form_data;
+	gboolean free_form_data=FALSE;
 	if(!(free_form_data=online_service_form_data_replace( service, &form_data, NULL ) ))
 		debug("Resetting form data free gboolean to ensure that only the 3rd & further call will free the orginal form data pointer");
 	if(service->user_name && service->nick_name && g_strrstr( (gchar *)(*form_data), "/me" ) ){
@@ -862,12 +858,6 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 static gboolean online_service_form_data_replace( OnlineService *service, gpointer  **form_data, gchar *form_data_swap ){
 	static gboolean free_form_data=FALSE;
 	if(!( service && service->key && (*form_data) && form_data_swap )) return (free_form_data=FALSE);
-	
-	/*debug("Modifing <%s>'s status update.", service->key);
-	debug("\tOrginal POST update value:");
-	debug("\t\t[%s]", (gchar *)(**form_data) );
-	debug("\tis being replaced with:");
-	debug("\t\t[%s].", form_data_swap );*/
 	
 	if(free_form_data) uber_free( **form_data );
 	(**form_data)=form_data_swap;

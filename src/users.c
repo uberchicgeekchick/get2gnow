@@ -107,11 +107,11 @@
  *                    prototypes for private method & function                  *
  ********************************************************************************/
 static User *user_new(OnlineService *service, gboolean a_follower);
-static void user_validate( User **user );
+static void user_validate(User **user);
 
 
 static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring);
-static void user_status_validate( UserStatus **status );
+static void user_status_validate(UserStatus **status);
 static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user);
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user);
@@ -214,7 +214,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) )) continue;
 		
 		if(g_str_equal(current_node->name, "id" )){
-			user->id=strtod(content, NULL);
+			user->id=g_ascii_strtod(content, NULL);
 			user->id_str=gdouble_to_str(user->id);
 			debug("User ID: %s(=%f).", user->id_str, user->id);
 			
@@ -360,8 +360,9 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 		
 		debug("Parsing searches beginning at node: %s.", current_node->name );
 		if(g_str_equal(current_node->name, "id")){
-			status->id=strtod((g_strrstr(content, ":")+1), NULL);
-			status->id_str=gdouble_to_str(status->id);
+			gchar *status_id=NULL;
+			status->id=g_ascii_strtod((status_id=g_strrstr(content, ":")+1), NULL);
+			status->id_str=g_strdup(status_id);
 			debug("Parsing searches Update ID: %s(=%f).", status->id_str, status->id);
 		}else if(g_str_equal(current_node->name, "published") || g_str_equal(current_node->name, "updated")){
 			if( status->created_at_str && !g_str_equal(status->created_at_str, content) ){
@@ -424,11 +425,11 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 				continue;
 			}
 			
-			debug("Parsing searches user_name & user_nick from content: %s.", content );
-			if(!g_strrstr(content, "(")){
+			debug("Parsing searches user_name & user_nick from content: %s.", content);
+			const char *nick_name=NULL;
+			if(!(nick_name=g_strstr_len(content, -1, "(")))
 				status->user->user_name=g_markup_printf_escaped("%s", content);
-				/*status->user->nick_name=g_markup_printf_escaped("%s", content);*/
-			}else{
+			else{
 				gchar **user_data=g_strsplit(content, " (", -1);
 				status->user->user_name=g_markup_printf_escaped("%s", user_data[0]);
 				if(G_STR_N_EMPTY(user_data[1])){
@@ -465,6 +466,43 @@ static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xm
 	return status;
 }/*user_status_parse_retweeted_status(service, current_node->children, Homepage);*/
 
+UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, const gchar *uri){
+	xmlDoc		*doc=NULL;
+	xmlNode		*root_element=NULL;
+	xmlNode		*current_node=NULL;
+	UserStatus 	*status=NULL;
+	
+	if(!(doc=parse_xml_doc(xml, &root_element))){
+		debug("Failed to parse xml document, from <%s/%s>.", service->key, uri);
+		xmlCleanupParser();
+		return NULL;
+	}
+	
+	/* get updates or direct messages */
+	debug("Parsing %s.", root_element->name);
+	for(current_node=root_element; current_node; current_node=current_node->next) {
+		if(current_node->type != XML_ELEMENT_NODE ) continue;
+		
+		if(!( g_str_equal(current_node->name, "status") ))
+			continue;
+		
+		if(!current_node->children){
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_node->name);
+			continue;
+		}
+		
+		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
+		
+		debug("Creating Status *.");
+		if(!( (( status=user_status_parse(service, current_node->children, Archive))) && status->id )){
+			if(status) user_status_free(status);
+			break;
+		}
+		break;
+	}
+	return status;
+}/*user_status_parse_new(service, xml);*/
+
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
@@ -484,12 +522,12 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 			status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, monitoring);
 		
 		else if(g_str_equal(current_node->name, "id")){
-			status->id=strtod(content, NULL);
+			status->id=g_ascii_strtod(content, NULL);
 			status->id_str=gdouble_to_str(status->id);
 			debug("Update ID: %s(=%f).", content, status->id);
 			
 		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
-			status->in_reply_to_status_id=strtod(content, NULL);
+			status->in_reply_to_status_id=g_ascii_strtod(content, NULL);
 		
 		else if(g_str_equal(current_node->name, "source"))
 			status->source=g_strdup(content);
@@ -645,13 +683,13 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
 	
 	gchar *sexy_status_swap=www_html_entity_escape_text(status->text);
-	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){
+	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){*
 		status->sexy_update=www_format_urls(service, sexy_status_swap, TRUE, TRUE);
 		status->sexy_status_text=www_format_urls(service, sexy_status_swap, TRUE, FALSE);
-	}else{*/
+	*}else{*/
 		status->sexy_update=g_strdup(sexy_status_swap);
 		status->sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
-	//}
+	/*}*/
 	if(status->type==Searches){
 		debug("Formatting update for display.");
 		debug("\tstatus->text: [%s],", status->text);

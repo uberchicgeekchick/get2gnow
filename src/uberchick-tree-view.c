@@ -443,7 +443,7 @@ const gchar *monitoring_to_string(UpdateMonitor monitoring){
 		case	Searches:	return _("search results");
 		case	Groups:		return _("group discussions");
 		case	Timelines:	return _("global updates");
-		case	Archive:	return _("own updates");
+		case	Archive:	return _("my updates");
 		case	None:	default:
 			return _("a lil cracker :-P");
 	}

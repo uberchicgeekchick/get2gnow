@@ -339,13 +339,13 @@ gboolean images_set_file_chooser_preview_image(GtkImage *preview_image, GtkFileC
 	if(G_STR_EMPTY(filename)){
 		if(filename)
 			uber_free(filename);
-	}
-	
-	filename=gtk_file_chooser_get_filename(file_chooser);
-	if(G_STR_EMPTY(filename)){
-		if(filename)
-			uber_free(filename);
-		return FALSE;
+		filename=gtk_file_chooser_get_filename(file_chooser);
+		
+		if(G_STR_EMPTY(filename)){
+			if(filename)
+				uber_free(filename);
+			return FALSE;
+		}
 	}
 	
 	GdkPixbuf *pixbuf=gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);

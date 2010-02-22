@@ -111,8 +111,9 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 
 /* START: SelectedUpdate's methods. */
 gboolean online_service_request_isset_selected_update(void);
-void online_service_request_set_selected_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update);
+void online_service_request_set_selected_update(OnlineService *service, UpdateMonitor type, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update);
 OnlineService *online_service_request_selected_update_get_service(void);
+UpdateMonitor online_service_request_selected_update_get_update_type(void);
 gdouble online_service_request_selected_update_get_id(void);
 const gchar *online_service_request_selected_update_get_id_str(void);
 const gchar *online_service_request_selected_update_get_user_name(void);

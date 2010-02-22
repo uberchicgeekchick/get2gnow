@@ -196,10 +196,7 @@ void program_timeout_remove(guint *id, const gchar *usage){
 
 gchar *program_gdouble_drop_precision(const gdouble gdouble_value){
 	gchar *gdouble_str=g_strdup_printf("%f", gdouble_value);
-	gchar **gdouble_precision=g_strsplit(gdouble_str, ".", 2);
-	g_free(gdouble_str);
-	gdouble_str=g_strdup(gdouble_precision[0]);
-	g_strfreev(gdouble_precision);
+	g_ascii_dtostr(gdouble_str, strlen(gdouble_str), gdouble_value);
 	return gdouble_str;
 }/*program_gdouble_drop_precision();*/
 

@@ -370,8 +370,10 @@ void profile_manager_edit_profile(OnlineServiceWrapper *online_service_wrapper, 
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(online_service_wrapper);
 	if(!user){
+		const gchar *form_data=online_service_wrapper_get_form_data(online_service_wrapper);
 		debug("**ERROR:** Your profile could not be saved or updated.  <%s> returned: %s[#%d].", requested_uri, xml->reason_phrase, xml->status_code);
-		statusbar_printf("Your profile could not be saved or updated.  <%s> returned: %s[#%d].", requested_uri, xml->reason_phrase, xml->status_code);
+		debug("**ERROR:** POST: %s", form_data);
+		statusbar_printf("Your profile could not be saved or updated.  <%s> returned: %s[#%d] while POSTing: %s.", requested_uri, xml->reason_phrase, xml->status_code, form_data);
 		return;
 	}
 	

@@ -350,8 +350,8 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		return 0;
 	}
 	
-	/* get tweets or direct messages */
-	debug("Parsing %s timeline.", root_element->name);
+	/* get updates or direct messages */
+	debug("Parsing %s.", root_element->name);
 	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		

@@ -387,10 +387,7 @@ static void best_friends_button_clicked(GtkButton *button){
 	}
 	
 	if(button==best_friend_widgets->send_at_message_button){
-		if(!update_viewer_set_in_reply_to_data(service, user_name, unread_update_id, unread_update_id, TRUE, FALSE)){
-			update_viewer_sexy_insert_string(" @", FALSE, FALSE);
-			update_viewer_sexy_insert_string(user_name, TRUE, FALSE);
-		}
+		update_viewer_set_in_reply_to_data(service, update_viewer_get_update_monitoring(), user_name, NULL, unread_update_id, unread_update_id, TRUE, FALSE, FALSE);
 		uber_free(user_name);
 		return;
 	}

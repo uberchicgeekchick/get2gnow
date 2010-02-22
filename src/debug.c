@@ -275,7 +275,7 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 				va_start(args, msg);
 				g_vfprintf(stderr, g_strrstr(msg, ":** ")+sizeof(":**"), args);
 				va_end(args);
-				g_fprintf(stderr, ". @ %s %s\n", __DATE__, __TIME__);
+				g_fprintf(stderr, " @ %s %s\n", __DATE__, __TIME__);
 			}
 			
 			const gchar *newline;

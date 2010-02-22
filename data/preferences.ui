@@ -234,20 +234,6 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="titles_only_checkbutton">
-                                <property name="label" translatable="yes">_When loading updates.
-	Note: this may make timeline load slower..</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkCheckButton" id="expand_urls_selected_only_checkbutton">
                                 <property name="label" translatable="yes">Only after _selecting the update.</property>
                                 <property name="visible">True</property>
@@ -259,6 +245,19 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="titles_only_checkbutton">
+                                <property name="label" translatable="yes">Remove URI's from hyperlinks _when its title's found.</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
                                 <property name="position">2</property>
                               </packing>
                             </child>

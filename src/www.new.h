@@ -51,63 +51,56 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__ONLINE_SERVICES_REST_URIS_DEFINES_H__
-#define	__ONLINE_SERVICES_REST_URIS_DEFINES_H__
+#ifndef	__WWW_H__
+#define	__WWW_H__
+
+#ifndef	_GNU_SOURCE 
+#	define _GNU_SOURCE
+#endif
+
+#ifndef _THREAD_SAFE
+#	define _THREAD_SAFE
+#endif
+
+
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
+#include <glib.h>
+#include <gtk/gtk.h>
+
+#include "online-services.types.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
-#define API_LOGIN					"/account/verify_credentials.xml"
 
-#define API_TIMELINE_HOMEPAGE				"/statuses/home_timeline.xml"
-#define API_DIRECT_MESSAGES				"/direct_messages.xml"
-#define API_REPLIES					"/statuses/replies.xml"
-#define API_MENTIONS					"/statuses/mentions.xml"
-#define API_FAVORITES					"/favorites.xml"
 
-#define API_USER_PROFILE				"/users/show/%s.xml"
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
 
-#define API_USER_FOLLOW					"/friendships/create/%s.xml"
-#define API_USER_UNFOLLOW				"/friendships/destroy/%s.xml"
 
-#define API_USER_BLOCK					"/blocks/create/%s.xml"
-#define API_USER_UNBLOCK				"/blocks/destroy/%s.xml"
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+void www_init(void);
 
-#define API_FAVE					"/favorites/create/%s.xml"
-#define API_UNFAVE					"/favorites/destroy/%s.xml"
+void www_deinit(void);
 
-#define API_DESTROY_STEP1				"/statuses/%s.xml"
-#define API_DESTROY_STEP2				"/statuses/destroy/%s.xml"
+gchar *www_html_entity_escape_text(gchar *status_text);
+void www_html_entity_escape_status(gchar **status_text);
 
-#define API_TIMELINE_MINE				"/statuses/user_timeline.xml"
-#define API_TIMELINE_USER				"/statuses/user_timeline/%s.xml"
-#define API_TIMELINE_USER_UNREAD			API_TIMELINE_USER "?since_id=%f"
+gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
 
-#define API_FORWARDS_BY_ID				"/statuses/retweets/%s.xml"
+gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath);
+gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
-#define API_TIMELINE_SEARCH				"/search.atom?q="
-#define API_TIMELINE_SEARCH_SUBMIT			"/search.atom?q=%s"
-
-#define API_TIMELINE_GROUP				"/statuses/groups.xml"
-#define API_TIMELINE_PUBLIC				"/statuses/public_timeline.xml"
-
-#define API_POST_STATUS					"/statuses/update.xml"
-#define API_SEND_MESSAGE				"/direct_messages/new.xml"
-
-#define API_RETWEETED_TO_ME				"/statuses/retweeted_to_me.xml"
-#define API_RETWEETS_OF_ME				"/statuses/retweets_of_me.xml"
-#define API_RETWEET_UPDATE				"/statuses/retweet/%s.xml"
-
-#define	API_ACCOUNT_UPDATE_PROFILE			"/account/update_profile.xml"
-#define	API_ACCOUNT_UPDATE_PROFILE_IMAGE		"/account/update_profile_image.xml"
-#define	API_ACCOUNT_UPDATE_DELIVERY_DEVICE		"/account/update_delivery_device.xml"
-#define	API_ACCOUNT_UPDATE_PROFILE_COLORS		"/account/update_profile_colors.xml"
-#define	API_ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE	"/account/update_profile_background_image.xml"
-
-#define URI_SHORTENER_URI				"http://ur1.ca/"
+void *www_uri_title_save(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *online_service_wrapper);
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /*__ONLINE_SERVICES_REST_URIS_DEFINES_H__*/
+#endif /*__WWW_H__*/
+
