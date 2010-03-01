@@ -88,7 +88,6 @@
  ********************************************************************************/
 static void update_id_get(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id);
 static void update_id_set(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id);
-static gchar *update_ids_format_timeline_for_gconfig(const gchar *timeline);
 
 
 /********************************************************************************
@@ -204,7 +203,7 @@ static void update_id_set( OnlineService *service, const gchar *timelines_gconfi
 	uber_free(swap_id_str);
 }/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
 
-static gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
+gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
 	debug("Formatting timeline for use with gconf: from uri: <%s>.", uri);
 	
 	if(!strstr(uri, "%"))

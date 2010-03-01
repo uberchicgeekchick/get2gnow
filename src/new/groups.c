@@ -95,11 +95,9 @@
 
 
 /* Parse a timeline XML file */
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type){
+guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const xmlDoc *doc, const xmlNode *root_element, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
 	const gchar	*timeline=g_strrstr(uri, "/");
 	
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
 	UserStatus 	*status=NULL;
 	
@@ -170,7 +168,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 			user_status_free(status);
 		else{
 			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			update_notification_delay-=update_notification_interval;
+			update_notification_delay+=update_notification_interval;
 			notified_updates++;
 		}
 	}
@@ -184,7 +182,6 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
-	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	
 	return new_updates;

@@ -93,10 +93,8 @@
 #include "debug.h"
 
 
-static xmlDoc *parse_dom_content(SoupMessage *xml);
 
-
-static xmlDoc *parse_dom_content(SoupMessage *xml){
+xmlDoc *parse_xml_dom_content(SoupMessage *xml, xmlNode **root_element){
 	xmlDoc *doc=NULL;
 	
 	SoupURI	*suri=NULL;
@@ -204,34 +202,18 @@ static xmlDoc *parse_dom_content(SoupMessage *xml){
 	g_free(content_type);
 	g_free(charset);
 	
-	debug("XML document parsed.  Returning xmlDoc.");
-	return doc;
-}/*parse_dom_content*/
-
-xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element){
-	xmlDoc *doc=NULL;
-	
-	if(!(doc=parse_dom_content(xml))) {
-		debug("failed to read xml data");
-		return NULL;
-	}
-	
-	debug("Setting XML nodes.");
-	xmlNode *root_element=NULL;
-	*first_element=NULL;
-	
+	debug("XML document parsed.  Getting XML nodes.");
 	
 	/* Get first element */
-	root_element=xmlDocGetRootElement(doc);
-	if(root_element==NULL) {
+	if(!( *root_element=xmlDocGetRootElement(doc) )){
 		debug("failed getting first element of xml data");
 		xmlFreeDoc(doc);
 		return NULL;
-	} else
-		*first_element=root_element;
+	}
 	
+	debug("XML document parsed & XML root node found: returning xmlDoc.");
 	return doc;
-}
+}/*parse_dom_content();*/
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type){
 	switch(type){
@@ -261,11 +243,9 @@ const gchar *parser_xml_node_type_to_string(xmlElementType type){
 }/*parser_xml_node_type_to_string(node->type);*/
 
 /* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type){
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const xmlDoc *doc, const xmlNode *root_element, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
 	const gchar	*timeline=g_strrstr(uri, "/");
 	
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
 	UserStatus 	*status=NULL;
 	
@@ -284,9 +264,9 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
 	
-	switch(update_type){
+	switch(monitoring){
 		case	Searches: case	Groups:
-			debug("*ERROR:* Unsupported timeline.  parse_timeline requested to parse %s.  This method sould not have been called.", (update_type==Groups?"Groups":"Searches"));
+			debug("*ERROR:* Unsupported timeline.  parse_timeline requested to parse %s.  This method sould not have been called.", (monitoring==Groups?"Groups":"Searches"));
 			return 0;
 			
 		case	DMs:
@@ -338,7 +318,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			/* These cases are never reached - they're just here to make gcc happy. */
 			return 0;
 	}
-	if(!oldest_update_id && notify && ( update_type!=DMs || update_type!=Replies ) ) notify=FALSE;
+	if(!oldest_update_id && notify && ( monitoring!=DMs || monitoring!=Replies ) ) notify=FALSE;
 	
 	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
 	const gint	update_notification_interval=10;
@@ -373,17 +353,17 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		
 		status=NULL;
 		debug("Creating Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, update_type ))) && status->id )){
+		if(!( (( status=user_status_parse(service, current_node->children, monitoring ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
 		
 		new_updates++;
 		gboolean notify_of_new_update=FALSE;
-		/* id_oldest_tweet is only set when update_type DMs or Replies */
+		/* id_oldest_tweet is only set when monitoring DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UberChickTreeView.", status->user->user_name, status->id_str, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
-		if( update_type!=BestFriends && update_type!=DMs && ( best_friends_is_user_best_friend(service, status->user->user_name) || ( status->retweet && best_friends_is_user_best_friend(service, status->retweeted_user_name) ) ) )
+		if( monitoring!=BestFriends && monitoring!=DMs && ( best_friends_is_user_best_friend(service, status->user->user_name) || ( status->retweet && best_friends_is_user_best_friend(service, status->retweeted_user_name) ) ) )
 			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends)
 				notify_of_new_update=TRUE;
 			
@@ -398,7 +378,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 			user_status_free(status);
 		else{
 			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			update_notification_delay-=update_notification_interval;
+			update_notification_delay+=update_notification_interval;
 			notified_updates++;
 		}
 	}
@@ -413,9 +393,6 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	
 	return new_updates;
-}/*parse_timeline(service, xml, timeline, uberchick_tree_view, update_type);*/
+}/*parse_timeline(service, xml, timeline, uberchick_tree_view, monitoring);*/
 

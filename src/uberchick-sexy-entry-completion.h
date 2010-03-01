@@ -122,10 +122,27 @@ UberChickSexyEntryCompletion *uberchick_sexy_entry_completion_new(void);
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-gint uberchick_sexy_entry_completion_get_total(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
-void uberchick_sexy_entry_completion_increment_total(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, guint total);
-void uberchick_sexy_entry_completion_set_total(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, guint total);
+SexySpellEntry *uberchick_sexy_entry_get_widget(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
 
+void uberchick_sexy_entry_completion_show_entries(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+void uberchick_sexy_entry_completion_hide_entries(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+
+/*void uberchick_sexy_entry_completion_send(GtkWidget *activated_widget);*/
+
+void uberchick_sexy_entry_completion_beep(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+
+void uberchick_sexy_entry_completion_select_all(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+
+gboolean uberchick_sexy_entry_completion_entry_is_empty(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+gboolean uberchick_sexy_entry_completion_entry_clear(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+void uberchick_sexy_entry_completion_prefix_char(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const char c);
+gboolean uberchick_sexy_entry_completion_prefix_string(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gboolean to_lower, gboolean uniq);
+void uberchick_sexy_entry_completion_insert_char(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const char c);
+gboolean uberchick_sexy_entry_completion_insert_string(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gboolean to_lower, gboolean uniq);
+void uberchick_sexy_entry_completion_append_char(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const char c);
+gboolean uberchick_sexy_entry_completion_append_string(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gboolean to_lower, gboolean uniq);
+
+void uberchick_sexy_entry_completion_select(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
 
 G_END_DECLS
 #endif /* __UBERCHICK_SEXY_ENTRY_COMPLETION_H__ */

@@ -1,7 +1,7 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
@@ -47,8 +47,12 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-#ifndef __PARSER_H__
-#define __PARSER_H__
+
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__GROUPS_H__
+#define	__GROUPS_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -59,22 +63,34 @@
 #endif
 
 #include <glib.h>
-#include <libxml/parser.h>
+#include <gtk/gtk.h>
 
+
+/********************************************************************************
+ * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ ********************************************************************************/
+#include <glib/gi18n.h>
 #include <libsoup/soup-message.h>
 
-#include "online-services.typedefs.h"
 #include "uberchick-tree-view.h"
-#include "users.h"
+
 
 G_BEGIN_DECLS
+/********************************************************************************
+ *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ ********************************************************************************/
 
-xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const xmlDoc *doc, const xmlNode *root_element, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
 
-const gchar *parser_xml_node_type_to_string(xmlElementType type);
 
 G_END_DECLS
-#endif /*  __PARSER_H__ */
+#endif /* __GROUPS_H__*/
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+
 

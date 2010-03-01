@@ -80,7 +80,7 @@ void profile_manager_show(GtkWindow *parent);
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void profile_manager_edit_profile(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user);
+void profile_manager_edit_profile(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, xmlDoc **doc, User *user);
 void *profile_manager_save_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
 

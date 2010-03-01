@@ -14,7 +14,7 @@ if(! -d ${pkg_path}/specs ) mkdir -p ${pkg_path}/specs;
 
 set package_name=`/bin/grep PACKAGE_NAME= "${project_name}"/configure | sed 's/.*="\([^"]\+\)"/\1/'`
 set package_version=`/bin/grep PACKAGE_VERSION= "${project_name}"/configure | sed 's/.*="\([^"]\+\)"/\1/'`
-set package_release=`/bin/grep PACKAGE_RELEASE= "${project_name}"/configure | sed 's/.*="\([^"]\+\)"/\1/'`
+set package_string="${package_name}-${package_version}";
 
 if(! -e "${pkg_path}/specs/${project_name}.spec" ) then
 	cd "${project_name}";
@@ -34,13 +34,10 @@ if( ${?1} && "${1}" != "" && "${1}" == "--clean-up" ) set clean_up;
 if( ${?clean_up} ) then
 	rm ${pkg_path}/*/"${project_name}"*;
 endif
-set package_path="${package_name}-${package_version}";
-set package_string="${package_name}-${package_version}${package_release}";
-set package_rpm="${package_name}-${package_version}-${package_release}";
 printf "Creating tarball: [%s.tar.gz]\t\t\t" "${package_string}";
-ln -s "./${project_name}" "./${package_path}";
-tar --dereference -C ${project_path} -czf "${pkg_path}/tarballs/${package_string}.tar.gz" "${package_path}";
-rm "${project_name}/${project_name}.spec" "./${package_path}";
+ln -s "./${project_name}" "./${package_string}";
+tar --dereference -C ${project_path} -czf "${pkg_path}/tarballs/${package_string}.tar.gz" "${package_string}";
+rm "${project_name}/${project_name}.spec" "./${package_string}";
 printf "[done]\n";
 ${use_sudo}rpmbuild -ta "${pkg_path}/tarballs/${package_string}.tar.gz";
 if( "${status}" != "0" ) then

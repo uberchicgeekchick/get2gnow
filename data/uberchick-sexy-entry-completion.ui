@@ -2,6 +2,12 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkListStore" id="uberchick_sexy_entry_completion_list_store">
+    <columns>
+      <!-- column-name GSTRING_UBER_CHICK_SEXY_ENTRY_COMPLETION_PHRASE -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkHBox" id="uberchick_sexy_entry_completion_hbox">
     <property name="visible">True</property>
     <child>
@@ -16,7 +22,7 @@
             <child>
               <object class="GtkComboBoxEntry" id="uberchick_sexy_entry_completion_combo_box_entry">
                 <property name="visible">True</property>
-                <property name="model">search_history_list_store</property>
+                <property name="model">uberchick_sexy_entry_completion_list_store</property>
               </object>
             </child>
           </object>
@@ -27,7 +33,7 @@
             <property name="label" translatable="yes">&lt;b&gt;Sear_ch:&lt;/b&gt;</property>
             <property name="use_markup">True</property>
             <property name="use_underline">True</property>
-            <property name="mnemonic_widget">search_history_combo_box_entry</property>
+            <property name="mnemonic_widget">uberchick_sexy_entry_completion_combo_box_entry</property>
           </object>
         </child>
       </object>

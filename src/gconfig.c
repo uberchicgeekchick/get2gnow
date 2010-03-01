@@ -81,7 +81,7 @@ typedef struct {
 	gint		cached_value_int;
 	
 	gchar		*cached_key_float;
-	gdouble		cached_value_float;
+	gfloat		cached_value_float;
 	
 	gchar		*cached_key_string;
 	gchar		*cached_value_string;
@@ -124,7 +124,7 @@ static void gconfig_finalize(GObject *object);
 
 static gboolean gconfig_check_cached_bool(const gchar *key, gboolean *value);
 static gboolean gconfig_check_cached_int(const gchar *key, gint *value);
-static gboolean gconfig_check_cached_float(const gchar *key, gdouble *value);
+static gboolean gconfig_check_cached_float(const gchar *key, gfloat *value);
 static gboolean gconfig_check_cached_string(const gchar *key, gchar **value);
 static gboolean gconfig_check_cached_list(const gchar *key, GSList **value);
 static gboolean gconfig_check_cached(GConfigSupportedValue which_cache, const gchar *key);
@@ -297,7 +297,7 @@ gboolean gconfig_get_int(const gchar *key, gint *value){
 	return TRUE;
 }/*gconfig_get_int(key, &int);*/
 
-gboolean gconfig_set_float(const gchar *key, gdouble value){
+gboolean gconfig_set_float(const gchar *key, gfloat value){
 	if(G_STR_N_EMPTY(gconfig_priv->cached_key_float) && g_str_equal(gconfig_priv->cached_key_float, key) )
 		gconfig_priv->cached_value_float=value;
 	
@@ -312,7 +312,7 @@ gboolean gconfig_set_float(const gchar *key, gdouble value){
 	return success;
 }/*gconfig_set_float(key, float);*/
 
-gboolean gconfig_get_float(const gchar *key, gdouble *value){
+gboolean gconfig_get_float(const gchar *key, gfloat *value){
 	if(gconfig_check_cached_float(key, value))
 		return TRUE;
 	
@@ -542,12 +542,12 @@ static gboolean gconfig_check_cached_int(const gchar *key, gint *value){
 	return TRUE;
 }/*gconfig_check_cached_int(const gchar *key, gint *value);*/
 
-static gboolean gconfig_check_cached_float(const gchar *key, gdouble *value){
+static gboolean gconfig_check_cached_float(const gchar *key, gfloat *value){
 	if(!gconfig_check_cached(GConfigFloat, key))
 		return FALSE;
 	*value=gconfig_priv->cached_value_float;
 	return TRUE;
-}/*gconfig_check_cached_float(const gchar *key, gdouble *value);*/
+}/*gconfig_check_cached_float(const gchar *key, gfloat *value);*/
 
 static gboolean gconfig_check_cached_string(const gchar *key, gchar **value){
 	if(!gconfig_check_cached(GConfigString, key))

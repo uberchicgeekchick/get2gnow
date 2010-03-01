@@ -110,9 +110,9 @@ static User *user_new(OnlineService *service, gboolean a_follower);
 static void user_validate(User **user);
 
 
-static UserStatus *user_status_new(OnlineService *service, UpdateType update_type);
+static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring);
 static void user_status_validate(UserStatus **status);
-static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateType update_type);
+static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user);
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user);
 static void user_status_format_dates(UserStatus *status);
@@ -171,11 +171,11 @@ static void user_validate( User **user ){
 
 User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	xmlDoc *doc=NULL;
+	const xmlDoc *doc=online_service_wrapper_get_xml_doc(service_wrapper);
 	xmlNode *root_element=NULL;
 	User *user=NULL;
 	
-	if(!( (doc=parse_xml_doc(xml, &root_element )) )){
+	if(!( (doc=parse_xml_dom_content(xml, doc, &root_element )) )){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -310,14 +310,14 @@ void user_free(User *user){
 /********************************************************************************
  *                           UserStatus methods                                 *
  ********************************************************************************/
-static UserStatus *user_status_new(OnlineService *service, UpdateType update_type){
+static UserStatus *user_status_new(OnlineService *service, UpdateMonitor monitoring){
 	UserStatus	*status=g_new0(UserStatus, 1);
 	
 	status->service=service;
 	status->retweet=FALSE;
 	status->user=NULL;
 	status->retweeted_status=NULL;
-	status->type=update_type;
+	status->type=monitoring;
 	status->id_str=status->text=status->sexy_status_text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=status->retweeted_by=status->retweeted_user_name=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=0;
@@ -342,7 +342,7 @@ static void user_status_validate( UserStatus **status ){
 	if(! (*status)->retweeted_user_name ) (*status)->retweeted_user_name=g_strdup("");
 }/*user_status_validate(&status);*/ 
 
-UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type){
+UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	xmlNode		*current_node=NULL, *temp_node=NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, Searches);
@@ -457,11 +457,11 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 	user_status_format_updates(service, status, status->user);
 	
 	return status;
-}/*user_status_parse_from_search_result_atom_entry(service, current_node->children, update_type);*/
+}/*user_status_parse_from_search_result_atom_entry(service, current_node->children, monitoring);*/
 
-static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateType update_type){
+static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	debug("Parsing retweeted update beginning at node: %s", root_element->name);
-	UserStatus *status=user_status_parse(service, root_element, update_type);
+	UserStatus *status=user_status_parse(service, root_element, monitoring);
 	status->retweet=TRUE;
 	return status;
 }/*user_status_parse_retweeted_status(service, current_node->children, Homepage);*/
@@ -503,10 +503,10 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 	return status;
 }/*user_status_parse_new(service, xml);*/
 
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateType update_type){
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring){
 	xmlNode		*current_node=NULL;
 	gchar		*content=NULL;
-	UserStatus	*status=user_status_new(service, update_type);
+	UserStatus	*status=user_status_new(service, monitoring);
 	
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing update at beginning node: %s", root_element->name);
@@ -519,7 +519,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		}
 		
 		if( g_str_equal(current_node->name, "retweeted_status") && current_node->children)
-			status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, update_type);
+			status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, monitoring);
 		
 		else if(g_str_equal(current_node->name, "id")){
 			status->id=g_ascii_strtod(content, NULL);
@@ -558,7 +558,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 	}
 	
 	return status;
-}/*user_status_parse(service, current_node->children, update_type);*/
+}/*user_status_parse(service, current_node->children, monitoring);*/
 
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user){
 	if(!( service && (*status) && user && retweeted_status )) return;
@@ -740,19 +740,13 @@ gboolean user_status_notify_on_timeout(UserStatus *status){
 	if(!(status && G_STR_N_EMPTY(status->notification) )) return FALSE;
 	
 	NotifyNotification *notify_notification=NULL;
-	GError		*error=NULL;
-	const gchar	*notification_icon_file_name=NULL;
-	if(!(g_file_test(status->user->image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR )))
-		notification_icon_file_name=GETTEXT_PACKAGE;
-	else
-		notification_icon_file_name=status->user->image_file;
+	GError             *error=NULL;
 	
 	if(!main_window_status_icon_is_embedded())
-		notify_notification=notify_notification_new(GETTEXT_PACKAGE, status->notification, notification_icon_file_name, NULL);
+		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
 	else
-		notify_notification=notify_notification_new_with_status_icon(GETTEXT_PACKAGE, status->notification, notification_icon_file_name, main_window_status_icon_get());
+		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window_status_icon_get());
 	
-	notify_notification_set_hint_string(notify_notification, "suppress-sound", "");
 	notify_notification_set_timeout(notify_notification, 10000);
 	
 	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))

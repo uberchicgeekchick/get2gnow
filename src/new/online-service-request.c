@@ -114,7 +114,7 @@ typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
 
 struct _SelectedUpdate{
 	OnlineService	*service;
-	UpdateType	type;
+	UpdateMonitor	type;
 	gdouble		id;
 	gchar		*id_str;
 	gdouble		user_id;
@@ -559,7 +559,7 @@ gboolean online_service_request_isset_selected_update(void){
 	return ( (!(selected_update && selected_update->id)) ?FALSE :TRUE );
 }/*online_service_request_isset_selected_update();*/
 
-void online_service_request_set_selected_update(OnlineService *service, UpdateType type, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update){
+void online_service_request_set_selected_update(OnlineService *service, UpdateMonitor type, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update){
 	/*	gint id=atoi(string);	*/
 	if(selected_update) online_service_request_unset_selected_update();
 	
@@ -580,7 +580,7 @@ OnlineService *online_service_request_selected_update_get_service(void){
 	return ( (selected_update && selected_update->service) ?selected_update->service :NULL );
 }/*online_service_request_selected_update_get_service();*/
 
-UpdateType online_service_request_selected_update_get_update_type(void){
+UpdateMonitor online_service_request_selected_update_get_update_type(void){
 	return ( (selected_update && selected_update->type) ?selected_update->type :None);
 }/*online_service_request_selected_update_get_update_type();*/
 

@@ -76,9 +76,6 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to the version of this package. */
-#undef PACKAGE_RELEASE
-
 /* Define where this package was installed to. */
 #undef PACKAGE_PREFIX
 

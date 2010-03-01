@@ -96,7 +96,7 @@
 
 
 /* Parse a timeline XML file */
-guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type){
 	const gchar	*timeline=g_strrstr(uri, "/");
 	
 	xmlDoc		*doc=NULL;
@@ -163,7 +163,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 			user_status_free(status);
 		else{
 			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			update_notification_delay+=update_notification_interval;
+			update_notification_delay-=update_notification_interval;
 			notified_updates++;
 		}
 	}

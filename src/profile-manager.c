@@ -366,7 +366,7 @@ static void profile_manager_setup_image_file_filters(ProfileManager *profile_man
 }/*profile_manager_setup_image_file_filters(profile_manager);*/
 
 /* signal handlers & callback methods. */
-void profile_manager_edit_profile(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, User *user){
+void profile_manager_edit_profile(OnlineServiceWrapper *online_service_wrapper, SoupMessage *xml, xmlDoc **doc, User *user){
 	OnlineService *service=online_service_wrapper_get_online_service(online_service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(online_service_wrapper);
 	if(!user){
@@ -578,34 +578,34 @@ static gboolean profile_manager_update_profile_image(GtkButton *update_profile_i
 static gboolean profile_manager_update_profile_colors(GtkButton *update_profile_colors_button, ProfileManager *profile_manager){
 	GdkColormap *colormap=gdk_colormap_get_system();
 	GdkColor *color=g_new0(GdkColor, 1);
-	gchar *color_str=NULL, *form_data=NULL;
+	/*gchar *color_str=NULL;*/
+	gchar *form_data=NULL;
 	gdk_colormap_alloc_color(colormap, color, FALSE, TRUE);
 	
 	gtk_color_button_get_color(profile_manager->profile_colors_background_color_button, color);
-	color_str=gdk_color_to_string(color);
-	form_data=g_strdup_printf("profile_background_color=%s", color_str);
-	uber_free(color_str);
+	/*color_str=gdk_color_to_string(color);*/
+	form_data=g_strdup_printf("profile_background_color=#%02x%02x%02x", (color->red/256), (color->green/256), (color->blue/256));
+	/*uber_free(color_str);*/
 	
 	gtk_color_button_get_color(profile_manager->profile_colors_text_color_button, color);
-	color_str=gdk_color_to_string(color);
-	form_data=g_strdup_printf("%s&profile_text_color=%s", form_data, color_str);
-	uber_free(color_str);
+	/*color_str=gdk_color_to_string(color);*/
+	form_data=g_strdup_printf("%s&profile_text_color=#%02x%02x%02x", form_data, (color->red/256), (color->green/256), (color->blue/256));
+	/*uber_free(color_str);*/
 	
 	gtk_color_button_get_color(profile_manager->profile_colors_link_color_button, color);
-	color_str=gdk_color_to_string(color);
-	form_data=g_strdup_printf("%s&profile_link_color=%s", form_data, color_str);
-	uber_free(color_str);
+	/*color_str=gdk_color_to_string(color);*/
+	form_data=g_strdup_printf("%s&profile_link_color=#%02x%02x%02x", form_data, (color->red/256), (color->green/256), (color->blue/256));
+	/*uber_free(color_str);*/
 	
 	gtk_color_button_get_color(profile_manager->profile_colors_sidebar_fill_color_button, color);
-	/*color_str=g_strdup_printf("%sprofile_text_color=#%s%s%s", guint16_to_rgb_hex_str(color->red), guint16_to_rgb_hex_str(color->green), guint16_to_rgb_hex_str(color->blue) );*/
-	color_str=gdk_color_to_string(color);
-	form_data=g_strdup_printf("%s&profile_sidebar_fill_color=%s", form_data, color_str);
-	uber_free(color_str);
+	/*color_str=gdk_color_to_string(color);*/
+	form_data=g_strdup_printf("%s&profile_sidebar_fill_color=#%02x%02x%02x", form_data, (color->red/256), (color->green/256), (color->blue/256));
+	/*uber_free(color_str);*/
 	
 	gtk_color_button_get_color(profile_manager->profile_colors_sidebar_border_color_button, color);
-	color_str=gdk_color_to_string(color);
-	form_data=g_strdup_printf("%s&profile_sidebar_border_color=%s", form_data, color_str);
-	uber_free(color_str);
+	/*color_str=gdk_color_to_string(color);*/
+	form_data=g_strdup_printf("%s&profile_sidebar_border_color=#%02x%02x%02x", form_data, (color->red/256), (color->green/256), (color->blue/256));
+	/*uber_free(color_str);*/
 	
 	online_service_request(profile_manager->service, POST, API_ACCOUNT_UPDATE_PROFILE_COLORS, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)profile_manager_edit_profile, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, GINT_TO_POINTER(ACCOUNT_UPDATE_PROFILE_COLORS), form_data);
 	

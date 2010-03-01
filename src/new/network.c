@@ -172,18 +172,18 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	gchar *image_filename=NULL;
 	gboolean new_image=images_save_image(service, xml, requested_uri, network_image_dl->filename, &image_filename);
 	
-	UpdateType update_type=uberchick_tree_view_get_update_type(network_image_dl->uberchick_tree_view);
-	if(network_image_dl->retweet||update_type==Searches){
+	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(network_image_dl->uberchick_tree_view);
+	if(network_image_dl->retweet||monitoring==Searches){
 		image_filename_dir=g_path_get_dirname(network_image_dl->filename);
 		image_filename_directory=cache_dir_test(image_filename_dir, TRUE);
 	}
 	
-	if(!network_image_dl->retweet && update_type!=Searches)
+	if(!network_image_dl->retweet && monitoring!=Searches)
 		main_window_statusbar_printf("New avatar added to UberChickTreeView.");
 	
 	uberchick_tree_view_set_image(network_image_dl->uberchick_tree_view, image_filename, network_image_dl->iter);
 	
-	if(network_image_dl->retweet||update_type==Searches){
+	if(network_image_dl->retweet||monitoring==Searches){
 		if(new_image){
 			debug("Cleaning-up retweeted update avatar's path:");
 			debug("\t[%s]", image_filename);
@@ -230,7 +230,7 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	else message=g_strdup_printf("ReTweet: of <%s@%s>'s update by <%s>.", user_data, service->uri, service->key);
 	
 	gchar *error_message=NULL;
-	if(!(www_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){
+	if(!(online_service_wrapper_did_request_fail(service_wrapper))){
 		debug("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		debug("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 		
@@ -291,7 +291,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	UberChickTreeView *uberchick_tree_view=UBERCHICK_TREE_VIEW(online_service_wrapper_get_user_data(service_wrapper));
-	UpdateType update_type=uberchick_tree_view_get_update_type(uberchick_tree_view);
+	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(uberchick_tree_view);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	if(!IS_UBERCHICK_TREE_VIEW(uberchick_tree_view))
 		return NULL;
@@ -311,15 +311,15 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	debug("Started processing <%s>'s timeline: %s.  Requested URI: %s.", service->key, timeline, requested_uri);
 	
 	guint new_updates=0;
-	switch(update_type){
+	switch(monitoring){
 		case None:
 			debug("Attempting to parse an unsupport network request.");
 			break;
 		case Searches:
-			new_updates=searches_parse_results(service, xml, requested_uri, uberchick_tree_view, update_type);
+			new_updates=searches_parse_results(service, xml, requested_uri, uberchick_tree_view, monitoring);
 			break;
 		case Groups:
-			new_updates=groups_parse_conversation(service, xml, timeline, uberchick_tree_view, update_type);
+			new_updates=groups_parse_conversation(service, xml, timeline, uberchick_tree_view, monitoring);
 			break;
 		case Homepage:
 		case DMs:
@@ -331,7 +331,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Archive:
 		case BestFriends:
 		default:
-			new_updates=parse_timeline(service, xml, timeline, uberchick_tree_view, update_type);
+			new_updates=parse_timeline(service, xml, timeline, uberchick_tree_view, monitoring);
 			break;
 	}
 	
@@ -355,7 +355,7 @@ static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
 	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
-}/*network_retry(new_timeline, service_wrapper, update_type);*/
+}/*network_retry(new_timeline, service_wrapper, monitoring);*/
 
 
 

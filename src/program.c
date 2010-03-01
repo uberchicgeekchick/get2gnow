@@ -90,6 +90,11 @@
 #include "debug.h"
 
 static gboolean notifing=FALSE;
+const gchar *old_locale=NULL;
+static gchar **remaining_argv=NULL;
+static gint remaining_argc=0;
+static GnomeProgram *program=NULL;
+
 
 /********************************************************
  *          Static method & function prototypes         *
@@ -105,6 +110,30 @@ gboolean program_init(int argc, char **argv){
 		ipc_deinit();
 		return FALSE;
 	}
+	old_locale=setlocale(LC_TIME, "C");
+	
+	GOptionContext *option_context=g_option_context_new(GETTEXT_PACKAGE);
+	GOptionEntry option_entries[]={
+					{
+						G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY,
+						&remaining_argv,
+						"Special option that collects any remaining arguments for us"
+					},
+					{ NULL }
+	};
+	
+	g_option_context_add_main_entries(option_context, option_entries, NULL);
+	
+	program=gnome_program_init(
+					GETTEXT_PACKAGE, PACKAGE_VERSION,
+					LIBGNOME_MODULE,
+					argc, argv,
+					GNOME_PARAM_GOPTION_CONTEXT, option_context,
+					GNOME_PARAM_NONE
+	);
+	
+	if(remaining_argv)
+		remaining_argc=g_strv_length(remaining_argv)-1;
 	
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
@@ -156,6 +185,9 @@ void program_deinit(void){
 	cache_deinit();
 	
 	debug_deinit();
+	
+	setlocale(LC_TIME, old_locale);
+	g_print("%s exited.\n", GETTEXT_PACKAGE);
 }/*program_deinit();*/
 
 const gchar *program_gtk_response_to_string(gint response){
@@ -189,7 +221,7 @@ void program_uber_object_free(gpointer pointer1, ...){
 void program_timeout_remove(guint *id, const gchar *usage){
 	if(!( *id > 0 )) return;
 	
-	debug("Stopping %s monitoring.  Timeout id: %d.", ( G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]" ), (*id));
+	debug("Stopping %s; timeout id: %d.", ( G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]" ), (*id));
 	g_source_remove((*id) );
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/

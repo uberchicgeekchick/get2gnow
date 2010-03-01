@@ -125,6 +125,10 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_less:		case GDK_minus:
 					online_service_request_selected_update_unfollow();
 					return FALSE;
+				case GDK_Insert:	case GDK_KP_Insert:
+				case GDK_I:		case GDK_i:
+					online_service_request_popup_shorten_uri();
+					return TRUE;
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_sexy_insert_char('\n');
 					return FALSE;
@@ -210,6 +214,13 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_O:	case GDK_o:
 					online_service_request_selected_update_unblock();
 					return FALSE;
+				case GDK_Insert:	case GDK_KP_Insert:
+				case GDK_I:		case GDK_i:
+					online_service_request_popup_shorten_uri();
+					return TRUE;
+				case GDK_Tab:		case GDK_KP_Tab:
+					update_viewer_sexy_insert_char('\t');
+					return FALSE;
 				case GDK_Page_Up:
 					tabs_get_previous();
 					return FALSE;
@@ -224,6 +235,12 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_new_dm();
 					return FALSE;
+				case GDK_Insert:	case GDK_KP_Insert:
+					online_service_request_popup_shorten_uri();
+					return TRUE;
+				case GDK_Tab:		case GDK_KP_Tab:
+					update_viewer_sexy_insert_char('\t');
+					return FALSE;
 				default: break;
 			}
 			break;
@@ -232,9 +249,11 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_sexy_insert_char('\n');
 					return FALSE;
-				case GDK_Tab:		case GDK_KP_Tab:
 				case GDK_Insert:	case GDK_KP_Insert:
 				case GDK_I:		case GDK_i:
+					online_service_request_popup_shorten_uri();
+					return TRUE;
+				case GDK_Tab:		case GDK_KP_Tab:
 					update_viewer_sexy_insert_char('\t');
 					return FALSE;
 				case GDK_N:	case GDK_n:

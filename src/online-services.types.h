@@ -82,7 +82,7 @@ typedef struct _User User;
 typedef struct _UserStatus UserStatus;
 
 typedef struct _RateLimitTimer RateLimitTimer;
-typedef enum _UpdateMonitor UpdateMonitor;
+typedef enum _UpdateType UpdateType;
 
 typedef enum _MicroBloggingService MicroBloggingService;
 
@@ -97,10 +97,15 @@ typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
 /**********************************************************************
  *                         Macros & methods.                          *
  **********************************************************************/
+#define	ONLINE_SERVICE_REQUEST_FUNC	((OnlineServiceRequestFunc)(func))
 typedef void (*OnlineServiceRequestFunc) (OnlineService *service, GtkWindow *parent_window, const gchar *user_data);
+#define	ONLINE_SERVICE_SOUPSESSION_CALLBACK_RETURN_PROCESSOR_FUNC	((OnlineServiceSoupSessionCallbackReturnProcessorFunc)(func))
 typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
+#define	ONLINE_SERVICE_SOUP_SESSION_CALLBACK_FUNC	((OnlineServiceSoupSessionCallbackFunc)(func))
 typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
+#define	USERS_GLIST_ONLOAD_FUNC(func)	((UsersGListOnLoadFunc)(func))
 typedef void (*UsersGListOnLoadFunc) (GList *users);
+#define	G_POINTER_FUNC(func)	((GPointerFunc)(func))
 typedef void (*GPointerFunc) (gpointer user_data);
 
 

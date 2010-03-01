@@ -1,8 +1,8 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -47,8 +47,12 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-#ifndef __PARSER_H__
-#define __PARSER_H__
+
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__WWW_H__
+#define	__WWW_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -58,23 +62,43 @@
 #	define _THREAD_SAFE
 #endif
 
+
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
 #include <glib.h>
-#include <libxml/parser.h>
+#include <gtk/gtk.h>
 
-#include <libsoup/soup-message.h>
-
-#include "online-services.typedefs.h"
-#include "uberchick-tree-view.h"
-#include "users.h"
+#include "online-services.types.h"
 
 G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
 
-xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
 
-const gchar *parser_xml_node_type_to_string(xmlElementType type);
 
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+void www_init(void);
+
+void www_deinit(void);
+
+gchar *www_html_entity_escape_text(gchar *status_text);
+void www_html_entity_escape_status(gchar **status_text);
+
+gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, xmlDoc **doc, gchar **error_message);
+
+gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath);
+gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
 G_END_DECLS
-#endif /*  __PARSER_H__ */
+#endif /*__WWW_H__*/
 

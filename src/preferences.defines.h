@@ -63,6 +63,7 @@ G_BEGIN_DECLS
 
 
 #define	PREFS_TIMELINE_RELOAD_MINUTES				GCONF_PATH "/ui/tabs/reload"
+#define	PREFS_MAX_UPDATES_TO_SHOW				GCONF_PATH "/ui/tabs%s/max_updates"
 
 #define PREFS_AUTOLOAD_FOLLOWING				GCONF_PATH "/ui/start-up/tabs/following"
 #define PREFS_AUTOLOAD_HOMEPAGE					GCONF_PATH "/ui/start-up/tabs/homepage"

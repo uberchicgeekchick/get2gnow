@@ -231,8 +231,8 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 	GList		*accounts=NULL;
 	OnlineService	*service=NULL;
 	
-	UberChickLabel *uberchick_label;
-	if(!( IS_UBERCHICK_LABEL( (uberchick_label=UBERCHICK_LABEL(widget)) ) ))
+	UberChickLabel *uberchick_label=UBERCHICK_LABEL(widget);
+	if(!( IS_UBERCHICK_LABEL(uberchick_label) ))
 		uberchick_label=NULL;
 	
 	debug("OnlineServices URI handeler called for URI: [%s]", uri);
@@ -267,7 +267,7 @@ void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
 			update_viewer_set_in_reply_to_data(service, Users, &services_resource[1], NULL, 0.0, 0.0, TRUE, FALSE, FALSE);
 			debug("OnlineServices: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
 		}else{
-			update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label), Users, &services_resource[1], NULL, uberchick_label_get_user_id(uberchick_label), uberchick_label_get_update_id(uberchick_label), TRUE, FALSE, FALSE);
+			update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label), Users, &services_resource[1], uberchick_label_get_text(uberchick_label), uberchick_label_get_user_id(uberchick_label), uberchick_label_get_update_id(uberchick_label), TRUE, FALSE, FALSE);
 			debug("OnlineServices via UberChick_Label: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
 		}
 		return;

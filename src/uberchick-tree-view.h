@@ -143,9 +143,9 @@ gint8 uberchick_tree_view_has_loaded(UberChickTreeView *uberchick_tree_view);
 gint uberchick_tree_view_get_page(UberChickTreeView *uberchick_tree_view);
 void uberchick_tree_view_set_page(UberChickTreeView *uberchick_tree_view, gint page);
 
-UpdateMonitor uberchick_tree_view_get_monitoring(UberChickTreeView *uberchick_tree_view);
-const gchar *uberchick_tree_view_get_monitoring_string(UberChickTreeView *uberchick_tree_view);
-const gchar *monitoring_to_string(UpdateMonitor monitoring);
+UpdateType uberchick_tree_view_get_update_type(UberChickTreeView *uberchick_tree_view);
+const gchar *uberchick_tree_view_get_update_type_string(UberChickTreeView *uberchick_tree_view);
+const gchar *update_type_to_string(UpdateType update_type);
 
 gint uberchick_tree_view_get_total(UberChickTreeView *uberchick_tree_view);
 guint uberchick_tree_view_get_notify_delay(UberChickTreeView *uberchick_tree_view);

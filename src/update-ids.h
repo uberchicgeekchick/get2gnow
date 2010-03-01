@@ -89,6 +89,7 @@ G_BEGIN_DECLS
 gboolean update_ids_check(OnlineService *service, const gchar *timeline, gdouble update_id, gboolean check_oldest);
 void update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id);
 void update_ids_set(OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id);
+gchar *update_ids_format_timeline_for_gconfig(const gchar *timeline);
 
 
 /********************************************************************************

@@ -76,7 +76,11 @@
 			<default>5</default>
 			<locale name="C">
 				<short>Minutes between timeline retrievals</short>
-				<long>Minutes between timeline retrievals. Values supported are 5 to 100. Minutes are incremented by 5 minute interievals.</long>
+				<long>
+					Minutes between timeline retrievals.
+					Values supported are 5 to 100.
+					Minutes are incremented by 5 minute interievals.
+				</long>
 			</locale>
 		</schema>
 		

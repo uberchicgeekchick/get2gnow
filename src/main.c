@@ -34,38 +34,12 @@
 #include "config.h"
 #include "program.h"
 
-const gchar *old_locale=NULL;
-gchar **remaining_argv=NULL;
-gint remaining_argc=0;
-GnomeProgram *program=NULL;
 
-int main(const int argc, const char **argv, const char **envp){
-	old_locale=setlocale(LC_TIME, "C");
-	GOptionContext *option_context=g_option_context_new(GETTEXT_PACKAGE);
-	GOptionEntry option_entries[]={
-					{
-						G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY,
-						&remaining_argv,
-						"Special option that collects any remaining arguments for us"
-					},
-					{ NULL }
-	};
-	
-	g_option_context_add_main_entries(option_context, option_entries, NULL);
-	
-	program=gnome_program_init(
-					GETTEXT_PACKAGE, PACKAGE_VERSION PACKAGE_RELEASE,
-					LIBGNOME_MODULE,
-					(gint)argc, (gchar **)argv,
-					GNOME_PARAM_GOPTION_CONTEXT, option_context,
-					GNOME_PARAM_NONE
-	);
-	
-	if(remaining_argv)
-		remaining_argc=g_strv_length(remaining_argv)-1;
-	
-	if(!program_init(remaining_argc, remaining_argv)){
-		setlocale(LC_TIME, old_locale);
+int main(gint argc, gchar **argv);
+
+
+int main(gint argc, gchar **argv){
+	if(!program_init(argc, argv)){
 		exit(0);
 	}
 	
@@ -73,12 +47,6 @@ int main(const int argc, const char **argv, const char **envp){
 	
 	program_deinit();
 	
-	setlocale(LC_TIME, old_locale);
-	
 	return 0;
-}/*int main(int argc, const char **argv, const char **envp);*/
-
-void get2gnow_program_deinit(void){
-	program_deinit();
-}/*get2gnow_program_deinit();*/
+}/*int main(gint argc, gchar **argv);*/
 

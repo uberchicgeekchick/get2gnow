@@ -733,12 +733,10 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="010001"
+PACKAGE_VERSION="010301a03"
 VERSION="${PACKAGE_VERSION}"
-PACKAGE_RELEASE="a76"
-RELEASE="${PACKAGE_RELEASE}"
 PACKAGE_PREFIX="${prefix}"
-PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_RELEASE}"
+PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
 PACKAGE_BUGREPORT="http://bugzilla.gnome.org/enter_bug.cgi?product=${PACKAGE_NAME}"
 
 GNOME_DOC_UTILS_VERSION_REQUIRED=0.14.0
@@ -791,11 +789,9 @@ ac_subst_vars='SHELL
 PATH_SEPARATOR
 PACKAGE
 VERSION
-RELEASE
 PACKAGE_NAME
 PACKAGE_TARNAME
 PACKAGE_VERSION
-PACKAGE_RELEASE
 PACKAGE_STRING
 PACKAGE_BUGREPORT
 GNOME_DOC_UTILS_VERSION_REQUIRED
@@ -1952,11 +1948,6 @@ _ACEOF
 
 cat >>confdefs.h <<_ACEOF
 #define PACKAGE_VERSION "$PACKAGE_VERSION"
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PACKAGE_RELEASE "$PACKAGE_RELEASE"
 _ACEOF
 
 
@@ -10644,7 +10635,7 @@ echo "$as_me: creating $ofile" >&6;}
 #! $SHELL
 
 # `$echo "$cfgfile" | sed 's%^.*/%%'` - Provide generalized library-building support services.
-# Generated automatically by $PROGRAM (GNU $PACKAGE_NAME $PACKAGE_VERSION$PACKAGE_RELEASE$TIMESTAMP)
+# Generated automatically by $PROGRAM (GNU $PACKAGE_NAME $PACKAGE_VERSION$TIMESTAMP)
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
@@ -14761,7 +14752,7 @@ EOF
       ;;
 
     amigaos*)
-      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_F77='-L$libdir'
       hardcode_minus_L_F77=yes
 
@@ -15175,7 +15166,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     amigaos*)
-      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_F77='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_F77='-L$libdir'
       hardcode_minus_L_F77=yes
       # see comment about different semantics on the GNU ld section
@@ -17362,7 +17353,7 @@ EOF
       ;;
 
     amigaos*)
-      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_GCJ='-L$libdir'
       hardcode_minus_L_GCJ=yes
 
@@ -17796,7 +17787,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     amigaos*)
-      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION PACKAGE_RELEASE $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
+      archive_cmds_GCJ='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define PACKAGE_VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
       hardcode_libdir_flag_spec_GCJ='-L$libdir'
       hardcode_minus_L_GCJ=yes
       # see comment about different semantics on the GNU ld section
@@ -25440,11 +25431,9 @@ SHELL!$SHELL$ac_delim
 PATH_SEPARATOR!$PATH_SEPARATOR$ac_delim
 PACKAGE!$PACKAGE$ac_delim
 VERSION!$VERSION$ac_delim
-RELEASE!$RELEASE$ac_delim
 PACKAGE_NAME!$PACKAGE_NAME$ac_delim
 PACKAGE_TARNAME!$PACKAGE_TARNAME$ac_delim
 PACKAGE_VERSION!$PACKAGE_VERSION$ac_delim
-PACKAGE_RELEASE!$PACKAGE_RELEASE$ac_delim
 PACKAGE_PREFIX!$PACKAGE_PREFIX$ac_delim
 PACKAGE_STRING!$PACKAGE_STRING$ac_delim
 PACKAGE_BUGREPORT!$PACKAGE_BUGREPORT$ac_delim
@@ -25548,7 +25537,7 @@ CPP!$CPP$ac_delim
 CXX!$CXX$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 110; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 108; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

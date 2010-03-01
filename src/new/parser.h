@@ -59,8 +59,8 @@
 #endif
 
 #include <glib.h>
-#include <libxml/parser.h>
 
+#include <libxml/parser.h>
 #include <libsoup/soup-message.h>
 
 #include "online-services.typedefs.h"
@@ -69,9 +69,9 @@
 
 G_BEGIN_DECLS
 
-xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element);
+xmlDoc *parse_xml_dom_content(SoupMessage *xml, xmlNode **root_element);
 
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
+guint parse_timeline(OnlineService *service, SoupMessage *xml, const xmlDoc *doc, const xmlNode *root_element, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
 
 const gchar *parser_xml_node_type_to_string(xmlElementType type);
 

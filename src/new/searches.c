@@ -84,22 +84,21 @@
 #include "gconfig.h"
 
 #include "parser.h"
-#include "groups.h"
+#include "searches.h"
 
 
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"Groups:Parser:Requests:OnlineServices:Updates:UI:Refreshing:Dates:Times:groups.c"
+#define	DEBUG_DOMAINS	"Search:Parser:Requests:OnlineServices:Updates:UI:Refreshing:Dates:Times:search.c"
 #include "debug.h"
 
 
+
 /* Parse a timeline XML file */
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type){
+guint searches_parse_results(OnlineService *service, SoupMessage *xml, const xmlDoc *doc, const xmlNode *root_element, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring){
 	const gchar	*timeline=g_strrstr(uri, "/");
 	
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
 	xmlNode		*current_node=NULL;
 	UserStatus 	*status=NULL;
 	
@@ -107,12 +106,14 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	guint		new_updates=0, notified_updates=0;
 	
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	
 	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	
 	gdouble	last_notified_update=newest_update_id;
 	newest_update_id=0.0;
 	
 	gboolean	has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
-	gboolean	notify=((oldest_update_id&&has_loaded)?gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE):FALSE);
+	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE );
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
 	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
@@ -125,18 +126,10 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		return 0;
 	}
 	
-	/* get tweets or direct messages */
-	debug("Parsing %s timeline.", root_element->name);
-	for(current_node = root_element; current_node; current_node = current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
-		
-		if( g_str_equal(current_node->name, "statuses") || g_str_equal(current_node->name, "direct-messages") ){
-			if(!current_node->children) continue;
-			current_node = current_node->children;
-			continue;
-		}
-		
-		if(!( g_str_equal(current_node->name, "status") || g_str_equal(current_node->name, "direct_message") ))
+	/* parse updates from search results. */
+	debug("Parsing searches node %s.", root_element->name);
+	for(current_node=root_element->children; current_node; current_node=current_node->next) {
+		if(!( current_node->type == XML_ELEMENT_NODE && g_str_equal(current_node->name, "entry") ))
 			continue;
 		
 		if(!current_node->children){
@@ -144,21 +137,19 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 			continue;
 		}
 		
-		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
-		
+		debug("Parsing searches result's update * entry.");
 		status=NULL;
-		debug("Creating tweet's Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, Searches ))) && status->id )){
+		if(!( (( status=user_status_parse_from_search_result_atom_entry(service, current_node->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
 		
 		new_updates++;
 		gboolean notify_of_new_update=FALSE;
-		debug("Adding UserStatus from: %s, ID: %f, on <%s> to uberchick_eeView.", status->user->user_name, status->id, service->key);
+		debug("Adding UserStatus ID: %f, on <%s> to UberChickTreeView.", status->id, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		
-		if(notify && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) )
+		if(notify && !save_oldest_id && status->id > last_notified_update )
 			notify_of_new_update=TRUE;
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
@@ -170,7 +161,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 			user_status_free(status);
 		else{
 			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
-			update_notification_delay-=update_notification_interval;
+			update_notification_delay+=update_notification_interval;
 			notified_updates++;
 		}
 	}

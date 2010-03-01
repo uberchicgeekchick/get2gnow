@@ -84,7 +84,7 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateMonitor monitoring);
+guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
 
 
 G_END_DECLS

@@ -80,9 +80,9 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element);
 
 void user_free(User *user);
 
-UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
+UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type);
 UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, const gchar *uri);
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateMonitor monitoring);
+UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateType update_type);
 gboolean user_status_notify_on_timeout(UserStatus *status);
 gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean use_gmt);
 gint update_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt);

@@ -20,7 +20,6 @@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 PACKAGE = @PACKAGE@
 VERSION = "@VERSION@"
-RELEASE = @RELEASE@
 
 SHELL = /bin/sh
 
@@ -41,7 +40,7 @@ install_sh = @install_sh@
 # Automake >= 1.8 provides @mkdir_p@.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
-distdir = ../$(PACKAGE)-$(VERSION)$(RELEASE)/$(subdir)
+distdir = ../$(PACKAGE)-$(VERSION)/$(subdir)
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@

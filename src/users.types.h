@@ -112,7 +112,7 @@ struct _UserStatus {
 	User		*user;
 	UserStatus	*retweeted_status;
 	
-	UpdateMonitor	type;
+	UpdateType	type;
 	
 	gboolean	retweet;
 	gchar		*retweeted_user_name;

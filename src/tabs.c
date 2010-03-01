@@ -83,6 +83,7 @@ typedef struct _TimelineTabs{
 	GtkNotebook	*notebook;
 	gint		previous_page;
 	gint		current_page;
+	gint		pages;
 } TimelineTabs;
 
 static TimelineTabs *tabs;
@@ -116,17 +117,19 @@ void tabs_init(GtkNotebook *notebook){
 	tabs=g_new0(TimelineTabs, 1);
 	
 	tabs->notebook=notebook;
-	if(gtk_notebook_get_n_pages(tabs->notebook) )
+	if(gtk_notebook_get_n_pages(tabs->notebook))
 		gtk_notebook_remove_page(tabs->notebook, 0);
 	
 	g_signal_connect( tabs->notebook, "switch-page", (GCallback)tabs_mark_as_read, NULL );
 	tabs->tabs=NULL;
 	
 	tabs->previous_page=tabs->current_page=-1;
+	tabs->pages=0;
 }/* tabs_init(main_window->private->tabs_notebook); */
 
 static UberChickTreeView *tabs_new_tab(const gchar *timeline, OnlineService *service){
-	UberChickTreeView *uberchick_tree_view=uberchick_tree_view_new(gtk_notebook_get_n_pages(tabs->notebook), timeline, service);
+	gint page=tabs->pages;
+	UberChickTreeView *uberchick_tree_view=uberchick_tree_view_new(page, timeline, service);
 	
 	tabs->tabs=g_list_append(tabs->tabs, uberchick_tree_view);
 	tabs->tabs=g_list_last(tabs->tabs);
@@ -137,7 +140,9 @@ static UberChickTreeView *tabs_new_tab(const gchar *timeline, OnlineService *ser
 	GtkWidget *uberchick_tree_view_tab=uberchick_tree_view_get_tab_widget(uberchick_tree_view);
 	GtkWidget *uberchick_tree_view_menu=uberchick_tree_view_get_menu_widget(uberchick_tree_view);
 	
-	gint page=gtk_notebook_append_page_menu(tabs->notebook, uberchick_tree_view_child, uberchick_tree_view_tab, uberchick_tree_view_menu);
+	tabs->pages++;
+	
+	gtk_notebook_append_page_menu(tabs->notebook, uberchick_tree_view_child, uberchick_tree_view_tab, uberchick_tree_view_menu);
 	GtkWidget *tab_label=gtk_notebook_get_tab_label(tabs->notebook, uberchick_tree_view_child);
 	gtk_notebook_set_tab_label_packing(tabs->notebook, tab_label, FALSE, FALSE, GTK_PACK_START);
 	tabs_set_page(page);
@@ -154,8 +159,7 @@ UberChickTreeView *tabs_open_timeline(const gchar *timeline, OnlineService *serv
 			continue;
 		
 		uberchick_tree_view=UBERCHICK_TREE_VIEW(t->data);
-		gint uberchick_tree_view_page=uberchick_tree_view_get_page(uberchick_tree_view);
-		tabs_set_page(uberchick_tree_view_page);
+		tabs_set_page(uberchick_tree_view_get_page(uberchick_tree_view));
 		return uberchick_tree_view;
 	}
 	g_list_free(t);
@@ -180,7 +184,7 @@ static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guin
 }/*tabs_mark_as_read(tabs->notebook, uberchick_tree_view, 0);*/
 
 UberChickTreeView *tabs_get_next(void){
-	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
+	if(tabs->pages==1) return tabs_get_current();
 	UberChickTreeView *current=tabs_get_current();
 	gtk_notebook_set_current_page(tabs->notebook, uberchick_tree_view_get_page(current)+1);
 	UberChickTreeView *next=tabs_get_current();
@@ -197,7 +201,7 @@ UberChickTreeView *tabs_get_current(void){
 }/*tabs_get_current()*/
 
 UberChickTreeView *tabs_get_previous(void){
-	if(gtk_notebook_get_n_pages(tabs->notebook)==1) return tabs_get_current();
+	if(tabs->pages==1) return tabs_get_current();
 	UberChickTreeView *current=tabs_get_current();
 	gtk_notebook_set_current_page(tabs->notebook, uberchick_tree_view_get_page(current)-1);
 	UberChickTreeView *previous=tabs_get_current();
@@ -205,7 +209,7 @@ UberChickTreeView *tabs_get_previous(void){
 		tabs_set_page(uberchick_tree_view_get_page(previous));
 		return previous;
 	}
-	tabs_set_page(gtk_notebook_get_n_pages(tabs->notebook)-1);
+	tabs_set_page(tabs->pages-1);
 	return tabs_get_current();
 }/*tabs_get_previous()*/
 
@@ -301,7 +305,8 @@ void tabs_close_page(gint page){
 	uberchick_tree_view_stop(uberchick_tree_view);
 	gtk_notebook_remove_page(tabs->notebook, page);
 	
-	if(tabs->previous_page <= gtk_notebook_get_n_pages(tabs->notebook))
+	tabs->pages--;
+	if(tabs->previous_page <= tabs->pages)
 		tabs_set_page(tabs->previous_page);
 	
 	tabs->tabs=g_list_remove(tabs->tabs, uberchick_tree_view);
@@ -309,8 +314,8 @@ void tabs_close_page(gint page){
 }/*void tabs_close_page(0);*/
 
 static void tabs_set_page(gint page){
-	if(tabs->current_page > 0)
-		if(tabs->current_page <= gtk_notebook_get_n_pages(tabs->notebook))
+	if(tabs->current_page > -1)
+		if(tabs->current_page <= tabs->pages)
 			tabs->previous_page=tabs->current_page;
 		else
 			tabs->previous_page=0;

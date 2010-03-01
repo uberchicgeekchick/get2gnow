@@ -708,7 +708,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			
 			if(g_strrstr(requested_uri, service->uri)){
 				soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
-				soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION PACKAGE_RELEASE);
+				soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
 			}
 			
 			if(form_data)
@@ -762,7 +762,7 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	if(g_strrstr(*requested_uri, "?since_id=")) return;
 	
 	UberChickTreeView *uberchick_tree_view=(UberChickTreeView *)*user_data;
-	UpdateMonitor monitoring=uberchick_tree_view_get_monitoring(uberchick_tree_view);
+	UpdateType update_type=uberchick_tree_view_get_update_type(uberchick_tree_view);
 	gint8 has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
 	if(!( (*user_data) )) return;
 	
@@ -777,10 +777,10 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	if( has_loaded && uberchick_tree_view_get_total(uberchick_tree_view) ){
 		requesting=_("new");
 		since_id=newest_update_id;
-	}else if(monitoring==DMs || monitoring==Replies){
+	}else if(update_type==DMs || update_type==Replies){
 		requesting=_("total");
 		since_id=oldest_update_id;
-	}else if(monitoring==BestFriends){
+	}else if(update_type==BestFriends){
 		requesting=_("best friend's newest");
 		since_id=unread_update_id;
 	}else

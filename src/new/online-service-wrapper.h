@@ -51,8 +51,8 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __ONLINE_SERVICES_TYPEDEFS_H__
-#define __ONLINE_SERVICES_TYPEDEFS_H__
+#ifndef __ONLINE_SERVICE_WRAPPER_H__
+#define __ONLINE_SERVICE_WRAPPER_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -62,58 +62,53 @@
 #	define _THREAD_SAFE
 #endif
 
-/********************************************************************************
- *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
- ********************************************************************************/
-#include <glib.h>
 
-G_BEGIN_DECLS
+/**********************************************************************
+ *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ **********************************************************************/
+#include <glib.h>
+#include <glib/gstdio.h>
+#include <gtk/gtk.h>
+
+#include <libxml/parser.h>
+#include <libsoup/soup.h>
+
+#include "online-services.typedefs.h"
+
 /**********************************************************************
  *  Macros, constants, objects, structures, and enum typedefs         *
  **********************************************************************/
-enum _RequestMethod{
-	POST,
-	GET,
-	QUEUE,
-};
-
-enum _UpdateType{
-	None		=	0,
-	DMs		=	1,
-	Replies		=	2,
-	Homepage	=	3,
-	BestFriends	=	4,
-	Users		=	5,
-	Searches	=	6,
-	Groups		=	7,
-	ReTweets	=	8,
-	Timelines	=	9,
-	Faves		=	10,
-	Archive		=	11,
-};
-
-enum _OnlineServicesListStoreColumns{
-	OnlineServiceKey,
-	UrlString,
-	OnlineServicePointer,
-};
-
-enum _ReloadState{
-	Load,
-	Reload,
-	Retry,
-	Reattempt,
-};
-
-enum _UsersGListGetWhich{
-	GetFriends,
-	GetFollowers,
-	GetBoth,
-};
 
 
 /**********************************************************************
+ *          Global method & function prototypes                       *
+ **********************************************************************/
+G_BEGIN_DECLS
+
+gboolean online_service_wrapper_init(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data);
+
+OnlineService *online_service_wrapper_get_online_service(OnlineServiceWrapper *online_service_wrapper);
+RequestMethod online_service_wrapper_get_request_method(OnlineServiceWrapper *online_service_wrapper);
+const gchar *online_service_wrapper_get_requested_uri(OnlineServiceWrapper *online_service_wrapper);
+
+const xmlDoc *online_service_wrapper_get_xml_doc(OnlineServiceWrapper *online_service_wrapper);
+const xmlNode *online_service_wrapper_get_xml_root_node(OnlineServiceWrapper *online_service_wrapper);
+gboolean online_service_wrapper_did_request_failed(OnlineServiceWrapper *online_service_wrapper);
+
+OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_wrapper_get_online_service_soup_session_callback_return_processor_func(OnlineServiceWrapper *online_service_wrapper);
+OnlineServiceSoupSessionCallbackFunc online_service_wrapper_get_callback(OnlineServiceWrapper *online_service_wrapper);
+gpointer online_service_wrapper_get_user_data(OnlineServiceWrapper *online_service_wrapper);
+gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_service_wrapper);
+
+guint8 online_service_wrapper_reattempt(OnlineServiceWrapper *online_service_wrapper);
+guint8 online_service_wrapper_increment_attempt(OnlineServiceWrapper *online_service_wrapper);
+guint8 online_service_wrapper_get_attempt(OnlineServiceWrapper *online_service_wrapper);
+
+void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper, gboolean free_queue);
+
+
+G_END_DECLS
+#endif /* __ONLINE_SERVICE_WRAPPER_H__ */
+/**********************************************************************
  *                               eof                                  *
  **********************************************************************/
-G_END_DECLS
-#endif /* __ONLINE_SERVICES_TYPEDEFS_H__ */

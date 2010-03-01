@@ -94,6 +94,8 @@ GType uberchick_label_get_type(void) G_GNUC_CONST;
 UberChickLabel *uberchick_label_new(void);
 OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label);
 const gchar *uberchick_label_get_user_name(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_sexy_text(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_text(UberChickLabel *uberchick_label);
 gdouble uberchick_label_get_user_id(UberChickLabel *uberchick_label);
 gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label);
 

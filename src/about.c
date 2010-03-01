@@ -119,7 +119,7 @@ void about_dialog_new (GtkWindow *parent){
 					"copyright", _("Copyright \xc2\xa9 2009 Kaity G. B."),
 					"license", license_trans,
 					"translator-credits", _("translator-credits"),
-					"version", PACKAGE_VERSION PACKAGE_RELEASE,
+					"version", PACKAGE_VERSION,
 					"website", PACKAGE_BUGREPORT,
 					"wrap-license", TRUE,
 					"logo-icon-name", GETTEXT_PACKAGE,

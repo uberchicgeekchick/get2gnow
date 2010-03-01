@@ -119,7 +119,7 @@
 typedef struct _TimelineLabels TimelineLabels;
 
 struct _TimelineLabels{
-	UpdateMonitor	monitoring;
+	UpdateType	update_type;
 	const gchar	*timeline;
 	const gchar	*tab_label_string;
 	const gchar	*menu_label_string;
@@ -147,8 +147,8 @@ struct _UberChickTreeViewPrivate {
 	OnlineService		*service;
 	gchar			*user;
 	
-	UpdateMonitor		monitoring;
-	gchar			*monitoring_string;
+	UpdateType		update_type;
+	gchar			*update_type_string;
 	gint8			has_loaded;
 	
 	gint			minutes;
@@ -326,7 +326,7 @@ static void uberchick_tree_view_finalize(UberChickTreeView *uberchick_tree_view)
 	if(this->user) uber_free(this->user);
 	if(this->tab_label_string) uber_free(this->tab_label_string);
 	if(this->menu_label_string) uber_free(this->menu_label_string);
-	if(this->monitoring_string) uber_free(this->monitoring_string);
+	if(this->update_type_string) uber_free(this->update_type_string);
 	uber_free(this->max_updates_str);
 	
 	if(this->tab_hbox) gtk_widget_destroy(GTK_WIDGET(this->tab_hbox));
@@ -431,8 +431,8 @@ static void uberchick_tree_view_setup_visibility(UberChickTreeView *uberchick_tr
 		uberchick_tree_view_toggle_rcpt_column(uberchick_tree_view);
 }/*uberchick_tree_view_setup_visibility(uberchick_tree_view);*/
 
-const gchar *monitoring_to_string(UpdateMonitor monitoring){
-	switch(monitoring){
+const gchar *update_type_to_string(UpdateType update_type){
+	switch(update_type){
 		case	Homepage:	return _("homepage");
 		case	ReTweets:	return _("friends' retweets");
 		case	Replies:	return _("@ replies");
@@ -447,7 +447,7 @@ const gchar *monitoring_to_string(UpdateMonitor monitoring){
 		case	None:	default:
 			return _("a lil cracker :-P");
 	}
-}/*monitoring_to_string(monitoring);*/
+}/*update_type_to_string(update_type);*/
 
 /*BEGIN: Custom UberChickTreeView methods.*/
 /**
@@ -493,21 +493,21 @@ gint uberchick_tree_view_get_page(UberChickTreeView *uberchick_tree_view){
 	return GET_PRIVATE(uberchick_tree_view)->page;
 }/*uberchick_tree_view_get_page(uberchick_tree_view);*/
 
-UpdateMonitor uberchick_tree_view_get_monitoring(UberChickTreeView *uberchick_tree_view){
+UpdateType uberchick_tree_view_get_update_type(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return None;
-	return GET_PRIVATE(uberchick_tree_view)->monitoring;
-}/*uberchick_tree_view_get_monitoring(uberchick_tree_view);*/
+	return GET_PRIVATE(uberchick_tree_view)->update_type;
+}/*uberchick_tree_view_get_update_type(uberchick_tree_view);*/
 
-const gchar *uberchick_tree_view_get_monitoring_string(UberChickTreeView *uberchick_tree_view){
+const gchar *uberchick_tree_view_get_update_type_string(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) )) return NULL;
-	return GET_PRIVATE(uberchick_tree_view)->monitoring_string;
-}/*uberchick_tree_view_get_monitoring_string(UberChickTreeView *uberchick_tree_view);*/
+	return GET_PRIVATE(uberchick_tree_view)->update_type_string;
+}/*uberchick_tree_view_get_update_type_string(UberChickTreeView *uberchick_tree_view);*/
 
 guint uberchick_tree_view_get_notify_delay(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) )) return 100;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	return (this->page+this->monitoring+1)*10;
+	return (this->page*10)+(this->update_type+10);
 }/*uberchick_tree_view_get_notify_delay(uberchick_tree_view);*/
 
 gint uberchick_tree_view_get_total(UberChickTreeView *uberchick_tree_view){
@@ -548,12 +548,12 @@ void uberchick_tree_view_start(UberChickTreeView *uberchick_tree_view){
 		return;
 	}
 	
-	if(this->monitoring==Groups){
+	if(this->update_type==Groups){
 		online_services_request_statusnet(QUEUE, this->timeline, NULL, network_display_timeline, uberchick_tree_view, NULL);
 		return;
 	}
 	
-	if(this->monitoring==ReTweets){
+	if(this->update_type==ReTweets){
 		online_services_request(QUEUE, this->timeline, NULL, network_display_timeline, uberchick_tree_view, NULL);
 		return;
 	}
@@ -583,11 +583,11 @@ static float uberchick_tree_view_prepare_reload(UberChickTreeView *uberchick_tre
 #ifndef	GNOME_ENABLE_DEBUG
 		this->minutes+=this->page+1;
 #else
-		/*this->minutes=this->page+this->monitoring+1;*/
+		/*this->minutes=this->page+this->update_type+1;*/
 		this->minutes=this->page+1;
 #endif
 		this->reload=(this->minutes*60)+seconds;
-		debug("Setting %s's, timeline: %s, UberChickTreeView's minutes and initial timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
+		debug("Setting %s's, timeline: %s, UberChickTreeView's minutes and initial timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->update_type_string, this->timeline, this->reload, this->minutes, seconds);
 	}
 	uberchick_tree_view_get_reload_details(uberchick_tree_view);
 	return 0.0;
@@ -597,11 +597,11 @@ static gint uberchick_tree_view_get_reload_details(UberChickTreeView *uberchick_
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return 0;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	guint seconds=((this->page+1)*5)+(this->monitoring*3)+10;
+	guint seconds=((this->page+1)*5)+(this->update_type*3)+10;
 	if(!(this->minutes && this->reload)) return seconds;
 	
-	statusbar_printf("Your %s will automatically update every %d minutes and %d seconds.", this->monitoring_string, this->minutes, seconds);
-	debug("Setting %s's, timeline: %s,  UberChickTreeView's timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->monitoring_string, this->timeline, this->reload, this->minutes, seconds);
+	statusbar_printf("Your %s will automatically update every %d minutes and %d seconds.", this->update_type_string, this->minutes, seconds);
+	debug("Setting %s's, timeline: %s,  UberChickTreeView's timeout.  They'll reload evey: %lu seconds(%d minutes and %d seconds).", this->update_type_string, this->timeline, this->reload, this->minutes, seconds);
 	return seconds;
 }/*uberchick_tree_view_get_reload_details(uberchick_tree_view);*/
 
@@ -612,7 +612,7 @@ static void uberchick_tree_view_set_adjustment(UberChickTreeView *uberchick_tree
 	guint connected_online_services=0;
 	if(this->service)
 		connected_online_services=1;
-	else if(this->monitoring==Groups)
+	else if(this->update_type==Groups)
 		connected_online_services=online_services_has_connected_statusnet(0);
 	else
 		connected_online_services=online_services_has_connected(0);
@@ -629,10 +629,19 @@ static void uberchick_tree_view_set_adjustment(UberChickTreeView *uberchick_tree
 	gtk_adjustment_set_upper(this->max_updates_adjustment, this->maximum);
 	gtk_adjustment_set_upper(this->progress_bar_adjustment, this->maximum);
 	
+	gfloat max_updates=0.0;
+	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
+	gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
+	gconfig_get_float(prefs_str, &max_updates);
+	uber_free(prefs_str);
+	uber_free(timelines_gconfig_prefs_path);
+	if(max_updates > 0.0 && max_updates!=this->max_updates)
+		this->max_updates=max_updates;
+	
 	gtk_adjustment_set_value(this->max_updates_adjustment, this->max_updates);
 	gtk_spin_button_set_value(this->max_updates_spin_button, this->max_updates);
 	
-	debug("Connected UberChickTreeView's for %s's, timeline: %s, for %d OnlineServices and adjustments set-up.  Minimum: %f; Maximum: %f; Max Updates: %f.", this->monitoring_string, this->timeline, this->connected_online_services, this->minimum, this->maximum, this->max_updates);
+	debug("Connected UberChickTreeView's for %s's, timeline: %s, for %d OnlineServices and adjustments set-up.  Minimum: %f; Maximum: %f; Max Updates: %f.", this->update_type_string, this->timeline, this->connected_online_services, this->minimum, this->maximum, this->max_updates);
 }/*uberchick_tree_view_set_adjustment(uberchick_tree_view);*/
 
 static void uberchick_tree_view_check_updates(UberChickTreeView *uberchick_tree_view){
@@ -640,7 +649,7 @@ static void uberchick_tree_view_check_updates(UberChickTreeView *uberchick_tree_
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
 	if(!this->total) return;
-	switch(this->monitoring){
+	switch(this->update_type){
 		case	DMs:	case	Replies:
 		case	Faves:	case	BestFriends:
 		case	Users:
@@ -671,16 +680,23 @@ static void uberchick_tree_view_set_maximum_updates(GtkSpinButton *max_updates_s
 	else if(max_updates < this->minimum)
 		max_updates=this->minimum;
 	
-	if(GTK_WIDGET_IS_SENSITIVE(this->max_updates_spin_button) && (this->monitoring==DMs || this->monitoring==Replies || this->monitoring==Faves) ){
+	if(GTK_WIDGET_IS_SENSITIVE(this->max_updates_spin_button) && (this->update_type==DMs || this->update_type==Replies || this->update_type==Faves) ){
 		gtk_widget_set_sensitive(GTK_WIDGET(this->max_updates_spin_button), FALSE);
 		gtk_tool_item_set_visible_vertical(this->max_updates_separator_tool_item, FALSE);
 		gtk_tool_item_set_visible_horizontal(this->max_updates_separator_tool_item, FALSE);
 		gtk_tool_item_set_visible_vertical(this->max_updates_custom_tool_button, FALSE);
 		gtk_tool_item_set_visible_horizontal(this->max_updates_custom_tool_button, FALSE);
 		max_updates=this->maximum;
+	}else{
+		gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
+		gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
+		gconfig_set_float(prefs_str, max_updates);
+		uber_free(prefs_str);
+		uber_free(timelines_gconfig_prefs_path);
 	}
+	
 	uber_free(this->max_updates_str);
-	this->max_updates_str=gdouble_to_str((this->max_updates=max_updates) );
+	this->max_updates_str=gdouble_to_str((this->max_updates=max_updates));
 	
 	gtk_adjustment_set_value(this->max_updates_adjustment, this->max_updates);
 	gtk_adjustment_set_value(this->progress_bar_adjustment, this->max_updates);
@@ -720,16 +736,16 @@ static void uberchick_tree_view_check_maximum_updates(UberChickTreeView *uberchi
 					GINT_LIST_STORE_INDEX, &tree_store_index,
 				-1
 		);
-		debug("Removing iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->monitoring_string, i, tree_store_index);
+		debug("Removing iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->update_type_string, i, tree_store_index);
 		
-		debug( "Removing <%s>'s %s at index %i which exceeds maximum updates: %s.", service->guid, this->monitoring_string, i, this->max_updates_str );
+		debug( "Removing <%s>'s %s at index %i which exceeds maximum updates: %s.", service->guid, this->update_type_string, i, this->max_updates_str );
 		
 		if( !selected_index_updated && this->selected_index>-1 && tree_store_index>-1 && this->tree_store_index>-1 && this->selected_index==tree_store_index ){
 			selected_index_updated=TRUE;
 			this->selected_index=-1;
 			
 			if(uberchick_tree_view_scroll_to_top(uberchick_tree_view) )
-				debug("UberChickTreeView for %s(timeline %s) focus moved to row 0.", this->monitoring_string, this->timeline );
+				debug("UberChickTreeView for %s(timeline %s) focus moved to row 0.", this->update_type_string, this->timeline );
 		}
 		
 		gtk_tree_store_remove(this->tree_store, iter);
@@ -748,7 +764,7 @@ static void uberchick_tree_view_check_inbox(UberChickTreeView *uberchick_tree_vi
 	if(!this->total) return;
 	
 	gint update_expiration=0;
-	switch(this->monitoring){
+	switch(this->update_type){
 		case	DMs:
 			/*By default Direct Messages from the last 4 weeks are loaded.*/
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_DMS, &update_expiration, 2419200);
@@ -819,19 +835,19 @@ static void uberchick_tree_view_update_age(UberChickTreeView *uberchick_tree_vie
 		if(this->tree_store_index>-1 && i>=this->tree_store_index)
 			tree_store_index+=this->tree_store_index+1;
 		
-		created_how_long_ago=user_status_convert_time(created_at_str, &created_ago, (this->monitoring==Searches ?FALSE :TRUE) );
+		created_how_long_ago=user_status_convert_time(created_at_str, &created_ago, (this->update_type==Searches ?FALSE :TRUE) );
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
 			if( !selected_index_updated && this->selected_index>-1 && tree_store_index>-1 && this->tree_store_index>-1 && this->selected_index==tree_store_index ){
 				selected_index_updated=TRUE;
-				debug("Updating selected_index for <%s>'s %s(timeline %s), previous selected_index: %d; new selected_index: %d.", service->guid, this->monitoring_string, this->timeline, this->selected_index, -1 );
+				debug("Updating selected_index for <%s>'s %s(timeline %s), previous selected_index: %d; new selected_index: %d.", service->guid, this->update_type_string, this->timeline, this->selected_index, -1 );
 				this->selected_index=-1;
 				
 				if(uberchick_tree_view_scroll_to_top(uberchick_tree_view) )
-					debug("UberChickTreeView for %s(timeline %s) focus moved to 0.", this->monitoring_string, this->timeline );
+					debug("UberChickTreeView for %s(timeline %s) focus moved to 0.", this->update_type_string, this->timeline );
 			}
 			
-			debug("Removing UberChickTreeView iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->monitoring_string, i, tree_store_index);
-			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->monitoring_string, this->monitoring_string, expiration, created_ago );
+			debug("Removing UberChickTreeView iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->update_type_string, i, tree_store_index);
+			debug( "Removing <%s>'s expired %s.  Oldest %s allowed: [%d] it was posted %d.", service->guid, this->update_type_string, this->update_type_string, expiration, created_ago );
 			
 			gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 			update_ids_get(service, this->timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
@@ -839,12 +855,12 @@ static void uberchick_tree_view_update_age(UberChickTreeView *uberchick_tree_vie
 				update_ids_set(service, this->timeline, newest_update_id, unread_update_id, update_id);
 			
 			gtk_tree_store_remove(this->tree_store, iter);
-			if( unread && this->total > -1 && this->unread_updates>=this->total && (this->has_loaded > 0 || ( this->monitoring==DMs || this->monitoring==Replies || this->monitoring==BestFriends ) ) )
+			if( unread && this->total > -1 && this->unread_updates>=this->total && (this->has_loaded > 0 || ( this->update_type==DMs || this->update_type==Replies || this->update_type==BestFriends ) ) )
 				this->unread_updates--;
 			this->total--;
 		}else{
 			if( !selected_index_updated && this->selected_index>-1 && tree_store_index>-1 && this->tree_store_index>-1 && this->selected_index==tree_store_index ){
-				debug("Updating selected_index for <%s>'s %s(timeline %s), previous selected_index: %d; new selected_index: %d.", service->guid, this->monitoring_string, this->timeline, this->selected_index, ( (this->selected_index+this->tree_store_index>=this->total+1) ?-1 :(this->selected_index+this->tree_store_index+1) ) );
+				debug("Updating selected_index for <%s>'s %s(timeline %s), previous selected_index: %d; new selected_index: %d.", service->guid, this->update_type_string, this->timeline, this->selected_index, ( (this->selected_index+this->tree_store_index>=this->total+1) ?-1 :(this->selected_index+this->tree_store_index+1) ) );
 				selected_index_updated=TRUE;
 				if( (this->selected_index+=this->tree_store_index+1) >= this->total ) this->selected_index=-1;
 			}
@@ -895,14 +911,14 @@ static void uberchick_tree_view_rerender_detailed_update_for_row(UberChickTreeVi
 					(retweet ?"</span>\n" :"" ),
 					user_nick_name, user_user_name, service->uri,
 					service->nick_name, service->key,
-					( (this->monitoring==DMs)
+					( (this->update_type==DMs)
 					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n<span weight=\"ultrabold\" style=\"italic\">["
-						:(this->monitoring==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n<span style=\"italic\">["
+						:(this->update_type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n<span style=\"italic\">["
 							:""
 						)
 					),
 					sexy_status_update,
-					((this->monitoring==DMs||this->monitoring==Replies) ?"]</span>" :""),
+					((this->update_type==DMs||this->update_type==Replies) ?"]</span>" :""),
 					created_how_long_ago
 	);
 	
@@ -1056,7 +1072,7 @@ static void uberchick_tree_view_modifiy_updates_tree_store( UberChickTreeView *u
 		}
 		
 		if(!tree_store_remove){
-			debug("Updating iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->monitoring_string, i, tree_store_index);
+			debug("Updating iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->update_type_string, i, tree_store_index);
 			if(!(uberchick_tree_view_tree_store_column==GBOOLEAN_UNREAD && (gboolean)GPOINTER_TO_INT(value)==FALSE))
 				gtk_tree_store_set(
 						this->tree_store, iter,
@@ -1068,7 +1084,7 @@ static void uberchick_tree_view_modifiy_updates_tree_store( UberChickTreeView *u
 				uberchick_tree_view_iter_mark_as_read(uberchick_tree_view, iter, service, user_name, update_id);
 			}
 		}else{
-			debug("Removing iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->monitoring_string, i, tree_store_index);
+			debug("Removing iter for <%s>'s %s at index: %d; tree_store_index: %d.", service->guid, this->update_type_string, i, tree_store_index);
 			if(i==this->selected_index){
 				this->selected_index=-1;
 				debug("Moving focus to UberChickTreeView's top since the currently selected iter is being removed.");
@@ -1107,7 +1123,7 @@ void uberchick_tree_view_remove_service(UberChickTreeView *uberchick_tree_view, 
 	
 	if(!this->total) return;
 	
-	debug( "Removing <%s>'s %s updates.", service->guid, this->monitoring_string );
+	debug( "Removing <%s>'s %s updates.", service->guid, this->update_type_string );
 	uberchick_tree_view_remove_from_tree_store( uberchick_tree_view, ONLINE_SERVICE, service );
 }/*uberchick_tree_view_remove_service(uberchick_tree_view, service);*/
 
@@ -1115,7 +1131,7 @@ void uberchick_tree_view_update_tree_store_mark_all_as_read(GtkToolButton *mark_
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	debug( "Marking all %s updates as read.", this->monitoring_string );
+	debug( "Marking all %s updates as read.", this->update_type_string );
 	uberchick_tree_view_modifiy_updates_tree_store( uberchick_tree_view, GBOOLEAN_UNREAD, GINT_TO_POINTER(FALSE), FALSE );
 	uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
 }/*uberchick_tree_view_update_tree_store_mark_all_as_read(this->tab_mark_as_read_tool_button|this->mark_as_read_tool_button, uberchick_tree_view);*/
@@ -1145,7 +1161,7 @@ void uberchick_tree_view_complete(UberChickTreeView *uberchick_tree_view){
 	
 	if(!this->connected_online_services)	return;
 	
-	debug("UberChickTreeView for %s, timeline: %s, completed processing new %d new updates out of %d total updates.", this->monitoring_string, this->timeline, this->unread_updates, this->total);
+	debug("UberChickTreeView for %s, timeline: %s, completed processing new %d new updates out of %d total updates.", this->update_type_string, this->timeline, this->unread_updates, this->total);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 	uberchick_tree_view_update_age(uberchick_tree_view, 0);
 	if(this->unread && this->unread_updates)
@@ -1175,11 +1191,11 @@ static void uberchick_tree_view_setup_icon_and_tooltip_for_auto_refresh_toggle_t
 	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(this->auto_refresh_toggle_tool_button), stock_icon_name_for_toggle_tool_button);
 	uber_free(stock_icon_name_for_toggle_tool_button);
 	
-	gchar *label_for_toggle_tool_button=g_strdup_printf("<span weight=\"bold\">%sable auto_-reloading of %s.</span>", (auto_refresh_disabled ?"Dis" :"En"), this->monitoring_string);
+	gchar *label_for_toggle_tool_button=g_strdup_printf("<span weight=\"bold\">%sable auto_-reloading of %s.</span>", (auto_refresh_disabled ?"Dis" :"En"), this->update_type_string);
 	gtk_tool_button_set_label(GTK_TOOL_BUTTON(this->auto_refresh_toggle_tool_button), label_for_toggle_tool_button);
 	uber_free(label_for_toggle_tool_button);
 	
-	gchar *tooltip_markup_for_toggle_tool_button=g_strdup_printf("<span weight=\"bold\">St%s auto re-loading %s.</span>", (auto_refresh_disabled ?"art" :"op"), this->monitoring_string);
+	gchar *tooltip_markup_for_toggle_tool_button=g_strdup_printf("<span weight=\"bold\">St%s auto re-loading %s.</span>", (auto_refresh_disabled ?"art" :"op"), this->update_type_string);
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(this->auto_refresh_toggle_tool_button), tooltip_markup_for_toggle_tool_button);
 	uber_free(tooltip_markup_for_toggle_tool_button);
 }/*uberchick_tree_view_setup_icon_and_tooltip_for_auto_refresh_toggle_tool_button(this->auto_refresh_toggle_tool_button, uberchick_tree_view);*/
@@ -1205,8 +1221,8 @@ static void uberchick_tree_view_set_timeline_label(UberChickTreeView *uberchick_
 	this->timeline=g_strdup(timeline);
 	for(timeline_labels=TimelineLabelsList; timeline_labels->timeline; timeline_labels++){
 		if(g_str_has_prefix(this->timeline, timeline_labels->timeline) || g_str_equal(this->timeline, timeline_labels->timeline) ){
-			this->monitoring=timeline_labels->monitoring;
-			if(this->monitoring!=Searches){
+			this->update_type=timeline_labels->update_type;
+			if(this->update_type!=Searches){
 				this->tab_label_string=g_strdup(timeline_labels->tab_label_string);
 				this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 			}else{
@@ -1216,14 +1232,14 @@ static void uberchick_tree_view_set_timeline_label(UberChickTreeView *uberchick_
 			break;
 		}
 		
-		if(timeline_labels->monitoring!=BestFriends && timeline_labels->monitoring!=Users )
+		if(timeline_labels->update_type!=BestFriends && timeline_labels->update_type!=Users )
 			continue;
 		
 		
 		if(!g_str_has_prefix(this->timeline, "/statuses/user_timeline/"))
 			continue;
 		
-		/* This checks for 'monitoring of 'BestFriends' updates 1st & than 'Users' updates but no others. */
+		/* This checks for 'update_type of 'BestFriends' updates 1st & than 'Users' updates but no others. */
 		gchar **feed_info=g_strsplit_set(timeline, "/.", -1);
 		gchar **user_info=g_strsplit_set(feed_info[3], ".", -1);
 		const gchar *user_name=user_info[0];
@@ -1245,9 +1261,9 @@ static void uberchick_tree_view_set_timeline_label(UberChickTreeView *uberchick_
 		this->tab_label_string=g_strdup_printf(timeline_labels->tab_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
 		this->menu_label_string=g_strdup_printf(timeline_labels->menu_label_string, (user_is_best_friend?"My Best Friend: " :""), this->user, (viewing_newest_updates?"Newest ":""), this->service->uri );
 		if(user_is_best_friend && viewing_newest_updates)
-			this->monitoring=BestFriends;
+			this->update_type=BestFriends;
 		else
-			this->monitoring=timeline_labels->monitoring;
+			this->update_type=timeline_labels->update_type;
 		g_strfreev(feed_info);
 		g_strfreev(user_info);
 		break;
@@ -1258,7 +1274,7 @@ static void uberchick_tree_view_set_timeline_label(UberChickTreeView *uberchick_
 		this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 	}
 	
-	this->monitoring_string=g_strdup(monitoring_to_string(this->monitoring));
+	this->update_type_string=g_strdup(update_type_to_string(this->update_type));
 	uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
 }/*uberchick_tree_view_set_timeline_label(uberchick_tree_view, timeline);*/
 
@@ -1493,7 +1509,7 @@ static gboolean uberchick_tree_view_index_select(UberChickTreeView *uberchick_tr
 	
 	if(!( GTK_IS_TREE_VIEW(GTK_TREE_VIEW(this->sexy_tree_view)) && this->total )) return FALSE;
 	if( uberchick_tree_view_goto(uberchick_tree_view, this->selected_index, TRUE) ){
-		debug("UberChickTreeView for %s(timeline %s) index selected.  Update %d, out of %d total updates.", this->monitoring_string, this->timeline, this->selected_index, this->total );
+		debug("UberChickTreeView for %s(timeline %s) index selected.  Update %d, out of %d total updates.", this->update_type_string, this->timeline, this->selected_index, this->total );
 		return TRUE;
 	}
 	return FALSE;
@@ -1506,7 +1522,7 @@ static gboolean uberchick_tree_view_index_scroll_to(UberChickTreeView *uberchick
 	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return FALSE;
 	
 	if( uberchick_tree_view_goto_index(uberchick_tree_view, FALSE) ){
-		debug("UberChickTreeView for %s(timeline %s) perspective scrolled to index.  Update %d, out of %d total updates.", this->monitoring_string, this->timeline, this->index, this->total );
+		debug("UberChickTreeView for %s(timeline %s) perspective scrolled to index.  Update %d, out of %d total updates.", this->update_type_string, this->timeline, this->index, this->total );
 		return TRUE;
 	}
 	return FALSE;
@@ -1519,7 +1535,7 @@ static gboolean uberchick_tree_view_scroll_to_top(UberChickTreeView *uberchick_t
 	if(!( GTK_TREE_VIEW(this->sexy_tree_view) && this->total )) return FALSE;
 	this->index=0;
 	if( uberchick_tree_view_goto_index(uberchick_tree_view, FALSE) ){
-		debug("UberChickTreeView for %s(timeline %s) focus moved to index 0.", this->monitoring_string, this->timeline );
+		debug("UberChickTreeView for %s(timeline %s) focus moved to index 0.", this->update_type_string, this->timeline );
 		return TRUE;
 	}
 	return FALSE;
@@ -1529,7 +1545,7 @@ static void uberchick_tree_view_clear(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	debug("Clearing UberChickTreeView, for %s (timeline: %s).  UberChickTreeView has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
+	debug("Clearing UberChickTreeView, for %s (timeline: %s).  UberChickTreeView has_loaded status:%s(#%d).", this->update_type_string, this->timeline, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 	
 	gtk_tree_store_clear(this->tree_store);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
@@ -1645,8 +1661,8 @@ void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, U
 	);
 	this->total++;
 	
-	debug("Inserting update in to UberChickTreeView at index %d.  Inserting one of <%s>'s %s; timeline [%s]; update ID: %s; read status: %s.  Total updates: %u", this->tree_store_index, status->service->guid, this->monitoring_string, this->timeline, status->id_str, (unread ?"TRUE" :"FALSE"), this->total);
-	debug("Inserting iter for <%s>'s %s at index: %d; tree_view_index: %d.", status->service->guid, this->monitoring_string, this->total, this->total);
+	debug("Inserting update in to UberChickTreeView at index %d.  Inserting one of <%s>'s %s; timeline [%s]; update ID: %s; read status: %s.  Total updates: %u", this->tree_store_index, status->service->guid, this->update_type_string, this->timeline, status->id_str, (unread ?"TRUE" :"FALSE"), this->total);
+	debug("Inserting iter for <%s>'s %s at index: %d; tree_view_index: %d.", status->service->guid, this->update_type_string, this->total, this->total);
 	if(unread)
 		uberchick_tree_view_increment_unread(uberchick_tree_view);
 	
@@ -1666,7 +1682,7 @@ static gboolean uberchick_tree_view_notification(UberChickTreeView *uberchick_tr
 	if(gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE))
 		return TRUE;
 	
-	switch(GET_PRIVATE(uberchick_tree_view)->monitoring){
+	switch(GET_PRIVATE(uberchick_tree_view)->update_type){
 		case	Homepage:	case	ReTweets:
 		case	Users:
 			if(gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE))
@@ -1701,7 +1717,7 @@ void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_v
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	debug("Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates.  UberChickTreeView has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
+	debug("Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates.  UberChickTreeView has_loaded status:%s(#%d).", this->update_type_string, this->timeline, this->unread_updates, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 	
 	if(this->unread) this->unread=FALSE;
 	gchar *tab_label_markup=NULL, *menu_label_markup=NULL;
@@ -1730,7 +1746,7 @@ static void uberchick_tree_view_labels_mark_as_unread(UberChickTreeView *uberchi
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	debug("Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates(maximum allowed updates: %s).  UberChickTreeView's total updates:%d; has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
+	debug("Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates(maximum allowed updates: %s).  UberChickTreeView's total updates:%d; has_loaded status:%s(#%d).", this->update_type_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 	
 	if(!GTK_WIDGET_IS_SENSITIVE(GTK_WIDGET(this->mark_as_read_tool_button)))
 		gtk_widget_set_sensitive(GTK_WIDGET(this->mark_as_read_tool_button), TRUE);
@@ -1765,7 +1781,7 @@ static void uberchick_tree_view_increment_unread(UberChickTreeView *uberchick_tr
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	switch(this->monitoring){
+	switch(this->update_type){
 		case	DMs:		case	Replies:
 		case	Faves:		case	BestFriends:
 		case	Users:
@@ -1775,7 +1791,7 @@ static void uberchick_tree_view_increment_unread(UberChickTreeView *uberchick_tr
 		case	Archive:	case	Timelines:
 		case	Searches:	case	Groups:
 			if( this->has_loaded > 0 && this->total ) break;
-			debug("Not-Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates(maximum allowed updates exceded: %s).  UberChickTreeView's total updates:%d; has_loaded status:%s(#%d).", this->monitoring_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
+			debug("Not-Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates(maximum allowed updates exceded: %s).  UberChickTreeView's total updates:%d; has_loaded status:%s(#%d).", this->update_type_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
 		
 		case	None:		default:
 			return;
@@ -1834,7 +1850,7 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 	debug("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: tree_store %d.", update_id_str, user_name, service->uri, service->guid, tree_store_index);
 	statusbar_printf("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: tree_store %d.", update_id_str, user_name, service->uri, service->guid, tree_store_index);
 	
-	update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, this->monitoring);
+	update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, this->update_type);
 	
 	uber_free(user_name);
 	uber_free(sexy_update);
@@ -1859,10 +1875,10 @@ static void uberchick_tree_view_iter_mark_as_read(UberChickTreeView *uberchick_t
 	
 	update_ids_check( service, this->timeline, update_id, FALSE );
 	best_friends_check_update_ids( service, user_name, update_id );
-	if(this->monitoring!=DMs){
+	if(this->update_type!=DMs){
 		if(best_friends_is_user_best_friend(service, user_name))
 			best_friends_tree_store_mark_as_read(service, user_name, update_id);
-		if(this->monitoring!=BestFriends && this->monitoring!=Users){
+		if(this->update_type!=BestFriends && this->update_type!=Users){
 			gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, user_name);
 			update_ids_check( service, user_timeline, update_id, FALSE );
 			uber_free(user_timeline);

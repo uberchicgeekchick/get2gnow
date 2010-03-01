@@ -97,8 +97,8 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 gboolean gconfig_get_int(const gchar *key, gint *value);
 
 
-gboolean gconfig_set_float(const gchar *key, gdouble value);
-gboolean gconfig_get_float(const gchar *key, gdouble *value);
+gboolean gconfig_set_float(const gchar *key, gfloat value);
+gboolean gconfig_get_float(const gchar *key, gfloat *value);
 
 
 gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean);

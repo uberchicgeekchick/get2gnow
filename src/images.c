@@ -97,7 +97,7 @@ void images_set_unknown_image_file(void){
 	}
 	
 	unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-	if(!(g_file_test(unknown_image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR ))){
+	if(!(g_file_test(unknown_image_filename, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR ))){
 		uber_free(unknown_image_filename);
 		unknown_image_filename=g_strdup("");
 		debug("**error:** images_unknown_image_file could not be set.");
