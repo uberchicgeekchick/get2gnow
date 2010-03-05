@@ -116,7 +116,7 @@ struct _UpdateViewer{
 	 * Or whenever a update is selected. */
 	GList			*compact_update_viewer_hidden_containers;
 	/* Widgets that are enabled when we a update is selected */
-	GList			*selected_update_buttons;
+	GList			*selected_update_widgets;
 	
 	/* GtkWidgets for viewing user details & for controlling one's relationship to them. */
 	GtkHBox			*user_vbox;
@@ -376,7 +376,7 @@ static void update_viewer_destroy_cb(GtkWidget *window, UpdateViewer *update_vie
 	gtk_tree_store_clear(update_viewer->online_services_accounts_tree_store);
 	
 	uber_list_free(update_viewer->compact_update_viewer_hidden_containers);
-	uber_list_free(update_viewer->selected_update_buttons);
+	uber_list_free(update_viewer->selected_update_widgets);
 	
 	uber_free(update_viewer);
 }/*update_viewer_destroy_cb*/
@@ -988,51 +988,51 @@ static void update_viewer_scale(gboolean compact){
 }/* update_viewer_scale(TRUE); */ 
 
 static void update_viewer_selected_update_buttons_setup(GtkBuilder *ui, UpdateViewer *update_viewer){
-	const gchar *selected_update_buttons[]={
+	const gchar *selected_update_widgets[]={
 		/* Container widgets start here.  Starting with index #0. */
-		"user_vbox",
-		/* Container widgets end here.  None button widgets begin with #1. */
+		"user_vbox", /* index[0] */
 		
-		/* None button widgets start here.  Starting with index #1. */
-		"update_viewer_update_controls_vseparator",
-		"make_fave_button",
-		"update_viewer_left_vseparator",
-		"user_image",
-		/* None button widgets end here.  Buttons begin with #4. */
+		/* Container widgets end here.  Misc. widgets begin with #1. */
+		"update_viewer_update_controls_vseparator", /* index[1] */
+		"make_fave_button", /* index[2] */
 		
-		"update_viewer_unfave_button",
+		"update_viewer_left_vseparator", /* index[3] */
+		"reply_button", /* index[4] */
+		"forward_update_button", /* index[5] */
 		
-		"update_viewer_destroy_update_button",
+		"user_image", /* index[6] */
+		/* Misc. widgets end here.  Buttons begin with index #7. */
 		
-		"view_user_profile_button",
-		"view_user_unread_updates_button",
-		"view_user_updates_button",
-		"best_friend_toggle_button",
+		"update_viewer_unfave_button", /* index[7] */
 		
-		"user_follow_button",
-		"user_unfollow_button",
-		"user_block_button",
+		"update_viewer_destroy_update_button", /* index[8] */
 		
-		"sexy_dm_button",
+		"view_user_profile_button", /* index[9] */
+		"view_user_unread_updates_button", /* index[10] */
+		"view_user_updates_button", /* index[11] */
+		"best_friend_toggle_button", /* index[12] */
 		
-		"reply_button",
-		"forward_update_button",
+		"user_follow_button", /* index[13] */
+		"user_unfollow_button", /* index[14] */
+		"user_block_button", /* index[15] */
+		
+		"sexy_dm_button", /* index[16] */
 	};
 	
 	GList *list=NULL;
-	for(int i=0; i < G_N_ELEMENTS(selected_update_buttons); i++)
-		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_buttons[i])) );
+	for(int i=0; i < G_N_ELEMENTS(selected_update_widgets); i++)
+		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_widgets[i])) );
 	
 	list=g_list_append(list, update_viewer->retweet_button);
 	
-	update_viewer->selected_update_buttons=list;
+	update_viewer->selected_update_widgets=list;
 }/*update_viewer_selected_widgets_setup();*/
 
 static void update_viewer_selected_update_buttons_show(OnlineService *service, const gchar *user_name, gboolean selected_update){
 	main_window_selected_update_image_menu_items_show(selected_update);
 	GList *l=NULL;
 	guint8 i=0;
-	for(i=0, l=update_viewer->selected_update_buttons; l; l=l->next, i++){
+	for(i=0, l=update_viewer->selected_update_widgets; l; l=l->next, i++){
 		switch(i){
 			/* Container widgets start here.  Starting with index #0. */
 			case 0: /* "user_vbox", */
@@ -1041,9 +1041,9 @@ static void update_viewer_selected_update_buttons_show(OnlineService *service, c
 				else
 					gtk_widget_show_all(GTK_WIDGET(l->data));
 				break;
-			/* Container widgets end here.  None button widgets begin with #1. */
+			/* Container widgets end here.  Misc. widgets begin with #1. */
 			
-			/* None button widgets start here.  Starting with index #1. */
+			/* Misc. widgets start here.  Starting with index #1. */
 			case 1: /* "update_viewer_update_controls_vseparator" */
 			case 2: /* "make_fave_button" */
 				if(!(selected_update && service))
@@ -1052,34 +1052,39 @@ static void update_viewer_selected_update_buttons_show(OnlineService *service, c
 					gtk_widget_show(GTK_WIDGET(l->data));
 				break;
 			
-			case 3: /* "update_viewer_left_vseparator" */
+			case 3: case 4: case 5:
+				/*    "update_viewer_left_vseparator"           */
+				/*    "reply_button" & "forward_update_button"  */
 				if(!selected_update && gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE) )
 					gtk_widget_hide(GTK_WIDGET(l->data));
 				else
 					gtk_widget_show(GTK_WIDGET(l->data));
+				if(i==3) break;
+				gtk_widget_set_sensitive(GTK_WIDGET(l->data), selected_update);
 				break;
 			
-			case 4: /* "user_image" */
+			case 6: /* "user_image" */
 				if(gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE))
 					gtk_widget_hide(GTK_WIDGET(l->data));
 				else
 					gtk_widget_show(GTK_WIDGET(l->data));
 				break;
-			/* None button widgets end here.  Buttons begin with #4. */
+			/* Misc. widgets end here.  Buttons begin with index #7. */
 			
-			case 5: /* "update_viewer_unfave_button" */
+			case 7: /* "update_viewer_unfave_button" */
 				if(!(selected_update && service && update_viewer->viewing_update_type==Faves))
 					gtk_widget_hide(GTK_WIDGET(l->data));
 				else
 					gtk_widget_show(GTK_WIDGET(l->data));
 				break;
 			
-			case 6: /* "update_viewer_destroy_update_button" */
+			case 8: /* "update_viewer_destroy_update_button" */
 				if(!(selected_update && service && G_STR_N_EMPTY(user_name) && online_services_is_user_name_mine(service, user_name) ))
 					gtk_widget_hide(GTK_WIDGET(l->data));
 				else
 					gtk_widget_show(GTK_WIDGET(l->data));
 				break;
+			
 			default:
 				/************************************************
 				 * "view_user_profile_button",                  *
@@ -1092,9 +1097,6 @@ static void update_viewer_selected_update_buttons_show(OnlineService *service, c
 				 * "user_block_button",                         *
 				 *                                              *
 				 * "sexy_dm_button",                            *
-				 *                                              *
-				 * "reply_button",                              *
-				 * "forward_update_button",                     *
 				 ************************************************/
 				if( GTK_BUTTON(l->data) == update_viewer->retweet_button )
 					if(!(selected_update && service)){
