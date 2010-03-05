@@ -86,6 +86,16 @@
 
 #define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), UBERCHICK_TYPE_LABEL, UberChickLabelPrivate))
 
+struct _UberChickLabel {
+	/*GtkLabel           parent;*/
+	SexyUrlLabel           parent;
+};
+
+struct _UberChickLabelClass {
+	/*GtkLabelClass      parent_class;*/
+	SexyUrlLabelClass      parent_class;
+};
+
 struct _UberChickLabelPrivate{
 	OnlineService	*service;
 	UpdateType	update_type;

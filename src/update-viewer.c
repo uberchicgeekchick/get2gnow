@@ -96,11 +96,7 @@
 
 #include "www.h"
 
-#ifndef ENABLE_ALPHA_UI
-#	include "uberchick-label.h"
-#else
-#	include "uberchick-label.alpha.h"
-#endif
+#include "uberchick-label.h"
 
 #include "uberchick-sexy-entry-completion.h"
 

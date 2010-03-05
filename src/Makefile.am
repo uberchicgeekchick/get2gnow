@@ -22,9 +22,9 @@ if HAVE_GNOME_KEYRING
 keyring_sources = keyring.c keyring.h
 endif
 if ENABLE_ALPHA_UI
-alpha_ui_sources = uberchick-label.alpha.c uberchick-label.alpha.h
+get2gnow_ui_sources = uberchick-label.alpha.c
 else
-alpha_ui_sources = uberchick-label.c uberchick-label.h
+get2gnow_ui_sources = uberchick-label.c
 endif
 
 get2gnow_SOURCES = 													\
@@ -59,7 +59,7 @@ get2gnow_SOURCES = 													\
 	searches.c					searches.h							\
 	tabs.c						tabs.h								\
 	timer.c						timer.h								\
-	$(alpha_ui_sources)											\
+	$(get2gnow_ui_sources)				uberchick-label.h						\
 	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
 	uberchick-tree-view.c		uberchick-tree-view.macros.h		uberchick-tree-view.h			\
 	ui-utils.c					ui-utils.h							\

@@ -62,7 +62,7 @@
 #include <gtk/gtk.h>
 #include <glib-object.h>
 #include <libsexy/sexy.h>
-#include "online-services.h"
+#include "online-services.typedefs.h"
 
 G_BEGIN_DECLS
 
@@ -77,16 +77,6 @@ G_BEGIN_DECLS
 typedef struct _UberChickLabel		UberChickLabel;
 typedef struct _UberChickLabelClass	UberChickLabelClass;
 typedef struct _UberChickLabelPrivate	UberChickLabelPrivate;
-
-struct _UberChickLabel {
-	/*GtkLabel           parent;*/
-	SexyUrlLabel           parent;
-};
-
-struct _UberChickLabelClass {
-	/*GtkLabelClass      parent_class;*/
-	SexyUrlLabelClass      parent_class;
-};
 
 GType uberchick_label_get_type(void) G_GNUC_CONST;
 
