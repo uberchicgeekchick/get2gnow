@@ -72,7 +72,7 @@
 #include "main-window.h"
 
 #include "online-services.typedefs.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-services.h"
 #include "online-service-wrapper.h"
@@ -90,7 +90,6 @@
 #include "parser.h"
 
 #include "www.h"
-#include "uberchick-label.h"
 
 #include "ui-utils.h"
 #include "update-viewer.h"
@@ -683,13 +682,9 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
 	
 	gchar *sexy_status_swap=www_html_entity_escape_text(status->text);
-	/*if(!gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE)){*
-		status->sexy_update=www_format_urls(service, sexy_status_swap, TRUE, TRUE);
-		status->sexy_status_text=www_format_urls(service, sexy_status_swap, TRUE, FALSE);
-	*}else{*/
-		status->sexy_update=g_strdup(sexy_status_swap);
-		status->sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
-	/*}*/
+	status->sexy_update=g_strdup(sexy_status_swap);
+	status->sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
+	
 	if(status->type==Searches){
 		debug("Formatting update for display.");
 		debug("\tstatus->text: [%s],", status->text);

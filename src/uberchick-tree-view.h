@@ -57,12 +57,12 @@
 G_BEGIN_DECLS
 
 
-#define TYPE_UBERCHICK_TREE_VIEW		(uberchick_tree_view_get_type())
-#define UBERCHICK_TREE_VIEW(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UBERCHICK_TREE_VIEW, UberChickTreeView))
-#define UBERCHICK_TREE_VIEW_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), TYPE_UBERCHICK_TREE_VIEW, UberChickTreeViewClass))
-#define IS_UBERCHICK_TREE_VIEW(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UBERCHICK_TREE_VIEW))
-#define IS_UBERCHICK_TREE_VIEW_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UBERCHICK_TREE_VIEW))
-#define UBERCHICK_TREE_VIEW_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UBERCHICK_TREE_VIEW, UberChickTreeViewClass))
+#define UBERCHICK_TYPE_TREE_VIEW		(uberchick_tree_view_get_type())
+#define UBERCHICK_TREE_VIEW(o)			(G_TYPE_CHECK_INSTANCE_CAST((o), UBERCHICK_TYPE_TREE_VIEW, UberChickTreeView))
+#define UBERCHICK_TREE_VIEW_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), UBERCHICK_TYPE_TREE_VIEW, UberChickTreeViewClass))
+#define IS_UBERCHICK_TREE_VIEW(o)		(G_TYPE_CHECK_INSTANCE_TYPE((o), UBERCHICK_TYPE_TREE_VIEW))
+#define IS_UBERCHICK_TREE_VIEW_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE((k), UBERCHICK_TYPE_TREE_VIEW))
+#define UBERCHICK_TREE_VIEW_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS((o), UBERCHICK_TYPE_TREE_VIEW, UberChickTreeViewClass))
 
 typedef struct _UberChickTreeView      UberChickTreeView;
 typedef struct _UberChickTreeViewClass UberChickTreeViewClass;
@@ -110,7 +110,6 @@ GType uberchick_tree_view_get_type(void) G_GNUC_CONST;
 
 
 UberChickTreeView *uberchick_tree_view_new(gint page, const gchar *timeline, OnlineService *service);
-void uberchick_tree_view_null_and_void_catch_all_method(UberChickTreeView *uberchick_tree_view);
 
 const gchar *uberchick_tree_view_get_timeline(UberChickTreeView *uberchick_tree_view);
 

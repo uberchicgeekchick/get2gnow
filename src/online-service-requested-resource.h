@@ -51,16 +51,11 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__WWW_H__
-#define	__WWW_H__
+#ifndef	__HEADER_H__
+#define	__HEADER_H__
 
-#ifndef	_GNU_SOURCE 
-#	define _GNU_SOURCE
-#endif
-
-#ifndef _THREAD_SAFE
-#	define _THREAD_SAFE
-#endif
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
 
 /********************************************************************************
@@ -69,7 +64,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services.typedefs.h"
+#include "online-services.types.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
@@ -85,21 +80,29 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void www_open_uri(GtkWidget *widget, const gchar *uri);
-void www_init(void);
 
-void www_deinit(void);
+/* START: OnlineServiceRequest signal handlers.
+ *	The user name or etc is passed as g_signal connect's 'user_data' value. */
+OnlineServiceResourceRequest *online_service_resource_request_new(OnlineService *service, const gchar *user_data);
+void online_service_resource_request_free(OnlineService *service, const gchar *user_data);
+void online_service_request_signal_handler_view_updates_new(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_view_updates(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_view_forwards(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_view_profile(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_best_friend_add(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_best_friend_drop(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_follow(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_unfollow(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_block(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_unblock(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_save_fave(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_unfave(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+void online_service_request_signal_handler_delete(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
+/* END: OnlineServiceRequest signal handlers. */
 
-gchar *www_html_entity_escape_text(gchar *status_text);
-void www_html_entity_escape_status(gchar **status_text);
 
-gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
-
-gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath);
-gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /*__WWW_H__*/
-
+#endif /*__HEADER_H__*/

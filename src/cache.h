@@ -70,7 +70,7 @@
 #include <libsoup/soup-message-body.h>
 #include <libxml/tree.h>
 
-#include "online-service.typedefs.h"
+#include "online-services.typedefs.h"
 #include "users.h"
 #include "images.h"
 

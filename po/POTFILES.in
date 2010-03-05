@@ -29,6 +29,7 @@ src/groups.c
 src/gtkbuilder.c
 src/images.c
 src/ipc.c
+keyring.c
 src/hotkeys.c
 src/main.c
 src/main-window.c
@@ -45,6 +46,7 @@ src/proxy.c
 src/searches.c
 src/tabs.c
 src/timer.c
+src/uberchick-label.alpha.c
 src/uberchick-label.c
 src/uberchick-sexy-entry-completion.c
 src/uberchick-tree-view.c

@@ -111,16 +111,13 @@ static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **g
 		*gtkbuilder_ui_filename=g_build_filename(BUILDDIR, "data", gtkbuilder_ui_file, NULL);
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(*gtkbuilder_ui_filename)){
-		if(!get_local)
-			debug("Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
-		else
-			debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+		debug("Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
 		
 		if(use_template){
-			debug("**NOTICE:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
-			debug("**NOTICE:** GTK_BUILDER_UI_FILENAME [%s] needs converted.", *gtkbuilder_ui_filename);
-			debug("**NOTICE:** GTK_BUILDER_UI_FILENAME template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename);
-			debug("**NOTICE:** GTK_BUILDER_UI_FILENAME can be converted by running: (cd data/ ; make %s.ui).  Or re-run `make`.", base_filename);
+			debug("**ERROR:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: [%s] needs converted.", *gtkbuilder_ui_filename);
+			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename);
+			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: can be converted by running: (cd data/ ; touch %s.in.ui; make %s.ui).  Or re-run `make`.", base_filename, base_filename);
 		}
 		return TRUE;
 	}

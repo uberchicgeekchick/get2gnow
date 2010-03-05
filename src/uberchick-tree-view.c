@@ -88,7 +88,7 @@
 #include "online-services.h"
 
 #include "online-service-request.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 
 #include "best-friends.h"
@@ -114,7 +114,7 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_UBERCHICK_TREE_VIEW, UberChickTreeViewPrivate))
+#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), UBERCHICK_TYPE_TREE_VIEW, UberChickTreeViewPrivate))
 
 typedef struct _TimelineLabels TimelineLabels;
 
@@ -380,7 +380,7 @@ UberChickTreeView *uberchick_tree_view_new(gint page, const gchar *timeline, Onl
 		debug("**ERROR:** Cannot create update view for an empty timeline.");
 		return NULL;
 	}
-	UberChickTreeView *uberchick_tree_view=g_object_new(TYPE_UBERCHICK_TREE_VIEW, NULL);
+	UberChickTreeView *uberchick_tree_view=g_object_new(UBERCHICK_TYPE_TREE_VIEW, NULL);
 	UberChickTreeViewPrivate *this=GET_PRIVATE( (uberchick_tree_view=g_object_ref_sink(uberchick_tree_view)) );
 	
 	debug("Creating new UberChickTreeView for timeline: %s.", timeline);
@@ -401,18 +401,6 @@ UberChickTreeView *uberchick_tree_view_new(gint page, const gchar *timeline, Onl
 	
 	return uberchick_tree_view;
 }/*uberchick_tree_view_new(timeline, NULL);*/
-
-
-/********************************************************************************
- *       my "catch all" method to call any static methods because:              *
- *             - they may not be in use atm.                                    *
- *             - they're temporarally not being called.                         *
- *             - signal handlers as defined in my GtkBuildable UI.              *
- ********************************************************************************/
-void uberchick_tree_view_null_and_void_catch_all_method(UberChickTreeView *uberchick_tree_view){
-	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) )) return;
-	uberchick_tree_view_close(GET_PRIVATE(uberchick_tree_view)->tab_close_tool_button, uberchick_tree_view);
-}/*uberchick_tree_view_null_and_void_catch_all_method(uberchick_tree_view);*/
 
 
 static void uberchick_tree_view_setup_visibility(UberChickTreeView *uberchick_tree_view){
@@ -626,17 +614,22 @@ static void uberchick_tree_view_set_adjustment(UberChickTreeView *uberchick_tree
 	gtk_adjustment_set_lower(this->progress_bar_adjustment, this->minimum);
 	
 	this->maximum=connected_online_services*MAXIMUM_UPDATES;
+	
+	if(this->update_type!=DMs && this->update_type!=Replies && this->update_type!=Faves){
+		gfloat max_updates=0.0;
+		gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
+		gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
+		gconfig_get_float(prefs_str, &max_updates);
+		uber_free(prefs_str);
+		uber_free(timelines_gconfig_prefs_path);
+		if(max_updates > 0.0 && max_updates!=this->max_updates)
+			this->max_updates=max_updates;
+		if(this->max_updates>this->maximum)
+			this->maximum=this->max_updates;
+	}
+	
 	gtk_adjustment_set_upper(this->max_updates_adjustment, this->maximum);
 	gtk_adjustment_set_upper(this->progress_bar_adjustment, this->maximum);
-	
-	gfloat max_updates=0.0;
-	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
-	gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
-	gconfig_get_float(prefs_str, &max_updates);
-	uber_free(prefs_str);
-	uber_free(timelines_gconfig_prefs_path);
-	if(max_updates > 0.0 && max_updates!=this->max_updates)
-		this->max_updates=max_updates;
 	
 	gtk_adjustment_set_value(this->max_updates_adjustment, this->max_updates);
 	gtk_spin_button_set_value(this->max_updates_spin_button, this->max_updates);
@@ -680,13 +673,14 @@ static void uberchick_tree_view_set_maximum_updates(GtkSpinButton *max_updates_s
 	else if(max_updates < this->minimum)
 		max_updates=this->minimum;
 	
-	if(GTK_WIDGET_IS_SENSITIVE(this->max_updates_spin_button) && (this->update_type==DMs || this->update_type==Replies || this->update_type==Faves) ){
-		gtk_widget_set_sensitive(GTK_WIDGET(this->max_updates_spin_button), FALSE);
-		gtk_tool_item_set_visible_vertical(this->max_updates_separator_tool_item, FALSE);
-		gtk_tool_item_set_visible_horizontal(this->max_updates_separator_tool_item, FALSE);
-		gtk_tool_item_set_visible_vertical(this->max_updates_custom_tool_button, FALSE);
-		gtk_tool_item_set_visible_horizontal(this->max_updates_custom_tool_button, FALSE);
-		max_updates=this->maximum;
+	if(this->update_type==DMs || this->update_type==Replies || this->update_type==Faves){
+		if(GTK_WIDGET_IS_SENSITIVE(this->max_updates_spin_button)){
+			gtk_widget_set_sensitive(GTK_WIDGET(this->max_updates_spin_button), FALSE);
+			gtk_tool_item_set_visible_vertical(this->max_updates_separator_tool_item, FALSE);
+			gtk_tool_item_set_visible_horizontal(this->max_updates_separator_tool_item, FALSE);
+			gtk_tool_item_set_visible_vertical(this->max_updates_custom_tool_button, FALSE);
+			gtk_tool_item_set_visible_horizontal(this->max_updates_custom_tool_button, FALSE);
+		}
 	}else{
 		gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
 		gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
@@ -700,6 +694,7 @@ static void uberchick_tree_view_set_maximum_updates(GtkSpinButton *max_updates_s
 	
 	gtk_adjustment_set_value(this->max_updates_adjustment, this->max_updates);
 	gtk_adjustment_set_value(this->progress_bar_adjustment, this->max_updates);
+	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 }/*uberchick_tree_view_set_maximum_updates(this->max_updates_spin_button, uberchick_tree_view);*/
 
 static void uberchick_tree_view_check_maximum_updates(UberChickTreeView *uberchick_tree_view){

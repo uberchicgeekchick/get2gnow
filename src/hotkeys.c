@@ -96,6 +96,7 @@
 #include "debug.h"
 
 static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event);
+static gboolean hotkeys_display_menu(const gchar *menu_name, const gint event_time);
 
 
 void hotkey_pressed(GtkWidget *widget, GdkEventKey *event){
@@ -149,84 +150,101 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_D:	case GDK_d:
 					update_viewer_send( GTK_WIDGET(update_viewer_get_sexy_dm_button() ));
 					return FALSE;
+				
 				case GDK_S:	case GDK_s:
 					update_viewer_send(NULL);
 					return FALSE;
+				
 				case GDK_N:	case GDK_n:
-					g_signal_emit_by_name(main_window_get_menu_item("network"), "popup");
-					return TRUE;
+					return hotkeys_display_menu("network", event->time);
+				
 				case GDK_B:	case GDK_b:
-					g_signal_emit_by_name(main_window_get_menu_item("tabs"), "popup");
-					return TRUE;
+					return hotkeys_display_menu("tabs", event->time);
+				
 				case GDK_E:	case GDK_e:
-					g_signal_emit_by_name(main_window_get_menu_item("edit"), "popup");
-					return TRUE;
+					return hotkeys_display_menu("edit", event->time);
+				
 				case GDK_V:	case GDK_v:
-					g_signal_emit_by_name(main_window_get_menu_item("view"), "popup");
-					return TRUE;
+					return hotkeys_display_menu("view", event->time);
+				
 				case GDK_T:	case GDK_t:
-					g_signal_emit_by_name(main_window_get_menu_item("online_service_request"), "popup");
-					return TRUE;
+					return hotkeys_display_menu("online_service_request", event->time);
+				
 				case GDK_H:	case GDK_h:
-					g_signal_emit_by_name(main_window_get_menu_item("help"), "popup");
-					return TRUE;
+					return hotkeys_display_menu("help", event->time);
+				
 				case GDK_Up: case GDK_KP_Up:
 					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
 						main_window_hide_search_history();
 					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
 						update_viewer_hide_previous_updates();
 					return TRUE;
+				
 				case GDK_Down: case GDK_KP_Down:
 					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
 						main_window_show_search_history();
 					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
 						update_viewer_show_previous_updates();
 					return TRUE;
+				
 				case GDK_R: case GDK_r:
 					uberchick_tree_view_refresh(tabs_get_current()); 
 					return FALSE;
+				
 				case GDK_P:	case GDK_p:
 				case GDK_question:
 					online_service_request_selected_update_view_profile();
 					return TRUE;
+				
 				case GDK_U:	case GDK_u:
 					/* calls: update_viewer_sexy_select(); */
 					gtk_widget_grab_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()));
 					return FALSE;
+				
 				case GDK_asciitilde:	case GDK_ampersand:
 					online_service_request_selected_update_view_updates();
 					return FALSE;
+				
 				case GDK_F:	case GDK_f:
 				case GDK_greater:	case GDK_plus:
 					online_service_request_selected_update_follow();
 					return FALSE;
+				
 				case GDK_A:	case GDK_a:
 					online_service_request_popup_best_friend_add();
 					return TRUE;
+				
 				case GDK_asterisk:
 				case GDK_colon:	case GDK_exclam:
 					online_service_request_selected_update_best_friend_add();
 					return FALSE;
+				
 				case GDK_L:	case GDK_l:
 				case GDK_numbersign:	case GDK_semicolon:
 					online_service_request_selected_update_block();
 					return FALSE;
+				
 				case GDK_O:	case GDK_o:
 					online_service_request_selected_update_unblock();
 					return FALSE;
+				
 				case GDK_Insert:	case GDK_KP_Insert:
 				case GDK_I:		case GDK_i:
 					online_service_request_popup_shorten_uri();
 					return TRUE;
+				
 				case GDK_Tab:		case GDK_KP_Tab:
 					update_viewer_sexy_insert_char('\t');
 					return FALSE;
+				
 				case GDK_Page_Up:
 					tabs_get_previous();
 					return FALSE;
+				
 				case GDK_Page_Down:
 					tabs_get_next();
 					return FALSE;
+				
 				default: break;
 			}
 			break;
@@ -320,6 +338,17 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 	uberchick_tree_view_key_pressed(tabs_get_current(), event);
 	return FALSE;
 }/*hotkey_process(widget, event);*/
+
+static gboolean hotkeys_display_menu(const gchar *menu_name, const gint event_time){
+	GtkMenu *menu=main_window_get_menu(menu_name);
+	GtkMenuItem *menu_item=main_window_get_menu_item(menu_name);
+	if(!(menu && menu_item))
+		return FALSE;
+	debug("Displaying main_window's [%s] menu via hotkey popup", menu_name);
+	gtk_menu_popup(menu, GTK_WIDGET(GTK_MENU_SHELL(main_menu_get_main_menubar())), GTK_WIDGET(menu_item), NULL, NULL, 0, event_time);
+	return TRUE;
+	g_signal_emit_by_name(main_window_get_menu_item("network"), "popup");
+}/*hotkeys_display_menu("network");*/
 
 /********************************************************
  *                       eof                            *

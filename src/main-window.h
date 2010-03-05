@@ -118,7 +118,7 @@ GtkWindow *main_window_get_window(void);
 GtkPaned *main_window_get_uberchick_tree_view_paned(void);
 GtkPaned *main_window_get_main_paned(void);
 
-GtkMenuBar *main_menu_get_main_main(void);
+GtkMenuBar *main_menu_get_main_menubar(void);
 GtkMenuItem *main_window_get_menu_item(const gchar *menu);
 GtkMenu *main_window_get_menu(const gchar *menu);
 

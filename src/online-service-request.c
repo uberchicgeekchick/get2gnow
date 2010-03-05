@@ -70,7 +70,8 @@
 #include "online-services.rest-uris.defines.h"
 #include "online-services.typedefs.h"
 #include "online-service-request.h"
-#include "online-service.typedefs.h"
+#include "online-services.types.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
 
@@ -122,27 +123,6 @@ struct _SelectedUpdate{
 	gchar		*user_name;
 	gchar		*update;
 };
-
-enum _RequestAction{
-	SelectService,
-	ViewProfile,
-	ViewUpdates,
-	ViewUpdatesNew,
-	ViewForwards,
-	BestFriendAdd,
-	BestFriendDrop,
-	Follow,
-	UnFollow,
-	Block,
-	UnBlock,
-	Fave,
-	UnFave,
-	DeleteStep1,
-	DeleteStep2,
-	ShortenURI,
-	Confirmation,
-};
-
 
 struct _OnlineServiceRequest{
 	OnlineService	*service;

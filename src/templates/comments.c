@@ -59,6 +59,8 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "config.h"
+#include "main.h"
 #include "program.h"
 #include "template.h"
 

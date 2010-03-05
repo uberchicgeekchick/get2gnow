@@ -47,31 +47,31 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__ONLINE_SERVICE_TYPEDEFS_H__
-#define	__ONLINE_SERVICE_TYPEDEFS_H__
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
-#ifndef	_GNU_SOURCE 
-#	define _GNU_SOURCE
-#endif
+#include <glib.h>
+#include <glib/gi18n.h>
+#include <glib/gprintf.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
-#ifndef _THREAD_SAFE
-#	define _THREAD_SAFE
-#endif
+#include "config.h"
+#include "program.h"
+
+#include "online-services.typedefs.h"
+#include "online-service.types.h"
+#include "online-service-requested-resource.h"
 
 
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
-#include <glib.h>
-#include <gtk/gtk.h>
 
-#include "timer.h"
 
-G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
@@ -80,67 +80,30 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-enum _MicroBloggingService{
-	StatusNet	=	1,
-	Identica	=	2,
-	Twitter		=	3,
-	Unknown		=	4,
-	Unsupported	=	0,
-};
-
-struct _OnlineService{
-	gboolean			processing;
-	guint				processing_timer;
-	GList				*processing_queue;
-	
-	User				*user_profile;
-	
-	SoupSession			*session;
-	RateLimitTimer			*timer;
-	
-	gboolean			post_to_by_default;
-	gboolean			post_to_enabled;
-	
-	gboolean			authenticated;
-	gboolean			connected;
-	gboolean			has_loaded;
-	guint				logins;
-	
-	MicroBloggingService		micro_blogging_service;
-	gchar				*micro_blogging_client;
-	
-	gboolean			enabled;
-	gboolean			auto_connect;
-	
-	gchar				*key;
-	gchar				*guid;
-	
-	gboolean			https;
-	gchar				*uri;
-	gchar				*server;
-	gchar				*path;
-	gchar				*user_name;
-	gchar				*nick_name;
-	gchar				*password;
-	
-	GSList				*best_friends;
-	gint				best_friends_total;
-	
-	GList				*friends;
-	GList				*followers;
-	GList				*friends_and_followers;
-	
-	gchar				*status;
-};
 
 
 /********************************************************************************
- *       prototypes for methods, handlers, callbacks, function, & etc           *
+ *                prototypes for private methods & functions                    *
  ********************************************************************************/
 
 
-G_END_DECLS
+/********************************************************************************
+ *               object methods, handlers, callbacks, & etc.                    *
+ ********************************************************************************/
+
+
+/********************************************************************************
+ *              Debugging information static objects, and local defines         *
+ ********************************************************************************/
+#define	DEBUG_DOMAINS	"OnlineServices:Requests:Signals:Handlers:Hotkeys:Callbacks:UI:OnlineServiceRequestedResource:online-service-requested-resource.c"
+#include "debug.h"
+
+
+/********************************************************************************
+ *              creativity...art, beauty, fun, & magic...programming            *
+ ********************************************************************************/
+
+
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-#endif /* __ONLINE_SERVICE_TYPEDEFS_H__*/

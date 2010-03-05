@@ -92,7 +92,7 @@ gboolean online_services_reconnect(void);
 gboolean online_services_refresh(void);
 void online_services_disconnect(void);
 
-void online_services_uri_clicked(GtkWidget *widget, const gchar *uri);
+void online_services_open_uri(GtkWidget *widget, const gchar *uri, OnlineService *service);
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default);
 void online_services_delete_service(OnlineService *service);

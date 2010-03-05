@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="010301a03"
+PACKAGE_VERSION="030000a00"
 VERSION="${PACKAGE_VERSION}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
@@ -961,6 +961,8 @@ get2gnow_CFLAGS
 get2gnow_LIBS
 debug_CFLAGS
 GETTEXT_PACKAGE
+ENABLE_ALPHA_UI
+DISABLE_ALPHA_UI
 USE_NLS
 MSGFMT_OPTS
 GMSGFMT
@@ -22801,6 +22803,24 @@ if test x$enable_debug = xyes ; then
 fi
 
 
+# Check whether --enable-alpha-ui was given.
+if test "${enable_alpha_ui+set}" = set; then
+  enableval=$enable_alpha_ui;
+else
+  enable_debug=no
+fi
+
+
+if test x$enable_alpha_ui = xyes ; then
+	echo "#define ENABLE_ALPHA_UI 1" >> confdefs.h
+	ENABLE_ALPHA_UI=""
+	DISABLE_ALPHA_UI="#"
+else
+	ENABLE_ALPHA_UI="#"
+	DISABLE_ALPHA_UI=""
+fi
+
+
 
 
 	if test $USE_MAINTAINER_MODE = yes; then
@@ -25646,6 +25666,8 @@ get2gnow_CFLAGS!$get2gnow_CFLAGS$ac_delim
 get2gnow_LIBS!$get2gnow_LIBS$ac_delim
 debug_CFLAGS!$debug_CFLAGS$ac_delim
 GETTEXT_PACKAGE!$GETTEXT_PACKAGE$ac_delim
+ENABLE_ALPHA_UI!$ENABLE_ALPHA_UI$ac_delim
+DISABLE_ALPHA_UI!$DISABLE_ALPHA_UI$ac_delim
 USE_NLS!$USE_NLS$ac_delim
 MSGFMT_OPTS!$MSGFMT_OPTS$ac_delim
 GMSGFMT!$GMSGFMT$ac_delim
@@ -25662,7 +25684,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

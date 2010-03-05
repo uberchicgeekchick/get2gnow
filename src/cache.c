@@ -69,7 +69,7 @@
 #include "config.h"
 #include "program.h"
 
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 
 #include "cache.h"

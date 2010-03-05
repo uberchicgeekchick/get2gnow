@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["010301a03"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["030000a00"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -113,7 +113,25 @@ if test x$enable_debug = xyes ; then
 	debug_CFLAGS="-g -ggdb"
 	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
 fi
-		
+
+
+dnl /************************************************************
+dnl *   ALPHA UI enabled                                        *
+dnl /************************************************************
+AM_CONDITIONAL(GNOME_ENABLE_DEBUG, test x$enable_alpha_ui = xyes)
+
+if test x$enable_alpha_ui = xyes ; then
+	echo "#define ENABLE_ALPHA_UI 1" >> confdefs.h
+	ENABLE_ALPHA_UI=""
+	DISABLE_ALPHA_UI="#"
+else
+	ENABLE_ALPHA_UI="#"
+	DISABLE_ALPHA_UI=""
+fi
+
+
+
+
 dnl -----------------------------------------------------------
 dnl Language Support
 dnl -----------------------------------------------------------

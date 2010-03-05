@@ -73,8 +73,6 @@
 #include <libsoup/soup.h>
 
 #include "online-services.typedefs.h"
-#include "online-services.types.h"
-#include "online-service.typedefs.h"
 
 
 /*********************************************************************
@@ -89,6 +87,9 @@ G_BEGIN_DECLS
 /********************************************************
  *          Global method  & function prototypes        *
  ********************************************************/
+gboolean online_service_open_uri(GtkWidget *widget, const gchar *uri, OnlineService *service);
+gchar *online_service_get_uri_requested_resource(OnlineService *service, const gchar *uri);
+
 OnlineService *online_service_open(const gchar *guid);
 OnlineService *online_service_new(const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default);
 void online_service_display_debug_details(OnlineService *service, gboolean new_service, const char *action);

@@ -67,6 +67,7 @@
 
 #include "config.h"
 #include "main.h"
+#include "program.h"
 #include "my-gobject-extended.h"
 
 

@@ -67,23 +67,24 @@
 G_BEGIN_DECLS
 
 
-/* UberChickLabel: extended libsexy SexyUrlUberChickLabel.*/ 
-#define TYPE_UBERCHICK_LABEL         (uberchick_label_get_type())
-#define UBERCHICK_LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UBERCHICK_LABEL, UberChickLabel))
-#define UBERCHICK_LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), TYPE_UBERCHICK_LABEL, UberChickLabelClass))
-#define IS_UBERCHICK_LABEL(o)        (G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UBERCHICK_LABEL))
-#define IS_UBERCHICK_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UBERCHICK_LABEL))
-#define UBERCHICK_LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UBERCHICK_LABEL, UberChickLabelClass))
+#define UBERCHICK_TYPE_LABEL         (uberchick_label_get_type())
+#define UBERCHICK_LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST((o), UBERCHICK_TYPE_LABEL, UberChickLabel))
+#define UBERCHICK_LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), UBERCHICK_TYPE_LABEL, UberChickLabelClass))
+#define IS_UBERCHICK_LABEL(o)        (G_TYPE_CHECK_INSTANCE_TYPE((o), UBERCHICK_TYPE_LABEL))
+#define IS_UBERCHICK_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE((k), UBERCHICK_TYPE_LABEL))
+#define UBERCHICK_LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), UBERCHICK_TYPE_LABEL, UberChickLabelClass))
 
 typedef struct _UberChickLabel		UberChickLabel;
 typedef struct _UberChickLabelClass	UberChickLabelClass;
 typedef struct _UberChickLabelPrivate	UberChickLabelPrivate;
 
 struct _UberChickLabel {
+	/*GtkLabel           parent;*/
 	SexyUrlLabel           parent;
 };
 
 struct _UberChickLabelClass {
+	/*GtkLabelClass      parent_class;*/
 	SexyUrlLabelClass      parent_class;
 };
 
@@ -94,12 +95,13 @@ GType uberchick_label_get_type(void) G_GNUC_CONST;
 UberChickLabel *uberchick_label_new(void);
 OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label);
 const gchar *uberchick_label_get_user_name(UberChickLabel *uberchick_label);
-const gchar *uberchick_label_get_sexy_text(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_markup(UberChickLabel *uberchick_label);
 const gchar *uberchick_label_get_text(UberChickLabel *uberchick_label);
 gdouble uberchick_label_get_user_id(UberChickLabel *uberchick_label);
+UpdateType uberchick_label_get_update_type(UberChickLabel *uberchick_label);
 gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label);
 
-void uberchick_label_set_text(UberChickLabel  *uberchick_label, OnlineService *service, const gchar *user_name, gdouble user_id, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *service, UpdateType update_type, const gchar *user_name, gdouble user_id, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 
 G_END_DECLS
 #endif /* __UBERCHICK_LABEL_H__ */

@@ -9,6 +9,13 @@
 /* Enable additional debugging at the expense of performance and size */
 #undef GNOME_ENABLE_DEBUG
 
+/* Rather to use the
+ *	GtkLabel based update viewer, which is ugly but does more
+ * or the
+ *	SexyUrlLabel based update viewer which is much more elegant.
+ */
+#undef ENABLE_ALPHA_UI
+
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 

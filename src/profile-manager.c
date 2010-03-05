@@ -66,7 +66,7 @@
 #include "gtkbuilder.h"
 
 #include "online-services.rest-uris.defines.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
 #include "online-service-wrapper.h"

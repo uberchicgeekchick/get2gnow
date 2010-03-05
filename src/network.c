@@ -75,7 +75,7 @@
 #include "online-services.typedefs.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
@@ -131,7 +131,7 @@ static NetworkImageDL *network_uberchick_tree_view_image_dl_new(UberChickTreeVie
 }/*network_uberchick_tree_view_image_dl_new*/
 
 static gboolean network_test_uberchick_tree_view_image(UberChickTreeView *uberchick_tree_view, const gchar *image_filename, GtkTreeIter *iter){
-	if(!g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+	if(!g_file_test(image_filename, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR))
 		return FALSE;
 	
 	debug("Image file: [%s] exists and will be added to currect UberChicTreeView.", image_filename);
@@ -140,10 +140,10 @@ static gboolean network_test_uberchick_tree_view_image(UberChickTreeView *uberch
 }/*network_test_uberchick_tree_view_image(uberchick_tree_view, image_filename, iter);*/
 
 void network_get_image(OnlineService *service, UberChickTreeView *uberchick_tree_view, const gchar *image_filename, const gchar *image_url, gboolean retweet, GtkTreeIter *iter){
-	/*if(network_test_uberchick_tree_view_image(uberchick_tree_view, image_filename, iter)){
+	if(network_test_uberchick_tree_view_image(uberchick_tree_view, image_filename, iter)){
 		uber_free(iter);
 		return;
-	}*/
+	}
 	
 	debug("Downloading Image: %s.  GET: %s", image_filename, image_url);
 	NetworkImageDL *network_image_dl=network_uberchick_tree_view_image_dl_new(uberchick_tree_view, image_filename, retweet, iter);
@@ -170,13 +170,13 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	gchar *image_filename_directory=NULL;
 	
 	gchar *image_filename=NULL;
-	gboolean new_image=images_save_image(service, xml, requested_uri, network_image_dl->filename, &image_filename);
-	
 	UpdateType update_type=uberchick_tree_view_get_update_type(network_image_dl->uberchick_tree_view);
 	if(network_image_dl->retweet||update_type==Searches){
 		image_filename_dir=g_path_get_dirname(network_image_dl->filename);
 		image_filename_directory=cache_dir_test(image_filename_dir, TRUE);
 	}
+	
+	gboolean new_image=images_save_image(service, xml, requested_uri, network_image_dl->filename, &image_filename);
 	
 	if(!network_image_dl->retweet && update_type!=Searches)
 		main_window_statusbar_printf("New avatar added to UberChickTreeView.");
@@ -335,6 +335,8 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			break;
 	}
 	
+	uberchick_tree_view_complete(uberchick_tree_view);
+	
 	if(!online_service_wrapper_get_attempt(service_wrapper) && !new_updates && !g_strrstr(requested_uri, "?since_id=") && uberchick_tree_view_has_loaded(uberchick_tree_view) > 0 && xml->status_code==200){
 		uber_free(timeline);
 		return network_retry(service_wrapper);
@@ -343,7 +345,6 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	if(new_updates)
 		debug("Total tweets in this timeline: %d.", new_updates);
 	
-	uberchick_tree_view_complete(uberchick_tree_view);
 	uber_free(timeline);
 	
 	return NULL;

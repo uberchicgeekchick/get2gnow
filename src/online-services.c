@@ -77,12 +77,12 @@
 #include "online-services.typedefs.h"
 #include "online-service-request.h"
 #include "online-services.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
+#include "www.h"
 
 #include "main-window.h"
 #include "update-viewer.h"
-#include "uberchick-label.h"
 #include "preferences.defines.h"
 #include "gconfig.h"
 #include "online-services-dialog.h"
@@ -138,7 +138,7 @@ OnlineServices *online_services_init(void){
 	
 	for(k=services->keys; k; k=k->next){
 		account_key=(gchar *)k->data;
-		if(!g_strrstr(account_key, "@")){
+		if(!g_strstr_len(account_key, -1, "@")){
 			debug("**ERROR:** Invalid OnlineService: <%s> - skipping.", account_key);
 			continue;
 		}
@@ -227,66 +227,23 @@ void online_services_disconnect(void){
 }/*online_services_disconnect();*/
 
 
-void online_services_uri_clicked(GtkWidget *widget, const gchar *uri){
+void online_services_open_uri(GtkWidget *widget, const gchar *uri, OnlineService *service){
 	GList		*accounts=NULL;
-	OnlineService	*service=NULL;
+	OnlineService	*current_service=NULL;
 	
-	UberChickLabel *uberchick_label=UBERCHICK_LABEL(widget);
-	if(!( IS_UBERCHICK_LABEL(uberchick_label) ))
-		uberchick_label=NULL;
-	
-	debug("OnlineServices URI handeler called for URI: [%s]", uri);
-	for(accounts=services->accounts; accounts; accounts=accounts->next){
-		service=(OnlineService *)accounts->data;
-		if( !g_strrstr(uri, service->uri) ) continue;
-		
-		if( g_strrstr(uri, "search") ){
-			gchar *search_phrase=g_strrstr(uri, "?q=%");
-			if(!(search_phrase[4] && search_phrase[4] =='2'))
-				if(G_STR_N_EMPTY( (search_phrase=g_strrstr(uri, "=")+sizeof("=")) ))
-					return main_window_sexy_search_entry_set(search_phrase, TRUE);
-				else
-					break;
-			
-			static char tag;
-			if(!search_phrase[7])
-				if(G_STR_N_EMPTY( (search_phrase=g_strrstr(uri, "=")+sizeof("=")) ))
-					return main_window_sexy_search_entry_set(search_phrase, TRUE);
-				else
-					break;
-			if( search_phrase[5] && search_phrase[5] =='1') tag='!';
-			else if( search_phrase[5] && search_phrase[5] =='3') tag='#';
-			search_phrase=g_strdup_printf("%c%s", tag, &search_phrase[7]);
-			main_window_sexy_search_entry_set(search_phrase, TRUE);
-			uber_free(search_phrase);
-			return;
+	if(!service){
+		for(accounts=services->accounts; accounts; accounts=accounts->next){
+			current_service=(OnlineService *)accounts->data;
+			if(strstr(uri, current_service->uri) ) break;
+			current_service=NULL;
 		}
-		
-		gchar *services_resource=g_strrstr( (g_strrstr(uri, service->uri)), "/");
-		if(!uberchick_label){
-			update_viewer_set_in_reply_to_data(service, Users, &services_resource[1], NULL, 0.0, 0.0, TRUE, FALSE, FALSE);
-			debug("OnlineServices: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
-		}else{
-			update_viewer_set_in_reply_to_data(uberchick_label_get_service(uberchick_label), Users, &services_resource[1], uberchick_label_get_text(uberchick_label), uberchick_label_get_user_id(uberchick_label), uberchick_label_get_update_id(uberchick_label), TRUE, FALSE, FALSE);
-			debug("OnlineServices via UberChick_Label: Inserting: <%s@%s> in to current update.", &services_resource[1], service->uri );
-		}
-		return;
-	}
+	}else
+		current_service=service;
 	
-	gchar *uri_to_open=(gchar *)uri;
-	gboolean new_uri=FALSE;
-	if(!g_strrstr(uri_to_open, "://")){
-		new_uri=TRUE;
-		uri_to_open=g_strdup_printf("http://%s", uri_to_open);
-	}
-	
-	if(g_app_info_launch_default_for_uri(uri_to_open, NULL, NULL))
-		debug("**NOTICE:** Opening URI: <%s>.", uri_to_open);
+	if(!current_service)
+		www_open_uri(widget, uri);
 	else
-		debug("**ERROR:** Can't handle URI: <%s>.", uri_to_open);
-	
-	if(new_uri)
-		uber_free(uri_to_open);
+		online_service_open_uri(widget, uri, current_service);
 }/*online_services_url_activated_cb(widget, const gchar *uri);*/
 
 

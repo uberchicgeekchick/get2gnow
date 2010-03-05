@@ -70,14 +70,13 @@
 #include "parser.h"
 #include "www.h"
 
+#include "online-service.types.h"
 #include "online-service.h"
 
 #include "gconfig.h"
 #include "preferences.defines.h"
 
-#include "uberchick-label.h"
 #include "main-window.h"
-#include "update-viewer.h"
 
 
 /********************************************************************************
@@ -99,7 +98,7 @@ enum {
 /********************************************************************************
  *                prototypes for private methods & functions                    *
  ********************************************************************************/
-static gboolean www_uri_check(gchar *url);
+static gboolean www_uri_check(gchar *uri);
 static gssize www_find_first_non_user_name(const gchar *str);
 
 static gchar *www_format_service_hyperlink(OnlineService *service, const gchar *url_prefix, gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks);
@@ -133,6 +132,20 @@ static GRegex *number_regex;
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
+void www_open_uri(GtkWidget *widget, const gchar *uri){
+	gchar *new_uri=NULL;
+	if(!g_strstr_len(uri, -1, "://"))
+		new_uri=g_strdup_printf("http://%s", uri);
+	
+	if(g_app_info_launch_default_for_uri( (new_uri ?new_uri :uri), NULL, NULL))
+		debug("**NOTICE:** Opening URI: <%s>.", (new_uri ?new_uri :uri));
+	else
+		debug("**ERROR:** Can't handle URI: <%s>.", (new_uri ?new_uri :uri));
+	
+	if(new_uri)
+		uber_free(new_uri);
+}/*www_open_uri(widget, uri);*/
+
 void www_init(void){
 	GError *error=NULL;
 	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]+)?";
@@ -208,7 +221,7 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 			g_error_free(error);
 		}
 	}
-	while((current_character=strstr(current_character, "&amp;"))) {
+	while((current_character=g_strstr_len(current_character, -1, "&amp;"))) {
 		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
 			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
 		else
@@ -318,25 +331,26 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 	gchar *result=NULL, *temp=NULL;
 	gchar **words=g_strsplit_set(message, " \t\n\r", 0);
 	for(gint i=0; words[i]; i++) {
-		if(!( words[i][1] && www_uri_check(words[i]) )) continue;
+		if(!( words[i][1] && www_uri_check(words[i]) )){
+			/* Checks for e-mail addresses. */
+			if(!expand_hyperlinks) continue;
+			const gchar *address_at=g_strstr_len(words[i], -1, "@");
+			const gchar *domain=g_strstr_len(words[i], -1, "@");
+			if(!(G_STR_N_EMPTY(address_at) && G_STR_N_EMPTY(domain) && g_strstr_len(domain, -1, "."))) continue;
+			
+			debug("Rendering E-mail address: <%s>", words[i]);
+			if(!make_hyperlinks)
+				temp=g_strdup_printf("<u>email: %s</u>", words[i]);
+			else
+				temp=g_strdup_printf("<a href=\"mailto:%s\">email: %s</a>", words[i], words[i]);
+			uber_free(words[i]);
+			words[i]=temp;
+			temp=NULL;
+			continue;
+		}
 		
 		gboolean searching=FALSE;
 		if(words[i][0]!='@' && !(searching=(words[i][0]=='!' || words[i][0]=='#')) ){
-			const gchar *domain=g_strrstr( words[i], "@" );
-			if(G_STR_N_EMPTY(domain) && strstr(domain, ".")){
-				debug("Rendering E-mail address: <%s>", words[i]);
-				if(!make_hyperlinks)
-					temp=g_strdup_printf("<u>%s</u>", words[i]);
-				else
-					temp=g_strdup_printf("<a href=\"mailto:%s\">%s</a>", words[i], words[i]);
-				uber_free(words[i]);
-				words[i]=temp;
-				temp=NULL;
-				domain=NULL;
-				continue;
-			}
-			domain=NULL;
-			
 			debug("Rendering URI for display including title.  URI: '%s'.", words[i]);
 			temp=www_find_uri_pages_title(service, words[i], NULL, expand_hyperlinks, make_hyperlinks);
 			debug("Rendered URI for display.  %s will be replaced with %s.", words[i], temp);
@@ -346,11 +360,11 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 			continue;
 		}
 		
-		gchar *url_prefix=g_strdup_printf("http%s://%s%s/%s%s%s%s", (words[i][0]=='@'&&service->https ?"s" :""), ( (words[i][0]=='#' && service->micro_blogging_service==Twitter) ?"search." :"" ), service->uri, (searching ?"search" :""), (searching && service->micro_blogging_service!=Twitter ?"/notice" :"" ), (searching ?"?q=" :""), (words[i][0]=='#' ?"%23" :(words[i][0]=='!' ?"%21" :"") ) );
+		gchar *search_uri_prefix=g_strdup_printf("http%s://%s%s/%s%s%s%s", (words[i][0]=='@'&&service->https ?"s" :""), ( (words[i][0]=='#' && service->micro_blogging_service==Twitter) ?"search." :"" ), service->uri, (searching ?"search" :""), (searching && service->micro_blogging_service!=Twitter ?"/notice" :"" ), (searching ?"?q=" :""), (words[i][0]=='#' ?"%23" :(words[i][0]=='!' ?"%21" :"") ) );
 		debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri);
-		temp=www_format_service_hyperlink(service, url_prefix, words[i], expand_hyperlinks, make_hyperlinks);
+		temp=www_format_service_hyperlink(service, search_uri_prefix, words[i], expand_hyperlinks, make_hyperlinks);
 		debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri, temp);
-		uber_free(url_prefix);
+		uber_free(search_uri_prefix);
 		uber_free(words[i]);
 		words[i]=temp;
 		temp=NULL;
@@ -362,26 +376,30 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 }/*www_format_urls(service, "text with http://plan-text.links/", (TRUE|FALSE), (TRUE|FALSE) );*/
 
 static gboolean www_uri_check(gchar *uri){
-#define	D(x)	{ (x), ((sizeof(x))-1) }
+#ifndef	prefix_created
+#define prefix_created
+#define	mk_str_struct(x)	{ (x), ((sizeof(x))-1) }
 	static const struct {
 		const char	*s;
 		guint8		len;
 	}
 	
 	prefix[] = {
-		D("@"),
-		D("!"),
-		D("#"),
-		D("ftp."),
-		D("www."),
-		D("irc."),
-		D("ftp://"),
-		D("irc://"),
-		D("http://"),
-		D("https://"),
-		D("mailto:"),
+		mk_str_struct("@"),
+		mk_str_struct("!"),
+		mk_str_struct("#"),
+		mk_str_struct("http://"),
+		mk_str_struct("https://"),
+		mk_str_struct("ftp."),
+		mk_str_struct("www."),
+		mk_str_struct("irc."),
+		mk_str_struct("ftp://"),
+		mk_str_struct("irc://"),
+		mk_str_struct("mailto:"),
 	};
-#undef D
+#undef mk_str_struct
+#endif
+	
 	guint8 uri_length=strlen(uri);
 	for(int i=0; i<G_N_ELEMENTS(prefix); i++){
 		if(uri_length<prefix[i].len) continue;
@@ -395,7 +413,7 @@ static gboolean www_uri_check(gchar *uri){
 	}
 	
 	return FALSE;
-}/*www_uri_check("text");*/
+}/*www_uri_check("@username|#search_hash|!group_name|http://any.domain.com/|user@domain.com");*/
 
 static gssize www_find_first_non_user_name(const gchar *str){
 	for(gssize i=0; str[i]; ++i)
@@ -540,7 +558,7 @@ static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const
 	gchar *hyperlink_suffix1=NULL;
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
 	
-	if(services_resource && searching && !g_strrstr(*uri_title, services_resource))
+	if(services_resource && searching && !g_strstr_len(*uri_title, -1, services_resource))
 		hyperlink_suffix1=g_strdup_printf("'s search results for %s", services_resource);
 	
 	gchar *hyperlink_suffix2=NULL;
@@ -614,14 +632,12 @@ gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpat
 	for(current_node=root_element; current_node; current_node=current_node->next){
 		if(current_node->type != XML_ELEMENT_NODE ) continue;
 		
-		IF_DEBUG
-			debug("**NOTICE:** Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
+		debug("Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
 		if( xpath_depth>xpath_target_depth ) break;
 		
 		if(!g_str_equal(current_node->name, xpathv[xpath_depth])){
 			if(xpath_depth==xpath_target_depth && !current_node->next){
-				IF_DEBUG
-					debug("**NOTICE:** Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM.", current_node->name, xpath_depth);
+				debug("Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM.", current_node->name, xpath_depth);
 				current_node=current_node->parent;
 				xpath_depth--;
 			}

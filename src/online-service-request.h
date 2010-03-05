@@ -70,15 +70,13 @@
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
 
-#include "online-services.types.h"
+#include "online-services.typedefs.h"
 
 
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
 typedef struct _OnlineServiceRequest OnlineServiceRequest;
-typedef enum _RequestAction RequestAction;
-
 
 extern OnlineService *selected_service;
 
@@ -135,11 +133,10 @@ void online_service_request_selected_update_follow(void);
 void online_service_request_selected_update_unfollow(void);
 void online_service_request_selected_update_block(void);
 void online_service_request_selected_update_unblock(void);
-/* END: SelectedUpdate's request handlers. */
-
 void online_service_request_selected_update_save_fave(void);
 void online_service_request_selected_update_unfave(void);
 void online_service_request_selected_update_delete(void);
+/* END: SelectedUpdate's request handlers. */
 
 void online_service_request_popup_select_service(void);
 void online_service_request_popup_profile(void);

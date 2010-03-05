@@ -84,7 +84,7 @@
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionPrivate))
+#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionPrivate))
 
 struct _UberChickSexyEntryCompletionPrivate {
 	gint			total;
@@ -180,7 +180,7 @@ static void uberchick_sexy_entry_completion_init(UberChickSexyEntryCompletion *u
 }/* uberchick_sexy_entry_completion_init(uberchick_sexy_entry_completion);*/
 
 UberChickSexyEntryCompletion *uberchick_sexy_entry_completion_new(void){
-	return g_object_new(TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, NULL);
+	return g_object_new(UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION, NULL);
 }/*uberchick_sexy_entry_completion_new(timeline);*/
 
 static void uberchick_sexy_entry_completion_finalize(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){

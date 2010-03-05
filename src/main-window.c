@@ -69,7 +69,7 @@
 #include "about.h"
 #include "online-services.typedefs.h"
 #include "online-services.rest-uris.defines.h"
-#include "online-service.typedefs.h"
+#include "online-services.typedefs.h"
 #include "online-service.h"
 #include "online-services.h"
 #include "online-service-request.h"
@@ -85,7 +85,6 @@
 #include "ui-utils.h"
 #include "geometry.h"
 
-#include "uberchick-label.h"
 #include "preferences.h"
 
 #include "hotkeys.h"
@@ -493,9 +492,6 @@ static void main_window_setup(void){
 	main_window_selected_update_widgets_setup(ui);
 	g_object_unref(ui);
 	
-	/* Set-up the notification area */
-	debug("Configuring notification area widget...");
-	main_window_status_icon_create_menu();
 	main_window_status_icon_create();
 	
 	/* Expand tweet area used to view & send tweets & dm.  */
@@ -678,9 +674,9 @@ GtkPaned *main_window_get_main_paned(void){
 	return GTK_PANED(main_window->private->main_vpaned);
 }/*main_window_get_main_paned();*/
 
-GtkMenuBar *main_menu_get_main_main(void){
+GtkMenuBar *main_menu_get_main_menubar(void){
 	return main_window->private->menubar;
-}/*main_menu_get_main_main();*/
+}/*main_menu_get_main_menubar();*/
 
 GtkMenuItem *main_window_get_menu_item(const gchar *menu){
 	if((g_str_equal(menu, "network")) ) return GET_PRIVATE(main_window)->network_menu_item;
@@ -1233,10 +1229,9 @@ static void main_window_show_hide_cb(GtkWidget *widget, MainWindow *main_window)
 }
 
 GtkStatusIcon *main_window_status_icon_get(void){
-	if(!main_window->private->status_icon){
-		main_window_status_icon_create_menu();
+	if(!main_window->private->status_icon)
 		main_window_status_icon_create();
-	}
+	
 	return main_window->private->status_icon;
 }/*main_window_status_icon_get();*/
 
@@ -1265,7 +1260,7 @@ static void main_window_status_icon_create_menu(void){
 	GtkAction *action=NULL;
 	
 	main_window->private->popup_menu=gtk_menu_new();
-	main_window->private->popup_menu_show_main_window=gtk_toggle_action_new("tray_show_app", _("_Show "), NULL, NULL);
+	main_window->private->popup_menu_show_main_window=gtk_toggle_action_new("tray_show_app", _("_Show "), _("Show, or hide, get2gnow's main window"), NULL);
 	g_signal_connect(G_OBJECT(main_window->private->popup_menu_show_main_window), "toggled", G_CALLBACK(main_window_show_hide_cb), main_window);
 	w=gtk_action_create_menu_item(GTK_ACTION(main_window->private->popup_menu_show_main_window));
 	gtk_widget_show(w);
@@ -1276,28 +1271,32 @@ static void main_window_status_icon_create_menu(void){
 	gtk_widget_show(w);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
 	
-	action=gtk_action_new("tray_new_message", _("_New Update"), NULL, "gtk-new");
+	action=gtk_action_new("tray_new_message", _("_New Update"), _("Start a new update"), "gtk-new");
 	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(update_viewer_new_update), main_window);
 	w=gtk_action_create_menu_item(action);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
 	
-	action=gtk_action_new("tray_new_dm", _("New _DM"), NULL, "gtk-jump-to");
+	action=gtk_action_new("tray_new_dm", _("New _DM"), _("Send a direct message to one of your followers"), "gtk-jump-to");
 	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(update_viewer_new_dm), main_window);
 	w=gtk_action_create_menu_item(action);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
 	
-	action=gtk_action_new("tray_about", _("_About"), NULL, "gtk-about");
+	action=gtk_action_new("tray_about", _("_About"), _("View information about get2gnow"), "gtk-about");
 	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(main_window_about_cb), main_window);
 	w=gtk_action_create_menu_item(action);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
 	
-	action=gtk_action_new("tray_quit", _("_Quit"), NULL, "gtk-quit");
+	action=gtk_action_new("tray_quit", _("_Quit"), _("Quit get2gnow"), "gtk-quit");
 	g_signal_connect(G_OBJECT(action), "activate", G_CALLBACK(main_window_exit), main_window);
 	w=gtk_action_create_menu_item(action);
 	gtk_menu_shell_append(GTK_MENU_SHELL(main_window->private->popup_menu), w);
 }
 
 static void main_window_status_icon_create(void){
+	/* Set-up the system notification area icon and its popup menu. */
+	debug("Configuring system notification icon...");
+	main_window_status_icon_create_menu();
+	
 	main_window->private->status_icon=gtk_status_icon_new_from_icon_name(_(GETTEXT_PACKAGE));
 	g_signal_connect(main_window->private->status_icon, "activate", G_CALLBACK(main_window_status_icon_activate_cb), main_window);
 	

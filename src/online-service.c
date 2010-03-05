@@ -73,7 +73,7 @@
 #include "online-services.typedefs.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 
 #include "online-service-wrapper.h"
@@ -99,6 +99,7 @@
 #include "keyring.h"
 #endif
 
+#include "uberchick-label.h"
 #include "update-viewer.h"
 #include "main-window.h"
 #include "gconfig.h"
@@ -168,6 +169,75 @@ MicroBloggingServices MicroBloggingServicesList[]={
 /********************************************************
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
+gboolean online_service_open_uri(GtkWidget *widget, const gchar *uri, OnlineService *service){
+	UberChickLabel *uberchick_label=NULL;
+	if(!(widget && (IS_UBERCHICK_LABEL( (uberchick_label=UBERCHICK_LABEL(widget)) )) ))
+		uberchick_label=NULL;
+	
+	if(!service){
+		if(!uberchick_label) return FALSE;
+		service=uberchick_label_get_service(uberchick_label);
+	}
+	debug("Loading: <%s>; via: <%s>", uri, service->key);
+	if(!(service && G_STR_N_EMPTY(service->uri) && G_STR_N_EMPTY(uri) && g_strstr_len(uri, -1, service->uri))){
+		if(G_STR_N_EMPTY(uri))
+			www_open_uri(widget, uri);
+		return FALSE;
+	}
+	
+	gchar *requested_resource=NULL;
+	if(!(requested_resource=online_service_get_uri_requested_resource(service, uri))){
+		www_open_uri(widget, uri);
+		return FALSE;
+	}
+	
+	switch(requested_resource[0]){
+		case '!':
+		case '#':
+			debug("OnlineServices: Searching for <%s> on <%s>", requested_resource, service->key);
+			main_window_sexy_search_entry_set(requested_resource, TRUE);
+			break;
+		
+		case '@':
+		default:
+			if(!uberchick_label){
+				debug("OnlineServices: Inserting: <%s@%s> in to current update.", &requested_resource[1], service->uri);
+				update_viewer_set_in_reply_to_data(service, Users, &requested_resource[1], NULL, 0.0, 0.0, TRUE, FALSE, FALSE);
+				break;
+			}
+			debug("OnlineServices via UberChick_Label: Inserting: <%s@%s> in to current update.", &requested_resource[1], service->uri);
+			update_viewer_set_in_reply_to_data(service, uberchick_label_get_update_type(uberchick_label), &requested_resource[1], uberchick_label_get_text(uberchick_label), uberchick_label_get_user_id(uberchick_label), uberchick_label_get_update_id(uberchick_label), TRUE, FALSE, FALSE);
+			break;
+	}
+	uber_free(requested_resource);
+	return TRUE;
+}/*online_service_open_uri(service, uri);*/
+
+gchar *online_service_get_uri_requested_resource(OnlineService *service, const gchar *uri){
+	debug("Parsing requested_resource from: <%s>; for: <%s>", uri, service->key);
+	if(!(service && G_STR_N_EMPTY(service->uri) && G_STR_N_EMPTY(uri) && g_strstr_len(uri, -1, service->uri)))
+		return FALSE;
+	
+	gchar *requested_resource=NULL;
+	if(!g_strstr_len(uri, -1, "search")){
+		if(G_STR_EMPTY( (requested_resource=g_strrstr(uri, "/")) ))
+			return NULL;
+		
+		if(!g_regex_match_simple("^[A-Za-z_]+$", &requested_resource[1], G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0))
+			return NULL;
+		
+		return g_strdup_printf("@%s", &requested_resource[1]);
+	}
+	
+	requested_resource=g_uri_unescape_string( g_strstr_len(uri, -1, "?q=")+g_utf8_strlen("?q=", -1), NULL );
+	if(G_STR_EMPTY(requested_resource)){
+		uber_free(requested_resource);
+		return NULL;
+	}
+	
+	return requested_resource;
+}/*online_service_get_uri_service_resource(uri);*/
+
 gboolean online_service_validate_guid(OnlineService *service, const gchar *user_name, const gchar *uri){
 	if(!service) return FALSE;
 	gchar *guid=g_strdup_printf("%s@%s", user_name, uri);
@@ -262,7 +332,7 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 OnlineService *online_service_open(const gchar *account_key){
 	debug("Loading OnlineService instance for: '%s' account.", account_key);
 	
-	if(!g_strrstr(account_key, "@")){
+	if(!g_strstr_len(account_key, -1, "@")){
 		debug("**ERROR:** Invalid OnlineService: <%s> - skipping.", account_key);
 		return NULL;
 	}
@@ -644,7 +714,7 @@ gboolean online_service_reconnect(OnlineService *service){
 }/*online_service_reconnect(service);*/
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri){
-	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :"" ), ( g_strrstr(uri, "search.") && service->micro_blogging_service==Twitter ?"search." :"" ), service->uri, ( (service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
+	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :"" ), ( g_strstr_len(uri, -1, "search.") && service->micro_blogging_service==Twitter ?"search." :"" ), service->uri, ( (service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
 }/*online_service_request_uri_create(service, uri);*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request_method, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
@@ -706,7 +776,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			debug("form_data: [%s]", (gchar *)form_data);
 			xml=soup_message_new("POST", requested_uri);
 			
-			if(g_strrstr(requested_uri, service->uri)){
+			if(g_strstr_len(requested_uri, -1, service->uri)){
 				soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
 				soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
 			}
@@ -738,7 +808,8 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 		case GET:
 			debug("Sending <%s>'s libsoup %s request for: [%s].", service->guid, request_string, requested_uri );
 			OnlineService *new_service=online_service_open(service->key);
-			soup_session_send_message(service->session, xml);
+			online_service_connect(new_service);
+			soup_session_send_message(new_service->session, xml);
 			online_service_free(new_service, TRUE);
 			break;
 	}
@@ -759,14 +830,14 @@ static void online_service_request_validate_uri(OnlineService *service, gchar **
 	))
 		return;
 	
-	if(g_strrstr(*requested_uri, "?since_id=")) return;
+	if(g_strstr_len(*requested_uri, -1, "?since_id=")) return;
 	
 	UberChickTreeView *uberchick_tree_view=(UberChickTreeView *)*user_data;
 	UpdateType update_type=uberchick_tree_view_get_update_type(uberchick_tree_view);
 	gint8 has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
 	if(!( (*user_data) )) return;
 	
-	const gchar *timeline=g_strrstr(*requested_uri, "/");
+	const gchar *timeline=g_strstr_len(*requested_uri, -1, "/");
 	
 	gdouble newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
@@ -814,7 +885,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 	gboolean free_form_data=FALSE;
 	if(!(free_form_data=online_service_form_data_replace( service, &form_data, NULL ) ))
 		debug("Resetting form data free gboolean to ensure that only the 3rd & further call will free the orginal form data pointer");
-	if(service->user_name && service->nick_name && g_strrstr( (gchar *)(*form_data), "/me" ) ){
+	if(service->user_name && service->nick_name && g_strstr_len( (gchar *)(*form_data), -1, "/me" ) ){
 		gint replace=0;
 		gconfig_get_int_or_default(PREFS_UPDATES_REPLACE_ME_W_NICK, &replace, 2);
 		if(replace!=-1){
@@ -903,7 +974,7 @@ void online_service_free(OnlineService *service, gboolean no_state_change){
 	
 	debug("Destroying OnlineService <%s> object.", service->guid );
 	uber_object_free(&service->key, &service->uri, &service->user_name, &service->nick_name, &service->password, &service->guid, &service->micro_blogging_client, &service->status, &service, NULL);
-}/*online_service_free*/
+}/*online_service_free(online_service, (TRUE|FALSE));*/
 
 /********************************************************
  *                       eof                            *

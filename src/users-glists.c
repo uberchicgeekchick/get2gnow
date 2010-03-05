@@ -73,7 +73,7 @@
 #include "online-services.typedefs.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-service.h"
 
 #include "network.h"

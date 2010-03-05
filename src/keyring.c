@@ -29,7 +29,7 @@
 #include <gnome-keyring.h>
 
 #include "online-services.typedefs.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "keyring.h"
 
 #define DEBUG_DOMAINS   "OnlineServices:Authentication:Settings:Setup:GNOME-Keyring:Security:keyring.c"

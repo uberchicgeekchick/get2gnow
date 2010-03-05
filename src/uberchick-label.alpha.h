@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the Reciprocal Public License (RPL).
+ * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,12 +48,61 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-#ifndef __RPL_1_5_H__
-#define __RPL_1_5_H__
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
+
+#ifndef __UBERCHICK_LABEL_H__
+#define __UBERCHICK_LABEL_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
-#endif /*__RPL_1_5_H__*/
+#include <glib.h>
+#include <gtk/gtk.h>
+#include <glib-object.h>
+#include <libsexy/sexy.h>
+#include "online-services.h"
+
+G_BEGIN_DECLS
+
+
+#define UBERCHICK_TYPE_LABEL         (uberchick_label_get_type())
+#define UBERCHICK_LABEL(o)           (G_TYPE_CHECK_INSTANCE_CAST((o), UBERCHICK_TYPE_LABEL, UberChickLabel))
+#define UBERCHICK_LABEL_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), UBERCHICK_TYPE_LABEL, UberChickLabelClass))
+#define IS_UBERCHICK_LABEL(o)        (G_TYPE_CHECK_INSTANCE_TYPE((o), UBERCHICK_TYPE_LABEL))
+#define IS_UBERCHICK_LABEL_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE((k), UBERCHICK_TYPE_LABEL))
+#define UBERCHICK_LABEL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS((o), UBERCHICK_TYPE_LABEL, UberChickLabelClass))
+
+typedef struct _UberChickLabel		UberChickLabel;
+typedef struct _UberChickLabelClass	UberChickLabelClass;
+typedef struct _UberChickLabelPrivate	UberChickLabelPrivate;
+
+struct _UberChickLabel {
+	GtkLabel           parent;
+	/*SexyUrlLabel           parent;*/
+};
+
+struct _UberChickLabelClass {
+	GtkLabelClass      parent_class;
+	/*SexyUrlLabelClass      parent_class;*/
+};
+
+GType uberchick_label_get_type(void) G_GNUC_CONST;
+
+
+
+UberChickLabel *uberchick_label_new(void);
+OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_user_name(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_markup(UberChickLabel *uberchick_label);
+const gchar *uberchick_label_get_text(UberChickLabel *uberchick_label);
+gdouble uberchick_label_get_user_id(UberChickLabel *uberchick_label);
+UpdateType uberchick_label_get_update_type(UberChickLabel *uberchick_label);
+gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label);
+
+void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *service, UpdateType update_type, const gchar *user_name, gdouble user_id, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+
+G_END_DECLS
+#endif /* __UBERCHICK_LABEL_H__ */
 

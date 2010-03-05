@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the Reciprocal Public License (RPL).
+ * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,11 +48,11 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/********************************************************************************
- *                      My art, code, & programming.                            *
- ********************************************************************************/
-#ifndef __ONLINE_SERVICES_TYPES_H__
-#define __ONLINE_SERVICES_TYPES_H__
+/**********************************************************************
+ *          My art, code, & programming.                              *
+ **********************************************************************/
+#ifndef __ONLINE_SERVICES_TYPEDEFS_H__
+#define __ONLINE_SERVICES_TYPEDEFS_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -62,55 +62,58 @@
 #	define _THREAD_SAFE
 #endif
 
-
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include <glib.h>
-#include <gtk/gtk.h>
-#include <libsoup/soup-message.h>
 
 G_BEGIN_DECLS
-/********************************************************************************
- *                        objects, structs, and enum typedefs                   *
- ********************************************************************************/
-typedef struct _OnlineServices OnlineServices;
-typedef struct _OnlineService OnlineService;
-typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
+/**********************************************************************
+ *  Macros, constants, objects, structures, and enum typedefs         *
+ **********************************************************************/
+enum _RequestMethod{
+	POST,
+	GET,
+	QUEUE,
+};
 
-typedef struct _User User;
-typedef struct _UserStatus UserStatus;
+enum _UpdateType{
+	None		=	0,
+	DMs		=	1,
+	Replies		=	2,
+	Homepage	=	3,
+	BestFriends	=	4,
+	Users		=	5,
+	Searches	=	6,
+	Groups		=	7,
+	ReTweets	=	8,
+	Timelines	=	9,
+	Faves		=	10,
+	Archive		=	11,
+};
 
-typedef struct _RateLimitTimer RateLimitTimer;
-typedef enum _UpdateType UpdateType;
+enum _OnlineServicesListStoreColumns{
+	OnlineServiceKey,
+	UrlString,
+	OnlineServicePointer,
+};
 
-typedef enum _MicroBloggingService MicroBloggingService;
+enum _ReloadState{
+	Load,
+	Reload,
+	Retry,
+	Reattempt,
+};
 
-typedef enum _ReloadState ReloadState;
-typedef enum _RequestMethod RequestMethod;
-
-typedef enum _UsersGListGetWhich UsersGListGetWhich;
-
-typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
+enum _UsersGListGetWhich{
+	GetFriends,
+	GetFollowers,
+	GetBoth,
+};
 
 
 /**********************************************************************
- *                         Macros & methods.                          *
+ *                               eof                                  *
  **********************************************************************/
-#define	ONLINE_SERVICE_REQUEST_FUNC	((OnlineServiceRequestFunc)(func))
-typedef void (*OnlineServiceRequestFunc) (OnlineService *service, GtkWindow *parent_window, const gchar *user_data);
-#define	ONLINE_SERVICE_SOUPSESSION_CALLBACK_RETURN_PROCESSOR_FUNC	((OnlineServiceSoupSessionCallbackReturnProcessorFunc)(func))
-typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
-#define	ONLINE_SERVICE_SOUP_SESSION_CALLBACK_FUNC	((OnlineServiceSoupSessionCallbackFunc)(func))
-typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-#define	USERS_GLIST_ONLOAD_FUNC(func)	((UsersGListOnLoadFunc)(func))
-typedef void (*UsersGListOnLoadFunc) (GList *users);
-#define	G_POINTER_FUNC(func)	((GPointerFunc)(func))
-typedef void (*GPointerFunc) (gpointer user_data);
-
-
-/********************************************************************************
- *                                    eof                                       *
- ********************************************************************************/
 G_END_DECLS
-#endif /* __ONLINE_SERVICES_TYPES_H__ */
+#endif /* __ONLINE_SERVICES_TYPEDEFS_H__ */

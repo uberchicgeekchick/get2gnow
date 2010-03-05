@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__WWW_H__
-#define	__WWW_H__
+#ifndef	__ONLINE_SERVICE_TYPEDEFS_H__
+#define	__ONLINE_SERVICE_TYPEDEFS_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -69,7 +69,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services.typedefs.h"
+#include "timer.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
@@ -80,26 +80,91 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
+enum _MicroBloggingService{
+	StatusNet	=	1,
+	Identica	=	2,
+	Twitter		=	3,
+	Unknown		=	4,
+	Unsupported	=	0,
+};
 
+struct _OnlineService{
+	gboolean			processing;
+	guint				processing_timer;
+	GList				*processing_queue;
+	
+	User				*user_profile;
+	
+	SoupSession			*session;
+	RateLimitTimer			*timer;
+	
+	gboolean			post_to_by_default;
+	gboolean			post_to_enabled;
+	
+	gboolean			authenticated;
+	gboolean			connected;
+	gboolean			has_loaded;
+	guint				logins;
+	
+	MicroBloggingService		micro_blogging_service;
+	gchar				*micro_blogging_client;
+	
+	gboolean			enabled;
+	gboolean			auto_connect;
+	
+	gchar				*key;
+	gchar				*guid;
+	
+	gboolean			https;
+	gchar				*uri;
+	gchar				*server;
+	gchar				*path;
+	gchar				*user_name;
+	gchar				*nick_name;
+	gchar				*password;
+	
+	GSList				*best_friends;
+	gint				best_friends_total;
+	
+	GList				*friends;
+	GList				*followers;
+	GList				*friends_and_followers;
+	
+	gchar				*status;
+};
+
+struct _OnlineServiceRequestedResource{
+	OnlineService			*service;
+	gchar				*user_data;
+};
+
+enum _RequestAction{
+	SelectService,
+	ViewProfile,
+	ViewUpdates,
+	ViewUpdatesNew,
+	ViewForwards,
+	BestFriendAdd,
+	BestFriendDrop,
+	Follow,
+	UnFollow,
+	Block,
+	UnBlock,
+	Fave,
+	UnFave,
+	DeleteStep1,
+	DeleteStep2,
+	ShortenURI,
+	Confirmation,
+};
 
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void www_open_uri(GtkWidget *widget, const gchar *uri);
-void www_init(void);
 
-void www_deinit(void);
 
-gchar *www_html_entity_escape_text(gchar *status_text);
-void www_html_entity_escape_status(gchar **status_text);
-
-gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
-
-gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath);
-gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
+G_END_DECLS
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-G_END_DECLS
-#endif /*__WWW_H__*/
-
+#endif /* __ONLINE_SERVICE_TYPEDEFS_H__*/

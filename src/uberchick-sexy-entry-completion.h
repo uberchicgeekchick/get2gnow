@@ -70,18 +70,18 @@
  ********************************************************************************/
 G_BEGIN_DECLS
 
-#define TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION					\
+#define UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION					\
 			(uberchick_sexy_entry_completion_get_type())
 #define UBERCHICK_SEXY_ENTRY_COMPLETION(o)					\
-			(G_TYPE_CHECK_INSTANCE_CAST((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletion))
+			(G_TYPE_CHECK_INSTANCE_CAST((o), UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletion))
 #define UBERCHICK_SEXY_ENTRY_COMPLETION_CLASS(k)				\
-			(G_TYPE_CHECK_CLASS_CAST((k), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionClass))
+			(G_TYPE_CHECK_CLASS_CAST((k), UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionClass))
 #define IS_UBERCHICK_SEXY_ENTRY_COMPLETION(o)					\
-			(G_TYPE_CHECK_INSTANCE_TYPE((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION))
+			(G_TYPE_CHECK_INSTANCE_TYPE((o), UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION))
 #define IS_UBERCHICK_SEXY_ENTRY_COMPLETION_CLASS(k)				\
-			(G_TYPE_CHECK_CLASS_TYPE((k), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION))
+			(G_TYPE_CHECK_CLASS_TYPE((k), UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION))
 #define UBERCHICK_SEXY_ENTRY_COMPLETION_GET_CLASS(o)				\
-			(G_TYPE_INSTANCE_GET_CLASS((o), TYPE_UBERCHICK_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionClass))
+			(G_TYPE_INSTANCE_GET_CLASS((o), UBERCHICK_TYPE_SEXY_ENTRY_COMPLETION, UberChickSexyEntryCompletionClass))
 
 typedef struct _UberChickSexyEntryCompletion      UberChickSexyEntryCompletion;
 typedef struct _UberChickSexyEntryCompletionClass UberChickSexyEntryCompletionClass;

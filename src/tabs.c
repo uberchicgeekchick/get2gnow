@@ -57,7 +57,7 @@
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
 #include "program.h"
-#include "online-service.typedefs.h"
+#include "online-service.types.h"
 #include "online-services.types.h"
 #include "online-services.typedefs.h"
 
