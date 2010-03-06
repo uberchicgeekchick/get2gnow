@@ -1164,7 +1164,7 @@ void uberchick_tree_view_complete(UberChickTreeView *uberchick_tree_view){
 	if(this->unread && this->unread_updates)
 		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);	
 	
-	if(gconfig_if_bool( SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE ))
+	if(gconfig_if_bool(SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE))
 		uberchick_tree_view_scroll_to_top(uberchick_tree_view);
 }/*uberchick_tree_view_complete(uberchick_tree_view);*/
 

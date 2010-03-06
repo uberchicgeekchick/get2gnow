@@ -22775,6 +22775,22 @@ if test x$enable_gtk_icon_update = xyes ; then
 fi
 
 
+
+# Check whether --enable-debug was given.
+if test "${enable_debug+set}" = set; then
+  enableval=$enable_debug;
+  enable_gdb=xyes;
+else
+  enable_debug=no
+fi
+
+
+if test x$enable_debug = xyes ; then
+	debug_CFLAGS="-g3 -ggdb"
+	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
+fi
+
+
 # Check whether --enable-gdb was given.
 if test "${enable_gdb+set}" = set; then
   enableval=$enable_gdb;
@@ -22788,26 +22804,11 @@ if test x$enable_gdb = xyes ; then
 fi
 
 
-
-# Check whether --enable-debug was given.
-if test "${enable_debug+set}" = set; then
-  enableval=$enable_debug;
-else
-  enable_debug=no
-fi
-
-
-if test x$enable_debug = xyes ; then
-	debug_CFLAGS="-g3 -ggdb"
-	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
-fi
-
-
 # Check whether --enable-alpha-ui was given.
 if test "${enable_alpha_ui+set}" = set; then
   enableval=$enable_alpha_ui;
 else
-  enable_debug=no
+  enable_alpha_ui=no
 fi
 
 
@@ -26310,8 +26311,12 @@ if test "$no_create" != yes; then
 fi
 
 
-printf "\nPrefix:\t\t\t%s\nBUILDDIR:\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$ac_pwd" "$have_gnome_keyring";
-if test x$enable_gtk_icon_update = xyes; then printf "forcing gtk-icon-update-cache\n"; fi;
-if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
-if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\n"; fi;
+
+printf "\nPrefix:\t\t\t\t\t[%s]\n%s's BUILDDIR:\t\t\t[%s]\n" "$prefix" "$GETTEXT_PACKAGE" "$ac_pwd";
+if test x$have_gnome_keyring = xyes; then printf "GNOME Keyring:\t\t\t\t[enabled]\n"; fi;
+if test x$enable_alpha_ui = xyes; then printf "New & Improved, alpha, UI:\t\t[enabled]\n"; fi;
+if test x$enable_debug = xyes; then printf "Debug Mode:\t\t\t\t[enabled]\n"; fi;
+if test x$enable_gdb = xyes; then printf "Debug symbols:\t\t\t\t[enabled]\n"; fi;
+if test x$enable_gtk_icon_update = xyes; then printf "Updating GTK's icon cache.\n"; fi;
+
 

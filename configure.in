@@ -118,7 +118,7 @@ fi
 dnl /************************************************************
 dnl *   ALPHA UI enabled                                        *
 dnl /************************************************************
-AM_CONDITIONAL(GNOME_ENABLE_DEBUG, test x$enable_alpha_ui = xyes)
+AM_CONDITIONAL(ENABLE_ALPHA_UI, test x$enable_alpha_ui = xyes)
 
 if test x$enable_alpha_ui = xyes ; then
 	echo "#define ENABLE_ALPHA_UI 1" >> confdefs.h
@@ -173,7 +173,14 @@ src/Makefile
 po/Makefile
 ])
 
-printf "\nPrefix:\t\t\t%s\nGNOME Keyring:\t\t%s\n" "$prefix" "$have_gnome_keyring";
-if test x$enable_gtk_icon_update = xyes; then printf "forcing gtk-icon-update-cache\n"; fi;
-if test x$enable_gdb = xyes ; then printf "gdb symbols:\t\t[enabled]\n"; fi;
-if test x$enable_debug = xyes ; then printf "Debug Mode:\t\t[enabled]\nDebug BUILDDIR:\t$ac_pwd\n"; fi;
+
+
+
+printf "\nPrefix:\t\t\t\t\t[%s]\n%s's BUILDDIR:\t\t\t[%s]\n" "$prefix" "$GETTEXT_PACKAGE" "$ac_pwd";
+if test x$have_gnome_keyring = xyes; then printf "GNOME Keyring:\t\t\t\t[enabled]\n"; fi;
+if test x$enable_alpha_ui = xyes; then printf "New & Improved, alpha, UI:\t\t[enabled]\n"; fi;
+if test x$enable_debug = xyes; then printf "Debug Mode:\t\t\t\t[enabled]\n"; fi;
+if test x$enable_gdb = xyes; then printf "Debug symbols:\t\t\t\t[enabled]\n"; fi;
+if test x$enable_gtk_icon_update = xyes; then printf "Updating GTK's icon cache.\n"; fi;
+
+
