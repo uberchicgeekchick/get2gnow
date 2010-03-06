@@ -405,6 +405,7 @@ UberChickTreeView *uberchick_tree_view_new(gint page, const gchar *timeline, Onl
 
 static void uberchick_tree_view_setup_visibility(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) )) return;
+	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
 	if(gconfig_if_bool(CONCATENATED_UPDATES, FALSE) || gconfig_if_bool(COMPACT_VIEW, FALSE) ){
 		uberchick_tree_view_toggle_view(uberchick_tree_view);
@@ -417,6 +418,15 @@ static void uberchick_tree_view_setup_visibility(UberChickTreeView *uberchick_tr
 		uberchick_tree_view_toggle_from_column(uberchick_tree_view);
 	else if(!gconfig_if_bool(TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, FALSE))
 		uberchick_tree_view_toggle_rcpt_column(uberchick_tree_view);
+	
+	if(this->update_type!=DMs && this->update_type!=Replies && this->update_type!=Faves)
+		return;
+	
+	gtk_widget_set_sensitive(GTK_WIDGET(this->max_updates_spin_button), FALSE);
+	gtk_tool_item_set_visible_vertical(this->max_updates_separator_tool_item, FALSE);
+	gtk_tool_item_set_visible_horizontal(this->max_updates_separator_tool_item, FALSE);
+	gtk_tool_item_set_visible_vertical(this->max_updates_custom_tool_button, FALSE);
+	gtk_tool_item_set_visible_horizontal(this->max_updates_custom_tool_button, FALSE);
 }/*uberchick_tree_view_setup_visibility(uberchick_tree_view);*/
 
 const gchar *update_type_to_string(UpdateType update_type){
@@ -615,7 +625,7 @@ static void uberchick_tree_view_set_adjustment(UberChickTreeView *uberchick_tree
 	
 	this->maximum=connected_online_services*MAXIMUM_UPDATES;
 	
-	if(this->update_type!=DMs && this->update_type!=Replies && this->update_type!=Faves){
+	/*if(this->update_type!=DMs && this->update_type!=Replies && this->update_type!=Faves){
 		gfloat max_updates=0.0;
 		gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
 		gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
@@ -626,7 +636,7 @@ static void uberchick_tree_view_set_adjustment(UberChickTreeView *uberchick_tree
 			this->max_updates=max_updates;
 		if(this->max_updates>this->maximum)
 			this->maximum=this->max_updates;
-	}
+	}*/
 	
 	gtk_adjustment_set_upper(this->max_updates_adjustment, this->maximum);
 	gtk_adjustment_set_upper(this->progress_bar_adjustment, this->maximum);
@@ -673,21 +683,13 @@ static void uberchick_tree_view_set_maximum_updates(GtkSpinButton *max_updates_s
 	else if(max_updates < this->minimum)
 		max_updates=this->minimum;
 	
-	if(this->update_type==DMs || this->update_type==Replies || this->update_type==Faves){
-		if(GTK_WIDGET_IS_SENSITIVE(this->max_updates_spin_button)){
-			gtk_widget_set_sensitive(GTK_WIDGET(this->max_updates_spin_button), FALSE);
-			gtk_tool_item_set_visible_vertical(this->max_updates_separator_tool_item, FALSE);
-			gtk_tool_item_set_visible_horizontal(this->max_updates_separator_tool_item, FALSE);
-			gtk_tool_item_set_visible_vertical(this->max_updates_custom_tool_button, FALSE);
-			gtk_tool_item_set_visible_horizontal(this->max_updates_custom_tool_button, FALSE);
-		}
-	}else{
+	/*
 		gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(this->timeline);
 		gchar *prefs_str=g_strdup_printf(PREFS_MAX_UPDATES_TO_SHOW, timelines_gconfig_prefs_path);
 		gconfig_set_float(prefs_str, max_updates);
 		uber_free(prefs_str);
 		uber_free(timelines_gconfig_prefs_path);
-	}
+	*/
 	
 	uber_free(this->max_updates_str);
 	this->max_updates_str=gdouble_to_str((this->max_updates=max_updates));
