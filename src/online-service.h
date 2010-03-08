@@ -102,7 +102,7 @@ gboolean online_service_connect(OnlineService *service);
 gboolean online_service_login(OnlineService *service, gboolean temporary_connection);
 gboolean online_service_refresh(OnlineService *service);
 gboolean online_service_reconnect(OnlineService *service);
-void online_service_disconnect(OnlineService *service, gboolean no_state_change);
+void online_service_disconnect(OnlineService *service, gboolean temporary, gboolean no_state_change);
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
 

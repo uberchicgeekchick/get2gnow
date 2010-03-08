@@ -556,7 +556,8 @@ gboolean online_service_login(OnlineService *service, gboolean temporary_connect
 	
 	online_service_request(service, QUEUE, API_LOGIN, NULL, online_service_login_check, API_LOGIN, NULL);
 	
-	if(!temporary_connection) online_services_increment_connected(service);
+	if(!temporary_connection)
+		online_services_increment_connected(service);
 	
 	online_service_fetch_profile(service, service->user_name, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)online_service_set_profile);
 	
@@ -680,7 +681,7 @@ gboolean online_service_validate_session(OnlineService *service, const gchar *re
 	return TRUE;
 }/*online_service_validate_session(service, requested_uri);*/
 
-void online_service_disconnect(OnlineService *service, gboolean no_state_change){
+void online_service_disconnect(OnlineService *service, gboolean temporary, gboolean no_state_change){
 	if(!service) return;
 	if(!(service->session && service->enabled && service->connected)) return;
 
@@ -699,8 +700,9 @@ void online_service_disconnect(OnlineService *service, gboolean no_state_change)
 	service->has_loaded=service->connected=service->authenticated=FALSE;
 	service->logins=0;
 	debug("Disconnected from OnlineService [%s].", service->guid);
-	online_services_decrement_connected(service, no_state_change);
-}/*online_service_disconnect(service, TRUE|FALSE);*/
+	if(!temporary)
+		online_services_decrement_connected(service, no_state_change);
+}/*online_service_disconnect(service, TRUE|FALSE, TRUE|FALSE);*/
 
 gboolean online_service_reconnect(OnlineService *service){
 	if(!service) return FALSE;
@@ -708,7 +710,7 @@ gboolean online_service_reconnect(OnlineService *service){
 		return FALSE;
 	
 	if(service->connected || service->session)
-		online_service_disconnect(service, TRUE);
+		online_service_disconnect(service, FALSE, TRUE);
 	
 	return online_service_connect(service);
 }/*online_service_reconnect(service);*/
@@ -810,6 +812,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			OnlineService *new_service=online_service_open(service->key);
 			online_service_connect(new_service);
 			soup_session_send_message(new_service->session, xml);
+			online_service_disconnect(new_service, TRUE, TRUE);
 			online_service_free(new_service, TRUE);
 			break;
 	}
@@ -946,20 +949,23 @@ static void online_service_message_restarted(SoupMessage *xml, OnlineService *se
 	
 	debug("**ERROR:** Cancelling restarted message, authentication failed.");
 	soup_session_cancel_message(service->session, xml, 401);
-	online_service_disconnect(service, FALSE);
+	online_service_disconnect(service, FALSE, FALSE);
 }/*onlin_service_message_restarted*/
 
 void online_service_free(OnlineService *service, gboolean no_state_change){
 	if(!service) return;
 	
-	debug("Unloading instance of: %s service", service->guid);
+	debug("Unloading instance of: <%s> service", service->guid);
 	debug("Cancelling any queued requests using <%s>'s connection.", service->key);
-	online_service_disconnect(service, no_state_change);
 	g_list_foreach(service->processing_queue, (GFunc)online_service_wrapper_free, GUINT_TO_POINTER(FALSE));
 	
-	debug("Shutting down network rate-limit timer for OnlineService\t[%s].", service->guid );
+	debug("Shutting <%s>'s rate-limit timer", service->guid );
 	timer_free(service->timer);
 	service->timer=NULL;
+	
+	debug("Disconnecting <%s>", service->key);
+	if(service->session && service->connected)
+		online_service_disconnect(service, FALSE, no_state_change);
 	
 	if(service->user_profile){
 		user_free(service->user_profile);

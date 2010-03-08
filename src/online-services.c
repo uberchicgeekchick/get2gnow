@@ -221,7 +221,7 @@ void online_services_disconnect(void){
 		service=(OnlineService *)accounts->data;
 		if(selected_service==service)
 			selected_service=NULL;
-		online_service_disconnect(service, TRUE);
+		online_service_disconnect(service, FALSE, TRUE);
 	}
 	main_window_state_on_connection(FALSE);
 }/*online_services_disconnect();*/
@@ -288,7 +288,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 			recreating=TRUE;
 		}else{
 			debug("Saving existing service: <%s>.", decoded_key);
-			online_service_disconnect(service, FALSE);
+			online_service_disconnect(service, FALSE, FALSE);
 			if((online_service_save(service, password, enabled, https, auto_connect, post_to_by_default)))
 				if(online_service_reconnect(service))
 					return service;
@@ -369,7 +369,7 @@ void online_services_delete_service(OnlineService *service){
 	if(!(services->connected > 1 && services->total > 1))
 		main_window_state_on_connection(FALSE);
 	debug("Removing old OnlineService: '%s'.", service->key);
-	online_service_disconnect(service, TRUE);
+	online_service_disconnect(service, FALSE, TRUE);
 	
 	debug("Rebuilding OnlineServices' key while removing old key: %s.", service->key);
 	g_slist_free(services->keys);
