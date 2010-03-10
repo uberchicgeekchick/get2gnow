@@ -91,6 +91,8 @@
 #include "update-viewer.h"
 #include "user-profile-viewer.h"
 #include "best-friends.h"
+#include "uberchick-tree-view.h"
+#include "uberchick-tree-view.types.h"
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *

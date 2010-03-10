@@ -46,7 +46,6 @@ src/proxy.c
 src/searches.c
 src/tabs.c
 src/timer.c
-src/uberchick-label.alpha.c
 src/uberchick-label.c
 src/uberchick-sexy-entry-completion.c
 src/uberchick-tree-view.c

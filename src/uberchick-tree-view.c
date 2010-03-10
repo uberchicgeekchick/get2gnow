@@ -107,6 +107,7 @@
 #include "hotkeys.h"
 #include "update-viewer.h"
 
+#include "uberchick-tree-view.types.h"
 #include "uberchick-tree-view.macros.h"
 #include "uberchick-tree-view.h"
 
@@ -959,6 +960,7 @@ const gchar *uberchick_tree_view_tree_store_column_to_string(UberChickTreeViewLi
 		case	GINT_LIST_STORE_INDEX: return _("GINT_LIST_STORE_INDEX");
 		case	GBOOLEAN_UNREAD: return _("GBOOLEAN_UNREAD");
 		case	GBOOLEAN_RETWEET: return _("GBOOLEAN_RETWEET");
+		case	GDOUBLE_RETWEET_UPDATE_ID: return _("GDOUBLE_RETWEET_UPDATE_ID");
 		case	GCHARARRY_RETWEETED_BY: return _("GCHARARRY_RETWEETED_BY");
 		case	STRING_SEXY_STATUS_UPDATE: return _("STRING_SEXY_STATUS_UPDATE");
 		default: return _("UNKNOWN COLUMN");
@@ -1059,6 +1061,7 @@ static void uberchick_tree_view_modifiy_updates_tree_store( UberChickTreeView *u
 			case	GUINT_UBERCHICK_TREE_VIEW_INDEX:
 			case	GDOUBLE_UPDATE_ID:
 			case	GDOUBLE_USER_ID:
+			case	GDOUBLE_RETWEET_UPDATE_ID:
 			case	ULONG_CREATED_AT:
 			case	GINT_LIST_STORE_INDEX:
 				uber_free(user_name);
@@ -1654,6 +1657,7 @@ void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, U
 				GINT_LIST_STORE_INDEX, this->tree_store_index,		/* The row's unsorted index.					*/
 				GBOOLEAN_UNREAD, unread,				/* If the update's been read or not.				*/
 				GBOOLEAN_RETWEET, status->retweet,			/* If the update's a retweet or not.				*/
+				GDOUBLE_RETWEET_UPDATE_ID, ( (status->retweet && status->retweeted_status && status->retweeted_status->id) ?status->retweeted_status->id :0.0),
 				GCHARARRY_RETWEETED_BY, status->retweeted_by,		/* Who retweeted this update.  Its: "" if the update's not a retweet.			*/
 			-1
 	);
@@ -1816,11 +1820,11 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 	}
 	
 	
-	gdouble		update_id, user_id;
+	gdouble		update_id=0.0, user_id=0.0, retweet_update_id=0.0;
 	OnlineService	*service=NULL;
-	GdkPixbuf	*pixbuf;
-	gchar		*user_name, *nick_name, *date, *sexy_update, *text_update;
-	gboolean	unread=FALSE;
+	GdkPixbuf	*pixbuf=NULL;
+	gchar		*user_name=NULL, *nick_name=NULL, *date=NULL, *sexy_update=NULL, *text_update=NULL;
+	gboolean	unread=FALSE, retweet=FALSE;
 	
 	gint tree_store_index=-1;
 	gtk_tree_model_get(
@@ -1836,6 +1840,8 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 					ONLINE_SERVICE, &service,
 					GINT_LIST_STORE_INDEX, &tree_store_index,
 					GBOOLEAN_UNREAD, &unread,
+					GBOOLEAN_RETWEET, &retweet,
+					GDOUBLE_RETWEET_UPDATE_ID, &retweet_update_id,
 				-1
 	);
 	
@@ -1848,7 +1854,7 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 	debug("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: tree_store %d.", update_id_str, user_name, service->uri, service->guid, tree_store_index);
 	statusbar_printf("Displaying update ID: %s.  From <%s@%s>; To: <%s>.  Indices: tree_store %d.", update_id_str, user_name, service->uri, service->guid, tree_store_index);
 	
-	update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, this->update_type);
+	update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, this->update_type, retweet_update_id);
 	
 	uber_free(user_name);
 	uber_free(sexy_update);

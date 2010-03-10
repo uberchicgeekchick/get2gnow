@@ -62,6 +62,7 @@
 #include "online-services.typedefs.h"
 
 #include "main-window.h"
+#include "uberchick-tree-view.types.h"
 #include "uberchick-tree-view.h"
 #include "tabs.h"
 

@@ -53,6 +53,8 @@
       <column type="gboolean"/>
       <!-- column-name GBOOLEAN_RETWEET -->
       <column type="gboolean"/>
+      <!-- column-name GDOUBLE_RETWEET_UPDATE_ID -->
+      <column type="gdouble"/>
       <!-- column-name GCHARARRY_RETWEETED_BY -->
       <column type="gchararray"/>
       <!-- column-name STRING_SEXY_STATUS_UPDATE -->

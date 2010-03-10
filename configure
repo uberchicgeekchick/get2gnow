@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="030303a09"
+PACKAGE_VERSION="030303a10"
 VERSION="${PACKAGE_VERSION}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
@@ -961,8 +961,6 @@ get2gnow_CFLAGS
 get2gnow_LIBS
 debug_CFLAGS
 GETTEXT_PACKAGE
-ENABLE_ALPHA_UI
-DISABLE_ALPHA_UI
 USE_NLS
 MSGFMT_OPTS
 GMSGFMT
@@ -22779,7 +22777,6 @@ fi
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then
   enableval=$enable_debug;
-  enable_gdb=xyes;
 else
   enable_debug=no
 fi
@@ -22788,6 +22785,7 @@ fi
 if test x$enable_debug = xyes ; then
 	debug_CFLAGS="-g3 -ggdb"
 	echo "#define GNOME_ENABLE_DEBUG 1" >> confdefs.h
+	enable_gdb=yes;
 fi
 
 
@@ -22814,11 +22812,6 @@ fi
 
 if test x$enable_alpha_ui = xyes ; then
 	echo "#define ENABLE_ALPHA_UI 1" >> confdefs.h
-	ENABLE_ALPHA_UI=""
-	DISABLE_ALPHA_UI="#"
-else
-	ENABLE_ALPHA_UI="#"
-	DISABLE_ALPHA_UI=""
 fi
 
 
@@ -24903,7 +24896,10 @@ if `test -e "${prefix}/share/icons/hicolor/scalable/apps/get2gnow.svg"` && test 
 else
 	printf "%s will be installed and make install will attempt to update GTK's icon cache.\n" ${PACKAGE_NAME};
 	gtk_update_icon_cache="gtk_update_icon_cache=gtk-update-icon-cache -f -t \$(datadir)/icons/hicolor";
-fi;
+	if test x$enable_gtk_icon_update = xno; then
+		enable_gtk_icon_update = yes;
+	fi
+fi
 
 
 : ${CONFIG_STATUS=./config.status}
@@ -25667,8 +25663,6 @@ get2gnow_CFLAGS!$get2gnow_CFLAGS$ac_delim
 get2gnow_LIBS!$get2gnow_LIBS$ac_delim
 debug_CFLAGS!$debug_CFLAGS$ac_delim
 GETTEXT_PACKAGE!$GETTEXT_PACKAGE$ac_delim
-ENABLE_ALPHA_UI!$ENABLE_ALPHA_UI$ac_delim
-DISABLE_ALPHA_UI!$DISABLE_ALPHA_UI$ac_delim
 USE_NLS!$USE_NLS$ac_delim
 MSGFMT_OPTS!$MSGFMT_OPTS$ac_delim
 GMSGFMT!$GMSGFMT$ac_delim
@@ -25685,7 +25679,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

@@ -1358,16 +1358,18 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 	return prefix_added;
 }/*update_viewer_set_in_reply_to_data(user->user_name|NULL, None|Homepage|Replies|DMs|etc, service, 1212154, TRUE|FALSE, TRUE|FALSE);*/
 
-void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateType update_type){
+void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateType update_type, gdouble retweet_update_id){
 	if(!(service && service->session && online_service_validate_session(service, user_name) )) return;
 	
-	if(!(service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE)))
-		update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, NULL);
-	else
-		update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, service);
+	if(!id){
+		if(!(service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE)))
+			update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, NULL);
+		else
+			update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, service);
+	}
 	
 	if(id)
-		update_viewer_set_in_reply_to_data(service, update_type, (gchar *)user_name, (gchar *)text_update, user_id, id, FALSE, FALSE, TRUE);
+		update_viewer_set_in_reply_to_data(service, update_type, (gchar *)user_name, (gchar *)text_update, user_id, (retweet_update_id ?retweet_update_id :id), FALSE, FALSE, TRUE);
 	else
 		update_viewer_set_in_reply_to_data(NULL, None, NULL, NULL, 0.0, 0.0, FALSE, FALSE, TRUE);
 	
@@ -1381,7 +1383,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	if(!render_update)
 		online_service_request_unset_selected_update();
 	else{
-		online_service_request_set_selected_update(service, update_type, id, user_id, user_name, text_update);
+		online_service_request_set_selected_update(service, update_type, (retweet_update_id ?retweet_update_id :id), user_id, user_name, text_update);
 		main_window_set_statusbar_default_message( _("Hotkeys: <Alt+S> to post your update; <Alt+D> to send your update as a DM.  <CTRL+N> start a new tweet; <CTRL+D> or <SHIFT+Return> to DM your friends; <CTRL+R>, <Return>, or '@' to reply, <CTRL+F> or '>' to forward/retweet.") );
 	}
 	
@@ -1454,7 +1456,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	
 	debug("Selecting 'sexy_entry' for entering a new update.");
 	update_viewer_sexy_select();
-}/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None);*/
+}/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None, 0.0|status->retweeted_status->id);*/
 
 static void update_viewer_insert_shortened_uri(GtkButton *shorten_uri_button, UpdateViewer *update_viewer){
 	gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), FALSE);
@@ -1697,7 +1699,7 @@ void update_viewer_send(GtkWidget *activated_widget){
 void update_viewer_new_update(void){
 	update_viewer_sexy_entry_clear();
 	main_window_set_statusbar_default_message( _("Hotkeys: Press Up, Down, Page Up, or Page Down to browse updates.  Press & Hold <ALT+CTRL> while browsing to select the update.") );
-	update_viewer_view_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, None);
+	update_viewer_view_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, None, 0.0);
 	
 	if(update_viewer->best_friends_service) update_viewer->best_friends_service=NULL;
 	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);

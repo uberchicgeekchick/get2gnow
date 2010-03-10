@@ -68,6 +68,8 @@ typedef struct _UberChickTreeView      UberChickTreeView;
 typedef struct _UberChickTreeViewClass UberChickTreeViewClass;
 typedef struct _UberChickTreeViewPrivate  UberChickTreeViewPrivate;
 
+typedef enum _UberChickTreeViewListStoreColumn UberChickTreeViewListStoreColumn;
+
 struct _UberChickTreeView {
 	SexyTreeView            parent;
 };
@@ -75,34 +77,6 @@ struct _UberChickTreeView {
 struct _UberChickTreeViewClass {
 	SexyTreeViewClass       parent_class;
 };
-
-
-typedef enum _UberChickTreeViewListStoreColumn{	/********************************************************************************/
-	GUINT_UBERCHICK_TREE_VIEW_INDEX,		/*	The update's index in the list-store.                                   */
-	GDOUBLE_UPDATE_ID,				/*	Update's ID.								*/
-	GSTRING_UPDATE_ID_STR,				/*	Update's ID string.							*/
-	GDOUBLE_USER_ID,					/*	User's ID.								*/
-	STRING_USER,					/*	Username string.							*/
-	STRING_NICK,					/*	Author name string.							*/
-	STRING_TEXT,					/*	Unformated Update string.						*/
-	STRING_UPDATE,					/*	Update for display string in the UberChickTreeView's SexyTreeView.  */
-	STRING_SEXY_UPDATE,				/*	libsexy formatted Update for SexyTreeView's tooltip.			*/
-	STRING_DETAILED_UPDATE,				/*	Upate's string as markup w/full details..				*/
-	STRING_CREATED_AGO,				/*	'Posted ?(seconds|minutes|hours|day) ago.				*/
-	STRING_CREATED_AT,				/*	Date string.								*/
-	GINT_CREATED_AGO,				/*	How old the post is, in seconds, for sorting.				*/
-	ULONG_CREATED_AT,				/*	Unix seconds since epoc of how old the update is.			*/
-	PIXBUF_AVATAR,					/*	Avatar pixbuf.								*/
-	ONLINE_SERVICE,					/*	OnlineService pointer.							*/
-	STRING_FROM,					/*	<status's auther @ OnlineService URI>					*/
-	STRING_RCPT,					/* 	OnlineService's key this update's from. E.G. To: <user@service>		*/
-	GINT_LIST_STORE_INDEX,				/*	The associated order/place this item appears in the list store.         */
-	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
-	GBOOLEAN_RETWEET,				/*	If the update's a retweet or not					*/
-	GCHARARRY_RETWEETED_BY,				/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
-	STRING_SEXY_STATUS_UPDATE,			/*	Update's string as markup for display.					*/
-							/********************************************************************************/
-} UberChickTreeViewListStoreColumn;
 
 
 GType uberchick_tree_view_get_type(void) G_GNUC_CONST;

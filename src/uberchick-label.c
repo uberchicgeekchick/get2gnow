@@ -87,13 +87,19 @@
 #define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), UBERCHICK_TYPE_LABEL, UberChickLabelPrivate))
 
 struct _UberChickLabel {
-	/*GtkLabel           parent;*/
-	SexyUrlLabel           parent;
+#ifndef ENABLE_ALPHA_UI
+	SexyUrlLabel		parent;
+#else
+	GtkLabel		parent;
+#endif
 };
 
 struct _UberChickLabelClass {
-	/*GtkLabelClass      parent_class;*/
-	SexyUrlLabelClass      parent_class;
+#ifndef ENABLE_ALPHA_UI
+	SexyUrlLabelClass	parent_class;
+#else
+	GtkLabelClass		parent_class;
+#endif
 };
 
 struct _UberChickLabelPrivate{
@@ -108,8 +114,11 @@ struct _UberChickLabelPrivate{
 };
 
 
-/*G_DEFINE_TYPE(UberChickLabel, uberchick_label, GTK_TYPE_LABEL);*/
-G_DEFINE_TYPE(UberChickLabel, uberchick_label, SEXY_TYPE_URL_LABEL);
+#ifndef ENABLE_ALPHA_UI
+	G_DEFINE_TYPE(UberChickLabel, uberchick_label, SEXY_TYPE_URL_LABEL);
+#else
+	G_DEFINE_TYPE(UberChickLabel, uberchick_label, GTK_TYPE_LABEL);
+#endif
 
 
 
@@ -145,10 +154,13 @@ static void uberchick_label_init(UberChickLabel *uberchick_label){
 	this->text=this->markup=NULL;
 	
 	g_object_set(uberchick_label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, "wrap", TRUE, "wrap-mode", PANGO_WRAP_WORD_CHAR, "single-line-mode", FALSE, "use-markup", TRUE, "justify", GTK_JUSTIFY_FILL, NULL);
-	/*g_object_set(uberchick_label, "selectable", TRUE, NULL);*/
+#ifndef ENABLE_ALPHA_UI
 	g_signal_connect(SEXY_URL_LABEL(uberchick_label), "url-activated", (GCallback)online_service_open_uri, this->service);
+#else
+	g_object_set(uberchick_label, "selectable", TRUE, NULL);
 	g_signal_connect(GTK_LABEL(uberchick_label), "activate-link", (GCallback)online_service_open_uri, this->service);
 	g_signal_connect(GTK_LABEL(uberchick_label), "populate-popup", (GCallback)uberchick_label_populate_popup, NULL);
+#endif
 }/*uberchick_label_init(gobject);*/
 
 UberChickLabel *uberchick_label_new(void){
@@ -240,8 +252,11 @@ void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *
 	debug("UberChickLabel: Rendering markup for <%s>'s update's ID: %f; update's text: %s", service->key, update_id, text);
 	this->text=g_strdup(text);
 	this->markup=www_format_urls(service, text, expand_hyperlinks, make_hyperlinks);
-	/*gtk_label_set_markup(GTK_LABEL(uberchick_label), this->markup);*/
+#ifndef ENABLE_ALPHA_UI
 	sexy_url_label_set_markup(SEXY_URL_LABEL(uberchick_label), this->markup);
+#else
+	gtk_label_set_markup(GTK_LABEL(uberchick_label), this->markup);
+#endif
 	debug("UberChickLabel: Rendered markup: [%s]", this->markup);
 }/*uberchick_label_set_markup(uberchick_label, service, update_type, user_name, user_id, id, markup, TRUE|FALSE, TRUE|FALSE);*/
 

@@ -47,8 +47,6 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 @HAVE_GNOME_KEYRING_TRUE@keyring_sources = keyring.c keyring.h
-@DISABLE_ALPHA_UI@get2gnow_ui_sources = uberchick-label.c
-@ENABLE_ALPHA_UI@get2gnow_ui_sources = uberchick-label.alpha.c
 get2gnow_SOURCES = 													\
 	about.c						about.h								\
 	best-friends.c					best-friends.h							\
@@ -81,9 +79,9 @@ get2gnow_SOURCES = 													\
 	searches.c					searches.h							\
 	tabs.c						tabs.h								\
 	timer.c						timer.h								\
-	$(get2gnow_ui_sources)				uberchick-label.h						\
+	uberchick-label.c				uberchick-label.h						\
 	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
-	uberchick-tree-view.c		uberchick-tree-view.macros.h		uberchick-tree-view.h			\
+	uberchick-tree-view.c	uberchick-tree-view.macros.h	uberchick-tree-view.types.h	uberchick-tree-view.h	\
 	ui-utils.c					ui-utils.h							\
 	update-ids.c					update-ids.h							\
 	update-viewer.c					update-viewer.h							\
@@ -94,8 +92,6 @@ get2gnow_SOURCES = 													\
 
 
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
-@DISABLE_ALPHA_UI@alpha_ui_objects = uberchick-label.$(OBJEXT)
-@ENABLE_ALPHA_UI@alpha_ui_objects = uberchick-label.alpha.$(OBJEXT)
 get2gnow_OBJECTS =					\
 	about.$(OBJEXT)					\
 	best-friends.$(OBJEXT)				\
@@ -127,7 +123,7 @@ get2gnow_OBJECTS =					\
 	searches.$(OBJEXT)				\
 	tabs.$(OBJEXT)					\
 	timer.$(OBJEXT)					\
-	$(alpha_ui_objects)				\
+	uberchick-label.$(OBJEXT)			\
 	uberchick-sexy-entry-completion.$(OBJEXT)	\
 	uberchick-tree-view.$(OBJEXT)			\
 	ui-utils.$(OBJEXT)				\
