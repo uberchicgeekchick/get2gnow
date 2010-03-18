@@ -426,7 +426,8 @@ xmlNode *xml_get_child_element(const gchar *uri, xmlNode *root_element, const gc
 	
 	if(!current_element)
 		return NULL;
-	else if(!attribute)
+	
+	if(!attribute)
 		return current_element;
 		
 	va_list attributes;
