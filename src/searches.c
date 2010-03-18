@@ -68,6 +68,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "xml.h"
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -83,7 +84,6 @@
 #include "images.h"
 #include "gconfig.h"
 
-#include "parser.h"
 #include "searches.h"
 
 
@@ -101,7 +101,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	xmlNode		*current_node=NULL;
+	xmlNode		*current_element=NULL;
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
@@ -122,7 +122,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	const gint	update_notification_interval=10;
 	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)+1)*100;
 	
-	if(!(doc=parse_xml_doc(xml, &root_element))){
+	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
 		xmlCleanupParser();
 		return 0;
@@ -130,18 +130,18 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	/* parse updates from search results. */
 	debug("Parsing searches node %s.", root_element->name);
-	for(current_node=root_element->children; current_node; current_node=current_node->next) {
-		if(!( current_node->type == XML_ELEMENT_NODE && g_str_equal(current_node->name, "entry") ))
+	for(current_element=root_element->children; current_element; current_element=current_element->next) {
+		if(!( current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, "entry") ))
 			continue;
 		
-		if(!current_node->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_node->name);
+		if(!current_element->children){
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_element->name);
 			continue;
 		}
 		
 		debug("Parsing searches result's update * entry.");
 		status=NULL;
-		if(!( (( status=user_status_parse_from_search_result_atom_entry(service, current_node->children, Searches ))) && status->id )){
+		if(!( (( status=user_status_parse_from_search_result_atom_entry(service, current_element->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}

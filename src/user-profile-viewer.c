@@ -87,7 +87,6 @@
 #include "preferences.defines.h"
 #include "gtkbuilder.h"
 #include "cache.h"
-#include "parser.h"
 
 #include "www.h"
 

@@ -94,7 +94,6 @@
 #include "best-friends.h"
 
 #include "network.h"
-#include "searches.h"
 
 #include "gtkbuilder.h"
 #include "gconfig.h"
@@ -103,7 +102,6 @@
 #include "main-window.h"
 #include "tabs.h"
 
-#include "parser.h"
 #include "hotkeys.h"
 #include "update-viewer.h"
 
@@ -111,6 +109,8 @@
 #include "uberchick-tree-view.macros.h"
 #include "uberchick-tree-view.h"
 
+#include "users.types.h"
+#include "groups.types.h"
 
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
@@ -136,7 +136,7 @@ TimelineLabelsList[]={
 	{ReTweets,	API_RETWEETED_TO_ME,		N_("My Friends Re_Tweets"),	N_("My Friends' ReTweets")},
 	{ReTweets,	API_RETWEETS_OF_ME,		N_("ReTweets of My _Updates"),	N_("ReTweets of My Updates")},
 	{Searches,	API_TIMELINE_SEARCH,		N_("_Search Results for %s"),	N_("Search Results for %s")},
-	{Groups,	API_TIMELINE_GROUP,		N_("_Group Discussions"),	N_("Group Discussions")},
+	{Groups,	API_STATUSNET_GROUPS_SEARCH,	N_("_%s Group Discussions"),	N_("%s Group Discussions")},
 	{Timelines,	API_TIMELINE_PUBLIC,		N_("_Global Updates"),		N_("Public Updates")},
 	{Archive,	API_TIMELINE_MINE,		N_("_My Updates"),		N_("My Updates")},
 	{None,		NULL,				N_("Unknow_n timeline"),	N_("Unknown timeline")}
@@ -408,7 +408,11 @@ static void uberchick_tree_view_set_visibility(UberChickTreeView *uberchick_tree
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) )) return;
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	if(gconfig_if_bool(CONCATENATED_UPDATES, FALSE) || gconfig_if_bool(COMPACT_VIEW, FALSE) ){
+	if(this->update_type==Groups){
+		uberchick_tree_view_toggle_from_column(uberchick_tree_view);
+		uberchick_tree_view_toggle_rcpt_column(uberchick_tree_view);
+		uberchick_tree_view_toggle_created_ago_str_column(uberchick_tree_view);
+	}else if(gconfig_if_bool(CONCATENATED_UPDATES, FALSE) || gconfig_if_bool(COMPACT_VIEW, FALSE) ){
 		uberchick_tree_view_toggle_view(uberchick_tree_view);
 		uberchick_tree_view_toggle_toolbar(uberchick_tree_view);
 		uberchick_tree_view_toggle_from_column(uberchick_tree_view);
@@ -1222,7 +1226,7 @@ static void uberchick_tree_view_set_timeline_label(UberChickTreeView *uberchick_
 	for(timeline_labels=TimelineLabelsList; timeline_labels->timeline; timeline_labels++){
 		if(g_str_has_prefix(this->timeline, timeline_labels->timeline) || g_str_equal(this->timeline, timeline_labels->timeline) ){
 			this->update_type=timeline_labels->update_type;
-			if(this->update_type!=Searches){
+			if(this->update_type!=Searches&&this->update_type!=Groups){
 				this->tab_label_string=g_strdup(timeline_labels->tab_label_string);
 				this->menu_label_string=g_strdup(timeline_labels->menu_label_string);
 			}else{
@@ -1578,6 +1582,8 @@ static void uberchick_tree_view_grab_focus_cb(GtkWidget *widget, UberChickTreeVi
 gboolean uberchick_tree_view_toggle_view(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return FALSE;
 	
+	if(GET_PRIVATE(uberchick_tree_view)->update_type==Groups) return FALSE;
+	
 	uberchick_tree_view_toggle_update_detailed_column(uberchick_tree_view);
 	uberchick_tree_view_toggle_update_column(uberchick_tree_view);
 	uberchick_tree_view_toggle_created_ago_str_column(uberchick_tree_view);
@@ -1658,7 +1664,8 @@ void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, U
 				GBOOLEAN_UNREAD, unread,				/* If the update's been read or not.				*/
 				GBOOLEAN_RETWEET, status->retweet,			/* If the update's a retweet or not.				*/
 				GDOUBLE_RETWEET_UPDATE_ID, ( (status->retweet && status->retweeted_status && status->retweeted_status->id) ?status->retweeted_status->id :0.0),
-				GCHARARRY_RETWEETED_BY, status->retweeted_by,		/* Who retweeted this update.  Its: "" if the update's not a retweet.			*/
+				GCHARARRY_RETWEETED_BY, status->retweeted_by,		/* Who retweeted this update.                                   */
+				                                                        /*         "" if the update's not a retweet.			*/
 			-1
 	);
 	this->total++;
@@ -1676,7 +1683,65 @@ void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, U
 	
 	uberchick_tree_view_set_image(uberchick_tree_view, status->user->image_file, iter);
 	uber_free(iter);
-}/*uberchick_tree_view_store_update( uberchick_tree_view, status );*/
+}/*uberchick_tree_view_store_update(uberchick_tree_view, status);*/
+
+void uberchick_tree_view_store_group(UberChickTreeView *uberchick_tree_view, StatusNetGroup *group){
+	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
+	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
+	
+	gtk_progress_bar_pulse(this->progress_bar);
+	
+	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
+	update_ids_get(group->service, this->timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
+	gboolean unread=(group->id && group->id > unread_update_id);
+	
+	this->tree_store_index++;
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	gtk_tree_store_insert(this->tree_store, iter, NULL, this->tree_store_index);
+	gtk_tree_store_set(
+			this->tree_store, iter,
+				GUINT_UBERCHICK_TREE_VIEW_INDEX, this->total,		/* The total of updates in the TreeStore when the rows entered.	*/
+				GDOUBLE_UPDATE_ID, group->id,				/* Update's ID.							*/
+				GSTRING_UPDATE_ID_STR, group->id_str,			/* Update s ID as a string.					*/
+				GDOUBLE_USER_ID, group->id,				/* User's ID.							*/
+				STRING_USER, group->name,				/* Useruser_name string.					*/
+				STRING_NICK, group->title,				/* Author user_name string.					*/
+				STRING_TEXT, group->note,				/* Update's string as plain text.				*/
+				STRING_UPDATE, group->note,				/* Update's string as markup for display.			*/
+				STRING_SEXY_STATUS_UPDATE, group->note_markup,		/* Update's string as markup for display.			*/
+				STRING_SEXY_UPDATE, group->note_tooltip,		/* SexyTreeView's tooltip.					*/
+				STRING_DETAILED_UPDATE, NULL,				/* Upate's string as markup w/full details.			*/
+				STRING_CREATED_AGO, g_strdup(""),			/* (seconds|minutes|hours|day) ago.				*/
+				STRING_CREATED_AT, g_strdup(""),			/* Date string.							*/
+				GINT_CREATED_AGO, 0,					/* How old the post is, in seconds, for sorting.		*/
+				ULONG_CREATED_AT, 0,					/* Seconds since the post was posted.				*/
+				ONLINE_SERVICE, group->service,				/* OnlineService pointer.					*/
+				STRING_FROM, g_strdup(""),				/* Who the update/update is from.				*/
+				STRING_RCPT, g_strdup(""),				/* The OnlineService's key this update's from.			*/
+				GINT_LIST_STORE_INDEX, this->tree_store_index,		/* The row's unsorted index.					*/
+				GBOOLEAN_UNREAD, unread,				/* If the update's been read or not.				*/
+				GBOOLEAN_RETWEET, FALSE,				/* If the update's a retweet or not.				*/
+				GDOUBLE_RETWEET_UPDATE_ID, 0.0,
+				GCHARARRY_RETWEETED_BY, g_strdup(""),			/* Who retweeted this update.                                   */
+				                                                        /*         "" if the update's not a retweet.			*/
+			-1
+	);
+	this->total++;
+	
+	debug("Inserting update in to UberChickTreeView at index %d.  Inserting one of <%s>'s %s; timeline [%s]; update ID: %s; read group: %s.  Total updates: %u", this->tree_store_index, group->service->guid, this->update_type_string, this->timeline, group->id_str, (unread ?"TRUE" :"FALSE"), this->total);
+	debug("Inserting iter for <%s>'s %s at index: %d; tree_view_index: %d.", group->service->guid, this->update_type_string, this->total, this->total);
+	if(unread)
+		uberchick_tree_view_increment_unread(uberchick_tree_view);
+	
+	/* network_get_image, or its callback network_cb_on_image, free's iter once its no longer needed.*/
+	if(!( g_file_test(group->image_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR) )){
+		debug("User Avatar file [%s] not found. Attempting to download: %s", group->image_file, group->image_uri );
+		return network_get_image(group->service, uberchick_tree_view, group->image_file, group->image_uri, TRUE, iter);
+	}
+	
+	uberchick_tree_view_set_image(uberchick_tree_view, group->image_file, iter);
+	uber_free(iter);
+}/*uberchick_tree_view_store_group(uberchick_tree_view, group);*/
 
 static gboolean uberchick_tree_view_notification(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return FALSE;

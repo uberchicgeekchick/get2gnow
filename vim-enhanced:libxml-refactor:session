@@ -1,0 +1,23 @@
+#!/bin/tcsh -f
+set my_editor = "`printf "\""${0}"\"" | sed 's/.*\/\([^\:]\+\).*/\1/g'`"
+
+if("${my_editor}" == "${0}" ) then
+	echo "**error:** unable to determine session editor
+your default editor will be used.";
+	set my_editor="${EDITOR}";
+endif
+
+switch ( "${my_editor}" )
+case "connectED":
+case "gedit":
+	breaksw
+case "vi":
+case "vim":
+case "vim-enhanced":
+default:
+	set my_editor = `printf "%s -p" "vim-enhanced"`
+	breaksw
+endsw
+
+${my_editor} "/projects/gtk/get2gnow/src/groups.c" "/projects/gtk/get2gnow/src/groups.h" "/projects/gtk/get2gnow/src/images.c" "/projects/gtk/get2gnow/src/main-window.c" "/projects/gtk/get2gnow/src/network.c" "/projects/gtk/get2gnow/src/online-service.c" "/projects/gtk/get2gnow/src/online-service-request.c" "/projects/gtk/get2gnow/src/online-services.typedefs.h" "/projects/gtk/get2gnow/src/online-service-wrapper.c" "/projects/gtk/get2gnow/src/program.c" "/projects/gtk/get2gnow/src/program.h" "/projects/gtk/get2gnow/src/searches.c" "/projects/gtk/get2gnow/src/timelines.c" "/projects/gtk/get2gnow/src/uberchick-label.c" "/projects/gtk/get2gnow/src/uberchick-tree-view.c" "/projects/gtk/get2gnow/src/user-profile-viewer.c" "/projects/gtk/get2gnow/src/users.c" "/projects/gtk/get2gnow/src/users-glists.c" "/projects/gtk/get2gnow/src/users-glists.h" "/projects/gtk/get2gnow/src/users.h" "/projects/gtk/get2gnow/src/www.c" "/projects/gtk/get2gnow/src/www.h" "/projects/gtk/get2gnow/src/xml.c" "/projects/gtk/get2gnow/src/xml.h" "/projects/gtk/get2gnow/src/xml.types.h" "/projects/gtk/get2gnow/statusnet-groups.art/identi.ca-search-group?q=Linux.html"
+

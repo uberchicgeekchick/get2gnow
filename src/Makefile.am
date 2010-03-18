@@ -31,7 +31,7 @@ get2gnow_SOURCES = 													\
 	friend-manager.c				friend-manager.h						\
 	gconfig.c					gconfig.h							\
 	geometry.c					geometry.h							\
-	groups.c					groups.h							\
+	groups.c				groups.types.h			groups.h				\
 	gtkbuilder.c					gtkbuilder.h							\
 	hotkeys.c					hotkeys.h							\
 	images.c					images.h							\
@@ -46,13 +46,13 @@ get2gnow_SOURCES = 													\
 	online-services.c				online-services.h						\
 	online-services-dialog.c			online-services-dialog.h					\
 	online-service-wrapper.c			online-service-wrapper.h					\
-	parser.c					parser.h							\
 	preferences.c					preferences.h							\
 	profile-manager.c				profile-manager.h						\
 	program.c					program.h							\
 	proxy.c						proxy.h								\
 	searches.c					searches.h							\
 	tabs.c						tabs.h								\
+	timelines.c					timelines.h							\
 	timer.c						timer.h								\
 	uberchick-label.c				uberchick-label.h						\
 	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
@@ -63,8 +63,9 @@ get2gnow_SOURCES = 													\
 	users-glists.c							users-glists.h					\
 	users.c				users.types.h			users.h						\
 	user-profile-viewer.c				user-profile-viewer.h						\
+	xml.c				xml.types.h			xml.h						\
 	www.c						www.h								\
 
 
-get2gnow_LDADD=								\
+get2gnow_LDADD=														\
 	$(get2gnow_LIBS)

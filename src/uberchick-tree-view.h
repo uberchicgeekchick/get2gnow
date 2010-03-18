@@ -52,7 +52,6 @@
 #include <gtk/gtk.h>
 #include <libsexy/sexy.h>
 #include "online-services.typedefs.h"
-#include "users.types.h"
 
 G_BEGIN_DECLS
 
@@ -99,7 +98,13 @@ gboolean uberchick_tree_view_refresh(UberChickTreeView *uberchick_tree_view);
 void uberchick_tree_view_stop(UberChickTreeView *uberchick_tree_view);
 void uberchick_tree_view_complete(UberChickTreeView *uberchick_tree_view);
 
+
+
 void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, UserStatus *status );
+void uberchick_tree_view_store_group(UberChickTreeView *uberchick_tree_view, StatusNetGroup *group);
+
+
+
 void uberchick_tree_view_update_tree_store( UberChickTreeView *uberchick_tree_view, UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value );
 void uberchick_tree_view_remove_from_tree_store( UberChickTreeView *uberchick_tree_view, UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value );
 void uberchick_tree_view_remove_service(UberChickTreeView *uberchick_tree_view, OnlineService *service);

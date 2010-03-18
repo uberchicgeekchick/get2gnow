@@ -78,6 +78,7 @@
 #include "online-services.h"
 
 #include "www.h"
+#include "xml.h"
 
 #include "gconfig.h"
 #include "preferences.defines.h"
@@ -409,7 +410,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	
 	gchar *error_message=NULL;
-	if(!(www_xml_error_check(service, request->uri, xml, &error_message))){
+	if(!(xml_error_check(service, request->uri, xml, &error_message))){
 		debug("OnlineServiceRequest failed to %s %s.  OnlineService: '%s':\n\t\tServer response: %i", request->message, request->get_rest_xml, service->guid, xml->status_code);
 		
 		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service->guid, xml->reason_phrase, xml->status_code);
@@ -501,7 +502,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		case ShortenURI:
 			debug("Looking for shortened URI.");
 			gchar *shortened_uri=NULL;
-			if(!( (shortened_uri=www_get_uri_dom_xpath_element_content(xml, "html->body->p->a")) && g_utf8_strlen(shortened_uri, -1) > uri_shortener_uri_strlen && g_str_has_prefix(shortened_uri, URI_SHORTENER_URI) && G_STR_N_EMPTY(g_strrstr(shortened_uri, URI_SHORTENER_URI)) )){
+			if(!( (shortened_uri=(gchar *)www_get_uri_dom_xpath_element_content(xml, "html->body->p->a")) && g_utf8_strlen(shortened_uri, -1) > uri_shortener_uri_strlen && g_str_has_prefix(shortened_uri, URI_SHORTENER_URI) && G_STR_N_EMPTY(g_strrstr(shortened_uri, URI_SHORTENER_URI)) )){
 				debug("**ERROR:** %s failed to create a shortened URI.  %s returned %s(%d).", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
 				main_window_statusbar_printf("%s failed to create a shortened URI.  %s returned %s(%d).", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
 			}else{
@@ -556,7 +557,7 @@ void online_service_request_set_selected_update(OnlineService *service, UpdateTy
 	selected_update->user_name=g_strdup(user_name);
 	selected_update->type=type;
 	selected_update->update=g_strdup(update);
-}/*online_service_request_set_selected_update*/
+}/*online_service_request_set_selected_update(service, update_type, 0.0|[0-9]+.[0-9]+, 0.0|[0-9]+.[0-9]+, "username", "what are you doing?");*/
 
 OnlineService *online_service_request_selected_update_get_service(void){
 	return ( (selected_update && selected_update->service) ?selected_update->service :NULL );

@@ -77,6 +77,8 @@
 #include "update-ids.h"
 #include "network.h"
 
+#include "xml.h"
+
 #include "users.types.h"
 #include "users.h"
 
@@ -87,186 +89,19 @@
 #include "gconfig.h"
 
 #include "best-friends.h"
-#include "parser.h"
+#include "timelines.h"
 
-#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Updates:UI:Refreshing:Dates:Times:parser.c"
+#define	DEBUG_DOMAINS	"Parser:Requests:OnlineServices:Updates:UI:Refreshing:Dates:Times:timelines.c"
 #include "debug.h"
 
 
-static xmlDoc *parse_dom_content(SoupMessage *xml);
-
-
-static xmlDoc *parse_dom_content(SoupMessage *xml){
-	xmlDoc *doc=NULL;
-	
-	SoupURI	*suri=NULL;
-	gchar *uri=NULL;
-	if(!( (((suri=soup_message_get_uri(xml)))) && ((uri=soup_uri_to_string(suri, FALSE))) && (G_STR_N_EMPTY(uri)) )){
-		debug("*WARNING*: Unknown XML document URI.");
-		if(uri) g_free(uri);
-		uri=g_strdup("[*unknown*]");
-	}
-	if(suri) soup_uri_free(suri);
-	
-	
-	if(!( xml->response_headers && xml->response_body && xml->response_body->data && xml->response_body->length )){
-		debug("*ERROR:* Cannot parse empty or xml resonse from: %s.", uri);
-		g_free(uri);
-		return NULL;
-	}
-	
-	
-	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type & DOM information from: %s", uri);
-	gchar *content_info=NULL;
-	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("*ERROR:* Failed to determine content-type for:  %s.", uri);
-		g_free(uri);
-		return NULL;
-	}
-	
-	debug("Parsing content info: [%s] from: %s", content_info, uri);
-	content_v=g_strsplit(content_info, "; ", -1);
-	g_free(content_info);
-	gchar *content_type=NULL;
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("*ERROR:*: Failed to determine content-type for:  %s.", uri);
-		g_strfreev(content_v);
-		g_free(uri);
-		return NULL;
-	}
-	
-	if(!( g_strrstr(content_type, "text") || g_strrstr(content_type, "xml") )){
-		debug("*ERROR:* <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further.", uri, content_type );
-		uber_free(content_type);
-		return NULL;
-	}
-	
-	debug("Parsed Content-Type: [%s] for: %s", content_type, uri);
-	
-	gchar *charset=NULL;
-	if(!( ((content_v[1])) && (charset=g_strdup(content_v[1])) )){
-		debug("*ERROR:* Failed to determine charset for:  %s.", uri);
-		g_free(content_type);
-		g_strfreev(content_v);
-		g_free(uri);
-		return NULL;
-	}
-	g_strfreev(content_v);
-	
-	
-	debug("Parsing charset: [%s] for: %s", charset, uri);
-	content_v=g_strsplit(charset, "=", -1);
-	g_free(charset);
-	if(!(content_v && content_v[1])){
-		debug("Defaulting to charset: [utf-8] for: %s", uri);
-		charset=g_strdup("utf-8");
-	}else{
-		charset=g_strdup(content_v[1]);
-		debug("Setting parsed charset: [%s] for: %s", charset, uri);
-	}
-	g_strfreev(content_v);
-	
-	
-	gchar *encoding=NULL;
-	if(!g_str_equal(charset, "utf-8"))
-		encoding=g_ascii_strup(charset, -1);
-	else
-		encoding=g_utf8_strup(charset, -1);
-	
-	content_v=g_strsplit(content_type, "/", -1);
-	gchar *dom_base_entity=NULL;
-	if(!( ((content_v[1])) && (dom_base_entity=g_strdup(content_v[1])) )){
-		debug("**ERROR**: Failed to determine DOM base entity URL for: %s.", uri);
-		g_free(uri);
-		g_free(content_type);
-		g_strfreev(content_v);
-		return NULL;
-	}
-	g_strfreev(content_v);
-	
-	
-	debug("Parsed xml document's information. URI: [%s] content-type: [%s]; charset: [%s]; encoding: [%s]; dom element: [%s]", uri, content_type, charset, encoding, dom_base_entity);
-	
-	
-	debug("Parsing %s document.", dom_base_entity);
-	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
-		debug("*ERROR:* Failed to parse %s document.", dom_base_entity);
-		g_free(uri);
-		g_free(content_type);
-		g_free(dom_base_entity);
-		g_free(charset);
-		return NULL;
-	}
-	
-	g_free(dom_base_entity);
-	g_free(encoding);
-	g_free(content_type);
-	g_free(charset);
-	
-	debug("XML document parsed.  Returning xmlDoc.");
-	return doc;
-}/*parse_dom_content*/
-
-xmlDoc *parse_xml_doc(SoupMessage *xml, xmlNode **first_element){
-	xmlDoc *doc=NULL;
-	
-	if(!(doc=parse_dom_content(xml))) {
-		debug("failed to read xml data");
-		return NULL;
-	}
-	
-	debug("Setting XML nodes.");
-	xmlNode *root_element=NULL;
-	*first_element=NULL;
-	
-	
-	/* Get first element */
-	root_element=xmlDocGetRootElement(doc);
-	if(root_element==NULL) {
-		debug("failed getting first element of xml data");
-		xmlFreeDoc(doc);
-		return NULL;
-	} else
-		*first_element=root_element;
-	
-	return doc;
-}
-
-const gchar *parser_xml_node_type_to_string(xmlElementType type){
-	switch(type){
-		case XML_ELEMENT_NODE: return _("XML_ELEMENT_NODE");
-		case XML_ATTRIBUTE_NODE: return _("XML_ATTRIBUTE_NODE");
-		case XML_TEXT_NODE: return _("XML_TEXT_NODE");
-		case XML_CDATA_SECTION_NODE: return _("XML_CDATA_SECTION_NODE");
-		case XML_ENTITY_REF_NODE: return _("XML_ENTITY_REF_NODE");
-		case XML_ENTITY_NODE: return _("XML_ENTITY_NODE");
-		case XML_PI_NODE: return _("XML_PI_NODE");
-		case XML_COMMENT_NODE: return _("XML_COMMENT_NODE");
-		case XML_DOCUMENT_NODE: return _("XML_DOCUMENT_NODE");
-		case XML_DOCUMENT_TYPE_NODE: return _("XML_DOCUMENT_TYPE_NODE");
-		case XML_DOCUMENT_FRAG_NODE: return _("XML_DOCUMENT_FRAG_NODE");
-		case XML_NOTATION_NODE: return _("XML_NOTATION_NODE");
-		case XML_HTML_DOCUMENT_NODE: return _("XML_HTML_DOCUMENT_NODE");
-		case XML_DTD_NODE: return _("XML_DTD_NODE");
-		case XML_ELEMENT_DECL: return _("XML_ELEMENT_DECL");
-		case XML_ATTRIBUTE_DECL: return _("XML_ATTRIBUTE_DECL");
-		case XML_ENTITY_DECL: return _("XML_ENTITY_DECL");
-		case XML_NAMESPACE_DECL: return _("XML_NAMESPACE_DECL");
-		case XML_XINCLUDE_START: return _("XML_XINCLUDE_START");
-		case XML_XINCLUDE_END: return _("XML_XINCLUDE_END");
-		case XML_DOCB_DOCUMENT_NODE: return _("XML_DOCB_DOCUMENT_NODE");
-		default: return _("XML_TYPE_UNKNOWN");
-	}
-}/*parser_xml_node_type_to_string(node->type);*/
-
-/* Parse a timeline XML file */
-guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type){
+/* Parse a timeline */
+guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type){
 	const gchar	*timeline=g_strrstr(uri, "/");
 	
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	xmlNode		*current_node=NULL;
+	xmlNode		*current_element=NULL;
 	UserStatus 	*status=NULL;
 	
 	/* Count new tweets */
@@ -286,7 +121,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	switch(update_type){
 		case	Searches: case	Groups:
-			debug("*ERROR:* Unsupported timeline.  parse_timeline requested to parse %s.  This method sould not have been called.", (update_type==Groups?"Groups":"Searches"));
+			debug("*ERROR:* Unsupported timeline.  timelines_parse requested to parse %s.  This method sould not have been called.", (update_type==Groups?"Groups":"Searches"));
 			return 0;
 			
 		case	DMs:
@@ -344,7 +179,7 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	const gint	update_notification_interval=10;
 	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)+1)*100;
 	
-	if(!(doc=parse_xml_doc(xml, &root_element))){
+	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, <%s>'s timeline: %s.", service->key, timeline);
 		xmlCleanupParser();
 		return 0;
@@ -352,28 +187,28 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	
 	/* get updates or direct messages */
 	debug("Parsing %s.", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
+	for(current_element=root_element; current_element; current_element=current_element->next) {
+		if(current_element->type != XML_ELEMENT_NODE ) continue;
 		
-		if( g_str_equal(current_node->name, "statuses") || g_str_equal(current_node->name, "direct-messages") ){
-			if(!current_node->children) continue;
-			current_node=current_node->children;
+		if( g_str_equal(current_element->name, "statuses") || g_str_equal(current_element->name, "direct-messages") ){
+			if(!current_element->children) continue;
+			current_element=current_element->children;
 			continue;
 		}
 		
-		if(!( g_str_equal(current_node->name, "status") || g_str_equal(current_node->name, "direct_message") ))
+		if(!( g_str_equal(current_element->name, "status") || g_str_equal(current_element->name, "direct_message") ))
 			continue;
 		
-		if(!current_node->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_node->name);
+		if(!current_element->children){
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_element->name);
 			continue;
 		}
 		
-		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s.", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
 		
 		status=NULL;
 		debug("Creating Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, update_type ))) && status->id )){
+		if(!( (( status=user_status_parse(service, current_element->children, update_type ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
 		}
@@ -417,5 +252,5 @@ guint parse_timeline(OnlineService *service, SoupMessage *xml, const gchar *uri,
 	xmlCleanupParser();
 	
 	return new_updates;
-}/*parse_timeline(service, xml, timeline, uberchick_tree_view, update_type);*/
+}/*timelines_parse(service, xml, timeline, uberchick_tree_view, update_type);*/
 

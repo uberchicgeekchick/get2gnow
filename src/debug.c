@@ -127,7 +127,7 @@ gboolean debug_if_devel(void){
 #else
 	return debug_devel;
 #endif
-}/*IF_DEVEL==if(debug_if_devel())*/
+}/*IF_DEVEL==debug_if_devel()*/
 
 gboolean debug_check_devel(const gchar *debug_environmental_value){
 #ifdef GNOME_ENABLE_DEBUG
@@ -350,7 +350,7 @@ gboolean debug_if_domain(const gchar *domains){
 		}
 	}
 	return FALSE;
-}/*macro:IF_DEBUG if(debug_if_domain(DEBUG_DOMAINS))*/
+}/*macro:IF_DEBUG()==if(debug_if_domain(DEBUG_DOMAINS))*/
 
 
 /********************************************************************************

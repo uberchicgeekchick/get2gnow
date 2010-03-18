@@ -86,6 +86,7 @@
 #include "gconfig.h"
 #include "preferences.defines.h"
 #include "tabs.h"
+#include "uberchick-tree-view.types.h"
 #include "uberchick-tree-view.h"
 #include "update-viewer.h"
 #include "ui-utils.h"

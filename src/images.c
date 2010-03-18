@@ -56,6 +56,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "xml.h"
 #include "www.h"
 #include "cache.h"
 #include "images.h"
@@ -116,7 +117,7 @@ void images_unset_unknown_image_file(void){
 
 gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename){
 	gchar *error_message=NULL;
-	if(!(www_xml_error_check(service, image_uri, xml, &error_message))){
+	if(!(xml_error_check(service, image_uri, xml, &error_message))){
 		debug("Failed to download and save image: <%s> to file: [%s].", image_uri, image_file);
 		debug("Detailed error message: %s.", error_message);
 		uber_free(error_message);

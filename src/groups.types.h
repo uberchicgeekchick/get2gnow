@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -51,48 +51,55 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__GROUPS_H__
-#define	__GROUPS_H__
+#ifndef	__GROUPS_TYPES_H__
+#define	__GROUPS_TYPES_H__
 
-#ifndef	_GNU_SOURCE 
-#	define _GNU_SOURCE
-#endif
-
-#ifndef _THREAD_SAFE
-#	define _THREAD_SAFE
-#endif
-
-#include <glib.h>
-#include <gtk/gtk.h>
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
 
 /********************************************************************************
- * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
  ********************************************************************************/
-#include <glib/gi18n.h>
-#include <libsoup/soup-message.h>
+#include <glib.h>
+#include <gtk/gtk.h>
 
-#include "uberchick-tree-view.h"
+#include "online-services.types.h"
 
 
 G_BEGIN_DECLS
 /********************************************************************************
- *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-
-
-/********************************************************************************
- *       prototypes for methods, handlers, callbacks, function, & etc           *
- ********************************************************************************/
-void groups_init(void);
-void groups_deinit(void);
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
-
-
-G_END_DECLS
-#endif /* __GROUPS_H__*/
+struct _StatusNetGroup {
+	OnlineService		*service;
+	UpdateType		type;
+	
+	gdouble			id;
+	gchar			*id_str;
+	
+	gchar			*name;
+	gchar			*title;
+	
+	gchar			*uri;
+	gchar			*homepage;
+	
+	gchar			*image_uri;
+	gchar			*image_file;
+	
+	gchar			*note;
+	gchar			*note_tooltip;
+	gchar			*note_markup;
+	gchar			*notification;
+	
+	gchar			*created_at_str;
+	gchar			*created_how_long_ago;
+	
+	gulong			created_at;
+	gint			created_seconds_ago;
+};
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-
-
+G_END_DECLS
+#endif /* __GROUPS_TYPES_H__*/

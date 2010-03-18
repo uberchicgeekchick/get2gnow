@@ -197,7 +197,7 @@ GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widge
 	return ( ui ? ui : NULL );
 }
 
-void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer user_data, gchar *first_widget,...){
+void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer user_data, gchar *first_widget, ...){
 	va_list args;
 	va_start(args, first_widget);
 	

@@ -495,7 +495,7 @@ gboolean gconfig_set_list(const gchar *key, GSList *value, GConfValueType list_t
 		gconfig_priv->cached_type_list=list_type;
 	}
 	
-	IF_DEBUG{
+	if(IF_DEBUG){
 		debug("Saving list:");
 		gconfig_print_list_values(key, value, list_type);
 	}
@@ -521,7 +521,7 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 		debug("**ERROR:** failed to retrieve list: %s, error: %s.", key, error->message);
 		g_error_free(error);
 		return FALSE;
-	}else IF_DEBUG{
+	}else if(IF_DEBUG){
 		debug("Retrieved list:");
 		gconfig_print_list_values(key, *value, list_type);
 	}

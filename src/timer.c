@@ -64,6 +64,8 @@
 #include "config.h"
 #include "program.h"
 
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "timer.h"
 #include "main-window.h"
 

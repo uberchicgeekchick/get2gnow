@@ -82,9 +82,8 @@ G_BEGIN_DECLS
  ********************************************************************************/
 enum _MicroBloggingService{
 	StatusNet	=	1,
-	Identica	=	2,
-	Twitter		=	3,
-	Unknown		=	4,
+	Twitter		=	2,
+	Unknown		=	3,
 	Unsupported	=	0,
 };
 

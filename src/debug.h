@@ -56,12 +56,12 @@ G_BEGIN_DECLS
 #endif
 
 
-#ifndef IF_DEBUG
-#	define IF_DEBUG		if(debug_if_domain(DEBUG_DOMAINS))
+#ifndef IF_DEVEL
+#	define	IF_DEVEL			(debug_if_devel())
 #endif
 
-#ifndef IF_DEVEL
-#	define	IF_DEVEL		if(debug_if_devel())
+#ifndef IF_DEBUG
+#	define IF_DEBUG				(debug_if_domain(DEBUG_DOMAINS))
 #endif
 
 void debug_init(void);

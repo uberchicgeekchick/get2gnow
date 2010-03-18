@@ -92,8 +92,8 @@ gboolean keyring_get_password(OnlineService **service){
 	data=passwords->data;
 	GList *p=NULL;
 	(*service)->password=g_strdup(data->password);
-	if(DOMAIN){
-		debug("Password(s) found for OnlineService: '%s'.  Server: %s; Username: '%s'; Password: %s(using).", (*service)->key, (*service)->uri, (*service)->user_name, (DOMAIN ? (*service)->password :"[*passwords are hidden outside of debug mode*]")  );
+	if(IF_DEVEL){
+		debug("Password(s) found for OnlineService: '%s'.  Server: %s; Username: '%s'; Password: %s(using).", (*service)->key, (*service)->uri, (*service)->user_name, (IF_DEBUG ? (*service)->password :"[*passwords are hidden outside of debug mode*]")  );
 		debug("Passwords found: (=");
 		for(p=passwords; p; p=p->next){
 			data=(GnomeKeyringNetworkPasswordData *)p->data;

@@ -75,6 +75,7 @@
 #include "update-ids.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service-request.h"
 #include "online-services.h"
 #include "online-service.types.h"

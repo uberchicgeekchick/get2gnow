@@ -67,9 +67,11 @@
 
 #include "program.h"
 
-#include "parser.h"
+#include "xml.h"
 #include "www.h"
 
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.types.h"
 #include "online-service.h"
 
@@ -77,6 +79,7 @@
 #include "preferences.defines.h"
 
 #include "main-window.h"
+#include "update-ids.h"
 
 
 /********************************************************************************
@@ -119,14 +122,14 @@ static void www_uri_title_append(const gchar *uri, const gchar *title);
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:UberChickTreeView:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:label.c"
+#define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:www.c"
 #include "debug.h"
 
 static GtkListStore *www_uri_title_lookup_table_list_store;
 static gboolean www_uri_title_lookup_table_processing=FALSE;
 static guint www_uri_title_lookup_table_clean_up_timeout_id=0;
 static guint www_uri_title_list_store_total=0;
-static GRegex *number_regex;
+static GRegex *number_regex=NULL;
 
 
 /********************************************************************************
@@ -148,8 +151,8 @@ void www_open_uri(GtkWidget *widget, const gchar *uri){
 
 void www_init(void){
 	GError *error=NULL;
-	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]+)?";
-	number_regex=g_regex_new(g_regex_pattern, 0, G_REGEX_MATCH_NOTEOL, &error);
+	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]*)?";
+	number_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
 	if(error){
 		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
 		g_error_free(error);
@@ -157,6 +160,16 @@ void www_init(void){
 	www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	www_uri_title_lookup_table_clean_up_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)www_uri_titles_clean_up, NULL);
 }/*www_init();*/
+
+void www_deinit(void){
+	if(number_regex)
+		g_regex_unref(number_regex);
+	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
+	if(www_uri_title_lookup_table_list_store){
+		gtk_list_store_clear(www_uri_title_lookup_table_list_store);
+		uber_object_unref(www_uri_title_lookup_table_list_store);
+	}
+}/*www_deinit();*/
 
 static gboolean www_uri_titles_clean_up(void){
 	if(!www_uri_title_list_store_total) return TRUE;
@@ -181,7 +194,7 @@ static gboolean www_uri_titles_clean_up(void){
 					COLUMN_INSERT_TIME, &datetime,
 				-1
 		);
-		if( (created_ago=update_convert_datetime_to_seconds_old(datetime, TRUE)) >= 3600 ){
+		if( (created_ago=convert_datetime_to_seconds_old(datetime, TRUE)) >= 3600 ){
 			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, created_ago);
 			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
 			if(www_uri_title_list_store_total)
@@ -191,12 +204,6 @@ static gboolean www_uri_titles_clean_up(void){
 	}
 	return !(www_uri_title_lookup_table_processing=FALSE);
 }/*www_uri_titles_clean_up();*/
-
-void www_deinit(void){
-	g_regex_unref(number_regex);
-	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
-	uber_object_unref(www_uri_title_lookup_table_list_store);
-}/*www_init();*/
 
 void www_html_entity_escape_status(gchar **status_text){
 	gchar *new_status=www_html_entity_escape_text( *status_text );
@@ -209,7 +216,7 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 	gchar *escaped_status=NULL;
 	gchar *regex_status=NULL;
 	gchar *current_character=escaped_status=g_markup_escape_text(status_text, -1);
-	GMatchInfo *match_info;
+	GMatchInfo *match_info=NULL;
 	if(g_regex_match(number_regex, current_character, 0, &match_info)){
 		GError *error=NULL;
 		regex_status=g_regex_replace(number_regex, current_character, strlen(current_character), 0, "", 0, &error);
@@ -221,6 +228,7 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 			g_error_free(error);
 		}
 	}
+	g_match_info_free(match_info);
 	while((current_character=g_strstr_len(current_character, -1, "&amp;"))) {
 		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
 			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
@@ -229,101 +237,6 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 	}
 	return escaped_status;
 }/*www_html_entity_escape_text(status->text);*/
-
-gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message){
-	if(!( SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) && xml->status_code>99 )){
-		*error_message=g_strdup_printf("OnlineService: <%s> has returned an invalid or failed libsoup request.  The URI [%s] returned:: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code );
-		return FALSE;
-	}
-	
-	*error_message=g_strdup("");;
-	
-	if(xml->status_code==100||xml->status_code==200){
-		debug("OnlineService: <%s>'s request for: %s has succeed.  HTTP status returned: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code);
-		return TRUE;
-	}
-	
-	if(xml->status_code==401 || xml->status_code==503){
-		debug("**ERROR:** Authentication failed and/or access denied.  OnlineService: <%s> returned. %s(%d) when requesting [%s].", service->key, xml->reason_phrase, xml->status_code, uri );
-		return FALSE;
-	}
-	
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
-	
-	debug("Getting content-type from uri: [%s].", uri);
-	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type & DOM information from: [%s].", uri);
-	gchar *content_info=NULL;
-	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("*ERROR:* Failed to determine content-type for:  [%s].", uri);
-		return FALSE;
-	}
-	
-	debug("Parsing content info: [%s] from: [%s].", content_info, uri);
-	content_v=g_strsplit(content_info, "; ", -1);
-	uber_free(content_info);
-	gchar *content_type=NULL;
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("*ERROR:* Failed to determine content-type for:  [%s].", uri);
-		g_strfreev(content_v);
-		return FALSE;
-	}
-	debug("Parsed Content-Type: [%s] for: [%s].", content_type, uri);
-	
-	g_strfreev(content_v);
-	if(!g_str_equal(content_type, "application/xml")){
-		uber_free(content_type);
-		return TRUE;
-	}
-	uber_free(content_type);
-	
-	debug("Parsing xml document to find any authentication errors.");
-	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
-		debug("Unable to parse xml doc.");
-		uber_free( *error_message );
-		*error_message=g_strdup("Unable to parse xml doc.");
-		xmlCleanupParser();
-		return FALSE;
-	}
-	
-	root_element=xmlDocGetRootElement(doc);
-	if(root_element==NULL) {
-		debug("Failed getting first element of xml data.");
-		uber_free( *error_message );
-		*error_message=g_strdup("Failed getting first element of xml data.");
-		xmlFreeDoc(doc);
-		xmlCleanupParser();
-		return FALSE;
-	}
-	
-	gboolean error_free=TRUE;
-	xmlNode	*current_node=NULL;
-	for(current_node = root_element; current_node; current_node = current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
-		
-		if(!( g_str_equal(current_node->name, "error") )) continue;
-		
-		error_free=FALSE;
-		uber_free( *error_message );
-		*error_message=(gchar *)xmlNodeGetContent(current_node);
-		break;
-	}
-	
-	if(!error_free){
-		gchar *error_message_swap=g_strdup_printf("OnlineService: <%s> returned: %s(%d) with the error: %s.", service->key, xml->reason_phrase, xml->status_code, *error_message);
-		uber_free((*error_message) );
-		*error_message=error_message_swap;
-		error_message_swap=NULL;
-		debug("%s", *error_message);
-		statusbar_printf( "%s", *error_message );
-	}
-	
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	
-	return error_free;
-}/*www_xml_error_check(service, xml);*/
 
 gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(G_STR_EMPTY(message)) return g_strdup("");
@@ -526,7 +439,7 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 	uber_free(content_type);
 	
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
-	if(!(uri_title=www_get_uri_dom_xpath_element_content(xml, "html->head->title"))){
+	if(!(uri_title=(gchar *)www_get_uri_dom_xpath_element_content(xml, "html->head->title"))){
 		if(searching)
 			uri_title=g_strdup(service->uri);
 		else if(services_resource && services_resource[0]=='@')
@@ -577,10 +490,14 @@ static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const
 }/*www_format_uri_with_title(&uri_title, uri, services_resource);*/
 
 static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml){
-	debug("Downloading headers for: %s to determine its content-type.", uri);
-	*xml=online_service_request_uri(service, GET, uri, 0, NULL, NULL, NULL, NULL);
+	if(!(*xml)){
+		debug("Downloading: <%s> and determining its content-type.", uri);
+		*xml=online_service_request_uri(service, GET, uri, 0, NULL, NULL, NULL, NULL);
+	}
+	
 	gchar *error_message=NULL;
-	if(!www_xml_error_check(service, uri, *xml, &error_message)){
+	gchar *content_type=NULL;
+	if(!xml_error_check(service, uri, *xml, &error_message)){
 		uber_free(error_message);
 		return NULL;
 	}
@@ -599,7 +516,6 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	debug("Parsing content info: [%s] from: %s", content_info, uri);
 	content_v=g_strsplit(content_info, "; ", -1);
 	uber_free(content_info);
-	gchar *content_type=NULL;
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
 		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
 		g_strfreev(content_v);
@@ -612,52 +528,50 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	return content_type;
 }/*www_get_uri_content_type*/
 
-gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath){
+gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean return_xml_doc){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	debug("Parsing xml document before searching for xpath: '%s' content.", xpath);
-	if(!(doc=parse_xml_doc(xml, &root_element))){
+	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Unable to parse xml doc.");
 		xmlCleanupParser();
 		return NULL;
 	}
 	
-	xmlNode	*current_node=NULL;
+	xmlNode	*current_element=NULL;
 	gchar	*xpath_content=NULL;
 	
 	gchar	**xpathv=g_strsplit(xpath, "->", -1);
 	guint	xpath_depth=0, xpath_target_depth=g_strv_length(xpathv)-1;
 	
 	debug("Searching for xpath: '%s' content.", xpath);
-	for(current_node=root_element; current_node; current_node=current_node->next){
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
+	for(current_element=root_element; current_element; current_element=current_element->next){
+		if(current_element->type != XML_ELEMENT_NODE ) continue;
 		
-		debug("Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_node->name);
+		debug("Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_element->name);
 		if( xpath_depth>xpath_target_depth ) break;
 		
-		if(!g_str_equal(current_node->name, xpathv[xpath_depth])){
-			if(xpath_depth==xpath_target_depth && !current_node->next){
-				debug("Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM.", current_node->name, xpath_depth);
-				current_node=current_node->parent;
+		if(!g_str_equal(current_element->name, xpathv[xpath_depth])){
+			if(xpath_depth==xpath_target_depth && !current_element->next){
+				debug("Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM.", current_element->name, xpath_depth);
+				current_element=current_element->parent;
 				xpath_depth--;
 			}
 			continue;
 		}
 		
 		if(xpath_depth<xpath_target_depth){
-			if(!(current_node->children && current_node->children->next)) continue;
+			if(!(current_element->children && current_element->children->next)) continue;
 			
-			current_node=current_node->children;
+			current_element=current_element->children;
 			xpath_depth++;
 			continue;
 		}
 		
-		xpath_content=(gchar *)xmlNodeGetContent(current_node);
+		xpath_content=(gchar *)xmlNodeGetContent(current_element);
 		break;
 	}
 	
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	g_strfreev(xpathv);
 	
 	if(!( ((xpath_content)) && (xpath_content=g_strstrip(xpath_content)) && G_STR_N_EMPTY(xpath_content) )){
@@ -666,7 +580,14 @@ gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpat
 		return NULL;
 	}
 	
-	return xpath_content;
+	if(!return_xml_doc){
+		xmlFreeDoc(doc);
+		xmlCleanupParser();
+		return (gpointer)xpath_content;
+	}else{
+		uber_free(xpath_content);
+		return (gpointer)doc;
+	}
 }/*www_get_uri_dom_xpath_element_content(soup_xml_response, "targetted->xpaths->element", "max_xpath_element");*/
 
 static void www_uri_title_append(const gchar *uri, const gchar *title){

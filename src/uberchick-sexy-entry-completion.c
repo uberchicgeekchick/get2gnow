@@ -98,6 +98,7 @@ struct _UberChickSexyEntryCompletionPrivate {
 	GtkLabel		*remaining_characters_count_label;
 	GtkComboBoxEntry	*sexy_entry_combo_box_entry;
 	
+	GRegex			*upper_case_regex;
 	SexySpellEntry		*sexy_entry;
 	gint			sexy_entry_text_position;
 	guint			max_length;
@@ -176,6 +177,15 @@ static void uberchick_sexy_entry_completion_init(UberChickSexyEntryCompletion *u
 	
 	uberchick_sexy_entry_completion_setup(uberchick_sexy_entry_completion);
 	this->maximum=this->total=0;
+	
+	GError *error=NULL;
+	const gchar *g_regex_pattern="[A-Z]";
+	this->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	if(error){
+		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		g_error_free(error);
+	}
+	
 	g_object_set(uberchick_sexy_entry_completion, "expand", TRUE, "fill", TRUE, NULL);
 }/* uberchick_sexy_entry_completion_init(uberchick_sexy_entry_completion);*/
 
@@ -186,10 +196,16 @@ UberChickSexyEntryCompletion *uberchick_sexy_entry_completion_new(void){
 static void uberchick_sexy_entry_completion_finalize(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
-	gtk_list_store_clear(this->list_store);
+	if(this->list_store)
+		gtk_list_store_clear(this->list_store);
 	
-	gtk_widget_destroy(GTK_WIDGET(this->sexy_entry));
-	gtk_widget_destroy(GTK_WIDGET(this->entry_completion));
+	if(this->upper_case_regex)
+		g_regex_unref(this->upper_case_regex);
+	
+	if(this->sexy_entry)
+		gtk_widget_destroy(GTK_WIDGET(this->sexy_entry));
+	if(this->entry_completion)
+		gtk_widget_destroy(GTK_WIDGET(this->entry_completion));
 	
 	G_OBJECT_CLASS(uberchick_sexy_entry_completion_parent_class)->finalize(G_OBJECT(uberchick_sexy_entry_completion));
 }/* uberchick_sexy_entry_completion_finalized(uberchick_sexy_entry_completion);*/
@@ -400,15 +416,28 @@ static gboolean uberchick_sexy_entry_completion_puts(UberChickSexyEntryCompletio
 	if(gtk_widget_is_sensitive(GTK_WIDGET(this->sexy_entry)))
 		gtk_widget_set_sensitive(GTK_WIDGET(this->sexy_entry), TRUE);
 	
-	if(uniq && G_STR_N_EMPTY(GTK_ENTRY(this->sexy_entry)->text) && g_strrstr(GTK_ENTRY(this->sexy_entry)->text, str))
-		return FALSE;
-	
 	gchar *string=NULL;
-	if(to_lower && g_regex_match_simple("[A-Z]", str, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0))
+	gboolean free_string=FALSE;
+	GMatchInfo *match_info=NULL;
+	if(to_lower && g_regex_match(this->upper_case_regex, str, 0, &match_info)){
+		free_string=TRUE;
 		string=g_utf8_strdown(str, -1);
+	}else
+		string=(gchar *)str;
+	g_match_info_free(match_info);
+	
+	if(uniq && G_STR_N_EMPTY(GTK_ENTRY(this->sexy_entry)->text) && g_strrstr(GTK_ENTRY(this->sexy_entry)->text, string)){
+		if(free_string) uber_free(string);
+		return FALSE;
+	}
+	
+	if(uniq && GTK_ENTRY(this->sexy_entry)->text[0]=='@' && string[0]=='@'){
+		if(free_string) uber_free(string);
+		return FALSE;
+	}
 	
 	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(this->sexy_entry));
-	gtk_editable_insert_text(GTK_EDITABLE(this->sexy_entry), (string ?string :str), -1, &position_after);
+	gtk_editable_insert_text(GTK_EDITABLE(this->sexy_entry), string, -1, &position_after);
 	if(position_after<position_prior)
 		this->sexy_entry_text_position=position_prior;
 	else
@@ -416,8 +445,7 @@ static gboolean uberchick_sexy_entry_completion_puts(UberChickSexyEntryCompletio
 	
 	gtk_entry_set_position(GTK_ENTRY(this->sexy_entry), this->sexy_entry_text_position);
 	
-	if(string)
-		uber_free(string);
+	if(free_string) uber_free(string);
 	
 	uberchick_sexy_entry_completion_update_remaining_character_count(uberchick_sexy_entry_completion);
 	uberchick_sexy_entry_completion_select(uberchick_sexy_entry_completion);

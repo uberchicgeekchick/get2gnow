@@ -33,6 +33,7 @@
 #include "program.h"
 
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-services-dialog.h"
 #include "online-services.h"
 #include "online-service.types.h"

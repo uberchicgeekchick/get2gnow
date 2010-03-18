@@ -56,7 +56,7 @@ get2gnow_SOURCES = 													\
 	friend-manager.c				friend-manager.h						\
 	gconfig.c					gconfig.h							\
 	geometry.c					geometry.h							\
-	groups.c					groups.h							\
+	groups.c				groups.types.h			groups.h				\
 	gtkbuilder.c					gtkbuilder.h							\
 	hotkeys.c					hotkeys.h							\
 	images.c					images.h							\
@@ -71,13 +71,13 @@ get2gnow_SOURCES = 													\
 	online-services.c				online-services.h						\
 	online-services-dialog.c			online-services-dialog.h					\
 	online-service-wrapper.c			online-service-wrapper.h					\
-	parser.c					parser.h							\
 	preferences.c					preferences.h							\
 	profile-manager.c				profile-manager.h						\
 	program.c					program.h							\
 	proxy.c						proxy.h								\
 	searches.c					searches.h							\
 	tabs.c						tabs.h								\
+	timelines.c					timelines.h							\
 	timer.c						timer.h								\
 	uberchick-label.c				uberchick-label.h						\
 	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
@@ -88,51 +88,53 @@ get2gnow_SOURCES = 													\
 	users-glists.c					users-glists.h							\
 	users.c				users.types.h			users.h						\
 	user-profile-viewer.c				user-profile-viewer.h						\
+	xml.c				xml.types.h			xml.h						\
 	www.c						www.h								\
 
 
 @HAVE_GNOME_KEYRING_TRUE@am__objects_1 = keyring.$(OBJEXT)
-get2gnow_OBJECTS =					\
-	about.$(OBJEXT)					\
-	best-friends.$(OBJEXT)				\
-	cache.$(OBJEXT)					\
-	debug.$(OBJEXT)					\
-	following-viewer.$(OBJEXT)			\
-	friends-manager.$(OBJEXT)			\
-	gconfig.$(OBJEXT)				\
-	geometry.$(OBJEXT)				\
-	groups.$(OBJEXT)				\
-	gtkbuilder.$(OBJEXT)				\
-	hotkeys.$(OBJEXT)				\
-	images.$(OBJEXT)				\
-	ipc.$(OBJEXT)					\
-	$(am__objects_1)				\
-	main.$(OBJEXT)					\
-	main-window.$(OBJEXT)				\
-	network.$(OBJEXT)				\
-	online-service.$(OBJEXT)			\
-	online-service-request.$(OBJEXT)		\
-	online-services-dialog.$(OBJEXT)		\
-	online-services.$(OBJEXT)			\
-	online-service-wrapper.$(OBJEXT)		\
-	parser.$(OBJEXT)				\
-	preferences.$(OBJEXT)				\
-	profile-manager.$(OBJEXT)			\
-	program.$(OBJEXT)				\
-	proxy.$(OBJEXT)					\
-	searches.$(OBJEXT)				\
-	tabs.$(OBJEXT)					\
-	timer.$(OBJEXT)					\
-	uberchick-label.$(OBJEXT)			\
-	uberchick-sexy-entry-completion.$(OBJEXT)	\
-	uberchick-tree-view.$(OBJEXT)			\
-	ui-utils.$(OBJEXT)				\
-	update-ids.$(OBJEXT)				\
-	update-viewer.$(OBJEXT)				\
-	users-glists.$(OBJEXT)				\
-	users.$(OBJEXT)					\
-	user-profile-viewer.$(OBJEXT)			\
-	www.$(OBJEXT)					\
+get2gnow_OBJECTS =													\
+	about.$(OBJEXT)													\
+	best-friends.$(OBJEXT)												\
+	cache.$(OBJEXT)													\
+	debug.$(OBJEXT)													\
+	following-viewer.$(OBJEXT)											\
+	friends-manager.$(OBJEXT)											\
+	gconfig.$(OBJEXT)												\
+	geometry.$(OBJEXT)												\
+	groups.$(OBJEXT)												\
+	gtkbuilder.$(OBJEXT)												\
+	hotkeys.$(OBJEXT)												\
+	images.$(OBJEXT)												\
+	ipc.$(OBJEXT)													\
+	$(am__objects_1)												\
+	main.$(OBJEXT)													\
+	main-window.$(OBJEXT)												\
+	network.$(OBJEXT)												\
+	online-service.$(OBJEXT)											\
+	online-service-request.$(OBJEXT)										\
+	online-services-dialog.$(OBJEXT)										\
+	online-services.$(OBJEXT)											\
+	online-service-wrapper.$(OBJEXT)										\
+	preferences.$(OBJEXT)												\
+	profile-manager.$(OBJEXT)											\
+	program.$(OBJEXT)												\
+	proxy.$(OBJEXT)													\
+	searches.$(OBJEXT)												\
+	tabs.$(OBJEXT)													\
+	timelines.$(OBJEXT)												\
+	timer.$(OBJEXT)													\
+	uberchick-label.$(OBJEXT)											\
+	uberchick-sexy-entry-completion.$(OBJEXT)									\
+	uberchick-tree-view.$(OBJEXT)											\
+	ui-utils.$(OBJEXT)												\
+	update-ids.$(OBJEXT)												\
+	update-viewer.$(OBJEXT)												\
+	users-glists.$(OBJEXT)												\
+	users.$(OBJEXT)													\
+	user-profile-viewer.$(OBJEXT)											\
+	xml.$(OBJEXT)													\
+	www.$(OBJEXT)													\
 
 
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -325,24 +327,24 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 UBERCHICK_CFLAGS=-std=gnu99 -g3 -ggdb -Wno-parentheses -ffast-math
-AM_CFLAGS=									\
-		-I$(top_srcdir)                        				\
-		-I${top_builddir}						\
-		-DBUILDDIR=\""${abs_top_builddir}"\"				\
-		-DPREFIX="\"$(prefix)"\"					\
-		-DSYSCONFDIR=\""$(sysconfdir)"\"				\
-		-DDATADIR=\""$(datadir)"\"              			\
-		-DPKGDATADIR=\""$(pkgdatadir)"\"				\
-		-DLOCALEDIR=\""$(localedir)"\"					\
-		-DLIBDIR=\""$(libdir)"\"					\
-		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"	\
-		$(WARN_CFLAGS)							\
-		$(debug_CFLAGS)							\
-		$(get2gnow_CFLAGS)						\
-		$(UBERCHICK_CFLAGS)						\
+AM_CFLAGS=														\
+		-I$(top_srcdir)                        									\
+		-I${top_builddir}											\
+		-DBUILDDIR=\""${abs_top_builddir}"\"									\
+		-DPREFIX="\"$(prefix)"\"										\
+		-DSYSCONFDIR=\""$(sysconfdir)"\"									\
+		-DDATADIR=\""$(datadir)"\"              								\
+		-DPKGDATADIR=\""$(pkgdatadir)"\"									\
+		-DLOCALEDIR=\""$(localedir)"\"										\
+		-DLIBDIR=\""$(libdir)"\"										\
+		-DLIBSOUP_VERSION=\""`pkg-config --modversion libsoup-2.4`"\"						\
+		$(WARN_CFLAGS)												\
+		$(debug_CFLAGS)												\
+		$(get2gnow_CFLAGS)											\
+		$(UBERCHICK_CFLAGS)											\
 
 
-get2gnow_LDADD =								\
+get2gnow_LDADD =													\
 	$(get2gnow_LIBS)
 
 all: all-am
@@ -438,13 +440,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-services.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-wrapper.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/profile-manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/searches.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tabs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timelines.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uberchick-sexy-entry-completion.Po@am__quote@
@@ -455,6 +457,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users-glists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/users.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user-profile-viewer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/www.Po@am__quote@
 
 .c.o:

@@ -68,9 +68,11 @@
 #include "program.h"
 
 #include "www.h"
+#include "xml.h"
 #include "update-ids.h"
 
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.h"
 #include "online-service.types.h"
@@ -90,7 +92,6 @@
 #include "users.h"
 
 #include "network.h"
-#include "searches.h"
 
 #include "preferences.defines.h"
 #include "proxy.h"
@@ -141,7 +142,6 @@ struct _MicroBloggingServices{
 
 MicroBloggingServices MicroBloggingServicesList[]={
 	{Unknown,	NULL,			"get2gnow"},
-	{Identica,	"identi.ca",		"get2gnow"},
 	{Twitter,	"twitter.com",		"greettweetknow"},
 	{StatusNet,	"*",			"get2gnow"},
 	{Unsupported,	NULL,			NULL},
@@ -271,9 +271,8 @@ static void online_service_set_micro_blogging_service(OnlineService **service){
 static const gchar *micro_blogging_service_to_string(MicroBloggingService micro_blogging_service){
 	switch(micro_blogging_service){
 		case Unknown: default: return _("Unkown");
-		case Identica: return _("Identica");
-		case Twitter: return _("Twitter");
 		case StatusNet: return _("StatusNet");
+		case Twitter: return _("Twitter");
 		case Unsupported: return _("Unsupported");
 	}
 }/*micro_blogging_service_to_string(MicroBloggingServices micro_blogging_service)*/
@@ -576,7 +575,7 @@ static void *online_service_login_check(SoupSession *session, SoupMessage *xml, 
 	}
 
 	gchar *error_message=NULL;
-	if(!www_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)){
+	if(!xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message)){
 		debug("Logging on to <%s> failed.  Please check your user name and/or password. %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		statusbar_printf("Logging on to <%s> failed.  Please check your user name and/or password. %s said: %s(#%d).", service->guid, service->uri, xml->reason_phrase, xml->status_code );
 		service->authenticated=FALSE;
@@ -716,7 +715,11 @@ gboolean online_service_reconnect(OnlineService *service){
 }/*online_service_reconnect(service);*/
 
 gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri){
-	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :"" ), ( g_strstr_len(uri, -1, "search.") && service->micro_blogging_service==Twitter ?"search." :"" ), service->uri, ( (service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
+	if(G_STR_EMPTY(uri)){
+		debug("**ERROR:** Cannot create an OnlineServiceRequest from an empty URI");
+		return NULL;
+	}
+	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :"" ), ( g_strstr_len(uri, -1, "search.") && service->micro_blogging_service==Twitter ?"search." :"" ), service->uri, ( ( !g_str_has_prefix(uri, "/search/") && service->micro_blogging_service!=Twitter) ?"/api" :"" ), (G_STR_N_EMPTY(uri) ?uri :"") );
 }/*online_service_request_uri_create(service, uri);*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request_method, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
@@ -904,7 +907,7 @@ static void online_service_request_validate_form_data(OnlineService *service, gc
 		}
 	}
 	
-	if( g_str_has_prefix(*form_data, "*") && (service->micro_blogging_service==Identica || service->micro_blogging_service==StatusNet) )
+	if( g_str_has_prefix(*form_data, "*") && service->micro_blogging_service==StatusNet )
 		free_form_data=online_service_form_data_replace( service, (&form_data), g_strdup_printf(" %s", (gchar *)(*form_data) ) );
 	
 	free_form_data=online_service_form_data_replace( service, (&form_data), g_uri_escape_string((*form_data), NULL, TRUE) );

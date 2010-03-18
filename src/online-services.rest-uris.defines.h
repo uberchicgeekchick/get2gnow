@@ -84,13 +84,21 @@ G_BEGIN_DECLS
 #define API_TIMELINE_USER				"/statuses/user_timeline/%s.xml"
 #define API_TIMELINE_USER_UNREAD			API_TIMELINE_USER "?since_id=%f"
 
+#define API_TIMELINE_PUBLIC				"/statuses/public_timeline.xml"
+
 #define API_FORWARDS_BY_ID				"/statuses/retweets/%s.xml"
 
 #define API_TIMELINE_SEARCH				"/search.atom?q="
 #define API_TIMELINE_SEARCH_SUBMIT			"/search.atom?q=%s"
 
-#define API_TIMELINE_GROUP				"/statuses/groups.xml"
-#define API_TIMELINE_PUBLIC				"/statuses/public_timeline.xml"
+#define API_STATUSNET_GROUPS_SEARCH			"/search/group?q="
+#define API_STATUSNET_GROUPS_SEARCH_SUBMIT		"/search/group?q=%s"
+
+#define API_STATUSNET_GROUPS_LIST_ALL			"/statusnet/groups/list_all.xml"
+
+#define API_STATUSNET_GROUPS_LIST			"/statusnet/groups/list.xml"
+#define API_STATUSNET_GROUPS_JOIN			"/statusnet/groups/join.xml"
+#define API_STATUSNET_GROUPS_LEAVE			"/statusnet/groups/leave.xml"
 
 #define API_POST_STATUS					"/statuses/update.xml"
 #define API_SEND_MESSAGE				"/direct_messages/new.xml"

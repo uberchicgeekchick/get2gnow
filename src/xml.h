@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -51,48 +51,50 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__GROUPS_H__
-#define	__GROUPS_H__
+#ifndef	__XML_H__
+#define	__XML_H__
 
-#ifndef	_GNU_SOURCE 
-#	define _GNU_SOURCE
-#endif
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
-#ifndef _THREAD_SAFE
-#	define _THREAD_SAFE
-#endif
 
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>
 
-
-/********************************************************************************
- * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
- ********************************************************************************/
-#include <glib/gi18n.h>
+#include <libxml/parser.h>
 #include <libsoup/soup-message.h>
 
-#include "uberchick-tree-view.h"
-
+#include "online-services.typedefs.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
- *        Methods, macros, constants, objects, structs, and enum typedefs       *
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
+
+
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
 
 
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-void groups_init(void);
-void groups_deinit(void);
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
+/*OnlineServiceXmlDoc *xml_init_xml_doc_and_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);*/
+gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
+
+xmlDoc *xml_create_xml_doc_and_get_root_element_from_soup_message(SoupMessage *xml, xmlNode **root_element);
+
+xmlNode *xml_get_child_element(const gchar *uri, xmlNode *root_element, const gchar *element, const gchar *attribute, ...);
+const gchar *xml_node_type_to_string(xmlElementType type);
 
 
-G_END_DECLS
-#endif /* __GROUPS_H__*/
+
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-
-
+G_END_DECLS
+#endif /*__XML_H__*/

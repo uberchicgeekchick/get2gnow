@@ -39,12 +39,12 @@ src/online-service-request.c
 src/online-services.c
 src/online-services-dialog.c
 src/online-service-wrapper.c
-src/parser.c
 src/preferences.c
 src/program.c
 src/proxy.c
 src/searches.c
 src/tabs.c
+src/timelines.c
 src/timer.c
 src/uberchick-label.c
 src/uberchick-sexy-entry-completion.c
@@ -55,5 +55,6 @@ src/update-viewer.c
 src/users-glists.c
 src/users.c
 src/user-profile-viewer.c
+src/xml.c
 src/www.c
 

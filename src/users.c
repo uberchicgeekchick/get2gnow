@@ -87,9 +87,9 @@
 #include "preferences.defines.h"
 #include "gtkbuilder.h"
 #include "cache.h"
-#include "parser.h"
 
 #include "www.h"
+#include "xml.h"
 
 #include "ui-utils.h"
 #include "update-viewer.h"
@@ -114,7 +114,7 @@ static void user_status_validate(UserStatus **status);
 static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateType update_type);
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user);
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user);
-static void user_status_format_dates(UserStatus *status);
+static void user_status_format_dates(UserStatus *status, gboolean use_gmt);
 
 
 /********************************************************************************
@@ -174,7 +174,7 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 	xmlNode *root_element=NULL;
 	User *user=NULL;
 	
-	if(!( (doc=parse_xml_doc(xml, &root_element )) )){
+	if(!( (doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element )) )){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -198,7 +198,7 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 }/*user_parse_profile(service, xml, service_wrapper);*/
 
 User *user_parse_node(OnlineService *service, xmlNode *root_element){
-	xmlNode		*current_node=NULL;
+	xmlNode		*current_element=NULL;
 	gchar		*content=NULL;
 	
 	User		*user=user_new(service, getting_followers);
@@ -206,73 +206,73 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	debug("Parsing user profile data.");
 	/* Begin 'users' node loop */
 	debug("Parsing user beginning at node: %s", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE )
+	for(current_element=root_element; current_element; current_element=current_element->next) {
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE )
 			continue;
 		
-		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) )) continue;
+		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_element)) ) )) continue;
 		
-		if(g_str_equal(current_node->name, "id" )){
+		if(g_str_equal(current_element->name, "id" )){
 			user->id=g_ascii_strtod(content, NULL);
 			user->id_str=gdouble_to_str(user->id);
 			debug("User ID: %s(=%f).", user->id_str, user->id);
 			
-		}else if(g_str_equal(current_node->name, "name" ))
+		}else if(g_str_equal(current_element->name, "name" ))
 			user->nick_name=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_node->name, "screen_name" ))
+		else if(g_str_equal(current_element->name, "screen_name" ))
 			user->user_name=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_node->name, "location" ))
+		else if(g_str_equal(current_element->name, "location" ))
 			user->location=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_node->name, "description" )){
+		else if(g_str_equal(current_element->name, "description" )){
 			if(G_STR_N_EMPTY(content))
 				user->bio=g_markup_printf_escaped("%s", content);
 			else
 				user->bio=g_strdup("unavailable");
-		}else if(g_str_equal(current_node->name, "url" ))
+		}else if(g_str_equal(current_element->name, "url" ))
 			user->uri=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "followers_count" ))
+		else if(g_str_equal(current_element->name, "followers_count" ))
 			user->followers=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(current_node->name, "friends_count" ))
+		else if(g_str_equal(current_element->name, "friends_count" ))
 			user->following=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(current_node->name, "statuses_count" ))
+		else if(g_str_equal(current_element->name, "statuses_count" ))
 			user->updates=strtoul( content, NULL, 10 );
 		
-		else if(g_str_equal(current_node->name, "profile_image_url"))
+		else if(g_str_equal(current_element->name, "profile_image_url"))
 			user->image_uri=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "profile_background_image_url"))
+		else if(g_str_equal(current_element->name, "profile_background_image_url"))
 			user->profile_background_uri=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "profile_background_tile")){
+		else if(g_str_equal(current_element->name, "profile_background_tile")){
 			if(!strcasecmp(content, "true"))
 				user->profile_background_tile=TRUE;
 		
-		}else if(g_str_equal(current_node->name, "profile_background_color"))
+		}else if(g_str_equal(current_element->name, "profile_background_color"))
 			user->profile_background_color=g_strdup_printf("#%s", content);
 
-		else if(g_str_equal(current_node->name, "profile_text_color"))
+		else if(g_str_equal(current_element->name, "profile_text_color"))
 			user->profile_text_color=g_strdup_printf("#%s", content);
 
-		else if(g_str_equal(current_node->name, "profile_link_color"))
+		else if(g_str_equal(current_element->name, "profile_link_color"))
 			user->profile_link_color=g_strdup_printf("#%s", content);
 
-		else if(g_str_equal(current_node->name, "profile_sidebar_fill_color"))
+		else if(g_str_equal(current_element->name, "profile_sidebar_fill_color"))
 			user->profile_sidebar_fill_color=g_strdup_printf("#%s", content);
 
-		else if(g_str_equal(current_node->name, "profile_sidebar_border_color"))
+		else if(g_str_equal(current_element->name, "profile_sidebar_border_color"))
 			user->profile_sidebar_border_color=g_strdup_printf("#%s", content);
 
-		else if( g_str_equal(current_node->name, "status") && current_node->children)
-			user->status=user_status_parse(service, current_node->children, Users);
+		else if( g_str_equal(current_element->name, "status") && current_element->children)
+			user->status=user_status_parse(service, current_element->children, Users);
 		
-		else if( g_str_equal(current_node->name, "retweeted_status") && user->status && current_node->children){
-			user->status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, Users);
+		else if( g_str_equal(current_element->name, "retweeted_status") && user->status && current_element->children){
+			user->status->retweeted_status=user_status_parse_retweeted_status(service, current_element->children, Users);
 		}
 		
 		uber_free(content);
@@ -293,7 +293,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	user->profile_background_file=cache_images_get_user_profile_background_filename(service, user->user_name, user->profile_background_uri);
 	
 	return user;
-}/*user_parse_node(service, root_node); || user_parse_node(service, current_node->children);*/
+}/*user_parse_node(service, root_node); || user_parse_node(service, current_element->children);*/
 
 void user_free(User *user){
 	if(!( user && user->id && user->service )) return;
@@ -342,85 +342,90 @@ static void user_status_validate( UserStatus **status ){
 }/*user_status_validate(&status);*/ 
 
 UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type){
-	xmlNode		*current_node=NULL, *temp_node=NULL;
+	xmlNode		*current_element=NULL, *current_elements_attributes=NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, Searches);
 	status->user=user_new(service, getting_followers);
 	
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing searches results beginning at node: %s", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
+	for(current_element=root_element; current_element; current_element=current_element->next) {
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
 		
-		if( !g_str_equal(current_node->name, "link") && G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) ){
+		if( !g_str_equal(current_element->name, "link") && G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_element)) ) ){
 			if(content) uber_free(content);
 			continue;
 		}
 		
-		debug("Parsing searches beginning at node: %s.", current_node->name );
-		if(g_str_equal(current_node->name, "id")){
+		debug("Parsing searches beginning at node: %s.", current_element->name );
+		if(g_str_equal(current_element->name, "id")){
 			gchar *status_id=NULL;
 			status->id=g_ascii_strtod((status_id=g_strrstr(content, ":")+1), NULL);
 			status->id_str=g_strdup(status_id);
 			debug("Parsing searches Update ID: %s(=%f).", status->id_str, status->id);
-		}else if(g_str_equal(current_node->name, "published") || g_str_equal(current_node->name, "updated")){
-			if( status->created_at_str && !g_str_equal(status->created_at_str, content) ){
-				uber_free(status->created_at_str);
-				uber_free(status->created_how_long_ago);
-				status->created_at=0;
-			}
-			status->created_at_str=g_strdup(content);
-			user_status_format_dates(status);
-		}else if(g_str_equal(current_node->name, "title")){
-			status->text=g_strdup(content);
-			debug("Parsing searches update: %s; from: %s.", status->text, current_node->name );
-		}else if(g_str_equal(current_node->name, "link")){
-			if(content) uber_free(content);
-			xmlAttr *attr_node;
-			debug("Parsing searches link node searching for type=\"image/png\".");
-			for( attr_node=current_node->properties; attr_node; attr_node=attr_node->next ){
-				debug("Parsing searches at node: %s looking for type.", attr_node->name );
-				if(g_str_equal(attr_node->name, "type")) break;
-			}
-			if(!attr_node) continue;
+		}else if(g_str_equal(current_element->name, "published") || g_str_equal(current_element->name, "updated")){
+			if( status->created_at_str )
+				if(!g_str_equal(status->created_at_str, content)){
+					uber_free(status->created_at_str);
+					uber_free(status->created_how_long_ago);
+					status->created_at=0;
+				}else{
+					uber_free(content);
+					continue;
+				}
 			
-			for(temp_node=attr_node->children; temp_node; temp_node=temp_node->next){
-				content=(gchar *)xmlNodeGetContent(temp_node);
+			status->created_at_str=g_strdup(content);
+			user_status_format_dates(status, TRUE);
+		}else if(g_str_equal(current_element->name, "title")){
+			status->text=g_strdup(content);
+			debug("Parsing searches update: %s; from: %s.", status->text, current_element->name );
+		}else if(g_str_equal(current_element->name, "link")){
+			if(content) uber_free(content);
+			xmlAttr *elements_attributes;
+			debug("Parsing searches link node searching for type=\"image/png\".");
+			for( elements_attributes=current_element->properties; elements_attributes; elements_attributes=elements_attributes->next ){
+				debug("Parsing searches at node: %s looking for type.", elements_attributes->name );
+				if(g_str_equal(elements_attributes->name, "type")) break;
+			}
+			if(!elements_attributes) continue;
+			
+			for(current_elements_attributes=elements_attributes->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next){
+				content=(gchar *)xmlNodeGetContent(current_elements_attributes);
 				debug("Parsing searches at node: %s looking for image/png.", content );
 				if(g_str_equal(content, "image/png")) break;
 				uber_free(content);
 			}
 			if(content) uber_free(content);
-			if(!temp_node) continue;
+			if(!current_elements_attributes) continue;
 			
 			debug("Parsed searches type and image/png nodes.  Now searching href node.");
-			for( attr_node=attr_node->next; attr_node; attr_node=attr_node->next ){
-				debug("Parsing searches node %s looking for href.", attr_node->name );
-				if(g_str_equal(attr_node->name, "href") ) break;
+			for( elements_attributes=elements_attributes->next; elements_attributes; elements_attributes=elements_attributes->next ){
+				debug("Parsing searches node %s looking for href.", elements_attributes->name );
+				if(g_str_equal(elements_attributes->name, "href") ) break;
 			}
-			if(!attr_node) continue;
+			if(!elements_attributes) continue;
 			
 			debug("Parsed searches href nodes.  Setting avatar's uri.");
-			status->user->image_uri=(gchar *)xmlNodeGetContent(attr_node->children);
+			status->user->image_uri=(gchar *)xmlNodeGetContent(elements_attributes->children);
 			debug("Parsing searches nodes finished.  Setting user->image: %s.", status->user->image_uri );
 			
-			attr_node=NULL;
-			temp_node=NULL;
+			elements_attributes=NULL;
+			current_elements_attributes=NULL;
 			continue;
-		}else if(g_str_equal(current_node->name, "twitter:source")){
+		}else if(g_str_equal(current_element->name, "twitter:source")){
 			status->source=g_strdup(content);
-		}else if(g_str_equal(current_node->name, "author")){
+		}else if(g_str_equal(current_element->name, "author")){
 			if(content) uber_free(content);
-			debug("Parsing searches user_name & user_nick from: %s.", current_node->name );
-			for( temp_node=current_node->children; temp_node; temp_node=temp_node->next ){
-				debug("Parsing searches for user_name & user_nick: %s.", temp_node->name );
-				if(g_str_equal(temp_node->name, "name") ) break;
+			debug("Parsing searches user_name & user_nick from: %s.", current_element->name );
+			for( current_elements_attributes=current_element->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next ){
+				debug("Parsing searches for user_name & user_nick: %s.", current_elements_attributes->name );
+				if(g_str_equal(current_elements_attributes->name, "name") ) break;
 			}
 			if(content) uber_free(content);
-			if(!temp_node) continue;
-			if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(temp_node)) ) )){
+			if(!current_elements_attributes) continue;
+			if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_elements_attributes)) ) )){
 				if(content) uber_free(content);
-				temp_node=NULL;
+				current_elements_attributes=NULL;
 				continue;
 			}
 			
@@ -442,7 +447,7 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 				g_strfreev(user_data);
 			}
 			debug("Parsed searches user_name: %s; user_nick: %s.", status->user->user_name, status->user->nick_name);
-			temp_node=NULL;
+			current_elements_attributes=NULL;
 		}
 		if(content) uber_free(content);
 	}
@@ -450,28 +455,28 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 	status->user->image_file=cache_images_get_user_avatar_filename(service, status->user->user_name, status->user->image_uri);
 	status->user->profile_background_file=cache_images_get_user_profile_background_filename(service, status->user->user_name, status->user->profile_background_uri);
 	
-	user_validate( &status->user );
+	user_validate(&status->user);
 	user_status_validate(&status);
 	
 	user_status_format_updates(service, status, status->user);
 	
 	return status;
-}/*user_status_parse_from_search_result_atom_entry(service, current_node->children, update_type);*/
+}/*user_status_parse_from_search_result_atom_entry(service, current_element->children, update_type);*/
 
 static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateType update_type){
 	debug("Parsing retweeted update beginning at node: %s", root_element->name);
 	UserStatus *status=user_status_parse(service, root_element, update_type);
 	status->retweet=TRUE;
 	return status;
-}/*user_status_parse_retweeted_status(service, current_node->children, Homepage);*/
+}/*user_status_parse_retweeted_status(service, current_element->children, Homepage);*/
 
 UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, const gchar *uri){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	xmlNode		*current_node=NULL;
+	xmlNode		*current_element=NULL;
 	UserStatus 	*status=NULL;
 	
-	if(!(doc=parse_xml_doc(xml, &root_element))){
+	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, from <%s/%s>.", service->key, uri);
 		xmlCleanupParser();
 		return NULL;
@@ -479,21 +484,21 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 	
 	/* get updates or direct messages */
 	debug("Parsing %s.", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
+	for(current_element=root_element; current_element; current_element=current_element->next) {
+		if(current_element->type != XML_ELEMENT_NODE ) continue;
 		
-		if(!( g_str_equal(current_node->name, "status") ))
+		if(!( g_str_equal(current_element->name, "status") ))
 			continue;
 		
-		if(!current_node->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_node->name);
+		if(!current_element->children){
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_element->name);
 			continue;
 		}
 		
-		debug("Parsing %s.", (g_str_equal(current_node->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s.", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
 		
 		debug("Creating Status *.");
-		if(!( (( status=user_status_parse(service, current_node->children, Archive))) && status->id )){
+		if(!( (( status=user_status_parse(service, current_element->children, Archive))) && status->id )){
 			if(status) user_status_free(status);
 			break;
 		}
@@ -503,43 +508,43 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 }/*user_status_parse_new(service, xml);*/
 
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateType update_type){
-	xmlNode		*current_node=NULL;
+	xmlNode		*current_element=NULL;
 	gchar		*content=NULL;
 	UserStatus	*status=user_status_new(service, update_type);
 	
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing update at beginning node: %s", root_element->name);
-	for(current_node=root_element; current_node; current_node=current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE && current_node->type != XML_ATTRIBUTE_NODE ) continue;
+	for(current_element=root_element; current_element; current_element=current_element->next) {
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
 		
-		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_node)) ) )){
+		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_element)) ) )){
 			if(content) uber_free(content);
 			continue;
 		}
 		
-		if( g_str_equal(current_node->name, "retweeted_status") && current_node->children)
-			status->retweeted_status=user_status_parse_retweeted_status(service, current_node->children, update_type);
+		if( g_str_equal(current_element->name, "retweeted_status") && current_element->children)
+			status->retweeted_status=user_status_parse_retweeted_status(service, current_element->children, update_type);
 		
-		else if(g_str_equal(current_node->name, "id")){
+		else if(g_str_equal(current_element->name, "id")){
 			status->id=g_ascii_strtod(content, NULL);
 			status->id_str=gdouble_to_str(status->id);
 			debug("Update ID: %s(=%f).", content, status->id);
 			
-		}else if(g_str_equal(current_node->name, "in_reply_to_status_id"))
+		}else if(g_str_equal(current_element->name, "in_reply_to_status_id"))
 			status->in_reply_to_status_id=g_ascii_strtod(content, NULL);
 		
-		else if(g_str_equal(current_node->name, "source"))
+		else if(g_str_equal(current_element->name, "source"))
 			status->source=g_strdup(content);
 		
-		else if((g_str_equal(current_node->name, "sender") || g_str_equal(current_node->name, "user")) && current_node->children )
-			status->user=user_parse_node(service, current_node->children);
+		else if((g_str_equal(current_element->name, "sender") || g_str_equal(current_element->name, "user")) && current_element->children )
+			status->user=user_parse_node(service, current_element->children);
 		
-		else if(g_str_equal(current_node->name, "text"))
+		else if(g_str_equal(current_element->name, "text"))
 			status->text=g_strdup(content);
 		
-		else if(g_str_equal(current_node->name, "created_at")){
+		else if(g_str_equal(current_element->name, "created_at")){
 			status->created_at_str=g_strdup(content);
-			user_status_format_dates(status);
+			user_status_format_dates(status, FALSE);
 		}
 		
 		uber_free(content);
@@ -557,7 +562,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 	}
 	
 	return status;
-}/*user_status_parse(service, current_node->children, update_type);*/
+}/*user_status_parse(service, current_element->children, update_type);*/
 
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user){
 	if(!( service && (*status) && user && retweeted_status )) return;
@@ -595,7 +600,7 @@ static void user_status_format_retweeted_status(OnlineService *service, UserStat
 	(*status)->retweeted_user_name=retweeted_user_name;
 }/*user_status_format_retweeted_status(service, retweeted_status, &status, user);*/
 
-static void user_status_format_dates(UserStatus *status){
+static void user_status_format_dates(UserStatus *status, gboolean use_gmt){
 	tzset();
 	time_t		t=time(NULL);
 	struct tm	*ta;
@@ -611,12 +616,12 @@ static void user_status_format_dates(UserStatus *status){
 	status->created_at=mktime(&post);
 	
 	debug("Parsing update's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
-	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago, (status->type==Searches ?FALSE :TRUE) );
+	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago, use_gmt );
 	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
-}/*user_status_format_dates*/
+}/*user_status_format_dates(status, TRUE|FALSE);*/
 
 gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean use_gmt){
-	gint diff=update_convert_datetime_to_seconds_old(datetime, use_gmt);
+	gint diff=convert_datetime_to_seconds_old(datetime, use_gmt);
 	if(diff < 0) *my_diff=0;
 	else *my_diff=diff;
 	
@@ -651,48 +656,20 @@ gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean u
 	 */
 }/*user_status_convert_time(date_created_string, &created_seconds_ago);*/
 
-gint update_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt){
-	struct tm	*ta;
-	struct tm	post;
-	int		seconds_local;
-	int		seconds_post;
-	time_t		t=time(NULL);
-	
-	tzset();
-	if(use_gmt)
-		ta=gmtime(&t);
-	else
-		ta=localtime(&t);
-	ta->tm_isdst=-1;
-	
-	seconds_local=mktime(ta);
-	
-	strptime(datetime, "%a %b %d %T +0000 %Y", &post);
-	post.tm_isdst=-1;
-	seconds_post=mktime(&post);
-	
-	return difftime(seconds_local, seconds_post);
-}/*
-	update_convert_datetime_to_seconds_old("Fri Nov  6 16:30:31 -0000 2009");
-	update_convert_datetime_to_seconds_old(datetime);
-*/
-
 
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user){
 	if(!(service->connected && G_STR_N_EMPTY(status->text) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))) return;
 	
-	gchar *sexy_status_swap=www_html_entity_escape_text(status->text);
-	status->sexy_update=g_strdup(sexy_status_swap);
-	status->sexy_status_text=www_format_urls(service, sexy_status_swap, FALSE, FALSE);
+	status->sexy_update=www_html_entity_escape_text(status->text);
+	status->sexy_status_text=www_format_urls(service, status->sexy_update, FALSE, FALSE);
 	
 	if(status->type==Searches){
 		debug("Formatting update for display.");
 		debug("\tstatus->text: [%s],", status->text);
 		debug("\tstatus->update: [%s],", status->update);
 		debug("\tsexy_status_text: [%s],", status->sexy_status_text);
-		debug("\tsexy_status_swap: [%s],", sexy_status_swap);
+		debug("\tsexy_status_swap: [%s],", status->sexy_update);
 	}
-	uber_free(sexy_status_swap);
 	
 	status->from=g_strdup_printf("<span size=\"small\" weight=\"ultrabold\">%s\n&lt;%s@%s&gt;</span>",
 					user->nick_name, user->user_name, service->uri

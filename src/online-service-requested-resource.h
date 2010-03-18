@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__HEADER_H__
-#define	__HEADER_H__
+#ifndef	__ONLINE_SERVICE_REQUESTED_RESOURCE_H__
+#define	__ONLINE_SERVICE_REQUESTED_RESOURCE_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -105,4 +105,4 @@ void online_service_request_signal_handler_delete(GtkWidget *widget, OnlineServi
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /*__HEADER_H__*/
+#endif /*__ONLINE_SERVICE_REQUESTED_RESOURCE_H__*/

@@ -70,6 +70,8 @@
 #include "online-service-wrapper.h"
 
 #include "www.h"
+#include "xml.h"
+
 #include "main-window.h"
 
 #include "online-service-request.h"
@@ -243,7 +245,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 	uber_free(service->status);
 	const gchar *status=NULL;
 	gchar *error_message=NULL;
-	if(!www_xml_error_check(service, online_service_wrapper->requested_uri, xml, &error_message))
+	if(!xml_error_check(service, online_service_wrapper->requested_uri, xml, &error_message))
 		status=_("[Failed]");
 	else
 		status=_("[Success]");
@@ -253,7 +255,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 		return NULL;
 	}
 	
-	debug("%s  www_xml_error_check returned: %s.", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, online_service_wrapper->requested_uri, xml->reason_phrase, xml->status_code)), error_message );
+	debug("%s  xml_error_check returned: %s.", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, online_service_wrapper->requested_uri, xml->reason_phrase, xml->status_code)), error_message );
 	statusbar_printf("<%s> loading %s: %s.", service->key, g_strrstr(online_service_wrapper->requested_uri, "/"), status);
 	
 	uber_free(error_message);

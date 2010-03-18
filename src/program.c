@@ -81,6 +81,7 @@
 #include "cache.h"
 #include "images.h"
 #include "www.h"
+#include "groups.h"
 
 
 /********************************************************
@@ -158,6 +159,7 @@ gboolean program_init(int argc, char **argv){
 	online_services_init();
 	
 	www_init();
+	groups_init();
 	
 	images_set_unknown_image_file();
 	
@@ -179,15 +181,16 @@ void program_deinit(void){
 	ipc_deinit();
 	
 	www_deinit();
+	groups_deinit();
 	
 	images_unset_unknown_image_file();
 	
 	cache_deinit();
 	
+	debug("**NOTICE:** %s exited.", GETTEXT_PACKAGE);
 	debug_deinit();
 	
 	setlocale(LC_TIME, old_locale);
-	g_print("%s exited.\n", GETTEXT_PACKAGE);
 }/*program_deinit();*/
 
 const gchar *program_gtk_response_to_string(gint response){
@@ -242,6 +245,38 @@ MACROS:
 	gtk_widget_is_visible(widget) == program_gtk_widget_get_gboolean_property_value(widget, "visibile")
 	gtk_widget_is_sensitive(widget) == program_gtk_widget_get_gboolean_property_value(widget, "sensitive")
 	gtk_widget_has_focus(widget) == program_gtk_widget_get_gboolean_property_value(widget, "has-focus")
+*/
+
+gint program_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt){
+	struct tm	*ta;
+	struct tm	post;
+	int		seconds_local;
+	int		seconds_post;
+	
+	/*if(use_gmt)
+		setlocale(LC_TIME, old_locale);*/
+	
+	time_t		t=time(NULL);
+	
+	/*if(use_gmt)
+		ta=gmtime(&t);
+	else*/
+		ta=localtime(&t);
+	ta->tm_isdst=-1;
+	
+	seconds_local=mktime(ta);
+	
+	strptime(datetime, "%a %b %d %T %z %Y", &post);
+	post.tm_isdst=-1;
+	seconds_post=mktime(&post);
+	
+	/*if(use_gmt)
+		old_locale=setlocale(LC_TIME, "C");*/
+	
+	return difftime(seconds_local, seconds_post);
+}/*
+	program_convert_datetime_to_seconds_old("Fri Nov  6 16:30:31 -0000 2009");
+	program_convert_datetime_to_seconds_old(datetime);
 */
 
 /********************************************************

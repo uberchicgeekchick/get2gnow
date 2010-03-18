@@ -193,54 +193,41 @@ StatusNetGroup *groups_new_group_from_node(OnlineService *service, const gchar *
 		debug("Parsing Group from xhtml <li> node.  Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
 		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
 		
-		if(g_str_equal(current_element->name, "a")){
-			if((contents_element=xml_get_child_element(uri, current_element, "a", "class", "url entry-title", "href", NULL))){
-				content=(gchar *)xmlNodeGetContent(contents_element);
-				group->uri=g_strdup(content);
-				debug("**DEBUG:** Parsed Group's URI: <%s>", group->uri);
-				uber_free(content);
-			}else if((contents_element=xml_get_child_element(uri, current_element, "a", "class", "url", "href", NULL))){
-				content=(gchar *)xmlNodeGetContent(contents_element);
-				group->homepage=g_strdup(content);
-				debug("**DEBUG:** Parsed Group's Homepage: <%s>", group->homepage);
-				uber_free(content);
-				continue;
-			}else
-				continue;
+		if((contents_element=xml_get_child_element(uri, current_element, "a", "class", "url entry-title", "href", NULL))){
+			content=(gchar *)xmlNodeGetContent(contents_element);
+			group->uri=g_strdup(content);
+			debug("**DEBUG:** Parsed Group's URI: <%s>", group->uri);
+			uber_free(content);
 			
 			for(current_elements_attributes=current_element->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next) {
 				debug("Parsing current element: <%s>; type: [%s].", current_elements_attributes->name, xml_node_type_to_string(current_elements_attributes->type));
-				if(g_str_equal(current_elements_attributes->name, "img")){
-					if((contents_element=xml_get_child_element(uri, current_elements_attributes, "img", "class", "photo avatar", "src", NULL))){
-						content=(gchar *)xmlNodeGetContent(contents_element);
-						group->image_uri=g_strdup(content);
-						debug("**DEBUG:** Parsed Group's Image URI: <%s>", group->image_uri);
-						uber_free(content);
-					}
-					
-				}else if(g_str_equal(current_elements_attributes->name, "span")){
-					if((contents_element=xml_get_child_element(uri, current_elements_attributes, "span", "class", "nickname", NULL))){
-						content=(gchar *)xmlNodeGetContent(contents_element);
-						group->name=g_markup_printf_escaped(content);
-						uber_free(content);
-						debug("**DEBUG:** Parsed Group's Name: <%s>", group->name);
-					}
+				if((contents_element=xml_get_child_element(uri, current_elements_attributes, "img", "class", "photo avatar", "src", NULL))){
+					content=(gchar *)xmlNodeGetContent(contents_element);
+					group->image_uri=g_strdup(content);
+					debug("**DEBUG:** Parsed Group's Image URI: <%s>", group->image_uri);
+					uber_free(content);
+				}else if((contents_element=xml_get_child_element(uri, current_elements_attributes, "span", "class", "nickname", NULL))){
+					content=(gchar *)xmlNodeGetContent(contents_element);
+					group->name=g_markup_printf_escaped(content);
+					uber_free(content);
+					debug("**DEBUG:** Parsed Group's Name: <%s>", group->name);
 				}
 			}
-		}else if(g_str_equal(current_element->name, "span")){
-			if((contents_element=xml_get_child_element(uri, current_element, "span", "class", "fn org", NULL))){
-				content=(gchar *)xmlNodeGetContent(contents_element);
-				group->title=g_markup_printf_escaped(content);
-				uber_free(content);
-				debug("**DEBUG:** Parsed Group's Title: <%s>", group->title);
-			}
-		}else if(g_str_equal(current_element->name, "p")){
-			if((contents_element=xml_get_child_element(uri, current_element, "p", "class", "note", NULL))){
-				content=(gchar *)xmlNodeGetContent(contents_element);
-				group->note=g_markup_printf_escaped(content);
-				uber_free(content);
-				debug("**DEBUG:** Parsed Group's Note: <%s>", group->note);
-			}
+		}else if((contents_element=xml_get_child_element(uri, current_element, "a", "class", "url", "href", NULL))){
+			content=(gchar *)xmlNodeGetContent(contents_element);
+			group->homepage=g_strdup(content);
+			debug("**DEBUG:** Parsed Group's Homepage: <%s>", group->homepage);
+			uber_free(content);
+		}else if((contents_element=xml_get_child_element(uri, current_element, "span", "class", "fn org", NULL))){
+			content=(gchar *)xmlNodeGetContent(contents_element);
+			group->title=g_markup_printf_escaped(content);
+			uber_free(content);
+			debug("**DEBUG:** Parsed Group's Title: <%s>", group->title);
+		}else if((contents_element=xml_get_child_element(uri, current_element, "p", "class", "note", NULL))){
+			content=(gchar *)xmlNodeGetContent(contents_element);
+			group->note=g_markup_printf_escaped(content);
+			uber_free(content);
+			debug("**DEBUG:** Parsed Group's Note: <%s>", group->note);
 		}
 	}
 	

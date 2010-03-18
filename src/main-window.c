@@ -64,7 +64,6 @@
 
 #include "gconfig.h"
 #include "gtkbuilder.h"
-#include "parser.h"
 
 #include "about.h"
 #include "online-services.typedefs.h"
@@ -573,7 +572,11 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
  .	 * 	This is handled by MainWindow's methods: 'main_window_toggle_visibility' & 'main_window_timeout'.
 	 */
 	const gchar *gconfig_key=g_object_get_data( (GObject *)check_menu_item, "gconfig_key");
+	const gchar *gconfig_default=g_object_get_data( (GObject *)check_menu_item, "default_value");
 	gboolean active=gtk_check_menu_item_get_active(check_menu_item);
+	if(active==gconfig_if_bool(gconfig_key, (g_str_equal(gconfig_default, "FALSE") ?FALSE :TRUE)))
+		return;
+	
 	gconfig_set_bool(gconfig_key, active);
 	GtkWidget *widget=NULL;
 	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) ){
@@ -610,10 +613,10 @@ static void main_window_compact_view_toggled(gboolean checked){
 }/*main_window_view_compact_view_toggled(TRUE|FALSE);*/
 
 static void main_window_compact_timelines_toggled(gboolean checked){
+	tabs_toggle_view();
+	
 	gtk_check_menu_item_set_active(main_window->private->view_menu_from_colums_check_menu_item, !checked);
 	gtk_check_menu_item_set_active(main_window->private->view_menu_rcpt_colums_check_menu_item, !checked);
-	
-	tabs_toggle_view();
 }/*main_window_compact_timelines_toggled(TRUE|FALSE);*/
 
 void main_window_compact_ui(GtkToggleButton *toggle_button){
@@ -1168,8 +1171,14 @@ static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *m
 	if( G_STR_EMPTY(search_phrase) ) return;
 	main_window_search_history_prepend(main_window->private, search_phrase);
 	debug("Searching for %s.", search_phrase);
-	search_phrase=g_uri_escape_string(search_phrase, NULL, TRUE);
-	gchar *search_timeline=g_strdup_printf(API_TIMELINE_SEARCH_SUBMIT, search_phrase);
+	gchar *search_timeline=NULL;
+	if(search_phrase[0]!='!'){
+		search_phrase=g_uri_escape_string(search_phrase, NULL, TRUE);
+		search_timeline=g_strdup_printf(API_TIMELINE_SEARCH_SUBMIT, search_phrase);
+	}else{
+		search_phrase=g_uri_escape_string(&search_phrase[1], NULL, TRUE);
+		search_timeline=g_strdup_printf(API_STATUSNET_GROUPS_SEARCH_SUBMIT, search_phrase);
+	}
 	tabs_open_timeline(search_timeline, NULL);
 	uber_free(search_phrase);
 	uber_free(search_timeline);

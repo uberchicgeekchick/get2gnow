@@ -78,10 +78,13 @@ typedef struct _OnlineServices OnlineServices;
 typedef struct _OnlineService OnlineService;
 typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
 typedef struct _OnlineServiceRequestedResource OnlineServiceRequestedResource;
+typedef struct _OnlineServiceXmlDoc OnlineServiceXmlDoc;
 typedef enum _RequestAction RequestAction;
 
 typedef struct _User User;
 typedef struct _UserStatus UserStatus;
+
+typedef struct _StatusNetGroup StatusNetGroup;
 
 typedef struct _RateLimitTimer RateLimitTimer;
 typedef enum _UpdateType UpdateType;
@@ -101,12 +104,22 @@ typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
  **********************************************************************/
 #define	ONLINE_SERVICE_REQUEST_FUNC	((OnlineServiceRequestFunc)(func))
 typedef void (*OnlineServiceRequestFunc) (OnlineService *service, GtkWindow *parent_window, const gchar *user_data);
+
 #define	ONLINE_SERVICE_SOUPSESSION_CALLBACK_RETURN_PROCESSOR_FUNC	((OnlineServiceSoupSessionCallbackReturnProcessorFunc)(func))
 typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
+
 #define	ONLINE_SERVICE_SOUP_SESSION_CALLBACK_FUNC	((OnlineServiceSoupSessionCallbackFunc)(func))
 typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
+
+#define	ONLINE_SERVICE_POST_PROCESS_FUNC	((OnlineServicePostProcessFunc)(func))
+typedef void (*OnlineServicePostProcessFunc) (OnlineServiceWrapper *service_wrapper, OnlineServiceXmlDoc *xml_doc, gpointer soup_session_callback_return_gpointer);
+
+#define	ONLINE_SERVICE_CALLBACK_FUNC	((OnlineServiceCallbackFunc)(func))
+typedef void* (*OnlineServiceCallbackFunc) (OnlineService *service, OnlineServiceXmlDoc *xml_doc, OnlineServiceWrapper *service_wrapper);
+
 #define	USERS_GLIST_ONLOAD_FUNC(func)	((UsersGListOnLoadFunc)(func))
 typedef void (*UsersGListOnLoadFunc) (GList *users);
+
 #define	G_POINTER_FUNC(func)	((GPointerFunc)(func))
 typedef void (*GPointerFunc) (gpointer user_data);
 

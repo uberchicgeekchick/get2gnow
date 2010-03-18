@@ -86,8 +86,8 @@
 /********************************************************************************
  *                prototypes for private methods & functions                    *
  ********************************************************************************/
-static void update_id_get(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id);
-static void update_id_set(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id);
+static gboolean update_id_get(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id);
+static gboolean update_id_set(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id);
 
 
 /********************************************************************************
@@ -147,8 +147,8 @@ void update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newe
 	uber_free(timelines_gconfig_prefs_path);
 }/*update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
-static void update_id_get( OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id ){
-	if(!( service && G_STR_N_EMPTY(timelines_gconfig_prefs_path) )) return;
+static gboolean update_id_get( OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id ){
+	if(!( service && G_STR_N_EMPTY(timelines_gconfig_prefs_path) )) return FALSE;
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
@@ -156,7 +156,7 @@ static void update_id_get( OnlineService *service, const gchar *timelines_gconfi
 	 */
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gdouble swap_id;
-	gboolean success;
+	gboolean success=FALSE;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY, service->key, timelines_gconfig_prefs_path, key);
 	debug("Retrieving <%s>'s %s update ID.  From gconf key: [%s].", service->key, key, prefs_path);
@@ -169,6 +169,7 @@ static void update_id_get( OnlineService *service, const gchar *timelines_gconfi
 	debug("Retrieved <%s>'s %s update ID: %f(from string %s) from gconf key: [%s].", service->key, key, *update_id, swap_id_str, prefs_path);
 	uber_free(prefs_path);
 	uber_free(swap_id_str);
+	return success;
 }/*update_id_get( service, "/friends.xml", "newest", &newest_update_id );*/
 
 void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id ){
@@ -184,15 +185,15 @@ void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newe
 	uber_free(timelines_gconfig_prefs_path);
 }/*update_ids_set(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
-static void update_id_set( OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id ){
-	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path) )) return;
+static gboolean update_id_set( OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id ){
+	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path) )) return FALSE;
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
 	 * 				service->key			/timeline.xml (newest|oldest|unread)
 	 */
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
-	gboolean success;
+	gboolean success=FALSE;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY, service->key, timelines_gconfig_prefs_path, key);
 	swap_id_str=gdouble_to_str(update_id);
@@ -201,13 +202,14 @@ static void update_id_set( OnlineService *service, const gchar *timelines_gconfi
 	debug("Saved <%s>'s %s update ID: %f(from string: %s) to gconfig path: [%s].", service->key, key, update_id, swap_id_str, prefs_path);
 	uber_free(prefs_path);
 	uber_free(swap_id_str);
+	return success;
 }/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
 
 gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
 	debug("Formatting timeline for use with gconf: from uri: <%s>.", uri);
 	
 	if(!strstr(uri, "%"))
-		return g_strdup( ( strstr(uri, "=") ?g_strrstr(uri, "=") :g_strrstr(uri, "/") ) );
+		return g_strdup( ( strstr(uri, "=") ?g_strrstr(uri, "=")+sizeof("=") :g_strrstr(uri, "/")+sizeof("/") ) );
 	
 	gchar **uri_split=g_strsplit_set( g_strrstr(uri, "/"), "?=", 3);
 	gchar *search_phrase_encoded;

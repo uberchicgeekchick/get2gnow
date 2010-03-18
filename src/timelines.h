@@ -1,7 +1,7 @@
 /* -*- Mode: C; shift-width: 8; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 /*
  * get2gnow is:
- * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
+ * 	Copyright (c) 2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
  * 	Released under the terms of the RPL
  *
  * For more information or to find the latest release, visit our
@@ -47,12 +47,8 @@
  * select a default license for their data.  All of the Software's data pertaining to each
  * User must be fully accessible, exportable, and deletable to that User.
  */
-
-/********************************************************************************
- *                      My art, code, & programming.                            *
- ********************************************************************************/
-#ifndef	__GROUPS_H__
-#define	__GROUPS_H__
+#ifndef __TIMELINES_H__
+#define __TIMELINES_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -63,36 +59,16 @@
 #endif
 
 #include <glib.h>
-#include <gtk/gtk.h>
 
-
-/********************************************************************************
- * project, object, system & library headers, eg #include <gdk/gdkkeysyms.h>    *
- ********************************************************************************/
-#include <glib/gi18n.h>
 #include <libsoup/soup-message.h>
 
+#include "online-services.typedefs.h"
 #include "uberchick-tree-view.h"
 
-
 G_BEGIN_DECLS
-/********************************************************************************
- *        Methods, macros, constants, objects, structs, and enum typedefs       *
- ********************************************************************************/
 
-
-/********************************************************************************
- *       prototypes for methods, handlers, callbacks, function, & etc           *
- ********************************************************************************/
-void groups_init(void);
-void groups_deinit(void);
-guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
-
+guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri, UberChickTreeView *uberchick_tree_view, UpdateType update_type);
 
 G_END_DECLS
-#endif /* __GROUPS_H__*/
-/********************************************************************************
- *                                    eof                                       *
- ********************************************************************************/
-
+#endif /*  __TIMELINES_H__ */
 

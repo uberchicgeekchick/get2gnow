@@ -79,6 +79,7 @@ extern gboolean getting_followers;
  *          Global method & function prototypes                       *
  **********************************************************************/
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func);
+/*void *users_glist_process(OnlineService *service, OnlineServiceXmlDoc *xml_doc, OnlineServiceWrapper *service_wrapper);*/
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, GList *new_users);
 

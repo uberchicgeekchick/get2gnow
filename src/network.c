@@ -81,8 +81,9 @@
 #include "online-service-request.h"
 
 #include "www.h"
+#include "xml.h"
 
-#include "parser.h"
+#include "timelines.h"
 #include "groups.h"
 #include "searches.h"
 #include "cache.h"
@@ -230,7 +231,7 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	else message=g_strdup_printf("ReTweet: of <%s@%s>'s update by <%s>.", user_data, service->uri, service->key);
 	
 	gchar *error_message=NULL;
-	if(!(www_xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){
+	if(!(xml_error_check(service, online_service_wrapper_get_requested_uri(service_wrapper), xml, &error_message))){
 		debug("%s couldn't be %s :'(", message, (direct_message?"sent":"updated"));
 		debug("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 		
@@ -250,7 +251,7 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	
 	debug("HTTP response: %s(#%d) while %s.", xml->reason_phrase, xml->status_code, (direct_message ?"sending direct messaging" :"updating your status") );
 	
-	if( !direct_message && xml->status_code==404 && (service->micro_blogging_service==Identica || service->micro_blogging_service==StatusNet)){
+	if( !direct_message && xml->status_code==404 && service->micro_blogging_service==StatusNet){
 		debug("Resubmitting status update to: <%s> due to StatusNet bug.", service->key);
 		online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_update_posted, user_data, online_service_wrapper_get_form_data(service_wrapper));
 	}
@@ -282,9 +283,10 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 	}
 	const gchar *notice_suffix=NULL;
 	if( !gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) && !gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) )
-		notice_suffix=_("  URL auto-expansion is enabled loading timelines may take a while.");
-	debug("%s request for %s.%s", notice_prefix, uri, notice_suffix);
-	statusbar_printf("%s request for %s.%s", notice_prefix, uri, (notice_suffix ?_("  This may take several moments.") :"" ) );
+		notice_suffix=_("This will take several moments.");
+	
+	debug("%s request for %s%s%s", notice_prefix, uri, (notice_suffix ?"; " :""), (notice_suffix ?notice_suffix :""));
+	statusbar_printf("%s request for %s%s%s", notice_prefix, uri, (notice_suffix ?"; " :""), (notice_suffix ?notice_suffix :""));
 }/*network_set_state_loading_timeline(uri, Load);*/
 
 
@@ -297,7 +299,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		return NULL;
 	
 	gchar *error_message=NULL;
-	if(!(www_xml_error_check(service, requested_uri, xml, &error_message)))
+	if(!(xml_error_check(service, requested_uri, xml, &error_message)))
 		if(!online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
 			uber_free(error_message);
 			return network_retry(service_wrapper);
@@ -308,7 +310,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
-	debug("Started processing <%s>'s timeline: %s.  Requested URI: %s.", service->key, timeline, requested_uri);
+	debug("Started processing <%s>'s requested_uri: %s.", service->key, requested_uri);
 	
 	guint new_updates=0;
 	switch(update_type){
@@ -319,7 +321,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 			new_updates=searches_parse_results(service, xml, requested_uri, uberchick_tree_view, update_type);
 			break;
 		case Groups:
-			new_updates=groups_parse_conversation(service, xml, timeline, uberchick_tree_view, update_type);
+			new_updates=groups_parse_conversation(service, xml, requested_uri, uberchick_tree_view, update_type);
 			break;
 		case Homepage:
 		case DMs:
@@ -331,7 +333,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 		case Archive:
 		case BestFriends:
 		default:
-			new_updates=parse_timeline(service, xml, timeline, uberchick_tree_view, update_type);
+			new_updates=timelines_parse(service, xml, timeline, uberchick_tree_view, update_type);
 			break;
 	}
 	
@@ -343,10 +345,9 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	}
 	
 	if(new_updates)
-		debug("Total tweets in this timeline: %d.", new_updates);
+		debug("Total tweets in this requested_uri: %d.", new_updates);
 	
 	uber_free(timeline);
-	
 	return NULL;
 }/*network_display_timeline(session, xml, service_wrapper);*/
 

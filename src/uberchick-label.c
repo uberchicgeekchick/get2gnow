@@ -67,8 +67,9 @@
 #include "program.h"
 
 #include "network.h"
-#include "parser.h"
 #include "gconfig.h"
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -79,6 +80,7 @@
 #include "update-viewer.h"
 
 #include "www.h"
+
 #include "uberchick-label.h"
 
 #define	DEBUG_DOMAINS	"UI:Sexy:URLs:URIs:Links:UberChickTreeView:OnlineServices:Networking:Updates:WWW:XPath:Auto-Magical:label.c"
@@ -153,7 +155,7 @@ static void uberchick_label_init(UberChickLabel *uberchick_label){
 	this->update_id=0.0;
 	this->text=this->markup=NULL;
 	
-	g_object_set(uberchick_label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, "wrap", TRUE, "wrap-mode", PANGO_WRAP_WORD_CHAR, "single-line-mode", FALSE, "use-markup", TRUE, "justify", GTK_JUSTIFY_FILL, NULL);
+	g_object_set(uberchick_label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, "wrap", TRUE, "wrap-mode", PANGO_WRAP_WORD_CHAR, "single-line-mode", FALSE, "use-markup", TRUE, "justify", GTK_JUSTIFY_LEFT, NULL);
 #ifndef ENABLE_ALPHA_UI
 	g_signal_connect(SEXY_URL_LABEL(uberchick_label), "url-activated", (GCallback)online_service_open_uri, this->service);
 #else

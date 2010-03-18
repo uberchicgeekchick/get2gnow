@@ -161,13 +161,17 @@ struct _UpdateViewer{
 	
 	GtkHBox			*update_composition_hbox;
 	
+	/* BEGIN: UberChickSexyEntryCompletion::private values. */
 	gint			max_updates;
 	gint			total_updates;
 	GtkComboBoxEntry	*sexy_entry_combo_box_entry;
 	GtkListStore		*previous_updates_list_store;
+	GRegex			*upper_case_regex;
+	GRegex			*username_regex;
 	SexySpellEntry		*sexy_entry;
 	GtkEntryCompletion	*sexy_completion;
 	gint			sexy_entry_text_position;
+	/* END: UberChickSexyEntryCompletion::private values. */
 	
 	/* Info on the update being viewed to avoid issues with the 'best friends' toggle button. */
 	OnlineService		*viewing_service;
@@ -356,27 +360,46 @@ static void update_viewer_online_service_check_button_set_status(GtkTreeIter *it
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 static void update_viewer_destroy_cb(GtkWidget *window, UpdateViewer *update_viewer){
+	if(!update_viewer) return;
 	debug("Destroying UpdateViewer & freeing resources");
 	update_viewer_previous_updates_free(update_viewer);
 	
-	if(update_viewer->viewing_user_name) uber_free(update_viewer->viewing_user_name);
-	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);
-	if(update_viewer->viewing_update_id_str) uber_free(update_viewer->viewing_update_id_str);
+	if(update_viewer->viewing_user_name)
+		uber_free(update_viewer->viewing_user_name);
+	if(update_viewer->best_friends_user_name)
+		uber_free(update_viewer->best_friends_user_name);
+	if(update_viewer->viewing_update_id_str)
+		uber_free(update_viewer->viewing_update_id_str);
 	
-	if(update_viewer->sexy_to) gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_to));
-	if(update_viewer->sexy_from) gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_from));
-	if(update_viewer->sexy_selected_update_author) gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_selected_update_author));
-	if(update_viewer->sexy_update) gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_update));
+	if(update_viewer->sexy_to)
+		gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_to));
+	if(update_viewer->sexy_from)
+		gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_from));
+	if(update_viewer->sexy_selected_update_author)
+		gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_selected_update_author));
+	if(update_viewer->sexy_update)
+		gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_update));
 	
-	if(update_viewer->sexy_entry) gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_entry));
-	if(update_viewer->sexy_completion) gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_completion));
+	if(update_viewer->sexy_entry)
+		gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_entry));
+	if(update_viewer->sexy_completion)
+		gtk_widget_destroy(GTK_WIDGET(update_viewer->sexy_completion));
 	
-	gtk_widget_destroy( GTK_WIDGET(update_viewer->update_viewer) );
+	if(update_viewer->update_viewer)
+		gtk_widget_destroy( GTK_WIDGET(update_viewer->update_viewer) );
 	
-	gtk_tree_store_clear(update_viewer->online_services_accounts_tree_store);
+	if(update_viewer->online_services_accounts_tree_store)
+		gtk_tree_store_clear(update_viewer->online_services_accounts_tree_store);
 	
-	uber_list_free(update_viewer->compact_update_viewer_hidden_containers);
-	uber_list_free(update_viewer->selected_update_widgets);
+	if(update_viewer->upper_case_regex)
+		g_regex_unref(update_viewer->upper_case_regex);
+	if(update_viewer->username_regex)
+		g_regex_unref(update_viewer->username_regex);
+	
+	if(update_viewer->compact_update_viewer_hidden_containers)
+		uber_list_free(update_viewer->compact_update_viewer_hidden_containers);
+	if(update_viewer->selected_update_widgets)
+		uber_list_free(update_viewer->selected_update_widgets);
 	
 	uber_free(update_viewer);
 }/*update_viewer_destroy_cb*/
@@ -403,6 +426,22 @@ static UpdateViewer *update_viewer_init(void){
 	UpdateViewer *update_viewer=g_new0(UpdateViewer, 1);
 	debug("Building UpdateViewer");
 	update_viewer->sexy_entry_text_position=-1;
+	
+	GError *error=NULL;
+	const gchar *g_regex_pattern="[A-Z]";
+	update_viewer->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	if(error){
+		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		g_error_free(error);
+	}
+	
+	error=NULL;
+	g_regex_pattern="^@[^ ]+ $";
+	update_viewer->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	if(error){
+		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		g_error_free(error);
+	}
 	
 	update_viewer->viewing_user_name=NULL;
 	update_viewer->best_friends_user_name=NULL;
@@ -1596,15 +1635,28 @@ static gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, g
 	if(G_STR_EMPTY(str))
 		return FALSE;
 	
-	if(uniq && G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && g_strrstr(GTK_ENTRY(update_viewer->sexy_entry)->text, str))
-		return FALSE;
-	
 	gchar *string=NULL;
-	if(to_lower && g_regex_match_simple("[A-Z]", str, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0))
+	gboolean free_string=FALSE;
+	GMatchInfo *match_info=NULL;
+	if(to_lower && g_regex_match(update_viewer->upper_case_regex, str, 0, &match_info)){
+		free_string=TRUE;
 		string=g_utf8_strdown(str, -1);
+	}else
+		string=(gchar *)str;
+	g_match_info_free(match_info);
+	
+	if(uniq && G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && g_strrstr(GTK_ENTRY(update_viewer->sexy_entry)->text, string)){
+		if(free_string) uber_free(string);
+		return FALSE;
+	}
+	
+	if(uniq && GTK_ENTRY(update_viewer->sexy_entry)->text[0]=='@' && string[0]=='@'){
+		if(free_string) uber_free(string);
+		return FALSE;
+	}
 	
 	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry));
-	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), (string ?string :str), -1, &position_after);
+	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), string, -1, &position_after);
 	if(position_after<position_prior)
 		update_viewer->sexy_entry_text_position=position_prior;
 	else
@@ -1612,8 +1664,7 @@ static gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, g
 	
 	gtk_entry_set_position(GTK_ENTRY(update_viewer->sexy_entry), update_viewer->sexy_entry_text_position);
 	
-	if(string)
-		uber_free(string);
+	if(free_string) uber_free(string);
 	
 	update_viewer_sexy_entry_update_remaining_character_count();
 	update_viewer_sexy_select();
@@ -1661,7 +1712,11 @@ void update_viewer_send(GtkWidget *activated_widget){
 	if( G_STR_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && activated_widget==GTK_WIDGET(update_viewer->sexy_entry) && online_service_request_selected_update_get_user_name() )
 		return update_viewer_reply();
 	
-	if(g_regex_match_simple("^@[^ ]+ $", GTK_ENTRY(update_viewer->sexy_entry)->text, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0))
+	GMatchInfo *match_info=NULL;
+	gboolean contains_username_only=g_regex_match(update_viewer->username_regex, GTK_ENTRY(update_viewer->sexy_entry)->text, 0, &match_info);
+	g_match_info_free(match_info);
+	
+	if(contains_username_only)
 		return update_viewer_beep();
 	
 	if(!activated_widget){

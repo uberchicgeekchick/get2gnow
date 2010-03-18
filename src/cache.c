@@ -268,10 +268,10 @@ static void cache_file_clean_up(const gchar *cache_file){
 void cache_get_uri_filename(const gchar *uri, gboolean set_subdir, gchar **subdir, gboolean set_filename, gchar **filename, gboolean set_query_string, gchar **query_string){
 	/*
 	 * uri_info[] index explanation:
-	 * 	0 == the url scheme, e.g. https, http, etc.
-	 * 	1 == this is empty as a result of the '://' in url scheme.
+	 * 	0 == the uri scheme, e.g. https, http, etc.
+	 * 	1 == this is empty as a result of the '://' in uri scheme.
 	 * 	2 == the domain name
-	 * 	3-n == the finale part of the url, e.g. an image's file name or xml page w/its query string.
+	 * 	3-n == the finale part of the uri, e.g. an image's file name or xml page w/its query string.
 	 */
 	gchar **uri_info=g_strsplit_set(uri, "/?", -1);
 	guint n=0;
@@ -344,19 +344,19 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	return filename;
 }/*cache_file_create_file_for_online_service(service, "users", "uberChick.xml", NULL);*/
 
-gchar *cache_images_get_user_image_filename(OnlineService *service, const gchar *image_type, const gchar *user_name, const gchar *image_url){
-	if(!(G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(image_url) )){
-		debug("**ERROR** Unable to parse an empty url into an image filename.  Attempting to load %s for user: <%s>; using url: [%s].", image_type, user_name, image_url);
+gchar *cache_create_image_filename_from_uri(OnlineService *service, const gchar *image_type, const gchar *user_name, const gchar *image_uri){
+	if(!(G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(image_uri) )){
+		debug("**ERROR** Unable to parse an empty uri into an image filename.  Attempting to load %s for user: <%s>; using uri: [%s].", image_type, user_name, image_uri);
 		return images_get_unknown_image_file();
 	}
 	
-	debug("Creating image file name for '%s@%s' from image url: %s.", user_name, service->uri, image_url);
+	debug("Creating image file name for '%s@%s' from image uri: %s.", user_name, service->uri, image_uri);
 	
 	gchar *image_file;
-	cache_get_uri_filename(image_url, FALSE, NULL, TRUE, &image_file, FALSE, NULL);
+	cache_get_uri_filename(image_uri, FALSE, NULL, TRUE, &image_file, FALSE, NULL);
 	if(G_STR_EMPTY(image_file)){
 		if(image_file) uber_free(image_file);
-		debug("**WARNING:** Unable to parse url into a valid image filename.  Loading %s for user: <%s>; using url: [%s].", image_type, user_name, image_url);
+		debug("**WARNING:** Unable to parse uri into a valid image filename.  Loading %s for user: <%s>; using uri: [%s].", image_type, user_name, image_uri);
 		return images_get_unknown_image_file();
 	}
 	
@@ -383,7 +383,7 @@ gchar *cache_images_get_user_image_filename(OnlineService *service, const gchar 
 	uber_free(image_path);
 	
 	return image_filename;
-}/*cache_images_get_user_avatar_filename(service, user->user_name, user->image_url);*/
+}/*cache_create_image_filename_from_uri(service, user->user_name, user->image_uri);*/
 
 
 /********************************************************

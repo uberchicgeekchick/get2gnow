@@ -78,7 +78,7 @@
 
 #include "network.h"
 #include "www.h"
-#include "parser.h"
+#include "xml.h"
 
 #include "friends-manager.h"
 #include "following-viewer.h"
@@ -117,7 +117,7 @@ static int users_glists_sort_by_user_name(User *user1, User *user2);
 static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func);
 static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_which, OnlineService *service);
 
-static GList *users_glist_parse(OnlineService *service, SoupMessage *xml);
+static GList *users_glist_parse(OnlineService *service, const gchar *uri, SoupMessage *xml);
 
 
 /********************************************************
@@ -255,6 +255,7 @@ static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_
 	return FALSE;
 }/*users_glist_get_recall_check(service);*/
 
+/*void *users_glist_process(OnlineService *service, OnlineServiceXmlDoc *xml_doc, OnlineServiceWrapper *service_wrapper){*/
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
@@ -265,7 +266,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service->key, users_glist_get_which_str, page_num_str, xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
-	if(!(www_xml_error_check(service, uri, xml, &error_message))){
+	if(!(xml_error_check(service, uri, xml, &error_message))){
 		debug("**ERROR:** No more %s could be downloaded the request was not successful.", users_glist_get_which_str);
 		debug("**ERROR:** <%s>'s %s should be refreshed.", service->key, users_glist_get_which_str);
 		uber_free(error_message);
@@ -276,7 +277,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	getting_followers=( g_strrstr(uri, API_FOLLOWERS) ? TRUE : FALSE );
 	GList *new_users=NULL;
 	debug("Parsing user list");
-	if(!(new_users=users_glist_parse(service, xml)) ){
+	if(!(new_users=users_glist_parse(service, uri, xml)) ){
 		debug("No more %s where found, yippies we've got'em all.", users_glist_get_which_str);
 		return NULL;
 	}
@@ -332,12 +333,12 @@ int users_glists_sort_by_user_name(User *user1, User *user2){
 }/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; } );*/
 
 
-GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
+GList *users_glist_parse(OnlineService *service, const gchar *uri, SoupMessage *xml){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
 	
 	debug("Parsing users xml listing.");
-	if(!( (doc=parse_xml_doc(xml, &root_element)) && root_element )){
+	if(!( (doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)) && root_element )){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -379,7 +380,7 @@ GList *users_glist_parse(OnlineService *service, SoupMessage *xml){
 	}
 	
 	return users;
-}/*users_glist_parse(service, xml)*/
+}/*users_glist_parse(service, uri, xml)*/
 
 
 gboolean users_glists_free_lists(OnlineService *service, UsersGListGetWhich users_glist_get_which){

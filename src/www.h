@@ -75,6 +75,15 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
+#ifndef www_get_uri_dom_xpath_element_content 
+#	define	www_get_uri_dom_xpath_element_content(xml, xpath)	\
+		www_get_dom_xpath(xml, xpath, FALSE)
+#endif
+
+#ifndef www_get_xml_doc_from_dom_xpath 
+#	define	www_get_xml_doc_from_dom_xpath(xml, xpath)		\
+		www_get_dom_xpath(xml, xpath, TRUE)
+#endif
 
 
 /********************************************************************************
@@ -93,9 +102,7 @@ void www_deinit(void);
 gchar *www_html_entity_escape_text(gchar *status_text);
 void www_html_entity_escape_status(gchar **status_text);
 
-gboolean www_xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
-
-gchar *www_get_uri_dom_xpath_element_content(SoupMessage *xml, const gchar *xpath);
+gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean return_xml_doc);
 gchar *www_format_urls(OnlineService *service, const char *message, gboolean expand_hyperlinks, gboolean make_hyperlinks);
 /********************************************************************************
  *                                    eof                                       *

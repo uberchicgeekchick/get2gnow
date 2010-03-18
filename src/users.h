@@ -85,7 +85,6 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateType update_type);
 gboolean user_status_notify_on_timeout(UserStatus *status);
 gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean use_gmt);
-gint update_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt);
 
 void user_status_free(UserStatus *status);
 
