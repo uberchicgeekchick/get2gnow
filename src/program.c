@@ -248,7 +248,7 @@ MACROS:
 */
 
 gint program_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt){
-	struct tm	*ta;
+	struct tm	*locale_datetime;
 	struct tm	post;
 	int		seconds_local;
 	int		seconds_post;
@@ -258,15 +258,18 @@ gint program_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use
 	
 	time_t		t=time(NULL);
 	
-	/*if(use_gmt)
-		ta=gmtime(&t);
-	else*/
-		ta=localtime(&t);
-	ta->tm_isdst=-1;
+	tzset();
+	if(use_gmt){
+		locale_datetime=gmtime(&t);
+		strptime(datetime, "%a %b %d %T %z %Y", &post);
+	}else{
+		locale_datetime=localtime(&t);
+		strptime(datetime, "%a %b %d %T +0000 %Y", &post);
+	}
+	locale_datetime->tm_isdst=-1;
 	
-	seconds_local=mktime(ta);
+	seconds_local=mktime(locale_datetime);
 	
-	strptime(datetime, "%a %b %d %T %z %Y", &post);
 	post.tm_isdst=-1;
 	seconds_post=mktime(&post);
 	

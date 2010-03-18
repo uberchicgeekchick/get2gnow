@@ -604,7 +604,7 @@ static void user_status_format_dates(UserStatus *status, gboolean use_gmt){
 	tzset();
 	time_t		t=time(NULL);
 	struct tm	*ta;
-	if(status->type!=Searches)
+	if(use_gmt)
 		ta=gmtime(&t);
 	else
 		ta=localtime(&t);
@@ -616,7 +616,7 @@ static void user_status_format_dates(UserStatus *status, gboolean use_gmt){
 	status->created_at=mktime(&post);
 	
 	debug("Parsing update's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
-	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago, use_gmt );
+	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago, use_gmt);
 	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
 }/*user_status_format_dates(status, TRUE|FALSE);*/
 
