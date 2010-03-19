@@ -79,6 +79,7 @@
 
 #include "config.h"
 #include "program.h"
+#include "datetime.h"
 
 #include "images.h"
 
@@ -837,7 +838,7 @@ static void uberchick_tree_view_update_age(UberChickTreeView *uberchick_tree_vie
 		if(this->tree_store_index>-1 && i>=this->tree_store_index)
 			tree_store_index+=this->tree_store_index+1;
 		
-		created_how_long_ago=user_status_convert_time(created_at_str, &created_ago, (this->update_type==Searches ?FALSE :TRUE) );
+		datetime_strp_age(created_at_str, &created_how_long_ago, &created_ago, (this->update_type==Searches ?FALSE :TRUE) );
 		if(expiration > 0 && created_ago > 0 && created_ago > expiration){
 			if( !selected_index_updated && this->selected_index>-1 && tree_store_index>-1 && this->tree_store_index>-1 && this->selected_index==tree_store_index ){
 				selected_index_updated=TRUE;

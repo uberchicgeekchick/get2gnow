@@ -67,6 +67,7 @@
 
 #include "config.h"
 #include "program.h"
+#include "datetime.h"
 
 #include "ipc.h"
 #include "gconfig.h"
@@ -91,7 +92,6 @@
 #include "debug.h"
 
 static gboolean notifing=FALSE;
-const gchar *old_locale=NULL;
 static gchar **remaining_argv=NULL;
 static gint remaining_argc=0;
 static GnomeProgram *program=NULL;
@@ -111,7 +111,8 @@ gboolean program_init(int argc, char **argv){
 		ipc_deinit();
 		return FALSE;
 	}
-	old_locale=setlocale(LC_TIME, "C");
+	
+	datetime_locale_init();
 	
 	GOptionContext *option_context=g_option_context_new(GETTEXT_PACKAGE);
 	GOptionEntry option_entries[]={
@@ -190,7 +191,7 @@ void program_deinit(void){
 	debug("**NOTICE:** %s exited.", GETTEXT_PACKAGE);
 	debug_deinit();
 	
-	setlocale(LC_TIME, old_locale);
+	datetime_locale_deinit();
 }/*program_deinit();*/
 
 const gchar *program_gtk_response_to_string(gint response){
@@ -245,41 +246,6 @@ MACROS:
 	gtk_widget_is_visible(widget) == program_gtk_widget_get_gboolean_property_value(widget, "visibile")
 	gtk_widget_is_sensitive(widget) == program_gtk_widget_get_gboolean_property_value(widget, "sensitive")
 	gtk_widget_has_focus(widget) == program_gtk_widget_get_gboolean_property_value(widget, "has-focus")
-*/
-
-gint program_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt){
-	struct tm	*locale_datetime;
-	struct tm	post;
-	int		seconds_local;
-	int		seconds_post;
-	
-	/*if(use_gmt)
-		setlocale(LC_TIME, old_locale);*/
-	
-	time_t		t=time(NULL);
-	
-	tzset();
-	if(use_gmt){
-		locale_datetime=gmtime(&t);
-		strptime(datetime, "%a %b %d %T %z %Y", &post);
-	}else{
-		locale_datetime=localtime(&t);
-		strptime(datetime, "%a %b %d %T +0000 %Y", &post);
-	}
-	locale_datetime->tm_isdst=-1;
-	
-	seconds_local=mktime(locale_datetime);
-	
-	post.tm_isdst=-1;
-	seconds_post=mktime(&post);
-	
-	/*if(use_gmt)
-		old_locale=setlocale(LC_TIME, "C");*/
-	
-	return difftime(seconds_local, seconds_post);
-}/*
-	program_convert_datetime_to_seconds_old("Fri Nov  6 16:30:31 -0000 2009");
-	program_convert_datetime_to_seconds_old(datetime);
 */
 
 /********************************************************

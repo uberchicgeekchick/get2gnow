@@ -175,11 +175,6 @@ G_BEGIN_DECLS
 #	endif
 #endif
 
-#ifndef convert_datetime_to_seconds_old 
-#	define	convert_datetime_to_seconds_old(datetime, use_gmt)			\
-		program_convert_datetime_to_seconds_old(datetime, use_gmt)
-#endif
-
 #ifndef uber_g_str_n_equal
 #	define		uber_str_n_equal			!uber_str_equal
 #endif
@@ -202,8 +197,6 @@ gboolean program_uber_g_str_equal(gchar *string_cmp_against, gchar *string_cmp1,
 
 gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property);
 void program_timeout_remove(guint *id, const gchar *usage);
-
-gint program_convert_datetime_to_seconds_old(const gchar *datetime, gboolean use_gmt);
 
 void program_deinit(void);
 

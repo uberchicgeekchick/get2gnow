@@ -65,7 +65,9 @@
 #include <gdk/gdkkeysyms.h>
 #include <libxml/parser.h>
 
+#include "config.h"
 #include "program.h"
+#include "datetime.h"
 
 #include "xml.h"
 #include "www.h"
@@ -186,7 +188,7 @@ static gboolean www_uri_titles_clean_up(void){
 		
 		gchar *uri=NULL, *title=NULL;
 		const gchar *datetime=NULL;
-		gint created_ago=0;
+		gint age=0;
 		gtk_tree_model_get(
 				GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter,
 					COLUMN_URI, &uri,
@@ -194,8 +196,9 @@ static gboolean www_uri_titles_clean_up(void){
 					COLUMN_INSERT_TIME, &datetime,
 				-1
 		);
-		if( (created_ago=convert_datetime_to_seconds_old(datetime, TRUE)) >= 3600 ){
-			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, created_ago);
+		datetime_age(datetime, &age, FALSE);
+		if( age >= 3600 ){
+			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, age);
 			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
 			if(www_uri_title_list_store_total)
 				www_uri_title_list_store_total--;

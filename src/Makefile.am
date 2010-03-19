@@ -26,6 +26,7 @@ get2gnow_SOURCES = 													\
 	about.c						about.h								\
 	best-friends.c					best-friends.h							\
 	cache.c						cache.h								\
+	datetime.c					datetime.h							\
 	debug.c						debug.h								\
 	following-viewer.c				following-viewer.h						\
 	friend-manager.c				friend-manager.h						\

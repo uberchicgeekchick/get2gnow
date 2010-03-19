@@ -69,6 +69,8 @@
 
 #include "config.h"
 #include "program.h"
+#include "datetime.h"
+
 #include "main-window.h"
 
 #include "online-services.typedefs.h"
@@ -114,7 +116,6 @@ static void user_status_validate(UserStatus **status);
 static UserStatus *user_status_parse_retweeted_status(OnlineService *service, xmlNode *root_element, UpdateType update_type);
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user);
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user);
-static void user_status_format_dates(UserStatus *status, gboolean use_gmt);
 
 
 /********************************************************************************
@@ -375,7 +376,7 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 				}
 			
 			status->created_at_str=g_strdup(content);
-			user_status_format_dates(status, TRUE);
+			datetime_strp_ages(status->created_at_str, &status->created_at, &status->created_how_long_ago, &status->created_seconds_ago, TRUE);
 		}else if(g_str_equal(current_element->name, "title")){
 			status->text=g_strdup(content);
 			debug("Parsing searches update: %s; from: %s.", status->text, current_element->name );
@@ -544,7 +545,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		
 		else if(g_str_equal(current_element->name, "created_at")){
 			status->created_at_str=g_strdup(content);
-			user_status_format_dates(status, FALSE);
+			datetime_strp_ages(status->created_at_str, &status->created_at, &status->created_how_long_ago, &status->created_seconds_ago, FALSE);
 		}
 		
 		uber_free(content);
@@ -599,62 +600,6 @@ static void user_status_format_retweeted_status(OnlineService *service, UserStat
 	uber_free((*status)->retweeted_user_name);
 	(*status)->retweeted_user_name=retweeted_user_name;
 }/*user_status_format_retweeted_status(service, retweeted_status, &status, user);*/
-
-static void user_status_format_dates(UserStatus *status, gboolean use_gmt){
-	tzset();
-	time_t		t=time(NULL);
-	struct tm	*ta;
-	if(use_gmt)
-		ta=gmtime(&t);
-	else
-		ta=localtime(&t);
-	ta->tm_isdst=-1;
-	
-	struct tm	post;
-	strptime(status->created_at_str, "%s", &post);
-	post.tm_isdst=-1;
-	status->created_at=mktime(&post);
-	
-	debug("Parsing update's 'created_at' date: [%s] to Unix seconds since: %lu", status->created_at_str, status->created_at);
-	status->created_how_long_ago=user_status_convert_time(status->created_at_str, &status->created_seconds_ago, use_gmt);
-	debug("Display time set to: %s, %d.", status->created_how_long_ago, status->created_seconds_ago);
-}/*user_status_format_dates(status, TRUE|FALSE);*/
-
-gchar *user_status_convert_time(const gchar *datetime, gint *my_diff, gboolean use_gmt){
-	gint diff=convert_datetime_to_seconds_old(datetime, use_gmt);
-	if(diff < 0) *my_diff=0;
-	else *my_diff=diff;
-	
-	/* Up to one minute ago. */
-	
-	if(diff < 2) return g_strdup(_("1 second ago"));
-	if(diff < 60 ) return g_strdup_printf(_("%d seconds ago"), diff);
-	if(diff < 120) return g_strdup(_("1 minute ago"));
-	
-	/* Minutes */
-	diff=diff/60;
-	if(diff < 60) return g_strdup_printf(_("%d minutes ago"), diff);
-	if(diff < 120) return g_strdup(_("1 hour ago"));
-	
-	/* Hours */
-	diff=diff/60;
-	if(diff < 24) return g_strdup_printf(_("%d hours ago"), diff);
-	if(diff < 48) return g_strdup(_("1 day ago"));
-	
-	/* Days */
-	diff=diff/24;
-	if(diff < 30) return g_strdup_printf(_("%d days ago"), diff);
-	if(diff < 365) return g_strdup_printf(_("%d months ago"), (diff/30));
-	
-	diff=diff/365;
-	return g_strdup_printf(_("%d year%s ago"), diff, (diff==1 ?"" :"s") );
-	/* NOTE:
-	 * 	About time, month, & year precision, "years aren't...blah blah".
-	 * 	yeah well I agree!
-	 * 	but I'm dealing w/integers not floating point arthmatic.
-	 * 	so we'll all just have to get over is.
-	 */
-}/*user_status_convert_time(date_created_string, &created_seconds_ago);*/
 
 
 static void user_status_format_updates(OnlineService *service, UserStatus *status, User *user){

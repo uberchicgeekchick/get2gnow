@@ -51,6 +51,7 @@ get2gnow_SOURCES = 													\
 	about.c						about.h								\
 	best-friends.c					best-friends.h							\
 	cache.c						cache.h								\
+	datetime.c					datetime.h							\
 	debug.c						debug.h								\
 	following-viewer.c				following-viewer.h						\
 	friend-manager.c				friend-manager.h						\
@@ -97,6 +98,7 @@ get2gnow_OBJECTS =													\
 	about.$(OBJEXT)													\
 	best-friends.$(OBJEXT)												\
 	cache.$(OBJEXT)													\
+	datetime.$(OBJEXT)												\
 	debug.$(OBJEXT)													\
 	following-viewer.$(OBJEXT)											\
 	friends-manager.$(OBJEXT)											\
@@ -422,6 +424,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/about.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/best-friends.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cache.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/datetime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/followers-dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/friends-manager.Po@am__quote@

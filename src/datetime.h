@@ -2,7 +2,7 @@
 /*
  * get2gnow is:
  * 	Copyright (c) 2006-2009 Kaity G. B. <uberChick@uberChicGeekChick.Com>
- * 	Released under the terms of the RPL
+ * 	Released under the terms of the Reciprocal Public License (RPL).
  *
  * For more information or to find the latest release, visit our
  * website at: http://uberChicGeekChick.Com/?projects=get2gnow
@@ -48,47 +48,45 @@
  * User must be fully accessible, exportable, and deletable to that User.
  */
 
-/**********************************************************************
- *          My art, code, & programming.                              *
- **********************************************************************/
-#ifndef __USERS_H__
-#define __USERS_H__
+/********************************************************************************
+ *                      My art, code, & programming.                            *
+ ********************************************************************************/
+#ifndef	__DATETIME_H__
+#define	__DATETIME_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
 
 
-/**********************************************************************
- *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
- **********************************************************************/
-#include <gtk/gtk.h>
-#include <libxml/parser.h>
-#include <libsoup/soup.h>
-#include "online-services.typedefs.h"
-#include "users.types.h"
+/********************************************************************************
+ *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *
+ ********************************************************************************/
+#include <glib.h>
 
 
-/**********************************************************************
- *        Objects, structures, and etc typedefs                       *
- **********************************************************************/
-/**********************************************************************
- *          Global method & function prototypes                      *
- **********************************************************************/
-User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
+G_BEGIN_DECLS
+/********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
 
-User *user_parse_node(OnlineService *service, xmlNode *root_element);
+/********************************************************************************
+ *                        objects, structs, and enum typedefs                   *
+ ********************************************************************************/
 
-void user_free(User *user);
 
-UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type);
-UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, const gchar *uri);
-UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateType update_type);
-gboolean user_status_notify_on_timeout(UserStatus *status);
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
+void datetime_locale_init(void);
+void datetime_locale_deinit(void);
 
-void user_status_free(UserStatus *status);
+void datetime_strp_ages(gchar *datetime, gulong *seconds_since_epoc, gchar **age, gint *seconds_old, gboolean use_gmt);
+void datetime_strp_age(const gchar *datetime, gchar **age, gint *my_diff, gboolean use_gmt);
+void datetime_age(const gchar *datetime, gint *age, gboolean use_gmt);
 
-#endif /*__USERS_H__*/
-/**********************************************************************
- *                               eof                                  *
- **********************************************************************/
 
+/********************************************************************************
+ *                                    eof                                       *
+ ********************************************************************************/
+G_END_DECLS
+#endif /*__DATETIME_H__*/

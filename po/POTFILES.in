@@ -20,6 +20,7 @@ data/get2gnow.schemas.in
 src/about.c
 src/best-friends.c
 src/cache.c
+src/datetime.c
 src/debug.c
 src/following-viewer.c
 src/friend-manager.c
