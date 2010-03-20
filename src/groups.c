@@ -190,7 +190,7 @@ StatusNetGroup *groups_new_group_from_node(OnlineService *service, const gchar *
 	}
 	
 	for(current_element=root_element->children; current_element; current_element=current_element->next) {
-		debug("Parsing Group from xhtml <li> node.  Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+		debug("Parsing Group from xhtml <li> element.  Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
 		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
 		
 		if(g_str_equal(current_element->name, "a")){

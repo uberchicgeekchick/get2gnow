@@ -92,17 +92,22 @@
 #include "debug.h"
 
 
-#define API_FOLLOWING		"/statuses/friends.xml"
-#define API_FOLLOWERS		"/statuses/followers.xml"
+#define API_FOLLOWING		"/statuses/friends/%s.xml?%s=%li"
+#define API_FOLLOWERS		"/statuses/followers/%s.xml?%s=%li"
 
 static OnlineService *service=NULL;
 static UsersGListOnLoadFunc on_load_func=NULL;
+static UsersGListGetWhich users_glist_get_which;
+
+static gint64 next_cursor=-1;
+static gint64 previous_cursor=-1;
 static guint page=0;
 
 static gboolean fetching_users=FALSE;
 gboolean getting_followers=FALSE;
 
-static guint which_pass=0;
+static gint which_pass=-1;
+const gchar *get_parameter=NULL;
 
 /*static UsersGListGetWhich users_glist_get_which_previous;*/
 
@@ -114,10 +119,10 @@ const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_
 
 static int users_glists_sort_by_user_name(User *user1, User *user2);
 
-static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func);
+static GList *users_glist_check(UsersGListGetWhich users_glist_get_which_list, gboolean refresh, UsersGListOnLoadFunc func);
 static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_which, OnlineService *service);
 
-static GList *users_glist_parse(OnlineService *service, const gchar *uri, SoupMessage *xml);
+GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml);
 
 
 /********************************************************
@@ -125,9 +130,9 @@ static GList *users_glist_parse(OnlineService *service, const gchar *uri, SoupMe
  ********************************************************/
 const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_which){
 	switch(users_glist_get_which){
-		case GetFriends: return "friends";
-		case GetFollowers: return "followers";
-		case GetBoth: return "friends and followers";
+		case GetFriends: return _("friends");
+		case GetFollowers: return _("followers");
+		case GetBoth: return _("friends and followers");
 		default:
 			      debug("**ERROR:** Attempting to download unsupport list of user relationships.");
 			      return "**ERROR:** Unsupported [UsersGlistGetWhich type]";
@@ -136,97 +141,161 @@ const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_
 
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func){
 	if(!selected_service){
-		debug("**ERROR:** Default OnlineService is not set.  I'm unable to retreive page %d your %s.", page, (which_pass ?_("who are following you") :_("you're following")));
+		debug("**ERROR:** Default OnlineService is not set.  I'm unable to retreive next_cursor %li your %s.", next_cursor, (which_pass ?_("who are following you") :_("you're following")));
 		return NULL;
 	}
 	
-	debug("Loading users_glist; users_glist_get_which type: %s. page #%d; on pass: #%d.", users_glist_get_which_to_string(users_glist_get_which), page, which_pass );
-	
 	GList *users=NULL;
-	if( (!fetching_users) && (users=users_glist_check( users_glist_get_which, refresh, func)) )
+	if( (!fetching_users) && (users=users_glist_check(users_glist_get_which, refresh, func)) )
 		return users;
 	
-	fetching_users=TRUE;
-	page++;
+	if(!fetching_users) fetching_users=TRUE;
 	
-	gchar *uri=NULL;
 	if(users_glist_get_recall_check(users_glist_get_which, service)){
 		if(fetching_users) fetching_users=FALSE;
 		return users_glist_get(users_glist_get_which, FALSE, NULL);
 	}
 	
+	if(service->micro_blogging_service!=Twitter){
+		get_parameter="page";
+		if(next_cursor<0)
+			next_cursor++;
+		next_cursor++;
+	}else{
+		get_parameter="cursor";
+		if(next_cursor==0){
+			if(which_pass<1) which_pass++;
+			else which_pass=2;
+		}
+	}
+	debug("Initial service parameters setup.");
+	debug("get_parameter: [%s]; page/cursor: %li; which_pass: %i", get_parameter, next_cursor, which_pass);
+	
+	debug("Loading users_glist; users_glist_get_which type: %s. %s #%li; on which_pass: #%d.", users_glist_get_which_to_string(users_glist_get_which), get_parameter, next_cursor, which_pass);
+	
+	gchar *uri=NULL;
 	if(!which_pass)
-		uri=g_strdup_printf("%s?page=%d", API_FOLLOWING, page);
+		uri=g_strdup_printf(API_FOLLOWING, service->user_name, get_parameter, next_cursor);
 	else
-		uri=g_strdup_printf("%s?page=%d", API_FOLLOWERS, page);
+		uri=g_strdup_printf(API_FOLLOWERS, service->user_name, get_parameter, next_cursor);
 	
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
-	debug("Downloading %s page #%d(pass #%d).", users_glist_get_which_str, page, which_pass );
-	main_window_statusbar_printf("Please wait while %s downloads your %s(page #%d on pass #%d).", _(GETTEXT_PACKAGE), users_glist_get_which_str, page, which_pass );
 	
-	debug("Getting users_glist; uri: [%s]; page: %d; pass: %d; users_glist_get_which type: %s", uri, page, which_pass, users_glist_get_which_str );
+	statusbar_printf("Downloading %s page: %i; uri: <%s>", (which_pass ?_("who are following you") :_("you're following")), page, uri);
+	debug("Downloading users_glist page: %i; uri: <%s>", page, uri);
+	debug("requesting %s: %li; which_pass: %d; users_glist_get_which type: %s", get_parameter, next_cursor, which_pass, users_glist_get_which_str );
 	online_service_request(service, QUEUE, uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)users_glist_save, users_glist_process, GINT_TO_POINTER(users_glist_get_which), GINT_TO_POINTER(which_pass));
 	
-	g_free(uri);
+	uber_free(uri);
 	return NULL;
 }/*users_glist_get(users_glist_get_which, (refresh ?TRUE: FALSE), NULL);*/
 
-static GList *users_glist_check(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func){
-	if(!which_pass){
+static GList *users_glist_check(UsersGListGetWhich users_glist_get_which_list, gboolean refresh, UsersGListOnLoadFunc func){
+	if(which_pass==-1){
+		if(fetching_users) fetching_users=FALSE;
 		on_load_func=func;
 		service=selected_service;
+		users_glist_get_which=users_glist_get_which_list;
+		page=0;
+		next_cursor=-1;
+		previous_cursor=-1;
+		
 		if(refresh && service && service==selected_service)
 			users_glists_free_lists(service, users_glist_get_which);
 	}
 	
+	if(!(service && service==selected_service))
+		return NULL;
+	
 	GList *users=NULL;
-	if( service && service==selected_service ){
-		const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
-		switch(users_glist_get_which){
-			case GetFriends:
-				if(!service->friends) break;
-				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
-				users=g_list_sort(g_list_first(service->friends), (GCompareFunc)users_glists_sort_by_user_name);
-				break;
-			case GetFollowers:
-				if(!service->followers) break;
-				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
-				users=g_list_sort(g_list_first(service->followers), (GCompareFunc)users_glists_sort_by_user_name);
-				break;
-			case GetBoth:
-				if(!service->friends){
-					if(which_pass!=0) which_pass=0;
-					break;
+	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
+	switch(users_glist_get_which){
+		case GetFriends:
+			if(!service->friends){
+				if(which_pass!=0){
+					which_pass=0;
+					next_cursor=-1;
+					previous_cursor=-1;
+					page=0;
 				}
-				if(!service->followers){
-					if(which_pass!=1) which_pass=1;
-					break;
+				return NULL;
+			}
+			debug("Displaying & loading, <%s>'s %s from %i pages", service->key, users_glist_get_which_str, page);
+			users=g_list_sort(g_list_first(service->friends), (GCompareFunc)users_glists_sort_by_user_name);
+			break;
+		case GetFollowers:
+			if(!service->followers){
+				if(which_pass!=1){
+					which_pass=1;
+					next_cursor=-1;
+					previous_cursor=-1;
+					page=0;
 				}
-				debug("Displaying & loading, <%s>'s %s from %d pages.", service->key, users_glist_get_which_str, page-1);
-				if(!service->friends_and_followers){
-					service->friends_and_followers=g_list_alloc();
-					service->friends_and_followers=g_list_concat(g_list_first(service->friends), g_list_first(service->followers));
+				return NULL;
+			}
+			debug("Displaying & loading, <%s>'s %s from %i pages", service->key, users_glist_get_which_str, page);
+			users=g_list_sort(g_list_first(service->followers), (GCompareFunc)users_glists_sort_by_user_name);
+			break;
+		case GetBoth:
+			if(!service->friends){
+				if(which_pass!=0){
+					which_pass=0;
+					next_cursor=-1;
+					previous_cursor=-1;
+					page=0;
 				}
+				return NULL;
+			}
+			if(!service->followers){
+				if(which_pass!=1){
+					which_pass=1;
+					next_cursor=-1;
+					previous_cursor=-1;
+					page=0;
+				}
+				return NULL;
+			}
+			/*if(which_pass!=2){
+				which_pass=2;
+				next_cursor=-1;
+				previous_cursor=-1;
+				page=0;
+			}*/
+			debug("Displaying & loading, <%s>'s %s from %i pages.", service->key, users_glist_get_which_str, page);
+			if(!service->friends_and_followers){
+				GList *friends=g_list_last(service->friends);
+				friends=g_list_remove(friends, friends->data);
 				
-				users=g_list_sort(service->friends_and_followers, (GCompareFunc)users_glists_sort_by_user_name);
-				break;
-		}
-		page=0;
-		if(users){
-			which_pass=0;
-			if(on_load_func!=NULL)
-				on_load_func(users);
-			on_load_func=NULL;
-		}
+				GList *followers=g_list_last(service->followers);
+				followers=g_list_remove(followers, followers->data);
+				
+				service->friends_and_followers=g_list_alloc();
+				service->friends_and_followers=g_list_concat(g_list_first(friends), g_list_first(followers));
+				users=service->friends_and_followers;
+			}else
+				users=g_list_sort(g_list_first(service->friends_and_followers), (GCompareFunc)users_glists_sort_by_user_name);
+			break;
 	}
+	
+	if(fetching_users) fetching_users=FALSE;
+	page=0;
+	which_pass=-1;
+	next_cursor=-1;
+	previous_cursor=-1;
+	if(on_load_func!=NULL)
+		on_load_func(users);
+	on_load_func=NULL;
 	return users;
-}/*users_glist_check();*/
+}/*users_glist_check(users_glist_get_which, refresh, func);*/
 
 static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_which, OnlineService *service){
+	if(which_pass==-1)
+		which_pass=0;
+	
 	switch(users_glist_get_which){
 		case GetBoth:
 		case GetFriends:
-			if(which_pass==0) return FALSE;
+			if(which_pass<1) return FALSE;
 			if(!service->friends){
 				which_pass=0;
 				return TRUE;
@@ -240,7 +309,7 @@ static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_
 			}
 			if(users_glist_get_which!=GetBoth) return FALSE;
 		default: /*handle remaining 'GetBoth' checks:*/
-			if(which_pass==2) return FALSE;
+			if(which_pass>1) return FALSE;
 			if(!(service->friends && service->followers)){
 				if(!service->friends) which_pass=0;
 				else if(!service->followers) which_pass=1;
@@ -248,22 +317,22 @@ static gboolean users_glist_get_recall_check(UsersGListGetWhich users_glist_get_
 				return TRUE;
 			}else{
 				which_pass=2;
-				return TRUE;
+				return FALSE;
 			}
 			break;
 	}
 	return FALSE;
-}/*users_glist_get_recall_check(service);*/
+}/*users_glist_get_recall_check(GetFriends|GetFollowers|GetBoth, service);*/
 
 /*void *users_glist_process(OnlineService *service, OnlineServiceXmlDoc *xml_doc, OnlineServiceWrapper *service_wrapper){*/
 void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));
+	/*UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));*/
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
-	const gchar *page_num_str=g_strrstr(g_strrstr(uri, "?"), "=");
+	const gchar *next_cursor_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
-	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i].", service->key, users_glist_get_which_str, page_num_str, xml->reason_phrase, xml->status_code);
+	debug("Processing <%s>'s %s, %s #%s.  Server response: %s [%i].", service->key, users_glist_get_which_str, get_parameter, next_cursor_str, xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
 	if(!(xml_error_check(service, uri, xml, &error_message))){
@@ -274,55 +343,172 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	}
 	uber_free(error_message);
 	
-	getting_followers=( g_strrstr(uri, API_FOLLOWERS) ? TRUE : FALSE );
+	getting_followers=(which_pass ?TRUE :FALSE);
 	GList *new_users=NULL;
 	debug("Parsing user list");
-	if(!(new_users=users_glist_parse(service, uri, xml)) ){
+	if(!(new_users=users_glist_parse(service_wrapper, xml)) ){
 		debug("No more %s where found, yippies we've got'em all.", users_glist_get_which_str);
 		return NULL;
 	}
 	
+	page++;
 	return new_users;
 }/*users_glist_process(session, xml, service_wrapper);*/
 
 void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, GList *new_users){
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
-	UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));
+	/*UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));*/
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	
 	if(!new_users){
-		GList *users=NULL;
-		if(!which_pass) users=service->friends;
-		else users=service->followers;
-		users=g_list_last(users);
-		users=g_list_remove(users, users->data);
-		which_pass++;
+		if(which_pass<1) which_pass++;
+		else which_pass=2;
 		fetching_users=FALSE;
 		users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
 	}
 	
 	debug("Appending users to <%s>'s %s. parsed from uri: [%s].", service->key, users_glist_get_which_str, uri);
-	if(!which_pass){
+	if(which_pass<1){
 		if(!service->friends)
 			service->friends=new_users;
 		else
 			service->friends=g_list_append(service->friends, new_users);
-	}else{
+	}else if(which_pass==1){
 		if(!service->followers)
 			service->followers=new_users;
 		else
 			service->followers=g_list_append(service->followers, new_users);
+	}else{
+		debug("**ERROR:** Unknown list condition reached for <%s>", uri);
+		debug("**ERROR:** Failed to save users. page: %i; which_pass: %i; %s: %li", page, which_pass, get_parameter, next_cursor);
+		if(which_pass<1) which_pass++;
+		else which_pass=2;
+		fetching_users=FALSE;
+		users_glist_get(users_glist_get_which, FALSE, NULL);
+		return;
+	}
+	
+	if(service->micro_blogging_service==Twitter && next_cursor==0){
+		if(which_pass<1) which_pass++;
+		else which_pass=2;
+		fetching_users=FALSE;
+		users_glist_get(users_glist_get_which, FALSE, NULL);
+		return;
 	}
 	
 	/*cache_save_page(service, uri, xml->response_body);*/
 	
-	/*now we get the next page - or send the results where they belong.*/
-	debug("Retrieving the next page of %s.", (which_pass ?"followers" :"friends") );
-	debug("Saving users_glist; page %d - pass %d users_glist_get_which type: %s", page, which_pass, users_glist_get_which_to_string(users_glist_get_which) );
+	/*now we get the next page/next_cursor - or send the results where they belong.*/
+	debug("Appended new_users to <%s>->%s from; <%s>", service->key, (which_pass ?"followers" :"friends"), uri);
+	debug("While processing the current request to %s: which_pass: %i; page: %i", users_glist_get_which_to_string(users_glist_get_which), which_pass, page);
+	debug("Retrieving next: <%s?%li>; ", get_parameter, next_cursor);
 	users_glist_get(users_glist_get_which, FALSE, NULL);
-}/*users_glist_save*/
+}/*users_glist_save(service_wrapper, xml, users);*/
+
+GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml){
+	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
+	const gchar *uri=online_service_wrapper_get_requested_uri(service_wrapper);
+	
+	xmlDoc		*doc=NULL;
+	xmlNode		*root_element=NULL;
+	
+	debug("Parsing users from: <%s>", uri);
+	if(!( (doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)) && root_element )){
+		debug("[failed]");
+		xmlCleanupParser();
+		return NULL;
+	}
+	debug("[succeed]");
+	
+	gchar		*content=NULL;
+	xmlNode		*current_element=NULL;
+	debug("Parsed new users XML. Searching for users; starting element: <%s>", root_element->name);
+	
+	debug("Searching through <%s>'s elements", uri);
+	debug("Searching for <users>, <next_cursor>, and <previous_cursor> elements");
+	for(current_element=root_element; current_element; current_element=current_element->next){
+		if(current_element->type!=XML_ELEMENT_NODE) continue;
+		debug("Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+		if((g_str_equal(current_element->name, "users_list")) && current_element->children){
+			root_element=current_element->children;
+			debug("Found <%s>'s <users_list> element", uri);
+			debug("Moving root_element from: <%s>; to child element: <%s>", current_element->name, root_element->name);
+			break;
+		}
+	}
+	if((g_str_equal(root_element->name, "users_list")) && root_element->children){
+		root_element=root_element->children;
+		debug("Found <%s>'s users_list: moving to its children element: <%s>", uri, root_element->name);
+		
+		debug("2nd pass: Searching through <%s>'s elements", uri);
+		debug("2nd pass: Searching for <users>, <next_cursor>, and <previous_cursor> elements");
+		for(current_element=root_element; current_element; current_element=current_element->next){
+			if(current_element->type!=XML_ELEMENT_NODE) continue;
+			debug("2nd pass: Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+			if(g_str_equal(current_element->name, "users")){
+				root_element=current_element;
+				break;
+			}
+		}
+	}
+	
+	GList		*users=NULL;
+	for(current_element=root_element; current_element; current_element=current_element->next){
+		debug("Parsing users, next_cursor, & previous_cursor.  Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+		if(current_element->type!=XML_ELEMENT_NODE) continue;
+		
+		if(g_str_equal(current_element->name, "next_cursor")){
+			content=(gchar *)xmlNodeGetContent(current_element);
+			next_cursor=g_ascii_strtoll(content, NULL, 0);
+			debug("**DEBUG:** Found <%s>'s \"next_cursor\": %li; string: [%s]", uri, next_cursor, content);
+			uber_free(content);
+			continue;
+		}
+		
+		if(g_str_equal(current_element->name, "previous_cursor")){
+			content=(gchar *)xmlNodeGetContent(current_element);
+			previous_cursor=g_ascii_strtoll(content, NULL, 0);
+			debug("**DEBUG:** Found <%s>'s \"previous_cursor\": %li; string: [%s]", uri, previous_cursor, content);
+			uber_free(content);
+			continue;
+		}
+		
+		if(!g_str_equal(current_element->name, "users")) continue;
+		if(!current_element->children) continue;
+		
+		xmlNode *user_element=NULL;
+		debug("Parsing users from <%s>; current element: <%s>", uri, current_element->name);
+		for(user_element=current_element->children; user_element; user_element=user_element->next){
+			if( user_element->type!=XML_ELEMENT_NODE ) continue;
+			
+			if(!( g_str_equal(user_element->name, "user") && user_element->children )) continue;
+			
+			User *user=NULL;
+			if(!(user=user_parse_node(service, user_element->children))) continue;
+			if(!( user && user->id && user->user_name )) continue;
+			
+			debug("Added user: <%s@%s> to <%s>'s %s", user->user_name, service->uri, service->key, (which_pass ?_("who are following you") :_("you're following")));
+			users=g_list_append(users, user);
+			user=NULL;
+		}
+	}
+	
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
+	
+	if(next_cursor==-1) next_cursor++;
+	if(previous_cursor==-1) previous_cursor++;
+	
+	if(!users){
+		debug("No new users where found.");
+		return NULL;
+	}
+	
+	return users;
+}/*users_glist_parse(service_wrapper, xml);*/
+
 
 /**
  *returns: -1, 0 or 1, if user1 is <, == or > than user2.
@@ -331,56 +517,6 @@ int users_glists_sort_by_user_name(User *user1, User *user2){
 	if(!( user2 && user2->user_name )) return 1;
 	return strcasecmp( user1->user_name, user2->user_name );
 }/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; } );*/
-
-
-GList *users_glist_parse(OnlineService *service, const gchar *uri, SoupMessage *xml){
-	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
-	
-	debug("Parsing users xml listing.");
-	if(!( (doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)) && root_element )){
-		xmlCleanupParser();
-		return NULL;
-	}
-	
-	debug("Parsed new users XML.  beginning search for user nodes starting at: <%s>", root_element->name);
-	
-	User *user=NULL;
-	GList *users=NULL;
-	xmlNode *current_node=NULL;
-	gboolean users_found=FALSE;
-	for(current_node=root_element; current_node; current_node=current_node->next){
-		if( current_node->type!=XML_ELEMENT_NODE ) continue;
-		
-		if(g_str_equal(current_node->name, "users")){
-			if(!current_node->children) break;
-			current_node=current_node->children;
-			users_found=TRUE;
-		}
-		if(!users_found) continue;
-		
-		if(!( g_str_equal(current_node->name, "user") && current_node->children ))
-			continue;
-		
-		if(!( (((current_node->children))) && (user=user_parse_node(service, current_node->children)) ))
-			continue;
-		if(!( user && user->id && user->user_name )) continue;
-		
-		debug("Added user: [%s] to user list.", user->user_name);
-		users=g_list_append(users, user);
-		user=NULL;
-	}
-	
-	xmlFreeDoc(doc);
-	xmlCleanupParser();
-	
-	if(!users_found){
-		debug("No new users where found.");
-		return NULL;
-	}
-	
-	return users;
-}/*users_glist_parse(service, uri, xml)*/
 
 
 gboolean users_glists_free_lists(OnlineService *service, UsersGListGetWhich users_glist_get_which){

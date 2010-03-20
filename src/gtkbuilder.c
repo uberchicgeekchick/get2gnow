@@ -82,16 +82,14 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, FALSE))
 		return gtkbuilder_ui_filename;
 	
-	debug("**ERROR:** Unable to load gtkbuilder ui: [%s.ui].", base_filename);
-	
-	return NULL;
-	
 #else
+	
 	if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, FALSE))
 		return gtkbuilder_ui_filename;
 	
 	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, FALSE, FALSE))
 		return gtkbuilder_ui_filename;
+#endif
 	
 	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, TRUE))
 		return gtkbuilder_ui_filename;
@@ -99,7 +97,6 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	debug("**ERROR:** Unable to load gtkbuilder ui: [%s.ui].", base_filename);
 	
 	return NULL;
-#endif
 }/*gtkbuilder_get_path("update-viewer");*/
 
 static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename, gboolean get_local, gboolean use_template){

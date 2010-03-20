@@ -564,8 +564,8 @@
               <object class="GtkMenuItem" id="online_service_request_menu_item">
                 <property name="visible">True</property>
                 <property name="has_tooltip">True</property>
-                <property name="tooltip_markup">Tools for managing Upda_tes, Friends, &amp; Followers</property>
-                <property name="label" translatable="yes">Update &amp; Friendship _Tools</property>
+                <property name="tooltip_markup">Tools for managing Updates, Friends, &amp; Followers</property>
+                <property name="label" translatable="yes">_Tools</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="online_service_request_menu">

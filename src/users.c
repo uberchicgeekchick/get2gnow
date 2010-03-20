@@ -187,10 +187,11 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 		user_status_validate(&user->status);
 		
 	}
-		/*TODO finish caching
-		if((user=user_parse_node(service, root_element->children)))
-			cache_save_page(service, online_service_wrapper_get_requested_uri(service_wrapper), xml->response_body);
-		*/
+	
+	/*TODO finish caching
+	if((user=user_parse_node(service, root_element->children)))
+	cache_save_page(service, online_service_wrapper_get_requested_uri(service_wrapper), xml->response_body);
+	*/
 	
 	xmlFreeDoc(doc);
 	xmlCleanupParser();

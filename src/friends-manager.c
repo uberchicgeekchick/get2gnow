@@ -309,23 +309,25 @@ static void friends_manager_display_following_and_followers(GList *friends_and_f
 	gtk_tree_store_clear(friends_manager->tree_store);
 	for( list=friends_and_followers; list; list=list->next ){
 		user1=(User *)list->data;
-		if(!list->next)
+		if(!(user1 && G_STR_N_EMPTY(user1->user_name) )) continue;
+		if(!(list && list->next && list->next->data ))
 			following=!(follower=user1->follower);
 		else{
 			list=list->next;
 			user2=(User *)list->data;
-			if(!strcasecmp( user1->user_name, user2->user_name ))
+			if( user1 && user2 && G_STR_N_EMPTY(user1->user_name) && G_STR_N_EMPTY(user2->user_name) && g_str_equal(user1->user_name, user2->user_name))
 				follower=following=TRUE;
 			else{
 				list=list->prev;
 				following=!(follower=user1->follower);
 			}
+			user2=NULL;
 		}
 		
 		GtkTreeIter *iter=g_new(GtkTreeIter, 1);
 		gtk_tree_store_append(friends_manager->tree_store, iter, NULL );
-		const gchar *created_ago;
-		if(!( user1->status && user1->status->created_how_long_ago && G_STR_N_EMPTY(user1->status->created_how_long_ago) ))
+		const gchar *created_ago=NULL;
+		if(!( user1 && user1->status && user1->status->created_how_long_ago && G_STR_N_EMPTY(user1->status->created_how_long_ago) ))
 			created_ago="Never";
 		else
 			created_ago=user1->status->created_how_long_ago;
@@ -339,7 +341,8 @@ static void friends_manager_display_following_and_followers(GList *friends_and_f
 					USER_POINTER, user1,
 				-1
 		);
-		g_free(iter);
+		uber_free(iter);
+		created_ago=NULL;
 	}
 }/*friends_manager_display_following_and_followers*/
 
