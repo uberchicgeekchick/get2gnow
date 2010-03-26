@@ -99,8 +99,8 @@ static OnlineService *service=NULL;
 static UsersGListOnLoadFunc on_load_func=NULL;
 static UsersGListGetWhich users_glist_get_which;
 
-static gint64 next_cursor=-1;
-static gint64 previous_cursor=-1;
+static long signed int next_cursor=-1;
+static long signed int previous_cursor=-1;
 static guint page=0;
 
 static gboolean fetching_users=FALSE;
@@ -141,7 +141,7 @@ const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_
 
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func){
 	if(!selected_service){
-		debug("**ERROR:** Default OnlineService is not set.  I'm unable to retreive next_cursor %li your %s.", next_cursor, (which_pass ?_("who are following you") :_("you're following")));
+		debug("**ERROR:** Default OnlineService is not set.  I'm unable to retreive the users who %s.", (which_pass ?_("are following you") :_("you're following")));
 		return NULL;
 	}
 	

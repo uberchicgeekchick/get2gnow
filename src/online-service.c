@@ -175,11 +175,14 @@ gboolean online_service_open_uri(GtkWidget *widget, const gchar *uri, OnlineServ
 		uberchick_label=NULL;
 	
 	if(!service){
-		if(!uberchick_label) return FALSE;
+		if(!uberchick_label){
+			debug("Opening: <%s>", uri);
+			return FALSE;
+		}
 		service=uberchick_label_get_service(uberchick_label);
 	}
-	debug("Loading: <%s>; via: <%s>", uri, service->key);
 	if(!(service && G_STR_N_EMPTY(service->uri) && G_STR_N_EMPTY(uri) && g_strstr_len(uri, -1, service->uri))){
+		debug("Loading: <%s>; via: <%s>", uri, service->uri);
 		if(G_STR_N_EMPTY(uri))
 			www_open_uri(widget, uri);
 		return FALSE;
@@ -187,6 +190,7 @@ gboolean online_service_open_uri(GtkWidget *widget, const gchar *uri, OnlineServ
 	
 	gchar *requested_resource=NULL;
 	if(!(requested_resource=online_service_get_uri_requested_resource(service, uri))){
+		debug("Loading: <%s>; via: <%s>", uri, service->uri);
 		www_open_uri(widget, uri);
 		return FALSE;
 	}
@@ -223,7 +227,10 @@ gchar *online_service_get_uri_requested_resource(OnlineService *service, const g
 		if(G_STR_EMPTY( (requested_resource=g_strrstr(uri, "/")) ))
 			return NULL;
 		
-		if(!g_regex_match_simple("^[A-Za-z_]+$", &requested_resource[1], G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0))
+		GMatchInfo *match_info=NULL;
+		gboolean contains_username=g_regex_match(service->username_regex, &requested_resource[1], 0, &match_info);
+		g_match_info_free(match_info);
+		if(!contains_username)
 			return NULL;
 		
 		return g_strdup_printf("@%s", &requested_resource[1]);
@@ -289,6 +296,17 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	service->user_name=g_strdup(user_name);
 	service->user_profile=NULL;
 	service->nick_name=NULL;
+	
+	GError *error=NULL;
+	const gchar *g_regex_pattern="^[A-Za-z0-9_]+$";
+	service->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	if(error){
+		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		g_error_free(error);
+		if(service->username_regex)
+			g_regex_unref(service->username_regex);
+		service->username_regex=NULL;
+	}
 	
 	service->enabled=TRUE;
 	service->post_to_enabled=service->post_to_by_default=TRUE;
@@ -980,6 +998,9 @@ void online_service_free(OnlineService *service, gboolean no_state_change){
 		users_glists_free_lists(service, GetFriends);
 		users_glists_free_lists(service, GetFollowers);
 	}
+	
+	if(service->username_regex)
+		g_regex_unref(service->username_regex);
 	
 	debug("Destroying OnlineService <%s> object.", service->guid );
 	uber_object_free(&service->key, &service->uri, &service->user_name, &service->nick_name, &service->password, &service->guid, &service->micro_blogging_client, &service->status, &service, NULL);

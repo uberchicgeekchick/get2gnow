@@ -130,6 +130,7 @@ struct _OnlineService{
 	GList				*friends_and_followers;
 	
 	gchar				*status;
+	GRegex				*username_regex;
 };
 
 struct _OnlineServiceRequestedResource{

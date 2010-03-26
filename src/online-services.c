@@ -235,7 +235,7 @@ void online_services_open_uri(GtkWidget *widget, const gchar *uri, OnlineService
 	if(!service){
 		for(accounts=services->accounts; accounts; accounts=accounts->next){
 			current_service=(OnlineService *)accounts->data;
-			if(strstr(uri, current_service->uri) ) break;
+			if(g_strstr_len(uri, -1, current_service->uri) ) break;
 			current_service=NULL;
 		}
 	}else
@@ -245,7 +245,7 @@ void online_services_open_uri(GtkWidget *widget, const gchar *uri, OnlineService
 		www_open_uri(widget, uri);
 	else
 		online_service_open_uri(widget, uri, current_service);
-}/*online_services_url_activated_cb(widget, const gchar *uri);*/
+}/*online_services_open_uri(widget, const gchar *uri);*/
 
 
 gint online_services_has_connected_statusnet(guint count){

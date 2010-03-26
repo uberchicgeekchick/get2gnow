@@ -436,7 +436,7 @@ static UpdateViewer *update_viewer_init(void){
 	}
 	
 	error=NULL;
-	g_regex_pattern="^@[^ ]+ $";
+	g_regex_pattern="^@[A-Za-z0-9] $";
 	update_viewer->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
 	if(error){
 		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
@@ -1964,6 +1964,7 @@ static void update_viewer_previous_updates_free(UpdateViewer *update_viewer){
 }/*update_viewer_previous_updates_free(update_viewer);*/
 
 void update_viewer_beep(void){
+	return;
 	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
 		gtk_widget_error_bell(GTK_WIDGET(update_viewer->sexy_entry));
 }/*update_viewer_beep();*/
