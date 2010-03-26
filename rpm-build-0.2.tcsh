@@ -3,7 +3,7 @@ set starting_dir="${cwd}";
 set project_path=/projects/gtk
 cd "`dirname '${0}'`";
 set project_name="`basename '${cwd}'`";
-set pkg_path=${project_path}/releases;
+set pkg_path=${project_path}/packages;
 cd ${project_path}
 
 if(! -d ${pkg_path} ) mkdir -p ${pkg_path};
@@ -45,7 +45,7 @@ if( "${status}" != "0" ) then
 	exit -1;
 endif
 set local_tarball="${pkg_path}/tarballs/${package_string}.tar.gz";
-#set pkg_path=${project_path}/releases/../nfs/releases/;
+#set pkg_path="${pkg_path}/../nfs/packages";
 if( ${?clean_up} ) then
 	rm --verbose "${pkg_path}/"*/"${project_name}"*.${MACHTYPE}.*;
 	rm --verbose "${pkg_path}/"*/"${project_name}"*_${deb_arch}.*;
@@ -68,7 +68,7 @@ ${use_sudo}chown ${USER}:${GROUP} "${pkg_path}/"*/"${project_name}"*
 if( -d /projects/www/uberChicGeekChick.Com/apps/oss-canvas/downloads ) then
 	printf "Creating symlinks of our packages for our local uberChicGeekChick.Com mirror.\n"
 	if( ${?clean_up} ) rm "/projects/www/uberChicGeekChick.Com/apps/oss-canvas/downloads/${project_name}"*;
-	ln -sfv /projects/gtk/releases/*/${project_name}* /projects/www/uberChicGeekChick.Com/apps/oss-canvas/downloads/;
+	ln -sfv ${pkg_path}/*/${project_name}* /projects/www/uberChicGeekChick.Com/apps/oss-canvas/downloads/;
 endif
 if(! -d /projects/ssh/uberChicGeekChick.Com/apps/oss-canvas/downloads ) then
 	printf "Cannot copy our packages to uberChicGeekChick.Com.  sshfs has prolly disconnected.\n"

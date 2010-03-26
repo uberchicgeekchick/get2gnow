@@ -64,19 +64,24 @@
 #define	DEBUG_DOMAINS	"ui:gtkbuilder:gtkbuildable:information:settings:artistry:graphics:programming:code:about.c"
 #include "debug.h"
 
-const gchar *authors[] = {
+const gchar *authors[]={
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
+	NULL
+};
+
+const gchar *special_thnx[]={
+	"Stéphane Marguet <smarguet@gmail.com>",
 	"Aaron Taddei <aarontaddei@gmail.com>",
 	"Lord Drachenblut <lord.drachenblut@gmail.com>",
 	NULL
 };
 
-const gchar *artists[] = {
+const gchar *artists[]={
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
 	NULL
 };
 
-const gchar *license[] = {
+const gchar *license[]={
 	N_("Unless explicitly acquired and licensed from Licensor under another"
 		"license, the contents of this file are subject to the Reciprocal Public"
 		"License (\"RPL\") Version 1.5, or subsequent versions as allowed by the RPL,"
@@ -115,12 +120,13 @@ void about_dialog_new (GtkWindow *parent){
 				parent,
 					"authors", authors,
 					"artists", artists,
+					"documenters", special_thnx,
 					"comments", _("GNOME's micro-blogging client with support for Twitter.com and any StatusNet instance, e.g. Identi.ca(of course)."),
-					"copyright", _("Copyright \xc2\xa9 2009 Kaity G. B."),
+					"copyright", _("Copyright \xc2\xa9 2009-2010 Kaity G. B."),
 					"license", license_trans,
-					"translator-credits", _("translator-credits"),
 					"version", PACKAGE_VERSION,
-					"website", PACKAGE_BUGREPORT,
+					"website-label", PACKAGE_NAME,
+					"website", PACKAGE_WEBSITE,
 					"wrap-license", TRUE,
 					"logo-icon-name", GETTEXT_PACKAGE,
 				NULL

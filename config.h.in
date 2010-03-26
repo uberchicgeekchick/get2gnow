@@ -68,8 +68,11 @@
    */
 #undef LT_OBJDIR
 
-/* Define to the address where bug reports for this package should be sent. */
-#undef PACKAGE_BUGREPORT
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define where this package was installed to. */
+#undef PACKAGE_PREFIX
 
 /* Define to the full name of this package. */
 #undef PACKAGE_NAME
@@ -83,9 +86,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define where this package was installed to. */
-#undef PACKAGE_PREFIX
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
 
-/* Define to 1 if you have the ANSI C header files. */
-#undef STDC_HEADERS
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_WEBSITE
 
