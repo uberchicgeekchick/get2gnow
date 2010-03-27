@@ -77,8 +77,13 @@ G_BEGIN_DECLS
 typedef struct _OnlineServices OnlineServices;
 typedef struct _OnlineService OnlineService;
 typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
-typedef struct _OnlineServiceRequestedResource OnlineServiceRequestedResource;
 typedef struct _OnlineServiceXmlDoc OnlineServiceXmlDoc;
+
+typedef struct _OnlineServiceRequest OnlineServiceRequest;
+typedef struct _SelectedUpdate SelectedUpdate;
+typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
+typedef struct _OnlineServiceRequestedResource OnlineServiceRequestedResource;
+
 typedef enum _RequestAction RequestAction;
 
 typedef struct _User User;

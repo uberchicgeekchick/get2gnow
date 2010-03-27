@@ -81,9 +81,9 @@ enum {
 	ImagesDialog		=	GTK_ICON_SIZE_DIALOG,
 };
 
-void images_set_unknown_image_file(void);
-gchar *images_get_unknown_image_file(void);
-void images_unset_unknown_image_file(void);
+void images_init(void);
+void images_deinit(void);
+gchar *images_get_unknown_image_filename(void);
 
 gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename);
 

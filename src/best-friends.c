@@ -305,10 +305,10 @@ void best_friends_buttons_set_sensitive(void){
 	gdouble newest_update_id=0.0, unread_update_id=0.0;
 	if(!((best_friends_get_selected(&service, &user_name, &user_name_with_markup, &newest_update_id, &unread_update_id)) && service && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(user_name_with_markup) )){
 		sensitive=FALSE;
-		debug("No best friend is selected.  Best Friend buttons will be disabled.");
+		debug("No best friend is selected.  Best Friend buttons will be disabled");
 	}else{
 		sensitive=TRUE;
-		debug("Selected best friend: %s, on <%s>.  Enabling best friend controls.", user_name, service->guid );
+		debug("Selected best friend: %s, on <%s>.  Enabling best friend controls", user_name, service->guid );
 		uber_free(user_name);
 		uber_free(user_name_with_markup);
 	}
@@ -327,7 +327,7 @@ static void best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_
 	gchar *user_name_with_markup=NULL;
 	gdouble newest_update_id=0.0, unread_update_id=0.0;
 	if(!((best_friends_get_selected(&service, &user_name, &user_name_with_markup, &newest_update_id, &unread_update_id)) && service && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(user_name) )){
-		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name.");
+		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name");
 		update_viewer_sexy_select();
 		return;
 	}
@@ -353,7 +353,7 @@ static void best_friends_button_clicked(GtkButton *button){
 			online_service_request_popup_best_friend_drop();
 			return;
 		}
-		debug("Cannot load best friends request.  Invalid OnlineService or empty user_name.");
+		debug("Cannot load best friends request.  Invalid OnlineService or empty user_name");
 		if(user_name) uber_free(user_name);
 		if(user_name_with_markup) uber_free(user_name_with_markup);
 		update_viewer_sexy_select();
@@ -474,10 +474,10 @@ void best_friends_tree_store_update_check(OnlineServiceWrapper *online_service_w
 	}
 	
 	if(!best_friends_is_user_best_friend(service, user->user_name)){
-		debug("Adding best friend %s, on %s to the best friends tree_store & GSList.", user->user_name, service->guid);
+		debug("Adding best friend %s, on %s to the best friends tree_store & GSList", user->user_name, service->guid);
 		best_friends_append(service, user->user_name, user->status->id, TRUE);
 	}else{
-		debug("Removing best friend %s, on %s from the best friends tree_store & GSList.", user->user_name, service->guid);
+		debug("Removing best friend %s, on %s from the best friends tree_store & GSList", user->user_name, service->guid);
 		best_friends_remove(service, user->user_name);
 	}
 }/*best_friends_tree_store_update_check( online_service_wrapper, xml, user );*/
@@ -553,7 +553,7 @@ static gboolean best_friends_remove( OnlineService *service, const gchar *user_n
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(best_friend_widgets->tree_store), iter, path)){
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
@@ -583,7 +583,7 @@ static gboolean best_friends_remove( OnlineService *service, const gchar *user_n
 		uber_free(iter);
 		return TRUE;
 	}
-	debug("Could not remove %s, on %s.  The user could not be found.", user_name, service->guid);
+	debug("Could not remove %s, on %s.  The user could not be found", user_name, service->guid);
 	return FALSE;
 }/*best_friends_remove( service, user_name );*/
 
@@ -592,7 +592,7 @@ static void best_friends_open_all_unread_updates(GtkToolButton *open_all_unread_
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(best_friend_widgets->tree_store), iter, path)){
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
@@ -624,7 +624,7 @@ static void best_friends_mark_all_unread_updates_as_read(GtkToolButton *mark_all
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(best_friend_widgets->tree_store), iter, path)){
-			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path.", i);
+			debug("Removing iter at index: %d failed.  Unable to retrieve iter from path", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
@@ -666,7 +666,7 @@ static gint best_friends_tree_store_fill(void){
 	for(accounts=online_services_get_accounts(); accounts; accounts=accounts->next){
 		GSList *best_friends=NULL;
 		OnlineService *service=(OnlineService *)accounts->data;
-		debug("Loading <%s>'s best_friends.", service->key );
+		debug("Loading <%s>'s best_friends", service->key );
 		service->best_friends_total=0;
 		for(best_friends=g_slist_nth(service->best_friends, 0); best_friends; best_friends=best_friends->next){
 			best_friends_append( service, (const gchar *)best_friends->data, 0.0, FALSE);
@@ -685,7 +685,7 @@ static gint best_friends_tree_store_validate(void){
 	best_friend_widgets->total=0;
 	for(accounts=online_services_get_accounts(); accounts; accounts=accounts->next){
 		OnlineService *service=(OnlineService *)accounts->data;
-		debug("Validating <%s>'s best_friends.", service->key );
+		debug("Validating <%s>'s best_friends", service->key );
 		service->best_friends_total=0;
 		GSList *best_friends=NULL;
 		for( best_friends=g_slist_nth( service->best_friends, 0 ); best_friends; best_friends=best_friends->next)
@@ -703,7 +703,7 @@ static gboolean best_friends_tree_store_get_user_iter(OnlineService *service, co
 		*iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter( GTK_TREE_MODEL(best_friend_widgets->tree_store), *iter, path)){
-			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path.", user_name, service->guid, i);
+			debug("Failed to get best friend: %s, on %s aned index: %d, as read has failed.  Unable to retrieve iter from path", user_name, service->guid, i);
 			gtk_tree_path_free(path);
 			uber_free(*iter);
 			continue;
@@ -722,12 +722,12 @@ static gboolean best_friends_tree_store_get_user_iter(OnlineService *service, co
 			continue;
 		}
 		
-		debug("Found best friend iter for best friend: %s, on service: <%s>, at index: %d.", user_at_index, service_at_index->guid, i);
+		debug("Found best friend iter for best friend: %s, on service: <%s>, at index: %d", user_at_index, service_at_index->guid, i);
 		gtk_tree_path_free(path);
 		uber_free(user_at_index);
 		return TRUE;
 	}
-	debug("Unable to find best friend iter for best friend: %s, on service: <%s>.", user_at_index, service_at_index->guid);
+	debug("Unable to find best friend iter for best friend: %s, on service: <%s>", user_at_index, service_at_index->guid);
 	uber_free(user_at_index);
 	if(*iter) uber_free(*iter);
 	return FALSE;
@@ -738,7 +738,7 @@ gdouble best_friends_tree_store_mark_as_unread(OnlineService *service, const gch
 	
 	GtkTreeIter *iter=NULL;
 	if(!best_friends_tree_store_get_user_iter(service, user_name, &iter)){
-		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid);
+		debug("User: %s  on service: <%s>, could not be found in your best friends list store", user_name, service->guid);
 		return 0.0;
 	}
 	
@@ -768,7 +768,7 @@ gdouble best_friends_tree_store_mark_as_unread(OnlineService *service, const gch
 		user_name_at_index=g_strdup_printf("<b>%s</b>", user_at_index);
 	}
 	
-	debug("Marking best friend: %s(%s), on service <%s>, as having %d unread updates.  Last read update: %f; current update ID: %f..", user_at_index, user_name_at_index, service->guid, unread_updates, unread_update_id, update_id);
+	debug("Marking best friend: %s(%s), on service <%s>, as having %d unread updates.  Last read update: %f; current update ID: %f", user_at_index, user_name_at_index, service->guid, unread_updates, unread_update_id, update_id);
 	gtk_tree_store_set(
 			best_friend_widgets->tree_store, iter,
 				STRING_BEST_FRIEND_USER_NAME, user_name_at_index,
@@ -789,7 +789,7 @@ gboolean best_friends_tree_store_mark_as_read(OnlineService *service, const gcha
 	
 	GtkTreeIter *iter=NULL;
 	if(!best_friends_tree_store_get_user_iter(service, user_name, &iter)){
-		debug("User: %s  on service: <%s>, could not be found in your best friends list store.", user_name, service->guid);
+		debug("User: %s  on service: <%s>, could not be found in your best friends list store", user_name, service->guid);
 		return FALSE;
 	}
 	
@@ -808,7 +808,7 @@ gboolean best_friends_tree_store_mark_as_read(OnlineService *service, const gcha
 	update_ids_set(service, user_timeline, ( (update_id>newest_update_id) ?update_id :newest_update_id) , ( (update_id>unread_update_id) ?(unread_update_id=update_id) :unread_update_id ), ( (update_id>oldest_update_id) ?update_id :oldest_update_id));
 	uber_free(user_timeline);
 	
-	debug("Marking best friend: %s, on service <%s>, as having all of their updates as read.", user_at_index, service->guid);
+	debug("Marking best friend: %s, on service <%s>, as having all of their updates as read", user_at_index, service->guid);
 	gtk_tree_store_set(
 			best_friend_widgets->tree_store, iter,
 				STRING_BEST_FRIEND_USER_NAME, user_at_index,
@@ -895,21 +895,21 @@ gboolean best_friends_check_update_ids(OnlineService *service, const gchar *best
 	gboolean notify_of_new_update=FALSE, save_update_ids=FALSE;;
 	unread_update_id=best_friends_tree_store_mark_as_unread(service, best_friends_user_name, update_id);
 	if( unread_update_id > best_friends_unread_update_id ){
-		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new unread update.  Update->ID: %f.  Previous unread_update_id: %f.", service->guid, best_friends_user_name, service->uri, unread_update_id, best_friends_unread_update_id);
+		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new unread update.  Update->ID: %f.  Previous unread_update_id: %f", service->guid, best_friends_user_name, service->uri, unread_update_id, best_friends_unread_update_id);
 		notify_of_new_update=TRUE;
 		save_update_ids=TRUE;
 		best_friends_unread_update_id=unread_update_id;
 	}
 	
 	if( update_id > best_friends_newest_update_id ){
-		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new newest update.  Update->ID: %f.  Previous newest_update_id: %f.", service->guid, best_friends_user_name, service->uri, update_id, best_friends_newest_update_id);
+		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new newest update.  Update->ID: %f.  Previous newest_update_id: %f", service->guid, best_friends_user_name, service->uri, update_id, best_friends_newest_update_id);
 		if(!notify_of_new_update) notify_of_new_update=TRUE;
 		if(!save_update_ids) save_update_ids=TRUE;
 		best_friends_newest_update_id=update_id;
 	}
 	
 	if( update_id < best_friends_oldest_update_id ){
-		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new oldest update.  Update->ID: %f.  Previous oldest_update_id: %f.", service->guid, best_friends_user_name, service->uri, update_id, best_friends_oldest_update_id);
+		debug("OnlineService: <%s>'s Best Friend: <%s@%s> has a new oldest update.  Update->ID: %f.  Previous oldest_update_id: %f", service->guid, best_friends_user_name, service->uri, update_id, best_friends_oldest_update_id);
 		if(!save_update_ids) save_update_ids=TRUE;
 		best_friends_oldest_update_id=update_id;
 	}

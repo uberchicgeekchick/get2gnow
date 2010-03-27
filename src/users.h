@@ -61,11 +61,11 @@
 /**********************************************************************
  *        System & library headers, eg #include <gdk/gdkkeysyms.h>    *
  **********************************************************************/
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libsoup/soup.h>
 #include "online-services.typedefs.h"
-#include "users.types.h"
 
 
 /**********************************************************************
@@ -83,7 +83,6 @@ void user_free(User *user);
 UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type);
 UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, const gchar *uri);
 UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, UpdateType update_type);
-gboolean user_status_notify_on_timeout(UserStatus *status);
 
 void user_status_free(UserStatus *status);
 

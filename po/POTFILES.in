@@ -37,6 +37,7 @@ src/main-window.c
 src/network.c
 src/online-service.c
 src/online-service-request.c
+src/online-service-requested-resource.c
 src/online-services.c
 src/online-services-dialog.c
 src/online-service-wrapper.c
@@ -51,6 +52,7 @@ src/uberchick-label.c
 src/uberchick-sexy-entry-completion.c
 src/uberchick-tree-view.c
 src/ui-utils.c
+src/update.c
 src/update-ids.c
 src/update-viewer.c
 src/users-glists.c

@@ -182,7 +182,7 @@ static void uberchick_sexy_entry_completion_init(UberChickSexyEntryCompletion *u
 	const gchar *g_regex_pattern="[A-Z]";
 	this->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
 	if(error){
-		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
 	}
 	

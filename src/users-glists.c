@@ -64,22 +64,24 @@
 
 #include "cache.h"
 
-#include "users.types.h"
-#include "users-glists.h"
-#include "users.h"
-
-#include "main-window.h"
-
 #include "online-services.typedefs.h"
-#include "online-service-wrapper.h"
-#include "online-service-request.h"
+#include "online-services.types.h"
+
 #include "online-service.types.h"
 #include "online-service.h"
+
+#include "online-service-wrapper.h"
+#include "online-service-request.h"
 
 #include "network.h"
 #include "www.h"
 #include "xml.h"
 
+#include "users.types.h"
+#include "users-glists.h"
+#include "users.h"
+
+#include "main-window.h"
 #include "friends-manager.h"
 #include "following-viewer.h"
 #include "update-viewer.h"
@@ -134,14 +136,14 @@ const gchar *users_glist_get_which_to_string(UsersGListGetWhich users_glist_get_
 		case GetFollowers: return _("followers");
 		case GetBoth: return _("friends and followers");
 		default:
-			      debug("**ERROR:** Attempting to download unsupport list of user relationships.");
+			      debug("**ERROR:** Attempting to download unsupport list of user relationships");
 			      return "**ERROR:** Unsupported [UsersGlistGetWhich type]";
 	}
 }/*users_glist_get_which_to_string(users_glist_get_which);*/
 
 GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refresh, UsersGListOnLoadFunc func){
 	if(!selected_service){
-		debug("**ERROR:** Default OnlineService is not set.  I'm unable to retreive the users who %s.", (which_pass ?_("are following you") :_("you're following")));
+		debug("**ERROR:** Default OnlineService is not set.  I'm unable to retreive the users who %s", (which_pass ?_("are following you") :_("you're following")));
 		return NULL;
 	}
 	
@@ -168,10 +170,10 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 			else which_pass=2;
 		}
 	}
-	debug("Initial service parameters setup.");
+	debug("Initial service parameters setup");
 	debug("get_parameter: [%s]; page/cursor: %li; which_pass: %i", get_parameter, next_cursor, which_pass);
 	
-	debug("Loading users_glist; users_glist_get_which type: %s. %s #%li; on which_pass: #%d.", users_glist_get_which_to_string(users_glist_get_which), get_parameter, next_cursor, which_pass);
+	debug("Loading users_glist; users_glist_get_which type: %s. %s #%li; on which_pass: #%d", users_glist_get_which_to_string(users_glist_get_which), get_parameter, next_cursor, which_pass);
 	
 	gchar *uri=NULL;
 	if(!which_pass)
@@ -261,7 +263,7 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which_list, g
 				previous_cursor=-1;
 				page=0;
 			}*/
-			debug("Displaying & loading, <%s>'s %s from %i pages.", service->key, users_glist_get_which_str, page);
+			debug("Displaying & loading, <%s>'s %s from %i pages", service->key, users_glist_get_which_str, page);
 			if(!service->friends_and_followers){
 				GList *friends=g_list_last(service->friends);
 				friends=g_list_remove(friends, friends->data);
@@ -332,12 +334,12 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	const gchar *next_cursor_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
-	debug("Processing <%s>'s %s, %s #%s.  Server response: %s [%i].", service->key, users_glist_get_which_str, get_parameter, next_cursor_str, xml->reason_phrase, xml->status_code);
+	debug("Processing <%s>'s %s, %s #%s.  Server response: %s [%i]", service->key, users_glist_get_which_str, get_parameter, next_cursor_str, xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
 	if(!(xml_error_check(service, uri, xml, &error_message))){
-		debug("**ERROR:** No more %s could be downloaded the request was not successful.", users_glist_get_which_str);
-		debug("**ERROR:** <%s>'s %s should be refreshed.", service->key, users_glist_get_which_str);
+		debug("**ERROR:** No more %s could be downloaded the request was not successful", users_glist_get_which_str);
+		debug("**ERROR:** <%s>'s %s should be refreshed", service->key, users_glist_get_which_str);
 		uber_free(error_message);
 		return NULL;
 	}
@@ -347,7 +349,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	GList *new_users=NULL;
 	debug("Parsing user list");
 	if(!(new_users=users_glist_parse(service_wrapper, xml)) ){
-		debug("No more %s where found, yippies we've got'em all.", users_glist_get_which_str);
+		debug("No more %s where found, yippies we've got'em all", users_glist_get_which_str);
 		return NULL;
 	}
 	
@@ -369,7 +371,7 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, G
 		return;
 	}
 	
-	debug("Appending users to <%s>'s %s. parsed from uri: [%s].", service->key, users_glist_get_which_str, uri);
+	debug("Appending users to <%s>'s %s. parsed from uri: [%s]", service->key, users_glist_get_which_str, uri);
 	if(which_pass<1){
 		if(!service->friends)
 			service->friends=new_users;
@@ -430,7 +432,7 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 	debug("Searching for <users>, <next_cursor>, and <previous_cursor> elements");
 	for(current_element=root_element; current_element; current_element=current_element->next){
 		if(current_element->type!=XML_ELEMENT_NODE) continue;
-		debug("Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+		debug("Current element: <%s>; type: [%s]", current_element->name, xml_node_type_to_string(current_element->type));
 		if((g_str_equal(current_element->name, "users_list")) && current_element->children){
 			root_element=current_element->children;
 			debug("Found <%s>'s <users_list> element", uri);
@@ -446,7 +448,7 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 		debug("2nd pass: Searching for <users>, <next_cursor>, and <previous_cursor> elements");
 		for(current_element=root_element; current_element; current_element=current_element->next){
 			if(current_element->type!=XML_ELEMENT_NODE) continue;
-			debug("2nd pass: Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+			debug("2nd pass: Current element: <%s>; type: [%s]", current_element->name, xml_node_type_to_string(current_element->type));
 			if(g_str_equal(current_element->name, "users")){
 				root_element=current_element;
 				break;
@@ -456,7 +458,7 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 	
 	GList		*users=NULL;
 	for(current_element=root_element; current_element; current_element=current_element->next){
-		debug("Parsing users, next_cursor, & previous_cursor.  Current element: <%s>; type: [%s].", current_element->name, xml_node_type_to_string(current_element->type));
+		debug("Parsing users, next_cursor, & previous_cursor.  Current element: <%s>; type: [%s]", current_element->name, xml_node_type_to_string(current_element->type));
 		if(current_element->type!=XML_ELEMENT_NODE) continue;
 		
 		if(g_str_equal(current_element->name, "next_cursor")){
@@ -502,7 +504,7 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 	if(previous_cursor==-1) previous_cursor++;
 	
 	if(!users){
-		debug("No new users where found.");
+		debug("No new users where found");
 		return NULL;
 	}
 	
@@ -541,7 +543,7 @@ void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_ge
 	GList *glist_free=NULL;
 	switch(users_glist_get_which){
 		case GetBoth:
-			debug("%s %s %s %s %s, %s %s %s %s %s %s %s %s.", _("friends"), _("of"), service->key, _("i.e."), _("who"), _("is"), _("following"), _("you"), _("and"), _("who"), _("is"), _("following"), service->key);
+			debug("%s %s %s %s %s, %s %s %s %s %s %s %s %s", _("friends"), _("of"), service->key, _("i.e"), _("who"), _("is"), _("following"), _("you"), _("and"), _("who"), _("is"), _("following"), service->key);
 			if(service->friends_and_followers) uber_list_free(service->friends_and_followers);
 			if(service->friends) users_glists_free(service, GetFriends);
 			if(service->followers) users_glists_free(service, GetFollowers);
@@ -550,13 +552,13 @@ void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_ge
 		case GetFriends:
 			if(!service->friends) return;
 			glist_free=service->friends;
-			debug("%s %s %s %s, %s %s %s %s.", _("friends"), _("of"), service->key, _("i.e."), _("who"), _("is"), _("following"), service->key);
+			debug("%s %s %s %s, %s %s %s %s", _("friends"), _("of"), service->key, _("i.e"), _("who"), _("is"), _("following"), service->key);
 			break;
 			
 		case GetFollowers:
 			if(!service->followers) return;
 			glist_free=service->followers;
-			debug("%s %s %s %s.", _("who"), _("is"), _("following"), service->key);
+			debug("%s %s %s %s", _("who"), _("is"), _("following"), service->key);
 			break;
 	}
 	

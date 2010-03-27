@@ -52,9 +52,24 @@
  ********************************************************************************/
 #define _GNU_SOURCE
 #define _THREAD_SAFE
+#include <glib.h>
+#include <libnotify/notify.h>
 
+#include "config.h"
 #include "program.h"
-#include "template.h"
+
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
+#include "online-service.types.h"
+#include "users.types.h"
+
+#include "gconfig.h"
+#include "preferences.defines.h"
+
+#include "update.h"
+
+#include "main-window.h"
+#include "update-viewer.h"
 
 
 /********************************************************************************
@@ -86,6 +101,7 @@
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
 #define DEBUG_DOMAINS "OnlineServices:UI:Networking:Updates:Requests:Notification:Settings:Setup:Users:Timelines:update.c"
+#include "debug.h"
 
 
 /********************************************************************************
@@ -93,20 +109,28 @@
  ********************************************************************************/
 
 
-gboolean update_notify_on_timeout(gpointer data){
-	UserStatus *status=(UserStatus *)data;
-	if(!(status && G_STR_N_EMPTY(status->notification) )){
+gboolean update_notify_on_timeout(UserStatus *status){
+	if(!(status && G_STR_N_EMPTY(status->notification) )) return FALSE;
+	
+	NotifyNotification *notify_notification=NULL;
+	GError		*error=NULL;
+	const gchar	*notification_icon_file_name=NULL;
+	if(!(g_file_test(status->user->image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR )))
+		notification_icon_file_name=GETTEXT_PACKAGE;
+	else
+		notification_icon_file_name=status->user->image_file;
+	
+	if(!main_window_status_icon_is_embedded())
+		notify_notification=notify_notification_new(GETTEXT_PACKAGE, status->notification, notification_icon_file_name, NULL);
+	else
+		notify_notification=notify_notification_new_with_status_icon(GETTEXT_PACKAGE, status->notification, notification_icon_file_name, main_window_status_icon_get());
+	
+	if(!notify_notification){
+		debug("**ERROR:** Failed to create notification of new update from <%s@%s> on <%s>", status->user->user_name, status->service->uri, status->service->key);
 		return FALSE;
 	}
 	
-	NotifyNotification *notify_notification;
-	GError             *error=NULL;
-	
-	if(!gtk_status_icon_is_embedded(main_window->private->status_icon))
-		notify_notification=notify_notification_new(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, NULL);
-	else
-		notify_notification=notify_notification_new_with_status_icon(PACKAGE_TARNAME, status->notification, PACKAGE_TARNAME, main_window->private->status_icon);
-	
+	notify_notification_set_hint_string(notify_notification, "suppress-sound", "");
 	notify_notification_set_timeout(notify_notification, 10000);
 	
 	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
@@ -114,14 +138,15 @@ gboolean update_notify_on_timeout(gpointer data){
 	
 	notify_notification_show(notify_notification, &error);
 	
-	g_object_unref(G_OBJECT(notify_notification));
-	
 	if(error){
-		debug("Error displaying status->notification: %s.", error->message);
+		debug("Error displaying status->notification: %s", error->message);
 		g_error_free(error);
 	}
+	
+	uber_object_unref(notify_notification);
+	
 	return FALSE;
-}/*main_window_notify_on_timeout - only used as a callback to g_timer_add_seconds_full - see 'src/parser.c'. */
+}/*update_notify_on_timeout - only used as a callback to g_timer_add_seconds_full - see 'src/parser.c'. */
 
 
 /********************************************************************************

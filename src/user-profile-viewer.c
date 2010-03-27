@@ -71,7 +71,9 @@
 #include "program.h"
 
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.types.h"
+
 #include "online-service-request.h"
 #include "online-service.h"
 #include "online-services.h"
@@ -420,7 +422,7 @@ static void *user_profile_viewer_save_avatar(SoupSession *session, SoupMessage *
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *image_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	const gchar *image_file=online_service_wrapper_get_user_data(service_wrapper);
-	debug("Image download returned: %s(%d).", xml->reason_phrase, xml->status_code);
+	debug("Image download returned: %s(%d)", xml->reason_phrase, xml->status_code);
 	
 	gchar *image_filename=NULL;
 	if(images_save_image(service, xml, image_uri, image_file, &image_filename))

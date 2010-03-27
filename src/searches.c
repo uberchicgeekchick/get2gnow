@@ -69,6 +69,10 @@
 #include "program.h"
 
 #include "xml.h"
+
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
+
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -77,6 +81,7 @@
 
 #include "users.types.h"
 #include "users.h"
+#include "update.h"
 
 #include "main-window.h"
 #include "uberchick-tree-view.h"
@@ -123,23 +128,23 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)+1)*100;
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
-		debug("Failed to parse xml document, timeline: %s; uri: %s.", timeline, uri);
+		debug("Failed to parse xml document, timeline: %s; uri: %s", timeline, uri);
 		xmlCleanupParser();
 		return 0;
 	}
 	
 	/* parse updates from search results. */
-	debug("Parsing searches node %s.", root_element->name);
+	debug("Parsing searches node %s", root_element->name);
 	for(current_element=root_element->children; current_element; current_element=current_element->next) {
 		if(!( current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, "entry") ))
 			continue;
 		
 		if(!current_element->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_element->name);
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes", current_element->name);
 			continue;
 		}
 		
-		debug("Parsing searches result's update * entry.");
+		debug("Parsing searches result's update * entry");
 		status=NULL;
 		if(!( (( status=user_status_parse_from_search_result_atom_entry(service, current_element->children, Searches ))) && status->id )){
 			if(status) user_status_free(status);
@@ -148,7 +153,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		
 		new_updates++;
 		gboolean notify_of_new_update=FALSE;
-		debug("Adding UserStatus ID: %f, on <%s> to UberChickTreeView.", status->id, service->key);
+		debug("Adding UserStatus ID: %f, on <%s> to UberChickTreeView", status->id, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		
 		if(notify && !save_oldest_id && status->id > last_notified_update )
@@ -162,7 +167,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		if(!notify_of_new_update)
 			user_status_free(status);
 		else{
-			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)update_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 			update_notification_delay-=update_notification_interval;
 			notified_updates++;
 		}
@@ -173,7 +178,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
-		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	

@@ -65,8 +65,12 @@
 #define DEBUG_DOMAINS "Images:UI:Requests:Files:I/O:Setup:Start-Up:Cache:UpdateViewer:Graphics:images.c"
 #include "debug.h"
 
-static gchar *unknown_image_file=NULL;
+static gchar *images_missing_image_filename=NULL;
 
+
+static gboolean images_set_unknown_image_filename(gchar *unknown_image_file);
+static void images_fetch_unknown_image_filename(void);
+static void images_unset_unknown_image_filename(void);
 
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
@@ -74,61 +78,71 @@ static void images_validate_filename(gchar **image_filename);
 static GdkPixbuf *images_get_scaled_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
 
 
-gchar *images_get_unknown_image_file(void){
-	if(!unknown_image_file)
-		images_set_unknown_image_file();
-	return g_strdup(unknown_image_file);
-}/*images_get_unknown_image_file();*/
 
-void images_set_unknown_image_file(void){
+void images_deinit(void){
+	images_unset_unknown_image_filename();
+}/*images_deinit();*/
+
+gchar *images_get_unknown_image_filename(void){
+	if(!images_missing_image_filename)
+		images_fetch_unknown_image_filename();
+	return g_strdup(images_missing_image_filename);
+}/*images_get_unknown_image_filename();*/
+
+static void images_fetch_unknown_image_filename(void){
 	GtkImage *stock_unknown_image=NULL;
-	gchar *unknown_image_filename=NULL;
-	if((stock_unknown_image=GTK_IMAGE(gtk_image_new_from_icon_name("gtk-missing-image", ImagesDialog)))){
+	gchar *unknown_image_file=NULL;
+	if((stock_unknown_image=GTK_IMAGE(gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, ImagesDialog)))){
 		stock_unknown_image=g_object_ref_sink(stock_unknown_image);
-		g_object_get(stock_unknown_image, "file", &unknown_image_filename, NULL );
-		g_object_unref(stock_unknown_image);
-		if(!G_STR_EMPTY(unknown_image_filename)){
-			debug("**notice:** images_unknown_image_file has been set to <%s>.", unknown_image_filename);
-			unknown_image_file=unknown_image_filename;
+		g_object_get(stock_unknown_image, "file", &unknown_image_file, NULL);
+		if(images_set_unknown_image_filename(unknown_image_file)){
+			uber_object_unref(stock_unknown_image);
 			return;
 		}
 		
-		if(unknown_image_filename)
-			uber_free(unknown_image_filename);
+		uber_object_unref(stock_unknown_image);
+		uber_free(unknown_image_file);
 	}
 	
-	unknown_image_filename=g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL);
-	if(!(g_file_test(unknown_image_filename, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR ))){
-		uber_free(unknown_image_filename);
-		unknown_image_filename=g_strdup("");
-		debug("**error:** images_unknown_image_file could not be set.");
-	}else
-		debug("**notice:** images_unknown_image_file has been set to <%s>.", unknown_image_file);
-	
-	unknown_image_file=unknown_image_filename;
-}/*images_get_unknown_image_file();*/
+	if(!images_set_unknown_image_filename(g_build_filename(DATADIR, "icons", "gnome", "scalable", "status", "gtk-missing-image.svg", NULL))){
+		debug("**ERROR:** failed to set images_missing_image_filename");
+		images_missing_image_filename=g_strdup("");
+	}
+}/*images_fetch_unknown_image_filename();*/
 
-void images_unset_unknown_image_file(void){
-	if(!unknown_image_file) return;
+static gboolean images_set_unknown_image_filename(gchar *unknown_image_file){
+	if(!(G_STR_N_EMPTY(unknown_image_file) && g_file_test(unknown_image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR))){
+		debug("images_unknown_image_file could not be set image: [%s%s] %s", (G_STR_N_EMPTY(unknown_image_file) ?"file://" :""), (G_STR_N_EMPTY(unknown_image_file) ?unknown_image_file :"<unknown image>"), (G_STR_N_EMPTY(unknown_image_file) ?"doesn't exist" :"could not be determind"));
+		uber_free(unknown_image_file);
+		return FALSE;
+	}
 	
-	debug("**SHUTDOWN:** releasing memory of unknown image: %s.", unknown_image_file);
-	uber_free(unknown_image_file);
+	images_missing_image_filename=unknown_image_file;
+	debug("images_unknown_image_file has been set to <file://%s>", unknown_image_file);
+	return TRUE;
+}/*images_set_unknown_image_filename(unknown_image_file);*/
+
+static void images_unset_unknown_image_filename(void){
+	if(!images_missing_image_filename) return;
+	
+	debug("**SHUTDOWN:** releasing images_missing_image_filename: %s", images_missing_image_filename);
+	uber_free(images_missing_image_filename);
 }/*images_unset_unknown_image_file();*/
 
 gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename){
 	gchar *error_message=NULL;
 	if(!(xml_error_check(service, image_uri, xml, &error_message))){
-		debug("Failed to download and save image: <%s> to file: [%s].", image_uri, image_file);
-		debug("Detailed error message: %s.", error_message);
+		debug("Failed to download and save image: <%s> to file: [%s]", image_uri, image_file);
+		debug("Detailed error message: %s", error_message);
 		uber_free(error_message);
-		(*image_filename)=images_get_unknown_image_file();
+		(*image_filename)=images_get_unknown_image_filename();
 		return FALSE;
 	}
 	uber_free(error_message);
 	
 	if(!( g_strrstr( soup_message_headers_get_one( xml->response_headers, "Content-Type"), "image" ) )){
-		debug("Downloaded content does not appear to be an image: <%s>.  GNOME's unknown-image will be used instead.", image_uri);
-		(*image_filename)=images_get_unknown_image_file();
+		debug("Downloaded content does not appear to be an image: <%s>.  GNOME's unknown-image will be used instead", image_uri);
+		(*image_filename)=images_get_unknown_image_filename();
 		return FALSE;
 	}
 	
@@ -138,8 +152,8 @@ gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar
 					xml->response_body->length,
 				NULL
 	))){
-		debug("Failed to download and save image: <%s> to file: [%s].", image_uri, image_file);
-		(*image_filename)=images_get_unknown_image_file();
+		debug("Failed to download and save image: <%s> to file: [%s]", image_uri, image_file);
+		(*image_filename)=images_get_unknown_image_filename();
 		return FALSE;
 	}
 	
@@ -153,7 +167,7 @@ static void images_validate_filename(gchar **image_filename){
 		return;
 	
 	if(*image_filename) g_free(*image_filename);
-	*image_filename=images_get_unknown_image_file();
+	*image_filename=images_get_unknown_image_filename();
 }/*images_validate_filename*/
 
 GtkImage *images_get_expanded_image_from_filename( gchar *image_filename ){
@@ -197,7 +211,7 @@ GtkImage *images_get_image_from_filename( gchar *image_filename ){
 	
 	GdkPixbuf *pixbuf=images_get_pixbuf_from_filename(image_filename);
 	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf(pixbuf) );
-	g_object_unref(pixbuf);
+	uber_object_unref(pixbuf);
 	return image;
 }//images_get_image_from_file
 
@@ -210,7 +224,7 @@ GtkImage *images_get_scaled_image_from_filename( gchar *image_filename, gint wid
 	images_validate_height(&height);
 	GdkPixbuf *pixbuf=images_get_scaled_pixbuf_from_filename( image_filename, width, height );
 	GtkImage *image=GTK_IMAGE( gtk_image_new_from_pixbuf(pixbuf) );
-	g_object_unref(pixbuf);
+	uber_object_unref(pixbuf);
 	return image;
 }//images_get_image_from_file
 
@@ -264,10 +278,10 @@ GdkPixbuf *images_scale_pixbuf( GdkPixbuf *pixbuf, gint width, gint height ){
 	images_validate_height(&height);
 	
 	GdkPixbuf *resized=NULL;
-	if( (resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR )) )
+	if( (resized=gdk_pixbuf_scale_simple( pixbuf, width, height, GDK_INTERP_BILINEAR)) )
 		return resized;
 	
-	debug("Image error: risizing of pixmap to: %d x %d failed.", width, height );
+	debug("Image error: risizing of pixmap to: %d x %d failed", width, height);
 	return NULL;
 }//images_resize_pixbuf
 
@@ -331,7 +345,8 @@ static GdkPixbuf *images_get_scaled_pixbuf_from_filename( gchar *image_filename,
 		return pixbuf;
 	
 	debug("Image error: %s (%d x %d): %s", image_filename, width, height, error->message);
-	if(error) g_error_free(error);
+	if(error)
+		g_error_free(error);
 	return NULL;
 }/*images_get_scaled_pixbuf_from_file(image_filename, width, height);*/
 
@@ -355,7 +370,7 @@ gboolean images_set_file_chooser_preview_image(GtkImage *preview_image, GtkFileC
 		return FALSE;
 	
 	gtk_image_set_from_pixbuf(preview_image, pixbuf);
-	g_object_unref(pixbuf);
+	uber_object_unref(pixbuf);
 	gtk_file_chooser_set_preview_widget_active(file_chooser, TRUE);
 	
 	return TRUE;

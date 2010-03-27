@@ -195,7 +195,7 @@ static void gconfig_finalize(GObject *object){
 	if(gconfig_priv->gconf_client){
 		gconf_client_remove_dir(gconfig_priv->gconf_client, GCONF_PATH, NULL);
 		gconf_client_remove_dir(gconfig_priv->gconf_client, DESKTOP_INTERFACE_ROOT, NULL);
-		g_object_unref(gconfig_priv->gconf_client);
+		uber_object_unref(gconfig_priv->gconf_client);
 	}
 	
 	G_OBJECT_CLASS(gconfig_parent_class)->finalize(object);
@@ -216,8 +216,8 @@ static void gconfig_suggest_sync(const gchar *gtype, const gchar *key){
 	GError *error=NULL;
 	gconf_client_suggest_sync(gconfig_priv->gconf_client, &error);
 	if(error){
-		debug("**ERROR:** Failed to suggest gconf client syncing w/gconf deamon.");
-		debug("**ERROR:** \t\tGConf deamon return: [%s] after saving: %s (%s).", key, error->message, gtype);
+		debug("**ERROR:** Failed to suggest gconf client syncing w/gconf deamon");
+		debug("**ERROR:** \t\tGConf deamon return: [%s] after saving: %s (%s)", key, error->message, gtype);
 		g_error_free(error);
 	}
 }/*gconfig_suggest_sync("bool", key);*/
@@ -245,14 +245,14 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 	if( (!(gconf_value=gconf_client_get(gconfig_priv->gconf_client, key, &error))) || error){
 		*value=default_int;
 		if(error){
-			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s.", key, error->message);
+			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s", key, error->message);
 			g_error_free(error);
 			return FALSE;
 		}
 		
-		debug("**NOTICE:** Setting default value for: %s to [%i].", key, default_int);
+		debug("**NOTICE:** Setting default value for: %s to [%i]", key, default_int);
 		if(!(gconfig_set_int(key, default_int))){
-			debug("**ERROR:** failed to set '%s' to default value: '%d'.", key, default_int);
+			debug("**ERROR:** failed to set '%s' to default value: '%d'", key, default_int);
 			return FALSE;
 		}
 		
@@ -263,11 +263,11 @@ gboolean gconfig_get_int_or_default(const gchar *key, gint *value, gint default_
 	}
 	
 	if(gconf_value->type!=GCONF_VALUE_INT){
-		debug("**ERROR:** Requested gconf key: %s does not contain a int value.", key);
+		debug("**ERROR:** Requested gconf key: %s does not contain a int value", key);
 		*value=default_int;
 	}else{
 		*value=gconf_value_get_int(gconf_value);
-		debug("Retrieved int value for %s [%d].", key, *value);
+		debug("Retrieved int value for %s [%d]", key, *value);
 	}
 	gconf_value_free(gconf_value);
 	
@@ -340,14 +340,14 @@ gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
 	GError *error=NULL;
 	if( (!(gconf_value=gconf_client_get(gconfig_priv->gconf_client, key, &error))) || error){
 		if(error){
-			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s.", key, error->message);
+			debug("**ERROR:** Failed to retrieve gconf value for: %s.  Error: %s", key, error->message);
 			g_error_free(error);
 			return default_boolean;
 		}
 		
-		debug("*NOTICE:* Setting default value for: %s to [%s].", key, (default_boolean ?"TRUE" :"FALSE") );
+		debug("*NOTICE:* Setting default value for: %s to [%s]", key, (default_boolean ?"TRUE" :"FALSE") );
 		if(!(gconfig_set_bool(key, default_boolean))){
-			debug("**ERROR:** failed to set '%s' to default value: '%s'.", key, (default_boolean ?"TRUE" :"FALSE"));
+			debug("**ERROR:** failed to set '%s' to default value: '%s'", key, (default_boolean ?"TRUE" :"FALSE"));
 			return default_boolean;
 		}
 		
@@ -358,11 +358,11 @@ gboolean gconfig_if_bool(const gchar *key, gboolean default_boolean){
 	}
 	
 	if(gconf_value->type!=GCONF_VALUE_BOOL){
-		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value.", key);
+		debug("**ERROR:** Requested gconf key: %s does not contain a boolean value", key);
 		value=default_boolean;
 	}else{
 		value=gconf_value_get_bool(gconf_value);
-		debug("Retrieved boolean value for %s [%s].", key, (value ?"TRUE" :"FALSE") );
+		debug("Retrieved boolean value for %s [%s]", key, (value ?"TRUE" :"FALSE") );
 	}
 	gconf_value_free(gconf_value);
 	
@@ -375,7 +375,7 @@ gboolean gconfig_set_bool(const gchar *key, gboolean value){
 	if(G_STR_N_EMPTY(gconfig_priv->cached_key_bool) && g_str_equal(gconfig_priv->cached_key_bool, key) )
 		gconfig_priv->cached_value_bool=value;
 	
-	debug("Setting bool:'%s' to %s.", key, (value ? "TRUE" : "FALSE"));
+	debug("Setting bool:'%s' to %s", key, (value ? "TRUE" : "FALSE"));
 	GError *error=NULL;
 	gboolean success=gconf_client_set_bool(gconfig_priv->gconf_client, key, value, &error);
 	if(!success){
@@ -403,7 +403,7 @@ gboolean gconfig_get_bool(const gchar *key, gboolean *value){
 		return FALSE;
 	}
 	
-	debug("Retrieved bool:'%s' to %s(=%d).", key, (*value ? "TRUE" : "FALSE"), *value);
+	debug("Retrieved bool:'%s' to %s(=%d)", key, (*value ? "TRUE" : "FALSE"), *value);
 		
 	return TRUE;
 }/*gconfig_get_bool(key, &boolean);*/
@@ -439,7 +439,7 @@ gboolean gconfig_get_string(const gchar *key, gchar **value){
 		return FALSE;
 	}
 	
-	debug("Retrieved string: '%s'(='%s').", key, *value);
+	debug("Retrieved string: '%s'(='%s')", key, *value);
 	
 	uber_free(gconfig_priv->cached_key_string);
 	gconfig_priv->cached_value_string=g_strdup(*value);
@@ -518,7 +518,7 @@ gboolean gconfig_get_list(const gchar  *key, GSList **value, GConfValueType list
 	
 	*value=gconf_client_get_list(gconfig_priv->gconf_client, key, list_type, &error);
 	if(error){
-		debug("**ERROR:** failed to retrieve list: %s, error: %s.", key, error->message);
+		debug("**ERROR:** failed to retrieve list: %s, error: %s", key, error->message);
 		g_error_free(error);
 		return FALSE;
 	}else if(IF_DEBUG){
@@ -613,7 +613,7 @@ static gboolean gconfig_check_cached(GConfigSupportedValue which_cache, const gc
 
 gboolean gconfig_rm_rf(const gchar *key){
 	GError *error=NULL;
-	debug("Removing %s and all keys below it.", key);
+	debug("Removing %s and all keys below it", key);
 	gboolean success=gconf_client_recursive_unset(gconfig_priv->gconf_client, key, GCONF_UNSET_INCLUDING_SCHEMA_NAMES, &error);
 	if(error){
 		debug("**ERROR**: Failed to recursively unset: %s; gconf encountered an error: %s", key, error->message);
@@ -622,7 +622,7 @@ gboolean gconfig_rm_rf(const gchar *key){
 	}
 	
 	if(!success){
-		debug("**ERROR**: Failed to recursively unset: %s; an unknow error occured.", key);
+		debug("**ERROR**: Failed to recursively unset: %s; an unknow error occured", key);
 		return FALSE;
 	}
 	

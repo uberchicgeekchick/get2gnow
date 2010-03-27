@@ -77,16 +77,12 @@
 #include "preferences.defines.h"
 #include "preferences.h"
 
+#include "ui-utils.h"
 
 
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-#define GTK_BUILDER_UI_FILENAME "preferences"
-
-#define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Updates:Notification:Settings:Setup:Start-Up:Preferences:preferences.c"
-#include "debug.h"
-
 typedef struct _PreferencesDialog PreferencesDialog;
 typedef struct _replace_me_with replace_me_with;
 typedef struct _reload_time reload_time;
@@ -194,6 +190,15 @@ enum {
 	COLUMN_COMBO_COUNT,
 };
 
+/********************************************************************************
+ *              Debugging information static objects, and local defines         *
+ ********************************************************************************/
+#define GTK_BUILDER_UI_FILENAME "preferences"
+
+#define DEBUG_DOMAINS "UI:GtkBuilder:GtkBuildable:OnlineServices:Updates:Notification:Settings:Setup:Start-Up:Preferences:preferences.c"
+#include "debug.h"
+
+static PreferencesDialog *prefs=NULL;
 
 
 /********************************************************************************
@@ -229,7 +234,7 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
  *                  'Here be Dragons'...art, beauty, fun, & magic.              *
  ********************************************************************************/
 static void preferences_setup_widgets(PreferencesDialog *prefs){
-	debug("Binding widgets to preferences.");
+	debug("Binding widgets to preferences");
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_BEST_FRIENDS, TRUE, prefs->autoload_best_friends_updates_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_DMS, TRUE, prefs->autoload_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_REPLIES, TRUE, prefs->autoload_replies_check_button);
@@ -273,22 +278,22 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 }/*preferences_setup_widgets(prefs);*/
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s.", key );
+	debug("Saving preference: %s", key );
 	preferences_widget_sync_bool(key, user_data);
 }
 
 static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s.", key );
+	debug("Saving preference: %s", key );
 	preferences_widget_sync_string_combo(key, user_data);
 }
 
 static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s.", key );
+	debug("Saving preference: %s", key );
 	preferences_widget_sync_int_combo(key, user_data);
 }
 
 static void preferences_timeline_setup(PreferencesDialog *prefs){
-	debug("Binding timelines to preference.");
+	debug("Binding timelines to preference");
 	static const gchar *timelines[] = {
 		"",			N_("Nothing"),
 		API_TIMELINE_HOMEPAGE,	N_("My Homepage"),
@@ -322,11 +327,11 @@ static void preferences_timeline_setup(PreferencesDialog *prefs){
 		uber_free(iter);
 	}
 	
-	g_object_unref(list_store);
+	uber_object_unref(list_store);
 }/*static void preferences_timeline_setup(prefs);*/
 
 static void preferences_replace_with_setup(PreferencesDialog *prefs){
-	debug("Setting-up /me replacement preference.");
+	debug("Setting-up /me replacement preference");
 	
 	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
 	
@@ -350,11 +355,11 @@ static void preferences_replace_with_setup(PreferencesDialog *prefs){
 		uber_free(iter);
 	}
 	
-	g_object_unref(list_store);
+	uber_object_unref(list_store);
 }/*static void preferences_replace_with_setup(prefs);*/
 
 static void preferences_max_int_combo_box_setup(PreferencesDialog *prefs, GtkComboBox *int_combo_box, gint max_int_value, const gchar *int_label){
-	debug("Setting-up maximum %s preference combo box.", int_label);
+	debug("Setting-up maximum %s preference combo box", int_label);
 	
 	GtkListStore *list_store=gtk_list_store_new(COLUMN_COMBO_COUNT, G_TYPE_STRING, G_TYPE_INT);
 	
@@ -381,18 +386,18 @@ static void preferences_max_int_combo_box_setup(PreferencesDialog *prefs, GtkCom
 		uber_free(iter);
 	}
 	
-	g_object_unref(list_store);
+	uber_object_unref(list_store);
 }/*preferences_max_int_combo_box_setup(prefs, GtkComboBox *int_combo_box, const gchar *int_label);*/
 
 static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check_button){
 	gchar *pref_bool_default=(gchar *)g_object_get_data(G_OBJECT(check_button), "bool_default");
 	gboolean bool_default=g_str_equal(pref_bool_default, "TRUE");
-	debug("Binding CheckButton: %s to preference: %s; default value: %s.", gtk_button_get_label(GTK_BUTTON(check_button)), key, (bool_default?"TRUE":"FALSE"));
+	debug("Binding CheckButton: %s to preference: %s; default value: %s", gtk_button_get_label(GTK_BUTTON(check_button)), key, (bool_default?"TRUE":"FALSE"));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (check_button), gconfig_if_bool(key, bool_default));
 }
 
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box){
-	debug("Binding ComboBox to preference: %s.", key );
+	debug("Binding ComboBox to preference: %s", key );
 	gchar        *value;
 	
 	if (!gconfig_get_string(key, &value)) return;
@@ -433,7 +438,7 @@ static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *
 }
 
 static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *combo_box){
-	debug("Binding ComboBox to preference: %s.", key );
+	debug("Binding ComboBox to preference: %s", key );
 	gint          value=0, default_int=GPOINTER_TO_INT( g_object_get_data(G_OBJECT(combo_box), "default_int") );
 	if(!gconfig_get_int_or_default(key, &value, default_int)) return;
 	GtkTreeModel *model=gtk_combo_box_get_model(combo_box);;
@@ -571,18 +576,15 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs){
 }
 
 void preferences_dialog_show(GtkWindow *parent){
-	static PreferencesDialog *prefs;
-	GtkBuilder         *ui;
-
 	if(prefs){
-		gtk_window_present(GTK_WINDOW (prefs->dialog));
+		window_present(GTK_WINDOW (prefs->dialog), TRUE);
 		return;
 	}
 
 	prefs=g_new0(PreferencesDialog, 1);
 
 	/* Get widgets */
-	ui=gtkbuilder_get_file(
+	GtkBuilder *ui=gtkbuilder_get_file(
 				GTK_BUILDER_UI_FILENAME,
 					"preferences_dialog", &prefs->dialog,
 					"preferences_notebook", &prefs->notebook,
@@ -645,7 +647,7 @@ void preferences_dialog_show(GtkWindow *parent){
 	g_signal_connect_after( (GtkToggleButton *)prefs->concatenated_updates_check_button, "toggled", (GCallback)main_window_concatenate_timeline_columns, NULL);
 	g_signal_connect_after( (GtkToggleButton *)prefs->compact_entire_view_check_button, "toggled", (GCallback)main_window_compact_ui, NULL);
 	
-	g_object_unref(ui);
+	uber_object_unref(ui);
 	
 	g_object_add_weak_pointer(G_OBJECT (prefs->dialog), (gpointer) &prefs);
 	gtk_window_set_transient_for(GTK_WINDOW (prefs->dialog), parent);

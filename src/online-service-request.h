@@ -76,12 +76,10 @@
 /**********************************************************************
  *        Objects, structures, and etc typedefs                       *
  **********************************************************************/
-typedef struct _OnlineServiceRequest OnlineServiceRequest;
-
 extern OnlineService *selected_service;
-
 extern gdouble in_reply_to_status_id;
 extern OnlineService *in_reply_to_service;
+
 
 /**********************************************************************
  *          Global method & function prototypes                      *

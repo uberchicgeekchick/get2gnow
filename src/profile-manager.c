@@ -66,6 +66,8 @@
 #include "gtkbuilder.h"
 
 #include "online-services.rest-uris.defines.h"
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
@@ -275,7 +277,7 @@ static void profile_manager_setup(GtkWindow *parent){
 	
 	profile_manager_setup_image_file_filters(profile_manager);
 	
-	debug("ProfileManager created now connecting its signal handlers.");
+	debug("ProfileManager created now connecting its signal handlers");
 	gtkbuilder_connect(
 				ui, profile_manager,
 					"profile_manager_dialog", "destroy", profile_manager_destroy,
@@ -297,7 +299,7 @@ static void profile_manager_setup(GtkWindow *parent){
 				NULL
 	);
 	
-	g_object_unref(ui);
+	uber_object_unref(ui);
 	
 	gchar *window_title=g_strdup_printf("%s - <%s>'s %s", _(GETTEXT_PACKAGE), selected_service->key, _("Profile Manager"));
 	gtk_window_set_title(GTK_WINDOW(profile_manager->dialog), window_title);
@@ -371,7 +373,7 @@ void profile_manager_edit_profile(OnlineServiceWrapper *online_service_wrapper, 
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(online_service_wrapper);
 	if(!user){
 		const gchar *form_data=online_service_wrapper_get_form_data(online_service_wrapper);
-		debug("**ERROR:** Your profile could not be saved or updated.  <%s> returned: %s[#%d].", requested_uri, xml->reason_phrase, xml->status_code);
+		debug("**ERROR:** Your profile could not be saved or updated.  <%s> returned: %s[#%d]", requested_uri, xml->reason_phrase, xml->status_code);
 		debug("**ERROR:** POST: %s", form_data);
 		statusbar_printf("Your profile could not be saved or updated.  <%s> returned: %s[#%d] while POSTing: %s.", requested_uri, xml->reason_phrase, xml->status_code, form_data);
 		return;
@@ -447,7 +449,7 @@ static void profile_manager_revert_profile_colors(GtkButton *revert_profile_colo
 		gtk_color_button_set_color(profile_manager->profile_colors_sidebar_border_color_button, color);
 	
 	uber_free(color);
-	g_object_unref(colormap);
+	uber_object_unref(colormap);
 }/*profile_manager_revert_profile_colors(profile_manager->revert_profile_colors_button, profile_manager);*/
 	
 static void profile_manager_revert_profile_background_image(GtkButton *revert_profile_background_image_button, ProfileManager *profile_manager){
@@ -486,7 +488,7 @@ static void profile_manager_set_image(ProfileManagerImageWidget which_image, con
 		}
 		
 		gtk_image_set_from_pixbuf(profile_manager_image, pixbuf);
-		g_object_unref(pixbuf);
+		uber_object_unref(pixbuf);
 	}
 	
 	profile_manager_check_loading_status(profile_manager);
@@ -521,7 +523,7 @@ void *profile_manager_save_image(SoupSession *session, SoupMessage *xml, OnlineS
 	const gchar *image_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	const gchar *image_file=online_service_wrapper_get_user_data(service_wrapper);
 	ProfileManagerImageWidget which_image=GPOINTER_TO_INT(online_service_wrapper_get_form_data(service_wrapper));
-	debug("Image download returned: %s(%d).", xml->reason_phrase, xml->status_code);
+	debug("Image download returned: %s(%d)", xml->reason_phrase, xml->status_code);
 	
 	gchar *image_filename=NULL;
 	if(!images_save_image(service, xml, image_uri, image_file, &image_filename))
@@ -612,7 +614,7 @@ static gboolean profile_manager_update_profile_colors(GtkButton *update_profile_
 	uber_free(form_data);
 	
 	uber_free(color);
-	g_object_unref(colormap);
+	uber_object_unref(colormap);
 	return TRUE;
 }/*profile_manager_update_profile(profile_manager->update_profile_colors_button, profile_manager);*/
 
@@ -693,7 +695,7 @@ static void profile_manager_response(GtkDialog *dialog, gint response, ProfileMa
 }/*profile_message_response(profile_manager->dialog, GTK_RESPONSE_APPLY|GTK_RESPONSE_CANEL, profile_manager);*/
 
 static void profile_manager_destroy(GtkDialog *dialog, ProfileManager *profile_manager){
-	debug("Destroying ProfileManager.");
+	debug("Destroying ProfileManager");
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	
 	uber_free(profile_manager);

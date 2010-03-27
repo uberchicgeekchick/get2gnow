@@ -43,7 +43,8 @@ get2gnow_SOURCES = 													\
 	network.c					network.h							\
 	online-services.typedefs.h			online-services.rest-uri.defines.h				\
 	online-service.c				online-service.typedefs.h		online-service.h	\
-	online-service-request.c			online-service-request.h					\
+	online-service-request.c		online-service-request.types.h		online-service-request.h			\
+	online-service-requested-resource.c	online-service-requested-resource.types.h	online-service-requested-resource.h	\
 	online-services.c				online-services.h						\
 	online-services-dialog.c			online-services-dialog.h					\
 	online-service-wrapper.c			online-service-wrapper.h					\
@@ -59,6 +60,7 @@ get2gnow_SOURCES = 													\
 	uberchick-sexy-entry-completion.c		uberchick-sexy-entry-completion.h				\
 	uberchick-tree-view.c	uberchick-tree-view.macros.h	uberchick-tree-view.types.h	uberchick-tree-view.h	\
 	ui-utils.c					ui-utils.h							\
+	update.c					update.h							\
 	update-ids.c					update-ids.h							\
 	update-viewer.c					update-viewer.h							\
 	users-glists.c							users-glists.h					\

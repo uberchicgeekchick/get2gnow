@@ -64,7 +64,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services.types.h"
+#include "online-services.typedefs.h"
 
 
 G_BEGIN_DECLS

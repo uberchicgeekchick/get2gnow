@@ -133,11 +133,6 @@ struct _OnlineService{
 	GRegex				*username_regex;
 };
 
-struct _OnlineServiceRequestedResource{
-	OnlineService			*service;
-	gchar				*user_data;
-};
-
 enum _RequestAction{
 	SelectService,
 	ViewProfile,

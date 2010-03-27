@@ -132,7 +132,7 @@ gboolean proxy_init(void){
 	
 	if(G_STR_EMPTY(server)){
 		debug("Connect to the tubes using a proxy\t\t[%s]", _("disable"));
-		debug("*NOTICE:* Proxy connection is enabled but no server is provided. Please check your puter's configuration.");
+		debug("*NOTICE:* Proxy connection is enabled but no server is provided. Please check your puter's configuration");
 		proxy_status=PROXY_STATUS_DISABLED;
 		return FALSE;
 	}
@@ -154,7 +154,7 @@ gboolean proxy_init(void){
 	}
 	
 	debug("Connect to the tubes using a proxy\t\t[%s]", _("enable"));
-	debug("Proxy uri: <%s>.", proxy_uri );
+	debug("Proxy uri: <%s>", proxy_uri );
 	
 	proxy_suri=soup_uri_new(proxy_uri);
 	

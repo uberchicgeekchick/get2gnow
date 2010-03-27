@@ -71,6 +71,10 @@
 #include "program.h"
 
 #include "online-services.rest-uris.defines.h"
+
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
+
 #include "online-services.h"
 #include "online-service.types.h"
 #include "online-service.h"
@@ -81,6 +85,7 @@
 
 #include "users.types.h"
 #include "users.h"
+#include "update.h"
 
 #include "main-window.h"
 #include "uberchick-tree-view.h"
@@ -121,12 +126,12 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 	
 	switch(update_type){
 		case	Searches: case	Groups:
-			debug("*ERROR:* Unsupported timeline.  timelines_parse requested to parse %s.  This method sould not have been called.", (update_type==Groups?"Groups":"Searches"));
+			debug("*ERROR:* Unsupported timeline.  timelines_parse requested to parse %s.  This method sould not have been called", (update_type==Groups?"Groups":"Searches"));
 			return 0;
 			
 		case	DMs:
 			/*Direct Messages are kept for 4 weeks, by default.*/
-			debug("Parsing DMs.");
+			debug("Parsing DMs");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_DMS, &update_expiration, 2419200);
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE);
 			if(!oldest_update_id) save_oldest_id=TRUE;
@@ -135,7 +140,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		
 		case	Replies:
 			/*By default Replies, & @ Mentions, from the last 7 days are loaded.*/
-			debug("Parsing Replies and/or @ Mentions.");
+			debug("Parsing Replies and/or @ Mentions");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_REPLIES, &update_expiration, 604800);
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE);
 			if(!oldest_update_id) save_oldest_id=TRUE;
@@ -144,7 +149,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		
 		case	Faves:
 			/*Favorite/Star'd updates are kept for 4 weeks, by default.*/
-			debug("Parsing Faves.");
+			debug("Parsing Faves");
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_FAVES, &update_expiration, 2419200);
 			if(!oldest_update_id) save_oldest_id=TRUE;
 			else save_oldest_id=FALSE;
@@ -152,7 +157,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		
 		case	BestFriends:
 			/*Best Friends' updates are kept for 1 day, by default.*/
-			debug("Parsing best friends updates.");
+			debug("Parsing best friends updates");
 			notify=notify_best_friends;
 			gconfig_get_int_or_default(PREFS_UPDATES_ARCHIVE_BEST_FRIENDS, &update_expiration, 86400);
 			if(!save_oldest_id) save_oldest_id=TRUE;
@@ -160,13 +165,13 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		
 		case	Homepage:	case	ReTweets:
 		case	Timelines:	case	Users:
-			debug("Parsing updates from someone I'm following.");
+			debug("Parsing updates from someone I'm following");
 			if(!notify) notify=gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE);
 			if(!save_oldest_id) save_oldest_id=TRUE;
 			break;
 			
 		case	Archive:
-			debug("Parsing my own updates or favorites.");
+			debug("Parsing my own updates or favorites");
 			break;
 		
 		case	None:	default:
@@ -180,13 +185,13 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 	const gint	notify_priority=(uberchick_tree_view_get_page(uberchick_tree_view)+1)*100;
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
-		debug("Failed to parse xml document, <%s>'s timeline: %s.", service->key, timeline);
+		debug("Failed to parse xml document, <%s>'s timeline: %s", service->key, timeline);
 		xmlCleanupParser();
 		return 0;
 	}
 	
 	/* get updates or direct messages */
-	debug("Parsing %s.", root_element->name);
+	debug("Parsing %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
 		if(current_element->type != XML_ELEMENT_NODE ) continue;
 		
@@ -200,14 +205,14 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 			continue;
 		
 		if(!current_element->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_element->name);
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes", current_element->name);
 			continue;
 		}
 		
-		debug("Parsing %s.", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
 		
 		status=NULL;
-		debug("Creating Status *.");
+		debug("Creating Status *");
 		if(!( (( status=user_status_parse(service, current_element->children, update_type ))) && status->id )){
 			if(status) user_status_free(status);
 			continue;
@@ -216,7 +221,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		new_updates++;
 		gboolean notify_of_new_update=FALSE;
 		/* id_oldest_tweet is only set when update_type DMs or Replies */
-		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UberChickTreeView.", status->user->user_name, status->id_str, service->key);
+		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UberChickTreeView", status->user->user_name, status->id_str, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		if( update_type!=BestFriends && update_type!=DMs && ( best_friends_is_user_best_friend(service, status->user->user_name) || ( status->retweet && best_friends_is_user_best_friend(service, status->retweeted_user_name) ) ) )
 			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends)
@@ -232,7 +237,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		if(!notify_of_new_update)
 			user_status_free(status);
 		else{
-			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)user_status_notify_on_timeout, status, (GDestroyNotify)user_status_free);
+			g_timeout_add_seconds_full(notify_priority, update_notification_delay, (GSourceFunc)update_notify_on_timeout, status, (GDestroyNotify)user_status_free);
 			update_notification_delay-=update_notification_interval;
 			notified_updates++;
 		}
@@ -244,7 +249,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		 * this only once it won't ending up causing bloating.
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, timeline);
-		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f.", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	

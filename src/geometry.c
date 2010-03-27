@@ -131,7 +131,7 @@ static void geometry_load_for_window(ViewType view){
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
 	if(!(prefs_path=geometry_get_prefs_path(view, &default_width, &default_height, &default_x, &default_y))) return;
-	debug("Loading %s's window's geometry.", prefs_path[PrefernceWindow]);
+	debug("Loading %s's window's geometry", prefs_path[PrefernceWindow]);
 	
 	gconfig_get_int_or_default(prefs_path[PreferenceWidth], &w, default_width);
 	gconfig_get_int_or_default(prefs_path[PreferenceHeight], &h, default_height);
@@ -172,7 +172,7 @@ static void geometry_save_for_window(ViewType view){
 	GtkWindow	*window=geometry_get_window(view);
 	gchar		**prefs_path=NULL;
 	if(!(prefs_path=geometry_get_prefs_path(view, &default_width, &default_height, &default_x, &default_y))) return;
-	debug("Saving %s's window's geometry.", prefs_path[PrefernceWindow]);
+	debug("Saving %s's window's geometry", prefs_path[PrefernceWindow]);
 	
 	gtk_window_get_size(window, &w, &h);
 	if(!( w >0 && h > 0 )){
@@ -187,7 +187,7 @@ static void geometry_save_for_window(ViewType view){
 	if(!( x > 0 && y > 0 )){
 		debug("Unable to save window positions for %s, either value is less than zero.  position x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
 	}else{
-		debug("Saving position for: %s  postition x: %d, position y: %d.", prefs_path[PrefernceWindow], x, y);
+		debug("Saving position for: %s  postition x: %d, position y: %d", prefs_path[PrefernceWindow], x, y);
 
 		gconfig_set_int(prefs_path[PreferencePositionX], x);
 		gconfig_set_int(prefs_path[PreferencePositionY], y);
@@ -209,7 +209,7 @@ static void geometry_save_for_window(ViewType view){
 }/*geometry_save_for_window(view);*/
  
 static GtkWindow *geometry_get_window(ViewType view){
-	debug("Getting window to set geometry for.");
+	debug("Getting window to set geometry for");
 	switch(view){
 		case Embed:
 		case MicroBlogging_Viewer_MainWindow:
@@ -227,7 +227,7 @@ static gchar **geometry_get_prefs_path(ViewType view, gint *w, gint *h, gint *x,
 	gchar **prefs_path=NULL;
 	
 	if(!( (prefs_path=g_malloc0(sizeof(G_TYPE_STRING)*PreferenceTotal)) )){
-		debug("**FATAL-ERROR**: Unable to allocate preference path memory.");
+		debug("**FATAL-ERROR**: Unable to allocate preference path memory");
 		return NULL;
 	}
 	
@@ -248,35 +248,35 @@ static gchar **geometry_get_prefs_path(ViewType view, gint *w, gint *h, gint *x,
 		break;
 		
 		default:
-			debug("**ERROR**: Setting gconf preference paths. Unsupported geometry: [%d].", view);
+			debug("**ERROR**: Setting gconf preference paths. Unsupported geometry: [%d]", view);
 			return NULL;
 		break;
 	}
-	debug("Setting gconf preference paths to use for '%s' geometry.", prefs_path[PrefernceWindow]);
+	debug("Setting gconf preference paths to use for '%s' geometry", prefs_path[PrefernceWindow]);
 	
 	if(!(prefs_path[PreferenceWidth]=g_strdup_printf(PREFS_UI_WIDTH, prefs_path[PrefernceWindow]))){
-		debug("**ERROR:** Loading '%s' width preference path\t[failed].", prefs_path[PrefernceWindow]);
+		debug("**ERROR:** Loading '%s' width preference path\t[failed]", prefs_path[PrefernceWindow]);
 		prefs_path_free(prefs_path);
 		return NULL;
 	}
 	if(!(prefs_path[PreferenceHeight]=g_strdup_printf(PREFS_UI_HEIGHT, prefs_path[PrefernceWindow]))){
-		debug("**ERROR:** Loading '%s' height preference path\t[failed].", prefs_path[PrefernceWindow]);
+		debug("**ERROR:** Loading '%s' height preference path\t[failed]", prefs_path[PrefernceWindow]);
 		prefs_path_free(prefs_path);
 		return NULL;
 	}
 	if(!(prefs_path[PreferencePositionX]=g_strdup_printf(PREFS_UI_POSITIONS, prefs_path[PrefernceWindow], "x"))){
-		debug("**ERROR:** Loading '%s' x position preference path\t[failed].", prefs_path[PrefernceWindow]);
+		debug("**ERROR:** Loading '%s' x position preference path\t[failed]", prefs_path[PrefernceWindow]);
 		prefs_path_free(prefs_path);
 		return NULL;
 	}
 	
 	if(!(prefs_path[PreferencePositionY]=g_strdup_printf(PREFS_UI_POSITIONS, prefs_path[PrefernceWindow], "y"))){
-		debug("**ERROR:** Loading '%s' y position preference path\t[failed].", prefs_path[PrefernceWindow]);
+		debug("**ERROR:** Loading '%s' y position preference path\t[failed]", prefs_path[PrefernceWindow]);
 		prefs_path_free(prefs_path);
 		return NULL;
 	}
 	
-	debug("Loaded gconf '%s' geometry preference paths.", prefs_path[PrefernceWindow]);
+	debug("Loaded gconf '%s' geometry preference paths", prefs_path[PrefernceWindow]);
 	return prefs_path;
 }
 
@@ -307,8 +307,8 @@ static void geometry_set_paned(GtkPaned *paned, const gchar *widget, ViewType vi
 	g_object_get(G_OBJECT(paned), "max-position", &max_position, "min-position", &min_position, NULL);
 	max_position-=padding;
 	
-	debug("%s %s's paned position to: %d.", (save ?_("Saving") :_("Moving")), widget, position);
-	debug("Position details: maximum: %d; minimum: %d; padding: %d.", max_position, min_position, padding);
+	debug("%s %s's paned position to: %d", (save ?_("Saving") :_("Moving")), widget, position);
+	debug("Position details: maximum: %d; minimum: %d; padding: %d", max_position, min_position, padding);
 	
 	gtk_paned_set_position(paned, position);
 }/*geometry_set_paned(main_window_get_main_paned(), "update_viewer", view, TRUE, FALSE, 68|420|360);*/

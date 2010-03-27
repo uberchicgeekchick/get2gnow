@@ -349,7 +349,7 @@ static void uberchick_label_forward_text(GtkAction *action, UberChickLabel *uber
 	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
-	debug("UberChick_Label: Inserting: <%s@%s> in to current update.", this->user_name, this->service->uri);
+	debug("UberChick_Label: Inserting: <%s@%s> in to current update", this->user_name, this->service->uri);
 	update_viewer_set_in_reply_to_data(this->service, this->update_type, this->user_name, this->text, this->user_id, this->update_id, TRUE, TRUE, FALSE);
 }/*uberchick_label_forward_text(action, user_name);*/
 
@@ -359,7 +359,7 @@ static void uberchick_label_send_at_reply(GtkAction *action, UberChickLabel *ube
 	
 	gchar *requested_resource=(gchar *)g_object_get_data(G_OBJECT(action), "requested_resource");
 	
-	debug("UberChick_Label: Inserting: <%s@%s> in to current update.", requested_resource, this->service->uri);
+	debug("UberChick_Label: Inserting: <%s@%s> in to current update", requested_resource, this->service->uri);
 	update_viewer_set_in_reply_to_data(this->service, this->update_type, requested_resource, this->text, this->user_id, this->update_id, TRUE, FALSE, FALSE);
 }/*uberchick_label_send_at_reply(action, user_name);*/
 

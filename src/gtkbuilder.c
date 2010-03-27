@@ -94,7 +94,7 @@ static gchar *gtkbuilder_get_path(const gchar *base_filename){
 	else if(gtkbuilder_get_ui_filename(base_filename, &gtkbuilder_ui_filename, TRUE, TRUE))
 		return gtkbuilder_ui_filename;
 	
-	debug("**ERROR:** Unable to load gtkbuilder ui: [%s.ui].", base_filename);
+	debug("**ERROR:** Unable to load gtkbuilder ui: [%s.ui]", base_filename);
 	
 	return NULL;
 }/*gtkbuilder_get_path("update-viewer");*/
@@ -108,13 +108,13 @@ static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **g
 		*gtkbuilder_ui_filename=g_build_filename(BUILDDIR, "data", gtkbuilder_ui_file, NULL);
 	uber_free(gtkbuilder_ui_file);
 	if( gtkbuilder_ui_test_filename(*gtkbuilder_ui_filename)){
-		debug("Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
+		debug("Loading GtkBuildable UI from: [%s]", *gtkbuilder_ui_filename);
 		
 		if(use_template){
-			debug("**ERROR:** Loading GtkBuildable UI from: [%s].", *gtkbuilder_ui_filename);
-			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: [%s] needs converted.", *gtkbuilder_ui_filename);
-			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui].", base_filename, base_filename);
-			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: can be converted by running: (cd data/ ; touch %s.in.ui; make %s.ui).  Or re-run `make`.", base_filename, base_filename);
+			debug("**ERROR:** Loading GtkBuildable UI from: [%s]", *gtkbuilder_ui_filename);
+			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: [%s] needs converted", *gtkbuilder_ui_filename);
+			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: template file: [data/%s.in.ui] exists; needs converted to [data/%s.ui]", base_filename, base_filename);
+			debug("**ERROR:** GTK_BUILDER_UI_FILENAME: can be converted by running: (cd data/ ; touch %s.in.ui; make %s.ui).  Or re-run `make`", base_filename, base_filename);
 		}
 		return TRUE;
 	}
@@ -130,7 +130,7 @@ static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 		return NULL;
 	}
 	
-	debug("GtkBuilder UI found filename: %s.", gtkbuilder_ui_filename);
+	debug("GtkBuilder UI found filename: %s", gtkbuilder_ui_filename);
 	return gtkbuilder_ui_filename;
 }/*gtkbuilder_ui_test_file(gtkbuilder_ui_filename);*/
 
@@ -181,7 +181,7 @@ static void gtkbuilder_get_objects_from_ui(GtkBuilder *ui, const gchar *path, co
 	for(name=first_widget; name; name=va_arg(widgets, char *)){
 		pointer=va_arg(widgets, void *);
 		if(!( *pointer=gtk_builder_get_object(ui, name) ))
-			debug("**ERROR:** Widget '%s' at '%s' is missing.", name, path);
+			debug("**ERROR:** Widget '%s' at '%s' is missing", name, path);
 	}
 }/*gtkbuilder_get_objects(ui, path, first_widget, widgets);*/
 

@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__ONLINE_SERVICE_REQUESTED_RESOURCE_H__
-#define	__ONLINE_SERVICE_REQUESTED_RESOURCE_H__
+#ifndef	__HEADER_H__
+#define	__HEADER_H__
 
 #define _GNU_SOURCE
 #define _THREAD_SAFE
@@ -64,7 +64,6 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "online-services.types.h"
 
 G_BEGIN_DECLS
 /********************************************************************************
@@ -75,34 +74,56 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
+struct _SelectedUpdate{
+	OnlineService	*service;
+	UpdateType	type;
+	gdouble		id;
+	gchar		*id_str;
+	gdouble		user_id;
+	gchar		*user_id_str;
+	gchar		*user_name;
+	gchar		*update;
+};
+
+struct _OnlineServiceRequest{
+	OnlineService	*service;
+	
+	RequestAction	action;
+	RequestMethod	method;
+	
+	GtkWindow	*parent_window;
+	gpointer	extra;
+	
+	gchar		*get_rest_xml;
+	gchar		*message;
+	gchar		*uri;
+};
+
+struct  _OnlineServiceRequestPopup{
+	RequestAction		action;
+	
+	GtkMessageDialog	*dialog;
+
+	GtkFrame		*user_name_frame;
+	GtkLabel		*user_name_label;
+	GtkEntry		*user_name_entry;
+	
+	GtkFrame		*online_services_frame;
+	GtkLabel		*online_services_label;
+	GtkComboBox		*online_services_combo_box;
+	GtkListStore		*online_services_list_store;
+	
+	GtkCheckButton		*check_button;
+};
 
 
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
 
-/* START: OnlineServiceRequest signal handlers.
- *	The user name or etc is passed as g_signal connect's 'user_data' value. */
-OnlineServiceRequestedResource *online_service_requested_resource_new(OnlineService *service, const gchar *user_data);
-void online_service_requested_resource_free(OnlineService *service, const gchar *user_data);
-void online_service_request_signal_handler_view_updates_new(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_view_updates(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_view_forwards(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_view_profile(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_best_friend_add(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_best_friend_drop(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_follow(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_unfollow(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_block(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_unblock(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_save_fave(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_unfave(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-void online_service_request_signal_handler_delete(GtkWidget *widget, OnlineServiceRequestedResource *online_service_requested_resource);
-/* END: OnlineServiceRequest signal handlers. */
-
 
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /*__ONLINE_SERVICE_REQUESTED_RESOURCE_H__*/
+#endif /*__HEADER_H__*/

@@ -63,17 +63,20 @@
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
 
-#include "gconfig.h"
+#include "config.h"
 #include "program.h"
 
+#include "gconfig.h"
 #include "update-ids.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.typedefs.h"
-#include "online-service-request.h"
 #include "online-services.types.h"
 #include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-wrapper.h"
+
+#include "online-service-request.types.h"
+#include "online-service-request.h"
 
 #include "online-services.h"
 
@@ -83,6 +86,7 @@
 #include "gconfig.h"
 #include "preferences.defines.h"
 
+#include "users.types.h"
 #include "users-glists.h"
 
 #include "gtkbuilder.h"
@@ -94,6 +98,8 @@
 #include "best-friends.h"
 #include "uberchick-tree-view.h"
 #include "uberchick-tree-view.types.h"
+
+#include "ui-utils.h"
 
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
@@ -113,51 +119,6 @@ OnlineService *selected_service=NULL;
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
  ********************************************************************************/
-typedef struct _SelectedUpdate SelectedUpdate;
-typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
-
-struct _SelectedUpdate{
-	OnlineService	*service;
-	UpdateType	type;
-	gdouble		id;
-	gchar		*id_str;
-	gdouble		user_id;
-	gchar		*user_id_str;
-	gchar		*user_name;
-	gchar		*update;
-};
-
-struct _OnlineServiceRequest{
-	OnlineService	*service;
-	
-	RequestAction	action;
-	RequestMethod	method;
-	
-	GtkWindow	*parent_window;
-	gpointer	extra;
-	
-	gchar		*get_rest_xml;
-	gchar		*message;
-	gchar		*uri;
-};
-
-struct  _OnlineServiceRequestPopup{
-	RequestAction		action;
-	
-	GtkMessageDialog	*dialog;
-
-	GtkFrame		*user_name_frame;
-	GtkLabel		*user_name_label;
-	GtkEntry		*user_name_entry;
-	
-	GtkFrame		*online_services_frame;
-	GtkLabel		*online_services_label;
-	GtkComboBox		*online_services_combo_box;
-	GtkListStore		*online_services_list_store;
-	
-	GtkCheckButton		*check_button;
-};
-
 static SelectedUpdate *selected_update=NULL;
 
 static OnlineServiceRequestPopup *online_service_request_popup=NULL;
@@ -346,7 +307,7 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 	if(action==SelectService || action==Confirmation) return;
 
 	if(G_STR_EMPTY(get_rest_xml)){
-		debug("Cannot %s required information is missing.", online_service_request_action_to_string(action));
+		debug("Cannot %s required information is missing", online_service_request_action_to_string(action));
 		main_window_statusbar_printf("Cannot %s required information is missing.", online_service_request_action_to_string(action));
 		return;
 	}
@@ -437,7 +398,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 					break;
 				}
 				debug("\t\t\t\t[duplicate request]");
-				debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
+				debug("%s %s %s on %s", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
 				main_window_statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
 				break;
 			}
@@ -470,13 +431,13 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 					break;
 				}
 				debug("\t\t\t\t[duplicate request]");
-				debug("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
+				debug("%s %s %s on %s", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
 				main_window_statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
 				break;
 			}
 			if(request->action==DeleteStep1){
 				if(!online_services_is_user_name_mine(request->service, status->user->user_name))
-					debug("Unable to delete update %s; it does not belong to you.", request->get_rest_xml);
+					debug("Unable to delete update %s; it does not belong to you", request->get_rest_xml);
 				else
 					online_service_request_main(request->service, DeleteStep2, request->parent_window, status->id_str);
 			}else
@@ -500,10 +461,10 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 			}
 			break;
 		case ShortenURI:
-			debug("Looking for shortened URI.");
+			debug("Looking for shortened URI");
 			gchar *shortened_uri=NULL;
 			if(!( (shortened_uri=(gchar *)www_get_uri_dom_xpath_element_content(xml, "html->body->p->a")) && g_utf8_strlen(shortened_uri, -1) > uri_shortener_uri_strlen && g_str_has_prefix(shortened_uri, URI_SHORTENER_URI) && G_STR_N_EMPTY(g_strrstr(shortened_uri, URI_SHORTENER_URI)) )){
-				debug("**ERROR:** %s failed to create a shortened URI.  %s returned %s(%d).", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
+				debug("**ERROR:** %s failed to create a shortened URI.  %s returned %s(%d)", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
 				main_window_statusbar_printf("%s failed to create a shortened URI.  %s returned %s(%d).", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
 			}else{
 				update_viewer_sexy_insert_string(shortened_uri, FALSE, FALSE);
@@ -546,8 +507,8 @@ void online_service_request_set_selected_update(OnlineService *service, UpdateTy
 	/*	gint id=atoi(string);	*/
 	if(selected_update) online_service_request_unset_selected_update();
 	
-	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>.", service->guid, id, user_name, service->uri);
-	debug("SelectedUpdate's update: %s.", update);
+	debug("SelectedUpdate created from '%s', update ID: #%f from: '%s' on <%s>", service->guid, id, user_name, service->uri);
+	debug("SelectedUpdate's update: %s", update);
 	selected_update=g_new0(SelectedUpdate, 1);
 	selected_update->service=service;
 	selected_update->id=id;
@@ -603,7 +564,7 @@ static gboolean online_service_request_selected_update_include_and_begin_to_send
 
 void online_service_request_unset_selected_update(void){
 	if(!selected_update) return;
-	debug("Destroying current selected_update object.");
+	debug("Destroying current selected_update object");
 	selected_update->service=NULL;
 	
 	uber_object_free(&selected_update->user_name, &selected_update->id_str, &selected_update->user_id_str, &selected_update->update, &selected_update, NULL);
@@ -876,11 +837,11 @@ static void online_service_request_popup_confirmation_dialog_add_gconfig_key( co
 void online_service_request_popup_select_service(void){
 	if(!( online_services_has_connected(0) > 1 )){
 		selected_service=online_services_connected_get_first();
-		debug("There is only one connected OnlineService, auto-selecting: %s.", selected_service->guid);
+		debug("There is only one connected OnlineService, auto-selecting: %s", selected_service->guid);
 		return;
 	}
 	
-	debug("Prompting to select OnlineService to use as 'selected_service'.");
+	debug("Prompting to select OnlineService to use as 'selected_service'");
 	online_service_request_popup_dialog_show(SelectService);
 	
 	gtk_widget_hide(GTK_WIDGET(online_service_request_popup->user_name_frame));
@@ -967,19 +928,20 @@ static gboolean online_service_request_popup_validate_usage(RequestAction action
 		default:
 			break;
 	}//switch
-	debug("**ERROR:** %s is not supported by %s's popup prompt.", online_service_request_action_to_string(action), PACKAGE_NAME);
+	debug("**ERROR:** %s is not supported by %s's popup prompt", online_service_request_action_to_string(action), PACKAGE_NAME);
 	main_window_statusbar_printf("%s is not supported by %s's popup prompt.", online_service_request_action_to_string(action), PACKAGE_NAME);
 	return FALSE;
 }/*online_service_request_popup_validate_usage*/
 
 
 static void online_service_request_popup_dialog_show(RequestAction action){
-	if(!(online_service_request_popup_validate_usage(action))) return;
+	if(!(online_service_request_popup_validate_usage(action)))
+		return;
 	
 	if(online_service_request_popup){
 		if(online_service_request_popup->action==action){
-			debug("Displaying existing popup instance.");
-			return gtk_window_present(GTK_WINDOW(online_service_request_popup->dialog));
+			debug("Displaying existing popup instance");
+			return window_present(GTK_WINDOW(online_service_request_popup->dialog), TRUE);
 		}
 		
 		online_service_request_popup_destroy_and_free();
@@ -987,15 +949,14 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	
 	GtkWindow *parent_window=( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() );
 	
-	if(online_service_request_popup_dialog_response) online_service_request_popup_dialog_response=0;
-	
-	GtkBuilder *ui;
+	if(online_service_request_popup_dialog_response)
+		online_service_request_popup_dialog_response=0;
 	
 	online_service_request_popup=g_new0(OnlineServiceRequestPopup, 1);
 	online_service_request_popup->action=action;
 	
 	/* Get widgets */
-	ui=gtkbuilder_get_file(
+	GtkBuilder *ui=gtkbuilder_get_file(
 					GTK_BUILDER_UI_FILENAME,
 						"entry_popup", &online_service_request_popup->dialog,
 						
@@ -1027,13 +988,13 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 			NULL
 	);
 	
-	g_object_unref(ui);
+	uber_object_unref(ui);
 	
-	debug("Signal handlers set... loading accounts.");
+	debug("Signal handlers set... loading accounts");
 	if(!( online_services_combo_box_fill( online_service_request_popup->online_services_combo_box,  online_service_request_popup->online_services_list_store, TRUE) ))
-		debug("No services found to load, new accounts need to be setup.");
+		debug("No services found to load, new accounts need to be setup");
 	else
-		debug("OnlineServices found & loaded.  Selecting active service.");
+		debug("OnlineServices found & loaded.  Selecting active service");
 	
 	online_service_request_popup_set_title_and_label(action, online_service_request_popup);
 	
@@ -1050,7 +1011,7 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	}
 	
 	if(!(online_services_has_connected(0) > 1 && online_services_has_total(0) > 1 )){
-		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'.");
+		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'");
 		gtk_widget_hide(GTK_WIDGET(online_service_request_popup->online_services_frame));
 	}
 	

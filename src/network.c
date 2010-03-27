@@ -73,6 +73,7 @@
 #include "gconfig.h"
 
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.h"
 #include "online-service.types.h"
@@ -135,7 +136,7 @@ static gboolean network_test_uberchick_tree_view_image(UberChickTreeView *uberch
 	if(!g_file_test(image_filename, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR))
 		return FALSE;
 	
-	debug("Image file: [%s] exists and will be added to currect UberChicTreeView.", image_filename);
+	debug("Image file: [%s] exists and will be added to currect UberChicTreeView", image_filename);
 	uberchick_tree_view_set_image(uberchick_tree_view, image_filename, iter);
 	return TRUE;
 }/*network_test_uberchick_tree_view_image(uberchick_tree_view, image_filename, iter);*/
@@ -158,7 +159,7 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	NetworkImageDL *network_image_dl=(NetworkImageDL *)online_service_wrapper_get_user_data(service_wrapper);
 	if(!( network_image_dl && network_image_dl->uberchick_tree_view && network_image_dl->filename && network_image_dl->iter )){
-		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s.", network_image_dl->filename, (network_image_dl->iter ?"valid" :"unknown") );
+		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s", network_image_dl->filename, (network_image_dl->iter ?"valid" :"unknown") );
 		return NULL;
 	}
 	
@@ -239,7 +240,7 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 		statusbar_printf("http error: #%i: %s", xml->status_code, xml->reason_phrase);
 		
 		if(xml->status_code==100 && !online_service_wrapper_get_attempt(service_wrapper)){
-			debug("Resubmitting update to: [%s] per http response.", service->key);
+			debug("Resubmitting update to: [%s] per http response", service->key);
 			online_service_wrapper_reattempt(service_wrapper);
 		}
 	}else{
@@ -249,10 +250,10 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	uber_free(message);
 	uber_free(error_message);
 	
-	debug("HTTP response: %s(#%d) while %s.", xml->reason_phrase, xml->status_code, (direct_message ?"sending direct messaging" :"updating your status") );
+	debug("HTTP response: %s(#%d) while %s", xml->reason_phrase, xml->status_code, (direct_message ?"sending direct messaging" :"updating your status") );
 	
 	if( !direct_message && xml->status_code==404 && service->micro_blogging_service==StatusNet){
-		debug("Resubmitting status update to: <%s> due to StatusNet bug.", service->key);
+		debug("Resubmitting status update to: <%s> due to StatusNet bug", service->key);
 		online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_update_posted, user_data, online_service_wrapper_get_form_data(service_wrapper));
 	}
 	return NULL;
@@ -310,12 +311,12 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	
-	debug("Started processing <%s>'s requested_uri: %s.", service->key, requested_uri);
+	debug("Started processing <%s>'s requested_uri: %s", service->key, requested_uri);
 	
 	guint new_updates=0;
 	switch(update_type){
 		case None:
-			debug("Attempting to parse an unsupport network request.");
+			debug("Attempting to parse an unsupport network request");
 			break;
 		case Searches:
 			new_updates=searches_parse_results(service, xml, requested_uri, uberchick_tree_view, update_type);
@@ -345,7 +346,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	}
 	
 	if(new_updates)
-		debug("Total tweets in this requested_uri: %d.", new_updates);
+		debug("Total tweets in this requested_uri: %d", new_updates);
 	
 	uber_free(timeline);
 	return NULL;
@@ -354,7 +355,7 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 static void *network_retry(OnlineServiceWrapper *service_wrapper){
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
-	debug("Resubmitting: %s to <%s>.", requested_uri, service->uri);
+	debug("Resubmitting: %s to <%s>", requested_uri, service->uri);
 	online_service_wrapper_reattempt(service_wrapper);
 	return NULL;
 }/*network_retry(new_timeline, service_wrapper, update_type);*/

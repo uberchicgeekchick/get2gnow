@@ -128,7 +128,7 @@ void datetime_strp_ages(gchar *datetime, gulong *seconds_since_epoc, gchar **age
 	
 	debug("Setting age of datetime: [%s]; seconds since epoc: [%lu]", datetime, *seconds_since_epoc);
 	datetime_strp_age(datetime, age, seconds_old, use_gmt);
-	debug("Display time set to: %s, %d.", *age, *seconds_old);
+	debug("Display time set to: %s, %d", *age, *seconds_old);
 }/*datetime_strp_ages(status, TRUE|FALSE);*/
 
 void datetime_strp_age(const gchar *datetime, gchar **age, gint *my_diff, gboolean use_gmt){

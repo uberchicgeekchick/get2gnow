@@ -61,6 +61,7 @@
 #include <time.h>
 #include <strings.h>
 #include <gtk/gtk.h>
+#include <glib.h>
 #include <glib/gi18n.h>
 #include <libsoup/soup.h>
 #include <libxml/parser.h>
@@ -74,6 +75,7 @@
 #include "main-window.h"
 
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.types.h"
 #include "online-service.h"
 #include "online-services.h"
@@ -205,7 +207,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	
 	User		*user=user_new(service, getting_followers);
 	
-	debug("Parsing user profile data.");
+	debug("Parsing user profile data");
 	/* Begin 'users' node loop */
 	debug("Parsing user beginning at node: %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
@@ -217,7 +219,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		if(g_str_equal(current_element->name, "id" )){
 			user->id=g_ascii_strtod(content, NULL);
 			user->id_str=gdouble_to_str(user->id);
-			debug("User ID: %s(=%f).", user->id_str, user->id);
+			debug("User ID: %s(=%f)", user->id_str, user->id);
 			
 		}else if(g_str_equal(current_element->name, "name" ))
 			user->nick_name=g_markup_printf_escaped("%s", content);
@@ -359,12 +361,12 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 			continue;
 		}
 		
-		debug("Parsing searches beginning at node: %s.", current_element->name );
+		debug("Parsing searches beginning at node: %s", current_element->name );
 		if(g_str_equal(current_element->name, "id")){
 			gchar *status_id=NULL;
 			status->id=g_ascii_strtod((status_id=g_strrstr(content, ":")+1), NULL);
 			status->id_str=g_strdup(status_id);
-			debug("Parsing searches Update ID: %s(=%f).", status->id_str, status->id);
+			debug("Parsing searches Update ID: %s(=%f)", status->id_str, status->id);
 		}else if(g_str_equal(current_element->name, "published") || g_str_equal(current_element->name, "updated")){
 			if( status->created_at_str )
 				if(!g_str_equal(status->created_at_str, content)){
@@ -380,36 +382,36 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 			datetime_strp_ages(status->created_at_str, &status->created_at, &status->created_how_long_ago, &status->created_seconds_ago, TRUE);
 		}else if(g_str_equal(current_element->name, "title")){
 			status->text=g_strdup(content);
-			debug("Parsing searches update: %s; from: %s.", status->text, current_element->name );
+			debug("Parsing searches update: %s; from: %s", status->text, current_element->name );
 		}else if(g_str_equal(current_element->name, "link")){
 			if(content) uber_free(content);
 			xmlAttr *elements_attributes;
-			debug("Parsing searches link node searching for type=\"image/png\".");
+			debug("Parsing searches link node searching for type=\"image/png\"");
 			for( elements_attributes=current_element->properties; elements_attributes; elements_attributes=elements_attributes->next ){
-				debug("Parsing searches at node: %s looking for type.", elements_attributes->name );
+				debug("Parsing searches at node: %s looking for type", elements_attributes->name );
 				if(g_str_equal(elements_attributes->name, "type")) break;
 			}
 			if(!elements_attributes) continue;
 			
 			for(current_elements_attributes=elements_attributes->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next){
 				content=(gchar *)xmlNodeGetContent(current_elements_attributes);
-				debug("Parsing searches at node: %s looking for image/png.", content );
+				debug("Parsing searches at node: %s looking for image/png", content );
 				if(g_str_equal(content, "image/png")) break;
 				uber_free(content);
 			}
 			if(content) uber_free(content);
 			if(!current_elements_attributes) continue;
 			
-			debug("Parsed searches type and image/png nodes.  Now searching href node.");
+			debug("Parsed searches type and image/png nodes.  Now searching href node");
 			for( elements_attributes=elements_attributes->next; elements_attributes; elements_attributes=elements_attributes->next ){
-				debug("Parsing searches node %s looking for href.", elements_attributes->name );
+				debug("Parsing searches node %s looking for href", elements_attributes->name );
 				if(g_str_equal(elements_attributes->name, "href") ) break;
 			}
 			if(!elements_attributes) continue;
 			
-			debug("Parsed searches href nodes.  Setting avatar's uri.");
+			debug("Parsed searches href nodes.  Setting avatar's uri");
 			status->user->image_uri=(gchar *)xmlNodeGetContent(elements_attributes->children);
-			debug("Parsing searches nodes finished.  Setting user->image: %s.", status->user->image_uri );
+			debug("Parsing searches nodes finished.  Setting user->image: %s", status->user->image_uri );
 			
 			elements_attributes=NULL;
 			current_elements_attributes=NULL;
@@ -418,9 +420,9 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 			status->source=g_strdup(content);
 		}else if(g_str_equal(current_element->name, "author")){
 			if(content) uber_free(content);
-			debug("Parsing searches user_name & user_nick from: %s.", current_element->name );
+			debug("Parsing searches user_name & user_nick from: %s", current_element->name );
 			for( current_elements_attributes=current_element->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next ){
-				debug("Parsing searches for user_name & user_nick: %s.", current_elements_attributes->name );
+				debug("Parsing searches for user_name & user_nick: %s", current_elements_attributes->name );
 				if(g_str_equal(current_elements_attributes->name, "name") ) break;
 			}
 			if(content) uber_free(content);
@@ -431,7 +433,7 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 				continue;
 			}
 			
-			debug("Parsing searches user_name & user_nick from content: %s.", content);
+			debug("Parsing searches user_name & user_nick from content: %s", content);
 			const char *nick_name=NULL;
 			if(!(nick_name=g_strstr_len(content, -1, "(")))
 				status->user->user_name=g_markup_printf_escaped("%s", content);
@@ -448,7 +450,7 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 				}
 				g_strfreev(user_data);
 			}
-			debug("Parsed searches user_name: %s; user_nick: %s.", status->user->user_name, status->user->nick_name);
+			debug("Parsed searches user_name: %s; user_nick: %s", status->user->user_name, status->user->nick_name);
 			current_elements_attributes=NULL;
 		}
 		if(content) uber_free(content);
@@ -479,13 +481,13 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 	UserStatus 	*status=NULL;
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
-		debug("Failed to parse xml document, from <%s/%s>.", service->key, uri);
+		debug("Failed to parse xml document, from <%s/%s>", service->key, uri);
 		xmlCleanupParser();
 		return NULL;
 	}
 	
 	/* get updates or direct messages */
-	debug("Parsing %s.", root_element->name);
+	debug("Parsing %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
 		if(current_element->type != XML_ELEMENT_NODE ) continue;
 		
@@ -493,13 +495,13 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 			continue;
 		
 		if(!current_element->children){
-			debug("*WARNING:* Cannot parse %s. Its missing children nodes.", current_element->name);
+			debug("*WARNING:* Cannot parse %s. Its missing children nodes", current_element->name);
 			continue;
 		}
 		
-		debug("Parsing %s.", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
 		
-		debug("Creating Status *.");
+		debug("Creating Status *");
 		if(!( (( status=user_status_parse(service, current_element->children, Archive))) && status->id )){
 			if(status) user_status_free(status);
 			break;
@@ -530,7 +532,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		else if(g_str_equal(current_element->name, "id")){
 			status->id=g_ascii_strtod(content, NULL);
 			status->id_str=gdouble_to_str(status->id);
-			debug("Update ID: %s(=%f).", content, status->id);
+			debug("Update ID: %s(=%f)", content, status->id);
 			
 		}else if(g_str_equal(current_element->name, "in_reply_to_status_id"))
 			status->in_reply_to_status_id=g_ascii_strtod(content, NULL);
@@ -610,7 +612,7 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 	status->sexy_status_text=www_format_urls(service, status->sexy_update, FALSE, FALSE);
 	
 	if(status->type==Searches){
-		debug("Formatting update for display.");
+		debug("Formatting update for display");
 		debug("\tstatus->text: [%s],", status->text);
 		debug("\tstatus->update: [%s],", status->update);
 		debug("\tsexy_status_text: [%s],", status->sexy_status_text);
@@ -653,41 +655,6 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 						((status->type==DMs) ?"<b><i>[" :((status->type==Replies) ?"<i>[" :"")), status->sexy_status_text, ((status->type==DMs) ?"]</i></b>" :((status->type==Replies) ?"]</i>" :""))
 	);
 }/*user_status_format_updates(service, user->status, user);*/
-
-gboolean user_status_notify_on_timeout(UserStatus *status){
-	if(!(status && G_STR_N_EMPTY(status->notification) )) return FALSE;
-	
-	NotifyNotification *notify_notification=NULL;
-	GError		*error=NULL;
-	const gchar	*notification_icon_file_name=NULL;
-	if(!(g_file_test(status->user->image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR )))
-		notification_icon_file_name=GETTEXT_PACKAGE;
-	else
-		notification_icon_file_name=status->user->image_file;
-	
-	if(!main_window_status_icon_is_embedded())
-		notify_notification=notify_notification_new(GETTEXT_PACKAGE, status->notification, notification_icon_file_name, NULL);
-	else
-		notify_notification=notify_notification_new_with_status_icon(GETTEXT_PACKAGE, status->notification, notification_icon_file_name, main_window_status_icon_get());
-	
-	notify_notification_set_hint_string(notify_notification, "suppress-sound", "");
-	notify_notification_set_timeout(notify_notification, 10000);
-	
-	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
-		update_viewer_beep();
-	
-	notify_notification_show(notify_notification, &error);
-	
-	if(error){
-		debug("Error displaying status->notification: %s.", error->message);
-		g_error_free(error);
-	}
-	
-	if(G_IS_OBJECT(G_OBJECT(notify_notification)))
-		g_object_unref(G_OBJECT(notify_notification));
-	
-	return FALSE;
-}/*user_status_notify_on_timeout(status);*/
 
 void user_status_free(UserStatus *status){
 	if(!( status && status->id && status->service )) return;

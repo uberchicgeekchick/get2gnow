@@ -212,7 +212,7 @@ static gboolean ipc_filename_touch(const gchar *ipc_filename){
 	gchar *ipc_dirname=g_path_get_dirname(ipc_filename);
 	if(!g_file_test(ipc_dirname, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)){
 		if(g_mkdir_with_parents(ipc_dirname, S_IRUSR|S_IWUSR|S_IXUSR)){
-			debug("**ERROR:** Unable to create cache directory: [%s].", ipc_dirname);
+			debug("**ERROR:** Unable to create cache directory: [%s]", ipc_dirname);
 			uber_free(ipc_dirname);
 			return FALSE;
 		}
@@ -221,7 +221,7 @@ static gboolean ipc_filename_touch(const gchar *ipc_filename){
 	
 	if(!(g_file_test(ipc_filename,G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR)))
 		if(!(g_creat(ipc_filename, S_IRUSR|S_IWUSR))){
-			debug("**ERROR:** Failed to create cache file: [%s].", ipc_filename);
+			debug("**ERROR:** Failed to create cache file: [%s]", ipc_filename);
 			return FALSE;
 		}
 	

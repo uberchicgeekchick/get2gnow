@@ -65,7 +65,10 @@
 #include "gtkbuilder.h"
 #include "ui-utils.h"
 
+#include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.types.h"
+
 #include "online-service.h"
 #include "online-service-request.h"
 #include "users-glists.h"
@@ -143,7 +146,7 @@ static void following_viewer_response_cb(GtkDialog *dialog, gint response, Follo
 }/*following_viewer_response_cb();*/
 
 static void following_viewer_destroy_cb(GtkDialog *dialog, FollowingViewer *following_viewer){
-	debug("Destroying following viewer.");
+	debug("Destroying following viewer");
 	gtk_tree_store_clear(following_viewer->following_tree_store);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(following_viewer);
@@ -311,12 +314,10 @@ void following_viewer_show(GtkWindow *parent){
 
 
 static void following_viewer_setup(GtkWindow *parent){
-	GtkBuilder *ui;
-
 	following_viewer=g_new0(FollowingViewer, 1);
 
 	/* Get widgets */
-	ui=gtkbuilder_get_file(
+	GtkBuilder *ui=gtkbuilder_get_file(
 				GTK_BUILDER_UI_FILENAME,
 					"following_viewer", &following_viewer->viewer,
 					
@@ -358,7 +359,7 @@ static void following_viewer_setup(GtkWindow *parent){
 				NULL
 	);
 	
-	g_object_unref(ui);
+	uber_object_unref(ui);
 	
 	/*TODO: FIXME:*/
 	gtk_widget_hide(GTK_WIDGET(following_viewer->refresh_tool_button));

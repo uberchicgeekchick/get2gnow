@@ -63,6 +63,7 @@
 #include "ui-utils.h"
 
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.types.h"
 #include "online-service.h"
 #include "online-service-request.h"
@@ -157,7 +158,7 @@ static void friends_manager_response(GtkDialog *dialog, gint response, FriendsMa
 }/*friends_message_response*/
 
 static void friends_manager_destroy(GtkDialog *dialog, FriendsManager *friends_manager){
-	debug("Destroying friends manager.");
+	debug("Destroying friends manager");
 	gtk_tree_store_clear(friends_manager->tree_store);
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	uber_free(friends_manager);
@@ -449,7 +450,7 @@ static void friends_manager_setup(GtkWindow *parent){
 				NULL
 	);
 	
-	debug("FriendsManager created now connecting its signal handlers.");
+	debug("FriendsManager created now connecting its signal handlers");
 	gtkbuilder_connect(
 				ui, friends_manager,
 					"friends_manager", "destroy", friends_manager_destroy,
@@ -470,7 +471,7 @@ static void friends_manager_setup(GtkWindow *parent){
 				NULL
 	);
 	
-	g_object_unref(ui);
+	uber_object_unref(ui);
 	
 	gchar *window_title=g_strdup_printf("%s - <%s>'s %s", _(GETTEXT_PACKAGE), selected_service->key, _("Friends Manager"));
 	gtk_window_set_title(GTK_WINDOW(friends_manager->dialog), window_title);
@@ -484,7 +485,7 @@ static void friends_manager_setup(GtkWindow *parent){
 	window_present(GTK_WINDOW(friends_manager->dialog), TRUE);
 	
 	statusbar_printf(_("Please wait while friends and followers are loaded.  This will take a few moments..."));
-	debug("FriendsManager setup & loaded.  Please wait while friends and followers are loaded.");
+	debug("FriendsManager setup & loaded.  Please wait while friends and followers are loaded");
 	GdkCursor *cursor=gdk_cursor_new(GDK_WATCH);
 	gdk_window_set_cursor(GTK_WIDGET(friends_manager->dialog)->window, cursor);
 	gtk_widget_set_sensitive(GTK_WIDGET(friends_manager->dialog), FALSE);

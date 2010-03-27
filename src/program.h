@@ -104,23 +104,35 @@ G_BEGIN_DECLS
 	G_STMT_START{						\
 		if(mem!=NULL){ g_free(mem); mem=NULL; }		\
 		mem=g_new0(type, 1);				\
-}G_STMT_END
+	}G_STMT_END
 #endif
 
 #ifndef uber_free
-#	define	uber_free(mem)					{ g_free(mem); mem=NULL; }
+#	define	uber_free(mem)					\
+	G_STMT_START{						\
+		if(mem!=NULL){ g_free(mem); mem=NULL; }		\
+	}G_STMT_END
 #endif
 
 #ifndef uber_list_free
-#	define uber_list_free(l)				{ g_list_free(l); l=NULL; }
+#	define uber_list_free(l)				\
+	G_STMT_START{						\
+		if(l!=NULL){ g_list_free(l); l=NULL; }		\
+	}G_STMT_END
 #endif
 
 #ifndef uber_slist_free
-#	define uber_slist_free(sl)				{ g_slist_free(sl); sl=NULL; }
+#	define uber_slist_free(sl)				\
+	G_STMT_START{						\
+		if(sl!=NULL){ g_slist_free(sl); sl=NULL; }	\
+	}G_STMT_END
 #endif
 
 #ifndef uber_object_unref
-#	define	uber_object_unref(o)				{ g_object_unref(o); o=NULL; }
+#	define	uber_object_unref(o)				\
+	G_STMT_START{						\
+		if(o!=NULL){ g_object_unref(o); o=NULL; }	\
+	}G_STMT_END
 #endif
 
 #ifndef	g_strcasecmp

@@ -100,7 +100,7 @@ static void timer_main_quit(RateLimitTimer *timer);
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 RateLimitTimer *timer_new(void){
-	debug("Initalizing network rate limit timer.");
+	debug("Initalizing network rate limit timer");
 	if(!( g_thread_get_initialized() && g_thread_supported() )) g_thread_init(NULL);
 	
 	/* timer->gtimer is used to avoid Twitter's rate limit. */
@@ -116,7 +116,7 @@ RateLimitTimer *timer_new(void){
 }//timer_new
 
 void timer_main(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_method){
-	debug("Processing RateLimit.");
+	debug("Processing RateLimit");
 	if(!timer_check(timer, xml, request_method)) return;
 	
 	while(timer->processing){}
@@ -135,21 +135,21 @@ static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml, RequestMeth
 		return FALSE;
 	
 	if(request_method==POST){
-		debug("RateLimitTimer is skipped for POST requests.");
+		debug("RateLimitTimer is skipped for POST requests");
 		return FALSE;
 	}
 	
 	gchar *rate_limit=NULL;
 	if(!( (rate_limit=g_strdup(soup_message_headers_get_one(xml->response_headers, "X-RateLimit-Remaining"))) )){
-		debug("RateLimitTimer does not need to process this request.  X-RateLimit-Remaining header was not received.");
+		debug("RateLimitTimer does not need to process this request.  X-RateLimit-Remaining header was not received");
 		uber_free(rate_limit);
 		return FALSE;
 	}
 	
 	timer->requests_remaining=atoi(rate_limit);
 	
-	debug("Running RateLimitTimer.");
-	debug("Details: X-RateLimit-Remaining: %s(=%d).", rate_limit, timer->requests_remaining);
+	debug("Running RateLimitTimer");
+	debug("Details: X-RateLimit-Remaining: %s(=%d)", rate_limit, timer->requests_remaining);
 	
 	uber_free(rate_limit);
 	return TRUE;
@@ -183,7 +183,7 @@ static void timer_pause(RateLimitTimer *timer){
 }/*timer_pause(timer);*/
 
 static void timer_main_quit(RateLimitTimer *timer){
-	debug("Stopping network timer.");
+	debug("Stopping network timer");
 	g_timer_stop(timer->gtimer);
 	timer->active=FALSE;
 }//timer_main_qu1it
@@ -193,7 +193,7 @@ static void timer_main_quit(RateLimitTimer *timer){
 void timer_free(RateLimitTimer *timer){
 	if(!timer) return;
 	timer_main_quit(timer);
-	debug("Shutting down network timer.");
+	debug("Shutting down network timer");
 	g_timer_destroy(timer->gtimer);
 	uber_free(timer);
 }//timer_deinit

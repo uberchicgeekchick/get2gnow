@@ -69,6 +69,7 @@
 #include "online-services.typedefs.h"
 #include "online-services.rest-uris.defines.h"
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-service.h"
 #include "online-services.h"
 #include "online-service-request.h"
@@ -345,7 +346,7 @@ static void main_window_finalize(GObject *object){
 }/*main_window_finalize(main_window);*/
 
 static void main_window_setup(void){
-	debug("Starting %s...", PACKAGE_NAME);
+	debug("Starting %s", PACKAGE_NAME);
 	GtkNotebook *tabs_notebook=NULL;
 	
 	/* Set up interface */
@@ -489,7 +490,7 @@ static void main_window_setup(void){
 	/* Set up connected related widgets */
 	main_window_connection_items_setup(ui);
 	main_window_selected_update_widgets_setup(ui);
-	g_object_unref(ui);
+	uber_object_unref(ui);
 	
 	main_window_status_icon_create();
 	
@@ -631,7 +632,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 	gboolean use_update_viewer_dialog=gtk_toggle_button_get_active(toggle_button);
 	if(use_update_viewer_dialog==gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE)) return;
 	
-	debug("UpdateViewer changed:\t[%s].",(use_update_viewer_dialog?_("floating"):_("embed")) );
+	debug("UpdateViewer changed:\t[%s]",(use_update_viewer_dialog?_("floating"):_("embed")) );
 	geometry_save();
 	gconfig_set_bool(PREFS_UPDATE_VIEWER_DIALOG, use_update_viewer_dialog);
 	
@@ -639,7 +640,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 		if(gtk_widget_get_parent(GTK_WIDGET(main_window->private->update_viewer_embed))==GTK_WIDGET(main_window->private->update_viewer_window))
 			return;
 		
-		debug("Displaying UpdateViewer as a stand alone dialog & setting UpdateViewer's parent window..");
+		debug("Displaying UpdateViewer as a stand alone dialog & setting UpdateViewer's parent window");
 		gtk_widget_reparent(GTK_WIDGET(main_window->private->update_viewer_embed), GTK_WIDGET(main_window->private->update_viewer_window));
 		window_present(GTK_WINDOW(main_window->private->update_viewer_window), TRUE);
 		g_object_add_weak_pointer(G_OBJECT(main_window->private->update_viewer_window),(gpointer)&main_window->private->update_viewer_window);
@@ -649,7 +650,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 		if(gtk_widget_get_parent(GTK_WIDGET(main_window->private->update_viewer_embed))==GTK_WIDGET(main_window->private->update_viewer_vbox))
 			return;
 		
-		debug("Embeding UpdateViewer's into %s main window.", PACKAGE_NAME);
+		debug("Embeding UpdateViewer's into %s main window", PACKAGE_NAME);
 		gtk_widget_reparent(GTK_WIDGET(main_window->private->update_viewer_embed), GTK_WIDGET(main_window->private->update_viewer_vbox));
 		gtk_widget_show(GTK_WIDGET(main_window->private->expand_box));
 		gtk_widget_show(GTK_WIDGET(main_window->private->update_viewer_vbox));
@@ -659,7 +660,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 	
 	update_viewer_set_embed_toggle_and_image();
 	
-	debug("Setting MainWindow's embed state indicator, in its 'View' menu, to %s window.", (use_update_viewer_dialog ?"embed UpdateViewer into its main" :"split UpdateViewer off into a floating" ) );
+	debug("Setting MainWindow's embed state indicator, in its 'View' menu, to %s window", (use_update_viewer_dialog ?"embed UpdateViewer into its main" :"split UpdateViewer off into a floating" ) );
 	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_floating_check_menu_item, use_update_viewer_dialog);
 	
 	geometry_load();
@@ -808,7 +809,7 @@ static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_t
 		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
 		if(check_menu_item!=selected_tab) continue;
 		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
-		debug("Opening a timeline. GtkCheckMenuItem selected: %s; timeline: %s.", gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)), timeline );
+		debug("Opening a timeline. GtkCheckMenuItem selected: %s; timeline: %s", gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)), timeline );
 		if(!gtk_check_menu_item_get_active(check_menu_item))
 			tabs_close_timeline(timeline);
 		else
@@ -825,7 +826,7 @@ gboolean main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolea
 	if(!(main_window && main_window->private && main_window->private->tabs_menu_widgets)) return FALSE;
 	/* This shouldn't happen, but just in case */
 	if(G_STR_EMPTY(timeline_to_open)){
-		debug("**ERROR:** Cannot open an empty or NULL timeline.");
+		debug("**ERROR:** Cannot open an empty or NULL timeline");
 		return FALSE;
 	}
 	
@@ -836,7 +837,7 @@ gboolean main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolea
 		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
 		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
 		if(!g_str_equal(timeline, timeline_to_open)) continue;
-		debug("%s timeline tab: %s. GtkCheckMenuItem selected: %s.", (open ?_("Opening") :_("Closing") ), timeline, gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)) );
+		debug("%s timeline tab: %s. GtkCheckMenuItem selected: %s", (open ?_("Opening") :_("Closing") ), timeline, gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)) );
 		gtk_check_menu_item_set_active(check_menu_item, open);
 		tab_found=TRUE;
 	}
@@ -854,7 +855,7 @@ gboolean main_window_tabs_init(void){
 		uber_free(timeline);
 		open_home_page=FALSE;
 	}else
-		debug("Retrived default timeline: %s.  Auto-loading timeline tabs.", timeline);
+		debug("Retrived default timeline: %s.  Auto-loading timeline tabs", timeline);
 	
 	/* TODO: Remove this check by version 010102a00						*
 	 *	I'm depricating support for							*
@@ -870,21 +871,21 @@ gboolean main_window_tabs_init(void){
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_HOMEPAGE, TRUE)){
-		debug("Preparing auto-monitor for My Friends' Updates.");
+		debug("Preparing auto-monitor for My Friends' Updates");
 		main_window_tabs_menu_set_active(API_TIMELINE_HOMEPAGE, TRUE);
 		if(timeline && open_home_page && g_str_equal(timeline, API_TIMELINE_HOMEPAGE))
 			open_home_page=FALSE;
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_REPLIES, TRUE)){
-		debug("Preparing auto-monitor for Replies.");
+		debug("Preparing auto-monitor for Replies");
 		main_window_tabs_menu_set_active(API_REPLIES, TRUE);
 		if(timeline && open_home_page && g_str_equal(timeline, API_REPLIES))
 			open_home_page=FALSE;
 	}
 	
 	if(gconfig_if_bool(PREFS_AUTOLOAD_DMS, TRUE)){
-		debug("Preparing auto-monitor for DMs.");
+		debug("Preparing auto-monitor for DMs");
 		main_window_tabs_menu_set_active(API_DIRECT_MESSAGES, TRUE);
 		if(timeline && open_home_page && g_str_equal(timeline, API_DIRECT_MESSAGES))
 			open_home_page=FALSE;
@@ -1031,7 +1032,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 		&&
 		!main_window_search_history_is_unique(m_w_p, search_phrase)
 	){
-		debug("Update being sent: %s is already in the search history's and will not be stored again.", search_phrase);
+		debug("Update being sent: %s is already in the search history's and will not be stored again", search_phrase);
 		return;
 	}
 	
@@ -1081,7 +1082,7 @@ static gboolean main_window_search_history_is_unique(MainWindowPrivate *m_w_p, c
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter(m_w_p->search_history_tree_model, iter, path)){
-			debug("Checking search_phrase, at index: %d, failed to get valid iter for the list store.", i);
+			debug("Checking search_phrase, at index: %d, failed to get valid iter for the list store", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
@@ -1094,7 +1095,7 @@ static gboolean main_window_search_history_is_unique(MainWindowPrivate *m_w_p, c
 		);
 		
 		if(!strcmp(search_phrase, search_phrase_at_index)){
-			debug("Search phrase is not unique.  Duplicate search_phrase found at index: %d.", i);
+			debug("Search phrase is not unique.  Duplicate search_phrase found at index: %d", i);
 			debug("\tComparing new search_phrase: [%s]", search_phrase);
 			debug("\tAgainst old search_phrase: [%s]", search_phrase_at_index);
 			uniq=FALSE;
@@ -1113,7 +1114,7 @@ static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint lis
 	GtkTreePath *path=gtk_tree_path_new_from_indices(list_store_index, -1);
 	debug("Removing saved update %d.  Total update saved: %d", list_store_index, m_w_p->search_history_total);
 	if(!gtk_tree_model_get_iter(m_w_p->search_history_tree_model, iter, path))
-		debug("Removing saved update, at index: %d, failed to get valid iter for the list store.", list_store_index);
+		debug("Removing saved update, at index: %d, failed to get valid iter for the list store", list_store_index);
 	else{
 		debug("Removing iter at index: %d", list_store_index);
 		gtk_list_store_remove(m_w_p->search_history_list_store, iter);
@@ -1170,7 +1171,7 @@ static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *m
 	gchar *search_phrase=GTK_ENTRY(main_window->private->sexy_search_entry)->text;
 	if( G_STR_EMPTY(search_phrase) ) return;
 	main_window_search_history_prepend(main_window->private, search_phrase);
-	debug("Searching for %s.", search_phrase);
+	debug("Searching for %s", search_phrase);
 	gchar *search_timeline=NULL;
 	if(search_phrase[0]!='!'){
 		search_phrase=g_uri_escape_string(search_phrase, NULL, TRUE);
@@ -1303,7 +1304,7 @@ static void main_window_status_icon_create_menu(void){
 
 static void main_window_status_icon_create(void){
 	/* Set-up the system notification area icon and its popup menu. */
-	debug("Configuring system notification icon...");
+	debug("Configuring system notification icon");
 	main_window_status_icon_create_menu();
 	
 	main_window->private->status_icon=gtk_status_icon_new_from_icon_name(_(GETTEXT_PACKAGE));
@@ -1341,7 +1342,7 @@ static gboolean main_window_window_configure_event_cb(GtkWidget *widget, GdkEven
 }
 
 static void main_window_login(void){
-	debug("Logging into online services.");
+	debug("Logging into online services");
 	if(!online_services_login()){
 		online_services_dialog_show(main_window->private->window);
 		return;

@@ -162,8 +162,6 @@ gboolean program_init(int argc, char **argv){
 	www_init();
 	groups_init();
 	
-	images_set_unknown_image_file();
-	
 	main_window_create();
 	
 	return TRUE;
@@ -184,11 +182,11 @@ void program_deinit(void){
 	www_deinit();
 	groups_deinit();
 	
-	images_unset_unknown_image_file();
+	images_deinit();
 	
 	cache_deinit();
 	
-	debug("**NOTICE:** %s exited.", GETTEXT_PACKAGE);
+	debug("**NOTICE:** %s exited", GETTEXT_PACKAGE);
 	debug_deinit();
 	
 	datetime_locale_deinit();
@@ -225,7 +223,7 @@ void program_uber_object_free(gpointer pointer1, ...){
 void program_timeout_remove(guint *id, const gchar *usage){
 	if(!( *id > 0 )) return;
 	
-	debug("Stopping %s; timeout id: %d.", ( G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]" ), (*id));
+	debug("Stopping %s; timeout id: %d", ( G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]" ), (*id));
 	g_source_remove((*id) );
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/

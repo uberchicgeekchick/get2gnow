@@ -110,7 +110,7 @@ gboolean update_ids_check(OnlineService *service, const gchar *timeline, gdouble
 	gboolean	ids_set=FALSE;
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	debug("Checking <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f.", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
+	debug("Checking <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
 	if( update_id > newest_update_id ){
 		ids_set=TRUE;
 		newest_update_id=update_id;
@@ -127,7 +127,7 @@ gboolean update_ids_check(OnlineService *service, const gchar *timeline, gdouble
 	}
 	
 	if(ids_set){
-		debug("Saving <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f.", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
@@ -138,12 +138,12 @@ void update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newe
 	if(!(service && G_STR_N_EMPTY(timeline) )) return;
 	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(timeline);
 	debug("Retrieving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s].", timelines_gconfig_prefs_path );
+	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path );
 	update_id_get( service, timelines_gconfig_prefs_path, "newest", newest_update_id );
 	update_id_get( service, timelines_gconfig_prefs_path, "unread", unread_update_id );
 	update_id_get( service, timelines_gconfig_prefs_path, "oldest", oldest_update_id );
 	debug("Retrieving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s].", timelines_gconfig_prefs_path );
+	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path );
 	uber_free(timelines_gconfig_prefs_path);
 }/*update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
@@ -159,14 +159,14 @@ static gboolean update_id_get( OnlineService *service, const gchar *timelines_gc
 	gboolean success=FALSE;
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY, service->key, timelines_gconfig_prefs_path, key);
-	debug("Retrieving <%s>'s %s update ID.  From gconf key: [%s].", service->key, key, prefs_path);
+	debug("Retrieving <%s>'s %s update ID.  From gconf key: [%s]", service->key, key, prefs_path);
 	success=gconfig_get_string(prefs_path, &swap_id_str);
 	
 	if(!(success && swap_id_str)) swap_id=0.0;
 	else swap_id=g_ascii_strtod(swap_id_str, NULL);
 	
 	if(swap_id>0) *update_id=swap_id;
-	debug("Retrieved <%s>'s %s update ID: %f(from string %s) from gconf key: [%s].", service->key, key, *update_id, swap_id_str, prefs_path);
+	debug("Retrieved <%s>'s %s update ID: %f(from string %s) from gconf key: [%s]", service->key, key, *update_id, swap_id_str, prefs_path);
 	uber_free(prefs_path);
 	uber_free(swap_id_str);
 	return success;
@@ -176,12 +176,12 @@ void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newe
 	if(!(service && G_STR_N_EMPTY(timeline) )) return;
 	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(timeline);
 	debug("Saving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s].", timelines_gconfig_prefs_path);
+	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
 	update_id_set(service, timelines_gconfig_prefs_path, "newest", newest_update_id);
 	update_id_set(service, timelines_gconfig_prefs_path, "unread", unread_update_id);
 	update_id_set(service, timelines_gconfig_prefs_path, "oldest", oldest_update_id);
 	debug("Saved: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s].", timelines_gconfig_prefs_path);
+	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
 	uber_free(timelines_gconfig_prefs_path);
 }/*update_ids_set(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
@@ -197,16 +197,16 @@ static gboolean update_id_set( OnlineService *service, const gchar *timelines_gc
 	
 	prefs_path=g_strdup_printf(ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY, service->key, timelines_gconfig_prefs_path, key);
 	swap_id_str=gdouble_to_str(update_id);
-	debug("Saving <%s>'s %s update ID: %f(from string: %s) to gconfig path: [%s].", service->key, key, update_id, swap_id_str, prefs_path);
+	debug("Saving <%s>'s %s update ID: %f(from string: %s) to gconfig path: [%s]", service->key, key, update_id, swap_id_str, prefs_path);
 	success=gconfig_set_string(prefs_path, swap_id_str);
-	debug("Saved <%s>'s %s update ID: %f(from string: %s) to gconfig path: [%s].", service->key, key, update_id, swap_id_str, prefs_path);
+	debug("Saved <%s>'s %s update ID: %f(from string: %s) to gconfig path: [%s]", service->key, key, update_id, swap_id_str, prefs_path);
 	uber_free(prefs_path);
 	uber_free(swap_id_str);
 	return success;
 }/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
 
 gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
-	debug("Formatting timeline for use with gconf: from uri: <%s>.", uri);
+	debug("Formatting timeline for use with gconf: from uri: <%s>", uri);
 	
 	if(!strstr(uri, "%"))
 		return g_strdup( ( strstr(uri, "=") ?g_strrstr(uri, "=")+sizeof("=") :g_strrstr(uri, "/")+sizeof("/") ) );
@@ -223,7 +223,7 @@ gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
 	gchar *timeline=g_strdup_printf("%s%s", uri_split[0], search_phrase_encoded);
 	g_strfreev(uri_split);
 	uber_free(search_phrase_encoded);
-	debug("Parsed searches timeline: <%s>; from uri: <%s>.", timeline, uri);
+	debug("Parsed searches timeline: <%s>; from uri: <%s>", timeline, uri);
 	return timeline;
 }/*gchar *timeline=update_ids_format_timeline_for_gconfig(uri);*/
 

@@ -64,6 +64,7 @@
 
 #include "online-services.rest-uris.defines.h"
 #include "online-services.typedefs.h"
+#include "online-services.types.h"
 #include "online-services.h"
 #include "online-service.h"
 #include "online-service.types.h"
@@ -163,7 +164,7 @@ OnlineServiceWrapper *online_service_wrapper_new(OnlineService *service, SoupMes
 
 gboolean online_service_wrapper_init(OnlineService *service, SoupMessage *xml, RequestMethod request_method, const gchar *requested_uri, guint8 attempt, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(!service) return FALSE;
-	debug("Processing <%s>'s libsoup %s request for: [%s].  Creating and Queueing OnlineServiceWrapper.", service->guid, online_service_request_method_to_string(request_method), requested_uri );
+	debug("Processing <%s>'s libsoup %s request for: [%s].  Creating and Queueing OnlineServiceWrapper", service->guid, online_service_request_method_to_string(request_method), requested_uri );
 	online_service_wrapper_process( online_service_wrapper_new(service, xml, request_method, requested_uri, attempt, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data) );
 	return service->processing;
 }/*online_service_wrapper_init(service, xml, requested_uri, 0, post_process_callback, callback, user_data, form_data);*/
@@ -191,8 +192,8 @@ static gboolean online_service_wrapper_process(OnlineServiceWrapper *online_serv
 	service->processing_queue=g_list_append(service->processing_queue, online_service_wrapper);
 	if(online_service_wrapper->process_timeout_id) online_service_wrapper->process_timeout_id=0;
 	if(service->processing_timer > 0) service->processing_timer--;
-	debug("OnlineService: <%s>'s began processing: <%s>.", online_service_wrapper->service->guid, online_service_wrapper->requested_uri);
-	debug("Adding libsoup request to service: <%s> libsoup's message queue.", service->guid);
+	debug("OnlineService: <%s>'s began processing: <%s>", online_service_wrapper->service->guid, online_service_wrapper->requested_uri);
+	debug("Adding libsoup request to service: <%s> libsoup's message queue", service->guid);
 	soup_session_queue_message(online_service_wrapper->service->session, online_service_wrapper->xml, (SoupSessionCallback)online_service_wrapper_callback, online_service_wrapper);
 	
 	return FALSE;
@@ -206,7 +207,7 @@ static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_servic
 	OnlineService *service=online_service_wrapper->service;
 	if(!(service->enabled && service->connected && service->authenticated && online_service_validate_session(online_service_wrapper->service, online_service_wrapper->requested_uri) )){
 		if(!online_service_refresh(service)){
-			debug("Unable to load: %s.  You are no longer connected to %s.", online_service_wrapper->requested_uri, service->key);
+			debug("Unable to load: %s.  You are no longer connected to %s", online_service_wrapper->requested_uri, service->key);
 			statusbar_printf("Unable to load: %s.  You are no longer connected to: %s.", online_service_wrapper->requested_uri, service->key);
 			if(++online_service_wrapper->attempt > ONLINE_SERVICE_MAX_REQUESTS){
 			online_service_wrapper_free(online_service_wrapper, (service?TRUE :FALSE));
@@ -218,7 +219,7 @@ static gboolean online_service_wrapper_queue(OnlineServiceWrapper *online_servic
 	if(online_service_wrapper->process_timeout_id) return TRUE;
 	if(!online_service_wrapper->process_timeout) online_service_wrapper->process_timeout=++service->processing_timer;
 	online_service_wrapper->process_timeout_id=g_timeout_add((online_service_wrapper->process_timeout)*100, (GSourceFunc)online_service_wrapper_process, online_service_wrapper);
-	debug("OnlineService: <%s>'s re-queuing the requested uri: <%s> to be re-processed in %d00 milliseconds.", service->key, online_service_wrapper->requested_uri, online_service_wrapper->process_timeout);
+	debug("OnlineService: <%s>'s re-queuing the requested uri: <%s> to be re-processed in %d00 milliseconds", service->key, online_service_wrapper->requested_uri, online_service_wrapper->process_timeout);
 	return TRUE;
 }/*online_service_wrapper_queue(online_service_wrapper);*/
 
@@ -237,7 +238,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 	
 	OnlineService *service=online_service_wrapper->service;
 	if(!(service && service->key && G_STR_N_EMPTY(service->key) )){
-		debug("Invalid OnlineService.  Cannot process request for: %s.", online_service_wrapper->requested_uri);
+		debug("Invalid OnlineService.  Cannot process request for: %s", online_service_wrapper->requested_uri);
 		return NULL;
 	}
 	if(!(online_service_wrapper->requested_uri && G_STR_N_EMPTY(online_service_wrapper->requested_uri) )) online_service_wrapper->requested_uri=_("Unknown URI");
@@ -255,7 +256,7 @@ void *online_service_wrapper_callback(SoupSession *session, SoupMessage *xml, On
 		return NULL;
 	}
 	
-	debug("%s  xml_error_check returned: %s.", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d).", service->key, status, online_service_wrapper->requested_uri, xml->reason_phrase, xml->status_code)), error_message );
+	debug("%s  xml_error_check returned: %s", (service->status=g_strdup_printf("OnlineService: <%s> requested: %s.  URI: %s returned: %s(%d)", service->key, status, online_service_wrapper->requested_uri, xml->reason_phrase, xml->status_code)), error_message );
 	statusbar_printf("<%s> loading %s: %s.", service->key, g_strrstr(online_service_wrapper->requested_uri, "/"), status);
 	
 	uber_free(error_message);
@@ -337,7 +338,7 @@ static void online_service_wrapper_data_processor(gpointer *data, OnlineServiceW
 			*data=g_strdup(*data);
 			break;
 		default:
-			debug("**ERROR:** OnlineServiceWrapperDataProcessor reached unsupported data_processor.");
+			debug("**ERROR:** OnlineServiceWrapperDataProcessor reached unsupported data_processor");
 			break;
 	}
 }/*online_service_wrapper_data_processor(&data, DataSet|DataFree);*/
@@ -408,7 +409,7 @@ gpointer online_service_wrapper_get_form_data(OnlineServiceWrapper *online_servi
 void online_service_wrapper_free(OnlineServiceWrapper *online_service_wrapper, gboolean free_queue){
 	if(!(online_service_wrapper && online_service_wrapper->service)) return;
 	OnlineService *service=online_service_wrapper->service;
-	debug("OnlineService: <%s> has finished processing: <%s>.", service->guid, online_service_wrapper->requested_uri);
+	debug("OnlineService: <%s> has finished processing: <%s>", service->guid, online_service_wrapper->requested_uri);
 	if(service->processing) service->processing=FALSE;
 	
 	if(online_service_wrapper->process_timeout_id)

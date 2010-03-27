@@ -143,9 +143,9 @@ void www_open_uri(GtkWidget *widget, const gchar *uri){
 		new_uri=g_strdup_printf("http://%s", uri);
 	
 	if(g_app_info_launch_default_for_uri( (new_uri ?new_uri :uri), NULL, NULL))
-		debug("**NOTICE:** Opening URI: <%s>.", (new_uri ?new_uri :uri));
+		debug("**NOTICE:** Opening URI: <%s>", (new_uri ?new_uri :uri));
 	else
-		debug("**ERROR:** Can't handle URI: <%s>.", (new_uri ?new_uri :uri));
+		debug("**ERROR:** Can't handle URI: <%s>", (new_uri ?new_uri :uri));
 	
 	if(new_uri)
 		uber_free(new_uri);
@@ -156,7 +156,7 @@ void www_init(void){
 	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]*)?";
 	number_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
 	if(error){
-		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s.", g_regex_pattern, error->message );
+		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
 	}
 	www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -180,7 +180,7 @@ static gboolean www_uri_titles_clean_up(void){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter, path)){
-			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
+			debug("Retrieving iter from path to index %d failed.  Unable to remove row", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;
@@ -198,7 +198,7 @@ static gboolean www_uri_titles_clean_up(void){
 		);
 		datetime_age(datetime, &age, FALSE);
 		if( age >= 3600 ){
-			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old.", uri, title, datetime, age);
+			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old", uri, title, datetime, age);
 			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
 			if(www_uri_title_list_store_total)
 				www_uri_title_list_store_total--;
@@ -227,7 +227,7 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 			uber_free(escaped_status);
 			current_character=escaped_status=regex_status;
 		}else{
-			debug("**ERROR:** Parsing %s through g_regex_replace.  GError message: %s.", current_character, error->message );
+			debug("**ERROR:** Parsing %s through g_regex_replace.  GError message: %s", current_character, error->message );
 			g_error_free(error);
 		}
 	}
@@ -267,9 +267,9 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 		
 		gboolean searching=FALSE;
 		if(words[i][0]!='@' && !(searching=(words[i][0]=='!' || words[i][0]=='#')) ){
-			debug("Rendering URI for display including title.  URI: '%s'.", words[i]);
+			debug("Rendering URI for display including title.  URI: '%s'", words[i]);
 			temp=www_find_uri_pages_title(service, words[i], NULL, expand_hyperlinks, make_hyperlinks);
-			debug("Rendered URI for display.  %s will be replaced with %s.", words[i], temp);
+			debug("Rendered URI for display.  %s will be replaced with %s", words[i], temp);
 			uber_free(words[i]);
 			words[i]=temp;
 			temp=NULL;
@@ -277,9 +277,9 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 		}
 		
 		gchar *search_uri_prefix=g_strdup_printf("http%s://%s%s/%s%s%s%s", (words[i][0]=='@'&&service->https ?"s" :""), ( (words[i][0]=='#' && service->micro_blogging_service==Twitter) ?"search." :"" ), service->uri, (searching ?"search" :""), (searching && service->micro_blogging_service!=Twitter ?"/notice" :"" ), (searching ?"?q=" :""), (words[i][0]=='#' ?"%23" :(words[i][0]=='!' ?"%21" :"") ) );
-		debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri);
+		debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri);
 		temp=www_format_service_hyperlink(service, search_uri_prefix, words[i], expand_hyperlinks, make_hyperlinks);
-		debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s.", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri, temp);
+		debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri, temp);
 		uber_free(search_uri_prefix);
 		uber_free(words[i]);
 		words[i]=temp;
@@ -426,15 +426,15 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 	gchar *content_type=NULL;
 	
 	main_window_statusbar_printf("Please wait while %s's title is found.", uri);
-	debug("Attempting to determine content-type for: %s.", uri);
+	debug("Attempting to determine content-type for: %s", uri);
 	if(!(content_type=www_get_uri_content_type(service, uri, &xml))){
-		debug("Unable to determine the content-type from uri: '%s'.", uri);
+		debug("Unable to determine the content-type from uri: '%s'", uri);
 		www_uri_title_append(uri, uri);
 		return temp;
 	}
 	
 	if(!g_str_equal(content_type, "text/html")){
-		debug("Non-XHTML content-type from uri: '%s'.", uri);
+		debug("Non-XHTML content-type from uri: '%s'", uri);
 		uber_free(content_type);
 		www_uri_title_append(uri, uri);
 		return temp;
@@ -470,7 +470,7 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 }/*www_find_uri_pages_title(service, uri, "@user"||"#search||"!tag", expand_hyperlinks, make_hyperlinks);*/
 
 static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const gchar *services_resource){
-	debug("Attempting to display link info. title: %s for uri: '%s'.", *uri_title, uri);
+	debug("Attempting to display link info. title: %s for uri: '%s'", *uri_title, uri);
 	gchar *hyperlink_suffix1=NULL;
 	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
 	
@@ -494,7 +494,7 @@ static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const
 
 static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri, SoupMessage **xml){
 	if(!(*xml)){
-		debug("Downloading: <%s> and determining its content-type.", uri);
+		debug("Downloading: <%s> and determining its content-type", uri);
 		*xml=online_service_request_uri(service, GET, uri, 0, NULL, NULL, NULL, NULL);
 	}
 	
@@ -507,12 +507,12 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	
 	uber_free(error_message);
 	
-	debug("Getting content-type from uri: '%s'.", uri);
+	debug("Getting content-type from uri: '%s'", uri);
 	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type from [%s]'s headers.", uri);
+	debug("Parsing xml document's content-type from [%s]'s headers", uri);
 	gchar *content_info=NULL;
 	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one((*xml)->response_headers, "Content-Type")))){
-		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
+		debug("**ERROR**: Failed to determine content-type for:  %s", uri);
 		return NULL;
 	}
 	
@@ -520,7 +520,7 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	content_v=g_strsplit(content_info, "; ", -1);
 	uber_free(content_info);
 	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
-		debug("**ERROR**: Failed to determine content-type for:  %s.", uri);
+		debug("**ERROR**: Failed to determine content-type for:  %s", uri);
 		g_strfreev(content_v);
 		return NULL;
 	}
@@ -534,9 +534,9 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean return_xml_doc){
 	xmlDoc		*doc=NULL;
 	xmlNode		*root_element=NULL;
-	debug("Parsing xml document before searching for xpath: '%s' content.", xpath);
+	debug("Parsing xml document before searching for xpath: '%s' content", xpath);
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
-		debug("Unable to parse xml doc.");
+		debug("Unable to parse xml doc");
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -547,16 +547,16 @@ gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean retur
 	gchar	**xpathv=g_strsplit(xpath, "->", -1);
 	guint	xpath_depth=0, xpath_target_depth=g_strv_length(xpathv)-1;
 	
-	debug("Searching for xpath: '%s' content.", xpath);
+	debug("Searching for xpath: '%s' content", xpath);
 	for(current_element=root_element; current_element; current_element=current_element->next){
 		if(current_element->type != XML_ELEMENT_NODE ) continue;
 		
-		debug("Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s.", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_element->name);
+		debug("Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_element->name);
 		if( xpath_depth>xpath_target_depth ) break;
 		
 		if(!g_str_equal(current_element->name, xpathv[xpath_depth])){
 			if(xpath_depth==xpath_target_depth && !current_element->next){
-				debug("Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM.", current_element->name, xpath_depth);
+				debug("Current node: %s, at depth: %d, is malformated and doesn't close.  Moving back 'up' one layer in the DOM", current_element->name, xpath_depth);
 				current_element=current_element->parent;
 				xpath_depth--;
 			}
@@ -624,7 +624,7 @@ static gchar *www_uri_title_lookup(const gchar *uri){
 		iter=g_new0(GtkTreeIter, 1);
 		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(www_uri_title_lookup_table_list_store), iter, path)){
-			debug("Retrieving iter from path to index %d failed.  Unable to remove row.", i);
+			debug("Retrieving iter from path to index %d failed.  Unable to remove row", i);
 			gtk_tree_path_free(path);
 			uber_free(iter);
 			continue;

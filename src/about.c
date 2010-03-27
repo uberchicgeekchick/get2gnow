@@ -57,7 +57,7 @@
 #include <gio/gio.h>
 #include <glib/gi18n.h>
 
-#include "online-services.h"
+#include "www.h"
 #include "about.h"
 
 

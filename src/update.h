@@ -63,6 +63,8 @@
  ********************************************************************************/
 #include <glib.h>
 
+#include "online-services.typedefs.h"
+
 G_BEGIN_DECLS
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
@@ -77,7 +79,8 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
-gboolean update_notify_on_timeout(Update *update);
+gboolean update_notify_on_timeout(UserStatus *status);
+/*gboolean update_notify_on_timeout(Update *update);*/
 
 
 /********************************************************************************
