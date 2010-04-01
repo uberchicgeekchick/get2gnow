@@ -16,6 +16,11 @@
  */
 #undef ENABLE_ALPHA_UI
 
+/* Rather to enable the system alert and system button sounds.
+ *	This may cause pulseaudio related segfaults on some systems.
+ */
+#undef ENABLE_SOUND
+
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 

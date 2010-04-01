@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="030303a16"
+PACKAGE_VERSION="030303a18"
 VERSION="${PACKAGE_VERSION}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
@@ -22822,6 +22822,19 @@ if test x$enable_alpha_ui = xyes ; then
 fi
 
 
+# Check whether --enable-sound was given.
+if test "${enable_sound+set}" = set; then
+  enableval=$enable_sound;
+else
+  enable_sound=no
+fi
+
+
+if test x$enable_sound = xyes ; then
+	echo "#define ENABLE_SOUND 1" >> confdefs.h
+fi
+
+
 
 
 	if test $USE_MAINTAINER_MODE = yes; then
@@ -26317,6 +26330,9 @@ fi
 printf "\nPrefix:\t\t\t\t\t[%s]\n%s's BUILDDIR:\t\t\t[%s]\n" "$prefix" "$GETTEXT_PACKAGE" "$ac_pwd";
 if test x$have_gnome_keyring = xyes; then printf "GNOME Keyring:\t\t\t\t[enabled]\n"; fi;
 if test x$enable_alpha_ui = xyes; then printf "New & Improved, alpha, UI:\t\t[enabled]\n"; fi;
+printf "System alerts and sounds:\t\t[";
+if test x$enable_sound = xyes; then printf "en"; else printf "dis"; fi;
+printf "abled]\n";
 if test x$enable_debug = xyes; then printf "Debug Mode:\t\t\t\t[enabled]\n"; fi;
 if test x$enable_gdb = xyes; then printf "Debug symbols:\t\t\t\t[enabled]\n"; fi;
 if test x$enable_gtk_icon_update = xyes; then printf "Updating GTK's icon cache.\n"; fi;

@@ -144,15 +144,15 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef	gtk_widget_is_visible
-#	define	gtk_widget_is_visible(widget)			program_gtk_widget_get_gboolean_property_value(widget, "visible")
+#	define	gtk_widget_is_visible(widget)			program_gtk_widget_get_gboolean_property_value(GTK_WIDGET(widget), "visible")
 #endif
 
 #ifndef	gtk_widget_is_sensitive
-#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_gboolean_property_value(widget, "sensitive")
+#	define	gtk_widget_is_sensitive(widget)			program_gtk_widget_get_gboolean_property_value(GTK_WIDGET(widget), "sensitive")
 #endif
 
 #ifndef	gtk_widget_has_focus
-#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value(widget, "has-focus")
+#	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value(GTK_WIDGET(widget), "has-focus")
 #endif
 
 #ifndef	gtk_widget_toggle_visibility

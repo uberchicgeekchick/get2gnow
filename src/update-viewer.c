@@ -1010,7 +1010,7 @@ static void update_viewer_compact_view_display(gboolean compact){
 	
 	update_viewer_scale(compact);
 	
-	if(!GTK_WIDGET_IS_SENSITIVE(update_viewer->update_composition_vbox))
+	if(!gtk_widget_is_sensitive(update_viewer->update_composition_vbox))
 		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->update_composition_vbox), TRUE);
 	
 	if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->update_composition_vbox)))
@@ -1159,7 +1159,7 @@ static void update_viewer_selected_update_buttons_show(OnlineService *service, c
 	else
 		gtk_toggle_button_set_active(update_viewer->best_friend_toggle_button, TRUE);
 	
-	if(!GTK_WIDGET_IS_SENSITIVE(update_viewer->update_composition_vbox))
+	if(!gtk_widget_is_sensitive(update_viewer->update_composition_vbox))
 		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->update_composition_vbox), TRUE);
 	
 	if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->update_composition_vbox)))
@@ -1400,6 +1400,9 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateType update_type, gdouble retweet_update_id){
 	if(!(service && service->session && online_service_validate_session(service, user_name) )) return;
 	
+	if(!gtk_widget_is_sensitive(update_viewer->sexy_entry))
+		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), TRUE);
+	
 	if(!id){
 		if(!(service && gconfig_if_bool(PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE)))
 			update_viewer_online_services_set_postable_check_buttons(update_viewer->online_services_controls_reset_accounts_tool_button, NULL);
@@ -1594,6 +1597,9 @@ gboolean update_viewer_sexy_entry_clear(void){
 }/*update_viewer_sexy_entry_clear();*/
 
 static void update_viewer_sexy_set(gchar *text){
+	if(!gtk_widget_is_sensitive(update_viewer->sexy_entry))
+		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), TRUE);
+	
 	gtk_entry_set_text(GTK_ENTRY(update_viewer->sexy_entry), (text ?text :(gchar *)"") );
 	update_viewer_sexy_entry_update_remaining_character_count();
 	update_viewer_sexy_select();
@@ -1616,8 +1622,6 @@ void update_viewer_sexy_insert_char(const char c){
 }/*update_viewer_sexy_insert_char('\t', TRUE|FALSE, TRUE|FALSE);*/
 
 gboolean update_viewer_sexy_insert_string(const gchar *str, gboolean to_lower, gboolean uniq){
-	if(gtk_widget_is_sensitive(GTK_WIDGET(update_viewer->sexy_entry)))
-		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), TRUE);
 	return update_viewer_sexy_puts(str, gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry)), to_lower, uniq);
 }/*update_viewer_sexy_insert_string("string", TRUE|FALSE, TRUE|FALSE);*/
 
@@ -1632,6 +1636,9 @@ gboolean update_viewer_sexy_append_string(const gchar *str, gboolean to_lower, g
 }/*update_viewer_sexy_append_string("string", TRUE|FALSE, TRUE|FALSE);*/
 
 static gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, gboolean to_lower, gboolean uniq){
+	if(!gtk_widget_is_sensitive(update_viewer->sexy_entry))
+		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), TRUE);
+	
 	if(G_STR_EMPTY(str))
 		return FALSE;
 	
@@ -1645,7 +1652,7 @@ static gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, g
 		string=(gchar *)str;
 	g_match_info_free(match_info);
 	
-	if(uniq && G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && g_strrstr(GTK_ENTRY(update_viewer->sexy_entry)->text, string)){
+	if(uniq && G_STR_N_EMPTY(GTK_ENTRY(update_viewer->sexy_entry)->text) && g_strstr_len(GTK_ENTRY(update_viewer->sexy_entry)->text, -1, string)){
 		if(free_string) uber_free(string);
 		return FALSE;
 	}
@@ -1732,7 +1739,7 @@ void update_viewer_send(GtkWidget *activated_widget){
 		return;
 	}
 	
-	if((activated_widget==GTK_WIDGET(update_viewer->followers_send_dm)) &&(GTK_WIDGET_IS_SENSITIVE(update_viewer->followers_combo_box)) && G_STR_N_EMPTY((user_name=gtk_combo_box_get_active_text(update_viewer->followers_combo_box)) ) ){
+	if((activated_widget==GTK_WIDGET(update_viewer->followers_send_dm)) &&(gtk_widget_is_sensitive(update_viewer->followers_combo_box)) && G_STR_N_EMPTY((user_name=gtk_combo_box_get_active_text(update_viewer->followers_combo_box)) ) ){
 		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
 		User *user=NULL;
 		gtk_combo_box_get_active_iter(update_viewer->followers_combo_box, iter);
@@ -1796,7 +1803,7 @@ static void update_viewer_previous_updates_load(UpdateViewer *update_viewer){
 	for(update_viewer->total_updates=0; update_viewer->total_updates<=update_viewer->max_updates; update_viewer->total_updates++){
 		if(!( (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", update_viewer->total_updates)), &previous_update )) && G_STR_N_EMPTY(previous_update) )) break;
 		
-		update_viewer_previous_update_restore(update_viewer, (strstr(previous_update, "->") ?g_strrstr(previous_update, "->")+strlen("->") :previous_update) );
+		update_viewer_previous_update_restore(update_viewer, previous_update);
 		
 		uber_free(previous_update);
 		uber_free(previous_update_gconf_path);
@@ -1953,7 +1960,7 @@ static void update_viewer_previous_update_selected(GtkComboBoxEntry *sexy_entry_
 		return;
 	}
 	
-	update_viewer_sexy_set( (strstr(update, "->") ?g_strrstr(update, "->") :update ) );
+	update_viewer_sexy_set(update);
 	uber_free(update);
 	uber_free(iter);
 }/*update_viewer_previous_update_selected(update_viewer->sexy_entry_combo_box_entry, update_viewer);*/
@@ -1964,9 +1971,10 @@ static void update_viewer_previous_updates_free(UpdateViewer *update_viewer){
 }/*update_viewer_previous_updates_free(update_viewer);*/
 
 void update_viewer_beep(void){
-	return;
+#ifdef ENABLE_SOUND
 	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
 		gtk_widget_error_bell(GTK_WIDGET(update_viewer->sexy_entry));
+#endif
 }/*update_viewer_beep();*/
 
 SexySpellEntry *update_viewer_sexy_entry_get_widget(void){

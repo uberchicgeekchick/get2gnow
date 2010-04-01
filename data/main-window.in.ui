@@ -111,16 +111,16 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_menu_direct_messages_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_replies_check_menu_item">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Direct Messages</property>
+                        <property name="label" translatable="yes">@ _Replies</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="tabs_menu_replies_check_menu_item">
+                      <object class="GtkCheckMenuItem" id="tabs_menu_direct_messages_check_menu_item">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">@ _Replies</property>
+                        <property name="label" translatable="yes">_Direct Messages</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>

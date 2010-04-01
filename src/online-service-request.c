@@ -377,6 +377,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service->guid, xml->reason_phrase, xml->status_code);
 		online_service_request_free(request);
 		uber_free(error_message);
+		if(request->action==ShortenURI && !gtk_widget_is_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))
+			gtk_widget_set_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget()), TRUE);
 		return NULL;
 	}
 	uber_free(error_message);
@@ -470,7 +472,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 				update_viewer_sexy_insert_string(shortened_uri, FALSE, FALSE);
 				uber_free(shortened_uri);
 			}
-			gtk_widget_set_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget()), TRUE);
+			if(!gtk_widget_is_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))
+				gtk_widget_set_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget()), TRUE);
 			break;
 		case SelectService:
 		case ViewProfile:

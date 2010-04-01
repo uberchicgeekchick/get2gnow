@@ -1,4 +1,4 @@
-AC_INIT([get2gnow], ["030303a16"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["030303a18"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
@@ -29,10 +29,10 @@ GNOME_CXX_WARNINGS
 GNOME_DEBUG_CHECK
 GNOME_MAINTAINER_MODE_DEFINES
 
-dnl /************************************************************
-dnl  *	Library Dependencies,					*
-dnl  *	uses pkg-config, see PKG_CHECK_MODULES.			*
-dnl  ************************************************************/
+dnl ************************************************************
+dnl *	Library Dependencies,                                  *
+dnl *	uses pkg-config, see PKG_CHECK_MODULES.                *
+dnl ************************************************************
 
 GNOME_DOC_UTILS_VERSION_REQUIRED=0.14.0
 LIBSOUP_VERSION_REQUIRED=2.24.0
@@ -43,9 +43,9 @@ GTHREAD_VERSION_REQUIRED=2.20
 GCONF_VERSION_REQUIRED=1.2.0
 LIBGIO_VERSION_REQUIRED=2.15.5
 
-dnl /************************************************************
-dnl  *	GNOME Keyring						*
-dnl  ************************************************************/
+dnl ************************************************************
+dnl *	GNOME Keyring                                          *
+dnl ************************************************************
 AC_ARG_ENABLE(gnome_keyring,
 	      AS_HELP_STRING([--enable-gnome-keyring=@<:@no/yes/auto@:>@],
 		             [compile with Gnome Keyring support]), ,
@@ -71,9 +71,9 @@ fi
 
 AM_CONDITIONAL(HAVE_GNOME_KEYRING, test x$have_gnome_keyring = xyes)
 
-dnl /************************************************************
-dnl  * Pkg-Config dependency checks				*
-dnl  ************************************************************/
+dnl *************************************************************
+dnl * Pkg-Config dependency checks.                             *
+dnl *************************************************************
 PKG_CHECK_MODULES(get2gnow,
 [
 	gnome-doc-utils-devel >= $GNOME_DOC_UTILS_DEVEL_VERSION_REQUIRED
@@ -95,9 +95,9 @@ PKG_CHECK_MODULES(get2gnow,
 AC_SUBST(get2gnow_CFLAGS)
 AC_SUBST(get2gnow_LIBS)
 
-dnl /************************************************************
+dnl *************************************************************
 dnl *   GNOME_ENABLE_DEBUG support                              *
-dnl /************************************************************
+dnl *************************************************************
 AM_CONDITIONAL(GNOME_ENABLE_DEBUG, test x$enable_debug = xyes)
 
 if test x$enable_debug = xyes ; then
@@ -107,24 +107,40 @@ if test x$enable_debug = xyes ; then
 fi
 
 
-dnl /************************************************************
-dnl *    gdb support                                            *
-dnl /************************************************************
+dnl ************************************************************
+dnl *    gdb support                                           *
+dnl ************************************************************
 AM_CONDITIONAL(debug_CFLAGS="-g3 -ggdb", test x$enable_gdb = xyes)
 
 if test x$enable_gdb = xyes ; then
 	debug_CFLAGS="-g3 -ggdb"
 fi
 
-dnl /************************************************************
-dnl *   ALPHA UI enabled                                        *
-dnl /************************************************************
+
+
+dnl  *****************************************************************
+dnl  * Rather to use the                                             *
+dnl  *	GtkLabel based update viewer, which is ugly but does more    *
+dnl  * or the                                                        *
+dnl  *	SexyUrlLabel based update viewer which is much more elegant. *
+dnl  *****************************************************************
 AM_CONDITIONAL(ENABLE_ALPHA_UI, test x$enable_alpha_ui = xyes)
 
 if test x$enable_alpha_ui = xyes ; then
 	echo "#define ENABLE_ALPHA_UI 1" >> confdefs.h
 fi
 
+
+
+dnl *******************************************************************
+dnl * Rather to enable the system alert and system button sounds.     *
+dnl *	This may cause pulseaudio related segfaults on some systems.  *
+dnl *******************************************************************
+AM_CONDITIONAL(ENABLE_SOUND, test x$enable_sound = xyes)
+
+if test x$enable_sound = xyes ; then
+	echo "#define ENABLE_SOUND 1" >> confdefs.h
+fi
 
 
 
@@ -178,6 +194,9 @@ po/Makefile
 printf "\nPrefix:\t\t\t\t\t[%s]\n%s's BUILDDIR:\t\t\t[%s]\n" "$prefix" "$GETTEXT_PACKAGE" "$ac_pwd";
 if test x$have_gnome_keyring = xyes; then printf "GNOME Keyring:\t\t\t\t[enabled]\n"; fi;
 if test x$enable_alpha_ui = xyes; then printf "New & Improved, alpha, UI:\t\t[enabled]\n"; fi;
+printf "System alerts and sounds:\t\t[";
+if test x$enable_sound = xyes; then printf "en"; else printf "dis"; fi;
+printf "abled]\n";
 if test x$enable_debug = xyes; then printf "Debug Mode:\t\t\t\t[enabled]\n"; fi;
 if test x$enable_gdb = xyes; then printf "Debug symbols:\t\t\t\t[enabled]\n"; fi;
 if test x$enable_gtk_icon_update = xyes; then printf "Updating GTK's icon cache.\n"; fi;
