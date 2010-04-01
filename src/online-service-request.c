@@ -66,6 +66,7 @@
 #include "config.h"
 #include "program.h"
 
+#include "update.types.h"
 #include "gconfig.h"
 #include "update-ids.h"
 #include "online-services.rest-uris.defines.h"

@@ -78,6 +78,7 @@
 #include "following-viewer.h"
 
 #include "network.h"
+#include "update.types.h"
 #include "users.types.h"
 #include "users.h"
 

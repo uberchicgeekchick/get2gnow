@@ -51,8 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__ONLINE_SERVICE_TYPEDEFS_H__
-#define	__ONLINE_SERVICE_TYPEDEFS_H__
+#ifndef	__ONLINE_SERVICE_TYPES_H__
+#define	__ONLINE_SERVICE_TYPES_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -162,4 +162,4 @@ G_END_DECLS
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
-#endif /* __ONLINE_SERVICE_TYPEDEFS_H__*/
+#endif /* __ONLINE_SERVICE_TYPES_H__*/

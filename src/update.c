@@ -61,6 +61,7 @@
 #include "online-services.typedefs.h"
 #include "online-services.types.h"
 #include "online-service.types.h"
+#include "update.types.h"
 #include "users.types.h"
 
 #include "gconfig.h"
@@ -107,6 +108,24 @@
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
+const gchar *update_type_to_string(UpdateType update_type){
+	switch(update_type){
+		case	Homepage:	return _("homepage");
+		case	ReTweets:	return _("friends' retweets");
+		case	Replies:	return _("@ replies");
+		case	DMs:		return _("direct messages");
+		case	BestFriends:	return _("best friend's updates");
+		case	Users:		return _("friend's updates");
+		case	Faves:		return _("star'd updates");
+		case	Searches:	return _("search results");
+		case	Groups:		return _("group discussions");
+		case	Timelines:	return _("global updates");
+		case	Archive:	return _("my updates");
+		case	None:	default:
+			return _("a lil cracker :-P");
+	}
+}/*update_type_to_string(update_type);*/
+
 
 
 gboolean update_notify_on_timeout(UserStatus *status){

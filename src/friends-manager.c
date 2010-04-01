@@ -68,6 +68,7 @@
 #include "online-service.h"
 #include "online-service-request.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "users-glists.h"
 #include "users.h"

@@ -77,6 +77,7 @@
 #include "www.h"
 #include "xml.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "users-glists.h"
 #include "users.h"

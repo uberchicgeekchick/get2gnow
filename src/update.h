@@ -79,6 +79,7 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
+const gchar *update_type_to_string(UpdateType update_type);
 gboolean update_notify_on_timeout(UserStatus *status);
 /*gboolean update_notify_on_timeout(Update *update);*/
 

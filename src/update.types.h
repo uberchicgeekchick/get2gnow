@@ -51,16 +51,11 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef __ONLINE_SERVICES_TYPEDEFS_H__
-#define __ONLINE_SERVICES_TYPEDEFS_H__
+#ifndef	__UPDATE_TYPES_H__
+#define	__UPDATE_TYPES_H__
 
-#ifndef	_GNU_SOURCE 
-#	define _GNU_SOURCE
-#endif
-
-#ifndef _THREAD_SAFE
-#	define _THREAD_SAFE
-#endif
+#define _GNU_SOURCE
+#define _THREAD_SAFE
 
 
 /********************************************************************************
@@ -68,69 +63,41 @@
  ********************************************************************************/
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <libsoup/soup-message.h>
+
 
 G_BEGIN_DECLS
 /********************************************************************************
+ *                        defines, macros, methods, & etc                       *
+ ********************************************************************************/
+
+
+/********************************************************************************
  *                        objects, structs, and enum typedefs                   *
  ********************************************************************************/
-typedef struct _OnlineServices OnlineServices;
-typedef struct _OnlineService OnlineService;
-typedef struct _OnlineServiceWrapper OnlineServiceWrapper;
-typedef struct _OnlineServiceXmlDoc OnlineServiceXmlDoc;
-
-typedef struct _OnlineServiceRequest OnlineServiceRequest;
-typedef struct _SelectedUpdate SelectedUpdate;
-typedef struct _OnlineServiceRequestPopup OnlineServiceRequestPopup;
-typedef struct _OnlineServiceRequestedResource OnlineServiceRequestedResource;
-
-typedef enum _RequestAction RequestAction;
-
-typedef struct _User User;
-typedef struct _UserStatus UserStatus;
-
-typedef struct _StatusNetGroup StatusNetGroup;
-
-typedef struct _RateLimitTimer RateLimitTimer;
-typedef enum _UpdateType UpdateType;
-
-typedef enum _MicroBloggingService MicroBloggingService;
-
-typedef enum _ReloadState ReloadState;
-typedef enum _RequestMethod RequestMethod;
-
-typedef enum _UsersGListGetWhich UsersGListGetWhich;
-
-typedef enum _OnlineServicesListStoreColumns OnlineServicesListStoreColumns;
+enum _UpdateType{
+	None		=	0,
+	DMs		=	1,
+	Replies		=	2,
+	Homepage	=	3,
+	BestFriends	=	4,
+	Users		=	5,
+	Searches	=	6,
+	Groups		=	7,
+	ReTweets	=	8,
+	Timelines	=	9,
+	Faves		=	10,
+	Archive		=	11,
+};
 
 
-/**********************************************************************
- *                         Macros & methods.                          *
- **********************************************************************/
-#define	ONLINE_SERVICE_REQUEST_FUNC	((OnlineServiceRequestFunc)(func))
-typedef void (*OnlineServiceRequestFunc) (OnlineService *service, GtkWindow *parent_window, const gchar *user_data);
 
-#define	ONLINE_SERVICE_SOUPSESSION_CALLBACK_RETURN_PROCESSOR_FUNC	((OnlineServiceSoupSessionCallbackReturnProcessorFunc)(func))
-typedef void (*OnlineServiceSoupSessionCallbackReturnProcessorFunc) (OnlineServiceWrapper *service_wrapper, SoupMessage *xml, gpointer soup_session_callback_return_gpointer);
-
-#define	ONLINE_SERVICE_SOUP_SESSION_CALLBACK_FUNC	((OnlineServiceSoupSessionCallbackFunc)(func))
-typedef void* (*OnlineServiceSoupSessionCallbackFunc) (SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
-
-#define	ONLINE_SERVICE_POST_PROCESS_FUNC	((OnlineServicePostProcessFunc)(func))
-typedef void (*OnlineServicePostProcessFunc) (OnlineServiceWrapper *service_wrapper, OnlineServiceXmlDoc *xml_doc, gpointer soup_session_callback_return_gpointer);
-
-#define	ONLINE_SERVICE_CALLBACK_FUNC	((OnlineServiceCallbackFunc)(func))
-typedef void* (*OnlineServiceCallbackFunc) (OnlineService *service, OnlineServiceXmlDoc *xml_doc, OnlineServiceWrapper *service_wrapper);
-
-#define	USERS_GLIST_ONLOAD_FUNC(func)	((UsersGListOnLoadFunc)(func))
-typedef void (*UsersGListOnLoadFunc) (GList *users);
-
-#define	G_POINTER_FUNC(func)	((GPointerFunc)(func))
-typedef void (*GPointerFunc) (gpointer user_data);
+/********************************************************************************
+ *       prototypes for methods, handlers, callbacks, function, & etc           *
+ ********************************************************************************/
 
 
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
-#endif /* __ONLINE_SERVICES_TYPEDEFS_H__ */
+#endif /*__UPDATE_TYPES_H__*/

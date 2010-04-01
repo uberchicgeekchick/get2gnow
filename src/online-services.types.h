@@ -51,8 +51,8 @@
 /**********************************************************************
  *          My art, code, & programming.                              *
  **********************************************************************/
-#ifndef __ONLINE_SERVICES_TYPEDEFS_H__
-#define __ONLINE_SERVICES_TYPEDEFS_H__
+#ifndef __ONLINE_SERVICES_TYPES_H__
+#define __ONLINE_SERVICES_TYPES_H__
 
 #ifndef	_GNU_SOURCE 
 #	define _GNU_SOURCE
@@ -75,21 +75,6 @@ enum _RequestMethod{
 	POST,
 	GET,
 	QUEUE,
-};
-
-enum _UpdateType{
-	None		=	0,
-	DMs		=	1,
-	Replies		=	2,
-	Homepage	=	3,
-	BestFriends	=	4,
-	Users		=	5,
-	Searches	=	6,
-	Groups		=	7,
-	ReTweets	=	8,
-	Timelines	=	9,
-	Faves		=	10,
-	Archive		=	11,
 };
 
 enum _OnlineServicesListStoreColumns{
@@ -116,4 +101,4 @@ enum _UsersGListGetWhich{
  *                               eof                                  *
  **********************************************************************/
 G_END_DECLS
-#endif /* __ONLINE_SERVICES_TYPEDEFS_H__ */
+#endif /* __ONLINE_SERVICES_TYPES_H__ */

@@ -83,8 +83,10 @@
 
 #include "xml.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "users.h"
+#include "update.types.h"
 #include "update.h"
 
 #include "main-window.h"
@@ -125,7 +127,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 	newest_update_id=0.0;
 	
 	switch(update_type){
-		case	Searches: case	Groups:
+		case	Searches:	case	Groups:
 			debug("*ERROR:* Unsupported timeline.  timelines_parse requested to parse %s.  This method sould not have been called", (update_type==Groups?"Groups":"Searches"));
 			return 0;
 			

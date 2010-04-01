@@ -80,6 +80,7 @@
 #include "online-service.h"
 #include "online-service-wrapper.h"
 #include "online-service-request.h"
+#include "update.types.h"
 
 #include "www.h"
 #include "xml.h"

@@ -113,8 +113,11 @@
 #include "uberchick-tree-view.macros.h"
 #include "uberchick-tree-view.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "groups.types.h"
+#include "update.types.h"
+#include "update.h"
 
 /********************************************************************************
  *        Methods, macros, constants, objects, structs, and enum typedefs       *
@@ -437,24 +440,6 @@ static void uberchick_tree_view_set_visibility(UberChickTreeView *uberchick_tree
 	gtk_tool_item_set_visible_vertical(this->max_updates_custom_tool_button, FALSE);
 	gtk_tool_item_set_visible_horizontal(this->max_updates_custom_tool_button, FALSE);
 }/*uberchick_tree_view_set_visibility(uberchick_tree_view);*/
-
-const gchar *update_type_to_string(UpdateType update_type){
-	switch(update_type){
-		case	Homepage:	return _("homepage");
-		case	ReTweets:	return _("friends' retweets");
-		case	Replies:	return _("@ replies");
-		case	DMs:		return _("direct messages");
-		case	BestFriends:	return _("best friend's updates");
-		case	Users:		return _("friend's updates");
-		case	Faves:		return _("star'd updates");
-		case	Searches:	return _("search results");
-		case	Groups:		return _("group discussions");
-		case	Timelines:	return _("global updates");
-		case	Archive:	return _("my updates");
-		case	None:	default:
-			return _("a lil cracker :-P");
-	}
-}/*update_type_to_string(update_type);*/
 
 /*BEGIN: Custom UberChickTreeView methods.*/
 /**
@@ -1485,7 +1470,6 @@ static gboolean uberchick_tree_view_index_validate(UberChickTreeView *uberchick_
 	
 	if( *index > -1 && *index < this->total ) return TRUE;
 	*index=( (*index)>=this->total ?this->total :0 );
-	update_viewer_beep();
 	return FALSE;
 }/*uberchick_tree_view_index_validate(uberchick_tree_view, &index);*/
 
@@ -1755,33 +1739,36 @@ static gboolean uberchick_tree_view_notification(UberChickTreeView *uberchick_tr
 	
 	switch(GET_PRIVATE(uberchick_tree_view)->update_type){
 		case	Homepage:	case	ReTweets:
-		case	Users:
-			if(gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE))
-				return TRUE;
+		case	Users:		case	Timelines:
+			if(!gconfig_if_bool(PREFS_NOTIFY_FOLLOWING, TRUE))
+				return FALSE;
 			break;
 		
 		case	DMs:
-			if(gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE))
-				return TRUE;
+			if(!gconfig_if_bool(PREFS_NOTIFY_DMS, TRUE))
+				return FALSE;
 			break;
 		
 		case	Replies:
-			if(gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE))
-				return TRUE;
+			if(!gconfig_if_bool(PREFS_NOTIFY_REPLIES, TRUE))
+				return FALSE;
 			break;
 		
 		case	BestFriends:
-			if(gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE))
-				return TRUE;
+			if(!gconfig_if_bool(PREFS_NOTIFY_BEST_FRIENDS, TRUE))
+				return FALSE;
 			break;
 		
-		case	Searches:	case	Groups:	case	Faves:
-		case	Archive:	case	Timelines:	case	None:
-		default:
+		case	Searches:	case	Groups:
+			if(!gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE))
+				return FALSE;
+		
+		case	Faves:		case	Archive:
+		case	None:		default:
 			return FALSE;
 			break;
 	}
-	return FALSE;
+	return TRUE;
 }/*uberchick_tree_view_notification(uberchick_tree_view);*/
 
 void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_view){
@@ -1844,8 +1831,7 @@ static void uberchick_tree_view_labels_mark_as_unread(UberChickTreeView *uberchi
 	
 	gtk_window_set_urgency_hint(window, uberchick_tree_view_notification(uberchick_tree_view));
 	
-	if(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE))
-		update_viewer_beep();
+	update_viewer_beep();
 }/*uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);*/
 
 static void uberchick_tree_view_increment_unread(UberChickTreeView *uberchick_tree_view){

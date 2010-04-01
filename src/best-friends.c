@@ -75,6 +75,7 @@
 #include "update-viewer.h"
 
 #include "best-friends.h"
+#include "update.types.h"
 #include "users.types.h"
 /********************************************************************************
  *      Project, system, & library headers.  eg #include <gdk/gdkkeysyms.h>     *

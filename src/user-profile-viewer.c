@@ -80,6 +80,7 @@
 #include "online-service-wrapper.h"
 #include "network.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "users-glists.h"
 #include "users.h"

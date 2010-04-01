@@ -60,6 +60,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "config.h"
 #include "program.h"
 
 #include "ui-utils.h"
@@ -76,6 +77,7 @@
 #include "cache.h"
 #include "images.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "users.h"
 

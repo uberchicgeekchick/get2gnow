@@ -82,6 +82,7 @@
 
 #include "online-services-dialog.h"
 
+#include "update.types.h"
 #include "users.types.h"
 #include "users.h"
 
@@ -1972,8 +1973,9 @@ static void update_viewer_previous_updates_free(UpdateViewer *update_viewer){
 
 void update_viewer_beep(void){
 #ifdef ENABLE_SOUND
-	if(!gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE))
-		gtk_widget_error_bell(GTK_WIDGET(update_viewer->sexy_entry));
+	if(!(gconfig_if_bool(PREFS_NOTIFY_BEEP, TRUE) && !gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE)))
+		return;
+	gtk_widget_error_bell(GTK_WIDGET(update_viewer->sexy_entry));
 #endif
 }/*update_viewer_beep();*/
 

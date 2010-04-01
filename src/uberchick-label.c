@@ -68,6 +68,7 @@
 
 #include "network.h"
 #include "gconfig.h"
+#include "update.types.h"
 #include "online-services.typedefs.h"
 #include "online-services.types.h"
 #include "online-services.h"

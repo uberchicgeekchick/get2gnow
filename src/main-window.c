@@ -76,8 +76,6 @@
 #include "online-services-dialog.h"
 #include "main-window.h"
 
-#include "users.types.h"
-#include "users.h"
 #include "best-friends.h"
 
 #include "images.h"
