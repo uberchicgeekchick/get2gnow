@@ -413,7 +413,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 			else if(request->action==UnFollow||request->action==Block){
 				if(best_friends_is_user_best_friend(user->service, user->user_name))
 					best_friends_drop(user->service, request->parent_window, user->user_name);
-				tabs_remove_from_uberchick_tree_views_tree_stores(STRING_USER, request->get_rest_xml);
+				tabs_update_uberchick_tree_views_tree_stores(STRING_USER, request->get_rest_xml, TRUE);
 				gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, request->get_rest_xml);
 				tabs_close_timeline(user_timeline);
 				uber_free(user_timeline);
@@ -453,7 +453,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 			debug("Loading: <%s> while %s <%s>", request->uri, request->message, request->get_rest_xml);
 			if(xml->status_code!=403){
 				if(request->action!=Fave){
-					tabs_remove_from_uberchick_tree_views_tree_stores(GSTRING_UPDATE_ID_STR, request->get_rest_xml);
+					tabs_update_uberchick_tree_views_tree_stores(GSTRING_UPDATE_ID_STR, request->get_rest_xml, TRUE);
 					update_viewer_new_update();
 				}
 				debug("\t\t\t\t[succeeded]");

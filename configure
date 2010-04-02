@@ -733,7 +733,7 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="030303a18"
+PACKAGE_VERSION="030303a20"
 VERSION="${PACKAGE_VERSION}"
 PACKAGE_PREFIX="${prefix}"
 PACKAGE_STRING="${PACKAGE_NAME} ${PACKAGE_VERSION}"
@@ -1595,9 +1595,11 @@ Optional Features:
                           Turn on compiler warnings
   --enable-iso-c          Try to warn if code is not ISO C
   --enable-cxx-warnings=[no/minimum/yes]
-                               Turn on compiler warnings.
+                          Turn on compiler warnings.
 
   --enable-iso-cxx        Try to warn if code is not ISO C++
+ 
+Optional Modes, Features, and Improvement:
   --enable-gdb            compile with gdb symbols
   --enable-debug          turn on debugging and gdb symbols
   --enable-gtk-icon-update
@@ -1605,6 +1607,16 @@ Optional Features:
 			  of the packages icon being found of not.
   --enable-gnome-keyring=[no/yes/auto]
                           compile with Gnome Keyring support
+  --enable-alpha-ui
+                          compile with get2gnow's new UI elements enabled.
+                          These add many increased functions but may also
+                          introduce odd display and other various 'issues'.
+  --enable-sound
+                          compile with sound and notification alerts enabled.
+                          This may cause pulseaudio related segfaults so while
+                          get2gnow's sound support is being refactored and
+                          improved, to avoid any possibl pulseaudio segfaults
+                          this is a disabled by default.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]

@@ -104,10 +104,12 @@ void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, U
 void uberchick_tree_view_store_group(UberChickTreeView *uberchick_tree_view, StatusNetGroup *group);
 
 
+UpdateType uberchick_tree_view_get_update_type(UberChickTreeView *uberchick_tree_view);
+const gchar *uberchick_tree_view_get_update_type_string(UberChickTreeView *uberchick_tree_view);
 
-void uberchick_tree_view_update_tree_store( UberChickTreeView *uberchick_tree_view, UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value );
-void uberchick_tree_view_remove_from_tree_store( UberChickTreeView *uberchick_tree_view, UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value );
-void uberchick_tree_view_remove_service(UberChickTreeView *uberchick_tree_view, OnlineService *service);
+
+void uberchick_tree_view_update_tree_store(UberChickTreeView *uberchick_tree_view, UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value, gboolean tree_store_remove);
+
 
 gboolean uberchick_tree_view_toggle_view(UberChickTreeView *uberchick_tree_view);
 gboolean uberchick_tree_view_toggle_toolbar(UberChickTreeView *uberchick_tree_view);
@@ -120,9 +122,6 @@ gint8 uberchick_tree_view_has_loaded(UberChickTreeView *uberchick_tree_view);
 
 gint uberchick_tree_view_get_page(UberChickTreeView *uberchick_tree_view);
 void uberchick_tree_view_set_page(UberChickTreeView *uberchick_tree_view, gint page);
-
-UpdateType uberchick_tree_view_get_update_type(UberChickTreeView *uberchick_tree_view);
-const gchar *uberchick_tree_view_get_update_type_string(UberChickTreeView *uberchick_tree_view);
 
 gint uberchick_tree_view_get_total(UberChickTreeView *uberchick_tree_view);
 guint uberchick_tree_view_get_notify_delay(UberChickTreeView *uberchick_tree_view);

@@ -251,10 +251,10 @@ void tabs_start(void){
 	g_list_free(t);
 }/*tabs_start();*/
 
-void tabs_remove_from_uberchick_tree_views_tree_stores( UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value ){
+void tabs_update_uberchick_tree_views_tree_stores(UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value, gboolean tree_store_remove){
 	GList *t=NULL;
 	for(t=tabs->tabs; t; t=t->next)
-		uberchick_tree_view_remove_from_tree_store(UBERCHICK_TREE_VIEW(t->data), uberchick_tree_view_tree_store_column, value);
+		uberchick_tree_view_update_tree_store(UBERCHICK_TREE_VIEW(t->data), uberchick_tree_view_tree_store_column, value, tree_store_remove);
 	
 	g_list_free(t);
 }/*tabs_remove_from_uberchick_tree_views_tree_stores( UberChickTreeViewStoreColumn, value );*/
@@ -267,7 +267,7 @@ void tabs_remove_service(OnlineService *service){
 		if(uberchick_tree_view_get_service(uberchick_tree_view) == service)
 			tabs_close_page(uberchick_tree_view_get_page(uberchick_tree_view));
 		else
-			uberchick_tree_view_remove_service(uberchick_tree_view, service);
+			uberchick_tree_view_update_tree_store(uberchick_tree_view, ONLINE_SERVICE, service, TRUE);
 	}
 	g_list_free(t);
 }/*tabs_remove_service(service);*/

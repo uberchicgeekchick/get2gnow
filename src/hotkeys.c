@@ -123,17 +123,21 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_asterisk:
 					online_service_request_selected_update_unfave();
 					return FALSE;
+				
 				case GDK_F:	case GDK_f:
 				case GDK_less:		case GDK_minus:
 					online_service_request_selected_update_unfollow();
 					return FALSE;
+				
 				case GDK_Insert:	case GDK_KP_Insert:
 				case GDK_I:		case GDK_i:
 					online_service_request_popup_shorten_uri();
 					return TRUE;
+				
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_sexy_insert_char('\n');
 					return FALSE;
+				
 				case GDK_Tab:		case GDK_KP_Tab:
 					update_viewer_sexy_insert_char('\t');
 					return FALSE;
@@ -249,89 +253,115 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				default: break;
 			}
 			break;
+		
 		case GDK_SHIFT_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_new_dm();
 					return FALSE;
+				
 				case GDK_Insert:	case GDK_KP_Insert:
 					online_service_request_popup_shorten_uri();
 					return TRUE;
+				
 				case GDK_Tab:		case GDK_KP_Tab:
 					update_viewer_sexy_insert_char('\t');
 					return FALSE;
+				
 				default: break;
 			}
 			break;
+		
 		case GDK_CONTROL_MASK:
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 					update_viewer_sexy_insert_char('\n');
 					return FALSE;
+				
 				case GDK_Insert:	case GDK_KP_Insert:
 				case GDK_I:		case GDK_i:
 					online_service_request_popup_shorten_uri();
 					return TRUE;
+				
 				case GDK_Tab:		case GDK_KP_Tab:
 					update_viewer_sexy_insert_char('\t');
 					return FALSE;
+				
 				case GDK_N:	case GDK_n:
 					update_viewer_new_update();
 					return TRUE;
+				
 				case GDK_K:	case GDK_k:
 					update_viewer_sexy_entry_clear();
 					return TRUE;
+				
 				case GDK_L:	case GDK_l:
 					update_viewer_select_all();
 					return TRUE;
+				
 				case GDK_Q:	case GDK_q:
 					gtk_main_quit();
 					return TRUE;
+				
 				case GDK_S:	case GDK_s:
 				case GDK_asterisk:
 					online_service_request_selected_update_save_fave();
 					return FALSE;
+				
 				case GDK_F5:
 					uberchick_tree_view_refresh(tabs_get_current()); 
 					return FALSE;
+				
 				case GDK_Z:	case GDK_z:
 					online_service_request_selected_update_unfave();
 					return FALSE;
+				
 				case GDK_R:	case GDK_r:
 					online_service_request_selected_update_reply();
 					return FALSE;
+				
 				case GDK_F:	case GDK_f:
 					online_service_request_selected_update_forward();
 					return FALSE;
+				
 				case GDK_D:	case GDK_d:
 					update_viewer_new_dm();
 					return TRUE;
+				
 				case GDK_W: case GDK_w:
 					tabs_close_current_page();
 					return FALSE;
+				
 				case GDK_Page_Up:
 					tabs_get_previous();
 					return FALSE;
+				
 				case GDK_Page_Down:
 					tabs_get_next();
 					return FALSE;
+				
 				default: break;
 			}
 			break;
+		
 		default:
 			switch(event->keyval){
 				case GDK_F1:
 					help_show(main_window_get_window());
 					return TRUE;
+				
 				case GDK_greater:
 					online_service_request_selected_update_forward();
 					return FALSE;
+				
 				case GDK_at:
 					online_service_request_selected_update_reply();
 					return FALSE;
+				
 				case GDK_asciitilde:
 					update_viewer_new_dm();
 					return FALSE;
+				
 				default: break;
 			}
 			break;

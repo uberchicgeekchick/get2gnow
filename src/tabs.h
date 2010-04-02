@@ -99,7 +99,7 @@ UberChickTreeView *tabs_get_current(void);
 UberChickTreeView *tabs_get_previous(void);
 
 void tabs_start(void);
-void tabs_remove_from_uberchick_tree_views_tree_stores( UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value );
+void tabs_update_uberchick_tree_views_tree_stores(UberChickTreeViewListStoreColumn uberchick_tree_view_tree_store_column, gpointer value, gboolean tree_store_remove);
 void tabs_remove_service(OnlineService *service);
 void tabs_refresh(void);
 void tabs_stop(void);
