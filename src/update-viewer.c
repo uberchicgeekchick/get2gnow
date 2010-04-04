@@ -1249,7 +1249,7 @@ static void update_viewer_sexy_init(void){
 			FALSE, FALSE, 5
 	);
 	debug("Setting 'sexy_selected_update_author' as 'selected_update_controls_vbox' 2nd widget");
-	g_object_set(update_viewer->sexy_selected_update_author, "xalign", 0.50, "single-line-mode", TRUE, NULL);
+	g_object_set(update_viewer->sexy_selected_update_author, "xalign", 0.50, NULL);
 	gtk_widget_show(GTK_WIDGET(update_viewer->sexy_selected_update_author));
 	
 	debug("Creating UpdateViewer's service link area, 'update_viewer->sexy_to', using sexy label interface");
@@ -1480,8 +1480,8 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 		sexy_text=g_strdup("");
 	else{
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: <a href=\"http%s://%s/%s\">%s &lt;%s@%s&gt;</a></span>", uri_scheme_suffix, service->uri, user_name, nick_name, user_name, service->uri);
-		if(G_STR_N_EMPTY(retweeted_by_markup)){
-			gchar *sexy_swp_text=g_strdup_printf("%s\n\t%s", sexy_text, retweeted_by_markup);
+		if(retweeted_by_markup){
+			gchar *sexy_swp_text=g_strdup_printf("%s - %s", sexy_text, retweeted_by_markup);
 			uber_free(sexy_text);
 			sexy_text=sexy_swp_text;
 		}
@@ -1584,7 +1584,7 @@ static void update_viewer_sexy_entry_update_remaining_character_count(void){
 	gshort remaining_character_count=update_viewer_sexy_entry_update_length(GTK_ENTRY(update_viewer->sexy_entry)->text);
 	gchar *remaining_characters_markup_label=NULL;
 	if(remaining_character_count < 0){
-		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
+		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, TRUE))
 			update_viewer_beep();
 		remaining_characters_markup_label=g_strdup_printf("<span size=\"small\" foreground=\"red\">%d</span>", remaining_character_count);
 	}else{
@@ -1797,7 +1797,7 @@ void update_viewer_new_update(void){
 
 static void update_viewer_sexy_send(OnlineService *service, const gchar *user_name){
 	if(!((GTK_ENTRY(update_viewer->sexy_entry)->text) &&(update_viewer_sexy_entry_update_length(GTK_ENTRY(update_viewer->sexy_entry)->text) > -1) )){
-		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE))
+		if(!gconfig_if_bool(PREFS_DISABLE_UPDATE_LENGTH_ALERT, TRUE))
 			update_viewer_beep();
 		return;
 	}

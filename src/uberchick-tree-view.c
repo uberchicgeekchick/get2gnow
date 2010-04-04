@@ -1764,7 +1764,10 @@ static gboolean uberchick_tree_view_notification(UberChickTreeView *uberchick_tr
 
 void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
-	/*if( GET_PRIVATE(uberchick_tree_view)->unread ) return;*/
+	if( GET_PRIVATE(uberchick_tree_view)->unread ){
+		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);
+		return;
+	}
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
 	if(this->unread && !this->unread_updates)
@@ -1796,7 +1799,10 @@ void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_v
 
 static void uberchick_tree_view_labels_mark_as_unread(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
-	/*if(!( GET_PRIVATE(uberchick_tree_view)->unread )) return;*/
+	if(!( GET_PRIVATE(uberchick_tree_view)->unread )){
+		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);
+		return;
+	}
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
 	if(!this->unread && this->unread_updates)

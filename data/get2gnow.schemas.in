@@ -592,7 +592,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/alerts/disable_update_length_alert</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
 				<short>Sound notification of long messages</short>
 				<long>Sound notification of long messages.</long>

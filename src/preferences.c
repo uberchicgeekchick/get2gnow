@@ -247,7 +247,7 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_ALL, TRUE, prefs->notify_all_new_updates);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_BEEP, TRUE, prefs->notify_beep_updates_check_button);
 	
-	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, FALSE, prefs->disable_update_length_alert_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, TRUE, prefs->disable_update_length_alert_check_button);
 	
 	preferences_hookup_toggle_button(prefs, COMPACT_VIEW, FALSE, prefs->compact_entire_view_check_button);
 	preferences_hookup_toggle_button(prefs, CONCATENATED_UPDATES, FALSE, prefs->concatenated_updates_check_button);
