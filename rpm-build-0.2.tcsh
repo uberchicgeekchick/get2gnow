@@ -82,7 +82,7 @@ archive_rpm:
 		rm --verbose "${pkg_path}/"*/"${project_name}"*_${deb_arch}.*;
 	endif
 	mv --verbose "${local_tarball}" "${pkg_path}/tarballs/${package_string}.${MACHTYPE}.tar.gz";
-	mv --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${package_string}-${package_release}.${MACHTYPE}.rpm" ./;
+	${use_sudo}mv --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${package_string}-${package_release}.${MACHTYPE}.rpm" ./;
 #archive_rpm:
 
 
