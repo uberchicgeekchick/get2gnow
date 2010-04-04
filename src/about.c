@@ -124,7 +124,7 @@ void about_dialog_new (GtkWindow *parent){
 					"comments", _("GNOME's micro-blogging client with support for Twitter.com and any StatusNet instance, e.g. Identi.ca(of course)."),
 					"copyright", _("Copyright \xc2\xa9 2009-2010 Kaity G. B."),
 					"license", license_trans,
-					"version", PACKAGE_VERSION,
+					"version", PACKAGE_RELEASE_VERSION,
 					"website-label", PACKAGE_NAME,
 					"website", PACKAGE_WEBSITE,
 					"wrap-license", TRUE,

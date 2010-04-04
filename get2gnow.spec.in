@@ -1,6 +1,7 @@
 Summary:	get2gnow's the ultimate micro-blogging client. Letting you get and do the most on all micro-blogging platforms.
 Name:		@PACKAGE_NAME@
-Version:	@PACKAGE_VERSION@
+Version:	@PACKAGE_VERSION@@PACKAGE_RELEASE@
+Release:	@PACKAGE_RELEASE@
 License:	RPL v1.3
 URL:		http://local.uberchicgeekchick.com/?projects=get2gnow
 Source0:	%{name}-%{version}.tar.gz

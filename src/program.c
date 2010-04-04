@@ -127,7 +127,7 @@ gboolean program_init(int argc, char **argv){
 	g_option_context_add_main_entries(option_context, option_entries, NULL);
 	
 	program=gnome_program_init(
-					GETTEXT_PACKAGE, PACKAGE_VERSION,
+					GETTEXT_PACKAGE, PACKAGE_RELEASE_VERSION,
 					LIBGNOME_MODULE,
 					argc, argv,
 					GNOME_PARAM_GOPTION_CONTEXT, option_context,

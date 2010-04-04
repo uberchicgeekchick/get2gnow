@@ -1,6 +1,10 @@
-AC_INIT([get2gnow], ["030303a22"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["030303"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
+
+PACKAGE_RELEASE="a22"
+PACKAGE_RELEASE_VERSION="${PACKAGE_VERSION}${PACKAGE_RELEASE}"
+VERSION="${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS(config.h)

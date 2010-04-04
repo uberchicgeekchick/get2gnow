@@ -802,7 +802,7 @@ SoupMessage *online_service_request_uri(OnlineService *service, RequestMethod re
 			
 			if(g_strstr_len(requested_uri, -1, service->uri)){
 				soup_message_headers_append(xml->request_headers, "X-Twitter-Client", PACKAGE_NAME);
-				soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_VERSION);
+				soup_message_headers_append(xml->request_headers, "X-Twitter-Client-Version", PACKAGE_RELEASE_VERSION);
 			}
 			
 			if(form_data)
