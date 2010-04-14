@@ -169,6 +169,7 @@ struct _UpdateViewer{
 	GtkListStore		*previous_updates_list_store;
 	GRegex			*upper_case_regex;
 	GRegex			*username_regex;
+	GRegex			*username_only_regex;
 	SexySpellEntry		*sexy_entry;
 	GtkEntryCompletion	*sexy_completion;
 	gint			sexy_entry_text_position;
@@ -392,10 +393,9 @@ static void update_viewer_destroy_cb(GtkWidget *window, UpdateViewer *update_vie
 	if(update_viewer->online_services_accounts_tree_store)
 		gtk_tree_store_clear(update_viewer->online_services_accounts_tree_store);
 	
-	if(update_viewer->upper_case_regex)
-		g_regex_unref(update_viewer->upper_case_regex);
-	if(update_viewer->username_regex)
-		g_regex_unref(update_viewer->username_regex);
+	uber_regex_unref(update_viewer->upper_case_regex);
+	uber_regex_unref(update_viewer->username_regex);
+	uber_regex_unref(update_viewer->username_only_regex);
 	
 	if(update_viewer->compact_update_viewer_hidden_containers)
 		uber_list_free(update_viewer->compact_update_viewer_hidden_containers);
@@ -429,19 +429,33 @@ static UpdateViewer *update_viewer_init(void){
 	update_viewer->sexy_entry_text_position=-1;
 	
 	GError *error=NULL;
-	const gchar *g_regex_pattern="[A-Z]";
-	update_viewer->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	const gchar *g_regex_pattern="[A-Z]+";
+	update_viewer->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
+		update_viewer->upper_case_regex=NULL;
 		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
+		uber_regex_unref(update_viewer->upper_case_regex);
 	}
 	
 	error=NULL;
-	g_regex_pattern="^@[A-Za-z0-9] $";
-	update_viewer->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	g_regex_pattern="^@[A-Za-z0-9_]+ $";
+	update_viewer->username_only_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
+		update_viewer->username_only_regex=NULL;
+		debug("**ERROR:** creating username_only GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
+		g_error_free(error);
+		uber_regex_unref(update_viewer->username_only_regex);
+	}
+	
+	error=NULL;
+	g_regex_pattern="^(@[A-Za-z0-9_]+) .+$";
+	update_viewer->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
+	if(error){
+		update_viewer->username_regex=NULL;
 		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
+		uber_regex_unref(update_viewer->username_regex);
 	}
 	
 	update_viewer->viewing_user_name=NULL;
@@ -1378,10 +1392,9 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 	else
 		users_at=g_strdup_printf("@%s, http://%s/%s, ", user_name, service->uri, user_name);
 	
-	if(!(prefix_added=update_viewer_sexy_prefix_string(users_at, TRUE, TRUE))){
-		update_viewer_sexy_insert_string(" ", FALSE, FALSE);
+	if(!(prefix_added=update_viewer_sexy_prefix_string(users_at, TRUE, TRUE)))
 		update_viewer_sexy_insert_string(users_at, TRUE, FALSE);
-	}
+	
 	uber_free(users_at);
 	
 	if(!forwarding){
@@ -1679,7 +1692,7 @@ static gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, g
 		return FALSE;
 	}
 	
-	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry));
+	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(update_viewer->sexy_entry))+strlen(string);
 	gtk_editable_insert_text(GTK_EDITABLE(update_viewer->sexy_entry), string, -1, &position_after);
 	if(position_after<position_prior)
 		update_viewer->sexy_entry_text_position=position_prior;
@@ -1737,7 +1750,7 @@ void update_viewer_send(GtkWidget *activated_widget){
 		return update_viewer_reply();
 	
 	GMatchInfo *match_info=NULL;
-	gboolean contains_username_only=g_regex_match(update_viewer->username_regex, GTK_ENTRY(update_viewer->sexy_entry)->text, 0, &match_info);
+	gboolean contains_username_only=g_regex_match(update_viewer->username_only_regex, GTK_ENTRY(update_viewer->sexy_entry)->text, 0, &match_info);
 	g_match_info_free(match_info);
 	
 	if(contains_username_only)
@@ -1850,12 +1863,18 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	update_viewer_previous_maxium_updates_validate(update_viewer);
 	
 	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
-	if(list_store_index<-1)
+	if(list_store_index<-1){
+		debug("Appending <%s> to UpdateViewer's previous_updates", update);
 		gtk_list_store_append(update_viewer->previous_updates_list_store, iter);
-	else if(list_store_index==-1)
+	}else if(list_store_index==-1){
+		debug("Prepending <%s> to UpdateViewer's previous_updates", update);
 		gtk_list_store_prepend(update_viewer->previous_updates_list_store, iter);
-	else if(list_store_index>-1)
-		gtk_list_store_insert(update_viewer->previous_updates_list_store, iter, (list_store_index<update_viewer->max_updates ?list_store_index :update_viewer->max_updates ));
+	}else if(list_store_index>-1){
+		if(list_store_index>update_viewer->max_updates)
+			list_store_index=update_viewer->max_updates;
+		debug("Inserting <%s> to UpdateViewer's previous_updates; index: %i", update, list_store_index);
+		gtk_list_store_insert(update_viewer->previous_updates_list_store, iter, list_store_index);
+	}
 	gtk_list_store_set(
 			update_viewer->previous_updates_list_store, iter,
 				GSTRING_UPDATE, g_strdup(update),
@@ -1863,10 +1882,23 @@ static void update_viewer_previous_update_add(UpdateViewer *update_viewer, const
 	);
 	uber_free(iter);
 	
+	gchar *user_name=NULL;
+	GMatchInfo *match_info=NULL;
+	if( ((g_regex_match(update_viewer->username_regex, update, 0, &match_info))) && (user_name=g_regex_replace(update_viewer->username_regex, update, -1, 0, "\\1", 0, NULL)) && G_STR_N_EMPTY(user_name) ){
+		debug("Appending user name <%s> to UpdateViewer's previous_updates", user_name);
+		/*update_viewer_previous_update_add(update_viewer, user_name, update_viewer->max_updates/2);*/
+		update_viewer_previous_update_add(update_viewer, user_name, list_store_index);
+	}
+	if(user_name)
+		uber_free(user_name);
+	if(match_info)
+		g_match_info_free(match_info);
+	
 	if( list_store_index==-3 || g_str_equal(update, "[new update]") ) return;
 	
 	update_viewer_previous_updates_remove(update_viewer, 1);
 	update_viewer_previous_update_add(update_viewer, "[new update]", list_store_index);
+	
 	if(update_viewer->total_updates<update_viewer->max_updates)
 		update_viewer->total_updates++;
 	else
@@ -1886,7 +1918,8 @@ static gint update_viewer_previous_maxium_updates_validate(UpdateViewer *update_
 		gconfig_set_int(PREFS_UPDATES_HISTORY_MAXIMUM, (update_viewer->max_updates=5));
 	else if(update_viewer->max_updates > 100)
 		gconfig_set_int(PREFS_UPDATES_HISTORY_MAXIMUM, (update_viewer->max_updates=100));
-	return update_viewer->max_updates;
+	//return (update_viewer->max_updates=update_viewer->max_updates*2);
+	return (update_viewer->max_updates*=2);
 }/*update_viewer_previous_maxium_updates_validate(update_viewer);*/
 
 static gboolean update_viewer_previous_updates_is_unique(UpdateViewer *update_viewer, const gchar *update){

@@ -285,7 +285,7 @@ static void uberchick_tree_view_update_tree_store_mark_all_as_read(GtkToolButton
 
 static void uberchick_tree_view_grab_focus_cb(GtkWidget *widget, UberChickTreeView *uberchick_tree_view);
 static void uberchick_tree_view_increment_unread(UberChickTreeView *uberchick_tree_view);
-static void uberchick_tree_view_labels_mark_as_unread(UberChickTreeView *uberchick_tree_view);
+static void uberchick_tree_view_mark_as_unread(UberChickTreeView *uberchick_tree_view);
 
 static gboolean uberchick_tree_view_toggle_update_detailed_column(UberChickTreeView *uberchick_tree_view);
 static gboolean uberchick_tree_view_toggle_update_column(UberChickTreeView *uberchick_tree_view);
@@ -1108,7 +1108,7 @@ static void uberchick_tree_view_update_tree_store_mark_all_as_read(GtkToolButton
 	
 	debug("Marking all %s updates as read", this->update_type_string);
 	uberchick_tree_view_update_tree_store(uberchick_tree_view, GBOOLEAN_UNREAD, GINT_TO_POINTER(FALSE), FALSE);
-	uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
+	uberchick_tree_view_mark_as_read(uberchick_tree_view);
 }/*uberchick_tree_view_update_tree_store_mark_all_as_read(this->tab_mark_as_read_tool_button|this->mark_as_read_tool_button, uberchick_tree_view);*/
 
 static void uberchick_tree_view_refresh_clicked(GtkButton *refresh_tool_button, UberChickTreeView *uberchick_tree_view){
@@ -1134,8 +1134,8 @@ void uberchick_tree_view_complete(UberChickTreeView *uberchick_tree_view){
 	debug("UberChickTreeView for %s, timeline: %s, completed processing new %d new updates out of %d total updates", this->update_type_string, this->timeline, this->unread_updates, this->total);
 	gtk_progress_bar_set_fraction(this->progress_bar, 1.0);
 	uberchick_tree_view_update_age(uberchick_tree_view, 0);
-	if(this->unread && this->unread_updates)
-		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);	
+	if(this->unread)
+		uberchick_tree_view_mark_as_unread(uberchick_tree_view);	
 	
 	if(gconfig_if_bool(SCROLL_TO_TOP_WITH_NEW_UPDATES, TRUE))
 		uberchick_tree_view_scroll_to_top(uberchick_tree_view);
@@ -1245,7 +1245,7 @@ static void uberchick_tree_view_set_timeline_label(UberChickTreeView *uberchick_
 	}
 	
 	this->update_type_string=g_strdup(update_type_to_string(this->update_type));
-	uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
+	uberchick_tree_view_mark_as_read(uberchick_tree_view);
 }/*uberchick_tree_view_set_timeline_label(uberchick_tree_view, timeline);*/
 
 static void uberchick_tree_view_create_gui(UberChickTreeView *uberchick_tree_view){
@@ -1549,13 +1549,13 @@ static void uberchick_tree_view_clear(UberChickTreeView *uberchick_tree_view){
 	if(unread_found){
 		if(!this->unread)
 			this->unread=TRUE;
-		uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
+		uberchick_tree_view_mark_as_read(uberchick_tree_view);
 	}
 }/*uberchick_tree_view_clear(uberchick_tree_view);*/
 
 static void uberchick_tree_view_grab_focus_cb(GtkWidget *widget, UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
-	uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
+	uberchick_tree_view_mark_as_read(uberchick_tree_view);
 }/*uberchick_tree_view_grab_focus_cb(widget, event, uberchick_tree_view);*/
 
 gboolean uberchick_tree_view_toggle_view(UberChickTreeView *uberchick_tree_view){
@@ -1762,15 +1762,15 @@ static gboolean uberchick_tree_view_notification(UberChickTreeView *uberchick_tr
 	return TRUE;
 }/*uberchick_tree_view_notification(uberchick_tree_view);*/
 
-void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_view){
+void uberchick_tree_view_mark_as_read(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	/*if( GET_PRIVATE(uberchick_tree_view)->unread ){
-		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);
+		uberchick_tree_view_mark_as_unread(uberchick_tree_view);
 		return;
 	}*/
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	if(this->unread && !this->unread_updates)
+	if(this->unread)
 		this->unread=FALSE;
 	
 	debug("Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates.  UberChickTreeView has_loaded status:%s(#%d)", this->update_type_string, this->timeline, this->unread_updates, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
@@ -1795,17 +1795,17 @@ void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_v
 	gtk_label_set_markup_with_mnemonic(this->menu_label, menu_label_markup);
 	uber_free(tab_label_markup);
 	uber_free(menu_label_markup);
-}/*uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);*/
+}/*uberchick_tree_view_mark_as_read(uberchick_tree_view);*/
 
-static void uberchick_tree_view_labels_mark_as_unread(UberChickTreeView *uberchick_tree_view){
+static void uberchick_tree_view_mark_as_unread(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
 	/*if(!( GET_PRIVATE(uberchick_tree_view)->unread )){
-		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);
+		uberchick_tree_view_mark_as_unread(uberchick_tree_view);
 		return;
 	}*/
 	UberChickTreeViewPrivate *this=GET_PRIVATE(uberchick_tree_view);
 	
-	if(!this->unread && this->unread_updates)
+	if(!this->unread)
 		this->unread=TRUE;
 	
 	debug("Marking UberChickTreeView, for %s (timeline: %s), as having %d unread updates(maximum allowed updates: %s).  UberChickTreeView's total updates:%d; has_loaded status:%s(#%d)", this->update_type_string, this->timeline, this->unread_updates, this->max_updates_str, this->total, (this->has_loaded>0 ?"TRUE" :"FALSE" ), this->has_loaded );
@@ -1834,7 +1834,7 @@ static void uberchick_tree_view_labels_mark_as_unread(UberChickTreeView *uberchi
 		window=update_viewer_get_window();
 	
 	gtk_window_set_urgency_hint(window, uberchick_tree_view_notification(uberchick_tree_view));
-}/*uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);*/
+}/*uberchick_tree_view_mark_as_unread(uberchick_tree_view);*/
 
 static void uberchick_tree_view_increment_unread(UberChickTreeView *uberchick_tree_view){
 	if(!( uberchick_tree_view && IS_UBERCHICK_TREE_VIEW(uberchick_tree_view) ))	return;
@@ -1878,7 +1878,7 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 	}
 	
 	if(this->unread)
-		uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
+		uberchick_tree_view_mark_as_read(uberchick_tree_view);
 	
 	gdouble		update_id=0.0, user_id=0.0, retweet_update_id=0.0;
 	OnlineService	*service=NULL;
@@ -1941,10 +1941,10 @@ static void uberchick_tree_view_iter_mark_as_read(UberChickTreeView *uberchick_t
 	if(this->unread_updates)
 		this->unread_updates--;
 	
-	if(!( this->unread_updates && this->unread ))
-		uberchick_tree_view_labels_mark_as_read(uberchick_tree_view);
+	if(!this->unread)
+		uberchick_tree_view_mark_as_read(uberchick_tree_view);
 	else
-		uberchick_tree_view_labels_mark_as_unread(uberchick_tree_view);
+		uberchick_tree_view_mark_as_unread(uberchick_tree_view);
 	
 	update_ids_check(service, this->timeline, update_id, FALSE);
 	best_friends_check_update_ids(service, user_name, update_id);

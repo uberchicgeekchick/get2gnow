@@ -99,6 +99,7 @@ struct _UberChickSexyEntryCompletionPrivate {
 	GtkComboBoxEntry	*sexy_entry_combo_box_entry;
 	
 	GRegex			*upper_case_regex;
+	GRegex			*username_regex;
 	SexySpellEntry		*sexy_entry;
 	gint			sexy_entry_text_position;
 	guint			max_length;
@@ -147,6 +148,9 @@ static void uberchick_sexy_entry_completion_add(UberChickSexyEntryCompletion *ub
 					uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, update, list_store_index)
 
 static gint uberchick_sexy_entry_completion_validate_maxium(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
+static gboolean uberchick_sexy_entry_completion_is_unique(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *update);
+static void uberchick_sexy_entry_completion_remove(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, gint list_store_index);
+static void uberchick_sexy_entry_completion_rotate(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
 
 static void uberchick_sexy_entry_completion_submitted(GtkWidget *sexy_entry, UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);
 
@@ -179,11 +183,22 @@ static void uberchick_sexy_entry_completion_init(UberChickSexyEntryCompletion *u
 	this->maximum=this->total=0;
 	
 	GError *error=NULL;
-	const gchar *g_regex_pattern="[A-Z]";
-	this->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	const gchar *g_regex_pattern="[A-Z]+";
+	this->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
 		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
+		uber_regex_unref(this->upper_case_regex);
+	}
+	
+	error=NULL;
+	g_regex_pattern="^(@[A-Za-z0-9_]+) .+$";
+	this->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
+	if(error){
+		this->username_regex=NULL;
+		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
+		g_error_free(error);
+		uber_regex_unref(this->username_regex);
 	}
 	
 	g_object_set(uberchick_sexy_entry_completion, "expand", TRUE, "fill", TRUE, NULL);
@@ -199,8 +214,8 @@ static void uberchick_sexy_entry_completion_finalize(UberChickSexyEntryCompletio
 	if(this->list_store)
 		gtk_list_store_clear(this->list_store);
 	
-	if(this->upper_case_regex)
-		g_regex_unref(this->upper_case_regex);
+	uber_regex_unref(this->upper_case_regex);
+	uber_regex_unref(this->username_regex);
 	
 	if(this->sexy_entry)
 		gtk_widget_destroy(GTK_WIDGET(this->sexy_entry));
@@ -280,8 +295,147 @@ static void uberchick_sexy_entry_completion_add(UberChickSexyEntryCompletion *ub
 	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
-	this->total++;
+	if(G_STR_EMPTY(update)) return;
+	
+	if(
+		G_STR_N_EMPTY(update)
+		&&
+		g_str_n_equal(update, "[new update]")
+		&&
+		gconfig_if_bool(PREFS_UPDATES_HISTORY_UNIQUE_ONLY, TRUE)
+		&&
+		!uberchick_sexy_entry_completion_is_unique(uberchick_sexy_entry_completion, update)
+	){
+		debug("Update being sent: %s is already in the previous update's list and will not be stored again", update);
+		return;
+	}
+	
+	uberchick_sexy_entry_completion_validate_maxium(uberchick_sexy_entry_completion);
+	
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	if(list_store_index<-1){
+		debug("Appending <%s> to UpdateViewer's previous_updates", update);
+		gtk_list_store_append(this->list_store, iter);
+	}else if(list_store_index==-1){
+		debug("Prepending <%s> to UpdateViewer's previous_updates", update);
+		gtk_list_store_prepend(this->list_store, iter);
+	}else if(list_store_index>-1){
+		if(list_store_index>this->maximum)
+			list_store_index=this->maximum;
+		debug("Inserting <%s> to UpdateViewer's previous_updates; index: %i", update, list_store_index);
+		gtk_list_store_insert(this->list_store, iter, list_store_index);
+	}
+	gtk_list_store_set(
+			this->list_store, iter,
+				GSTRING_UBER_CHICK_SEXY_ENTRY_COMPLETION_PHRASE, g_strdup(update),
+			-1
+	);
+	uber_free(iter);
+	
+	gchar *user_name=NULL;
+	GMatchInfo *match_info=NULL;
+	if( ((g_regex_match(this->username_regex, update, 0, &match_info))) && (user_name=g_regex_replace(this->username_regex, update, -1, 0, "\\1", 0, NULL)) && G_STR_N_EMPTY(user_name) ){
+		debug("Appending user name <%s> to UpdateViewer's previous_updates", user_name);
+		/*uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, user_name, this->maximum/2);*/
+		uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, user_name, list_store_index);
+	}
+	if(user_name)
+		uber_free(user_name);
+	if(match_info)
+		g_match_info_free(match_info);
+	
+	if( list_store_index==-3 || g_str_equal(update, "[new update]") ) return;
+	
+	uberchick_sexy_entry_completion_remove(uberchick_sexy_entry_completion, 1);
+	uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, "[new update]", list_store_index);
+	
+	if(this->total<this->maximum)
+		this->total++;
+	else
+		for(; this->total>=this->maximum; this->total--)
+			uberchick_sexy_entry_completion_remove(uberchick_sexy_entry_completion, this->total);
+	
+	uberchick_sexy_entry_completion_rotate(uberchick_sexy_entry_completion);
+	gchar *previous_update_gconf_path=NULL;
+	gconfig_set_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", 0)), update);
+	uber_free(previous_update_gconf_path);
 }/*uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, GTK_ENTRY(this->sexy_entry)->text, [-3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index]);*/
+
+static gboolean uberchick_sexy_entry_completion_is_unique(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *update){
+	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
+	
+	if(G_STR_EMPTY(update)) return FALSE;
+	
+	if(g_str_equal(update, "[new update]"))
+		return TRUE;
+	
+	debug("Checking uniqueness of update.  New update:\t[%s]", update);
+	gboolean uniq=TRUE;
+	gchar *update_at_index=NULL;
+	for(gint i=1; i<=this->total && uniq; i++) {
+		GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+		GtkTreePath *path=gtk_tree_path_new_from_indices(i, -1);
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(this->list_store), iter, path)){
+			debug("Checking update, at index: %d, failed to get valid iter for the list store", i);
+			gtk_tree_path_free(path);
+			uber_free(iter);
+			continue;
+		}
+		
+		gtk_tree_model_get(
+				GTK_TREE_MODEL(this->list_store), iter,
+					GSTRING_UBER_CHICK_SEXY_ENTRY_COMPLETION_PHRASE, &update_at_index,
+				-1
+		);
+		
+		if(!strcmp(update, update_at_index)){
+			debug("Update is not unique.  Duplicate update found at index: %d", i);
+			debug("\tComparing new update: [%s]", update);
+			debug("\tAgainst old update: [%s]", update_at_index);
+			uniq=FALSE;
+		}
+		
+		gtk_tree_path_free(path);
+		uber_free(update_at_index);
+		uber_free(iter);
+	}
+	return uniq;
+}/*uberchick_sexy_entry_completion_is_unique(uberchick_sexy_entry_completion, update);*/
+
+static void uberchick_sexy_entry_completion_remove(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, gint list_store_index){
+	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
+	
+	if(!(list_store_index > 0 && list_store_index <= this->total)) return;
+	GtkTreeIter *iter=g_new0(GtkTreeIter, 1);
+	GtkTreePath *path=gtk_tree_path_new_from_indices(list_store_index, -1);
+	debug("Removing saved update %d.  Total update saved: %d", list_store_index, this->total);
+	if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(this->list_store), iter, path))
+		debug("Removing saved update, at index: %d, failed to get valid iter for the list store", list_store_index);
+	else{
+		debug("Removing iter at index: %d", list_store_index);
+		gtk_list_store_remove(this->list_store, iter);
+	}
+	gtk_tree_path_free(path);
+	uber_free(iter);
+}/*uberchick_sexy_entry_completion_remove(uberchick_sexy_entry_completion, GET_PRIVATE(uberchick_sexy_entry_completion)->total);*/
+
+static void uberchick_sexy_entry_completion_rotate(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
+	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
+	
+	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
+	for(gint i=this->maximum; i>=0; i--){
+		if( (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i-1)), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
+			uber_free(previous_update_gconf_path);
+			previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i);
+			gconfig_set_string(previous_update_gconf_path, previous_update);
+		}
+		if(previous_update) uber_free(previous_update);
+		uber_free(previous_update_gconf_path);
+	}
+}/*uberchick_sexy_entry_completion_rotate(uberchick_sexy_entry_completion);*/
 
 static void uberchick_sexy_entry_completion_submitted(GtkWidget *sexy_entry, UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
 	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
@@ -300,17 +454,17 @@ static gint uberchick_sexy_entry_completion_validate_maxium(UberChickSexyEntryCo
 	else if(this->maximum > 100)
 		gconfig_set_int(PREFS_SEARCH_HISTORY_MAXIMUM, (this->maximum=100));
 	return this->maximum;
-}/*uberchick_sexy_entry_completion_validate_maxium(main_window->private);*/
+}/*uberchick_sexy_entry_completion_validate_maxium(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_show_entries(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
 	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
 	g_signal_emit_by_name(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry_combo_box_entry, "popup");
-}/*uberchick_sexy_entry_completion_show_previous_updates();*/
+}/*uberchick_sexy_entry_completion_show_previous_updates(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_hide_entries(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
 	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
 	g_signal_emit_by_name(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry_combo_box_entry, "popdown");
-}/*uberchick_sexy_entry_completion_hide_previous_updates();*/
+}/*uberchick_sexy_entry_completion_hide_previous_updates(uberchick_sexy_entry_completion);*/
 
 static gint uberchick_sexy_entry_completion_update_length(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, gchar *update){
 	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return 0;
@@ -337,7 +491,7 @@ static gint uberchick_sexy_entry_completion_update_length(UberChickSexyEntryComp
 	*/
 	
 	return (this->max_length-character_count);
-}/*uberchick_sexy_entry_completion_update_length(update);*/
+}/*uberchick_sexy_entry_completion_update_length(uberchick_sexy_entry_completion, update);*/
 
 static gboolean uberchick_sexy_entry_completion_confirm_clear(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
 	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
@@ -436,7 +590,7 @@ static gboolean uberchick_sexy_entry_completion_puts(UberChickSexyEntryCompletio
 		return FALSE;
 	}
 	
-	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(this->sexy_entry));
+	gint position_prior=gtk_editable_get_position(GTK_EDITABLE(this->sexy_entry))+strlen(string);
 	gtk_editable_insert_text(GTK_EDITABLE(this->sexy_entry), string, -1, &position_after);
 	if(position_after<position_prior)
 		this->sexy_entry_text_position=position_prior;

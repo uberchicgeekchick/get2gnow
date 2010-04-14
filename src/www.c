@@ -153,19 +153,19 @@ void www_open_uri(GtkWidget *widget, const gchar *uri){
 
 void www_init(void){
 	GError *error=NULL;
-	const gchar *g_regex_pattern="&amp;[0-9]+([ \n\r\t]*)?";
-	number_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	const gchar *g_regex_pattern="&amp;[0-9]+;([ \n\r\t]*)?";
+	number_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
 		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
+		uber_regex_unref(number_regex);
 	}
 	www_uri_title_lookup_table_list_store=gtk_list_store_new(COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	www_uri_title_lookup_table_clean_up_timeout_id=g_timeout_add_seconds(600, (GSourceFunc)www_uri_titles_clean_up, NULL);
 }/*www_init();*/
 
 void www_deinit(void){
-	if(number_regex)
-		g_regex_unref(number_regex);
+	uber_regex_unref(number_regex);
 	program_timeout_remove(&www_uri_title_lookup_table_clean_up_timeout_id, "URI Title clean-up timeout");
 	if(www_uri_title_lookup_table_list_store){
 		gtk_list_store_clear(www_uri_title_lookup_table_list_store);

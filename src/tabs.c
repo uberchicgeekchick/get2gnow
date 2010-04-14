@@ -181,7 +181,7 @@ void tabs_close_timeline(const gchar *timeline){
 }/*tabs_close_timeline( "/direct_messages.xml", (NULL|service) );*/
 
 static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num){
-	uberchick_tree_view_labels_mark_as_read(tabs_get_page(page_num, FALSE));
+	uberchick_tree_view_mark_as_read(tabs_get_page(page_num, FALSE));
 }/*tabs_mark_as_read(tabs->notebook, uberchick_tree_view, 0);*/
 
 UberChickTreeView *tabs_get_next(void){

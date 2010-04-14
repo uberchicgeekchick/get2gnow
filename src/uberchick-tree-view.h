@@ -116,7 +116,7 @@ gboolean uberchick_tree_view_toggle_toolbar(UberChickTreeView *uberchick_tree_vi
 gboolean uberchick_tree_view_toggle_from_column(UberChickTreeView *uberchick_tree_view);
 gboolean uberchick_tree_view_toggle_rcpt_column(UberChickTreeView *uberchick_tree_view);
 
-void uberchick_tree_view_labels_mark_as_read(UberChickTreeView *uberchick_tree_view);
+void uberchick_tree_view_mark_as_read(UberChickTreeView *uberchick_tree_view);
 
 gint8 uberchick_tree_view_has_loaded(UberChickTreeView *uberchick_tree_view);
 

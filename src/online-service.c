@@ -300,13 +300,11 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	
 	GError *error=NULL;
 	const gchar *g_regex_pattern="^[A-Za-z0-9_]+$";
-	service->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	service->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
 		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
-		if(service->username_regex)
-			g_regex_unref(service->username_regex);
-		service->username_regex=NULL;
+		uber_regex_unref(service->username_regex);
 	}
 	
 	service->enabled=TRUE;
@@ -1000,8 +998,7 @@ void online_service_free(OnlineService *service, gboolean no_state_change){
 		users_glists_free_lists(service, GetFollowers);
 	}
 	
-	if(service->username_regex)
-		g_regex_unref(service->username_regex);
+	uber_regex_unref(service->username_regex);
 	
 	debug("Destroying OnlineService <%s> object", service->guid );
 	uber_object_free(&service->key, &service->uri, &service->user_name, &service->nick_name, &service->password, &service->guid, &service->micro_blogging_client, &service->status, &service, NULL);

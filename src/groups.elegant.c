@@ -116,16 +116,16 @@ static gboolean groups_notify(StatusNetGroup *group);
 void groups_init(void){
 	GError *error=NULL;
 	const gchar *g_regex_pattern="^group-([0-9]*)$";
-	groups_id_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, 0, &error);
+	groups_id_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
 		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
 		g_error_free(error);
+		uber_regex_unref(groups_id_regex);
 	}
 }/*groups_init();*/
 
 void groups_deinit(void){
-	if(groups_id_regex)
-		g_regex_unref(groups_id_regex);
+	uber_regex_unref(groups_id_regex);
 }/*groups_deinit();*/
 
 static StatusNetGroup *groups_new_group(OnlineService *service){
