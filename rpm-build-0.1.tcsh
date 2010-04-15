@@ -38,8 +38,6 @@ set use_sudo="sudo ";
 if( "${uid}" == "0" )	\
 	set use_sudo="";
 
-goto archive_rpm;
-
 
 create_tarballs:
 	cd "${project_path}";
@@ -67,60 +65,29 @@ create_tarballs:
 #create_tarballs:
 
 	
-create_rpm:
-	${use_sudo}rpmbuild -ta "${pkg_path}/tarballs/${package_string}.tar.gz";
-	if( "${status}" != "0" ) then
-		printf "***********ERROR: rpm build failed****************";
-		exit -1;
-	endif
-#create_rpm:
+${use_sudo}rpmbuild -ta "${pkg_path}/tarballs/${package_string}.tar.gz";
+if( "${status}" != "0" ) then
+	printf "***********ERROR: rpm build failed****************";
+	exit -1;
+endif
+set local_tarball="${pkg_path}/tarballs/${package_string}.tar.gz";
+#set pkg_path=${pkg_path}/../nfs/packages;
+if( ${?clean_up} ) then
+	rm --verbose "${pkg_path}/"*/"${project_name}"*.${MACHTYPE}.*;
+	rm --verbose "${pkg_path}/"*/"${project_name}"*_${deb_arch}.*;
+endif
+mv --verbose "${local_tarball}" "${pkg_path}/tarballs/${package_string}.${MACHTYPE}.tar.gz";
+cp --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${package_string}.${MACHTYPE}.rpm" ./;
+${use_sudo}alien --to-deb --keep-version "./${package_string}.${MACHTYPE}.rpm";
+if( ${?clean_up} ) rm "./${package_string}.${MACHTYPE}.rpm";
+if( ${MACHTYPE} == "x86_64" ) then
+	set deb_arch="amd64";
+else
+	set deb_arch="i386";
+endif
+mv --verbose "./${project_name}_${version}_${deb_arch}.deb" "${pkg_path}/debs/${package_string}_${deb_arch}.deb";
+${use_sudo}mv --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${package_string}.${MACHTYPE}.rpm" "${pkg_path}/rpms/";
+${use_sudo}mv --verbose "/usr/src/packages/SRPMS/${package_string}.src.rpm" "${pkg_path}/srpms/${package_string}.${MACHTYPE}.src.rpm";
+${use_sudo}chown ${USER}:${GROUP} "${pkg_path}/"*/"${project_name}"*
 
-
-archive_rpm:
-	set local_tarball="${pkg_path}/tarballs/${package_string}.tar.gz";
-	set pkg_path="${pkg_path}/../nfs/packages";
-	if( ${?clean_up} ) then
-		rm --verbose "${pkg_path}/"*/"${project_name}"*.${MACHTYPE}.*;
-		rm --verbose "${pkg_path}/"*/"${project_name}"*_${deb_arch}.*;
-	endif
-	mv --verbose "${local_tarball}" "${pkg_path}/tarballs/${package_string}.${MACHTYPE}.tar.gz";
-	${use_sudo}mv --verbose "/usr/src/packages/RPMS/${MACHTYPE}/${package_string}-${package_release}.${MACHTYPE}.rpm" ./;
-#archive_rpm:
-
-
-create_deb:
-	cd "${projects_path}";
-	if(! -x `which alien` )	\
-		goto store_packages;
-	
-	${use_sudo}alien --to-deb --keep-version "./${package_string}-${package_release}.${MACHTYPE}.rpm";
-	rm "./${package_string}.${MACHTYPE}.rpm";
-	if( ${MACHTYPE} == "x86_64" ) then
-		set deb_arch="amd64";
-	else
-		set deb_arch="i386";
-	endif
-	mv --verbose "./${package_name}_${package_version}${package_release}-${package_release}_${deb_arch}.deb" "${pkg_path}/debs/${package_string}_${deb_arch}.deb";
-#create_deb:
-
-
-store_packages:
-	${use_sudo}mv --verbose "./${package_string}-${package_release}.${MACHTYPE}.rpm" "${pkg_path}/rpms/${package_string}.${MACHTYPE}.rpm";
-	${use_sudo}mv --verbose "/usr/src/packages/SRPMS/${package_string}-${package_release}.src.rpm" "${pkg_path}/srpms/${package_string}.${MACHTYPE}.src.rpm";
-	${use_sudo}chown ${USER}:${GROUP} "${pkg_path}/"*/"${project_name}"*
-#store_packages:
-
-exit_script:
-	if( ${?starting_dir} ) then
-		cd "${starting_dir}";
-		unset starting_dir;
-	endif
-	
-	if( ${?errno} ) then
-		set status=${errno};
-		unset errno;
-	endif
-	exit ${status};
-#exit_script:
-
-
+cd "${starting_dir}";
