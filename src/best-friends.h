@@ -89,7 +89,7 @@ gboolean best_friends_add(OnlineService *service, const gchar *user_name);
 gboolean best_friends_drop(OnlineService *service, GtkWindow *parent, const gchar *user_name);
 
 gboolean best_friends_is_user_best_friend(OnlineService *service, const gchar *user_name);
-gboolean best_friends_check_update_ids( OnlineService *service, const gchar *best_friends_user_name, gdouble update_id);
+gboolean best_friends_check_update_ids(OnlineService *service, const gchar *best_friends_user_name, gdouble update_id);
 gdouble best_friends_tree_store_mark_as_unread(OnlineService *service, const gchar *user_name, gdouble update_id);
 gboolean best_friends_tree_store_mark_as_read(OnlineService *service, const gchar *user_name, gdouble update_id);
 gboolean best_friends_new_update_notify(void);

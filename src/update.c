@@ -129,12 +129,12 @@ const gchar *update_type_to_string(UpdateType update_type){
 
 
 gboolean update_notify_on_timeout(UserStatus *status){
-	if(!(status && G_STR_N_EMPTY(status->notification) )) return FALSE;
+	if(!(status && G_STR_N_EMPTY(status->notification))) return FALSE;
 	
 	NotifyNotification *notify_notification=NULL;
 	GError		*error=NULL;
 	const gchar	*notification_icon_file_name=NULL;
-	if(!(g_file_test(status->user->image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR )))
+	if(!(g_file_test(status->user->image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR)))
 		notification_icon_file_name=GETTEXT_PACKAGE;
 	else
 		notification_icon_file_name=status->user->image_file;

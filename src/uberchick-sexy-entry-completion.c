@@ -186,7 +186,7 @@ static void uberchick_sexy_entry_completion_init(UberChickSexyEntryCompletion *u
 	const gchar *g_regex_pattern="[A-Z]+";
 	this->upper_case_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
-		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
+		debug("**ERROR:** creating case-matching GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message);
 		g_error_free(error);
 		uber_regex_unref(this->upper_case_regex);
 	}
@@ -196,7 +196,7 @@ static void uberchick_sexy_entry_completion_init(UberChickSexyEntryCompletion *u
 	this->username_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
 		this->username_regex=NULL;
-		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
+		debug("**ERROR:** creating username GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message);
 		g_error_free(error);
 		uber_regex_unref(this->username_regex);
 	}
@@ -228,7 +228,7 @@ static void uberchick_sexy_entry_completion_finalize(UberChickSexyEntryCompletio
 
 /*BEGIN: Custom UberChickSexyEntryCompletion methods.*/
 static void uberchick_sexy_entry_completion_setup(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	GtkBuilder *ui=gtkbuilder_get_file(
 				GTK_BUILDER_UI_FILENAME,
@@ -248,10 +248,10 @@ static void uberchick_sexy_entry_completion_setup(UberChickSexyEntryCompletion *
 }/*uberchick_sexy_entry_completion_setup(uberchick_sexy_entry_completion);*/
 
 static void uberchick_sexy_entry_completion_sexy_setup(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
-	this->tree_model=gtk_combo_box_get_model( GTK_COMBO_BOX(this->sexy_entry_combo_box_entry) );
+	this->tree_model=gtk_combo_box_get_model(GTK_COMBO_BOX(this->sexy_entry_combo_box_entry));
 	
 	this->sexy_entry=SEXY_SPELL_ENTRY(sexy_spell_entry_new());
 	this->sexy_entry=g_object_ref_sink(this->sexy_entry);
@@ -273,13 +273,13 @@ static void uberchick_sexy_entry_completion_sexy_setup(UberChickSexyEntryComplet
 }/*uberchick_sexy_entry_completion_sexy_setup(uberchick_sexy_entry_completion);*/
 
 static void uberchick_sexy_entry_completion_load(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 
 	gchar *previous_search=NULL, *search_history_gconf_path=NULL;
 	uberchick_sexy_entry_completion_validate_maxium(uberchick_sexy_entry_completion);
 	for(this->total=0; this->total<=this->maximum; this->total++){
-		if(!( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", this->total)), &previous_search )) && G_STR_N_EMPTY(previous_search) )) break;
+		if(!((gconfig_get_string((search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", this->total)), &previous_search)) && G_STR_N_EMPTY(previous_search))) break;
 		
 		uberchick_sexy_entry_completion_restore(uberchick_sexy_entry_completion, previous_search);
 		uber_free(previous_search);
@@ -292,7 +292,7 @@ static void uberchick_sexy_entry_completion_load(UberChickSexyEntryCompletion *u
 }/*uberchick_sexy_entry_completion_load(uberchick_sexy_entry_completion)*/
 
 static void uberchick_sexy_entry_completion_add(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *update, gint list_store_index){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	if(G_STR_EMPTY(update)) return;
@@ -334,7 +334,7 @@ static void uberchick_sexy_entry_completion_add(UberChickSexyEntryCompletion *ub
 	
 	gchar *user_name=NULL;
 	GMatchInfo *match_info=NULL;
-	if( ((g_regex_match(this->username_regex, update, 0, &match_info))) && (user_name=g_regex_replace(this->username_regex, update, -1, 0, "\\1", 0, NULL)) && G_STR_N_EMPTY(user_name) ){
+	if(((g_regex_match(this->username_regex, update, 0, &match_info))) && (user_name=g_regex_replace(this->username_regex, update, -1, 0, "\\1", 0, NULL)) && G_STR_N_EMPTY(user_name)){
 		debug("Appending user name <%s> to UpdateViewer's previous_updates", user_name);
 		/*uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, user_name, this->maximum/2);*/
 		uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, user_name, list_store_index);
@@ -344,7 +344,7 @@ static void uberchick_sexy_entry_completion_add(UberChickSexyEntryCompletion *ub
 	if(match_info)
 		g_match_info_free(match_info);
 	
-	if( list_store_index==-3 || g_str_equal(update, "[new update]") ) return;
+	if(list_store_index==-3 || g_str_equal(update, "[new update]")) return;
 	
 	uberchick_sexy_entry_completion_remove(uberchick_sexy_entry_completion, 1);
 	uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, "[new update]", list_store_index);
@@ -357,12 +357,12 @@ static void uberchick_sexy_entry_completion_add(UberChickSexyEntryCompletion *ub
 	
 	uberchick_sexy_entry_completion_rotate(uberchick_sexy_entry_completion);
 	gchar *previous_update_gconf_path=NULL;
-	gconfig_set_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", 0)), update);
+	gconfig_set_string((previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", 0)), update);
 	uber_free(previous_update_gconf_path);
 }/*uberchick_sexy_entry_completion_add(uberchick_sexy_entry_completion, GTK_ENTRY(this->sexy_entry)->text, [-3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index]);*/
 
 static gboolean uberchick_sexy_entry_completion_is_unique(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *update){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	if(G_STR_EMPTY(update)) return FALSE;
@@ -404,7 +404,7 @@ static gboolean uberchick_sexy_entry_completion_is_unique(UberChickSexyEntryComp
 }/*uberchick_sexy_entry_completion_is_unique(uberchick_sexy_entry_completion, update);*/
 
 static void uberchick_sexy_entry_completion_remove(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, gint list_store_index){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	if(!(list_store_index > 0 && list_store_index <= this->total)) return;
@@ -422,12 +422,12 @@ static void uberchick_sexy_entry_completion_remove(UberChickSexyEntryCompletion 
 }/*uberchick_sexy_entry_completion_remove(uberchick_sexy_entry_completion, GET_PRIVATE(uberchick_sexy_entry_completion)->total);*/
 
 static void uberchick_sexy_entry_completion_rotate(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	gchar *previous_update=NULL, *previous_update_gconf_path=NULL;
 	for(gint i=this->maximum; i>=0; i--){
-		if( (gconfig_get_string( (previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i-1)), &previous_update)) && G_STR_N_EMPTY(previous_update) ){
+		if((gconfig_get_string((previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i-1)), &previous_update)) && G_STR_N_EMPTY(previous_update)){
 			uber_free(previous_update_gconf_path);
 			previous_update_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "updates", i);
 			gconfig_set_string(previous_update_gconf_path, previous_update);
@@ -438,14 +438,14 @@ static void uberchick_sexy_entry_completion_rotate(UberChickSexyEntryCompletion 
 }/*uberchick_sexy_entry_completion_rotate(uberchick_sexy_entry_completion);*/
 
 static void uberchick_sexy_entry_completion_submitted(GtkWidget *sexy_entry, UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	this->total++;
 }/*uberchick_sexy_entry_completion_submitted(GtkWidget *sexy_entry, UberChickSexyEntryCompletion *uberchick_sexy_entry_completion);*/
 
 static gint uberchick_sexy_entry_completion_validate_maxium(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return 0;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return 0;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	gconfig_get_int_or_default(PREFS_SEARCH_HISTORY_MAXIMUM, &this->maximum, 50);
@@ -457,17 +457,17 @@ static gint uberchick_sexy_entry_completion_validate_maxium(UberChickSexyEntryCo
 }/*uberchick_sexy_entry_completion_validate_maxium(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_show_entries(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	g_signal_emit_by_name(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry_combo_box_entry, "popup");
 }/*uberchick_sexy_entry_completion_show_previous_updates(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_hide_entries(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	g_signal_emit_by_name(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry_combo_box_entry, "popdown");
 }/*uberchick_sexy_entry_completion_hide_previous_updates(uberchick_sexy_entry_completion);*/
 
 static gint uberchick_sexy_entry_completion_update_length(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, gchar *update){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return 0;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return 0;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	guint16 character_count=0;
@@ -476,7 +476,7 @@ static gint uberchick_sexy_entry_completion_update_length(UberChickSexyEntryComp
 	for(guint16 i=0; update[i]; i++){
 		if(update[i]=='<' || update[i]=='>')
 			character_count+=3;
-		if(replace_me!=-1 && update[i]=='/' && update[i+1] && update[i+1]=='m' && update[i+2] && update[i+2]=='e' ){
+		if(replace_me!=-1 && update[i]=='/' && update[i+1] && update[i+1]=='m' && update[i+2] && update[i+2]=='e'){
 			character_count+=online_services_get_length_of_longest_replacement();
 			i+=2;
 		}
@@ -494,10 +494,10 @@ static gint uberchick_sexy_entry_completion_update_length(UberChickSexyEntryComp
 }/*uberchick_sexy_entry_completion_update_length(uberchick_sexy_entry_completion, update);*/
 
 static gboolean uberchick_sexy_entry_completion_confirm_clear(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
-	if(G_STR_EMPTY( GTK_ENTRY(this->sexy_entry)->text )) return TRUE;
+	if(G_STR_EMPTY(GTK_ENTRY(this->sexy_entry)->text)) return TRUE;
 	return online_service_request_popup_confirmation_dialog(
 			PREFS_UPDATE_VIEWER_CLEAR,
 			_("You are about to empty your current update:"),
@@ -508,7 +508,7 @@ static gboolean uberchick_sexy_entry_completion_confirm_clear(UberChickSexyEntry
 }/*uberchick_sexy_entry_completion_confirm_clear(uberchick_sexy_entry_completion);*/
 
 static gboolean uberchick_sexy_entry_completion_clear(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	
 	if(!(uberchick_sexy_entry_completion_confirm_clear(uberchick_sexy_entry_completion)))
 		return FALSE;
@@ -518,53 +518,53 @@ static gboolean uberchick_sexy_entry_completion_clear(UberChickSexyEntryCompleti
 }/*uberchick_sexy_entry_completion_clear(uberchick_sexy_entry_completion);*/
 
 static void uberchick_sexy_entry_completion_set(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, gchar *text){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
-	gtk_entry_set_text(GTK_ENTRY(this->sexy_entry), (text ?text :(gchar *)"") );
+	gtk_entry_set_text(GTK_ENTRY(this->sexy_entry), (text ?text :(gchar *)""));
 	uberchick_sexy_entry_completion_update_remaining_character_count(uberchick_sexy_entry_completion);
 	uberchick_sexy_entry_completion_select(uberchick_sexy_entry_completion);
 }/*uberchick_sexy_entry_completion_set(NULL|"an phase or update");*/
 
 void uberchick_sexy_entry_completion_prefix_char(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const char c){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	gchar *str=g_strdup_printf("%c", c);
 	uberchick_sexy_entry_completion_prefix_string(uberchick_sexy_entry_completion, (const gchar *)str, FALSE, FALSE);
 	uber_free(str);
 }/*uberchick_sexy_entry_completion_prefix_char('\t', TRUE|FALSE, TRUE|FALSE);*/
 
 gboolean uberchick_sexy_entry_completion_prefix_string(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gboolean to_lower, gboolean uniq){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	return uberchick_sexy_entry_completion_puts(uberchick_sexy_entry_completion, str, 0, to_lower, uniq);
 }/*uberchick_sexy_entry_completion_prefix_string("string", TRUE|FALSE, TRUE|FALSE);*/
 
 void uberchick_sexy_entry_completion_insert_char(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const char c){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	gchar *str=g_strdup_printf("%c", c);
 	uberchick_sexy_entry_completion_insert_string(uberchick_sexy_entry_completion, (const gchar *)str, FALSE, FALSE);
 	uber_free(str);
 }/*uberchick_sexy_entry_completion_insert_char('\t', TRUE|FALSE, TRUE|FALSE);*/
 
 gboolean uberchick_sexy_entry_completion_insert_string(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gboolean to_lower, gboolean uniq){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	return uberchick_sexy_entry_completion_puts(uberchick_sexy_entry_completion, str, gtk_editable_get_position(GTK_EDITABLE(GTK_ENTRY(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry))), to_lower, uniq);
 }/*uberchick_sexy_entry_completion_insert_string("string", TRUE|FALSE, TRUE|FALSE);*/
 
 void uberchick_sexy_entry_completion_append_char(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const char c){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	gchar *str=g_strdup_printf("%c", c);
 	uberchick_sexy_entry_completion_append_string(uberchick_sexy_entry_completion, (const gchar *)str, FALSE, FALSE);
 	uber_free(str);
 }/*uberchick_sexy_entry_completion_append_char('\t', TRUE|FALSE, TRUE|FALSE);*/
 
 gboolean uberchick_sexy_entry_completion_append_string(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gboolean to_lower, gboolean uniq){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	return uberchick_sexy_entry_completion_puts(uberchick_sexy_entry_completion, str, (gint)gtk_entry_get_text_length(GTK_ENTRY(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry)), to_lower, uniq);
 }/*uberchick_sexy_entry_completion_append_string("string", TRUE|FALSE, TRUE|FALSE);*/
 
 static gboolean uberchick_sexy_entry_completion_puts(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion, const gchar *str, gint position_after, gboolean to_lower, gboolean uniq){
 	if(G_STR_EMPTY(str)) return FALSE;
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return FALSE;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return FALSE;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	if(gtk_widget_is_sensitive(GTK_WIDGET(this->sexy_entry)))
@@ -607,7 +607,7 @@ static gboolean uberchick_sexy_entry_completion_puts(UberChickSexyEntryCompletio
 }/*uberchick_sexy_entry_completion_puts("string", 0...139, TRUE|FALSE, TRUE|FALSE);*/
 
 static void uberchick_sexy_entry_completion_update_remaining_character_count(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	this->sexy_entry_text_position=gtk_editable_get_position(GTK_EDITABLE(GTK_ENTRY(this->sexy_entry)));
@@ -626,31 +626,31 @@ static void uberchick_sexy_entry_completion_update_remaining_character_count(Ube
 }/*uberchick_sexy_entry_completion_update_remaining_character_count(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_select(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	UberChickSexyEntryCompletionPrivate *this=GET_PRIVATE(uberchick_sexy_entry_completion);
 	
 	if(gtk_widget_has_focus(GTK_WIDGET(this->sexy_entry))) return;
 	/*if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))) return;*/
 	gtk_widget_grab_focus(GTK_WIDGET(this->sexy_entry));
 	gint position=-1;
-	if( this->sexy_entry_text_position > 0 && this->sexy_entry_text_position <= gtk_entry_get_text_length((GtkEntry *)this->sexy_entry) )
+	if(this->sexy_entry_text_position > 0 && this->sexy_entry_text_position <= gtk_entry_get_text_length((GtkEntry *)this->sexy_entry))
 		position=this->sexy_entry_text_position;
 	gtk_entry_set_position(GTK_ENTRY(this->sexy_entry), position);
 }/*uberchick_sexy_entry_completion_select(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_beep(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
 	if(gconfig_if_bool(PREFS_DISABLE_SYSTEM_BELL, FALSE)) return;
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	gtk_widget_error_bell(GTK_WIDGET(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry));
 }/*uberchick_sexy_entry_completion_beep(uberchick_sexy_entry_completion);*/
 
 SexySpellEntry *uberchick_sexy_entry_get_widget(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return NULL;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return NULL;
 	return GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry;
 }/*uberchick_sexy_entry_get_widget(uberchick_sexy_entry_completion);*/
 
 void uberchick_sexy_entry_completion_select_all(UberChickSexyEntryCompletion *uberchick_sexy_entry_completion){
-	if(!( uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion) )) return;
+	if(!(uberchick_sexy_entry_completion && IS_UBERCHICK_SEXY_ENTRY_COMPLETION(uberchick_sexy_entry_completion))) return;
 	/*if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))) return;*/
 	gtk_editable_select_region(GTK_EDITABLE(GET_PRIVATE(uberchick_sexy_entry_completion)->sexy_entry), 0, -1);
 }/*uberchick_sexy_entry_completion_select_all(uberchick_sexy_entry_completion);*/

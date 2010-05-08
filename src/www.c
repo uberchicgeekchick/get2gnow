@@ -142,7 +142,7 @@ void www_open_uri(GtkWidget *widget, const gchar *uri){
 	if(!g_strstr_len(uri, -1, "://"))
 		new_uri=g_strdup_printf("http://%s", uri);
 	
-	if(g_app_info_launch_default_for_uri( (new_uri ?new_uri :uri), NULL, NULL))
+	if(g_app_info_launch_default_for_uri((new_uri ?new_uri :uri), NULL, NULL))
 		debug("**NOTICE:** Opening URI: <%s>", (new_uri ?new_uri :uri));
 	else
 		debug("**ERROR:** Can't handle URI: <%s>", (new_uri ?new_uri :uri));
@@ -156,7 +156,7 @@ void www_init(void){
 	const gchar *g_regex_pattern="&amp;[0-9]+;([ \n\r\t]*)?";
 	number_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
-		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
+		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message);
 		g_error_free(error);
 		uber_regex_unref(number_regex);
 	}
@@ -197,7 +197,7 @@ static gboolean www_uri_titles_clean_up(void){
 				-1
 		);
 		datetime_age(datetime, &age, FALSE);
-		if( age >= 3600 ){
+		if(age >= 3600){
 			debug("Removing URIs: <%s>; title: [%s].  Which was stored on %s an is %d seconds old", uri, title, datetime, age);
 			gtk_list_store_remove(www_uri_title_lookup_table_list_store, iter);
 			if(www_uri_title_list_store_total)
@@ -209,8 +209,8 @@ static gboolean www_uri_titles_clean_up(void){
 }/*www_uri_titles_clean_up();*/
 
 void www_html_entity_escape_status(gchar **status_text){
-	gchar *new_status=www_html_entity_escape_text( *status_text );
-	uber_free( *status_text );
+	gchar *new_status=www_html_entity_escape_text(*status_text);
+	uber_free(*status_text);
 	*status_text=new_status;
 	new_status=NULL;
 }/*www_html_entity_escape_status(&status->text);*/
@@ -223,17 +223,17 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 	if(g_regex_match(number_regex, current_character, 0, &match_info)){
 		GError *error=NULL;
 		regex_status=g_regex_replace(number_regex, current_character, strlen(current_character), 0, "", 0, &error);
-		if(!(error && G_STR_EMPTY(regex_status) )){
+		if(!(error && G_STR_EMPTY(regex_status))){
 			uber_free(escaped_status);
 			current_character=escaped_status=regex_status;
 		}else{
-			debug("**ERROR:** Parsing %s through g_regex_replace.  GError message: %s", current_character, error->message );
+			debug("**ERROR:** Parsing %s through g_regex_replace.  GError message: %s", current_character, error->message);
 			g_error_free(error);
 		}
 	}
 	g_match_info_free(match_info);
 	while((current_character=g_strstr_len(current_character, -1, "&amp;"))) {
-		if(!( strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3) ))
+		if(!(strncmp(current_character+5, "lt;", 3) && strncmp(current_character+5, "gt;", 3)))
 			g_memmove(current_character+1, current_character+5, strlen(current_character+5)+1);
 		else
 			current_character+=5;
@@ -244,10 +244,12 @@ gchar *www_html_entity_escape_text(gchar *status_text){
 gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	if(G_STR_EMPTY(message)) return g_strdup("");
 	
-	gchar *result=NULL, *temp=NULL;
+	gchar *result=NULL;
 	gchar **words=g_strsplit_set(message, " \t\n\r", 0);
 	for(gint i=0; words[i]; i++) {
-		if(!( words[i][1] && www_uri_check(words[i]) )){
+		gchar *temp=NULL;
+		gboolean searching=FALSE;
+		if(!(words[i][1] && www_uri_check(words[i]))){
 			/* Checks for e-mail addresses. */
 			if(!expand_hyperlinks) continue;
 			const gchar *address_at=g_strstr_len(words[i], -1, "@");
@@ -259,74 +261,51 @@ gchar *www_format_urls(OnlineService *service, const gchar *message, gboolean ex
 				temp=g_strdup_printf("<u>email: %s</u>", words[i]);
 			else
 				temp=g_strdup_printf("<a href=\"mailto:%s\">email: %s</a>", words[i], words[i]);
-			uber_free(words[i]);
-			words[i]=temp;
-			temp=NULL;
-			continue;
-		}
-		
-		gboolean searching=FALSE;
-		if(words[i][0]!='@' && !(searching=(words[i][0]=='!' || words[i][0]=='#')) ){
+		}else if( !(searching=(words[i][0]=='!' || words[i][0]=='#')) && words[i][0]!='@' ){
 			debug("Rendering URI for display including title.  URI: '%s'", words[i]);
 			temp=www_find_uri_pages_title(service, words[i], NULL, expand_hyperlinks, make_hyperlinks);
 			debug("Rendered URI for display.  %s will be replaced with %s", words[i], temp);
+		}else{
+			gchar *search_uri_prefix=g_strdup_printf("http%s://%s%s/%s%s%s%s", (words[i][0]=='@'&&service->https ?"s" :""), ((words[i][0]=='#' && service->micro_blogging_service==Twitter) ?"search." :""), service->uri, (searching ?"search" :""), (searching && service->micro_blogging_service!=Twitter ?"/notice" :""), (searching ?"?q=" :""), (words[i][0]=='#' ?"%23" :(words[i][0]=='!' ?"%21" :"")));
+			debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri);
+			temp=www_format_service_hyperlink(service, search_uri_prefix, words[i], expand_hyperlinks, make_hyperlinks);
+			debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri, temp);
+			uber_free(search_uri_prefix);
+		}
+		
+		if(temp){
 			uber_free(words[i]);
 			words[i]=temp;
 			temp=NULL;
-			continue;
 		}
-		
-		gchar *search_uri_prefix=g_strdup_printf("http%s://%s%s/%s%s%s%s", (words[i][0]=='@'&&service->https ?"s" :""), ( (words[i][0]=='#' && service->micro_blogging_service==Twitter) ?"search." :"" ), service->uri, (searching ?"search" :""), (searching && service->micro_blogging_service!=Twitter ?"/notice" :"" ), (searching ?"?q=" :""), (words[i][0]=='#' ?"%23" :(words[i][0]=='!' ?"%21" :"") ) );
-		debug("Rendering OnlineService: <%s>'s %s %c link for: <%s@%s>", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri);
-		temp=www_format_service_hyperlink(service, search_uri_prefix, words[i], expand_hyperlinks, make_hyperlinks);
-		debug("Rendered OnlineService: <%s>'s %s %c link for: <%s@%s> will be replaced by: %s", service->key, (words[i][0]=='@' ?"user profile" :"search results"), words[i][0], &words[i][1], service->uri, temp);
-		uber_free(search_uri_prefix);
-		uber_free(words[i]);
-		words[i]=temp;
-		temp=NULL;
 	}
 	result=g_strjoinv(" ", words);
 	g_strfreev(words);
 	
 	return result;
-}/*www_format_urls(service, "text with http://plan-text.links/", (TRUE|FALSE), (TRUE|FALSE) );*/
+}/*www_format_urls(service, "text with http://plan-text.links/", (TRUE|FALSE), (TRUE|FALSE));*/
 
 static gboolean www_uri_check(gchar *uri){
-#ifndef	prefix_created
-#define prefix_created
-#define	mk_str_struct(x)	{ (x), ((sizeof(x))-1) }
-	static const struct {
-		const char	*s;
-		guint8		len;
-	}
-	
-	prefix[] = {
-		mk_str_struct("@"),
-		mk_str_struct("!"),
-		mk_str_struct("#"),
-		mk_str_struct("http://"),
-		mk_str_struct("https://"),
-		mk_str_struct("ftp."),
-		mk_str_struct("www."),
-		mk_str_struct("irc."),
-		mk_str_struct("ftp://"),
-		mk_str_struct("irc://"),
-		mk_str_struct("mailto:"),
+#ifndef	regex_created
+#define regex_created
+	const char *uri_regular_expressions[]={
+		"^@[A-Za-z0-9_]",
+		"^![A-Za-z0-9_]",
+		"^#[A-Za-z0-9_]",
+		"^http://[A-Za-z0-9\\-]",
+		"^https://[A-Za-z0-9\\-]",
+		"^ftp.[A-Za-z0-9\\-]",
+		"^www.[A-Za-z0-9\\-]",
+		"^irc.[A-Za-z0-9\\-]",
+		"^ftp://[A-Za-z0-9\\-]",
+		"^irc://[A-Za-z0-9\\-]",
+		"^mailto:[A-Za-z0-9\\-]",
 	};
-#undef mk_str_struct
 #endif
 	
-	guint8 uri_length=strlen(uri);
-	for(int i=0; i<G_N_ELEMENTS(prefix); i++){
-		if(uri_length<prefix[i].len) continue;
-		
-		/* This is pretty much case in-sensitive g_str_has_prefix(). */
-		int j;
-		for(j=0; j<prefix[i].len; j++)
-			if(g_ascii_tolower(uri[j])!=prefix[i].s[j]) break;
-			
-		if(j && j==prefix[i].len) return TRUE;
-	}
+	for(int i=0; i<G_N_ELEMENTS(uri_regular_expressions); i++)
+		if(g_regex_match_simple(uri_regular_expressions[i], uri, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY))
+			return TRUE;
 	
 	return FALSE;
 }/*www_uri_check("@username|#search_hash|!group_name|http://any.domain.com/|user@domain.com");*/
@@ -343,7 +322,7 @@ static gchar *www_format_service_hyperlink(OnlineService *service, const gchar *
 	gssize end=0;
 	gchar delim;
 	
-	if((end=(www_find_first_non_user_name(&services_resource[1])+1) ) ){
+	if((end=(www_find_first_non_user_name(&services_resource[1])+1))){
 		delim=services_resource[end];
 		services_resource[end]='\0';
 	}
@@ -355,13 +334,13 @@ static gchar *www_format_service_hyperlink(OnlineService *service, const gchar *
 	else
 		title=www_find_user_title(service, uri, services_resource, expand_hyperlinks, make_hyperlinks);
 	
-	const gchar *hyperlink_suffix=( G_STR_N_EMPTY(title) ?"" :services_resource );
+	const gchar *hyperlink_suffix=(G_STR_N_EMPTY(title) ?"" :services_resource);
 	if(!make_hyperlinks)
-		user_at_link=g_strdup_printf( "<u>%s%s</u>", title, hyperlink_suffix );
+		user_at_link=g_strdup_printf("<u>%s%s</u>", title, hyperlink_suffix);
 	else if(G_STR_N_EMPTY(title))
 		user_at_link=g_strdup(title);
 	else
-		user_at_link=g_strdup_printf( "<a href=\"%s\">%s%s</a>", uri, title, hyperlink_suffix );
+		user_at_link=g_strdup_printf("<a href=\"%s\">%s%s</a>", uri, title, hyperlink_suffix);
 	
 	if(end){
 		gchar *user_at_link2=g_strdup_printf(
@@ -401,7 +380,7 @@ static gchar *www_find_user_title(OnlineService *service, const gchar *uri, cons
 static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri, const gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	gchar *uri_title=NULL;
 	gchar *temp=NULL;
-	if( (uri_title=www_uri_title_lookup(uri)) ){
+	if((uri_title=www_uri_title_lookup(uri))){
 		www_format_uri_with_title(&uri_title, uri, services_resource);
 		if(!make_hyperlinks)
 			return g_strdup_printf("<u>%s</u>", uri_title);
@@ -417,7 +396,7 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 	if(gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) || !expand_hyperlinks)
 		return temp;
 	
-	if(g_str_has_prefix(uri, "ftp://")  || g_str_has_prefix(uri, "irc://") ){
+	if(g_str_has_prefix(uri, "ftp://")  || g_str_has_prefix(uri, "irc://")){
 		www_uri_title_append(uri, uri);
 		return temp;
 	}
@@ -441,7 +420,7 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 	}
 	uber_free(content_type);
 	
-	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
+	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!'));
 	if(!(uri_title=(gchar *)www_get_uri_dom_xpath_element_content(xml, "html->head->title"))){
 		if(searching)
 			uri_title=g_strdup(service->uri);
@@ -472,7 +451,7 @@ static gchar *www_find_uri_pages_title(OnlineService *service, const gchar *uri,
 static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const gchar *services_resource){
 	debug("Attempting to display link info. title: %s for uri: '%s'", *uri_title, uri);
 	gchar *hyperlink_suffix1=NULL;
-	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!' ));
+	gboolean searching=(services_resource && (services_resource[0]=='#' || services_resource[0]=='!'));
 	
 	if(services_resource && searching && !g_strstr_len(*uri_title, -1, services_resource))
 		hyperlink_suffix1=g_strdup_printf("'s search results for %s", services_resource);
@@ -481,7 +460,7 @@ static void www_format_uri_with_title(gchar **uri_title, const gchar *uri, const
 	if(!gconfig_if_bool(PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE))
 		hyperlink_suffix2=g_strdup_printf(" &lt;- %s", uri);
 	
-	gchar *uri_title_swap=g_strdup_printf("%s%s%s", *uri_title, (hyperlink_suffix1 ?hyperlink_suffix1 :""), (hyperlink_suffix2 ?hyperlink_suffix2 :"") );
+	gchar *uri_title_swap=g_strdup_printf("%s%s%s", *uri_title, (hyperlink_suffix1 ?hyperlink_suffix1 :""), (hyperlink_suffix2 ?hyperlink_suffix2 :""));
 	uber_free(*uri_title);
 	*uri_title=uri_title_swap;
 	uri_title_swap=NULL;
@@ -519,7 +498,7 @@ static gchar *www_get_uri_content_type(OnlineService *service, const gchar *uri,
 	debug("Parsing content info: [%s] from: %s", content_info, uri);
 	content_v=g_strsplit(content_info, "; ", -1);
 	uber_free(content_info);
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
+	if(!(((content_v[0])) && (content_type=g_strdup(content_v[0])))){
 		debug("**ERROR**: Failed to determine content-type for:  %s", uri);
 		g_strfreev(content_v);
 		return NULL;
@@ -549,10 +528,10 @@ gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean retur
 	
 	debug("Searching for xpath: '%s' content", xpath);
 	for(current_element=root_element; current_element; current_element=current_element->next){
-		if(current_element->type != XML_ELEMENT_NODE ) continue;
+		if(current_element->type != XML_ELEMENT_NODE) continue;
 		
 		debug("Looking for XPath: %s; current depth: %d; targetted depth: %d.  Comparing against current node: %s", xpathv[xpath_depth], xpath_depth, xpath_target_depth, current_element->name);
-		if( xpath_depth>xpath_target_depth ) break;
+		if(xpath_depth>xpath_target_depth) break;
 		
 		if(!g_str_equal(current_element->name, xpathv[xpath_depth])){
 			if(xpath_depth==xpath_target_depth && !current_element->next){
@@ -577,7 +556,7 @@ gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean retur
 	
 	g_strfreev(xpathv);
 	
-	if(!( ((xpath_content)) && (xpath_content=g_strstrip(xpath_content)) && G_STR_N_EMPTY(xpath_content) )){
+	if(!(((xpath_content)) && (xpath_content=g_strstrip(xpath_content)) && G_STR_N_EMPTY(xpath_content))){
 		if(xpath_content)
 			uber_free(xpath_content);
 		return NULL;

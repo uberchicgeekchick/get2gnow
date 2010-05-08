@@ -98,7 +98,7 @@
 #include "uberchick-sexy-entry-completion.h"
 
 
-#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE(( obj), TYPE_MAIN_WINDOW, MainWindowPrivate ))
+#define	GET_PRIVATE(obj)	(G_TYPE_INSTANCE_GET_PRIVATE((obj), TYPE_MAIN_WINDOW, MainWindowPrivate))
 
 struct _MainWindowPrivate {
 	/* Misc */
@@ -296,7 +296,7 @@ static void main_window_class_init(MainWindowClass *klass){
 	GObjectClass *object_class=G_OBJECT_CLASS(klass);
 	object_class->finalize=main_window_finalize;
 	g_type_class_add_private(object_class, sizeof(MainWindowPrivate));
-}/*main_window_class_init(GET_CLASS(main_window) );*/
+}/*main_window_class_init(GET_CLASS(main_window));*/
 
 static void main_window_init(MainWindow *singleton_main_window){
 	main_window=singleton_main_window;
@@ -525,10 +525,10 @@ static void main_window_setup(void){
 
 static void main_window_view_setup(MainWindowPrivate *m_w_p){
 	/* Best Friends stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( m_w_p->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE, (GtkWidget *)m_w_p->best_friends_vbox );
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE, (GtkWidget *)m_w_p->best_friends_vbox);
 	
 	/* Main Toolbar stuff. */
-	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( m_w_p->view_toolbar_main_check_menu_item, MAIN_WINDOW_MAIN_TOOLBAR_HIDE, TRUE, (GtkWidget *)m_w_p->main_window_handlebox );
+	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_toolbar_main_check_menu_item, MAIN_WINDOW_MAIN_TOOLBAR_HIDE, TRUE, (GtkWidget *)m_w_p->main_window_handlebox);
 	
 	/* Tabs Toolbars stuff. */
 	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_toolbar_tabs_check_menu_item, TIMELINE_SEXY_TREE_VIEW_TOOLBAR_VISIBILITY, TRUE, NULL);
@@ -538,11 +538,11 @@ static void main_window_view_setup(MainWindowPrivate *m_w_p){
 	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_from_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_FROM_COLUMN_VISIBILITY, TRUE, NULL);
 	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_rcpt_colums_check_menu_item, TIMELINE_SEXY_TREE_VIEW_RCPT_COLUMN_VISIBILITY, TRUE, NULL);
 	
-	gtk_check_menu_item_set_active( m_w_p->view_update_viewer_floating_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) );
-	g_signal_connect_after( m_w_p->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle_via_check_menu_item, NULL );
+	gtk_check_menu_item_set_active(m_w_p->view_update_viewer_floating_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE));
+	g_signal_connect_after(m_w_p->view_update_viewer_floating_check_menu_item, "toggled", (GCallback)update_viewer_emulate_embed_toggle_via_check_menu_item, NULL);
 	
-	gtk_check_menu_item_set_active(m_w_p->view_update_viewer_compact_view_check_menu_item, gconfig_if_bool( PREFS_UPDATE_VIEWER_COMPACT, FALSE) );
-	g_signal_connect_after( m_w_p->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)update_viewer_emulate_compact_view_toggle, NULL );
+	gtk_check_menu_item_set_active(m_w_p->view_update_viewer_compact_view_check_menu_item, gconfig_if_bool(PREFS_UPDATE_VIEWER_COMPACT, FALSE));
+	g_signal_connect_after(m_w_p->view_update_viewer_compact_view_check_menu_item, "toggled", (GCallback)update_viewer_emulate_compact_view_toggle, NULL);
 	
 	/* Over all hidden/visible UI widgets. */
 	main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(m_w_p->view_menu_uber_compact_view_check_menu, COMPACT_VIEW, FALSE, NULL);
@@ -552,16 +552,16 @@ static void main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_ke
 	gboolean hide=!gconfig_if_bool(gconfig_key, active);
 	gtk_check_menu_item_set_active(check_menu_item, !hide);
 	
-	g_object_set_data_full( (GObject *)check_menu_item, "gconfig_key", g_strdup(gconfig_key), g_free );
-	g_object_set_data_full( (GObject *)check_menu_item, "default_value", g_strdup( (active ?"TRUE" :"FALSE" ) ), g_free );
+	g_object_set_data_full((GObject *)check_menu_item, "gconfig_key", g_strdup(gconfig_key), g_free);
+	g_object_set_data_full((GObject *)check_menu_item, "default_value", g_strdup((active ?"TRUE" :"FALSE")), g_free);
 	
 	if(widget){
-		g_object_set_data( (GObject *)check_menu_item, "widget", widget );
+		g_object_set_data((GObject *)check_menu_item, "widget", widget);
 		if(hide) gtk_widget_hide(widget);
 	}
 	
 	g_signal_connect_after(check_menu_item, "toggled", (GCallback)main_window_view_menu_option_toggled, NULL);
-}/*main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key( main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE|FALSE, (GtkWidget *)main_window->private->best_friends_vbox );*/
+}/*main_window_bind_widget_visibility_to_check_menu_item_and_gconfig_key(main_window->private->view_best_friends_check_menu_item, MAIN_WINDOW_BEST_FRIENDS_HIDE_VBOX, TRUE|FALSE, (GtkWidget *)main_window->private->best_friends_vbox);*/
 
 static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_item){
 	/* Any widget's visiblity state is stored as !visibility.  I am going to switch this.
@@ -570,15 +570,15 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
 	 * e.g. /ui/hide/best_friends & /ui/hide/main_window.
  .	 * 	This is handled by MainWindow's methods: 'main_window_toggle_visibility' & 'main_window_timeout'.
 	 */
-	const gchar *gconfig_key=g_object_get_data( (GObject *)check_menu_item, "gconfig_key");
-	const gchar *gconfig_default=g_object_get_data( (GObject *)check_menu_item, "default_value");
+	const gchar *gconfig_key=g_object_get_data((GObject *)check_menu_item, "gconfig_key");
+	const gchar *gconfig_default=g_object_get_data((GObject *)check_menu_item, "default_value");
 	gboolean active=gtk_check_menu_item_get_active(check_menu_item);
 	if(active==gconfig_if_bool(gconfig_key, (g_str_equal(gconfig_default, "FALSE") ?FALSE :TRUE)))
 		return;
 	
 	gconfig_set_bool(gconfig_key, active);
 	GtkWidget *widget=NULL;
-	if( (widget=g_object_get_data( (GObject *)check_menu_item, "widget")) ){
+	if((widget=g_object_get_data((GObject *)check_menu_item, "widget"))){
 		if(!active)
 			gtk_widget_hide(widget);
 		else
@@ -619,18 +619,18 @@ static void main_window_compact_timelines_toggled(gboolean checked){
 }/*main_window_compact_timelines_toggled(TRUE|FALSE);*/
 
 void main_window_compact_ui(GtkToggleButton *toggle_button){
-	main_window_compact_view_toggled( gtk_toggle_button_get_active(toggle_button) );
+	main_window_compact_view_toggled(gtk_toggle_button_get_active(toggle_button));
 }/*main_window_compact_ui();*/
 
 void main_window_concatenate_timeline_columns(GtkToggleButton *toggle_button){
-	main_window_compact_timelines_toggled( gtk_toggle_button_get_active(toggle_button) );
+	main_window_compact_timelines_toggled(gtk_toggle_button_get_active(toggle_button));
 }/*main_window_concatenate_timeline_columns();*/
 
 void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointer user_data){
 	gboolean use_update_viewer_dialog=gtk_toggle_button_get_active(toggle_button);
 	if(use_update_viewer_dialog==gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE)) return;
 	
-	debug("UpdateViewer changed:\t[%s]",(use_update_viewer_dialog?_("floating"):_("embed")) );
+	debug("UpdateViewer changed:\t[%s]",(use_update_viewer_dialog?_("floating"):_("embed")));
 	geometry_save();
 	gconfig_set_bool(PREFS_UPDATE_VIEWER_DIALOG, use_update_viewer_dialog);
 	
@@ -658,7 +658,7 @@ void main_window_update_viewer_set_embed(GtkToggleButton *toggle_button, gpointe
 	
 	update_viewer_set_embed_toggle_and_image();
 	
-	debug("Setting MainWindow's embed state indicator, in its 'View' menu, to %s window", (use_update_viewer_dialog ?"embed UpdateViewer into its main" :"split UpdateViewer off into a floating" ) );
+	debug("Setting MainWindow's embed state indicator, in its 'View' menu, to %s window", (use_update_viewer_dialog ?"embed UpdateViewer into its main" :"split UpdateViewer off into a floating"));
 	gtk_check_menu_item_set_active(main_window->private->view_update_viewer_floating_check_menu_item, use_update_viewer_dialog);
 	
 	geometry_load();
@@ -681,29 +681,29 @@ GtkMenuBar *main_menu_get_main_menubar(void){
 }/*main_menu_get_main_menubar();*/
 
 GtkMenuItem *main_window_get_menu_item(const gchar *menu){
-	if((g_str_equal(menu, "network")) ) return GET_PRIVATE(main_window)->network_menu_item;
-	if((g_str_equal(menu, "tabs")) ) return GET_PRIVATE(main_window)->tabs_menu_item;
-	if((g_str_equal(menu, "edit")) ) return GET_PRIVATE(main_window)->edit_menu_item;
-	if((g_str_equal(menu, "view")) ) return GET_PRIVATE(main_window)->view_menu_item;
-	if((g_str_equal(menu, "online_service_request")) ) return GET_PRIVATE(main_window)->online_service_request_menu_item;
-	if((g_str_equal(menu, "help")) ) return GET_PRIVATE(main_window)->help_menu_item;
+	if((g_str_equal(menu, "network"))) return GET_PRIVATE(main_window)->network_menu_item;
+	if((g_str_equal(menu, "tabs"))) return GET_PRIVATE(main_window)->tabs_menu_item;
+	if((g_str_equal(menu, "edit"))) return GET_PRIVATE(main_window)->edit_menu_item;
+	if((g_str_equal(menu, "view"))) return GET_PRIVATE(main_window)->view_menu_item;
+	if((g_str_equal(menu, "online_service_request"))) return GET_PRIVATE(main_window)->online_service_request_menu_item;
+	if((g_str_equal(menu, "help"))) return GET_PRIVATE(main_window)->help_menu_item;
 	return NULL;
 }/*main_window_get_menu_item("tabs");*/
 
 GtkMenu *main_window_get_menu(const gchar *menu){
-	if((g_str_equal(menu, "network")) ) return GET_PRIVATE(main_window)->menu_network;
-	if((g_str_equal(menu, "tabs")) ) return GET_PRIVATE(main_window)->menu_tabs;
-	if((g_str_equal(menu, "edit")) ) return GET_PRIVATE(main_window)->menu_edit;
-	if((g_str_equal(menu, "view")) ) return GET_PRIVATE(main_window)->menu_view;
-	if((g_str_equal(menu, "online_service_request")) ) return GET_PRIVATE(main_window)->menu_online_service_request;
-	if((g_str_equal(menu, "help")) ) return GET_PRIVATE(main_window)->menu_help;
+	if((g_str_equal(menu, "network"))) return GET_PRIVATE(main_window)->menu_network;
+	if((g_str_equal(menu, "tabs"))) return GET_PRIVATE(main_window)->menu_tabs;
+	if((g_str_equal(menu, "edit"))) return GET_PRIVATE(main_window)->menu_edit;
+	if((g_str_equal(menu, "view"))) return GET_PRIVATE(main_window)->menu_view;
+	if((g_str_equal(menu, "online_service_request"))) return GET_PRIVATE(main_window)->menu_online_service_request;
+	if((g_str_equal(menu, "help"))) return GET_PRIVATE(main_window)->menu_help;
 	return NULL;
 }/*main_window_get_menu("tabs");*/
 
 static void main_window_destroy_cb(GtkWidget *window, MainWindow *main_window){
 	online_service_request_unset_selected_update();
 	/* Add any clean-up code above this function call */
-	gtk_widget_destroy(GTK_WIDGET(GET_PRIVATE(main_window)->window) );
+	gtk_widget_destroy(GTK_WIDGET(GET_PRIVATE(main_window)->window));
 }
 
 static gboolean main_window_delete_event_cb(GtkWidget *window, GdkEvent *event, MainWindow *main_window){
@@ -736,7 +736,7 @@ static void main_window_toggle_visibility(void){
 	
 	visible=window_get_is_visible(GTK_WINDOW(main_window->private->window));
 	
-	if(visible && main_window_status_icon_is_embedded() ) {
+	if(visible && main_window_status_icon_is_embedded()) {
 		geometry_save();
 		
 		gtk_widget_hide(GTK_WIDGET(main_window->private->window));
@@ -770,29 +770,29 @@ static void main_window_exit(GtkWidget  *widget, MainWindow  *main_window){
 }
 
 static void main_window_tabs_menu_widgets_setup(MainWindowPrivate *m_w_p){
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_mine);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_mine), "timeline", API_TIMELINE_MINE, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_mine);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_mine), "timeline", API_TIMELINE_MINE, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_favorites);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_favorites), "timeline", API_FAVORITES, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_favorites);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_favorites), "timeline", API_FAVORITES, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_dm);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_dm), "timeline", API_DIRECT_MESSAGES, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_dm);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_dm), "timeline", API_DIRECT_MESSAGES, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_replies);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_replies), "timeline", API_REPLIES, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_replies);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_replies), "timeline", API_REPLIES, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_homepage);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_homepage), "timeline", API_TIMELINE_HOMEPAGE, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_homepage);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_homepage), "timeline", API_TIMELINE_HOMEPAGE, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_to_me);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_to_me), "timeline", API_RETWEETED_TO_ME, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_to_me);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_to_me), "timeline", API_RETWEETED_TO_ME, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_of_me);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_of_me), "timeline", API_RETWEETS_OF_ME, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_retweets_of_me);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_retweets_of_me), "timeline", API_RETWEETS_OF_ME, NULL);
 	
-	m_w_p->tabs_menu_widgets=g_list_append( m_w_p->tabs_menu_widgets, m_w_p->timeline_public);
-	g_object_set_data_full(G_OBJECT(m_w_p->timeline_public), "timeline", API_TIMELINE_PUBLIC, NULL );
+	m_w_p->tabs_menu_widgets=g_list_append(m_w_p->tabs_menu_widgets, m_w_p->timeline_public);
+	g_object_set_data_full(G_OBJECT(m_w_p->timeline_public), "timeline", API_TIMELINE_PUBLIC, NULL);
 	
 	GList *tabs=NULL;
 	for(tabs=m_w_p->tabs_menu_widgets; tabs; tabs=tabs->next)
@@ -807,7 +807,7 @@ static void main_window_tabs_menu_timeline_selected(GtkCheckMenuItem *selected_t
 		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
 		if(check_menu_item!=selected_tab) continue;
 		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
-		debug("Opening a timeline. GtkCheckMenuItem selected: %s; timeline: %s", gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)), timeline );
+		debug("Opening a timeline. GtkCheckMenuItem selected: %s; timeline: %s", gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)), timeline);
 		if(!gtk_check_menu_item_get_active(check_menu_item))
 			tabs_close_timeline(timeline);
 		else
@@ -835,7 +835,7 @@ gboolean main_window_tabs_menu_set_active(const gchar *timeline_to_open, gboolea
 		GtkCheckMenuItem *check_menu_item=(GtkCheckMenuItem *)tab_menu_items->data;
 		const gchar *timeline=g_object_get_data(G_OBJECT(check_menu_item), "timeline");
 		if(!g_str_equal(timeline, timeline_to_open)) continue;
-		debug("%s timeline tab: %s. GtkCheckMenuItem selected: %s", (open ?_("Opening") :_("Closing") ), timeline, gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)) );
+		debug("%s timeline tab: %s. GtkCheckMenuItem selected: %s", (open ?_("Opening") :_("Closing")), timeline, gtk_menu_item_get_label(GTK_MENU_ITEM(check_menu_item)));
 		gtk_check_menu_item_set_active(check_menu_item, open);
 		tab_found=TRUE;
 	}
@@ -861,7 +861,7 @@ gboolean main_window_tabs_init(void){
 	 *	I'm doing this now; before <friends_timeline.xml> is depricated.		*
 	 *	Twitter already has this planned and I imagine identi.ca will do so too.	*/
 	gboolean open_old_homepage=FALSE;
-	if( (gconfig_get_bool(PREFS_AUTOLOAD_FOLLOWING, &open_old_homepage)) && open_old_homepage ){
+	if((gconfig_get_bool(PREFS_AUTOLOAD_FOLLOWING, &open_old_homepage)) && open_old_homepage){
 		gconfig_set_bool(PREFS_AUTOLOAD_FOLLOWING, FALSE);
 		gconfig_rm_rf(PREFS_AUTOLOAD_FOLLOWING);
 		if(!gconfig_if_bool(PREFS_AUTOLOAD_HOMEPAGE, TRUE))
@@ -967,7 +967,7 @@ static void main_menu_online_service_request_menu_process(GtkImageMenuItem *item
 	debug("Attempting to run OnlineServicRequestPopup: %s", gtk_image_menu_item_name);
 	GPointerFunc	func=g_object_get_data(G_OBJECT(item), "func");
 	gpointer	user_data=g_object_get_data(G_OBJECT(item), "user_data");
-	func( user_data );
+	func(user_data);
 }
 
 
@@ -975,7 +975,7 @@ static void main_menu_online_service_request_menu_process(GtkImageMenuItem *item
 /*BEGIN:UBERCHICK_SEXY_ENTRY_COMPLETION_COMBO_BOX*/
 
 static void main_window_sexy_search_setup(MainWindowPrivate *m_w_p){
-	m_w_p->search_history_tree_model=gtk_combo_box_get_model( (GtkComboBox *)m_w_p->search_history_combo_box_entry );
+	m_w_p->search_history_tree_model=gtk_combo_box_get_model((GtkComboBox *)m_w_p->search_history_combo_box_entry);
 	m_w_p->sexy_search_entry=(SexySpellEntry *)sexy_spell_entry_new();
 	m_w_p->sexy_search_entry=g_object_ref_sink(m_w_p->sexy_search_entry);
 	gtk_container_remove(GTK_CONTAINER(m_w_p->search_history_combo_box_entry), gtk_bin_get_child(GTK_BIN(m_w_p->search_history_combo_box_entry)));
@@ -1006,7 +1006,7 @@ static void main_window_search_history_load(MainWindowPrivate *m_w_p){
 	gchar *previous_search=NULL, *search_history_gconf_path=NULL;
 	main_window_search_history_validate_maxium(m_w_p);
 	for(m_w_p->search_history_total=0; m_w_p->search_history_total<=m_w_p->search_history_maximum; m_w_p->search_history_total++){
-		if(!( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", m_w_p->search_history_total)), &previous_search )) && G_STR_N_EMPTY(previous_search) )) break;
+		if(!((gconfig_get_string((search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", m_w_p->search_history_total)), &previous_search)) && G_STR_N_EMPTY(previous_search))) break;
 		
 		main_window_search_history_restore(m_w_p, previous_search);
 		uber_free(previous_search);
@@ -1042,7 +1042,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	else if(list_store_index==-1)
 		gtk_list_store_prepend(m_w_p->search_history_list_store, iter);
 	else if(list_store_index>-1)
-		gtk_list_store_insert(m_w_p->search_history_list_store, iter, (list_store_index<m_w_p->search_history_maximum ?list_store_index :m_w_p->search_history_maximum ));
+		gtk_list_store_insert(m_w_p->search_history_list_store, iter, (list_store_index<m_w_p->search_history_maximum ?list_store_index :m_w_p->search_history_maximum));
 	gtk_list_store_set(
 			m_w_p->search_history_list_store, iter,
 				GSTRING_SEARCH_PHRASE, g_strdup(search_phrase),
@@ -1050,7 +1050,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	);
 	uber_free(iter);
 	
-	if( list_store_index==-3 || g_str_equal(search_phrase, "[new search]") ) return;
+	if(list_store_index==-3 || g_str_equal(search_phrase, "[new search]")) return;
 	
 	main_window_search_history_remove(m_w_p, 1);
 	main_window_search_history_add(m_w_p, "[new search]", list_store_index);
@@ -1063,7 +1063,7 @@ static void main_window_search_history_add(MainWindowPrivate *m_w_p, const gchar
 	
 	main_window_search_history_rotate(m_w_p);
 	gchar *search_history_gconf_path=NULL;
-	gconfig_set_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", 0)), search_phrase);
+	gconfig_set_string((search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", 0)), search_phrase);
 	uber_free(search_history_gconf_path);
 }/*main_window_search_history_add(main_window->private, GTK_ENTRY(update_viewer->sexy_search_entry)->text, -3 to prepend w/o saving update into gconfig|-2 to prepend|-1 to append|>0 to instert at this index);*/
 
@@ -1124,7 +1124,7 @@ static void main_window_search_history_remove(MainWindowPrivate *m_w_p, gint lis
 static void main_window_search_history_rotate(MainWindowPrivate *m_w_p){
 	gchar *search_history_previous_search=NULL, *search_history_gconf_path=NULL;
 	for(gint i=m_w_p->search_history_maximum; i>=0; i--){
-		if( (gconfig_get_string( (search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i-1)), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search) ){
+		if((gconfig_get_string((search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i-1)), &search_history_previous_search)) && G_STR_N_EMPTY(search_history_previous_search)){
 			uber_free(search_history_gconf_path);
 			search_history_gconf_path=g_strdup_printf(PREFS_SAVED_HISTORY_STRING, "search", i);
 			gconfig_set_string(search_history_gconf_path, search_history_previous_search);
@@ -1148,7 +1148,7 @@ static void main_window_search_history_selected(GtkComboBoxEntry *search_history
 				-1
 	);
 	
-	if(!(G_STR_N_EMPTY(selected_search_phrase) && g_str_n_equal(selected_search_phrase, "[new search]") )){
+	if(!(G_STR_N_EMPTY(selected_search_phrase) && g_str_n_equal(selected_search_phrase, "[new search]"))){
 		uber_free(selected_search_phrase);
 		uber_free(iter);
 		return;
@@ -1167,7 +1167,7 @@ void main_window_sexy_search_entry_set(const gchar *search_phrase, gboolean auto
 
 static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *main_window){
 	gchar *search_phrase=GTK_ENTRY(main_window->private->sexy_search_entry)->text;
-	if( G_STR_EMPTY(search_phrase) ) return;
+	if(G_STR_EMPTY(search_phrase)) return;
 	main_window_search_history_prepend(main_window->private, search_phrase);
 	debug("Searching for %s", search_phrase);
 	gchar *search_timeline=NULL;
@@ -1184,7 +1184,7 @@ static void main_window_search_submitted(GtkWidget *search_widget, MainWindow *m
 }/*main_window_search_submitted(main_window->private->search_button, main_window->private);*/
 
 SexySpellEntry *main_window_sexy_search_entry_get_widget(void){
-	if(! main_window->private->sexy_search_entry ) return NULL;
+	if(! main_window->private->sexy_search_entry) return NULL;
 	return main_window->private->sexy_search_entry;
 }/*main_window_sexy_search_entry_get_widget();*/
 
@@ -1193,9 +1193,9 @@ void main_window_sexy_search_entry_select(void){
 	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()))) return;
 	gtk_widget_grab_focus(GTK_WIDGET(main_window->private->sexy_search_entry));
 	gint sexy_position=-1;
-	if( main_window->private->sexy_position > 0 && main_window->private->sexy_position <= gtk_entry_get_text_length((GtkEntry *)main_window->private->sexy_search_entry) )
+	if(main_window->private->sexy_position > 0 && main_window->private->sexy_position <= gtk_entry_get_text_length((GtkEntry *)main_window->private->sexy_search_entry))
 		sexy_position=main_window->private->sexy_position;
-	gtk_entry_set_position(GTK_ENTRY(main_window->private->sexy_search_entry), sexy_position );
+	gtk_entry_set_position(GTK_ENTRY(main_window->private->sexy_search_entry), sexy_position);
 }/*main_window_sexy_search_entry_select();*/
 
 void main_window_show_search_history(void){
@@ -1350,7 +1350,7 @@ static void main_window_login(void){
 }/*main_window_login*/
 
 static void main_window_reconnect(GtkMenuItem *item, MainWindow *main_window){
-	if(!( online_services_reconnect()))
+	if(!(online_services_reconnect()))
 		return;
 	
 	main_window_tabs_init();
@@ -1378,7 +1378,7 @@ static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	
 	GList *list=NULL;
 	for(int i=0; i < G_N_ELEMENTS(selected_update_buttons); i++)
-		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_buttons[i])) );
+		list=g_list_append(list, (gtk_builder_get_object(ui, selected_update_buttons[i])));
 	main_window->private->selected_update_image_menu_items=list;
 }/*main_window_selected_update_widgets_setup(ui);*/
 
@@ -1399,11 +1399,11 @@ static void main_window_connection_items_setup(GtkBuilder *ui){
 	};
 	
 	for(i=0, list=NULL; i < G_N_ELEMENTS(widgets_connected); i++)
-		list=g_list_prepend(list, (gtk_builder_get_object(ui, widgets_connected[i])) );
+		list=g_list_prepend(list, (gtk_builder_get_object(ui, widgets_connected[i])));
 	main_window->private->widgets_connected=list;
 	
 	for(i=0, list=NULL; i < G_N_ELEMENTS(widgets_disconnected); i++)
-		list=g_list_prepend(list, (gtk_builder_get_object(ui, widgets_disconnected[i])) );
+		list=g_list_prepend(list, (gtk_builder_get_object(ui, widgets_disconnected[i])));
 	main_window->private->widgets_disconnected=list;
 }/*main_window_connection_items_setup(ui);*/
 
@@ -1418,7 +1418,7 @@ void main_window_state_on_connection(gboolean connected){
 		update_viewer_new_update();
 		main_window_statusbar_timeouts_free();
 		online_service_request_unset_selected_update();
-		main_window_set_statusbar_default_message( _("You're currently not connected to any Online Services.") );
+		main_window_set_statusbar_default_message(_("You're currently not connected to any Online Services."));
 		tabs_stop();
 	}else{
 		update_viewer_new_update();
@@ -1428,18 +1428,18 @@ void main_window_state_on_connection(gboolean connected){
 	
 	GList         *l;
 	for(l=main_window->private->widgets_connected; l; l=l->next)
-		gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected );
+		gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
 	g_list_free(l);
 	
 	for(l=main_window->private->widgets_disconnected; l; l=l->next)
-		gtk_widget_set_sensitive(GTK_WIDGET(l->data), !connected );
+		gtk_widget_set_sensitive(GTK_WIDGET(l->data), !connected);
 	g_list_free(l);
 	
 	if(connected) update_viewer_sexy_select();
 }
 
 void main_window_selected_update_image_menu_items_show(gboolean selected_update){
-	if(!(main_window->private && main_window->private->selected_update_image_menu_items )) return;
+	if(!(main_window->private && main_window->private->selected_update_image_menu_items)) return;
 	
 	GList *selected_update_image_menu_items;
 	for(selected_update_image_menu_items=main_window->private->selected_update_image_menu_items; selected_update_image_menu_items; selected_update_image_menu_items=selected_update_image_menu_items->next)
@@ -1449,16 +1449,16 @@ void main_window_selected_update_image_menu_items_show(gboolean selected_update)
 }/*main_window_selected_update_image_menu_items_show(TRUE|FALSE);*/
 
 const gchar *main_window_set_statusbar_default_message(const gchar *default_message){
-	if(g_str_equal(main_window->private->statusbar_default_message, default_message) ) return main_window->private->statusbar_default_message;
+	if(g_str_equal(main_window->private->statusbar_default_message, default_message)) return main_window->private->statusbar_default_message;
 	uber_free(main_window->private->statusbar_default_message);
 	main_window->private->statusbar_default_message=g_strdup(default_message);
 	if(!statusbar_inital_context_id)
 		statusbar_inital_context_id=gtk_statusbar_push(main_window->private->statusbar, 1, main_window->private->statusbar_default_message);
 	return main_window->private->statusbar_default_message;
-}/*main_window_set_statusbar_default_message( _("Default message.") );*/
+}/*main_window_set_statusbar_default_message(_("Default message."));*/
 
 void main_window_statusbar_printf(const gchar *msg, ...){
-	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR(main_window->private->statusbar) ))
+	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR(main_window->private->statusbar)))
 		return;
 	
 	gchar *message=NULL;
@@ -1476,11 +1476,11 @@ static GSList *statusbar_timers=NULL;
 static guint statusbar_messages_total=0;
 void main_window_set_statusbar_msg(gchar *message){
 	static guint8 statusbar_messages_timeout=5;
-	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR(main_window->private->statusbar) ))
+	if(!(main_window->private && main_window->private->statusbar && GTK_IS_STATUSBAR(main_window->private->statusbar)))
 		return;
 	
-	if(G_STR_N_EMPTY(message) && !g_str_equal(message, main_window->private->statusbar_default_message) )
-		statusbar_timers=g_slist_append( statusbar_timers, GINT_TO_POINTER( g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, ++statusbar_messages_total+statusbar_messages_timeout, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free) ) );
+	if(G_STR_N_EMPTY(message) && !g_str_equal(message, main_window->private->statusbar_default_message))
+		statusbar_timers=g_slist_append(statusbar_timers, GINT_TO_POINTER(g_timeout_add_seconds_full(G_PRIORITY_DEFAULT, ++statusbar_messages_total+statusbar_messages_timeout, (GSourceFunc)main_window_statusbar_display, g_strdup(message), g_free)));
 	
 	if(main_window->private->timeout_id_status_bar_message_default)
 		program_timeout_remove(&main_window->private->timeout_id_status_bar_message_default, _("status bar default message"));
@@ -1493,10 +1493,10 @@ static gboolean main_window_statusbar_display(const gchar *message){
 		gtk_statusbar_remove(main_window->private->statusbar, 1, statusbar_inital_context_id);
 		statusbar_inital_context_id=0;
 	}
-	gtk_statusbar_pop(GTK_STATUSBAR(main_window->private->statusbar), 1 );
-	gtk_statusbar_push(GTK_STATUSBAR(main_window->private->statusbar), 1, ( G_STR_N_EMPTY(message) ?message :main_window->private->statusbar_default_message ) );
+	gtk_statusbar_pop(GTK_STATUSBAR(main_window->private->statusbar), 1);
+	gtk_statusbar_push(GTK_STATUSBAR(main_window->private->statusbar), 1, (G_STR_N_EMPTY(message) ?message :main_window->private->statusbar_default_message));
 	
-	if( statusbar_messages_total && statusbar_timers && statusbar_timers->data && !g_str_equal(message, main_window->private->statusbar_default_message) )
+	if(statusbar_messages_total && statusbar_timers && statusbar_timers->data && !g_str_equal(message, main_window->private->statusbar_default_message))
 		statusbar_messages_total--;
 	statusbar_messages_total--;
 	
@@ -1505,7 +1505,7 @@ static gboolean main_window_statusbar_display(const gchar *message){
 
 static void main_window_statusbar_timeouts_free(void){
 	if(statusbar_timers)
-		for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_messages_total; --statusbar_messages_total, statusbar_timers=g_slist_nth(statusbar_timers, 0) )
+		for(statusbar_timers=g_slist_nth(statusbar_timers, 0); statusbar_messages_total; --statusbar_messages_total, statusbar_timers=g_slist_nth(statusbar_timers, 0))
 			main_window_statusbar_timer_remove();
 	
 	uber_slist_free(statusbar_timers);
@@ -1515,7 +1515,7 @@ static void main_window_statusbar_timeouts_free(void){
 }/*main_window_statusbar_timeouts_free();*/
 
 static void main_window_statusbar_timer_remove(void){
-	if(!( statusbar_timers && statusbar_timers->data )) return;
+	if(!(statusbar_timers && statusbar_timers->data)) return;
 	
 	gpointer timer_pointer=statusbar_timers->data;
 	guint timer=GPOINTER_TO_INT(timer_pointer);

@@ -180,7 +180,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 			/* These cases are never reached - they're just here to make gcc happy. */
 			return 0;
 	}
-	if(!oldest_update_id && notify && ( update_type!=DMs || update_type!=Replies ) ) notify=FALSE;
+	if(!oldest_update_id && notify && (update_type!=DMs || update_type!=Replies)) notify=FALSE;
 	
 	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
 	const gint	update_notification_interval=10;
@@ -195,15 +195,15 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 	/* get updates or direct messages */
 	debug("Parsing %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
-		if(current_element->type != XML_ELEMENT_NODE ) continue;
+		if(current_element->type != XML_ELEMENT_NODE) continue;
 		
-		if( g_str_equal(current_element->name, "statuses") || g_str_equal(current_element->name, "direct-messages") ){
+		if(g_str_equal(current_element->name, "statuses") || g_str_equal(current_element->name, "direct-messages")){
 			if(!current_element->children) continue;
 			current_element=current_element->children;
 			continue;
 		}
 		
-		if(!( g_str_equal(current_element->name, "status") || g_str_equal(current_element->name, "direct_message") ))
+		if(!(g_str_equal(current_element->name, "status") || g_str_equal(current_element->name, "direct_message")))
 			continue;
 		
 		if(!current_element->children){
@@ -211,11 +211,11 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 			continue;
 		}
 		
-		debug("Parsing %s", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s", (g_str_equal(current_element->name, "status") ?"status update" :"direct message"));
 		
 		status=NULL;
 		debug("Creating Status *");
-		if(!( (( status=user_status_parse(service, current_element->children, update_type ))) && status->id )){
+		if(!(((status=user_status_parse(service, current_element->children, update_type))) && status->id)){
 			if(status) user_status_free(status);
 			continue;
 		}
@@ -225,12 +225,12 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		/* id_oldest_tweet is only set when update_type DMs or Replies */
 		debug("Adding UserStatus from: %s, ID: %s, on <%s> to UberChickTreeView", status->user->user_name, status->id_str, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
-		if( update_type!=BestFriends && update_type!=DMs && ( best_friends_is_user_best_friend(service, status->user->user_name) || ( status->retweet && best_friends_is_user_best_friend(service, status->retweeted_user_name) ) ) )
-			if( (best_friends_check_update_ids( service, status->user->user_name, status->id)) && notify_best_friends)
+		if(update_type!=BestFriends && update_type!=DMs && (best_friends_is_user_best_friend(service, status->user->user_name) || (status->retweet && best_friends_is_user_best_friend(service, status->retweeted_user_name))))
+			if((best_friends_check_update_ids(service, status->user->user_name, status->id)) && notify_best_friends)
 				notify_of_new_update=TRUE;
 			
 		
-		if( notify && !notify_of_new_update && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name) )
+		if(notify && !notify_of_new_update && !save_oldest_id && status->id > last_notified_update && strcasecmp(status->user->user_name, service->user_name))
 			notify_of_new_update=TRUE;
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
@@ -251,7 +251,7 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 		 * this only once it won't ending up causing bloating.
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, timeline);
-		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id);
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	

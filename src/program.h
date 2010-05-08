@@ -91,12 +91,12 @@ G_BEGIN_DECLS
 #endif
 
 #ifndef	G_STR_EMPTY
-#	define		G_STR_EMPTY(string)			( ((string)==NULL) || (string)[0]=='\0' )
+#	define		G_STR_EMPTY(string)			(((string)==NULL) || (string)[0]=='\0')
 #endif
 
 
 #ifndef	G_STR_N_EMPTY
-#	define		G_STR_N_EMPTY(string)			( ((string)!=NULL) && (string)[0]!='\0' )
+#	define		G_STR_N_EMPTY(string)			(((string)!=NULL) && (string)[0]!='\0')
 #endif
 
 #ifndef	uber_new
@@ -125,6 +125,13 @@ G_BEGIN_DECLS
 #	define uber_slist_free(sl)					\
 	G_STMT_START{							\
 		if(sl!=NULL){ g_slist_free(sl); sl=NULL; }		\
+	}G_STMT_END
+#endif
+
+#ifndef uber_error_free
+#	define	uber_error_free(error)					\
+	G_STMT_START{							\
+		if(error!=NULL){ g_error_free(error); error=NULL; }	\
 	}G_STMT_END
 #endif
 
@@ -165,8 +172,8 @@ G_BEGIN_DECLS
 #ifndef	gtk_widget_toggle_visibility
 #	define	gtk_widget_toggle_visibility(widget)											\
 	G_STMT_START{															\
-		if( widget && GTK_IS_WIDGET(widget) )											\
-			if(!( gtk_widget_is_visible(widget) ))										\
+		if(widget && GTK_IS_WIDGET(widget))											\
+			if(!(gtk_widget_is_visible(widget)))										\
 				gtk_widget_show(widget);										\
 			else														\
 				gtk_widget_hide(widget);										\

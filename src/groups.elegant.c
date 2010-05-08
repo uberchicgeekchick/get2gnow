@@ -118,7 +118,7 @@ void groups_init(void){
 	const gchar *g_regex_pattern="^group-([0-9]*)$";
 	groups_id_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
 	if(error){
-		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message );
+		debug("**ERROR:** creating GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message);
 		g_error_free(error);
 		uber_regex_unref(groups_id_regex);
 	}
@@ -145,7 +145,7 @@ static StatusNetGroup *groups_new_group(OnlineService *service){
 }/*groups_new_group(service);*/
 
 StatusNetGroup *groups_new_group_from_node(OnlineService *service, const gchar *uri, xmlNode *root_element){
-	if(!( service && root_element && root_element->children && root_element->properties )) return NULL;
+	if(!(service && root_element && root_element->children && root_element->properties)) return NULL;
 	
 	StatusNetGroup	*group=groups_new_group(service);
 	xmlNode		*current_element=NULL, *contents_element=NULL, *current_elements_attributes=NULL;
@@ -154,7 +154,7 @@ StatusNetGroup *groups_new_group_from_node(OnlineService *service, const gchar *
 	
 	debug("Parsing Group's ID within this node, i.e. <li class=\"profile hentry\" id=\"group-[0-9]+\">");
 	for(elements_attributes=root_element->properties; elements_attributes; elements_attributes=elements_attributes->next){
-		debug("Parsing Group node: <%s>; finding id attribute", elements_attributes->name );
+		debug("Parsing Group node: <%s>; finding id attribute", elements_attributes->name);
 		if(g_str_equal(elements_attributes->name, "id")) break;
 	}
 	if(!elements_attributes) return NULL;
@@ -184,14 +184,14 @@ StatusNetGroup *groups_new_group_from_node(OnlineService *service, const gchar *
 	 * get's inside the Groups hypercard <div>
 	 *
 	 */
-	if(!(root_element=xml_get_child_element(uri, root_element->children, "div", "class", "entity_profile vcard entry-content", NULL ))){
+	if(!(root_element=xml_get_child_element(uri, root_element->children, "div", "class", "entity_profile vcard entry-content", NULL))){
 		debug("Could not find Groups <div class=\"entity_profile vcard entry-content\">");
 		return NULL;
 	}
 	
 	for(current_element=root_element->children; current_element; current_element=current_element->next) {
 		debug("Parsing Group from xhtml <li> node.  Current element: <%s>; type: [%s]", current_element->name, xml_node_type_to_string(current_element->type));
-		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE) continue;
 		
 		if((contents_element=xml_get_child_element(uri, current_element, "a", "class", "url entry-title", "href", NULL))){
 			content=(gchar *)xmlNodeGetContent(contents_element);
@@ -238,7 +238,7 @@ StatusNetGroup *groups_new_group_from_node(OnlineService *service, const gchar *
 }/*groups_new_group_from_node(service, uri, root_element);*/
 
 static void groups_format_group_note(StatusNetGroup *group){
-	if(!(group && group->id && G_STR_N_EMPTY(group->note) )) return;
+	if(!(group && group->id && G_STR_N_EMPTY(group->note))) return;
 	
 	group->note_tooltip=www_html_entity_escape_text(group->note);
 	group->note_markup=www_format_urls(group->service, group->note_tooltip, FALSE, FALSE);
@@ -247,31 +247,31 @@ static void groups_format_group_note(StatusNetGroup *group){
 static void groups_verify_group(StatusNetGroup **group){
 	if(!group) return;
 	
-	if(! (*group)->id_str ) (*group)->id_str=g_strdup("");
+	if(! (*group)->id_str) (*group)->id_str=g_strdup("");
 	
-	if(! (*group)->uri ) (*group)->uri=g_strdup("");
-	if(! (*group)->homepage ) (*group)->homepage=g_strdup("");
+	if(! (*group)->uri) (*group)->uri=g_strdup("");
+	if(! (*group)->homepage) (*group)->homepage=g_strdup("");
 	
-	if(! (*group)->name ) (*group)->name=g_strdup("");
-	if(! (*group)->title ) (*group)->title=g_strdup("");
+	if(! (*group)->name) (*group)->name=g_strdup("");
+	if(! (*group)->title) (*group)->title=g_strdup("");
 	
-	if(! (*group)->image_uri ) (*group)->image_uri=g_strdup("");
-	if(! (*group)->image_file ) (*group)->image_file=g_strdup("");
+	if(! (*group)->image_uri) (*group)->image_uri=g_strdup("");
+	if(! (*group)->image_file) (*group)->image_file=g_strdup("");
 	
-	if(! (*group)->note ) (*group)->note=g_strdup("");
-	if(! (*group)->note_tooltip ) (*group)->note_tooltip=g_strdup("");
-	if(! (*group)->note_markup ) (*group)->note_markup=g_strdup("");
-	if(! (*group)->notification ) (*group)->notification=g_strdup("");
+	if(! (*group)->note) (*group)->note=g_strdup("");
+	if(! (*group)->note_tooltip) (*group)->note_tooltip=g_strdup("");
+	if(! (*group)->note_markup) (*group)->note_markup=g_strdup("");
+	if(! (*group)->notification) (*group)->notification=g_strdup("");
 }/*groups_verify_group(group);*/
 
 static void groups_free_group(StatusNetGroup *group){
 	if(!group) return;
-	groups_verify_group( &group );
+	groups_verify_group(&group);
 	debug("Freeing StatusNetGroup: <%s> [id: %f]", group->name, group->id);
 	
 	group->service=NULL;
 	
-	uber_object_free( &group->id_str, &group->name, &group->title, &group->uri, &group->homepage, &group->image_uri, &group->image_file, &group->note, &group->note_tooltip, &group->note_markup, &group->notification, &group, NULL );
+	uber_object_free(&group->id_str, &group->name, &group->title, &group->uri, &group->homepage, &group->image_uri, &group->image_file, &group->note, &group->note_tooltip, &group->note_markup, &group->notification, &group, NULL);
 }/*groups_free_group(StatusNetGroup *group);*/
 
 /* Parse a timeline XML file */
@@ -292,7 +292,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	const gchar	*element="body", *attribute="id", *value="groupsearch";
 	gchar		*content=NULL;
 	for(root_element=root_element->children; root_element; root_element=root_element->next){
-		if(!( root_element->type == XML_ELEMENT_NODE && g_str_equal(root_element->name, element) ))
+		if(!(root_element->type == XML_ELEMENT_NODE && g_str_equal(root_element->name, element)))
 			continue;
 		
 		if(!found_body){
@@ -366,7 +366,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	newest_update_id=0.0;
 	
 	gboolean	has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
-	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE );
+	gboolean	notify=((oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE);
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
 	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
@@ -377,7 +377,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	//debug("Parsing Groups from xhtml search results; starting with: <%s> node", root_element->name);
 	for(current_element=root_element->next; current_element; current_element=current_element->next) {
 		debug("Parsing Groups from <%s>'s looking for <li>; at node: <%s>; type: [%s]", uri, current_element->name, xml_node_type_to_string(current_element->type));
-		if(!( current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, "li") ))
+		if(!(current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, "li")))
 			continue;
 		
 		if(!current_element->children){
@@ -403,7 +403,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		
 		debug("Parsing Groups result");
 		group=NULL;
-		if(!( (( group=groups_new_group_from_node(service, uri, current_element) )) && group->id )){
+		if(!(((group=groups_new_group_from_node(service, uri, current_element))) && group->id)){
 			if(group) groups_free_group(group);
 			continue;
 		}
@@ -435,7 +435,7 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] Group IDs", service->guid, uri);
-		debug("Saving <%s>'s; Group IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; Group IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id);
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	

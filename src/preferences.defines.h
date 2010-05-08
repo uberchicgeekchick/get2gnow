@@ -109,7 +109,8 @@ G_BEGIN_DECLS
 #define	PREFS_UPDATES_ARCHIVE_FAVES				GCONF_PATH "/online-services/xml-cache/archive/expiration/faves"
 #define	PREFS_UPDATES_ARCHIVE_BEST_FRIENDS			GCONF_PATH "/online-services/xml-cache/archive/expiration/best_friends"
 
-#define	PREFS_UPDATES_REPLACE_ME_W_NICK				GCONF_PATH "/updates/replace_me_w_nick"
+#define	PREFS_UPDATES_REPLACE_ME_W_NICK				GCONF_PATH "/updates/replacements/me_w_nick"
+#define	PREFS_SWAP_OCTOTHORPES_AND_EXCLAIMATIONS		GCONF_PATH "/updates/replacements/swap/octothorpes_and_exclaimations"
 #define PREFS_UPDATES_ADD_PROFILE_LINK				GCONF_PATH "/updates/reply/add_profile_link"
 #define	PREFS_UPDATES_DIRECT_REPLY_ONLY				GCONF_PATH "/updates/reply/directly_to"
 

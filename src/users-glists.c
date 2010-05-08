@@ -149,7 +149,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	}
 	
 	GList *users=NULL;
-	if( (!fetching_users) && (users=users_glist_check(users_glist_get_which, refresh, func)) )
+	if((!fetching_users) && (users=users_glist_check(users_glist_get_which, refresh, func)))
 		return users;
 	
 	if(!fetching_users) fetching_users=TRUE;
@@ -186,7 +186,7 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	
 	statusbar_printf("Downloading %s page: %i; uri: <%s>", (which_pass ?_("who are following you") :_("you're following")), page, uri);
 	debug("Downloading users_glist page: %i; uri: <%s>", page, uri);
-	debug("requesting %s: %li; which_pass: %d; users_glist_get_which type: %s", get_parameter, next_cursor, which_pass, users_glist_get_which_str );
+	debug("requesting %s: %li; which_pass: %d; users_glist_get_which type: %s", get_parameter, next_cursor, which_pass, users_glist_get_which_str);
 	online_service_request(service, QUEUE, uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)users_glist_save, users_glist_process, GINT_TO_POINTER(users_glist_get_which), GINT_TO_POINTER(which_pass));
 	
 	uber_free(uri);
@@ -334,7 +334,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	/*UsersGListGetWhich users_glist_get_which=(UsersGListGetWhich)GPOINTER_TO_INT(online_service_wrapper_get_user_data(service_wrapper));*/
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	const gchar *next_cursor_str=g_strrstr(g_strrstr(uri, "?"), "=");
-	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which) );
+	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which));
 	debug("Processing <%s>'s %s, %s #%s.  Server response: %s [%i]", service->key, users_glist_get_which_str, get_parameter, next_cursor_str, xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
@@ -349,7 +349,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	getting_followers=(which_pass ?TRUE :FALSE);
 	GList *new_users=NULL;
 	debug("Parsing user list");
-	if(!(new_users=users_glist_parse(service_wrapper, xml)) ){
+	if(!(new_users=users_glist_parse(service_wrapper, xml))){
 		debug("No more %s where found, yippies we've got'em all", users_glist_get_which_str);
 		return NULL;
 	}
@@ -418,7 +418,7 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 	xmlNode		*root_element=NULL;
 	
 	debug("Parsing users from: <%s>", uri);
-	if(!( (doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)) && root_element )){
+	if(!((doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)) && root_element)){
 		debug("[failed]");
 		xmlCleanupParser();
 		return NULL;
@@ -484,13 +484,13 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 		xmlNode *user_element=NULL;
 		debug("Parsing users from <%s>; current element: <%s>", uri, current_element->name);
 		for(user_element=current_element->children; user_element; user_element=user_element->next){
-			if( user_element->type!=XML_ELEMENT_NODE ) continue;
+			if(user_element->type!=XML_ELEMENT_NODE) continue;
 			
-			if(!( g_str_equal(user_element->name, "user") && user_element->children )) continue;
+			if(!(g_str_equal(user_element->name, "user") && user_element->children)) continue;
 			
 			User *user=NULL;
 			if(!(user=user_parse_node(service, user_element->children))) continue;
-			if(!( user && user->id && user->user_name )) continue;
+			if(!(user && user->id && user->user_name)) continue;
 			
 			debug("Added user: <%s@%s> to <%s>'s %s", user->user_name, service->uri, service->key, (which_pass ?_("who are following you") :_("you're following")));
 			users=g_list_append(users, user);
@@ -517,9 +517,9 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
  *returns: -1, 0 or 1, if user1 is <, == or > than user2.
  */
 int users_glists_sort_by_user_name(User *user1, User *user2){
-	if(!( user2 && user2->user_name )) return 1;
-	return strcasecmp( user1->user_name, user2->user_name );
-}/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; } );*/
+	if(!(user2 && user2->user_name)) return 1;
+	return strcasecmp(user1->user_name, user2->user_name);
+}/*user_sort_by_user_name(l1->data, { l1=l1->next; l1->data; });*/
 
 
 gboolean users_glists_free_lists(OnlineService *service, UsersGListGetWhich users_glist_get_which){

@@ -164,16 +164,16 @@ static void xml_verify_online_service_xml_doc(OnlineServiceXmlDoc **this){
 	if(!(*this)->error_message)
 		(*this)->error_message=g_strdup("");
 	
-	if(! (*this)->uri )
+	if(! (*this)->uri)
 		(*this)->uri="";
 	
-	if(! (*this)->content_type )
+	if(! (*this)->content_type)
 		(*this)->content_type=g_strdup("");
 	
-	if(! (*this)->char_set )
+	if(! (*this)->char_set)
 		(*this)->char_set=g_strdup("");
 	
-	if(! (*this)->encoding )
+	if(! (*this)->encoding)
 		(*this)->encoding=g_strdup("");
 }/*xml_verify_online_service_xml_doc(xml_doc);*/
 
@@ -184,13 +184,13 @@ static void xml_free_online_service_xml_doc(OnlineServiceXmlDoc *this){
 	if(this->doc)
 		xmlFreeDoc(this->doc);
 	
-	uber_object_free( &this->error_message, &this->uri, &this->content_type, &this->char_set, &this->encoding, &this, NULL );
+	uber_object_free(&this->error_message, &this->uri, &this->content_type, &this->char_set, &this->encoding, &this, NULL);
 }/*xml_free_online_service_xml_doc(xml_doc);*/
 
 static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	SoupURI	*suri=NULL;
 	gchar *uri=NULL;
-	if(!( (((suri=soup_message_get_uri(xml)))) && ((uri=soup_uri_to_string(suri, FALSE))) && (G_STR_N_EMPTY(uri)) )){
+	if(!((((suri=soup_message_get_uri(xml)))) && ((uri=soup_uri_to_string(suri, FALSE))) && (G_STR_N_EMPTY(uri)))){
 		debug("*WARNING*: Unknown XML document URI");
 		if(uri) g_free(uri);
 		uri=g_strdup("[*unknown*]");
@@ -198,7 +198,7 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	if(suri) soup_uri_free(suri);
 	
 	
-	if(!( xml->response_headers && xml->response_body && xml->response_body->data && xml->response_body->length )){
+	if(!(xml->response_headers && xml->response_body && xml->response_body->data && xml->response_body->length)){
 		debug("*ERROR:* Cannot parse empty or xml resonse from: %s", uri);
 		g_free(uri);
 		return NULL;
@@ -218,15 +218,15 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	content_v=g_strsplit(content_info, "; ", -1);
 	g_free(content_info);
 	gchar *content_type=NULL;
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
+	if(!(((content_v[0])) && (content_type=g_strdup(content_v[0])))){
 		debug("*ERROR:*: Failed to determine content-type for:  %s", uri);
 		g_strfreev(content_v);
 		g_free(uri);
 		return NULL;
 	}
 	
-	if(!( g_strrstr(content_type, "text") || g_strrstr(content_type, "xml") )){
-		debug("*ERROR:* <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further", uri, content_type );
+	if(!(g_strrstr(content_type, "text") || g_strrstr(content_type, "xml"))){
+		debug("*ERROR:* <%s>'s Content-Type: [%s] is not contain text or xml content and cannot be parsed any further", uri, content_type);
 		uber_free(content_type);
 		return NULL;
 	}
@@ -234,7 +234,7 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	debug("Parsed Content-Type: [%s] for: %s", content_type, uri);
 	
 	gchar *charset=NULL;
-	if(!( ((content_v[1])) && (charset=g_strdup(content_v[1])) )){
+	if(!(((content_v[1])) && (charset=g_strdup(content_v[1])))){
 		debug("*ERROR:* Failed to determine charset for:  %s", uri);
 		g_free(content_type);
 		g_strfreev(content_v);
@@ -265,7 +265,7 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	
 	content_v=g_strsplit(content_type, "/", -1);
 	gchar *dom_base_entity=NULL;
-	if(!( ((content_v[1])) && (dom_base_entity=g_strdup(content_v[1])) )){
+	if(!(((content_v[1])) && (dom_base_entity=g_strdup(content_v[1])))){
 		debug("*ERROR:* Failed to determine DOM base entity URL for: %s", uri);
 		g_free(uri);
 		g_free(content_type);
@@ -280,7 +280,7 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	
 	debug("Parsing %s document", dom_base_entity);
 	xmlDoc *doc=NULL;
-	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
+	if(!((doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING))))){
 		debug("*ERROR:* Failed to parse %s document", dom_base_entity);
 		g_free(uri);
 		g_free(content_type);
@@ -319,8 +319,8 @@ xmlDoc *xml_create_xml_doc_and_get_root_element_from_soup_message(SoupMessage *x
 }/*xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element);*/
 
 gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message){
-	if(!( SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) && xml->status_code>99 )){
-		*error_message=g_strdup_printf("OnlineService: <%s> has returned an invalid or failed libsoup request.  The URI [%s] returned:: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code );
+	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) && xml->status_code>99)){
+		*error_message=g_strdup_printf("OnlineService: <%s> has returned an invalid or failed libsoup request.  The URI [%s] returned:: %s(%d).", service->key, uri, xml->reason_phrase, xml->status_code);
 		return FALSE;
 	}
 	
@@ -332,7 +332,7 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	}
 	
 	if(xml->status_code==401 || xml->status_code==503){
-		debug("**ERROR:** Authentication failed and/or access denied.  OnlineService: <%s> returned. %s(%d) when requesting [%s]", service->key, xml->reason_phrase, xml->status_code, uri );
+		debug("**ERROR:** Authentication failed and/or access denied.  OnlineService: <%s> returned. %s(%d) when requesting [%s]", service->key, xml->reason_phrase, xml->status_code, uri);
 		return FALSE;
 	}
 	
@@ -352,7 +352,7 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	content_v=g_strsplit(content_info, "; ", -1);
 	uber_free(content_info);
 	gchar *content_type=NULL;
-	if(!( ((content_v[0])) && (content_type=g_strdup(content_v[0])) )){
+	if(!(((content_v[0])) && (content_type=g_strdup(content_v[0])))){
 		debug("*ERROR:* Failed to determine content-type for:  [%s]", uri);
 		g_strfreev(content_v);
 		return FALSE;
@@ -367,9 +367,9 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	uber_free(content_type);
 	
 	debug("Parsing xml document to find any authentication errors");
-	if(!( (doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING) )) )){
+	if(!((doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING))))){
 		debug("Unable to parse xml doc");
-		uber_free( *error_message );
+		uber_free(*error_message);
 		*error_message=g_strdup("Unable to parse xml doc.");
 		xmlCleanupParser();
 		return FALSE;
@@ -378,7 +378,7 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	root_element=xmlDocGetRootElement(doc);
 	if(root_element==NULL) {
 		debug("Failed getting first element of xml data");
-		uber_free( *error_message );
+		uber_free(*error_message);
 		*error_message=g_strdup("Failed getting first element of xml data.");
 		xmlFreeDoc(doc);
 		xmlCleanupParser();
@@ -388,23 +388,23 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	gboolean error_free=TRUE;
 	xmlNode	*current_node=NULL;
 	for(current_node = root_element; current_node; current_node = current_node->next) {
-		if(current_node->type != XML_ELEMENT_NODE ) continue;
+		if(current_node->type != XML_ELEMENT_NODE) continue;
 		
-		if(!( g_str_equal(current_node->name, "error") )) continue;
+		if(!(g_str_equal(current_node->name, "error"))) continue;
 		
 		error_free=FALSE;
-		uber_free( *error_message );
+		uber_free(*error_message);
 		*error_message=(gchar *)xmlNodeGetContent(current_node);
 		break;
 	}
 	
 	if(!error_free){
 		gchar *error_message_swap=g_strdup_printf("OnlineService: <%s> returned: %s(%d) with the error: %s.", service->key, xml->reason_phrase, xml->status_code, *error_message);
-		uber_free((*error_message) );
+		uber_free((*error_message));
 		*error_message=error_message_swap;
 		error_message_swap=NULL;
 		debug("%s", *error_message);
-		statusbar_printf( "%s", *error_message );
+		statusbar_printf("%s", *error_message);
 	}
 	
 	xmlFreeDoc(doc);
@@ -420,7 +420,7 @@ xmlNode *xml_get_child_element(const gchar *uri, xmlNode *root_element, const gc
 	
 	for(current_element=root_element; current_element; current_element=current_element->next) {
 		debug("Parsing <%s>; looking for <%s>.  Current element: <%s>; type: [%s]", uri, element, current_element->name, xml_node_type_to_string(current_element->type));
-		if(( current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, element) ))
+		if((current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, element)))
 			break;
 	}
 	

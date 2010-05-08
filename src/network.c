@@ -159,8 +159,8 @@ void *network_cb_on_image(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	OnlineService *service=online_service_wrapper_get_online_service(service_wrapper);
 	const gchar *requested_uri=online_service_wrapper_get_requested_uri(service_wrapper);
 	NetworkImageDL *network_image_dl=(NetworkImageDL *)online_service_wrapper_get_user_data(service_wrapper);
-	if(!( network_image_dl && network_image_dl->uberchick_tree_view && network_image_dl->filename && network_image_dl->iter )){
-		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s", network_image_dl->filename, (network_image_dl->iter ?"valid" :"unknown") );
+	if(!(network_image_dl && network_image_dl->uberchick_tree_view && network_image_dl->filename && network_image_dl->iter)){
+		debug("**ERROR**: Missing image information.  Image filename: %s; Image iter: %s", network_image_dl->filename, (network_image_dl->iter ?"valid" :"unknown"));
 		return NULL;
 	}
 	
@@ -251,9 +251,9 @@ void *network_update_posted(SoupSession *session, SoupMessage *xml, OnlineServic
 	uber_free(message);
 	uber_free(error_message);
 	
-	debug("HTTP response: %s(#%d) while %s", xml->reason_phrase, xml->status_code, (direct_message ?"sending direct messaging" :"updating your status") );
+	debug("HTTP response: %s(#%d) while %s", xml->reason_phrase, xml->status_code, (direct_message ?"sending direct messaging" :"updating your status"));
 	
-	if( !direct_message && xml->status_code==404 && service->micro_blogging_service==StatusNet){
+	if(!direct_message && xml->status_code==404 && service->micro_blogging_service==StatusNet){
 		debug("Resubmitting status update to: <%s> due to StatusNet bug", service->key);
 		online_service_request(service, POST, (direct_message?API_SEND_MESSAGE:API_POST_STATUS), NULL, network_update_posted, user_data, online_service_wrapper_get_form_data(service_wrapper));
 	}
@@ -284,7 +284,7 @@ void network_set_state_loading_timeline(const gchar *uri, ReloadState state){
 			break;
 	}
 	const gchar *notice_suffix=NULL;
-	if( !gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) && !gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE) )
+	if(!gconfig_if_bool(PREFS_URLS_EXPANSION_DISABLED, FALSE) && !gconfig_if_bool(PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE))
 		notice_suffix=_("This will take several moments.");
 	
 	debug("%s request for %s%s%s", notice_prefix, uri, (notice_suffix ?"; " :""), (notice_suffix ?notice_suffix :""));
@@ -302,13 +302,13 @@ void *network_display_timeline(SoupSession *session, SoupMessage *xml, OnlineSer
 	
 	gchar *error_message=NULL;
 	if(!(xml_error_check(service, requested_uri, xml, &error_message)))
-		if(!online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100 ){
+		if(!online_service_wrapper_get_attempt(service_wrapper) && xml->status_code==100){
 			uber_free(error_message);
 			return network_retry(service_wrapper);
 		}
 	uber_free(error_message);
 	
-	gchar		**uri_split=g_strsplit( g_strrstr(requested_uri, "/"), "?", 2);
+	gchar		**uri_split=g_strsplit(g_strrstr(requested_uri, "/"), "?", 2);
 	gchar		*timeline=g_strdup(uri_split[0]);
 			g_strfreev(uri_split);
 	

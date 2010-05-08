@@ -146,7 +146,7 @@ static void uberchick_label_class_init(UberChickLabelClass *klass){
 }
 
 static void uberchick_label_init(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	this->service=NULL;
@@ -171,7 +171,7 @@ UberChickLabel *uberchick_label_new(void){
 }/*uberchick_label_new();*/
 
 static void uberchick_label_finalize(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	if(this->text)
@@ -187,42 +187,42 @@ static void uberchick_label_finalize(UberChickLabel *uberchick_label){
 }/*uberchick_label_finalize(update_viewer->update_label);*/
 
 OnlineService *uberchick_label_get_service(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->service )) return NULL;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->service)) return NULL;
 	return GET_PRIVATE(uberchick_label)->service;
 }/*uberchick_label_get_service(uberchick_label);*/
 
 const gchar *uberchick_label_get_user_name(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->user_name )) return NULL;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->user_name)) return NULL;
 	return GET_PRIVATE(uberchick_label)->user_name;
 }/*uberchick_label_get_user_name(uberchick_label);*/
 
 const gchar *uberchick_label_get_markup(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->markup )) return NULL;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->markup)) return NULL;
 	return GET_PRIVATE(uberchick_label)->markup;
 }/*uberchick_label_get_markup(uberchick_label);*/
 
 const gchar *uberchick_label_get_text(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->text )) return NULL;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->text)) return NULL;
 	return GET_PRIVATE(uberchick_label)->text;
 }/*uberchick_label_get_text(uberchick_label);*/
 
 gdouble uberchick_label_get_user_id(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->user_id )) return 0.0;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->user_id)) return 0.0;
 	return GET_PRIVATE(uberchick_label)->user_id;
 }/*uberchick_label_get_user_id(uberchick_label);*/
 
 UpdateType uberchick_label_get_update_type(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->update_type )) return None;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->update_type)) return None;
 	return GET_PRIVATE(uberchick_label)->update_type;
 }/*uberchick_label_get_update_type(uberchick_label);*/
 
 gdouble uberchick_label_get_update_id(UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->update_id )) return 0.0;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) && GET_PRIVATE(uberchick_label)->update_id)) return 0.0;
 	return GET_PRIVATE(uberchick_label)->update_id;
 }/*uberchick_label_get_update_id(uberchick_label);*/
 
 void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *service, UpdateType update_type, const gchar *user_name, gdouble user_id, gdouble update_id, const gchar *text, gboolean expand_hyperlinks, gboolean make_hyperlinks){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	if(this->update_type!=update_type)
@@ -265,7 +265,7 @@ void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *
 
 
 static void uberchick_label_populate_popup(UberChickLabel *uberchick_label, GtkMenu *menu){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	const gchar *uri=gtk_label_get_current_uri(GTK_LABEL(uberchick_label));
@@ -347,7 +347,7 @@ static void uberchick_label_shell_menu_add_separator(UberChickLabel *uberchick_l
 }/*uberchick_label_shell_menu_add_separator(uberchick_label, menu, TRUE|FALSE);*/
 
 static void uberchick_label_forward_text(GtkAction *action, UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	debug("UberChick_Label: Inserting: <%s@%s> in to current update", this->user_name, this->service->uri);
@@ -355,7 +355,7 @@ static void uberchick_label_forward_text(GtkAction *action, UberChickLabel *uber
 }/*uberchick_label_forward_text(action, user_name);*/
 
 static void uberchick_label_send_at_reply(GtkAction *action, UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	gchar *requested_resource=(gchar *)g_object_get_data(G_OBJECT(action), "requested_resource");
@@ -365,7 +365,7 @@ static void uberchick_label_send_at_reply(GtkAction *action, UberChickLabel *ube
 }/*uberchick_label_send_at_reply(action, user_name);*/
 
 static void uberchick_label_search(GtkAction *action, UberChickLabel *uberchick_label){
-	if(!( uberchick_label && IS_UBERCHICK_LABEL(uberchick_label) )) return;
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
 	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
 	
 	gchar *requested_resource=(gchar *)g_object_get_data(G_OBJECT(action), "requested_resource");

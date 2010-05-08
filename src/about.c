@@ -115,7 +115,7 @@ const gchar *license[]={
 void about_dialog_new (GtkWindow *parent){
 	gtk_about_dialog_set_url_hook((GtkAboutDialogActivateLinkFunc)www_open_uri, NULL, NULL);
 	
-	gchar *license_trans=g_strconcat( _(license[0]), "\n\n", _(license[1]), "\n\n", _(license[2]), "\n\n", _(license[3]), "\n\n", _(license[4]), NULL );
+	gchar *license_trans=g_strconcat(_(license[0]), "\n\n", _(license[1]), "\n\n", _(license[2]), "\n\n", _(license[3]), "\n\n", _(license[4]), NULL);
 	gtk_show_about_dialog(
 				parent,
 					"authors", authors,

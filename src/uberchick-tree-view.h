@@ -100,7 +100,7 @@ void uberchick_tree_view_complete(UberChickTreeView *uberchick_tree_view);
 
 
 
-void uberchick_tree_view_store_update( UberChickTreeView *uberchick_tree_view, UserStatus *status );
+void uberchick_tree_view_store_update(UberChickTreeView *uberchick_tree_view, UserStatus *status);
 void uberchick_tree_view_store_group(UberChickTreeView *uberchick_tree_view, StatusNetGroup *group);
 
 

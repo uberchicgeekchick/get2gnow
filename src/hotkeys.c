@@ -153,7 +153,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 			switch(event->keyval){
 				case GDK_Return:	case GDK_KP_Enter:
 				case GDK_D:	case GDK_d:
-					update_viewer_send( GTK_WIDGET(update_viewer_get_sexy_dm_button() ));
+					update_viewer_send(GTK_WIDGET(update_viewer_get_sexy_dm_button()));
 					return FALSE;
 				
 				case GDK_S:	case GDK_s:
@@ -221,7 +221,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				
 				case GDK_asterisk:
 				case GDK_colon:	case GDK_exclam:
-					online_service_request_selected_update_best_friend_add();
+					update_viewer_best_friend_emulate_toggle_click();
 					return FALSE;
 				
 				case GDK_L:	case GDK_l:

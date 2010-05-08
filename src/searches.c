@@ -121,7 +121,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	newest_update_id=0.0;
 	
 	gboolean	has_loaded=uberchick_tree_view_has_loaded(uberchick_tree_view);
-	gboolean	notify=( (oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE );
+	gboolean	notify=((oldest_update_id && has_loaded) ?gconfig_if_bool(PREFS_NOTIFY_ALL, TRUE) :FALSE);
 	gboolean	save_oldest_id=(has_loaded?FALSE:TRUE);
 	
 	guint		update_notification_delay=uberchick_tree_view_get_notify_delay(uberchick_tree_view);
@@ -137,7 +137,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	/* parse updates from search results. */
 	debug("Parsing searches node %s", root_element->name);
 	for(current_element=root_element->children; current_element; current_element=current_element->next) {
-		if(!( current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, "entry") ))
+		if(!(current_element->type == XML_ELEMENT_NODE && g_str_equal(current_element->name, "entry")))
 			continue;
 		
 		if(!current_element->children){
@@ -147,7 +147,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		
 		debug("Parsing searches result's update * entry");
 		status=NULL;
-		if(!( (( status=user_status_parse_from_search_result_atom_entry(service, current_element->children, Searches ))) && status->id )){
+		if(!(((status=user_status_parse_from_search_result_atom_entry(service, current_element->children, Searches))) && status->id)){
 			if(status) user_status_free(status);
 			continue;
 		}
@@ -157,7 +157,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		debug("Adding UserStatus ID: %f, on <%s> to UberChickTreeView", status->id, service->key);
 		uberchick_tree_view_store_update(uberchick_tree_view, status);
 		
-		if(notify && !save_oldest_id && status->id > last_notified_update )
+		if(notify && !save_oldest_id && status->id > last_notified_update)
 			notify_of_new_update=TRUE;
 		
 		if(!newest_update_id && status->id) newest_update_id=status->id;
@@ -179,7 +179,7 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 		 *cache_save_page(service, uri, xml->response_body);
 		 */
 		debug("Processing <%s>'s requested URI's: [%s] new update IDs", service->guid, uri);
-		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; update IDs for [%s];  newest ID: %f; unread ID: %f; oldest ID: %f", service->guid, timeline, newest_update_id, unread_update_id, oldest_update_id);
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	

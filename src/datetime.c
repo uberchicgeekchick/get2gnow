@@ -143,7 +143,7 @@ void datetime_strp_age(const gchar *datetime, gchar **age, gint *my_diff, gboole
 		*age=g_strdup(_("1 second ago"));
 		return;
 	}
-	if(diff < 60 ){
+	if(diff < 60){
 		*age=g_strdup_printf(_("%d seconds ago"), diff);
 		return;
 	}
@@ -186,7 +186,7 @@ void datetime_strp_age(const gchar *datetime, gchar **age, gint *my_diff, gboole
 	}
 	
 	diff=diff/365;
-	*age=g_strdup_printf(_("%d year%s ago"), diff, (diff==1 ?"" :"s") );
+	*age=g_strdup_printf(_("%d year%s ago"), diff, (diff==1 ?"" :"s"));
 	/* NOTE:
 	 * 	About time, month, & year precision, "years aren't...blah blah".
 	 * 	yeah well I agree!

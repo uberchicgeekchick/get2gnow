@@ -15,6 +15,7 @@ Requires:	gtk2 >= @GTK_VERSION_REQUIRED@
 Requires:	gconf2 >= @GCONF_VERSION_REQUIRED@
 Requires:	gnome-keyring
 Requires:	libsexy
+Requires:	intltool >= 0.35.0
 BuildRequires:	gnome-doc-utils-devel >= @GNOME_DOC_UTILS_VERSION_REQUIRED@
 BuildRequires:	gnome-doc-utils >= @GNOME_DOC_UTILS_VERSION_REQUIRED@
 BuildRequires:	libgnome
@@ -30,6 +31,7 @@ BuildRequires:	libgobject-2_0-0
 BuildRequires:	libgthread-2_0-0 >= @GTHREAD_VERSION_REQUIRED@
 BuildRequires:	libgnome-devel
 BuildRequires:	gnome-keyring-devel
+BuildRequires:	intltool >= 0.35.0
 
 %description
 get2gnow's the ultimate micro-blogging client.

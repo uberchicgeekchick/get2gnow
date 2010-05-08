@@ -88,18 +88,18 @@ gchar *images_get_unknown_image_filename(void);
 gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename);
 
 GtkImage *images_get_image_from_filename(gchar *image_filename);
-GtkImage *images_get_scaled_image_from_filename(gchar *image_filename, gint width, gint height );
+GtkImage *images_get_scaled_image_from_filename(gchar *image_filename, gint width, gint height);
 
 GtkImage *images_get_expanded_image_from_filename(gchar *image_filename);
 GtkImage *images_get_maximized_image_from_filename(gchar *image_filename);
 GtkImage *images_get_default_image_from_filename(gchar *image_filename);
-GtkImage *images_get_dialog_image_from_filename( gchar *image_filename );
+GtkImage *images_get_dialog_image_from_filename(gchar *image_filename);
 GtkImage *images_get_minimized_image_from_filename(gchar *image_filename);
 
 GtkImage *images_get_expanded_image_from_stock(const gchar *stock_image_name);
 GtkImage *images_get_maximized_image_from_stock(const gchar *stock_image_name);
 GtkImage *images_get_default_image_from_stock(const gchar *stock_image_name);
-GtkImage *images_get_dialog_image_from_stock( const gchar *stock_image_name );
+GtkImage *images_get_dialog_image_from_stock(const gchar *stock_image_name);
 GtkImage *images_get_minimized_image_from_stock(const gchar *stock_image_name);
 
 GdkPixbuf *images_get_expanded_pixbuf_from_filename(gchar *image_filename);
@@ -111,7 +111,7 @@ GdkPixbuf *images_get_minimized_pixbuf_from_filename(gchar *image_filename);
 GdkPixbuf *images_expand_pixbuf(GdkPixbuf *pixbuf);
 GdkPixbuf *images_maximize_pixbuf(GdkPixbuf *pixbuf);
 GdkPixbuf *images_normalize_pixbuf(GdkPixbuf *pixbuf);
-GdkPixbuf *images_dialogize_pixbuf( GdkPixbuf *pixbuf );
+GdkPixbuf *images_dialogize_pixbuf(GdkPixbuf *pixbuf);
 GdkPixbuf *images_minimize_pixbuf(GdkPixbuf *pixbuf);
 
 GdkPixbuf *images_scale_pixbuf(GdkPixbuf *pixbuf, gint width, gint height);

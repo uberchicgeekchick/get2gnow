@@ -138,7 +138,7 @@ gboolean ipc_init_check(int argc, char **argv){
 	
 	/* if another process creates a pipe while we are doing this,
 	 * we may not get that pipe here. dunno if it's a problem */
-	while((entry=g_dir_read_name(dir)) ){
+	while((entry=g_dir_read_name(dir))){
 		if(strncmp(entry, prefix, prefix_len))
 			continue;
 		
@@ -167,7 +167,7 @@ gboolean ipc_init_check(int argc, char **argv){
 		/* it would be cool to check that the file is indeed a fifo,
 		 * but again, who cares? */
 		int fd;
-		if((fd=open(filename,O_WRONLY|O_NONBLOCK)) == -1 ){
+		if((fd=open(filename,O_WRONLY|O_NONBLOCK)) == -1){
 			perror("open");
 			unlink(filename);
 			uber_free(filename);
@@ -176,7 +176,7 @@ gboolean ipc_init_check(int argc, char **argv){
 		
 		/* TODO: validate argumants. */
 		gboolean write_check=FALSE;
-		if(!(write_check=write(fd, "", 1) )){
+		if(!(write_check=write(fd, "", 1))){
 			close(fd);
 			uber_free(filename);
 			g_dir_close(dir);
@@ -190,7 +190,7 @@ gboolean ipc_init_check(int argc, char **argv){
 				to_open=g_build_filename(cur_dir, argv[1], NULL);
 			else
 				to_open=g_build_filename(argv[i], NULL);
-			if(!(write_check=write(fd, to_open, strlen(to_open) + 1)) )
+			if(!(write_check=write(fd, to_open, strlen(to_open) + 1)))
 				debug("**WARNING:** Failed to write: %s to %s", to_open, filename);
 			uber_free(to_open);
 		}

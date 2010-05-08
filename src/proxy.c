@@ -115,7 +115,7 @@ gboolean proxy_init(void){
 		}
 	
 	gboolean use_proxy=FALSE;
-	if(!( (gconfig_get_bool(PROXY_USE, &use_proxy)) && use_proxy )){
+	if(!((gconfig_get_bool(PROXY_USE, &use_proxy)) && use_proxy)){
 		proxy_status=PROXY_STATUS_DISABLED;
 		debug("Connect to the tubes using a proxy\t\t[%s]", _("disable"));
 		return FALSE;
@@ -140,21 +140,21 @@ gboolean proxy_init(void){
 	proxy_uri=NULL;
 	
 	use_proxy=FALSE;
-	if(!( (gconfig_get_bool(PROXY_USE_AUTH, &use_proxy)) && use_proxy ))
+	if(!((gconfig_get_bool(PROXY_USE_AUTH, &use_proxy)) && use_proxy))
 		proxy_uri=g_strdup_printf("http://%s:%d", server, port);
 	else {
 		gchar *user, *password;
 		gconfig_get_string(PROXY_USER, &user);
 		gconfig_get_string(PROXY_PASS, &password);
 		
-		proxy_uri=g_strdup_printf( "http://%s:%s@%s:%d", user, password, server, port);
+		proxy_uri=g_strdup_printf("http://%s:%s@%s:%d", user, password, server, port);
 		
 		g_free(user);
 		g_free(password);
 	}
 	
 	debug("Connect to the tubes using a proxy\t\t[%s]", _("enable"));
-	debug("Proxy uri: <%s>", proxy_uri );
+	debug("Proxy uri: <%s>", proxy_uri);
 	
 	proxy_suri=soup_uri_new(proxy_uri);
 	
@@ -171,7 +171,7 @@ gboolean proxy_attach_online_service(OnlineService *service){
 	if(proxy_status==PROXY_STATUS_DISABLED) return FALSE;
 	
 	debug("Piping OnlineService: <%s> to the tubes through this proxy: <%s>", service->key, proxy_uri);
-	g_object_set( G_OBJECT(service->session), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
+	g_object_set(G_OBJECT(service->session), SOUP_SESSION_PROXY_URI, proxy_suri, NULL);
 	return TRUE;
 }/*proxy_attach_online_service*/
 

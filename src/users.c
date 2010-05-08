@@ -145,30 +145,30 @@ static User *user_new(OnlineService *service, gboolean a_follower){
 	return user;
 }/*user_new*/
 
-static void user_validate( User **user ){
-	if(! G_STR_N_EMPTY( (*user)->user_name ) ) (*user)->user_name=g_strdup("");
-	if(! G_STR_N_EMPTY( (*user)->nick_name ) )
-		if(!( G_STR_EMPTY( (*user)->user_name ) )) (*user)->nick_name=g_strdup( (*user)->user_name );
+static void user_validate(User **user){
+	if(! G_STR_N_EMPTY((*user)->user_name)) (*user)->user_name=g_strdup("");
+	if(! G_STR_N_EMPTY((*user)->nick_name))
+		if(!(G_STR_EMPTY((*user)->user_name))) (*user)->nick_name=g_strdup((*user)->user_name);
 		else (*user)->nick_name=g_strdup("");
-	if(! G_STR_N_EMPTY( (*user)->location ) ) (*user)->location=g_strdup("");
-	if(! G_STR_N_EMPTY( (*user)->bio ) ) (*user)->bio=g_strdup("unavailable");
-	if(! G_STR_N_EMPTY( (*user)->uri ) )
-		if(G_STR_N_EMPTY( (*user)->user_name ) && (*user)->service && (*user)->service->key )
-			(*user)->uri=g_strdup_printf("http://%s/%s", (*user)->service->uri, (*user)->user_name );
+	if(! G_STR_N_EMPTY((*user)->location)) (*user)->location=g_strdup("");
+	if(! G_STR_N_EMPTY((*user)->bio)) (*user)->bio=g_strdup("unavailable");
+	if(! G_STR_N_EMPTY((*user)->uri))
+		if(G_STR_N_EMPTY((*user)->user_name) && (*user)->service && (*user)->service->key)
+			(*user)->uri=g_strdup_printf("http://%s/%s", (*user)->service->uri, (*user)->user_name);
 		else
 			(*user)->uri=g_strdup("");
 	
-	if(! G_STR_N_EMPTY( (*user)->image_uri ) ) (*user)->image_uri=g_strdup("");
-	if(! G_STR_N_EMPTY( (*user)->image_file ) ) (*user)->image_file=g_strdup("");
+	if(! G_STR_N_EMPTY((*user)->image_uri)) (*user)->image_uri=g_strdup("");
+	if(! G_STR_N_EMPTY((*user)->image_file)) (*user)->image_file=g_strdup("");
 	
-	if(! G_STR_N_EMPTY( (*user)->profile_background_uri ) ) (*user)->profile_background_uri=g_strdup("");
-	if(! G_STR_N_EMPTY( (*user)->profile_background_file ) ) (*user)->profile_background_file=g_strdup("");
+	if(! G_STR_N_EMPTY((*user)->profile_background_uri)) (*user)->profile_background_uri=g_strdup("");
+	if(! G_STR_N_EMPTY((*user)->profile_background_file)) (*user)->profile_background_file=g_strdup("");
 	
-	if(! G_STR_N_EMPTY( (*user)->profile_background_color ) ) (*user)->profile_background_color=g_strdup("#F0F2F5");
-	if(! G_STR_N_EMPTY( (*user)->profile_text_color ) ) (*user)->profile_text_color=g_strdup("#000000");
-	if(! G_STR_N_EMPTY( (*user)->profile_link_color ) ) (*user)->profile_link_color=g_strdup("#002FA7");
-	if(! G_STR_N_EMPTY( (*user)->profile_sidebar_fill_color ) ) (*user)->profile_sidebar_fill_color=g_strdup("#FFFFFF");
-	if(! G_STR_N_EMPTY( (*user)->profile_sidebar_border_color ) ) (*user)->profile_sidebar_border_color=g_strdup("#CEE1E9");
+	if(! G_STR_N_EMPTY((*user)->profile_background_color)) (*user)->profile_background_color=g_strdup("#F0F2F5");
+	if(! G_STR_N_EMPTY((*user)->profile_text_color)) (*user)->profile_text_color=g_strdup("#000000");
+	if(! G_STR_N_EMPTY((*user)->profile_link_color)) (*user)->profile_link_color=g_strdup("#002FA7");
+	if(! G_STR_N_EMPTY((*user)->profile_sidebar_fill_color)) (*user)->profile_sidebar_fill_color=g_strdup("#FFFFFF");
+	if(! G_STR_N_EMPTY((*user)->profile_sidebar_border_color)) (*user)->profile_sidebar_border_color=g_strdup("#CEE1E9");
 	
 }/*user_validate(&user);*/ 
 
@@ -178,7 +178,7 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 	xmlNode *root_element=NULL;
 	User *user=NULL;
 	
-	if(!( (doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element )) )){
+	if(!((doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)))){
 		xmlCleanupParser();
 		return NULL;
 	}
@@ -212,41 +212,41 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 	/* Begin 'users' node loop */
 	debug("Parsing user beginning at node: %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
-		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE )
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE)
 			continue;
 		
-		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_element)) ) )) continue;
+		if(!(G_STR_N_EMPTY((content=(gchar *)xmlNodeGetContent(current_element))))) continue;
 		
-		if(g_str_equal(current_element->name, "id" )){
+		if(g_str_equal(current_element->name, "id")){
 			user->id=g_ascii_strtod(content, NULL);
 			user->id_str=gdouble_to_str(user->id);
 			debug("User ID: %s(=%f)", user->id_str, user->id);
 			
-		}else if(g_str_equal(current_element->name, "name" ))
+		}else if(g_str_equal(current_element->name, "name"))
 			user->nick_name=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_element->name, "screen_name" ))
+		else if(g_str_equal(current_element->name, "screen_name"))
 			user->user_name=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_element->name, "location" ))
+		else if(g_str_equal(current_element->name, "location"))
 			user->location=g_markup_printf_escaped("%s", content);
 		
-		else if(g_str_equal(current_element->name, "description" )){
+		else if(g_str_equal(current_element->name, "description")){
 			if(G_STR_N_EMPTY(content))
 				user->bio=g_markup_printf_escaped("%s", content);
 			else
 				user->bio=g_strdup("unavailable");
-		}else if(g_str_equal(current_element->name, "url" ))
+		}else if(g_str_equal(current_element->name, "url"))
 			user->uri=g_strdup(content);
 		
-		else if(g_str_equal(current_element->name, "followers_count" ))
-			user->followers=strtoul( content, NULL, 10 );
+		else if(g_str_equal(current_element->name, "followers_count"))
+			user->followers=strtoul(content, NULL, 10);
 		
-		else if(g_str_equal(current_element->name, "friends_count" ))
-			user->following=strtoul( content, NULL, 10 );
+		else if(g_str_equal(current_element->name, "friends_count"))
+			user->following=strtoul(content, NULL, 10);
 		
-		else if(g_str_equal(current_element->name, "statuses_count" ))
-			user->updates=strtoul( content, NULL, 10 );
+		else if(g_str_equal(current_element->name, "statuses_count"))
+			user->updates=strtoul(content, NULL, 10);
 		
 		else if(g_str_equal(current_element->name, "profile_image_url"))
 			user->image_uri=g_strdup(content);
@@ -273,10 +273,10 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		else if(g_str_equal(current_element->name, "profile_sidebar_border_color"))
 			user->profile_sidebar_border_color=g_strdup_printf("#%s", content);
 
-		else if( g_str_equal(current_element->name, "status") && current_element->children)
+		else if(g_str_equal(current_element->name, "status") && current_element->children)
 			user->status=user_status_parse(service, current_element->children, Users);
 		
-		else if( g_str_equal(current_element->name, "retweeted_status") && user->status && current_element->children){
+		else if(g_str_equal(current_element->name, "retweeted_status") && user->status && current_element->children){
 			user->status->retweeted_status=user_status_parse_retweeted_status(service, current_element->children, Users);
 		}
 		
@@ -290,7 +290,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 		user_status_format_retweeted_status(service, user->status->retweeted_status, &user->status, user);
 	
 	if(user->status){
-		user_status_validate( &user->status );
+		user_status_validate(&user->status);
 		user_status_format_updates(service, user->status, user);
 	}
 	
@@ -301,7 +301,7 @@ User *user_parse_node(OnlineService *service, xmlNode *root_element){
 }/*user_parse_node(service, root_node); || user_parse_node(service, current_element->children);*/
 
 void user_free(User *user){
-	if(!( user && user->id && user->service )) return;
+	if(!(user && user->id && user->service)) return;
 	user_validate(&user);
 	if(user->status) user_status_free(user->status);
 	
@@ -330,20 +330,20 @@ static UserStatus *user_status_new(OnlineService *service, UpdateType update_typ
 	return status;
 }/*user_status_new(service, Users|Replies|Dms);*/
 
-static void user_status_validate( UserStatus **status ){
-	if(! (*status)->text ) (*status)->text=g_strdup("");
-	if(! (*status)->id_str ) (*status)->id_str=g_strdup("");
-	if(! (*status)->from ) (*status)->from=g_strdup("");
-	if(! (*status)->rcpt ) (*status)->rcpt=g_strdup("");
-	if(! (*status)->update ) (*status)->update=g_strdup("");
-	if(! (*status)->sexy_status_text ) (*status)->sexy_status_text=g_strdup("");
-	if(! (*status)->source ) (*status)->source=g_strdup("");
-	if(! (*status)->sexy_update ) (*status)->sexy_update=g_strdup("");
-	if(! (*status)->notification ) (*status)->notification=g_strdup("");
-	if(! (*status)->created_at_str ) (*status)->created_at_str=g_strdup("");
-	if(! (*status)->created_how_long_ago ) (*status)->created_how_long_ago=g_strdup("");
-	if(! (*status)->retweeted_by ) (*status)->retweeted_by=g_strdup("");
-	if(! (*status)->retweeted_user_name ) (*status)->retweeted_user_name=g_strdup("");
+static void user_status_validate(UserStatus **status){
+	if(! (*status)->text) (*status)->text=g_strdup("");
+	if(! (*status)->id_str) (*status)->id_str=g_strdup("");
+	if(! (*status)->from) (*status)->from=g_strdup("");
+	if(! (*status)->rcpt) (*status)->rcpt=g_strdup("");
+	if(! (*status)->update) (*status)->update=g_strdup("");
+	if(! (*status)->sexy_status_text) (*status)->sexy_status_text=g_strdup("");
+	if(! (*status)->source) (*status)->source=g_strdup("");
+	if(! (*status)->sexy_update) (*status)->sexy_update=g_strdup("");
+	if(! (*status)->notification) (*status)->notification=g_strdup("");
+	if(! (*status)->created_at_str) (*status)->created_at_str=g_strdup("");
+	if(! (*status)->created_how_long_ago) (*status)->created_how_long_ago=g_strdup("");
+	if(! (*status)->retweeted_by) (*status)->retweeted_by=g_strdup("");
+	if(! (*status)->retweeted_user_name) (*status)->retweeted_user_name=g_strdup("");
 }/*user_status_validate(&status);*/ 
 
 UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type){
@@ -355,21 +355,21 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing searches results beginning at node: %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
-		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE) continue;
 		
-		if( !g_str_equal(current_element->name, "link") && G_STR_EMPTY( (content=(gchar *)xmlNodeGetContent(current_element)) ) ){
+		if(!g_str_equal(current_element->name, "link") && G_STR_EMPTY((content=(gchar *)xmlNodeGetContent(current_element)))){
 			if(content) uber_free(content);
 			continue;
 		}
 		
-		debug("Parsing searches beginning at node: %s", current_element->name );
+		debug("Parsing searches beginning at node: %s", current_element->name);
 		if(g_str_equal(current_element->name, "id")){
 			gchar *status_id=NULL;
 			status->id=g_ascii_strtod((status_id=g_strrstr(content, ":")+1), NULL);
 			status->id_str=g_strdup(status_id);
 			debug("Parsing searches Update ID: %s(=%f)", status->id_str, status->id);
 		}else if(g_str_equal(current_element->name, "published") || g_str_equal(current_element->name, "updated")){
-			if( status->created_at_str )
+			if(status->created_at_str)
 				if(!g_str_equal(status->created_at_str, content)){
 					uber_free(status->created_at_str);
 					uber_free(status->created_how_long_ago);
@@ -383,20 +383,20 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 			datetime_strp_ages(status->created_at_str, &status->created_at, &status->created_how_long_ago, &status->created_seconds_ago, TRUE);
 		}else if(g_str_equal(current_element->name, "title")){
 			status->text=g_strdup(content);
-			debug("Parsing searches update: %s; from: %s", status->text, current_element->name );
+			debug("Parsing searches update: %s; from: %s", status->text, current_element->name);
 		}else if(g_str_equal(current_element->name, "link")){
 			if(content) uber_free(content);
 			xmlAttr *elements_attributes;
 			debug("Parsing searches link node searching for type=\"image/png\"");
-			for( elements_attributes=current_element->properties; elements_attributes; elements_attributes=elements_attributes->next ){
-				debug("Parsing searches at node: %s looking for type", elements_attributes->name );
+			for(elements_attributes=current_element->properties; elements_attributes; elements_attributes=elements_attributes->next){
+				debug("Parsing searches at node: %s looking for type", elements_attributes->name);
 				if(g_str_equal(elements_attributes->name, "type")) break;
 			}
 			if(!elements_attributes) continue;
 			
 			for(current_elements_attributes=elements_attributes->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next){
 				content=(gchar *)xmlNodeGetContent(current_elements_attributes);
-				debug("Parsing searches at node: %s looking for image/png", content );
+				debug("Parsing searches at node: %s looking for image/png", content);
 				if(g_str_equal(content, "image/png")) break;
 				uber_free(content);
 			}
@@ -404,15 +404,15 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 			if(!current_elements_attributes) continue;
 			
 			debug("Parsed searches type and image/png nodes.  Now searching href node");
-			for( elements_attributes=elements_attributes->next; elements_attributes; elements_attributes=elements_attributes->next ){
-				debug("Parsing searches node %s looking for href", elements_attributes->name );
-				if(g_str_equal(elements_attributes->name, "href") ) break;
+			for(elements_attributes=elements_attributes->next; elements_attributes; elements_attributes=elements_attributes->next){
+				debug("Parsing searches node %s looking for href", elements_attributes->name);
+				if(g_str_equal(elements_attributes->name, "href")) break;
 			}
 			if(!elements_attributes) continue;
 			
 			debug("Parsed searches href nodes.  Setting avatar's uri");
 			status->user->image_uri=(gchar *)xmlNodeGetContent(elements_attributes->children);
-			debug("Parsing searches nodes finished.  Setting user->image: %s", status->user->image_uri );
+			debug("Parsing searches nodes finished.  Setting user->image: %s", status->user->image_uri);
 			
 			elements_attributes=NULL;
 			current_elements_attributes=NULL;
@@ -421,14 +421,14 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 			status->source=g_strdup(content);
 		}else if(g_str_equal(current_element->name, "author")){
 			if(content) uber_free(content);
-			debug("Parsing searches user_name & user_nick from: %s", current_element->name );
-			for( current_elements_attributes=current_element->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next ){
-				debug("Parsing searches for user_name & user_nick: %s", current_elements_attributes->name );
-				if(g_str_equal(current_elements_attributes->name, "name") ) break;
+			debug("Parsing searches user_name & user_nick from: %s", current_element->name);
+			for(current_elements_attributes=current_element->children; current_elements_attributes; current_elements_attributes=current_elements_attributes->next){
+				debug("Parsing searches for user_name & user_nick: %s", current_elements_attributes->name);
+				if(g_str_equal(current_elements_attributes->name, "name")) break;
 			}
 			if(content) uber_free(content);
 			if(!current_elements_attributes) continue;
-			if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_elements_attributes)) ) )){
+			if(!(G_STR_N_EMPTY((content=(gchar *)xmlNodeGetContent(current_elements_attributes))))){
 				if(content) uber_free(content);
 				current_elements_attributes=NULL;
 				continue;
@@ -443,7 +443,7 @@ UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *servi
 				status->user->user_name=g_markup_printf_escaped("%s", user_data[0]);
 				if(G_STR_N_EMPTY(user_data[1])){
 					gchar **user_nick_data=g_strsplit(user_data[1], ")", -1);
-					if( user_nick_data[0] && G_STR_N_EMPTY(user_nick_data[0]) )
+					if(user_nick_data[0] && G_STR_N_EMPTY(user_nick_data[0]))
 						status->user->nick_name=g_markup_printf_escaped("%s", user_nick_data[0]);
 					/*else
 						status->user->nick_name=g_markup_printf_escaped("%s", user_data[1]);*/
@@ -490,9 +490,9 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 	/* get updates or direct messages */
 	debug("Parsing %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
-		if(current_element->type != XML_ELEMENT_NODE ) continue;
+		if(current_element->type != XML_ELEMENT_NODE) continue;
 		
-		if(!( g_str_equal(current_element->name, "status") ))
+		if(!(g_str_equal(current_element->name, "status")))
 			continue;
 		
 		if(!current_element->children){
@@ -500,10 +500,10 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 			continue;
 		}
 		
-		debug("Parsing %s", (g_str_equal(current_element->name, "status") ?"status update" :"direct message" ) );
+		debug("Parsing %s", (g_str_equal(current_element->name, "status") ?"status update" :"direct message"));
 		
 		debug("Creating Status *");
-		if(!( (( status=user_status_parse(service, current_element->children, Archive))) && status->id )){
+		if(!(((status=user_status_parse(service, current_element->children, Archive))) && status->id)){
 			if(status) user_status_free(status);
 			break;
 		}
@@ -520,14 +520,14 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 	/* Begin 'status' or 'direct-messages' loop */
 	debug("Parsing update at beginning node: %s", root_element->name);
 	for(current_element=root_element; current_element; current_element=current_element->next) {
-		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE ) continue;
+		if(current_element->type != XML_ELEMENT_NODE && current_element->type != XML_ATTRIBUTE_NODE) continue;
 		
-		if(!(G_STR_N_EMPTY( (content=(gchar *)xmlNodeGetContent(current_element)) ) )){
+		if(!(G_STR_N_EMPTY((content=(gchar *)xmlNodeGetContent(current_element))))){
 			if(content) uber_free(content);
 			continue;
 		}
 		
-		if( g_str_equal(current_element->name, "retweeted_status") && current_element->children)
+		if(g_str_equal(current_element->name, "retweeted_status") && current_element->children)
 			status->retweeted_status=user_status_parse_retweeted_status(service, current_element->children, update_type);
 		
 		else if(g_str_equal(current_element->name, "id")){
@@ -541,7 +541,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		else if(g_str_equal(current_element->name, "source"))
 			status->source=g_strdup(content);
 		
-		else if((g_str_equal(current_element->name, "sender") || g_str_equal(current_element->name, "user")) && current_element->children )
+		else if((g_str_equal(current_element->name, "sender") || g_str_equal(current_element->name, "user")) && current_element->children)
 			status->user=user_parse_node(service, current_element->children);
 		
 		else if(g_str_equal(current_element->name, "text"))
@@ -562,7 +562,7 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 		user_status_format_retweeted_status(service, status->retweeted_status, &status, status->user);
 	
 	if(status->user){
-		user_validate( &status->user );
+		user_validate(&status->user);
 		user_status_format_updates(service, status, status->user);
 	}
 	
@@ -570,23 +570,23 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 }/*user_status_parse(service, current_element->children, update_type);*/
 
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user){
-	if(!( service && (*status) && user && retweeted_status )) return;
+	if(!(service && (*status) && user && retweeted_status)) return;
 	gchar *retweeted_user_name=NULL;
 	gchar *retweeted_by=NULL;
 	UserStatus *status_swap=(*status);
 	
 	gdouble status_id=(*status)->id;
-	gchar *status_id_str=g_strdup( (*status)->id_str );
+	gchar *status_id_str=g_strdup((*status)->id_str);
 	
 	retweeted_status->created_at=(*status)->created_at;
 	uber_free(retweeted_status->created_at_str);
-	retweeted_status->created_at_str=g_strdup( (*status)->created_at_str );
+	retweeted_status->created_at_str=g_strdup((*status)->created_at_str);
 	
 	retweeted_status->created_seconds_ago=(*status)->created_seconds_ago;
 	uber_free(retweeted_status->created_how_long_ago);
-	retweeted_status->created_how_long_ago=g_strdup( (*status)->created_how_long_ago );
+	retweeted_status->created_how_long_ago=g_strdup((*status)->created_how_long_ago);
 	
-	if(!( (*status) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name) )){
+	if(!((*status) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))){
 		retweeted_user_name=g_strdup("unknown");
 		retweeted_by=g_strdup_printf("Anonymous <u>&lt;unknown@%s&gt;</u>", service->uri);
 	}else{
@@ -597,7 +597,7 @@ static void user_status_format_retweeted_status(OnlineService *service, UserStat
 	(*status)=retweeted_status;
 	(*status)->retweeted_status=status_swap;
 	(*status)->id=status_id;
-	uber_free( (*status)->id_str );
+	uber_free((*status)->id_str);
 	(*status)->id_str=status_id_str;
 	uber_free((*status)->retweeted_by);
 	(*status)->retweeted_by=retweeted_by;
@@ -627,12 +627,12 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 	status->rcpt=g_strdup_printf("<span size=\"small\" weight=\"light\">%s\n&lt;%s&gt;</span>", service->nick_name, service->key);
 	
 	status->update=g_strdup_printf("%s%s%s%s%s%s%s%s\n",
-					(status->retweet ?"<span size=\"x-small\" weight=\"ultrabold\">":"" ),
-					(status->retweet ?_("retweeted by") :"" ),
+					(status->retweet ?"<span size=\"x-small\" weight=\"ultrabold\">":""),
+					(status->retweet ?_("retweeted by") :""),
 					(status->retweet ?": " :""),
-					(status->retweet ?status->retweeted_by :"" ),
-					(status->retweet ?"</span>\n" :"" ),
-					( (status->type==DMs)
+					(status->retweet ?status->retweeted_by :""),
+					(status->retweet ?"</span>\n" :""),
+					((status->type==DMs)
 					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n<span weight=\"ultrabold\" style=\"italic\">["
 						:(status->type==Replies ?"<span style=\"italic\" variant=\"smallcaps\">[@ reply]</span>\n"
 							:""
@@ -644,11 +644,11 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 	
 	status->notification=g_strdup_printf(
 						"%s%s%s%s%s%s<i>[%s]</i>\n\t<b>From:</b> <b><u>%s &lt;%s@%s&gt;</u></b>\n\t<i>To:</i> <i><u>%s &lt;%s&gt;</u></i>\n<b>\t%s%s%s</b>",
-						(status->retweet ?"<b><i>[" :"" ),
-						(status->retweet ?_("retweeted by") :"" ),
+						(status->retweet ?"<b><i>[" :""),
+						(status->retweet ?_("retweeted by") :""),
 						(status->retweet ?"]\n\t" :""),
-						(status->retweet ?status->retweeted_by :"" ),
-						(status->retweet ?"</i></b>\n" :"" ),
+						(status->retweet ?status->retweeted_by :""),
+						(status->retweet ?"</i></b>\n" :""),
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
 						user->nick_name, user->user_name, service->uri,
@@ -658,7 +658,7 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 }/*user_status_format_updates(service, user->status, user);*/
 
 void user_status_free(UserStatus *status){
-	if(!( status && status->id && status->service )) return;
+	if(!(status && status->id && status->service)) return;
 	if(status->user) user_free(status->user);
 	else if(status->retweeted_status) user_status_free(status->retweeted_status);
 	user_status_validate(&status);

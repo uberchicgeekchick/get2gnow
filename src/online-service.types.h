@@ -131,6 +131,8 @@ struct _OnlineService{
 	
 	gchar				*status;
 	GRegex				*username_regex;
+	GRegex				*exclaimation_regex;
+	GRegex				*octothorpe_regex;
 };
 
 enum _RequestAction{

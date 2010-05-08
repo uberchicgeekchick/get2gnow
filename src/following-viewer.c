@@ -197,11 +197,11 @@ static User *following_viewer_get_selected_user(GtkTreeIter **iter, FollowingVie
 	if(user)
 		return user;
 	
-	uber_free( *iter );
+	uber_free(*iter);
 	return NULL;
 }/*following_viewer_get_selected_user(following_viewer);*/
 
-static void following_viewer_unfollow(GtkToolButton *button, FollowingViewer *following_viewer ){
+static void following_viewer_unfollow(GtkToolButton *button, FollowingViewer *following_viewer){
 	GtkTreeIter *iter=NULL;
 	User *user=NULL;
 	if(!(user=following_viewer_get_selected_user(&iter, following_viewer)))
@@ -214,7 +214,7 @@ static void following_viewer_unfollow(GtkToolButton *button, FollowingViewer *fo
 	uber_free(iter);
 }
 
-static void following_viewer_block( GtkToolButton *button, FollowingViewer *following_viewer ){
+static void following_viewer_block(GtkToolButton *button, FollowingViewer *following_viewer){
 	GtkTreeIter *iter=NULL;
 	User *user=NULL;
 	if(!(user=following_viewer_get_selected_user(&iter, following_viewer)))
@@ -307,7 +307,7 @@ void following_viewer_show(GtkWindow *parent){
 	online_service_request_popup_select_service();
 	if(!(selected_service)) return;
 	
-	if(!(following_viewer && following_viewer->viewer ))
+	if(!(following_viewer && following_viewer->viewer))
 		return following_viewer_setup(parent);
 	
 	window_present((GTK_WINDOW(following_viewer->viewer)), TRUE);

@@ -121,7 +121,7 @@ void tabs_init(GtkNotebook *notebook){
 	if(gtk_notebook_get_n_pages(tabs->notebook))
 		gtk_notebook_remove_page(tabs->notebook, 0);
 	
-	g_signal_connect( tabs->notebook, "switch-page", (GCallback)tabs_mark_as_read, NULL );
+	g_signal_connect(tabs->notebook, "switch-page", (GCallback)tabs_mark_as_read, NULL);
 	tabs->tabs=NULL;
 	
 	tabs->previous_page=tabs->current_page=-1;
@@ -164,8 +164,8 @@ UberChickTreeView *tabs_open_timeline(const gchar *timeline, OnlineService *serv
 		return uberchick_tree_view;
 	}
 	g_list_free(t);
-	return (uberchick_tree_view ? uberchick_tree_view :tabs_new_tab(timeline, service) );
-}/*tabs_open_timeline( "/direct_messages.xml", (NULL|service) );*/
+	return (uberchick_tree_view ? uberchick_tree_view :tabs_new_tab(timeline, service));
+}/*tabs_open_timeline("/direct_messages.xml", (NULL|service));*/
 
 void tabs_close_timeline(const gchar *timeline){
 	if(G_STR_EMPTY(timeline)) return;
@@ -178,7 +178,7 @@ void tabs_close_timeline(const gchar *timeline){
 		tabs_close_page(uberchick_tree_view_get_page(uberchick_tree_view));
 	}
 	g_list_free(t);
-}/*tabs_close_timeline( "/direct_messages.xml", (NULL|service) );*/
+}/*tabs_close_timeline("/direct_messages.xml", (NULL|service));*/
 
 static void tabs_mark_as_read(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num){
 	uberchick_tree_view_mark_as_read(tabs_get_page(page_num, FALSE));
@@ -257,7 +257,7 @@ void tabs_update_uberchick_tree_views_tree_stores(UberChickTreeViewListStoreColu
 		uberchick_tree_view_update_tree_store(UBERCHICK_TREE_VIEW(t->data), uberchick_tree_view_tree_store_column, value, tree_store_remove);
 	
 	g_list_free(t);
-}/*tabs_remove_from_uberchick_tree_views_tree_stores( UberChickTreeViewStoreColumn, value );*/
+}/*tabs_remove_from_uberchick_tree_views_tree_stores(UberChickTreeViewStoreColumn, value);*/
 
 void tabs_remove_service(OnlineService *service){
 	GList *t=NULL;

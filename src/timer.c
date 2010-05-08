@@ -101,7 +101,7 @@ static void timer_main_quit(RateLimitTimer *timer);
  ********************************************************/
 RateLimitTimer *timer_new(void){
 	debug("Initalizing network rate limit timer");
-	if(!( g_thread_get_initialized() && g_thread_supported() )) g_thread_init(NULL);
+	if(!(g_thread_get_initialized() && g_thread_supported())) g_thread_init(NULL);
 	
 	/* timer->gtimer is used to avoid Twitter's rate limit. */
 	RateLimitTimer *timer=g_new0(RateLimitTimer, 1);
@@ -131,7 +131,7 @@ void timer_main(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_m
 }/*timer_main(timer);*/
 
 static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml, RequestMethod request_method){
-	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code) ))
+	if(!(SOUP_IS_MESSAGE(xml) && SOUP_STATUS_IS_SUCCESSFUL(xml->status_code)))
 		return FALSE;
 	
 	if(request_method==POST){
@@ -140,7 +140,7 @@ static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml, RequestMeth
 	}
 	
 	gchar *rate_limit=NULL;
-	if(!( (rate_limit=g_strdup(soup_message_headers_get_one(xml->response_headers, "X-RateLimit-Remaining"))) )){
+	if(!((rate_limit=g_strdup(soup_message_headers_get_one(xml->response_headers, "X-RateLimit-Remaining"))))){
 		debug("RateLimitTimer does not need to process this request.  X-RateLimit-Remaining header was not received");
 		uber_free(rate_limit);
 		return FALSE;
@@ -156,13 +156,13 @@ static gboolean timer_check(RateLimitTimer *timer, SoupMessage *xml, RequestMeth
 }/*timer_check(timer, xml, POST|GET|QUEUE);*/
 
 static void timer_process(RateLimitTimer *timer){
-	if( timer->requests_remaining < 11 ) timer->pause = 36.0;
-	else if( timer->requests_remaining < 21 ) timer->pause = 24.0;
-	else if( timer->requests_remaining < 41 ) timer->pause = 12.0;
-	else if( timer->requests_remaining < 61 ) timer->pause = 6.0;
+	if(timer->requests_remaining < 11) timer->pause = 36.0;
+	else if(timer->requests_remaining < 21) timer->pause = 24.0;
+	else if(timer->requests_remaining < 41) timer->pause = 12.0;
+	else if(timer->requests_remaining < 61) timer->pause = 6.0;
 	else return;
 	
-	if( (timer->elapsed=g_timer_elapsed(timer->gtimer, &timer->microseconds)) > timer->pause )
+	if((timer->elapsed=g_timer_elapsed(timer->gtimer, &timer->microseconds)) > timer->pause)
 		return;
 	
 	g_timer_stop(timer->gtimer);
@@ -176,7 +176,7 @@ static void timer_pause(RateLimitTimer *timer){
 	timer->processing++;
 	main_window_statusbar_printf("You have only %d before being locked out so pauses %s requests.", timer->requests_remaining, _(GETTEXT_PACKAGE));
 	main_window_statusbar_printf("Please wait %f seconds.", timer->pause);
-	while( (timer->elapsed=g_timer_elapsed(timer->gtimer, &timer->microseconds)) < timer->pause )
+	while((timer->elapsed=g_timer_elapsed(timer->gtimer, &timer->microseconds)) < timer->pause)
 		main_window_statusbar_printf("Please wait %f more seconds.", timer->pause);
 	main_window_statusbar_printf(NULL);
 	timer->processing--;

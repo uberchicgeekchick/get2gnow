@@ -144,7 +144,7 @@ OnlineServices *online_services_init(void){
 			continue;
 		}
 		debug("Loading '%s' account", account_key);
-		if(!(service=online_service_open( (const gchar *)account_key))) continue;
+		if(!(service=online_service_open((const gchar *)account_key))) continue;
 		
 		services->accounts=g_list_append(services->accounts, service);
 		services->accounts=g_list_last(services->accounts);
@@ -235,7 +235,7 @@ void online_services_open_uri(GtkWidget *widget, const gchar *uri, OnlineService
 	if(!service){
 		for(accounts=services->accounts; accounts; accounts=accounts->next){
 			current_service=(OnlineService *)accounts->data;
-			if(g_strstr_len(uri, -1, current_service->uri) ) break;
+			if(g_strstr_len(uri, -1, current_service->uri)) break;
 			current_service=NULL;
 		}
 	}else
@@ -277,7 +277,7 @@ static gint online_services_cmp_count(guint compare, guint count){
 }/*online_services_cmp_count(service->logins, 1);*/
 
 OnlineService *online_services_save_service(OnlineService *service, const gchar *uri, const gchar *user_name, const gchar *password, gboolean enabled, gboolean https, gboolean auto_connect, gboolean post_to_by_default){
-	if(!( G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name))){
+	if(!(G_STR_N_EMPTY(uri) && G_STR_N_EMPTY(user_name))){
 		return NULL;
 	}
 	
@@ -309,21 +309,21 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	debug("New service: <%s> created.  OnlineServices total: %d", decoded_key, services->total);
 	
 	debug("Adding <%s> to OnlineServices' keys", decoded_key);
-	if(!( (services->keys=g_slist_append(services->keys, decoded_key)))){
+	if(!((services->keys=g_slist_append(services->keys, decoded_key)))){
 		debug("**ERROR**: Failed to append new service's key: <%s>, to OnlineServices' keys", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
 	debug("Saving accounts & services list: '%s'", ONLINE_SERVICES_ACCOUNTS);
-	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
+	if(!((gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
 		debug("**ERROR**: Failed to save new service: <%s>, couldn't save gconf's services list", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
 	}
 	
 	debug("Adding new service: <%s> to OnlineServices", decoded_key);
-	if(!( (services->accounts=g_list_append(services->accounts, service)))){
+	if(!((services->accounts=g_list_append(services->accounts, service)))){
 		debug("**ERROR**: Failed to add: <%s>, to OnlineServices' accounts", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
@@ -335,7 +335,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 	services->accounts=g_list_first(services->accounts);
 	
 	debug("Saving OnlineService: <%s> reloaded from OnlineServices accounts", decoded_key);
-	if(!( online_service_save(service, password, enabled, https, auto_connect, post_to_by_default))){
+	if(!(online_service_save(service, password, enabled, https, auto_connect, post_to_by_default))){
 		debug("**ERROR**: Failed saving new service: <%s>", decoded_key);
 		uber_free(decoded_key);
 		return NULL;
@@ -348,7 +348,7 @@ OnlineService *online_services_save_service(OnlineService *service, const gchar 
 		debug("\t\tConnecting to: <%s>\t[succeeded]", decoded_key);
 		
 		if(!online_service_login(service, FALSE)){
-			online_service_display_debug_details( service, TRUE, "re-connect");
+			online_service_display_debug_details(service, TRUE, "re-connect");
 			uber_free(decoded_key);
 			return NULL;
 		}
@@ -387,7 +387,7 @@ void online_services_delete_service(OnlineService *service){
 	services->keys=keys;
 	
 	debug("Saving re-built OnlineServices' keys");
-	if(!( (gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
+	if(!((gconfig_set_list_string(ONLINE_SERVICES_ACCOUNTS, services->keys)))){
 		debug("**ERROR**: Failed to delete service: '%s', couldn't save gconf's services list", service->key);
 		return;
 	}
@@ -464,11 +464,11 @@ gboolean online_services_combo_box_fill(GtkComboBox *combo_box, GtkListStore *li
 		uber_free(iter);
 	}
 	if(services_loaded){
-		debug("Accounts & services loaded.  %s", (connected_only ?_("Selecting default account") :_("Setting up combo_box for new account setup") ) );
+		debug("Accounts & services loaded.  %s", (connected_only ?_("Selecting default account") :_("Setting up combo_box for new account setup")));
 		gtk_combo_box_set_active(combo_box, 0);
 	}
 	
-	return (services_loaded ?TRUE :FALSE );
+	return (services_loaded ?TRUE :FALSE);
 }/*online_services_combo_box_fill(combo_box, list_store);*/
 
 gboolean online_services_is_user_name_mine(OnlineService *selected_online_service, const gchar *user_name){
@@ -495,7 +495,7 @@ OnlineService *online_services_get_service_by_key(const gchar *online_service_ke
 	OnlineService	*service=NULL;
 	
 	for(accounts=services->accounts; accounts; accounts=accounts->next){
-		if(g_str_equal( (service=(OnlineService *)accounts->data)->key, online_service_key))
+		if(g_str_equal((service=(OnlineService *)accounts->data)->key, online_service_key))
 			return service;
 	}
 	return NULL;
@@ -562,7 +562,7 @@ void online_services_request(RequestMethod request_method, const gchar *uri, Onl
 		if(!service->enabled) continue;
 		if(!(service->connected && service->authenticated)){
 			if(!online_service_refresh(service)){
-				debug("**ERROR:** Unable to load: %s refreshing: <%s> failed", uri, service->key);
+				debug("Disabled OnlineService: <%s> Unable to loading: <%s>; refreshing: <%s> failed", service->key, uri, service->key);
 				continue;
 			}
 		}
@@ -643,7 +643,7 @@ gssize online_services_get_length_of_longest_replacement(void){
 
 void online_services_deinit(void){
 	debug("**SHUTDOWN:** Closing & releasing %d accounts", services->total);
-	g_list_foreach(services->accounts, (GFunc)online_service_free, GINT_TO_POINTER(TRUE) );
+	g_list_foreach(services->accounts, (GFunc)online_service_free, GINT_TO_POINTER(TRUE));
 	g_list_free(services->accounts);
 
 	debug("**SHUTDOWN:** freeing OnlineServices keys");

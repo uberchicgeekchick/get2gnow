@@ -62,7 +62,7 @@
 
 
 
-static gchar *gtkbuilder_get_path( const gchar *filename );
+static gchar *gtkbuilder_get_path(const gchar *filename);
 static GtkBuilder *gtkbuilder_load_file(const gchar *filename, const gchar *first_widget, va_list widgets);
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename);
 static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **gtkbuilder_ui_filename, gboolean get_local, gboolean use_template);
@@ -107,7 +107,7 @@ static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **g
 	else
 		*gtkbuilder_ui_filename=g_build_filename(BUILDDIR, "data", gtkbuilder_ui_file, NULL);
 	uber_free(gtkbuilder_ui_file);
-	if( gtkbuilder_ui_test_filename(*gtkbuilder_ui_filename)){
+	if(gtkbuilder_ui_test_filename(*gtkbuilder_ui_filename)){
 		debug("Loading GtkBuildable UI from: [%s]", *gtkbuilder_ui_filename);
 		
 		if(use_template){
@@ -125,7 +125,7 @@ static gboolean gtkbuilder_get_ui_filename(const gchar *base_filename, gchar **g
 
 static gchar *gtkbuilder_ui_test_filename(gchar *gtkbuilder_ui_filename){
 	debug("Checking existance of for GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
-	if(!g_file_test( gtkbuilder_ui_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR )){
+	if(!g_file_test(gtkbuilder_ui_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)){
 		debug("Unable to load GtkBuilder UI filename: %s", gtkbuilder_ui_filename);
 		return NULL;
 	}
@@ -144,7 +144,7 @@ static GtkBuilder *gtkbuilder_load_file(const gchar *filename, const gchar *firs
 	/* Create gtkbuilder & load the xml file */
 	ui=gtk_builder_new();
 	gtk_builder_set_translation_domain(ui, GETTEXT_PACKAGE);
-	if(!(path=gtkbuilder_get_path(filename) )){
+	if(!(path=gtkbuilder_get_path(filename))){
 		debug("Unable to load GtkBuilder UI filename: %s", filename);
 		return NULL;
 	}
@@ -180,7 +180,7 @@ static void gtkbuilder_get_objects_from_ui(GtkBuilder *ui, const gchar *path, co
 	const char  *name=NULL;
 	for(name=first_widget; name; name=va_arg(widgets, char *)){
 		pointer=va_arg(widgets, void *);
-		if(!( *pointer=gtk_builder_get_object(ui, name) ))
+		if(!(*pointer=gtk_builder_get_object(ui, name)))
 			debug("**ERROR:** Widget '%s' at '%s' is missing", name, path);
 	}
 }/*gtkbuilder_get_objects(ui, path, first_widget, widgets);*/
@@ -191,7 +191,7 @@ GtkBuilder *gtkbuilder_get_file (const gchar *filename, const gchar *first_widge
 	GtkBuilder *ui=gtkbuilder_load_file(filename, first_widget, widgets);
 	va_end(widgets);
 
-	return ( ui ? ui : NULL );
+	return (ui ? ui : NULL);
 }
 
 void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer user_data, gchar *first_widget, ...){
@@ -203,7 +203,7 @@ void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer
 		const gchar *signal=va_arg(args, gchar *);
 		GCallback callback=va_arg(args, GCallback);
 		
-		if(!( instance=gtk_builder_get_object(ui, name) )){
+		if(!(instance=gtk_builder_get_object(ui, name))){
 			debug("**ERROR:** Missing widget '%s'", name);
 			continue;
 		}
@@ -214,5 +214,5 @@ void gtkbuilder_signals_connect(gboolean connect_after, GtkBuilder *ui, gpointer
 			g_signal_connect_after(instance, signal, (GCallback)callback, user_data);
 	}
 	va_end(args);
-}/*gtkbuilder_signals_connect((TRUE: use g_signal_connect; FALSE uses g_signal_connec_after), ui, user_data, "widget_name", va_args );*/
+}/*gtkbuilder_signals_connect((TRUE: use g_signal_connect; FALSE uses g_signal_connec_after), ui, user_data, "widget_name", va_args);*/
 

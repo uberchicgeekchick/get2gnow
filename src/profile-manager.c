@@ -517,7 +517,7 @@ static void profile_manager_download_image(ProfileManagerImageWidget which_image
 			break;
 	}
 	
-	online_service_request_uri(profile_manager->service, QUEUE, image_uri, 0, NULL, profile_manager_save_image, g_strdup(image_file), GINT_TO_POINTER(which_image) );
+	online_service_request_uri(profile_manager->service, QUEUE, image_uri, 0, NULL, profile_manager_save_image, g_strdup(image_file), GINT_TO_POINTER(which_image));
 }/*profile_manager_download_image(AvatarImage|ProfileBackgroundImage, image_file, image_uri);*/
 
 void *profile_manager_save_image(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper){
@@ -563,7 +563,7 @@ static void profile_manager_save(GtkButton *save_button, ProfileManager *profile
 }/*profile_manager_save(profile_manager->save_button, profile_manager);*/
 
 static gboolean profile_manager_update_profile(GtkButton *update_profile_button, ProfileManager *profile_manager){
-	if( g_str_equal(profile_manager->service->user_profile->nick_name, profile_manager->nick_name_entry->text) && g_str_equal(profile_manager->service->user_profile->uri, profile_manager->uri_entry->text) && g_str_equal(profile_manager->service->user_profile->location, profile_manager->location_entry->text) && g_str_equal(profile_manager->service->user_profile->bio, profile_manager->bio_entry->text) )
+	if(g_str_equal(profile_manager->service->user_profile->nick_name, profile_manager->nick_name_entry->text) && g_str_equal(profile_manager->service->user_profile->uri, profile_manager->uri_entry->text) && g_str_equal(profile_manager->service->user_profile->location, profile_manager->location_entry->text) && g_str_equal(profile_manager->service->user_profile->bio, profile_manager->bio_entry->text))
 		return FALSE;
 	
 	gchar *form_data=g_strdup_printf("name=%s&url=%s&location=%s&description=%s", g_uri_escape_string(profile_manager->nick_name_entry->text, NULL, TRUE), g_uri_escape_string(profile_manager->uri_entry->text, NULL, TRUE), g_uri_escape_string(profile_manager->location_entry->text, NULL, TRUE), g_uri_escape_string(profile_manager->bio_entry->text, NULL, TRUE));
@@ -623,8 +623,8 @@ static gboolean profile_manager_update_profile_colors(GtkButton *update_profile_
 static gboolean profile_manager_update_profile_background_image(GtkButton *update_profile_background_image_button, ProfileManager *profile_manager){
 	gchar *new_image_file_name=NULL;
 	gchar *new_image_form_data=NULL;
-	if( (new_image_file_name=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(profile_manager->profile_background_image_file_chooser_button))) && !g_str_equal(profile_manager->service->user_profile->profile_background_file, new_image_file_name) ){
-		new_image_form_data=g_strdup_printf("image=%s", g_uri_escape_string(new_image_file_name, NULL, TRUE) );
+	if((new_image_file_name=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(profile_manager->profile_background_image_file_chooser_button))) && !g_str_equal(profile_manager->service->user_profile->profile_background_file, new_image_file_name)){
+		new_image_form_data=g_strdup_printf("image=%s", g_uri_escape_string(new_image_file_name, NULL, TRUE));
 		uber_free(new_image_file_name);
 	}else if(new_image_file_name)
 		uber_free(new_image_file_name);
@@ -638,7 +638,7 @@ static gboolean profile_manager_update_profile_background_image(GtkButton *updat
 	}
 	
 	gboolean form_submitted=FALSE;
-	gchar *form_data=g_strdup_printf("%s%s%s", (new_image_form_data ?new_image_form_data :""), (new_image_form_data&&tile_background_form_data ?"&" :""), (tile_background_form_data ?tile_background_form_data :"") );
+	gchar *form_data=g_strdup_printf("%s%s%s", (new_image_form_data ?new_image_form_data :""), (new_image_form_data&&tile_background_form_data ?"&" :""), (tile_background_form_data ?tile_background_form_data :""));
 	if(G_STR_N_EMPTY(form_data)){
 		form_submitted=TRUE;
 		online_service_request(profile_manager->service, POST, API_ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)profile_manager_edit_profile, (OnlineServiceSoupSessionCallbackFunc)user_parse_profile, GINT_TO_POINTER(ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE), form_data);

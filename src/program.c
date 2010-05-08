@@ -106,7 +106,7 @@ static GnomeProgram *program=NULL;
  *   'Here be Dragons'...art, beauty, fun, & magic.     *
  ********************************************************/
 gboolean program_init(int argc, char **argv){
-	if( (ipc_init_check( argc, argv)) ){
+	if((ipc_init_check(argc, argv))){
 		g_fprintf(stdout, "%s is already running.  Be sure to check your desktop's notification tray for %s's icon.\n", GETTEXT_PACKAGE, GETTEXT_PACKAGE);
 		ipc_deinit();
 		return FALSE;
@@ -214,17 +214,17 @@ void program_uber_object_free(gpointer pointer1, ...){
 	va_list pointers;
 	va_start(pointers, pointer1);
 	for(pointer=pointer1; pointer; pointer=va_arg(pointers, gpointer)){
-		if(! *pointer ) continue;
+		if(! *pointer) continue;
 		uber_free(*pointer);
 	}
 	va_end(pointers);
 }/*void program_uber_object_free(pointer1, pointer2, NULL);*/
 
 void program_timeout_remove(guint *id, const gchar *usage){
-	if(!( *id > 0 )) return;
+	if(!(*id > 0)) return;
 	
-	debug("Stopping %s; timeout id: %d", ( G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]" ), (*id));
-	g_source_remove((*id) );
+	debug("Stopping %s; timeout id: %d", (G_STR_N_EMPTY(usage) ?usage :"[unidentified pthread timeout]"), (*id));
+	g_source_remove((*id));
 	*id=0;
 }/*program_timeout_remove(&id, _("message"));*/
 
@@ -234,10 +234,10 @@ gchar *program_gdouble_drop_precision(const gdouble gdouble_value){
 	return gdouble_str;
 }/*program_gdouble_drop_precision();*/
 
-gboolean program_gtk_widget_get_gboolean_property_value( GtkWidget *widget, const gchar *property ){
-	if(!( widget && GTK_IS_WIDGET(widget) )) return FALSE;
+gboolean program_gtk_widget_get_gboolean_property_value(GtkWidget *widget, const gchar *property){
+	if(!(widget && GTK_IS_WIDGET(widget))) return FALSE;
 	gboolean value=FALSE;
-	g_object_get( widget, property, &value, NULL );
+	g_object_get(widget, property, &value, NULL);
 	return value;
 }/*program_gtk_widget_get_property(GtkWidget *widget, "has-focus"|"visibility"|"sensitive");
 MACROS:

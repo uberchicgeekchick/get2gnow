@@ -133,10 +133,10 @@ gboolean debug_if_devel(void){
 gboolean debug_check_devel(const gchar *debug_environmental_value){
 #ifdef GNOME_ENABLE_DEBUG
 	debug_devel=TRUE;
-	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
+	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC")))
 		return FALSE;
 #else
-	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC" ) ))
+	if(!(debug_environmental_value && g_str_equal(debug_environmental_value, "ARTISTIC")))
 		return (debug_devel=FALSE);
 #endif
 	
@@ -209,7 +209,7 @@ static void debug_environment_check(void){
 }/*debug_environment_check();*/
 
 static void debug_domains_check(const gchar *domains){
-	if( debug_last_domains && g_str_equal(domains, debug_last_domains) ) return;
+	if(debug_last_domains && g_str_equal(domains, debug_last_domains)) return;
 	
 	if(debug_last_domains) uber_free(debug_last_domains);
 	debug_last_domains=g_strdup(domains);
@@ -265,7 +265,7 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 	
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
-			if(all_domains || !strcasecmp(debug_domains[x], debug_environment[y]) )
+			if(all_domains || !strcasecmp(debug_domains[x], debug_environment[y]))
 				debug_output_fp=stdout;
 			else if(debug_domains[x+1] || debug_environment[y+1])
 				continue;
@@ -277,7 +277,7 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 				g_fprintf(debug_output_fp, "\n");
 			}
 			
-			const gchar *prefix=(error ?" error" :(warning ?" warning" : (notice ?" notice" :(debug?" debug" :NULL) ) ) );
+			const gchar *prefix=(error ?" error" :(warning ?" warning" : (notice ?" notice" :(debug?" debug" :NULL))));
 			
 			if(error || warning || notice){
 				debug_message_fprintf(stderr, prefix, source_code, method, line_number, msg, args);
@@ -304,7 +304,7 @@ static void debug_message_fprintf(FILE *fp, const gchar *prefix, const gchar *so
 	const gchar *newline="";
 	const gchar *spacer="";
 	
-	if(!( debug_last_fp && debug_last_fp==fp && debug_last_source_code && g_str_equal(debug_last_source_code, source_code) )){
+	if(!(debug_last_fp && debug_last_fp==fp && debug_last_source_code && g_str_equal(debug_last_source_code, source_code))){
 		if(!debug_last_fp) debug_last_fp=fp;
 		
 		if(!(debug_last_source_code && g_str_equal(debug_last_source_code, source_code))){
@@ -319,7 +319,7 @@ static void debug_message_fprintf(FILE *fp, const gchar *prefix, const gchar *so
 		spacer="\t";
 	}
 	
-	if(!( debug_last_method && g_str_equal(debug_last_method, method) )){
+	if(!(debug_last_method && g_str_equal(debug_last_method, method))){
 		if(debug_last_method) uber_free(debug_last_method);
 		debug_last_method=g_strdup(method);
 		g_fprintf(fp, "%s%s%s in method: %s; on line: %d:", newline, newline, spacer, method, line_number);

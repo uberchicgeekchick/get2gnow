@@ -102,7 +102,7 @@ void cache_init(void){
 	cache_prefix=g_build_filename(g_get_home_dir(), ".gnome2", CONFIG_SUBDIR, NULL);
 	
 	gchar *cache_path_test=NULL;
-	if(!(cache_path_test=cache_dir_test("services", TRUE) ))
+	if(!(cache_path_test=cache_dir_test("services", TRUE)))
 		g_error("Unable to access config directory: %s.", cache_prefix);
 	
 	uber_free(cache_path_test);
@@ -117,7 +117,7 @@ static gchar *cache_file_create_online_service_xml_file(OnlineService *service, 
 	gchar *subdir, *filename, *query_string;
 	cache_get_uri_filename(uri, TRUE, &subdir, TRUE, &filename, TRUE, &query_string);
 	const gchar *page;
-	if(!( ((query_string)) && (page=g_strrstr(query_string, "page=")) ))
+	if(!(((query_string)) && (page=g_strrstr(query_string, "page="))))
 		page="0";
 	gchar *filename_xml=g_strdup_printf("%s/page_%s", subdir, page);
 	
@@ -137,7 +137,7 @@ static gchar *cache_file_create_online_service_xml_file(OnlineService *service, 
 
 gboolean cache_save_page(OnlineService *service, const gchar *uri, SoupMessageBody *xml){
 	debug("Caching page");
-	if(!( cache_file_save_online_service_xml(service, uri, xml->data, xml->length) ))
+	if(!(cache_file_save_online_service_xml(service, uri, xml->data, xml->length)))
 		return FALSE;
 	
 	debug("Cached page's content");
@@ -150,7 +150,7 @@ static gboolean cache_file_save_online_service_xml(OnlineService *service, const
 		return FALSE;
 	}
 	gchar *cache_file_xml=NULL;
-	if(!( cache_file_xml=cache_file_create_online_service_xml_file(service, uri) )){
+	if(!(cache_file_xml=cache_file_create_online_service_xml_file(service, uri))){
 		debug("**ERROR:** Unable to create xml cache filename");
 		return FALSE;
 	}
@@ -182,7 +182,7 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm
 	if(!(g_str_has_prefix(cache_dir_path, cache_prefix)))
 		return;
 	
-	if(!( (g_file_test(cache_dir_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)) )){
+	if(!((g_file_test(cache_dir_path, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_DIR)))){
 		cache_file_clean_up(cache_dir_path);
 		return;
 	}
@@ -191,7 +191,7 @@ static void cache_dir_absolute_clean_up(const gchar *cache_dir_path, gboolean rm
 	
 	const gchar *cache_file=NULL;
 	GDir *cache_dir=g_dir_open(cache_dir_path, 0, NULL);
-	while((cache_file=g_dir_read_name(cache_dir)) ){
+	while((cache_file=g_dir_read_name(cache_dir))){
 		gchar *cache_file_path=g_strdup_printf("%s/%s", cache_dir_path, cache_file);
 		if(g_file_test(cache_file_path, G_FILE_TEST_IS_DIR)){
 			cache_dir_absolute_clean_up(cache_file_path, TRUE);
@@ -319,7 +319,7 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 	}
 	va_end(cache_subdirs_and_file);
 	
-	if(!( (directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(file)) )){
+	if(!((directory=cache_dir_test(dir, TRUE)) && (filename=cache_file_touch(file)))){
 		debug("**ERROR:** Unable to create cache file");
 		debug("**ERROR:** Cache prefix: [%s]", cache_prefix);
 		
@@ -346,7 +346,7 @@ gchar *cache_file_create_file_for_online_service(OnlineService *service, const g
 }/*cache_file_create_file_for_online_service(service, "users", "uberChick.xml", NULL);*/
 
 gchar *cache_create_image_filename_from_uri(OnlineService *service, const gchar *image_type, const gchar *user_name, const gchar *image_uri){
-	if(!(G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(image_uri) )){
+	if(!(G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(image_uri))){
 		debug("**ERROR** Unable to parse an empty uri into an image filename.  Attempting to load %s for user: <%s>; using uri: [%s]", image_type, user_name, image_uri);
 		return images_get_unknown_image_filename();
 	}
@@ -364,14 +364,14 @@ gchar *cache_create_image_filename_from_uri(OnlineService *service, const gchar 
 	gchar *image_dir=cache_path_create("services", service->uri, image_type, user_name, NULL);
 	gchar *image_filename=NULL;
 	gchar *image_path=NULL;
-	if(!( ((image_path=cache_dir_test(image_dir, TRUE))) && (image_filename=cache_path_create(image_path, image_file, NULL)) )){
+	if(!(((image_path=cache_dir_test(image_dir, TRUE))) && (image_filename=cache_path_create(image_path, image_file, NULL)))){
 		uber_free(image_file);
 		uber_free(image_dir);
 		if(image_path) uber_free(image_path);
 		return images_get_unknown_image_filename();
 	}
 	
-	if(!( (g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)) )){
+	if(!((g_file_test(image_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)))){
 		debug("Cleaning up old %s from: [%s]", image_type, image_dir);
 		cache_dir_clean_up(image_dir, FALSE);
 	}

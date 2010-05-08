@@ -7,7 +7,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Disable prompting before deleting accounts</short>
+				<short>Disable prompting before deleting accounts.</short>
 				<long>Disable prompting before deleting accounts.</long>
 			</locale>
 		</schema>
@@ -19,7 +19,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Disable prompting before deleting best friends</short>
+				<short>Disable prompting before deleting best friends.</short>
 				<long>Disable prompting before deleting best friends.</long>
 			</locale>
 		</schema>
@@ -31,7 +31,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Disable prompting before cleaning up best friends</short>
+				<short>Disable prompting before cleaning up best friends.</short>
 				<long>
 					Disable prompting before cleaning up best friends.
 					Clean-up occures when a best friend's profile can no longer
@@ -47,7 +47,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Disable prompting before removing all text from the update viewer's update entry</short>
+				<short>Disable prompting before removing all text from the update viewer's update entry.</short>
 				<long>
 					Disable prompting before removing all text from the update viewer's update entry.
 					Clean-up occures when a best friend's profile can no longer
@@ -63,7 +63,7 @@
 			<type>string</type>
 			<default>/statuses/friends_timeline.xml</default>
 			<locale name="C">
-				<short>User's home timeline</short>
+				<short>User's home timeline.</short>
 				<long>User's home timeline.</long>
 			</locale>
 		</schema>
@@ -73,13 +73,12 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/tabs/reload</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
-			<default>5</default>
+			<default>3</default>
 			<locale name="C">
-				<short>Minutes between timeline retrievals</short>
+				<short>Minutes between tab/timeline auto-refreshes.</short>
 				<long>
-					Minutes between timeline retrievals.
-					Values supported are 5 to 100.
-					Minutes are incremented by 5 minute interievals.
+					Minutes between tab/timeline auto-refreshes.
+					Values supported are from 3 minutes up to 90 minutes.
 				</long>
 			</locale>
 		</schema>
@@ -189,7 +188,7 @@
 			<type>int</type>
 			<default>2419200</default>
 			<locale name="C">
-				<short>How long to archive/keep most updates for (in seconds)</short>
+				<short>How long to archive/keep most updates for (in seconds).</short>
 				<long>
 					How long to archive/keep most updates for (in seconds).
 					By default DMs from the last 4 weeks are loaded.
@@ -204,7 +203,7 @@
 			<type>int</type>
 			<default>2419200</default>
 			<locale name="C">
-				<short>How long to archive/keep DMs for (in seconds)</short>
+				<short>How long to archive/keep DMs for (in seconds).</short>
 				<long>
 					How long to archive/keep DMs for (in seconds).
 					By default DMs from the last 4 weeks are loaded.
@@ -219,7 +218,7 @@
 			<type>int</type>
 			<default>604800</default>
 			<locale name="C">
-				<short>How long to archive/keep replies for (in seconds)</short>
+				<short>How long to archive/keep replies for (in seconds).</short>
 				<long>
 					How long to archive/keep replies for (in seconds).
 					By default Replies, &amp; @ Mentions, from the last 7 days are loaded.
@@ -234,7 +233,7 @@
 			<type>int</type>
 			<default>2419200</default>
 			<locale name="C">
-				<short>How long to archive/keep the user's star'd/favorite updates for(in seconds)</short>
+				<short>How long to archive/keep the user's star'd/favorite updates for(in seconds).</short>
 				<long>
 					How long to archive/keep the user's star'd/favorite updates for(in seconds).
 					By default star'd/favorite from the last 4 weeks are loaded.
@@ -249,7 +248,7 @@
 			<type>int</type>
 			<default>86400</default>
 			<locale name="C">
-				<short>How long to archive/keep the user's best friends' updates for (in seconds)</short>
+				<short>How long to archive/keep the user's best friends' updates for (in seconds).</short>
 				<long>
 					How long to archive/keep the user's best friends' updates for (in seconds).
 					By default &quot;Best Friends' Updates&quot; from the last 24 hrs are loaded.
@@ -264,7 +263,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Hide main window on start-up</short>
+				<short>Hide main window on start-up.</short>
 				<long>Hide the main window on start-up.</long>
 			</locale>
 		</schema>
@@ -274,10 +273,10 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/hide/best_friends</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
-				<short>Hide the best friends 'panel' on start-up</short>
-				<long>Hide the best friends 'panel' on start-up.</long>
+				<short>Show the best friends 'panel' on start-up.</short>
+				<long>Show the best friends 'panel' on start-up.</long>
 			</locale>
 		</schema>
 		
@@ -288,8 +287,8 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Hide the best friends 'panel' on start-up</short>
-				<long>Hide the best friends 'panel' on start-up.</long>
+				<short>Hide the main window's toolbar on start-up.</short>
+				<long>Hide the main window's toolbar on start-up.</long>
 			</locale>
 		</schema>
 		
@@ -300,7 +299,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>To write &amp; view messages in a seperate window</short>
+				<short>To write &amp; view messages in a seperate window.</short>
 				<long>To write &amp; view messages in a seperate window.</long>
 			</locale>
 		</schema>
@@ -459,7 +458,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Stops URLs from being expanded to include the page title</short>
+				<short>Stops URLs from being expanded to include the page title.</short>
 				<long>
 					Stops URLs from being expanded to include the page title.
 					This is done when a particular tweet is selected.
@@ -496,7 +495,7 @@
 			<applyto>/apps/@PACKAGE_NAME@/ui/update_viewer/uri_expansion/replace_with_titles</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>bool</type>
-			<default>false</default>
+			<default>true</default>
 			<locale name="C">
 				<short>Replace hyperlink URLs with page titles without including the URI.</short>
 				<long>Replace hyperlink URLs with page titles without including the URI.</long>
@@ -510,7 +509,7 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notifications for all new messages</short>
+				<short>Show notifications for all new messages.</short>
 				<long>Show notification for all new messages.</long>
 			</locale>
 		</schema>
@@ -522,7 +521,7 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification for new messages from one of my 'best friends'</short>
+				<short>Show notification for new messages from one of my 'best friends'.</short>
 				<long>Show notification for all new messages from one of my 'best friends'.</long>
 			</locale>
 		</schema>
@@ -534,7 +533,7 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification for new messages from someone you follow</short>
+				<short>Show notification for new messages from someone you follow.</short>
 				<long>Show notification for new messages posted by any one you're following.</long>
 			</locale>
 		</schema>
@@ -546,7 +545,7 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification of direct messages</short>
+				<short>Show notification of direct messages.</short>
 				<long>Show notification of new direct messages sent directly to you.</long>
 			</locale>
 		</schema>
@@ -558,7 +557,7 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Show notification for new messages containing @username</short>
+				<short>Show notification for new messages containing @username.</short>
 				<long>Show notification of new messages where the user is beng replied to or talked to.</long>
 			</locale>
 		</schema>
@@ -570,7 +569,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Disables all sound notifications</short>
+				<short>Disables all sound notifications.</short>
 				<long>Disables all sound notifications.</long>
 			</locale>
 		</schema>
@@ -582,7 +581,7 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Sound notification of new Twitter messages</short>
+				<short>Sound notification of new Twitter messages.</short>
 				<long>Sound notification of new Twitter messages.</long>
 			</locale>
 		</schema>
@@ -594,14 +593,14 @@
 			<type>bool</type>
 			<default>true</default>
 			<locale name="C">
-				<short>Sound notification of long messages</short>
+				<short>Sound notification of long messages.</short>
 				<long>Sound notification of long messages.</long>
 			</locale>
 		</schema>
 		
 		<schema>
-			<key>/schemas/apps/@PACKAGE_NAME@/updates/replace_me_w_nick</key>
-			<applyto>/apps/@PACKAGE_NAME@/updates/replace_me_w_nick</applyto>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/replacements/me_w_nick</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/replacements/me_w_nick</applyto>
 			<owner>@PACKAGE_NAME@</owner>
 			<type>int</type>
 			<default>2</default>
@@ -616,7 +615,21 @@
 			</long>
 			</locale>
 		</schema>
-
+		
+		<schema>
+			<key>/schemas/apps/@PACKAGE_NAME@/updates/replacements/swap/octothorpes_and_exclaimations</key>
+			<applyto>/apps/@PACKAGE_NAME@/updates/replacements/swap/octothorpes_and_exclaimations</applyto>
+			<owner>@PACKAGE_NAME@</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Rather to replace tags, i.e.: #, with groups, i.e.: !, when posting.</short>
+				<long>
+					Rather to replace tags, i.e.: #, with groups, i.e.: !,
+					when posting to StatusNet; vice-versa when posting to Twitter.</long>
+			</locale>
+		</schema>
+		
 		<schema>
 			<key>/schemas/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/closing/main_window</key>
 			<applyto>/apps/@PACKAGE_NAME@/popup_confirmation_dialog/disabled_when/closing/main_window</applyto>
@@ -624,7 +637,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Confirm closing the main window</short>
+				<short>Confirm closing the main window.</short>
 				<long>
 					Whether or not to show the message dialog that
 					clicking the main window's 'x' button will exit
@@ -641,7 +654,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Confirm hiding the main window</short>
+				<short>Confirm hiding the main window.</short>
 				<long>
 					Whether or not to show the message dialog about
 					clickng the main window's 'x' button in its
@@ -658,7 +671,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Confirm deleting accounts, a.ka. OnlineService(s)</short>
+				<short>Confirm deleting accounts, a.ka. OnlineService(s).</short>
 				<long>
 					Whether or not to verify that the user truly meant to delece one of their accounts.
 				</long>
@@ -672,7 +685,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Confirm deletion of best friend when their profile isn't found</short>
+				<short>Confirm deletion of best friend when their profile isn't found.</short>
 				<long>
 					@PACKAGE_NAME@ can 'reload/refresh' a users best friends.
 					If a best friend's profile isn't found @PACKAGE_NAME@ will
@@ -696,7 +709,7 @@
 			<type>bool</type>
 			<default>false</default>
 			<locale name="C">
-				<short>Confirm the user meant to delete one of their best friends</short>
+				<short>Confirm the user meant to delete one of their best friends.</short>
 				<long>
 					Whether or not to verify that the user truly meant to delece one of their best friends.
 				</long>
@@ -710,7 +723,7 @@
 			<type>int</type>
 			<default>1100</default>
 			<locale name="C">
-				<short>Embed view width</short>
+				<short>Embed view width.</short>
 				<long>Embed view width.</long>
 			</locale>
 		</schema>
@@ -722,7 +735,7 @@
 			<type>int</type>
 			<default>700</default>
 			<locale name="C">
-				<short>Embed view height</short>
+				<short>Embed view height.</short>
 				<long>Embed view height.</long>
 			</locale>
 		</schema>
@@ -734,7 +747,7 @@
 			<type>int</type>
 			<default>100</default>
 			<locale name="C">
-				<short>Embed view X position</short>
+				<short>Embed view X position.</short>
 				<long>Embed view X position.</long>
 			</locale>
 		</schema>
@@ -746,7 +759,7 @@
 			<type>int</type>
 			<default>100</default>
 			<locale name="C">
-				<short>Embed view Y position</short>
+				<short>Embed view Y position.</short>
 				<long>Embed view Y position.</long>
 			</locale>
 		</schema>
@@ -758,7 +771,7 @@
 			<type>int</type>
 			<default>320</default>
 			<locale name="C">
-				<short>UpdateViewer's vertical slider bar's position</short>
+				<short>UpdateViewer's vertical slider bar's position.</short>
 				<long>UpdateViewer's vertical slider bar's position.</long>
 			</locale>
 		</schema>
@@ -770,7 +783,7 @@
 			<type>int</type>
 			<default>420</default>
 			<locale name="C">
-				<short>@PACKAGE_NAME@'s UpdateViewer's size/position within the Main Window</short>
+				<short>@PACKAGE_NAME@'s UpdateViewer's size/position within the Main Window.</short>
 				<long>@PACKAGE_NAME@'s UpdateViewer's size/position within the Main Window.</long>
 			</locale>
 		</schema>
@@ -782,7 +795,7 @@
 			<type>int</type>
 			<default>0</default>
 			<locale name="C">
-				<short>UpdateViewer's internal horizontal slider bar's position</short>
+				<short>UpdateViewer's internal horizontal slider bar's position.</short>
 				<long>UpdateViewer's internal horizontal slider bar's position.</long>
 			</locale>
 		</schema>
@@ -794,7 +807,7 @@
 			<type>int</type>
 			<default>68</default>
 			<locale name="C">
-				<short>UpdateViewer's internal vertical slider bar's position</short>
+				<short>UpdateViewer's internal vertical slider bar's position.</short>
 				<long>UpdateViewer's internal vertical slider bar's position.</long>
 			</locale>
 		</schema>
@@ -806,7 +819,7 @@
 			<type>int</type>
 			<default>1100</default>
 			<locale name="C">
-				<short>Main window width</short>
+				<short>Main window width.</short>
 				<long>Main window width.</long>
 			</locale>
 		</schema>
@@ -818,7 +831,7 @@
 			<type>int</type>
 			<default>700</default>
 			<locale name="C">
-				<short>Main window height</short>
+				<short>Main window height.</short>
 				<long>Main window height.</long>
 			</locale>
 		</schema>
@@ -830,7 +843,7 @@
 			<type>int</type>
 			<default>100</default>
 			<locale name="C">
-				<short>Main window X position</short>
+				<short>Main window X position.</short>
 				<long>Main window X position.</long>
 			</locale>
 		</schema>
@@ -842,7 +855,7 @@
 			<type>int</type>
 			<default>100</default>
 			<locale name="C">
-				<short>Main window Y position</short>
+				<short>Main window Y position.</short>
 				<long>Main window Y position.</long>
 			</locale>
 		</schema>
@@ -854,7 +867,7 @@
 			<type>int</type>
 			<default>700</default>
 			<locale name="C">
-				<short>UpdateViewer's width</short>
+				<short>UpdateViewer's width.</short>
 				<long>UpdateViewer's width.</long>
 			</locale>
 		</schema>
@@ -866,7 +879,7 @@
 			<type>int</type>
 			<default>350</default>
 			<locale name="C">
-				<short>UpdateViewer's height</short>
+				<short>UpdateViewer's height.</short>
 				<long>UpdateViewer's height.</long>
 			</locale>
 		</schema>
@@ -878,7 +891,7 @@
 			<type>int</type>
 			<default>100</default>
 			<locale name="C">
-				<short>UpdateViewer's X position</short>
+				<short>UpdateViewer's X position.</short>
 				<long>UpdateViewer's X position.</long>
 			</locale>
 		</schema>
@@ -890,7 +903,7 @@
 			<type>int</type>
 			<default>600</default>
 			<locale name="C">
-				<short>UpdateViewer's Y position</short>
+				<short>UpdateViewer's Y position.</short>
 				<long>UpdateViewer's Y position.</long>
 			</locale>
 		</schema>

@@ -72,8 +72,8 @@ G_BEGIN_DECLS
 #ifndef	gtk_tree_view_column_toggle_visibility
 #	define	gtk_tree_view_column_toggle_visibility(tree_view_column)								\
 	G_STMT_START{															\
-		if( tree_view_column && GTK_IS_TREE_VIEW_COLUMN(tree_view_column) )							\
-			gtk_tree_view_column_set_visible(tree_view_column, !gtk_tree_view_column_get_visible(tree_view_column) );	\
+		if(tree_view_column && GTK_IS_TREE_VIEW_COLUMN(tree_view_column))							\
+			gtk_tree_view_column_set_visible(tree_view_column, !gtk_tree_view_column_get_visible(tree_view_column));	\
 	}G_STMT_END
 #endif
 

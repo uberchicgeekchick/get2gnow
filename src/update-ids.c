@@ -110,45 +110,45 @@ gboolean update_ids_check(OnlineService *service, const gchar *timeline, gdouble
 	gboolean	ids_set=FALSE;
 	gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 	update_ids_get(service, timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
-	debug("Checking <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
-	if( update_id > newest_update_id ){
+	debug("Checking <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id);
+	if(update_id > newest_update_id){
 		ids_set=TRUE;
 		newest_update_id=update_id;
 	}
 	
-	if( update_id > unread_update_id ){
+	if(update_id > unread_update_id){
 		if(!ids_set) ids_set=TRUE;
 		unread_update_id=update_id;
 	}
 	
-	if( check_oldest && update_id > oldest_update_id ){
+	if(check_oldest && update_id > oldest_update_id){
 		if(!ids_set) ids_set=TRUE;
 		oldest_update_id=update_id;
 	}
 	
 	if(ids_set){
-		debug("Saving <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id );
+		debug("Saving <%s>'s; update IDs for [%s]; against update ID: %f; newest update ID: %f; unread update ID: %f; oldest update ID: %f", service->guid, timeline, update_id, newest_update_id, unread_update_id, oldest_update_id);
 		update_ids_set(service, timeline, newest_update_id, unread_update_id, oldest_update_id);
 	}
 	
 	return ids_set;
-}/*update_ids_check( service, timeline, index_update_id, FALSE );*/
+}/*update_ids_check(service, timeline, index_update_id, FALSE);*/
 
 void update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id){
-	if(!(service && G_STR_N_EMPTY(timeline) )) return;
+	if(!(service && G_STR_N_EMPTY(timeline))) return;
 	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(timeline);
 	debug("Retrieving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path );
-	update_id_get( service, timelines_gconfig_prefs_path, "newest", newest_update_id );
-	update_id_get( service, timelines_gconfig_prefs_path, "unread", unread_update_id );
-	update_id_get( service, timelines_gconfig_prefs_path, "oldest", oldest_update_id );
+	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
+	update_id_get(service, timelines_gconfig_prefs_path, "newest", newest_update_id);
+	update_id_get(service, timelines_gconfig_prefs_path, "unread", unread_update_id);
+	update_id_get(service, timelines_gconfig_prefs_path, "oldest", oldest_update_id);
 	debug("Retrieving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path );
+	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
 	uber_free(timelines_gconfig_prefs_path);
 }/*update_ids_get(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
-static gboolean update_id_get( OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id ){
-	if(!( service && G_STR_N_EMPTY(timelines_gconfig_prefs_path) )) return FALSE;
+static gboolean update_id_get(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble *update_id){
+	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path))) return FALSE;
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
@@ -170,10 +170,10 @@ static gboolean update_id_get( OnlineService *service, const gchar *timelines_gc
 	uber_free(prefs_path);
 	uber_free(swap_id_str);
 	return success;
-}/*update_id_get( service, "/friends.xml", "newest", &newest_update_id );*/
+}/*update_id_get(service, "/friends.xml", "newest", &newest_update_id);*/
 
-void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id ){
-	if(!(service && G_STR_N_EMPTY(timeline) )) return;
+void update_ids_set(OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id){
+	if(!(service && G_STR_N_EMPTY(timeline))) return;
 	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(timeline);
 	debug("Saving: <%s>'s update IDs [%s]", service->key, timeline);
 	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
@@ -185,8 +185,8 @@ void update_ids_set( OnlineService *service, const gchar *timeline, gdouble newe
 	uber_free(timelines_gconfig_prefs_path);
 }/*update_ids_set(service, "/friends.xml", id_newest_update, id_oldest_update);*/
 
-static gboolean update_id_set( OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id ){
-	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path) )) return FALSE;
+static gboolean update_id_set(OnlineService *service, const gchar *timelines_gconfig_prefs_path, const gchar *key, gdouble update_id){
+	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path))) return FALSE;
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY:
 	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
@@ -203,20 +203,20 @@ static gboolean update_id_set( OnlineService *service, const gchar *timelines_gc
 	uber_free(prefs_path);
 	uber_free(swap_id_str);
 	return success;
-}/*online_service_id_set( service, "/friends.xml", "newest", &newest_update_id );*/
+}/*online_service_id_set(service, "/friends.xml", "newest", &newest_update_id);*/
 
 gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
 	debug("Formatting timeline for use with gconf: from uri: <%s>", uri);
 	
 	if(!strstr(uri, "%"))
-		return g_strdup( ( strstr(uri, "=") ?g_strrstr(uri, "=")+sizeof("=") :g_strrstr(uri, "/")+sizeof("/") ) );
+		return g_strdup((strstr(uri, "=") ?g_strrstr(uri, "=")+sizeof("=") :g_strrstr(uri, "/")+sizeof("/")));
 	
-	gchar **uri_split=g_strsplit_set( g_strrstr(uri, "/"), "?=", 3);
+	gchar **uri_split=g_strsplit_set(g_strrstr(uri, "/"), "?=", 3);
 	gchar *search_phrase_encoded;
 	if(!strstr(uri_split[2], "%"))
 		search_phrase_encoded=g_strdup_printf("_%s", uri_split[2]);
 	else{
-		gchar **search_phrase_parts=g_strsplit( uri_split[2], "%", -1 );
+		gchar **search_phrase_parts=g_strsplit(uri_split[2], "%", -1);
 		search_phrase_encoded=g_strjoinv("_", search_phrase_parts);
 		g_strfreev(search_phrase_parts);
 	}

@@ -94,8 +94,20 @@ struct _PreferencesDialog{
 	GtkComboBox	*combo_reload;
 	
 	/* Checkbuttons */
-	GtkCheckButton	*disable_update_length_alert_check_button;
-	GtkComboBox	*replace_me_with_combo_box;
+	GtkCheckButton	*disable_system_bell;
+	
+	GtkCheckButton	*compact_entire_view_check_button;
+	GtkCheckButton	*concatenated_updates_check_button;
+	GtkCheckButton	*use_dialog_toggle_button;
+	GtkCheckButton	*compact_view_toggle_button;
+	
+	GtkCheckButton	*expand_urls_disabled_checkbutton;
+	GtkCheckButton	*expand_urls_selected_only_checkbutton;
+	GtkCheckButton	*titles_only_checkbutton;
+	GtkCheckButton	*expand_users_checkbutton;
+	
+	GtkCheckButton	*search_history_uniq_check_button;
+	GtkComboBox	*search_history_maximum_combo_box;
 	
 	GtkCheckButton	*autoload_best_friends_updates_check_button;
 	GtkCheckButton	*autoload_dms_check_button;
@@ -109,26 +121,15 @@ struct _PreferencesDialog{
 	GtkCheckButton	*notify_all_new_updates;
 	GtkCheckButton	*notify_beep_updates_check_button;
 	
-	GtkCheckButton	*disable_system_bell;
-	
-	GtkCheckButton	*compact_entire_view_check_button;
-	GtkCheckButton	*concatenated_updates_check_button;
-	GtkCheckButton	*use_dialog_toggle_button;
-	GtkCheckButton	*compact_view_toggle_button;
-	
-	GtkCheckButton	*expand_urls_disabled_checkbutton;
-	GtkCheckButton	*expand_urls_selected_only_checkbutton;
-	GtkCheckButton	*titles_only_checkbutton;
-	GtkCheckButton	*expand_users_checkbutton;
+	GtkCheckButton	*disable_update_length_alert_check_button;
+	GtkCheckButton	*swap_octothorpe_and_exclaimation;
+	GtkComboBox	*replace_me_with_combo_box;
 	
 	GtkCheckButton	*updates_add_profile_link_checkbutton;
 	GtkCheckButton	*post_reply_to_service_only_checkbutton;
 	
 	GtkCheckButton	*previous_updates_uniq_check_button;
 	GtkComboBox	*previous_updates_maximum_combo_box;
-	
-	GtkCheckButton	*search_history_uniq_check_button;
-	GtkComboBox	*search_history_maximum_combo_box;
 	
 	GList		*notify_ids;
 };
@@ -139,12 +140,15 @@ struct _reload_time{
 };
 
 reload_time reload_list[]={
+	{3, N_("3 minutes")},
 	{5, N_("5 minutes")},
 	{10, N_("10 minutes")},
 	{15, N_("15 minutes")},
 	{30, N_("30 minutes")},
 	{45, N_("45 minutes")},
 	{60, N_("1 hour")},
+	{75, N_("1 hour and 15 minutes")},
+	{90, N_("1 hour and 30 minutes")},
 	{0, NULL}
 };
 
@@ -235,10 +239,24 @@ static void preferences_destroy_cb(GtkDialog *dialog, PreferencesDialog *prefs);
  ********************************************************************************/
 static void preferences_setup_widgets(PreferencesDialog *prefs){
 	debug("Binding widgets to preferences");
+	
+	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, FALSE, prefs->disable_system_bell);
+	
+	preferences_hookup_toggle_button(prefs, COMPACT_VIEW, FALSE, prefs->compact_entire_view_check_button);
+	preferences_hookup_toggle_button(prefs, CONCATENATED_UPDATES, FALSE, prefs->concatenated_updates_check_button);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_COMPACT, FALSE, prefs->compact_view_toggle_button);
+	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_DIALOG, FALSE, prefs->use_dialog_toggle_button);
+	
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
+	
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_BEST_FRIENDS, TRUE, prefs->autoload_best_friends_updates_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_DMS, TRUE, prefs->autoload_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_REPLIES, TRUE, prefs->autoload_replies_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_AUTOLOAD_HOMEPAGE, TRUE, prefs->autoload_homepage_check_button);
+	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, 5, prefs->combo_reload);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_DMS, TRUE, prefs->notify_dms_check_button);
 	preferences_hookup_toggle_button(prefs, PREFS_NOTIFY_REPLIES, TRUE, prefs->notify_at_mentions_check_button);
@@ -249,17 +267,8 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_UPDATE_LENGTH_ALERT, TRUE, prefs->disable_update_length_alert_check_button);
 	
-	preferences_hookup_toggle_button(prefs, COMPACT_VIEW, FALSE, prefs->compact_entire_view_check_button);
-	preferences_hookup_toggle_button(prefs, CONCATENATED_UPDATES, FALSE, prefs->concatenated_updates_check_button);
-	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_COMPACT, FALSE, prefs->compact_view_toggle_button);
-	preferences_hookup_toggle_button(prefs, PREFS_UPDATE_VIEWER_DIALOG, FALSE, prefs->use_dialog_toggle_button);
-	
-	preferences_hookup_toggle_button(prefs, PREFS_DISABLE_SYSTEM_BELL, FALSE, prefs->disable_system_bell);
-	
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_USER_PROFILES, TRUE, prefs->expand_users_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_SELECTED_ONLY, TRUE, prefs->expand_urls_selected_only_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_REPLACE_WITH_TITLES, TRUE, prefs->titles_only_checkbutton);
-	preferences_hookup_toggle_button(prefs, PREFS_URLS_EXPANSION_DISABLED, FALSE, prefs->expand_urls_disabled_checkbutton);
+	preferences_hookup_toggle_button(prefs, PREFS_SWAP_OCTOTHORPES_AND_EXCLAIMATIONS, TRUE, prefs->swap_octothorpe_and_exclaimation);
+	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, 2, prefs->replace_me_with_combo_box);
 	
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_ADD_PROFILE_LINK, FALSE, prefs->updates_add_profile_link_checkbutton);
 	preferences_hookup_toggle_button(prefs, PREFS_UPDATES_DIRECT_REPLY_ONLY, FALSE, prefs->post_reply_to_service_only_checkbutton);
@@ -271,24 +280,20 @@ static void preferences_setup_widgets(PreferencesDialog *prefs){
 	
 	preferences_hookup_toggle_button(prefs, PREFS_SEARCH_HISTORY_UNIQUE_ONLY, TRUE, prefs->search_history_uniq_check_button);
 	preferences_hookup_int_combo(prefs, PREFS_SEARCH_HISTORY_MAXIMUM, 25, prefs->search_history_maximum_combo_box);
-	
-	preferences_hookup_int_combo(prefs, PREFS_TIMELINE_RELOAD_MINUTES, 5, prefs->combo_reload);
-	
-	preferences_hookup_int_combo(prefs, PREFS_UPDATES_REPLACE_ME_W_NICK, 2, prefs->replace_me_with_combo_box);
 }/*preferences_setup_widgets(prefs);*/
 
 static void preferences_notify_bool_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s", key );
+	debug("Saving preference: %s", key);
 	preferences_widget_sync_bool(key, user_data);
 }
 
 static void preferences_notify_string_combo_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s", key );
+	debug("Saving preference: %s", key);
 	preferences_widget_sync_string_combo(key, user_data);
 }
 
 static void preferences_notify_int_combo_cb(const gchar *key, gpointer user_data){
-	debug("Saving preference: %s", key );
+	debug("Saving preference: %s", key);
 	preferences_widget_sync_int_combo(key, user_data);
 }
 
@@ -397,7 +402,7 @@ static void preferences_widget_sync_bool(const gchar *key, GtkCheckButton *check
 }
 
 static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *combo_box){
-	debug("Binding ComboBox to preference: %s", key );
+	debug("Binding ComboBox to preference: %s", key);
 	gchar        *value;
 	
 	if (!gconfig_get_string(key, &value)) return;
@@ -438,14 +443,14 @@ static void preferences_widget_sync_string_combo(const gchar *key, GtkComboBox *
 }
 
 static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *combo_box){
-	debug("Binding ComboBox to preference: %s", key );
-	gint          value=0, default_int=GPOINTER_TO_INT( g_object_get_data(G_OBJECT(combo_box), "default_int") );
+	debug("Binding ComboBox to preference: %s", key);
+	gint          value=0, default_int=GPOINTER_TO_INT(g_object_get_data(G_OBJECT(combo_box), "default_int"));
 	if(!gconfig_get_int_or_default(key, &value, default_int)) return;
 	GtkTreeModel *model=gtk_combo_box_get_model(combo_box);;
 	GtkTreeIter   *iter=g_new0(GtkTreeIter, 1);
 	gboolean      found=FALSE;
 	
-	if(!( value && gtk_tree_model_get_iter_first(model, iter) )){
+	if(!(value && gtk_tree_model_get_iter_first(model, iter))){
 		uber_free(iter);
 		return;
 	}
@@ -462,11 +467,11 @@ static void preferences_widget_sync_int_combo(const gchar *key, GtkComboBox *com
 			gtk_combo_box_set_active_iter(combo_box, iter);
 			break;
 		}
-	}while( gtk_tree_model_iter_next(model, iter));
+	}while(gtk_tree_model_iter_next(model, iter));
 	/* Fallback to the first one. */
 	uber_free(iter);
 	iter=g_new0(GtkTreeIter, 1);
-	if( !found && gtk_tree_model_get_iter_first(model, iter) )
+	if(!found && gtk_tree_model_get_iter_first(model, iter))
 		gtk_combo_box_set_active_iter(combo_box, iter);
 	
 	uber_free(iter);
@@ -480,12 +485,12 @@ static void preferences_hookup_toggle_button(PreferencesDialog *prefs, const gch
 	guint id;
 	
 	g_object_set_data_full(G_OBJECT(check_button), "key", g_strdup(key), g_free);
-	g_object_set_data_full(G_OBJECT(check_button), "bool_default", g_strdup( (bool_default?"TRUE" :"FALSE") ), g_free);
+	g_object_set_data_full(G_OBJECT(check_button), "bool_default", g_strdup((bool_default?"TRUE" :"FALSE")), g_free);
 	
 	g_signal_connect(check_button, "toggled", (GCallback)preferences_toggle_button_toggled_cb, prefs);
 	preferences_widget_sync_bool(key, check_button);
 	
-	if((id=gconfig_notify_add(g_strdup(key), preferences_notify_bool_cb, check_button)) )
+	if((id=gconfig_notify_add(g_strdup(key), preferences_notify_bool_cb, check_button)))
 		preferences_add_id(prefs, id);
 }
 
@@ -498,7 +503,7 @@ static void preferences_hookup_string_combo(PreferencesDialog *prefs, const gcha
 
 	g_signal_connect(combo_box, "changed", (GCallback)preferences_string_combo_changed_cb, prefs);
 
-	if((id=gconfig_notify_add(g_strdup(key), preferences_notify_string_combo_cb, combo_box)) )
+	if((id=gconfig_notify_add(g_strdup(key), preferences_notify_string_combo_cb, combo_box)))
 		preferences_add_id(prefs, id);
 }
 
@@ -506,13 +511,13 @@ static void preferences_hookup_int_combo(PreferencesDialog *prefs, const gchar *
 	guint id;
 	
 	g_object_set_data_full(G_OBJECT(combo_box), "key", g_strdup(key), g_free);
-	g_object_set_data(G_OBJECT(combo_box), "default_int", GINT_TO_POINTER(default_int) );
+	g_object_set_data(G_OBJECT(combo_box), "default_int", GINT_TO_POINTER(default_int));
 	
 	preferences_widget_sync_int_combo(key, combo_box);
 	
 	g_signal_connect(combo_box, "changed", (GCallback)preferences_int_combo_changed_cb, prefs);
 	
-	if( (id=gconfig_notify_add(key, preferences_notify_int_combo_cb, combo_box)) )
+	if((id=gconfig_notify_add(key, preferences_notify_int_combo_cb, combo_box)))
 		preferences_add_id (prefs, id);
 }
 
@@ -617,6 +622,7 @@ void preferences_dialog_show(GtkWindow *parent){
 					"notify_beep_updates_check_button", &prefs->notify_beep_updates_check_button,
 					
 					"disable_update_length_alert_check_button", &prefs->disable_update_length_alert_check_button,
+					"updates_composition_swap_octothorpe_and_exclaimation", &prefs->swap_octothorpe_and_exclaimation,
 					"replace_me_with_combo_box", &prefs->replace_me_with_combo_box,
 					
 					"updates_add_profile_link_checkbutton", &prefs->updates_add_profile_link_checkbutton,
@@ -642,10 +648,10 @@ void preferences_dialog_show(GtkWindow *parent){
 				NULL
 	);
 	
-	g_signal_connect( (GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL);
-	g_signal_connect_after( (GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL);
-	g_signal_connect_after( (GtkToggleButton *)prefs->concatenated_updates_check_button, "toggled", (GCallback)main_window_concatenate_timeline_columns, NULL);
-	g_signal_connect_after( (GtkToggleButton *)prefs->compact_entire_view_check_button, "toggled", (GCallback)main_window_compact_ui, NULL);
+	g_signal_connect((GtkToggleButton *)prefs->use_dialog_toggle_button, "toggled", (GCallback)main_window_update_viewer_set_embed, NULL);
+	g_signal_connect_after((GtkToggleButton *)prefs->compact_view_toggle_button, "toggled", (GCallback)update_viewer_compact_view_toggled, NULL);
+	g_signal_connect_after((GtkToggleButton *)prefs->concatenated_updates_check_button, "toggled", (GCallback)main_window_concatenate_timeline_columns, NULL);
+	g_signal_connect_after((GtkToggleButton *)prefs->compact_entire_view_check_button, "toggled", (GCallback)main_window_compact_ui, NULL);
 	
 	uber_object_unref(ui);
 	

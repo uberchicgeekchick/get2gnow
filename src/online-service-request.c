@@ -147,7 +147,7 @@ static void online_service_request_popup_set_selected_service(GtkMessageDialog *
 static gboolean online_service_request_popup_dialog_process_requests(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup);
 static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup);
 static void online_service_request_popup_destroy_cb(GtkMessageDialog *dialog, OnlineServiceRequestPopup *online_service_request_popup);
-static void online_service_request_popup_confirmation_dialog_add_gconfig_key( const gchar *gconfig_key, GFunc func, gpointer user_data );
+static void online_service_request_popup_confirmation_dialog_add_gconfig_key(const gchar *gconfig_key, GFunc func, gpointer user_data);
 static gboolean online_service_request_popup_validate_usage(RequestAction action);
 static void online_service_request_popup_destroy_and_free(void);
 static void online_service_request_user_name_active_cb(GtkEntry *user_name_entry, OnlineServiceRequestPopup *online_service_request_popup);
@@ -278,14 +278,14 @@ static gboolean online_service_request_set_post_method_data(OnlineServiceRequest
 			(*request)->uri=g_strdup_printf(API_DESTROY_STEP2, (*request)->get_rest_xml);
 			break;
 		case ShortenURI:
-			if(!g_strrstr( (*request)->get_rest_xml, "://" )){
+			if(!g_strrstr((*request)->get_rest_xml, "://")){
 				main_window_statusbar_printf("%s is an invalid URI.", (*request)->get_rest_xml);
 				return FALSE;
 			}
 			(*request)->uri=g_strdup(URI_SHORTENER_URI);
 			gchar *get_rest_xml_escaped=g_uri_escape_string((*request)->get_rest_xml, NULL, TRUE);
 			gchar *get_rest_xml_swap=g_strdup_printf("longurl=%s", get_rest_xml_escaped);
-			uber_free( (*request)->get_rest_xml );
+			uber_free((*request)->get_rest_xml);
 			uber_free(get_rest_xml_escaped);
 			(*request)->get_rest_xml=get_rest_xml_swap;
 			break;
@@ -342,15 +342,15 @@ static void online_service_request_main(OnlineService *service, RequestAction ac
 
 static void online_service_request_open_timeline_tab(OnlineService *service, RequestAction action, const gchar *get_rest_xml){
 	gchar *timeline=NULL;
-	gchar *user_timeline=g_strdup_printf( API_TIMELINE_USER, get_rest_xml );
+	gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, get_rest_xml);
 	if(action==ViewUpdatesNew){
 		gdouble		newest_update_id=0.0, unread_update_id=0.0, oldest_update_id=0.0;
 		update_ids_get(service, user_timeline, &newest_update_id, &unread_update_id, &oldest_update_id);
 		if(!unread_update_id){
-			debug( "Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", get_rest_xml, service->guid );
+			debug("Loading %s's updates, on <%s>, all updates will be loaded because this best friends timeline has never been loaded before.", get_rest_xml, service->guid);
 			timeline=user_timeline;
 		}else{
-			debug( "Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", get_rest_xml, service->guid, newest_update_id );
+			debug("Loading %s's updates, on <%s>, new updates since their last read update: %f(ID).", get_rest_xml, service->guid, newest_update_id);
 			uber_free(user_timeline);
 			timeline=g_strdup_printf(API_TIMELINE_USER_UNREAD, get_rest_xml, unread_update_id);
 		}
@@ -358,7 +358,7 @@ static void online_service_request_open_timeline_tab(OnlineService *service, Req
 		uber_free(user_timeline);
 		timeline=g_strdup_printf(API_FORWARDS_BY_ID, get_rest_xml);
 	}else{
-		debug( "Loading %s's updates, on <%s>.  Displaying all updates.", get_rest_xml, service->guid );
+		debug("Loading %s's updates, on <%s>.  Displaying all updates.", get_rest_xml, service->guid);
 		timeline=user_timeline;
 	}
 	
@@ -401,8 +401,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 					break;
 				}
 				debug("\t\t\t\t[duplicate request]");
-				debug("%s %s %s on %s", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
-				main_window_statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
+				debug("%s %s %s on %s", ((request->action==UnFollow) ?_("You're not following") :_("You've already")), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
+				main_window_statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already")), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
 				break;
 			}
 			debug("\t\t\t\t[succeeded]");
@@ -434,8 +434,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 					break;
 				}
 				debug("\t\t\t\t[duplicate request]");
-				debug("%s %s %s on %s", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
-				main_window_statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already") ), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
+				debug("%s %s %s on %s", ((request->action==UnFollow) ?_("You're not following") :_("You've already")), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
+				main_window_statusbar_printf("%s %s %s on %s.", ((request->action==UnFollow) ?_("You're not following") :_("You've already")), (request->action==UnFollow ?"" : request->message), request->get_rest_xml, service->guid);
 				break;
 			}
 			if(request->action==DeleteStep1){
@@ -466,7 +466,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		case ShortenURI:
 			debug("Looking for shortened URI");
 			gchar *shortened_uri=NULL;
-			if(!( (shortened_uri=(gchar *)www_get_uri_dom_xpath_element_content(xml, "html->body->p->a")) && g_utf8_strlen(shortened_uri, -1) > uri_shortener_uri_strlen && g_str_has_prefix(shortened_uri, URI_SHORTENER_URI) && G_STR_N_EMPTY(g_strrstr(shortened_uri, URI_SHORTENER_URI)) )){
+			if(!((shortened_uri=(gchar *)www_get_uri_dom_xpath_element_content(xml, "html->body->p->a")) && g_utf8_strlen(shortened_uri, -1) > uri_shortener_uri_strlen && g_str_has_prefix(shortened_uri, URI_SHORTENER_URI) && G_STR_N_EMPTY(g_strrstr(shortened_uri, URI_SHORTENER_URI)))){
 				debug("**ERROR:** %s failed to create a shortened URI.  %s returned %s(%d)", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
 				main_window_statusbar_printf("%s failed to create a shortened URI.  %s returned %s(%d).", URI_SHORTENER_URI, URI_SHORTENER_URI, xml->reason_phrase, xml->status_code);
 			}else{
@@ -484,7 +484,7 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		case ViewForwards:
 		default:
 			/*more cases of to make gcc happy.*/
-			debug("Unsupported OnlineServiceRequest action! %s", online_service_request_action_to_string(request->action) );
+			debug("Unsupported OnlineServiceRequest action! %s", online_service_request_action_to_string(request->action));
 			break;
 	}//switch
 	
@@ -504,7 +504,7 @@ static void online_service_request_free(OnlineServiceRequest *request){
  *               SelectedUpdate methods, handlers, callbacks, & etc.            *
  ********************************************************************************/
 gboolean online_service_request_isset_selected_update(void){
-	return ( (!(selected_update && selected_update->id)) ?FALSE :TRUE );
+	return ((!(selected_update && selected_update->id)) ?FALSE :TRUE);
 }/*online_service_request_isset_selected_update();*/
 
 void online_service_request_set_selected_update(OnlineService *service, UpdateType type, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *update){
@@ -525,27 +525,27 @@ void online_service_request_set_selected_update(OnlineService *service, UpdateTy
 }/*online_service_request_set_selected_update(service, update_type, 0.0|[0-9]+.[0-9]+, 0.0|[0-9]+.[0-9]+, "username", "what are you doing?");*/
 
 OnlineService *online_service_request_selected_update_get_service(void){
-	return ( (selected_update && selected_update->service) ?selected_update->service :NULL );
+	return ((selected_update && selected_update->service) ?selected_update->service :NULL);
 }/*online_service_request_selected_update_get_service();*/
 
 UpdateType online_service_request_selected_update_get_update_type(void){
-	return ( (selected_update && selected_update->type) ?selected_update->type :None);
+	return ((selected_update && selected_update->type) ?selected_update->type :None);
 }/*online_service_request_selected_update_get_update_type();*/
 
 gdouble online_service_request_selected_update_get_id(void){
-	return ( (selected_update && selected_update->id) ?selected_update->id :0.0 );
+	return ((selected_update && selected_update->id) ?selected_update->id :0.0);
 }/*online_service_request_selected_update_get_id();*/
 
 const gchar *online_service_request_selected_update_get_id_str(void){
-	return ( (selected_update && selected_update->id_str) ?selected_update->id_str :NULL );
+	return ((selected_update && selected_update->id_str) ?selected_update->id_str :NULL);
 }/*online_service_request_selected_update_get_id_str();*/
 
 const gchar *online_service_request_selected_update_get_user_name(void){
-	return ( (selected_update && selected_update->user_name) ?selected_update->user_name :NULL );
+	return ((selected_update && selected_update->user_name) ?selected_update->user_name :NULL);
 }/*online_service_request_selected_update_get_user_name();*/
 
 gdouble online_service_request_selected_update_get_user_id(void){
-	return ( (selected_update && selected_update->user_id) ?selected_update->user_id :0.0 );
+	return ((selected_update && selected_update->user_id) ?selected_update->user_id :0.0);
 }/*online_service_request_selected_update_get_user_id();*/
 
 gboolean online_service_request_selected_update_reply(void){
@@ -557,7 +557,7 @@ gboolean online_service_request_selected_update_forward(void){
 }/*online_service_request_selected_update_forward();*/
 
 static gboolean online_service_request_selected_update_include_and_begin_to_send(gboolean forwarding){
-	if(!( selected_update && selected_update->id )){
+	if(!(selected_update && selected_update->id)){
 		update_viewer_beep();
 		return FALSE;
 	}
@@ -621,10 +621,10 @@ static gchar *online_service_request_action_to_title(RequestAction action){
 }/*online_service_request_action_to_title(action);*/
 
 static void online_service_request_popup_set_title_and_label(RequestAction action, OnlineServiceRequestPopup *online_service_request_popup){
-	gtk_window_set_title(GTK_WINDOW(online_service_request_popup->dialog), online_service_request_action_to_title(action) );
+	gtk_window_set_title(GTK_WINDOW(online_service_request_popup->dialog), online_service_request_action_to_title(action));
 	
 	gchar *label_markup=NULL;
-	switch( action ){
+	switch(action){
 		case SelectService:
 			label_markup=g_markup_printf_escaped("Please select the 'default' account you want to use for sending direct messages, managing friends, and etc.\n\n<span weight=\"bold\">NOTE: You're being asked this before %s loads your friends, followers, or both.  This may take a while, so after selecting your account, please be patient while you're friends, followers, or both are download.  They will be displeyed, it may just take awhile.</span>\n\nYou can select a different account at any time by selecting 'Select Default Account' from the 'Accounts' file menu:", GETTEXT_PACKAGE);
 			gtk_message_dialog_set_markup(online_service_request_popup->dialog, label_markup);
@@ -683,7 +683,7 @@ static void online_service_request_popup_set_title_and_label(RequestAction actio
 
 static void online_service_request_popup_response_cb(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	online_service_request_popup_dialog_response=response;
-	debug("Request-Popup-Dialog for %s recieved response: %s(=%i)", online_service_request_action_to_string( online_service_request_popup->action), program_gtk_response_to_string(response), response);
+	debug("Request-Popup-Dialog for %s recieved response: %s(=%i)", online_service_request_action_to_string(online_service_request_popup->action), program_gtk_response_to_string(response), response);
 	switch(response){
 		case GTK_RESPONSE_YES:
 		case GTK_RESPONSE_OK:
@@ -744,7 +744,7 @@ static gboolean online_service_request_popup_dialog_process_requests(GtkMessageD
 	OnlineService		*service=NULL;
 	const gchar		*get_rest_xml=gtk_entry_get_text(online_service_request_popup->user_name_entry);
 	
-	if(!( GTK_WIDGET_IS_SENSITIVE(online_service_request_popup->user_name_entry) && GTK_WIDGET_IS_SENSITIVE(online_service_request_popup->online_services_combo_box) ))
+	if(!(GTK_WIDGET_IS_SENSITIVE(online_service_request_popup->user_name_entry) && GTK_WIDGET_IS_SENSITIVE(online_service_request_popup->online_services_combo_box)))
 		return TRUE;
 	
 	if(G_STR_EMPTY(get_rest_xml)){
@@ -773,17 +773,17 @@ static void online_service_request_popup_dialog_process_confirmation(GtkMessageD
 	gpointer	user_data=g_object_get_data(G_OBJECT(dialog), "user_data");
 	const gchar	*gconfig_key=g_object_get_data(G_OBJECT(dialog), "gconfig_key");
 	
-	gconfig_set_bool(gconfig_key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON( online_service_request_popup->check_button)));
+	gconfig_set_bool(gconfig_key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(online_service_request_popup->check_button)));
 	
 	if(func)
-		func( (gpointer)gconfig_key, user_data);
+		func((gpointer)gconfig_key, user_data);
 }/*online_service_request_popup_dialog_process_confirmation(widget, response, popup);*/
 
 
 static void online_service_request_popup_set_selected_service(GtkMessageDialog *dialog, gint response, OnlineServiceRequestPopup *online_service_request_popup){
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	
-	if(gtk_combo_box_get_active_iter( online_service_request_popup->online_services_combo_box, iter)){
+	if(gtk_combo_box_get_active_iter(online_service_request_popup->online_services_combo_box, iter)){
 		gtk_tree_model_get(
 				 GTK_TREE_MODEL(online_service_request_popup->online_services_list_store), iter,
 					OnlineServicePointer, &selected_service,
@@ -808,22 +808,22 @@ gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_k
 	
 	online_service_request_popup_dialog_show(Confirmation);
 	
-	gtk_label_set_markup( online_service_request_popup->user_name_label, message1 );
+	gtk_label_set_markup(online_service_request_popup->user_name_label, message1);
 	if(!G_STR_EMPTY(message2))
-		gtk_label_set_markup( online_service_request_popup->online_services_label, message2 );
+		gtk_label_set_markup(online_service_request_popup->online_services_label, message2);
 	
 	if(!G_STR_EMPTY(gconfig_key))
-		online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );
+		online_service_request_popup_confirmation_dialog_add_gconfig_key(gconfig_key, func, user_data);
 	
-	gtk_widget_show_all( GTK_WIDGET( online_service_request_popup->dialog ) );
+	gtk_widget_show_all(GTK_WIDGET(online_service_request_popup->dialog));
 	
 	gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->user_name_entry), FALSE);
-	gtk_widget_hide( GTK_WIDGET(online_service_request_popup->user_name_entry) );
+	gtk_widget_hide(GTK_WIDGET(online_service_request_popup->user_name_entry));
 	
 	gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->online_services_combo_box), FALSE);
-	gtk_widget_hide( GTK_WIDGET(online_service_request_popup->online_services_combo_box));
+	gtk_widget_hide(GTK_WIDGET(online_service_request_popup->online_services_combo_box));
 	
-	gtk_dialog_run(GTK_DIALOG( online_service_request_popup->dialog));
+	gtk_dialog_run(GTK_DIALOG(online_service_request_popup->dialog));
 	switch(online_service_request_popup_dialog_response){
 		case GTK_RESPONSE_YES: case GTK_RESPONSE_OK: case GTK_RESPONSE_NONE: case GTK_RESPONSE_APPLY:
 			return TRUE;
@@ -832,14 +832,14 @@ gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_k
 	}
 }/*online_service_request_popup_confirm_dialog();*/
 
-static void online_service_request_popup_confirmation_dialog_add_gconfig_key( const gchar *gconfig_key, GFunc func, gpointer user_data ){
+static void online_service_request_popup_confirmation_dialog_add_gconfig_key(const gchar *gconfig_key, GFunc func, gpointer user_data){
 	g_object_set_data_full(G_OBJECT(online_service_request_popup->dialog), "gconfig_key", g_strdup(gconfig_key), g_free);
 	g_object_set_data(G_OBJECT(online_service_request_popup->dialog), "user_data", user_data);
 	g_object_set_data(G_OBJECT(online_service_request_popup->dialog), "func", func);
-}/*online_service_request_popup_confirmation_dialog_add_gconfig_key( gconfig_key, func, user_data );*/
+}/*online_service_request_popup_confirmation_dialog_add_gconfig_key(gconfig_key, func, user_data);*/
 
 void online_service_request_popup_select_service(void){
-	if(!( online_services_has_connected(0) > 1 )){
+	if(!(online_services_has_connected(0) > 1)){
 		selected_service=online_services_connected_get_first();
 		debug("There is only one connected OnlineService, auto-selecting: %s", selected_service->guid);
 		return;
@@ -910,7 +910,7 @@ void online_service_request_popup_shorten_uri(void){
 
 
 static gboolean online_service_request_popup_validate_usage(RequestAction action){
-	switch( action ){
+	switch(action){
 		case Confirmation:
 		case SelectService:
 		case ViewProfile:
@@ -951,7 +951,7 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 		online_service_request_popup_destroy_and_free();
 	}
 	
-	GtkWindow *parent_window=( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() );
+	GtkWindow *parent_window=(gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window());
 	
 	if(online_service_request_popup_dialog_response)
 		online_service_request_popup_dialog_response=0;
@@ -995,35 +995,35 @@ static void online_service_request_popup_dialog_show(RequestAction action){
 	uber_object_unref(ui);
 	
 	debug("Signal handlers set... loading accounts");
-	if(!( online_services_combo_box_fill( online_service_request_popup->online_services_combo_box,  online_service_request_popup->online_services_list_store, TRUE) ))
+	if(!(online_services_combo_box_fill(online_service_request_popup->online_services_combo_box,  online_service_request_popup->online_services_list_store, TRUE)))
 		debug("No services found to load, new accounts need to be setup");
 	else
 		debug("OnlineServices found & loaded.  Selecting active service");
 	
 	online_service_request_popup_set_title_and_label(action, online_service_request_popup);
 	
-	g_object_add_weak_pointer(G_OBJECT( online_service_request_popup->dialog), (gpointer)&online_service_request_popup);
-	gtk_window_set_transient_for(GTK_WINDOW( online_service_request_popup->dialog), parent_window );
-	gtk_widget_show_all(GTK_WIDGET( online_service_request_popup->dialog));
+	g_object_add_weak_pointer(G_OBJECT(online_service_request_popup->dialog), (gpointer)&online_service_request_popup);
+	gtk_window_set_transient_for(GTK_WINDOW(online_service_request_popup->dialog), parent_window);
+	gtk_widget_show_all(GTK_WIDGET(online_service_request_popup->dialog));
 	
 	if(action!=Confirmation){
-		gtk_widget_hide( GTK_WIDGET(online_service_request_popup->check_button) );
+		gtk_widget_hide(GTK_WIDGET(online_service_request_popup->check_button));
 		gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->check_button), FALSE);
 	}else{
-		gtk_widget_show( GTK_WIDGET(online_service_request_popup->check_button) );
+		gtk_widget_show(GTK_WIDGET(online_service_request_popup->check_button));
 		gtk_widget_set_sensitive(GTK_WIDGET(online_service_request_popup->check_button), TRUE);
 	}
 	
-	if(!(online_services_has_connected(0) > 1 && online_services_has_total(0) > 1 )){
+	if(!(online_services_has_connected(0) > 1 && online_services_has_total(0) > 1)){
 		debug("There is only one service to select from so we don't really need to ask.\n\t\tSo we'll just hide 'online_services_frame'");
 		gtk_widget_hide(GTK_WIDGET(online_service_request_popup->online_services_frame));
 	}
 	
-	gtk_window_present(GTK_WINDOW( online_service_request_popup->dialog));
+	gtk_window_present(GTK_WINDOW(online_service_request_popup->dialog));
 }/*online_service_request_popup_dialog_show*/
 
 static void online_service_request_user_name_active_cb(GtkEntry *user_name_entry, OnlineServiceRequestPopup *online_service_request_popup){
-	if(!( G_STR_N_EMPTY(online_service_request_popup->user_name_entry->text) ))
+	if(!(G_STR_N_EMPTY(online_service_request_popup->user_name_entry->text)))
 		update_viewer_beep();
 	else
 		online_service_request_popup_response_cb(online_service_request_popup->dialog, GTK_RESPONSE_OK, online_service_request_popup);
@@ -1087,70 +1087,70 @@ void online_service_request_delete(OnlineService *service, GtkWindow *parent_win
 
 void online_service_request_selected_update_view_updates_new(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewUpdatesNew, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewUpdatesNew, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_view_updates_new();*/
 
 void online_service_request_selected_update_view_forwards(void){
 	if(!(selected_update && selected_update->id)) return;
-	online_service_request_main(selected_update->service, ViewForwards, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
+	online_service_request_main(selected_update->service, ViewForwards, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->id_str);
 }/*online_service_request_selected_update_view_forwards();*/
 
 void online_service_request_selected_update_view_updates(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewUpdates, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewUpdates, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_view_updates();*/
 
 void online_service_request_selected_update_view_profile(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, ViewProfile, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, ViewProfile, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_view_profile*/
 
 void online_service_request_selected_update_best_friend_add(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	if(!best_friends_is_user_best_friend( selected_update->service, selected_update->user_name ))
-		online_service_request_main(selected_update->service, BestFriendAdd, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	if(!best_friends_is_user_best_friend(selected_update->service, selected_update->user_name))
+		online_service_request_main(selected_update->service, BestFriendAdd, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_best_friend_add();*/
 
 void online_service_request_selected_update_best_friend_drop(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	if(best_friends_is_user_best_friend( selected_update->service, selected_update->user_name ))
-		online_service_request_main(selected_update->service, BestFriendDrop, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	if(best_friends_is_user_best_friend(selected_update->service, selected_update->user_name))
+		online_service_request_main(selected_update->service, BestFriendDrop, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_best_friend_drop();*/
 
 void online_service_request_selected_update_follow(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Follow, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, Follow, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_follow*/
 
 void online_service_request_selected_update_unfollow(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, UnFollow, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, UnFollow, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_unfollow*/
 
 void online_service_request_selected_update_block(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, Block, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, Block, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_block*/
 
 void online_service_request_selected_update_unblock(void){
 	if(!(selected_update && selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, UnBlock, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->user_name);
+	online_service_request_main(selected_update->service, UnBlock, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_unblock*/
 
 void online_service_request_selected_update_save_fave(void){
 	if(!(selected_update && selected_update->id)) return;
-	online_service_request_main(selected_update->service, Fave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
+	online_service_request_main(selected_update->service, Fave, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->id_str);
 }/*online_service_request_selected_update_save_fave*/
 
 void online_service_request_selected_update_unfave(void){
 	if(!(selected_update && selected_update->id)) return;
-	online_service_request_main(selected_update->service, UnFave, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
+	online_service_request_main(selected_update->service, UnFave, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->id_str);
 }/*online_service_request_selected_update_unfave();*/
 
 void online_service_request_selected_update_delete(void){
 	if(!(selected_update && selected_update->id && selected_update->user_name)) return;
 	if(!online_services_is_user_name_mine(selected_update->service, selected_update->user_name)) return;
-	online_service_request_main(selected_update->service, DeleteStep2, ( gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window() ), selected_update->id_str);
+	online_service_request_main(selected_update->service, DeleteStep2, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->id_str);
 }/*online_service_request_selected_update_delete();*/
 
 
