@@ -82,8 +82,6 @@
 /********************************************************************************
  *                        defines, macros, methods, & etc                       *
  ********************************************************************************/
-#define	DEBUG_DOMAINS	"UI:XML:URLs:URIs:Links:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:xml.c"
-#include "debug.h"
 
 
 
@@ -95,6 +93,8 @@
 /********************************************************************************
  *                prototypes for private methods & functions                    *
  ********************************************************************************/
+static gboolean xml_parser_init(void);
+
 static OnlineServiceXmlDoc *xml_new_online_service_xml_doc(SoupMessage *xml, const gchar *uri);
 static void xml_free_online_service_xml_doc(OnlineServiceXmlDoc *xml_doc);
 static void xml_verify_online_service_xml_doc(OnlineServiceXmlDoc **xml_doc);
@@ -109,11 +109,34 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml);
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
+static gboolean libxml_parser_initalized=FALSE;
+
+
+#define	DEBUG_DOMAINS	"UI:XML:URLs:URIs:Links:OnlineServices:Networking:Updates:XPath:Auto-Magical:WWW:xml.c"
+#include "debug.h"
 
 
 /********************************************************************************
  *              creativity...art, beauty, fun, & magic...programming            *
  ********************************************************************************/
+static gboolean xml_parser_init(void){
+	if(libxml_parser_initalized)
+		return TRUE;
+	
+	debug("Initalizing libxml2 parser.");
+	return (libxml_parser_initalized=TRUE);
+}/*xml_parser_init();*/
+
+gboolean xml_parser_deinit(void){
+	if(!libxml_parser_initalized)
+		return FALSE;
+	
+	debug("Cleaning up libxml2 parser.  Calling: xmlCleanupParser();");
+	xmlCleanupParser();
+	return libxml_parser_initalized;
+}/*xml_parser_deinit();*/
+
+
 const gchar *xml_node_type_to_string(xmlElementType type){
 	switch(type){
 		case XML_ELEMENT_NODE: return _("XML_ELEMENT_NODE");
@@ -277,7 +300,7 @@ static xmlDoc *xml_create_doc_from_soup_message(SoupMessage *xml){
 	
 	debug("Parsed xml document's information. URI: [%s] content-type: [%s]; charset: [%s]; encoding: [%s]; dom element: [%s]", uri, content_type, charset, encoding, dom_base_entity);
 	
-	
+	xml_parser_init();	
 	debug("Parsing %s document", dom_base_entity);
 	xmlDoc *doc=NULL;
 	if(!((doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, dom_base_entity, encoding, (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING))))){
@@ -337,57 +360,23 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	}
 	
 	xmlDoc		*doc=NULL;
-	xmlNode		*root_element=NULL;
+	xmlNode *root_element=NULL;
 	
-	debug("Getting content-type from uri: [%s]", uri);
-	gchar **content_v=NULL;
-	debug("Parsing xml document's content-type & DOM information from: [%s]", uri);
-	gchar *content_info=NULL;
-	if(!(content_info=g_strdup((gchar *)soup_message_headers_get_one(xml->response_headers, "Content-Type")))){
-		debug("*ERROR:* Failed to determine content-type for:  [%s]", uri);
-		return FALSE;
-	}
-	
-	debug("Parsing content info: [%s] from: [%s]", content_info, uri);
-	content_v=g_strsplit(content_info, "; ", -1);
-	uber_free(content_info);
-	gchar *content_type=NULL;
-	if(!(((content_v[0])) && (content_type=g_strdup(content_v[0])))){
-		debug("*ERROR:* Failed to determine content-type for:  [%s]", uri);
-		g_strfreev(content_v);
-		return FALSE;
-	}
-	debug("Parsed Content-Type: [%s] for: [%s]", content_type, uri);
-	
-	g_strfreev(content_v);
-	if(!g_str_equal(content_type, "application/xml")){
-		uber_free(content_type);
-		return TRUE;
-	}
-	uber_free(content_type);
-	
-	debug("Parsing xml document to find any authentication errors");
-	if(!((doc=xmlReadMemory(xml->response_body->data, xml->response_body->length, "xml", "utf-8", (XML_PARSE_NOENT | XML_PARSE_RECOVER | XML_PARSE_NOERROR | XML_PARSE_NOWARNING))))){
-		debug("Unable to parse xml doc");
+	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		uber_free(*error_message);
-		*error_message=g_strdup("Unable to parse xml doc.");
-		xmlCleanupParser();
-		return FALSE;
-	}
-	
-	root_element=xmlDocGetRootElement(doc);
-	if(root_element==NULL) {
-		debug("Failed getting first element of xml data");
-		uber_free(*error_message);
-		*error_message=g_strdup("Failed getting first element of xml data.");
-		xmlFreeDoc(doc);
-		xmlCleanupParser();
+		if(!doc)
+			*error_message=g_strdup("Unable to parse xml doc.");
+		else{
+			*error_message=g_strdup("Failed to get the root element from the xml doc.");
+			xmlFreeDoc(doc);
+		}
+		debug(*error_message);
 		return FALSE;
 	}
 	
 	gboolean error_free=TRUE;
 	xmlNode	*current_node=NULL;
-	for(current_node = root_element; current_node; current_node = current_node->next) {
+	for(current_node=root_element; current_node; current_node=current_node->next) {
 		if(current_node->type != XML_ELEMENT_NODE) continue;
 		
 		if(!(g_str_equal(current_node->name, "error"))) continue;
@@ -408,7 +397,6 @@ gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *
 	}
 	
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	
 	return error_free;
 }/*xml_error_check(service, xml);*/

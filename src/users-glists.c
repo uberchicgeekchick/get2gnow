@@ -167,8 +167,8 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	}else{
 		get_parameter="cursor";
 		if(next_cursor==0){
-			if(which_pass<1) which_pass++;
-			else which_pass=2;
+			if(which_pass<2)
+				which_pass++;
 		}
 	}
 	debug("Initial service parameters setup");
@@ -267,10 +267,7 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which_list, g
 			debug("Displaying & loading, <%s>'s %s from %i pages", service->key, users_glist_get_which_str, page);
 			if(!service->friends_and_followers){
 				GList *friends=g_list_last(service->friends);
-				friends=g_list_remove(friends, friends->data);
-				
 				GList *followers=g_list_last(service->followers);
-				followers=g_list_remove(followers, followers->data);
 				
 				service->friends_and_followers=g_list_alloc();
 				service->friends_and_followers=g_list_concat(g_list_first(friends), g_list_first(followers));
@@ -280,7 +277,8 @@ static GList *users_glist_check(UsersGListGetWhich users_glist_get_which_list, g
 			break;
 	}
 	
-	if(fetching_users) fetching_users=FALSE;
+	if(fetching_users)
+		fetching_users=FALSE;
 	page=0;
 	which_pass=-1;
 	next_cursor=-1;
@@ -365,8 +363,8 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, G
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	
 	if(!new_users){
-		if(which_pass<1) which_pass++;
-		else which_pass=2;
+		if(which_pass<2)
+			which_pass++;
 		fetching_users=FALSE;
 		users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
@@ -386,16 +384,16 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, G
 	}else{
 		debug("**ERROR:** Unknown list condition reached for <%s>", uri);
 		debug("**ERROR:** Failed to save users. page: %i; which_pass: %i; %s: %li", page, which_pass, get_parameter, next_cursor);
-		if(which_pass<1) which_pass++;
-		else which_pass=2;
+		if(which_pass<2)
+			which_pass++;
 		fetching_users=FALSE;
 		users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
 	}
 	
 	if(service->micro_blogging_service==Twitter && next_cursor==0){
-		if(which_pass<1) which_pass++;
-		else which_pass=2;
+		if(which_pass<2)
+			which_pass++;
 		fetching_users=FALSE;
 		users_glist_get(users_glist_get_which, FALSE, NULL);
 		return;
@@ -420,7 +418,6 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 	debug("Parsing users from: <%s>", uri);
 	if(!((doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)) && root_element)){
 		debug("[failed]");
-		xmlCleanupParser();
 		return NULL;
 	}
 	debug("[succeed]");
@@ -499,10 +496,11 @@ GList *users_glist_parse(OnlineServiceWrapper *service_wrapper, SoupMessage *xml
 	}
 	
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	
-	if(next_cursor==-1) next_cursor++;
-	if(previous_cursor==-1) previous_cursor++;
+	if(next_cursor==-1)
+		next_cursor++;
+	if(previous_cursor==-1)
+		previous_cursor++;
 	
 	if(!users){
 		debug("No new users where found");

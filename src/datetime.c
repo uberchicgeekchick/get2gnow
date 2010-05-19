@@ -113,15 +113,15 @@ void datetime_locale_deinit(void){
 
 void datetime_strp_ages(gchar *datetime, gulong *seconds_since_epoc, gchar **age, gint *seconds_old, gboolean use_gmt){
 	tzset();
-	time_t		t=time(NULL);
-	struct tm	*ta;
+	time_t t=time(NULL);
+	struct tm *ta;
 	if(use_gmt)
 		ta=gmtime(&t);
 	else
 		ta=localtime(&t);
 	ta->tm_isdst=-1;
 	
-	struct tm	post;
+	struct tm post;
 	strptime(datetime, "%s", &post);
 	post.tm_isdst=-1;
 	*seconds_since_epoc=mktime(&post);

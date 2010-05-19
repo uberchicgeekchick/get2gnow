@@ -66,6 +66,7 @@
 
 const gchar *authors[]={
 	"Kaity G. B. <uberChick@uberChicGeekChick.Com>",
+	"Daniel Chen, [PATCH] Clean up egregious misuse of xmlCleanupParser(), <seven.steps@gmail.com>",
 	NULL
 };
 

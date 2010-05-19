@@ -83,6 +83,8 @@ G_BEGIN_DECLS
 /********************************************************************************
  *       prototypes for methods, handlers, callbacks, function, & etc           *
  ********************************************************************************/
+gboolean xml_parser_deinit(void);
+
 /*OnlineServiceXmlDoc *xml_init_xml_doc_and_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);*/
 gboolean xml_error_check(OnlineService *service, const gchar *uri, SoupMessage *xml, gchar **error_message);
 

@@ -130,7 +130,6 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s", timeline, uri);
-		xmlCleanupParser();
 		return 0;
 	}
 	
@@ -184,7 +183,6 @@ guint searches_parse_results(OnlineService *service, SoupMessage *xml, const gch
 	}
 	
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	
 	return new_updates;
 }/*search_parse_results(service, xml, uri, uberchick_tree_view);*/

@@ -516,7 +516,6 @@ gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean retur
 	debug("Parsing xml document before searching for xpath: '%s' content", xpath);
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Unable to parse xml doc");
-		xmlCleanupParser();
 		return NULL;
 	}
 	
@@ -564,7 +563,6 @@ gpointer *www_get_dom_xpath(SoupMessage *xml, const gchar *xpath, gboolean retur
 	
 	if(!return_xml_doc){
 		xmlFreeDoc(doc);
-		xmlCleanupParser();
 		return (gpointer)xpath_content;
 	}else{
 		uber_free(xpath_content);

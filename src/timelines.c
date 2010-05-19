@@ -188,7 +188,6 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, <%s>'s timeline: %s", service->key, timeline);
-		xmlCleanupParser();
 		return 0;
 	}
 	
@@ -256,7 +255,6 @@ guint timelines_parse(OnlineService *service, SoupMessage *xml, const gchar *uri
 	}
 	
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	
 	return new_updates;
 }/*timelines_parse(service, xml, timeline, uberchick_tree_view, update_type);*/

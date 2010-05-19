@@ -301,7 +301,6 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, timeline: %s; uri: %s", timeline, uri);
-		xmlCleanupParser();
 		return 0;
 	}
 	
@@ -366,7 +365,6 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	}
 	if(!root_element){
 		debug("Failed to find Groups' <ul class=\"profiles groups xoxo\">, timeline: %s; uri: %s", timeline, uri);
-		xmlCleanupParser();
 		return 0;
 	}
 	
@@ -457,7 +455,6 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 	}
 	
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	
 	return new_updates;
 }/*search_parse_results(service, xml, uri, uberchick_tree_view);*/

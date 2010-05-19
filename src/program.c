@@ -82,6 +82,7 @@
 #include "cache.h"
 #include "images.h"
 #include "www.h"
+#include "xml.h"
 #include "groups.h"
 
 
@@ -185,6 +186,8 @@ void program_deinit(void){
 	images_deinit();
 	
 	cache_deinit();
+	
+	xml_parser_deinit();	
 	
 	debug("**NOTICE:** %s exited", GETTEXT_PACKAGE);
 	debug_deinit();

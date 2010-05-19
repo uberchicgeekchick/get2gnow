@@ -179,7 +179,6 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 	User *user=NULL;
 	
 	if(!((doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element)))){
-		xmlCleanupParser();
 		return NULL;
 	}
 	
@@ -197,7 +196,6 @@ User *user_parse_profile(SoupSession *session, SoupMessage *xml, OnlineServiceWr
 	*/
 	
 	xmlFreeDoc(doc);
-	xmlCleanupParser();
 	
 	return user;
 }/*user_parse_profile(service, xml, service_wrapper);*/
@@ -483,7 +481,6 @@ UserStatus *user_status_parse_new(OnlineService *service, SoupMessage *xml, cons
 	
 	if(!(doc=xml_create_xml_doc_and_get_root_element_from_soup_message(xml, &root_element))){
 		debug("Failed to parse xml document, from <%s/%s>", service->key, uri);
-		xmlCleanupParser();
 		return NULL;
 	}
 	
