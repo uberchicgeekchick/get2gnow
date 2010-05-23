@@ -568,11 +568,13 @@ void users_glists_free(OnlineService *service, UsersGListGetWhich users_glist_ge
 
 void users_glists_append_friend(OnlineService *service, User *user){
 	main_window_statusbar_printf("%s %s %s %s %s.", service->key, _("'s"), _("now"), _("following"), user->user_name);
+	return;
 	service->friends=g_list_append(service->friends, user);
 }/*users_glists_append_friend(service, user);*/
 
 void users_glists_append_follower(OnlineService *service, User *user){
 	main_window_statusbar_printf("%s %s %s %s %s %s %s.", service->key, _("'s"), _("now"), _("being"), _("followed"), _("by"), user->user_name);
+	return;
 	service->followers=g_list_append(service->followers, user);
 }/*users_glists_append_follower(service, user);*/
 
