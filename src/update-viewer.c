@@ -1267,7 +1267,7 @@ static void update_viewer_sexy_init(void){
 			FALSE, FALSE, 5
 	);
 	debug("Setting 'sexy_selected_update_author' as 'selected_update_controls_vbox' 2nd widget");
-	g_object_set(update_viewer->sexy_selected_update_author, "xalign", 0.50, NULL);
+	g_object_set(update_viewer->sexy_selected_update_author, "xalign", 0.50, "single-line-mode", TRUE, NULL);
 	gtk_widget_show(GTK_WIDGET(update_viewer->sexy_selected_update_author));
 	
 	debug("Creating UpdateViewer's service link area, 'update_viewer->sexy_to', using sexy label interface");
@@ -1415,7 +1415,7 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 	return prefix_added;
 }/*update_viewer_set_in_reply_to_data(user->user_name|NULL, None|Homepage|Replies|DMs|etc, service, 1212154, TRUE|FALSE, TRUE|FALSE);*/
 
-void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateType update_type, gdouble retweet_update_id, const gchar *retweeted_by){
+void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateType update_type, gdouble retweet_update_id, const gchar *retweeted_user_name, const gchar *retweeted_user_nick){
 	if(!(service && service->session && online_service_validate_session(service, user_name))) return;
 	
 	if(!gtk_widget_is_sensitive(update_viewer->sexy_entry))
@@ -1466,15 +1466,18 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	const gchar *uri_scheme_suffix=(service->https?"s":"");
 	
 	gchar *sexy_text=NULL, *retweeted_by_markup=NULL;
-	if(G_STR_N_EMPTY(retweeted_by))
-		retweeted_by_markup=g_strdup_printf("<span size=\"small\" weight=\"light\">ReTweeted By: <a href=\"http%s://%s/%s\">%s &lt;%s@%s&gt;</a></span>", uri_scheme_suffix, service->uri, retweeted_by, nick_name, user_name, service->uri);
+	if(G_STR_N_EMPTY(retweeted_user_name))
+		retweeted_by_markup=g_strdup_printf("\n\n<span size=\"small\" weight=\"light\">ReTweeted By:\n\n\t\t<a href=\"http%s://%s/%s\">%s &lt;%s@%s&gt;</a></span>", uri_scheme_suffix, service->uri, retweeted_user_name, retweeted_user_nick, retweeted_user_name, service->uri);
 	
 	if(!render_update){
 		uberchick_label_set_markup(update_viewer->sexy_selected_update_author, service, update_type, user_name, user_id, id, "", FALSE, TRUE);
 		gtk_widget_hide(GTK_WIDGET(update_viewer->sexy_selected_update_author));
 	}else{
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\"><a href=\"http%s://%s/%s\">%s</a></span>", uri_scheme_suffix, service->uri, user_name, user_name);
-		if(retweeted_by_markup){
+		if(!retweeted_by_markup)
+			g_object_set(update_viewer->sexy_selected_update_author, "single-line-mode", TRUE, NULL);
+		else{
+			g_object_set(update_viewer->sexy_selected_update_author, "single-line-mode", FALSE, NULL);
 			gchar *sexy_swp_text=g_strdup_printf("%s\n%s", sexy_text, retweeted_by_markup);
 			uber_free(sexy_text);
 			sexy_text=sexy_swp_text;
@@ -1497,8 +1500,11 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 		sexy_text=g_strdup("");
 	else{
 		sexy_text=g_strdup_printf("<span weight=\"ultrabold\">From: <a href=\"http%s://%s/%s\">%s &lt;%s@%s&gt;</a></span>", uri_scheme_suffix, service->uri, user_name, nick_name, user_name, service->uri);
-		if(retweeted_by_markup){
-			gchar *sexy_swp_text=g_strdup_printf("%s - %s", sexy_text, retweeted_by_markup);
+		if(!retweeted_by_markup)
+			g_object_set(update_viewer->sexy_from, "single-line-mode", TRUE, NULL);
+		else{
+			g_object_set(update_viewer->sexy_from, "single-line-mode", FALSE, NULL);
+			gchar *sexy_swp_text=g_strdup_printf("%s\n%s", sexy_text, retweeted_by_markup);
 			uber_free(sexy_text);
 			sexy_text=sexy_swp_text;
 		}
@@ -1532,7 +1538,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	
 	debug("Selecting 'sexy_entry' for entering a new update");
 	update_viewer_sexy_select();
-}/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None, 0.0|status->retweeted_status->id, status->retweeted_status->user_name);*/
+}/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None, 0.0|status->retweeted_status->id, status->retweeted_status->user_name, status->retweeted_status->nick_name);*/
 
 static void update_viewer_insert_shortened_uri(GtkButton *shorten_uri_button, UpdateViewer *update_viewer){
 	gtk_widget_set_sensitive(GTK_WIDGET(update_viewer->sexy_entry), FALSE);
@@ -1795,7 +1801,7 @@ void update_viewer_send(GtkWidget *activated_widget){
 void update_viewer_new_update(void){
 	update_viewer_sexy_entry_clear();
 	main_window_set_statusbar_default_message(_("Hotkeys: Press Up, Down, Page Up, or Page Down to browse updates.  Press & Hold <ALT+CTRL> while browsing to select the update."));
-	update_viewer_view_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, None, 0.0, NULL);
+	update_viewer_view_update((selected_service ?selected_service :online_services_connected_get_first()), 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, None, 0.0, NULL, NULL);
 	
 	if(update_viewer->best_friends_service) update_viewer->best_friends_service=NULL;
 	if(update_viewer->best_friends_user_name) uber_free(update_viewer->best_friends_user_name);

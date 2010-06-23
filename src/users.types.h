@@ -116,7 +116,8 @@ struct _UserStatus {
 	
 	gboolean	retweet;
 	gchar		*retweeted_user_name;
-	gchar		*retweeted_by;
+	gchar		*retweeted_user_nick;
+	gchar		*retweeted_markup;
 	
 	gdouble		id;
 	gchar		*id_str;

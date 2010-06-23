@@ -284,11 +284,9 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 				va_end(args);
 				va_start(args, msg);
 			}else if(debug){
-#ifdef				GNOME_ENABLE_DEBUG
 				debug_message_fprintf(stdout, prefix, source_code, method, line_number, msg, args);
 				va_end(args);
 				va_start(args, msg);
-#endif
 			}
 			
 			debug_message_fprintf(debug_output_fp, prefix, source_code, method, line_number, msg, args);

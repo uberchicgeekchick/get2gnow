@@ -89,7 +89,7 @@ GtkVBox *update_viewer_get_status_view_vbox(void);
 void update_viewer_postable_online_services_append(OnlineService *service);
 gboolean update_viewer_postable_online_service_delete(OnlineService *service);
 
-void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *user_nick, const gchar *date, const gchar *sexy_tweet, const gchar *text_tweet, GdkPixbuf *pixbuf, UpdateType update_type, gdouble retweet_update_id, const gchar *retweeted_by);
+void update_viewer_view_update(OnlineService *service, const gdouble id, const gdouble user_id, const gchar *user_name, const gchar *nick_name, const gchar *date, const gchar *sexy_update, const gchar *text_update, GdkPixbuf *pixbuf, UpdateType update_type, gdouble retweet_update_id, const gchar *retweeted_user_name, const gchar *retweeted_user_nick);
 gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType update_type, const gchar *user_name, const gchar *update_text, gdouble user_id, gdouble update_id, gboolean reply, gboolean forwarding, gboolean force);
 
 void update_viewer_best_friend_emulate_toggle_click(void);

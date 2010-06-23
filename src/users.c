@@ -320,7 +320,7 @@ static UserStatus *user_status_new(OnlineService *service, UpdateType update_typ
 	status->user=NULL;
 	status->retweeted_status=NULL;
 	status->type=update_type;
-	status->id_str=status->text=status->sexy_status_text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=status->retweeted_by=status->retweeted_user_name=NULL;
+	status->id_str=status->text=status->sexy_status_text=status->update=status->notification=status->sexy_update=status->created_at_str=status->created_how_long_ago=status->retweeted_user_name=status->retweeted_user_nick=status->retweeted_markup=NULL;
 	status->id=status->in_reply_to_status_id=0.0;
 	status->created_at=0;
 	status->created_seconds_ago=0;
@@ -340,8 +340,9 @@ static void user_status_validate(UserStatus **status){
 	if(! (*status)->notification) (*status)->notification=g_strdup("");
 	if(! (*status)->created_at_str) (*status)->created_at_str=g_strdup("");
 	if(! (*status)->created_how_long_ago) (*status)->created_how_long_ago=g_strdup("");
-	if(! (*status)->retweeted_by) (*status)->retweeted_by=g_strdup("");
 	if(! (*status)->retweeted_user_name) (*status)->retweeted_user_name=g_strdup("");
+	if(! (*status)->retweeted_user_nick) (*status)->retweeted_user_nick=g_strdup("");
+	if(! (*status)->retweeted_markup) (*status)->retweeted_markup=g_strdup("");
 }/*user_status_validate(&status);*/ 
 
 UserStatus *user_status_parse_from_search_result_atom_entry(OnlineService *service, xmlNode *root_element, UpdateType update_type){
@@ -569,7 +570,8 @@ UserStatus *user_status_parse(OnlineService *service, xmlNode *root_element, Upd
 static void user_status_format_retweeted_status(OnlineService *service, UserStatus *retweeted_status, UserStatus **status, User *user){
 	if(!(service && (*status) && user && retweeted_status)) return;
 	gchar *retweeted_user_name=NULL;
-	gchar *retweeted_by=NULL;
+	gchar *retweeted_user_nick=NULL;
+	gchar *retweeted_markup=NULL;
 	UserStatus *status_swap=(*status);
 	
 	gdouble status_id=(*status)->id;
@@ -585,10 +587,12 @@ static void user_status_format_retweeted_status(OnlineService *service, UserStat
 	
 	if(!((*status) && G_STR_N_EMPTY(user->user_name) && G_STR_N_EMPTY(user->nick_name))){
 		retweeted_user_name=g_strdup("unknown");
-		retweeted_by=g_strdup_printf("Anonymous <u>&lt;unknown@%s&gt;</u>", service->uri);
+		retweeted_user_nick=g_strdup("unknown");
+		retweeted_markup=g_strdup_printf("Anonymous <u>&lt;unknown@%s&gt;</u>", service->uri);
 	}else{
 		retweeted_user_name=g_strdup(user->user_name);
-		retweeted_by=g_strdup_printf("%s <u>&lt;%s@%s&gt;</u>", user->nick_name, user->user_name, service->uri);
+		retweeted_user_nick=g_strdup(user->nick_name);
+		retweeted_markup=g_strdup_printf("%s <u>&lt;%s@%s&gt;</u>", retweeted_user_nick, retweeted_user_name, service->uri);
 	}
 	
 	(*status)=retweeted_status;
@@ -596,10 +600,12 @@ static void user_status_format_retweeted_status(OnlineService *service, UserStat
 	(*status)->id=status_id;
 	uber_free((*status)->id_str);
 	(*status)->id_str=status_id_str;
-	uber_free((*status)->retweeted_by);
-	(*status)->retweeted_by=retweeted_by;
 	uber_free((*status)->retweeted_user_name);
 	(*status)->retweeted_user_name=retweeted_user_name;
+	uber_free((*status)->retweeted_user_nick);
+	(*status)->retweeted_user_nick=retweeted_user_nick;
+	uber_free((*status)->retweeted_markup);
+	(*status)->retweeted_markup=retweeted_markup;
 }/*user_status_format_retweeted_status(service, retweeted_status, &status, user);*/
 
 
@@ -627,7 +633,7 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 					(status->retweet ?"<span size=\"x-small\" weight=\"ultrabold\">":""),
 					(status->retweet ?_("retweeted by") :""),
 					(status->retweet ?": " :""),
-					(status->retweet ?status->retweeted_by :""),
+					(status->retweet ?status->retweeted_markup :""),
 					(status->retweet ?"</span>\n" :""),
 					((status->type==DMs)
 					  	?"<span weight=\"ultrabold\" style=\"italic\" variant=\"smallcaps\">[Direct Message]</span>\n<span weight=\"ultrabold\" style=\"italic\">["
@@ -644,7 +650,7 @@ static void user_status_format_updates(OnlineService *service, UserStatus *statu
 						(status->retweet ?"<b><i>[" :""),
 						(status->retweet ?_("retweeted by") :""),
 						(status->retweet ?"]\n\t" :""),
-						(status->retweet ?status->retweeted_by :""),
+						(status->retweet ?status->retweeted_markup :""),
 						(status->retweet ?"</i></b>\n" :""),
 						((status->type==DMs) ?"<b><i><u>[Direct Message]</u></i></b>\n" :((status->type==Replies) ?"<i><u>[@ Reply]</u></i>\n" :"")),
 						status->created_how_long_ago,
@@ -661,7 +667,7 @@ void user_status_free(UserStatus *status){
 	user_status_validate(&status);
 	status->service=NULL;
 	
-	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_status_text, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status->retweeted_by, &status->retweeted_user_name, &status, NULL);
+	uber_object_free(&status->text, &status->id_str, &status->from, &status->rcpt, &status->update, &status->source, &status->sexy_status_text, &status->sexy_update, &status->notification, &status->created_at_str, &status->created_how_long_ago, &status->retweeted_user_name, &status->retweeted_user_nick, &status->retweeted_markup, &status, NULL);
 }/*user_status_free*/
 /********************************************************************************
  *                                    eof                                       *

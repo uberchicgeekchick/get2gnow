@@ -137,8 +137,7 @@ gboolean update_ids_check(OnlineService *service, const gchar *timeline, gdouble
 void update_ids_get(OnlineService *service, const gchar *timeline, gdouble *newest_update_id, gdouble *unread_update_id, gdouble *oldest_update_id){
 	if(!(service && G_STR_N_EMPTY(timeline))) return;
 	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(timeline);
-	debug("Retrieving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
+	debug("Getting <%s%s>'s update IDs, via gconfig key: [%s].", service->key, timeline, timelines_gconfig_prefs_path);
 	update_id_get(service, timelines_gconfig_prefs_path, "newest", newest_update_id);
 	update_id_get(service, timelines_gconfig_prefs_path, "unread", unread_update_id);
 	update_id_get(service, timelines_gconfig_prefs_path, "oldest", oldest_update_id);
@@ -151,8 +150,8 @@ static gboolean update_id_get(OnlineService *service, const gchar *timelines_gco
 	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path))) return FALSE;
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY:
-	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
-	 * 				service->key			/timeline.xml	(newest|oldest|unread)
+	 * "(/apps/get2gnow)	(/online-services/xml-cache/archive/since-ids/)				(%s/%s/%s)"
+	 * 										service->key/timeline.xml/(newest|oldest|unread)
 	 */
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gdouble swap_id;
@@ -175,8 +174,7 @@ static gboolean update_id_get(OnlineService *service, const gchar *timelines_gco
 void update_ids_set(OnlineService *service, const gchar *timeline, gdouble newest_update_id, gdouble unread_update_id, gdouble oldest_update_id){
 	if(!(service && G_STR_N_EMPTY(timeline))) return;
 	gchar *timelines_gconfig_prefs_path=update_ids_format_timeline_for_gconfig(timeline);
-	debug("Saving: <%s>'s update IDs [%s]", service->key, timeline);
-	debug("Using gconfig key: [%s]", timelines_gconfig_prefs_path);
+	debug("Saving <%s%s>'s update IDs, via gconfig key: [%s].", service->key, timeline, timelines_gconfig_prefs_path);
 	update_id_set(service, timelines_gconfig_prefs_path, "newest", newest_update_id);
 	update_id_set(service, timelines_gconfig_prefs_path, "unread", unread_update_id);
 	update_id_set(service, timelines_gconfig_prefs_path, "oldest", oldest_update_id);
@@ -189,8 +187,8 @@ static gboolean update_id_set(OnlineService *service, const gchar *timelines_gco
 	if(!(service && G_STR_N_EMPTY(timelines_gconfig_prefs_path))) return FALSE;
 	/* INFO:
 	 * GCONF_PATH:		ONLINE_SERVICE_PREFIX: ONLINE_SERVICE_UPDATE_IDS_GCONF_KEY:
-	 * "(/apps/get2gnow)	(/online-services/%s)		/xml-cache%s/%s"
-	 * 				service->key			/timeline.xml (newest|oldest|unread)
+	 * "(/apps/get2gnow)	(/online-services/xml-cache/archive/since-ids/)				(%s/%s/%s)"
+	 * 										service->key/timeline.xml/(newest|oldest|unread)
 	 */
 	gchar *prefs_path=NULL, *swap_id_str=NULL;
 	gboolean success=FALSE;
@@ -209,7 +207,7 @@ gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
 	debug("Formatting timeline for use with gconf: from uri: <%s>", uri);
 	
 	if(!strstr(uri, "%"))
-		return g_strdup((strstr(uri, "=") ?g_strrstr(uri, "=")+sizeof("=") :g_strrstr(uri, "/")+sizeof("/")));
+		return g_strdup((strstr(uri, "=") ?g_strrstr(uri, "=")+sizeof("=") :g_strrstr(uri, "/")));
 	
 	gchar **uri_split=g_strsplit_set(g_strrstr(uri, "/"), "?=", 3);
 	gchar *search_phrase_encoded;
@@ -220,7 +218,7 @@ gchar *update_ids_format_timeline_for_gconfig(const gchar *uri){
 		search_phrase_encoded=g_strjoinv("_", search_phrase_parts);
 		g_strfreev(search_phrase_parts);
 	}
-	gchar *timeline=g_strdup_printf("%s%s", uri_split[0], search_phrase_encoded);
+	gchar *timeline=g_strdup_printf("%s/%s", uri_split[0], search_phrase_encoded);
 	g_strfreev(uri_split);
 	uber_free(search_phrase_encoded);
 	debug("Parsed searches timeline: <%s>; from uri: <%s>", timeline, uri);

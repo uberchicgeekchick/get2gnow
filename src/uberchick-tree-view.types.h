@@ -97,7 +97,9 @@ enum _UberChickTreeViewListStoreColumn{			/*************************************
 	GBOOLEAN_UNREAD,				/*	If the update has been read or not					*/
 	GBOOLEAN_RETWEET,				/*	If the update's a retweet or not					*/
 	GDOUBLE_RETWEET_UPDATE_ID,			/*	If the update's a retweet: its the ID of the orginal/retweeted update.	*/
-	GCHARARRY_RETWEETED_BY,				/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
+	GCHARARRY_RETWEETED_USER_NAME,			/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
+	GCHARARRY_RETWEETED_USER_NICK,			/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
+	GCHARARRY_RETWEETED_MARKUP,			/*	Who retweeted this update.  Its: "" if this update's not a retweet.	*/
 	STRING_SEXY_STATUS_UPDATE,			/*	Update's string as markup for display.					*/
 							/********************************************************************************/
 };

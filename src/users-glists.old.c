@@ -95,8 +95,8 @@
 #include "debug.h"
 
 
-#define API_FOLLOWING		"/statuses/friends/%s.xml?page=%li"
-#define API_FOLLOWERS		"/statuses/followers/%s.xml?page=%li"
+#define API_FOLLOWING		"/statuses/friends/%s.xml?%s=%li"
+#define API_FOLLOWERS		"/statuses/followers/%s.xml?%s=%li"
 
 static OnlineService *service=NULL;
 static UsersGListOnLoadFunc on_load_func=NULL;
@@ -110,6 +110,7 @@ static gboolean fetching_users=FALSE;
 gboolean getting_followers=FALSE;
 
 static gint which_pass=-1;
+const gchar *get_parameter=NULL;
 
 /*static UsersGListGetWhich users_glist_get_which_previous;*/
 
@@ -159,31 +160,33 @@ GList *users_glist_get(UsersGListGetWhich users_glist_get_which, gboolean refres
 	}
 	
 	if(service->micro_blogging_service!=Twitter){
+		get_parameter="page";
 		if(next_cursor<0)
 			next_cursor++;
 		next_cursor++;
 	}else{
+		get_parameter="cursor";
 		if(next_cursor==0){
 			if(which_pass<2)
 				which_pass++;
 		}
 	}
 	debug("Initial service parameters setup");
-	debug("page/cursor: %li; which_pass: %i", next_cursor, which_pass);
+	debug("get_parameter: [%s]; page/cursor: %li; which_pass: %i", get_parameter, next_cursor, which_pass);
 	
-	debug("Loading users_glist; users_glist_get_which type: %s. page #%li; on which_pass: #%d", users_glist_get_which_to_string(users_glist_get_which), next_cursor, which_pass);
+	debug("Loading users_glist; users_glist_get_which type: %s. %s #%li; on which_pass: #%d", users_glist_get_which_to_string(users_glist_get_which), get_parameter, next_cursor, which_pass);
 	
 	gchar *uri=NULL;
 	if(!which_pass)
-		uri=g_strdup_printf(API_FOLLOWING, service->user_name, next_cursor);
+		uri=g_strdup_printf(API_FOLLOWING, service->user_name, get_parameter, next_cursor);
 	else
-		uri=g_strdup_printf(API_FOLLOWERS, service->user_name, next_cursor);
+		uri=g_strdup_printf(API_FOLLOWERS, service->user_name, get_parameter, next_cursor);
 	
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	
 	statusbar_printf("Downloading %s page: %i; uri: <%s>", (which_pass ?_("who are following you") :_("you're following")), page, uri);
 	debug("Downloading users_glist page: %i; uri: <%s>", page, uri);
-	debug("requesting page: %li; which_pass: %d; users_glist_get_which type: %s", next_cursor, which_pass, users_glist_get_which_str);
+	debug("requesting %s: %li; which_pass: %d; users_glist_get_which type: %s", get_parameter, next_cursor, which_pass, users_glist_get_which_str);
 	online_service_request(service, QUEUE, uri, (OnlineServiceSoupSessionCallbackReturnProcessorFunc)users_glist_save, users_glist_process, GINT_TO_POINTER(users_glist_get_which), GINT_TO_POINTER(which_pass));
 	
 	uber_free(uri);
@@ -330,7 +333,7 @@ void *users_glist_process(SoupSession *session, SoupMessage *xml, OnlineServiceW
 	const gchar *users_glist_get_which_str=users_glist_get_which_to_string(users_glist_get_which);
 	const gchar *next_cursor_str=g_strrstr(g_strrstr(uri, "?"), "=");
 	debug("Processing users_glist; users_glist_get_which type: %s", users_glist_get_which_to_string(users_glist_get_which));
-	debug("Processing <%s>'s %s, page #%s.  Server response: %s [%i]", service->key, users_glist_get_which_str, next_cursor_str, xml->reason_phrase, xml->status_code);
+	debug("Processing <%s>'s %s, %s #%s.  Server response: %s [%i]", service->key, users_glist_get_which_str, get_parameter, next_cursor_str, xml->reason_phrase, xml->status_code);
 	
 	gchar *error_message=NULL;
 	if(!(xml_error_check(service, uri, xml, &error_message))){
@@ -380,7 +383,7 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, G
 			service->followers=g_list_append(service->followers, new_users);
 	}else{
 		debug("**ERROR:** Unknown list condition reached for <%s>", uri);
-		debug("**ERROR:** Failed to save users. page: %i; which_pass: %i; page: %li", page, which_pass, next_cursor);
+		debug("**ERROR:** Failed to save users. page: %i; which_pass: %i; %s: %li", page, which_pass, get_parameter, next_cursor);
 		if(which_pass<2)
 			which_pass++;
 		fetching_users=FALSE;
@@ -401,7 +404,7 @@ void users_glist_save(OnlineServiceWrapper *service_wrapper, SoupMessage *xml, G
 	/*now we get the next page/next_cursor - or send the results where they belong.*/
 	debug("Appended new_users to <%s>->%s from; <%s>", service->key, (which_pass ?"followers" :"friends"), uri);
 	debug("While processing the current request to %s: which_pass: %i; page: %i", users_glist_get_which_to_string(users_glist_get_which), which_pass, page);
-	debug("Retrieving next: <page?%li>; ", next_cursor);
+	debug("Retrieving next: <%s?%li>; ", get_parameter, next_cursor);
 	users_glist_get(users_glist_get_which, FALSE, NULL);
 }/*users_glist_save(service_wrapper, xml, users);*/
 
