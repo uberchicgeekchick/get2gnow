@@ -77,11 +77,12 @@
 
 #include "config.h"
 #include "main.h"
+#include "macros.h"
 
 G_BEGIN_DECLS
-/**********************************************************************
- *        Objects, structures, and etc typedefs                       *
- **********************************************************************/
+/********************************************************************************
+ *                       macro & method overload defines.                       *
+ ********************************************************************************/
 #ifndef CONFIG_SUBDIR
 #	if defined GNOME_ENABLE_DEBUG
 #		define	CONFIG_SUBDIR		PACKAGE_TARNAME "-debug"
@@ -97,56 +98,6 @@ G_BEGIN_DECLS
 
 #ifndef	G_STR_N_EMPTY
 #	define		G_STR_N_EMPTY(string)			(((string)!=NULL) && (string)[0]!='\0')
-#endif
-
-#ifndef	uber_new
-#	define	uber_new(mem, type)					\
-	G_STMT_START{							\
-		if(mem!=NULL){ g_free(mem); mem=NULL; }			\
-		mem=g_new0(type, 1);					\
-	}G_STMT_END
-#endif
-
-#ifndef uber_free
-#	define	uber_free(mem)						\
-	G_STMT_START{							\
-		if(mem!=NULL){ g_free(mem); mem=NULL; }			\
-	}G_STMT_END
-#endif
-
-#ifndef uber_list_free
-#	define uber_list_free(l)					\
-	G_STMT_START{							\
-		if(l!=NULL){ g_list_free(l); l=NULL; }			\
-	}G_STMT_END
-#endif
-
-#ifndef uber_slist_free
-#	define uber_slist_free(sl)					\
-	G_STMT_START{							\
-		if(sl!=NULL){ g_slist_free(sl); sl=NULL; }		\
-	}G_STMT_END
-#endif
-
-#ifndef uber_error_free
-#	define	uber_error_free(error)					\
-	G_STMT_START{							\
-		if(error!=NULL){ g_error_free(error); error=NULL; }	\
-	}G_STMT_END
-#endif
-
-#ifndef uber_object_unref
-#	define	uber_object_unref(o)					\
-	G_STMT_START{							\
-		if(o!=NULL){ g_object_unref(o); o=NULL; }		\
-	}G_STMT_END
-#endif
-
-#ifndef uber_regex_unref
-#	define	uber_regex_unref(regex)					\
-	G_STMT_START{							\
-		if(regex!=NULL){ g_regex_unref(regex); regex=NULL; }	\
-	}G_STMT_END
 #endif
 
 #ifndef	g_strcasecmp
@@ -167,17 +118,6 @@ G_BEGIN_DECLS
 
 #ifndef	gtk_widget_has_focus
 #	define	gtk_widget_has_focus(widget)			program_gtk_widget_get_gboolean_property_value(GTK_WIDGET(widget), "has-focus")
-#endif
-
-#ifndef	gtk_widget_toggle_visibility
-#	define	gtk_widget_toggle_visibility(widget)											\
-	G_STMT_START{															\
-		if(widget && GTK_IS_WIDGET(widget))											\
-			if(!(gtk_widget_is_visible(widget)))										\
-				gtk_widget_show(widget);										\
-			else														\
-				gtk_widget_hide(widget);										\
-	}G_STMT_END
 #endif
 
 #ifndef	uber_object_free

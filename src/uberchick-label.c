@@ -110,8 +110,13 @@ struct _UberChickLabelPrivate{
 	UpdateType	update_type;
 	
 	gchar		*user_name;
+	
 	gdouble		user_id;
+	gchar		*user_id_str;
+	
 	gdouble		update_id;
+	gchar		*update_id_str;
+	
 	gchar		*text;
 	gchar		*markup;
 };
@@ -130,8 +135,25 @@ static void uberchick_label_init(UberChickLabel *uberchick_label);
 static void uberchick_label_finalize(UberChickLabel *uberchick_label);
 
 static void uberchick_label_populate_popup(UberChickLabel *uberchick_label, GtkMenu *menu);
-static void uberchick_label_shell_menu_add_action(UberChickLabel *uberchick_label, GtkMenu *menu, const gchar *name_of_action, const gchar *gtk_stock_icon_name, const gchar *tooltip_string, gchar *requested_resource, GCallback callback, gboolean prepend, gboolean add_separator);
+static void uberchick_label_shell_menu_add_action(UberChickLabel *uberchick_label, GtkMenu *menu, const gchar *name_of_action, const gchar *gtk_stock_icon_name, const gchar *actions_tooltip, gchar *requested_resource, GCallback callback, gboolean prepend, gboolean add_separator);
 static void uberchick_label_shell_menu_add_separator(UberChickLabel *uberchick_label, GtkMenu *menu, gboolean prepend);
+
+static void uberchick_label_shell_menu_add_user_actions(UberChickLabel *uberchick_label, GtkMenu *menu, const gchar *user_name);
+
+static void uberchick_label_context_menu_user_action_view_profile(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_unfollow(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_follow(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_view_updates_new(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_view_updates(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_view_profile(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_best_friend_add(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_best_friend_drop(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_block(GtkAction *action, UberChickLabel *uberchick_label);
+static void uberchick_label_context_menu_user_action_unblock(GtkAction *action, UberChickLabel *uberchick_label);
+
+static void uberchick_label_shell_menu_add_update_actions(UberChickLabel *uberchick_label, GtkMenu *menu);
+static void uberchick_label_context_menu_user_action_view_forwards(GtkAction *action, UberChickLabel *uberchick_label);
+
 
 static void uberchick_label_forward_text(GtkAction *action, UberChickLabel *uberchick_label);
 static void uberchick_label_send_at_reply(GtkAction *action, UberChickLabel *uberchick_label);
@@ -153,8 +175,11 @@ static void uberchick_label_init(UberChickLabel *uberchick_label){
 	this->update_type=None;
 	this->user_name=NULL;
 	this->user_id=0.0;
+	this->user_id_str=NULL;
 	this->update_id=0.0;
-	this->text=this->markup=NULL;
+	this->update_id_str=NULL;
+	this->text=NULL;
+	this->markup=NULL;
 	
 	g_object_set(uberchick_label, "xalign", 0.0, "yalign", 0.0, "xpad", 0, "ypad", 0, "wrap", TRUE, "wrap-mode", PANGO_WRAP_WORD_CHAR, "single-line-mode", FALSE, "use-markup", TRUE, "justify", GTK_JUSTIFY_LEFT, NULL);
 #ifndef ENABLE_ALPHA_UI
@@ -242,7 +267,9 @@ void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *
 	
 	if(G_STR_EMPTY(text)){
 		this->user_id=0.0;
+		uber_free(this->user_id_str);
 		this->update_id=0.0;
+		uber_free(this->update_id_str);
 		gtk_label_set_text(GTK_LABEL(uberchick_label), "");
 		return;
 	}
@@ -251,7 +278,13 @@ void uberchick_label_set_markup(UberChickLabel *uberchick_label, OnlineService *
 		this->user_name=g_strdup(user_name);
 	
 	this->user_id=user_id;
+	uber_free(this->user_id_str);
+	this->user_id_str=gdouble_to_str(this->user_id);
+	
 	this->update_id=update_id;
+	uber_free(this->update_id_str);
+	this->update_id_str=gdouble_to_str(this->update_id);
+	
 	debug("UberChickLabel: Rendering markup for <%s>'s update's ID: %f; update's text: %s", service->key, update_id, text);
 	this->text=g_strdup(text);
 	this->markup=www_format_urls(service, text, expand_hyperlinks, make_hyperlinks);
@@ -271,15 +304,15 @@ static void uberchick_label_populate_popup(UberChickLabel *uberchick_label, GtkM
 	const gchar *uri=gtk_label_get_current_uri(GTK_LABEL(uberchick_label));
 	if(!(this->service && G_STR_N_EMPTY(this->text) && G_STR_N_EMPTY(uri))) return;
 	
-	gchar *tooltip_string=NULL;
+	gchar *actions_tooltip=NULL;
 	
 	uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_forward_text_action", "gtk-media-next", "Forward/ReTweet this update", NULL, (GCallback)uberchick_label_forward_text, TRUE, TRUE);
 	
-	tooltip_string=g_strdup_printf("@ reply to @%s on <%s>", this->user_name, this->service->uri);
-	uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_at_reply_action", "gtk-undo", tooltip_string, g_strdup(this->user_name), (GCallback)uberchick_label_send_at_reply, TRUE, FALSE);
-	uber_free(tooltip_string);
+	uberchick_label_shell_menu_add_user_actions(uberchick_label, menu, this->user_name);
 	
 	uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_new_update_action", "gtk-new", "New update", NULL, (GCallback)update_viewer_new_update, TRUE, TRUE);
+	
+	uberchick_label_shell_menu_add_update_actions(uberchick_label, menu);
 	
 	gchar *requested_resource=NULL;
 	if(!(requested_resource=online_service_get_uri_requested_resource(this->service, uri)))
@@ -293,16 +326,14 @@ static void uberchick_label_populate_popup(UberChickLabel *uberchick_label, GtkM
 		case '@':
 			if(g_str_equal(this->user_name, &requested_resource[1])) break;
 			
-			debug("UberChickLabel found <%s>'s user name on <%s>", requested_resource, this->service->key);
-			tooltip_string=g_strdup_printf("@ reply to %s on <%s>", requested_resource, this->service->uri);
-			uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_reply_non_author_action", "gtk-undo", tooltip_string, g_strdup(requested_resource), (GCallback)uberchick_label_send_at_reply, FALSE, TRUE);
+			uberchick_label_shell_menu_add_user_actions(uberchick_label, menu, &requested_resource[1]);
 			break;
 		
 		case '#':
 		case '!':
 			debug("UberChickLabel found search link: for <%s> on <%s>", requested_resource, this->service->key);
-			tooltip_string=g_strdup_printf("Search for %s on <%s>", requested_resource, this->service->uri);
-			uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_search_action", "gtk-media-forward", tooltip_string, g_strdup(requested_resource), (GCallback)uberchick_label_search, FALSE, TRUE);
+			actions_tooltip=g_strdup_printf("Search for %s on <%s>", requested_resource, this->service->uri);
+			uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_search_action", "gtk-media-forward", actions_tooltip, g_strdup(requested_resource), (GCallback)uberchick_label_search, FALSE, TRUE);
 			break;
 		
 		default:
@@ -310,21 +341,21 @@ static void uberchick_label_populate_popup(UberChickLabel *uberchick_label, GtkM
 			break;
 	}
 	
-	if(tooltip_string)
-		uber_free(tooltip_string);
+	if(actions_tooltip)
+		uber_free(actions_tooltip);
 	
 	uber_free(requested_resource);
 }/*uberchick_label_populate_popup(uberchick_label, menu);*/
 
-static void uberchick_label_shell_menu_add_action(UberChickLabel *uberchick_label, GtkMenu *menu, const gchar *name_of_action, const gchar *gtk_stock_icon_name, const gchar *tooltip_string, gchar *requested_resource, GCallback callback, gboolean prepend, gboolean add_separator){
+static void uberchick_label_shell_menu_add_action(UberChickLabel *uberchick_label, GtkMenu *menu, const gchar *name_of_action, const gchar *gtk_stock_icon_name, const gchar *actions_tooltip, gchar *requested_resource, GCallback callback, gboolean prepend, gboolean add_separator){
 	GtkWidget *w=NULL;
 	GtkAction *action=NULL;
 	
 	if(add_separator)
 		uberchick_label_shell_menu_add_separator(uberchick_label, menu, prepend);
 	
-	gchar *label_string=g_strdup_printf("_%s", tooltip_string);
-	action=gtk_action_new(name_of_action, label_string, tooltip_string, gtk_stock_icon_name);
+	gchar *label_string=g_strdup_printf("_%s", actions_tooltip);
+	action=gtk_action_new(name_of_action, label_string, actions_tooltip, gtk_stock_icon_name);
 	if(requested_resource)
 		g_object_set_data_full(G_OBJECT(action), "requested_resource", requested_resource, g_free);
 	g_signal_connect(action, "activate", callback, uberchick_label);
@@ -337,7 +368,11 @@ static void uberchick_label_shell_menu_add_action(UberChickLabel *uberchick_labe
 	gtk_widget_show(w);
 }/*uberchick_label_shell_menu_add_action(uberchick_label, menu, "uberchick_label_context_menu_name_action", "gtk-", g_strdup(requested_resource), TRUE|FALSE, TRUE|FALSE);*/
 
+
 static void uberchick_label_shell_menu_add_separator(UberChickLabel *uberchick_label, GtkMenu *menu, gboolean prepend){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	/*UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);*/
+	
 	GtkWidget *w=gtk_separator_menu_item_new();
 	if(!prepend)
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), w);
@@ -345,6 +380,164 @@ static void uberchick_label_shell_menu_add_separator(UberChickLabel *uberchick_l
 		gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), w);
 	gtk_widget_show(w);
 }/*uberchick_label_shell_menu_add_separator(uberchick_label, menu, TRUE|FALSE);*/
+
+
+static void uberchick_label_shell_menu_add_update_actions(UberChickLabel *uberchick_label, GtkMenu *menu){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	debug("UberChickLabel adding update context menu items for update id: %f on %s.", this->update_id, this->service->key);
+	gchar *actions_tooltip=NULL, *actions_uniq_name=NULL;
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_view_thred_%s_action", this->update_id_str), "gtk-sort-ascending", actions_tooltip=g_strdup_printf("View update: %s's thread", this->update_id_str), g_strdup(this->update_id_str), (GCallback)uberchick_label_context_menu_user_action_view_forwards, TRUE, FALSE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+}/*uberchick_label_shell_menu_add_update_actions(uberchick_label, menu);*/
+
+
+static void uberchick_label_shell_menu_add_user_actions(UberChickLabel *uberchick_label, GtkMenu *menu, const gchar *user_name){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	debug("UberChickLabel adding user context menu items for: <%s@%s>", user_name, this->service->key);
+	gchar *actions_tooltip=NULL, *actions_uniq_name=NULL;
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_follow_%s_action", user_name), "gtk-add", actions_tooltip=g_strdup_printf("Follow @%s on <%s>", user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_follow, TRUE, FALSE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_unfollow_%s_action", user_name), "gtk-remove", actions_tooltip=g_strdup_printf("Stop following @%s on <%s>", user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_unfollow, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_best_friend_add_%s_action", user_name), "gtk-about", actions_tooltip=g_strdup_printf("Make @%s one of <%s@%s> best friends", user_name, this->service->user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_best_friend_add, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_best_friend_drop_%s_action", user_name), "gtk-delete", actions_tooltip=g_strdup_printf("@%s is no longer one of <%s@%s> best friends", user_name, this->service->user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_best_friend_drop, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_block_%s_action", user_name), "gtk-stop", actions_tooltip=g_strdup_printf("Block @%s's updates from being sent to <%s@%s>", user_name, this->service->user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_block, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_unblock_%s_action", user_name), "gtk-media-play", actions_tooltip=g_strdup_printf("Allow updates from @%s to be sent to <%s@%s>", user_name, this->service->user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_unblock, TRUE, FALSE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_view_%s_profile_action", user_name), "gtk-undo", actions_tooltip=g_strdup_printf("View @%s <%s> profile", user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_view_profile, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_view_%s_updates_new_action", user_name), "gtk-indent", actions_tooltip=g_strdup_printf("View @%s unread <%s> updates", user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_view_updates_new, TRUE, FALSE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_view_%s_updates_action", user_name), "gtk-home", actions_tooltip=g_strdup_printf("View all of @%s <%s> updates", user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_context_menu_user_action_view_updates, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+	
+	
+	uberchick_label_shell_menu_add_action(uberchick_label, menu, actions_uniq_name=g_strdup_printf("uberchick_label_context_menu_at_reply_to_%s_action", user_name), "gtk-undo", actions_tooltip=g_strdup_printf("@ reply to @%s on <%s>", user_name, this->service->uri), g_strdup(user_name), (GCallback)uberchick_label_send_at_reply, TRUE, TRUE);
+	uber_free(actions_tooltip);
+	uber_free(actions_uniq_name);
+}/*uberchick_label_shell_menu_add_user_actions(uberchick_label, menu, &requested_resource[1]);*/
+
+
+static void uberchick_label_context_menu_user_action_view_profile(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_view_profile(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_view_profile(action, uberchick_label)*/
+
+static void uberchick_label_context_menu_user_action_view_updates_new(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_view_updates_new(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_view_updates_new(action, user_name);*/
+
+static void uberchick_label_context_menu_user_action_view_updates(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_view_updates(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_view_updates(action, user_name);*/
+
+static void uberchick_label_context_menu_user_action_view_forwards(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_view_forwards(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_view_forwards(action, user_name);*/
+
+
+static void uberchick_label_context_menu_user_action_follow(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_follow(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_follow(action, user_name);*/
+
+
+static void uberchick_label_context_menu_user_action_unfollow(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_unfollow(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+	
+}/*uberchick_label_context_menu_user_action_unfollow(action, user_name);*/
+
+static void uberchick_label_context_menu_user_action_best_friend_add(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_best_friend_add(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_best_friend_add(action, user_name);*/
+
+static void uberchick_label_context_menu_user_action_best_friend_drop(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_best_friend_drop(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_best_friend_drop(action, user_name);*/
+
+static void uberchick_label_context_menu_user_action_block(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_block(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_block(action, user_name);*/
+
+static void uberchick_label_context_menu_user_action_unblock(GtkAction *action, UberChickLabel *uberchick_label){
+	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;
+	UberChickLabelPrivate *this=GET_PRIVATE(uberchick_label);
+	
+	online_service_request_unblock(this->service, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), (gchar *)g_object_get_data(G_OBJECT(action), "requested_resource"));
+	
+}/*uberchick_label_context_menu_user_action_unblock(action, user_name);*/
+
 
 static void uberchick_label_forward_text(GtkAction *action, UberChickLabel *uberchick_label){
 	if(!(uberchick_label && IS_UBERCHICK_LABEL(uberchick_label))) return;

@@ -19,5 +19,5 @@ default:
 	breaksw
 endsw
 
-${my_editor} "/projects/gtk/get2gnow/friends.xml" "/projects/gtk/get2gnow/src/friends-manager.c" "/projects/gtk/get2gnow/src/users-glists.c";
+${my_editor} ""/projects/gtk/get2gnow/data/main-window.in.ui ""/projects/gtk/get2gnow/src/hotkeys.c ""/projects/gtk/get2gnow/src/macros.h ""/projects/gtk/get2gnow/src/main-window.c ""/projects/gtk/get2gnow/src/Makefile.am ""/projects/gtk/get2gnow/src/Makefile.in ""/projects/gtk/get2gnow/src/online-service-request.c ""/projects/gtk/get2gnow/src/online-service-request.h ""/projects/gtk/get2gnow/src/online-service-request.types.h ""/projects/gtk/get2gnow/src/program.h ""/projects/gtk/get2gnow/src/uberchick-label.c ""/projects/gtk/get2gnow/src/update-viewer.c;
 

@@ -130,10 +130,8 @@ static gint online_service_request_popup_dialog_response=0;
  *         online_service_request's methods, handlers, callbacks, & etc.        *
  ********************************************************************************/
 static OnlineServiceRequest *online_service_request_new(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml);
-static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml);
 static void online_service_request_open_timeline_tab(OnlineService *service, RequestAction action, const gchar *get_rest_xml);
 static gboolean online_service_request_set_post_method_data(OnlineServiceRequest **request);
-static void online_service_request_free(OnlineServiceRequest *request);
 
 
 static gboolean online_service_request_selected_update_include_and_begin_to_send(gboolean forwarding);
@@ -304,7 +302,7 @@ static gboolean online_service_request_set_post_method_data(OnlineServiceRequest
 	return TRUE;
 }/*online_service_request_set_post_method_data(&request);*/
 
-static void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml){
+void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml){
 	if(action==SelectService || action==Confirmation) return;
 
 	if(G_STR_EMPTY(get_rest_xml)){
@@ -492,12 +490,13 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 	return NULL;
 }/*online_service_request_main_quit*/
 
-static void online_service_request_free(OnlineServiceRequest *request){
+void online_service_request_free(OnlineServiceRequest *request){
 	request->parent_window=NULL;
 	request->extra=NULL;
 	request->service=NULL;
 	uber_object_free(&request->uri, &request->get_rest_xml, &request->message, &request, NULL);
-}/*online_service_request_free*/
+	request=NULL;
+}/*online_service_request_free(request);*/
 
 
 /********************************************************************************
@@ -892,9 +891,9 @@ void online_service_request_popup_updates(void){
 	online_service_request_popup_dialog_show(ViewUpdates);
 }/*online_service_request_popup_updates();*/
 
-void online_service_request_popup_profile(void){
+void online_service_request_popup_view_profile(void){
 	online_service_request_popup_dialog_show(ViewProfile);
-}/*online_service_request_popup_profile();*/
+}/*online_service_request_popup_view_profile();*/
 
 void online_service_request_popup_best_friend_add(void){
 	online_service_request_popup_dialog_show(BestFriendAdd);
@@ -1045,10 +1044,6 @@ void online_service_request_view_updates(OnlineService *service, GtkWindow *pare
 	online_service_request_main(service, ViewUpdates, parent_window, user_name);
 }/*online_service_request_view_updates(service, parent_window, user_name);*/
 
-void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
-	online_service_request_main(service, ViewForwards, parent_window, user_name);
-}/*online_service_request_view_updates(service, parent_window, user_name);*/
-
 void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
 	online_service_request_main(service, BestFriendAdd, parent_window, user_name);
 }/*online_service_request_best_friend_add(service, parent_window, user_name);*/
@@ -1073,18 +1068,28 @@ void online_service_request_unblock(OnlineService *service, GtkWindow *parent_wi
 	online_service_request_main(service, UnBlock, parent_window, user_name);
 }/*online_service_request_view_unblock(service, parent_window, user_name);*/
 
-void online_service_request_fave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
-	online_service_request_main(service, Fave, parent_window, user_name);
-}/*online_service_request_view_fave(service, parent_window, user_name);*/
+void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str){
+	online_service_request_main(service, ViewForwards, parent_window, update_id_str);
+}/*online_service_request_view_updates(service, parent_window, update_id_str);*/
 
-void online_service_request_unfave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
-	online_service_request_main(service, UnFave, parent_window, user_name);
-}/*online_service_request_view_unfave(service, parent_window, user_name);*/
+void online_service_request_fave(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str){
+	online_service_request_main(service, Fave, parent_window, update_id_str);
+}/*online_service_request_view_fave(service, parent_window, update_id_str);*/
 
-void online_service_request_delete(OnlineService *service, GtkWindow *parent_window, const gchar *user_name){
-	online_service_request_main(service, DeleteStep1, parent_window, user_name);
-}/*online_service_request_view_delete(service, parent_window, user_name);*/
+void online_service_request_unfave(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str){
+	online_service_request_main(service, UnFave, parent_window, update_id_str);
+}/*online_service_request_view_unfave(service, parent_window, update_id_str);*/
 
+void online_service_request_delete(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str){
+	online_service_request_main(service, DeleteStep1, parent_window, update_id_str);
+}/*online_service_request_view_delete(service, parent_window, update_id_str);*/
+
+
+
+
+
+
+/* START: SelectedUpdate's request handlers. */
 void online_service_request_selected_update_view_updates_new(void){
 	if(!(selected_update && selected_update->user_name)) return;
 	online_service_request_main(selected_update->service, ViewUpdatesNew, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
@@ -1137,10 +1142,10 @@ void online_service_request_selected_update_unblock(void){
 	online_service_request_main(selected_update->service, UnBlock, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->user_name);
 }/*online_service_request_selected_update_unblock*/
 
-void online_service_request_selected_update_save_fave(void){
+void online_service_request_selected_update_fave(void){
 	if(!(selected_update && selected_update->id)) return;
 	online_service_request_main(selected_update->service, Fave, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->id_str);
-}/*online_service_request_selected_update_save_fave*/
+}/*online_service_request_selected_update_fave*/
 
 void online_service_request_selected_update_unfave(void){
 	if(!(selected_update && selected_update->id)) return;
@@ -1152,6 +1157,9 @@ void online_service_request_selected_update_delete(void){
 	if(!online_services_is_user_name_mine(selected_update->service, selected_update->user_name)) return;
 	online_service_request_main(selected_update->service, DeleteStep2, (gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE) ?update_viewer_get_window() :main_window_get_window()), selected_update->id_str);
 }/*online_service_request_selected_update_delete();*/
+/* END: SelectedUpdate's request handlers. */
+
+
 
 
 /********************************************************************************

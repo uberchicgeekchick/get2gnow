@@ -51,9 +51,8 @@
 /********************************************************************************
  *                      My art, code, & programming.                            *
  ********************************************************************************/
-#ifndef	__HEADER_H__
-#define	__HEADER_H__
-
+#ifndef	__MACROS_H__
+#define	__MACROS_H__
 
 
 #ifndef _GNU_SOURCE
@@ -63,7 +62,6 @@
 #ifndef _THREAD_SAFE 
 #	define _THREAD_SAFE
 #endif
-
 
 
 /********************************************************************************
@@ -77,21 +75,73 @@ G_BEGIN_DECLS
 /********************************************************************************
  *                       macro & method overload defines.                       *
  ********************************************************************************/
+#ifndef	uber_new
+#	define	uber_new(mem, type)					\
+	G_STMT_START{							\
+		if(mem!=NULL){ g_free(mem); mem=NULL; }			\
+		mem=g_new0(type, 1);					\
+	}G_STMT_END
+#endif
 
+#ifndef uber_free
+#	define	uber_free(mem)						\
+	G_STMT_START{							\
+		if(mem!=NULL){ g_free(mem); mem=NULL; }			\
+	}G_STMT_END
+#endif
 
-/********************************************************************************
- *                        objects, structs, and enum typedefs                   *
- ********************************************************************************/
+#ifndef uber_list_free
+#	define uber_list_free(l)					\
+	G_STMT_START{							\
+		if(l!=NULL){ g_list_free(l); l=NULL; }			\
+	}G_STMT_END
+#endif
 
+#ifndef uber_slist_free
+#	define uber_slist_free(sl)					\
+	G_STMT_START{							\
+		if(sl!=NULL){ g_slist_free(sl); sl=NULL; }		\
+	}G_STMT_END
+#endif
 
-/********************************************************************************
- *               method, handler, callback, & function, & prototypes            *
- ********************************************************************************/
+#ifndef uber_error_free
+#	define	uber_error_free(error)					\
+	G_STMT_START{							\
+		if(error!=NULL){ g_error_free(error); error=NULL; }	\
+	}G_STMT_END
+#endif
+
+#ifndef uber_object_unref
+#	define	uber_object_unref(o)					\
+	G_STMT_START{							\
+		if(o!=NULL){ g_object_unref(o); o=NULL; }		\
+	}G_STMT_END
+#endif
+
+#ifndef uber_regex_unref
+#	define	uber_regex_unref(regex)					\
+	G_STMT_START{							\
+		if(regex!=NULL){ g_regex_unref(regex); regex=NULL; }	\
+	}G_STMT_END
+#endif
+
+#ifndef	gtk_widget_toggle_visibility
+#	define	gtk_widget_toggle_visibility(widget)			\
+	G_STMT_START{							\
+		if(widget && GTK_IS_WIDGET(widget))			\
+			if(!(gtk_widget_is_visible(widget)))		\
+				gtk_widget_show(widget);		\
+			else						\
+				gtk_widget_hide(widget);		\
+	}G_STMT_END
+#endif
 
 
 /********************************************************************************
  *                                    eof                                       *
  ********************************************************************************/
 G_END_DECLS
+
 #endif /*__MACROS_H__*/
+
 

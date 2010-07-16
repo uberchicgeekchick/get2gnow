@@ -305,7 +305,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				
 				case GDK_S:	case GDK_s:
 				case GDK_asterisk:
-					online_service_request_selected_update_save_fave();
+					online_service_request_selected_update_fave();
 					return FALSE;
 				
 				case GDK_F5:

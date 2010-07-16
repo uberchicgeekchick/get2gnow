@@ -191,7 +191,7 @@
                         <property name="label" translatable="yes">_Compose</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image1</property>
+                        <property name="image">compose_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                         <child type="submenu">
@@ -231,22 +231,22 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="selected_update_image_menu_item">
+                      <object class="GtkImageMenuItem" id="selected_update_submenu_image_menu_item">
                         <property name="label" translatable="yes">_Selected Update:</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image2</property>
+                        <property name="image">selected_update_submenu_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                         <child type="submenu">
                           <object class="GtkMenu" id="selected_update_menu">
                             <property name="visible">True</property>
                             <child>
-                              <object class="GtkImageMenuItem" id="selected_update_author_image_menu_item">
+                              <object class="GtkImageMenuItem" id="selected_update_author_submenu_image_menu_item">
                                 <property name="label" translatable="yes">Update's _Author</property>
                                 <property name="visible">True</property>
                                 <property name="use_underline">True</property>
-                                <property name="image">image7</property>
+                                <property name="image">selected_update_author_submenu_image</property>
                                 <property name="use_stock">False</property>
                                 <property name="always_show_image">True</property>
                                 <child type="submenu">
@@ -258,7 +258,7 @@
                                         <property name="visible">True</property>
                                         <property name="tooltip_text" translatable="yes">View the profile for the user who wrote the selected update.</property>
                                         <property name="use_underline">True</property>
-                                        <property name="image">image3</property>
+                                        <property name="image">selected_update_author_view_profile_image</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
                                       </object>
@@ -268,7 +268,7 @@
                                         <property name="label" translatable="yes">View Author's _Unread Updates</property>
                                         <property name="visible">True</property>
                                         <property name="use_underline">True</property>
-                                        <property name="image">image12</property>
+                                        <property name="image">selected_update_author_view_unread_updates_image</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
                                       </object>
@@ -278,7 +278,7 @@
                                         <property name="label" translatable="yes">_View Author's Updates</property>
                                         <property name="visible">True</property>
                                         <property name="use_underline">True</property>
-                                        <property name="image">image4</property>
+                                        <property name="image">selected_update_author_view_updates_image</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
                                       </object>
@@ -305,7 +305,7 @@
                                         <property name="label" translatable="yes">_Follow the Author</property>
                                         <property name="visible">True</property>
                                         <property name="use_underline">True</property>
-                                        <property name="image">image6</property>
+                                        <property name="image">selected_update_author_follow_image</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
                                       </object>
@@ -315,7 +315,7 @@
                                         <property name="label" translatable="yes">_Unfollow the Author</property>
                                         <property name="visible">True</property>
                                         <property name="use_underline">True</property>
-                                        <property name="image">image8</property>
+                                        <property name="image">selected_update_author_unfollow_image</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
                                       </object>
@@ -325,7 +325,7 @@
                                         <property name="label" translatable="yes">B_lock the Author</property>
                                         <property name="visible">True</property>
                                         <property name="use_underline">True</property>
-                                        <property name="image">image9</property>
+                                        <property name="image">selected_update_author_block_image</property>
                                         <property name="use_stock">False</property>
                                         <property name="always_show_image">True</property>
                                       </object>
@@ -344,7 +344,7 @@
                                 <property name="label" translatable="yes">_Reply</property>
                                 <property name="visible">True</property>
                                 <property name="use_underline">True</property>
-                                <property name="image">image5</property>
+                                <property name="image">selected_update_reply_image</property>
                                 <property name="use_stock">False</property>
                                 <property name="always_show_image">True</property>
                                 <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -356,7 +356,7 @@
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="image">compos_menu_forward_update_image</property>
+                                <property name="image">compose_menu_selected_update_forward_update_image</property>
                                 <property name="use_stock">False</property>
                                 <property name="always_show_image">True</property>
                                 <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -576,7 +576,7 @@
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Manage, Update, and/o Edit one of your accounts online profiles.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image16</property>
+                        <property name="image">online_service_request_popup_manage_profile_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -661,7 +661,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Add a user to your list of best friends.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image14</property>
+                        <property name="image">online_service_request_popup_menu_best_friends_add_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -672,7 +672,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">Remove a user from your list of best friends.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image15</property>
+                        <property name="image">online_service_request_popup_menu_best_friends_drop_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -683,8 +683,8 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="online_service_request_popup_profile_image_menu_item">
-                        <property name="label" translatable="yes">View someone's _Profile</property>
+                      <object class="GtkImageMenuItem" id="online_service_request_popup_view_profile_image_menu_item">
+                        <property name="label" translatable="yes">View someone's _profile</property>
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">View someone's profile including:
 	Their bio.
@@ -692,7 +692,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
 	How many people are following them.
 	How many other people they're following.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">friends_menu_view_tweets_image</property>
+                        <property name="image">friends_menu_view_profile_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -703,7 +703,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="visible">True</property>
                         <property name="tooltip_text" translatable="yes">View all updates you haven't read from another user.</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image11</property>
+                        <property name="image">online_service_request_popup_unread_updates_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -725,7 +725,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                         <property name="no_show_all">True</property>
                         <property name="tooltip_text" translatable="yes">View an updates _threads (i.e. forwards/retweets)</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image13</property>
+                        <property name="image">online_service_request_popup_forwards_image</property>
                         <property name="use_stock">False</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -829,7 +829,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
-                                <property name="image">image10</property>
+                                <property name="image">search_button_image</property>
                                 <property name="use_underline">True</property>
                                 <property name="image_position">right</property>
                               </object>
@@ -1451,7 +1451,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
     <property name="stock">gtk-home</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="friends_menu_view_tweets_image">
+  <object class="GtkImage" id="friends_menu_view_profile_image">
     <property name="visible">True</property>
     <property name="stock">gtk-info</property>
     <property name="icon-size">1</property>
@@ -1476,7 +1476,7 @@ You can also View their updates and/or profile, follow them back, unfollow them,
     <property name="stock">gtk-orientation-portrait</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image1">
+  <object class="GtkImage" id="compose_image">
     <property name="visible">True</property>
     <property name="stock">gtk-justify-fill</property>
     <property name="icon-size">1</property>
@@ -1496,51 +1496,51 @@ You can also View their updates and/or profile, follow them back, unfollow them,
     <property name="stock">gtk-preferences</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image10">
+  <object class="GtkImage" id="search_button_image">
     <property name="visible">True</property>
     <property name="stock">gtk-media-next</property>
   </object>
-  <object class="GtkImage" id="image2">
+  <object class="GtkImage" id="selected_update_submenu_image">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image7">
+  <object class="GtkImage" id="selected_update_author_submenu_image">
     <property name="visible">True</property>
     <property name="stock">gtk-orientation-portrait</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image3">
+  <object class="GtkImage" id="selected_update_author_view_profile_image">
     <property name="visible">True</property>
     <property name="stock">gtk-info</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image4">
+  <object class="GtkImage" id="selected_update_author_view_updates_image">
     <property name="visible">True</property>
     <property name="stock">gtk-home</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image6">
+  <object class="GtkImage" id="selected_update_author_follow_image">
     <property name="visible">True</property>
     <property name="stock">gtk-add</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image8">
+  <object class="GtkImage" id="selected_update_author_unfollow_image">
     <property name="visible">True</property>
     <property name="stock">gtk-remove</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image9">
+  <object class="GtkImage" id="selected_update_author_block_image">
     <property name="visible">True</property>
     <property name="stock">gtk-stop</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image5">
+  <object class="GtkImage" id="selected_update_reply_image">
     <property name="visible">True</property>
     <property name="stock">gtk-undo</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="compos_menu_forward_update_image">
+  <object class="GtkImage" id="compose_menu_selected_update_forward_update_image">
     <property name="visible">True</property>
     <property name="stock">gtk-media-next</property>
     <property name="icon-size">1</property>
@@ -1550,32 +1550,32 @@ You can also View their updates and/or profile, follow them back, unfollow them,
     <property name="stock">gtk-about</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image11">
+  <object class="GtkImage" id="online_service_request_popup_unread_updates_image">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image12">
+  <object class="GtkImage" id="selected_update_author_view_unread_updates_image">
     <property name="visible">True</property>
     <property name="stock">gtk-indent</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image13">
+  <object class="GtkImage" id="online_service_request_popup_forwards_image">
     <property name="visible">True</property>
     <property name="stock">gtk-sort-ascending</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image14">
+  <object class="GtkImage" id="online_service_request_popup_menu_best_friends_add_image">
     <property name="visible">True</property>
     <property name="stock">gtk-about</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image15">
+  <object class="GtkImage" id="online_service_request_popup_menu_best_friends_drop_image">
     <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
     <property name="icon-size">1</property>
   </object>
-  <object class="GtkImage" id="image16">
+  <object class="GtkImage" id="online_service_request_popup_manage_profile_image">
     <property name="visible">True</property>
     <property name="stock">gtk-edit</property>
     <property name="icon-size">1</property>

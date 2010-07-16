@@ -86,22 +86,24 @@ extern OnlineService *in_reply_to_service;
  **********************************************************************/
 G_BEGIN_DECLS
 
+void online_service_request_main(OnlineService *service, RequestAction action, GtkWindow *parent_window, const gchar *get_rest_xml);
+void online_service_request_free(OnlineServiceRequest *request);
 const gchar *online_service_request_method_to_string(RequestMethod request_method);
 const gchar *online_service_request_action_to_string(RequestAction action);
 
 void online_service_request_view_profile(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_view_updates_new(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_view_updates(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
-void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_follow(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_unfollow(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_best_friend_add(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_best_friend_drop(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_block(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
 void online_service_request_unblock(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
-void online_service_request_fave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
-void online_service_request_unfave(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
-void online_service_request_delete(OnlineService *service, GtkWindow *parent_window, const gchar *user_name);
+void online_service_request_view_forwards(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str);
+void online_service_request_fave(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str);
+void online_service_request_unfave(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str);
+void online_service_request_delete(OnlineService *service, GtkWindow *parent_window, const gchar *update_id_str);
 
 void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, OnlineServiceWrapper *service_wrapper);
 
@@ -120,10 +122,12 @@ gboolean online_service_request_selected_update_forward(void);
 void online_service_request_unset_selected_update(void);
 /* END: SelectedUpdate's methods. */
 
+
+
+
 /* START: SelectedUpdate's request handlers. */
 void online_service_request_selected_update_view_updates_new(void);
 void online_service_request_selected_update_view_updates(void);
-void online_service_request_selected_update_view_forwards(void);
 void online_service_request_selected_update_view_profile(void);
 void online_service_request_selected_update_best_friend_add(void);
 void online_service_request_selected_update_best_friend_drop(void);
@@ -131,27 +135,32 @@ void online_service_request_selected_update_follow(void);
 void online_service_request_selected_update_unfollow(void);
 void online_service_request_selected_update_block(void);
 void online_service_request_selected_update_unblock(void);
-void online_service_request_selected_update_save_fave(void);
+void online_service_request_selected_update_view_forwards(void);
+void online_service_request_selected_update_fave(void);
 void online_service_request_selected_update_unfave(void);
 void online_service_request_selected_update_delete(void);
 /* END: SelectedUpdate's request handlers. */
 
+
+
+/* START: OnlineServiceRequestPopup's signal handlers & callbacks. */
 void online_service_request_popup_select_service(void);
-void online_service_request_popup_profile(void);
+void online_service_request_popup_view_profile(void);
 void online_service_request_popup_updates_new(void);
 void online_service_request_popup_updates(void);
-void online_service_request_popup_forwards(void);
 void online_service_request_popup_follow(void);
 void online_service_request_popup_best_friend_add(void);
 void online_service_request_popup_best_friend_drop(void);
 void online_service_request_popup_unfollow(void);
 void online_service_request_popup_block(void);
 void online_service_request_popup_unblock(void);
+void online_service_request_popup_forwards(void);
 void online_service_request_popup_fave(void);
 void online_service_request_popup_unfave(void);
 void online_service_request_popup_delete(void);
 void online_service_request_popup_shorten_uri(void);
 gboolean online_service_request_popup_confirmation_dialog(const gchar *gconfig_path, const gchar *message1, const gchar *message2, GFunc func, gpointer user_data);
+/* END: OnlineServiceRequestPopup's signal handlers & callbacks. */
 
 
 /**********************************************************************

@@ -606,7 +606,7 @@ UpdateViewer *update_viewer_new(GtkWindow *parent){
 				"reply_button", "clicked", update_viewer_reply,
 				"forward_update_button", "clicked", update_viewer_forward,
 				"retweet_button", "clicked", update_viewer_retweet,
-				"make_fave_button", "clicked", online_service_request_selected_update_save_fave,
+				"make_fave_button", "clicked", online_service_request_selected_update_fave,
 				"update_viewer_unfave_button", "clicked", online_service_request_selected_update_unfave,
 				"update_viewer_destroy_update_button", "clicked", online_service_request_selected_update_delete,
 				
@@ -1467,7 +1467,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 	
 	gchar *sexy_text=NULL, *retweeted_by_markup=NULL;
 	if(G_STR_N_EMPTY(retweeted_user_name))
-		retweeted_by_markup=g_strdup_printf("\n\n<span size=\"small\" weight=\"light\">ReTweeted By:\n\n\t\t<a href=\"http%s://%s/%s\">%s &lt;%s@%s&gt;</a></span>", uri_scheme_suffix, service->uri, retweeted_user_name, retweeted_user_nick, retweeted_user_name, service->uri);
+		retweeted_by_markup=g_strdup_printf("<span size=\"small\" weight=\"light\">ReTweeted By: <a href=\"http%s://%s/%s\">%s &lt;%s@%s&gt;</a></span>", uri_scheme_suffix, service->uri, retweeted_user_name, retweeted_user_nick, retweeted_user_name, service->uri);
 	
 	if(!render_update){
 		uberchick_label_set_markup(update_viewer->sexy_selected_update_author, service, update_type, user_name, user_id, id, "", FALSE, TRUE);
@@ -1477,7 +1477,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 		if(!retweeted_by_markup)
 			g_object_set(update_viewer->sexy_selected_update_author, "single-line-mode", TRUE, NULL);
 		else{
-			g_object_set(update_viewer->sexy_selected_update_author, "single-line-mode", FALSE, NULL);
+			g_object_set(update_viewer->sexy_selected_update_author, "wrap", TRUE, "wrap-mode", PANGO_WRAP_WORD, "single-line-mode", FALSE, NULL);
 			gchar *sexy_swp_text=g_strdup_printf("%s\n%s", sexy_text, retweeted_by_markup);
 			uber_free(sexy_text);
 			sexy_text=sexy_swp_text;
@@ -1503,7 +1503,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 		if(!retweeted_by_markup)
 			g_object_set(update_viewer->sexy_from, "single-line-mode", TRUE, NULL);
 		else{
-			g_object_set(update_viewer->sexy_from, "single-line-mode", FALSE, NULL);
+			g_object_set(update_viewer->sexy_from, "wrap", TRUE, "wrap-mode", PANGO_WRAP_WORD, "single-line-mode", FALSE, NULL);
 			gchar *sexy_swp_text=g_strdup_printf("%s\n%s", sexy_text, retweeted_by_markup);
 			uber_free(sexy_text);
 			sexy_text=sexy_swp_text;

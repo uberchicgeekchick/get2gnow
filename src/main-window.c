@@ -449,7 +449,7 @@ static void main_window_setup(void){
 					"new_dm", "activate", update_viewer_new_dm,
 					"selected_update_reply_image_menu_item", "activate", online_service_request_selected_update_reply,
 					"selected_update_forward_update_image_menu_item", "activate", online_service_request_selected_update_forward,
-					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_save_fave,
+					"selected_update_save_fave_image_menu_item", "activate", online_service_request_selected_update_fave,
 					"selected_update_author_view_profile_image_menu_item", "activate", online_service_request_selected_update_view_profile,
 					"selected_update_author_view_unread_updates_image_menu_item", "activate", online_service_request_selected_update_view_updates_new,
 					"selected_update_author_view_updates_image_menu_item", "activate", online_service_request_selected_update_view_updates,
@@ -933,8 +933,8 @@ static void main_window_online_service_request_popup_menu_setup(GtkBuilder *ui){
 		{ "online_service_request_popup_updates_image_menu_item",
 			(GPointerFunc)online_service_request_popup_updates,
 			NULL },
-		{ "online_service_request_popup_profile_image_menu_item",
-			(GPointerFunc)online_service_request_popup_profile,
+		{ "online_service_request_popup_view_profile_image_menu_item",
+			(GPointerFunc)online_service_request_popup_view_profile,
 			NULL },
 		{ "online_service_request_popup_forwards_image_menu_item",
 			(GPointerFunc)online_service_request_popup_forwards,
@@ -1363,7 +1363,7 @@ void main_window_disconnect(void){
 
 static void main_window_selected_update_widgets_setup(GtkBuilder *ui){
 	const gchar *selected_update_buttons[]={
-		"selected_update_image_menu_item",
+		"selected_update_submenu_image_menu_item",
 		"selected_update_reply_image_menu_item",
 		"selected_update_forward_update_image_menu_item",
 		"selected_update_save_fave_image_menu_item",
@@ -1449,7 +1449,9 @@ void main_window_selected_update_image_menu_items_show(gboolean selected_update)
 }/*main_window_selected_update_image_menu_items_show(TRUE|FALSE);*/
 
 const gchar *main_window_set_statusbar_default_message(const gchar *default_message){
-	if(g_str_equal(main_window->private->statusbar_default_message, default_message)) return main_window->private->statusbar_default_message;
+	if(g_str_equal(main_window->private->statusbar_default_message, default_message))
+		return main_window->private->statusbar_default_message;
+	
 	uber_free(main_window->private->statusbar_default_message);
 	main_window->private->statusbar_default_message=g_strdup(default_message);
 	if(!statusbar_inital_context_id)

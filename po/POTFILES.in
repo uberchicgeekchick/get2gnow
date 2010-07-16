@@ -28,10 +28,11 @@ src/gconfig.c
 src/geometry.c
 src/groups.c
 src/gtkbuilder.c
+src/hotkeys.c
 src/images.c
 src/ipc.c
-keyring.c
-src/hotkeys.c
+src/keyring.c
+src/macros.h
 src/main.c
 src/main-window.c
 src/network.c
