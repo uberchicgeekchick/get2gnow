@@ -47,6 +47,9 @@ all: config.h get2gnow.spec @PACKAGE_NAME@.control
 # uninstall.
 distuninstallcheck_listfiles = find . -type f -print | grep -v '^\./var/scrollkeeper'
 
+autom4teclean:
+	-test ! -d $(top_srcdir)/autom4te.cache || rm -rf $(top_srcdir)/autom4te.cache
+
 uninstall-debug:
 	-gconftool-2 --recursive-unset /schemas/get2gnow-debug
 	-gconftool-2 --recursive-unset /apps/get2gnow-debug

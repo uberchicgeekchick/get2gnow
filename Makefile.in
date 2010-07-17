@@ -637,6 +637,9 @@ install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 
+autom4teclean:
+	-test ! -d $(top_srcdir)/autom4te.cache || rm -rf $(top_srcdir)/autom4te.cache
+
 uninstall-debug:
 	-gconftool-2 --recursive-unset /schemas/get2gnow-debug
 	-gconftool-2 --recursive-unset /apps/get2gnow-debug
@@ -658,10 +661,6 @@ install-strip:
 	  `test -z '$(STRIP)' || \
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
-
-autom4teclean:
-	-test ! -d $(top_srcdir)/autom4te.cache || rm -rf $(top_srcdir)/autom4te.cache
-	
 
 clean-generic:
 
