@@ -673,6 +673,7 @@ clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-recursive distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
+	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags
