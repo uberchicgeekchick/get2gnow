@@ -412,6 +412,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 				if(best_friends_is_user_best_friend(user->service, user->user_name))
 					best_friends_drop(user->service, request->parent_window, user->user_name);
 				tabs_update_uberchick_tree_views_tree_stores(STRING_USER, request->get_rest_xml, TRUE);
+				if(selected_update && G_STR_N_EMPTY(selected_update->user_name) && G_STR_N_EMPTY(request->get_rest_xml) && g_str_equal(selected_update->user_name, request->get_rest_xml))
+					update_viewer_new_update();
 				gchar *user_timeline=g_strdup_printf(API_TIMELINE_USER, request->get_rest_xml);
 				tabs_close_timeline(user_timeline);
 				uber_free(user_timeline);

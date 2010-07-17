@@ -330,21 +330,26 @@ guint groups_parse_conversation(OnlineService *service, SoupMessage *xml, const 
 			content=(gchar *)xmlNodeGetContent(current_elements_attributes);
 			debug("Parsing Groups from <%s>'s looking for <%s %s=\"%s\">; at node: <%s %s=\"%s\">", uri, element, attribute, value, root_element->name, elements_attributes->name, content);
 			if(g_str_equal(content, "wrap")){
-				found_wrap=TRUE;
+				if(!found_wrap)
+					found_wrap=TRUE;
 				value="core";
 			}else if(g_str_equal(content, "core")){
-				found_core=TRUE;
+				if(!found_core)
+					found_core=TRUE;
 				value="content";
 			}else if(g_str_equal(content, "content")){
-				found_content=TRUE;
+				if(!found_content)
+					found_content=TRUE;
 				value="content_inner";
 			}else if(g_str_equal(content, "content_inner")){
-				found_content_inner=TRUE;
+				if(!found_content_inner)
+					found_content_inner=TRUE;
 				element="ul";
 				attribute="class";
 				value="profiles groups xoxo";
 			}else if(g_str_equal(content, "profiles groups xoxo")){
-				found_profiles=TRUE;
+				if(!found_profiles)
+					found_profiles=TRUE;
 				element="li";
 				attribute="class";
 				value="profile hentry";

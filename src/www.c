@@ -320,7 +320,7 @@ static gssize www_find_first_non_user_name(const gchar *str){
 static gchar *www_format_service_hyperlink(OnlineService *service, const gchar *url_prefix, gchar *services_resource, gboolean expand_hyperlinks, gboolean make_hyperlinks){
 	gchar *user_at_link=NULL;
 	gssize end=0;
-	gchar delim;
+	gchar delim='\0';
 	
 	if((end=(www_find_first_non_user_name(&services_resource[1])+1))){
 		delim=services_resource[end];
