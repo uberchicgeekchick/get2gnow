@@ -659,6 +659,10 @@ install-strip:
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
 
+autom4teclean:
+	-test ! -d $(top_srcdir)/autom4te.cache || rm -rf $(top_srcdir)/autom4te.cache
+	
+
 clean-generic:
 
 distclean-generic:
@@ -671,9 +675,8 @@ maintainer-clean-generic:
 clean: clean-recursive
 clean-am: clean-generic clean-libtool mostlyclean-am
 
-distclean: distclean-recursive distclean-am
+distclean: autom4teclean distclean-recursive distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags
@@ -706,9 +709,8 @@ install-ps: install-ps-recursive
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-recursive
+maintainer-clean: autom4teclean maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
