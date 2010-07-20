@@ -600,7 +600,7 @@ static void main_window_view_menu_option_toggled(GtkCheckMenuItem *check_menu_it
 	else if(check_menu_item==main_window->private->view_menu_uber_compact_view_check_menu)
 		main_window_compact_view_toggled(active);
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*main_window_view_menu_option_toggled(check_menu_item);*/
 
 static void main_window_compact_view_toggled(gboolean checked){
@@ -1190,7 +1190,7 @@ SexySpellEntry *main_window_sexy_search_entry_get_widget(void){
 
 void main_window_sexy_search_entry_select(void){
 	if(gtk_widget_has_focus(GTK_WIDGET(main_window->private->sexy_search_entry))) return;
-	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()))) return;
+	if(gtk_widget_has_focus(update_viewer_sexy_entry_get_widget())) return;
 	gtk_widget_grab_focus(GTK_WIDGET(main_window->private->sexy_search_entry));
 	gint sexy_position=-1;
 	if(main_window->private->sexy_position > 0 && main_window->private->sexy_position <= gtk_entry_get_text_length((GtkEntry *)main_window->private->sexy_search_entry))
@@ -1435,7 +1435,7 @@ void main_window_state_on_connection(gboolean connected){
 		gtk_widget_set_sensitive(GTK_WIDGET(l->data), !connected);
 	g_list_free(l);
 	
-	if(connected) update_viewer_sexy_select();
+	if(connected) update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }
 
 void main_window_selected_update_image_menu_items_show(gboolean selected_update){
@@ -1445,7 +1445,7 @@ void main_window_selected_update_image_menu_items_show(gboolean selected_update)
 	for(selected_update_image_menu_items=main_window->private->selected_update_image_menu_items; selected_update_image_menu_items; selected_update_image_menu_items=selected_update_image_menu_items->next)
 		gtk_widget_set_sensitive(GTK_WIDGET(selected_update_image_menu_items->data), selected_update);
 	g_list_free(selected_update_image_menu_items);
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*main_window_selected_update_image_menu_items_show(TRUE|FALSE);*/
 
 const gchar *main_window_set_statusbar_default_message(const gchar *default_message){

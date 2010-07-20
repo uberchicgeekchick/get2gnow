@@ -103,7 +103,7 @@ static gboolean hotkeys_display_menu(const gchar *menu_name, const gint event_ti
 void hotkey_pressed(GtkWidget *widget, GdkEventKey *event){
 	gboolean gui_displayed=FALSE;
 	if(!(gui_displayed=hotkey_process(widget, event)))
-		update_viewer_sexy_select();
+		update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*hotkey(widget, event);*/
 
 static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
@@ -111,7 +111,7 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 		if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))){
 			main_window_show_search_history();
 			return TRUE;
-		}else if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()))){
+		}else if(gtk_widget_has_focus(update_viewer_sexy_entry_get_widget())){
 			update_viewer_show_previous_updates();
 			return TRUE;
 		}
@@ -181,14 +181,14 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 				case GDK_Up: case GDK_KP_Up:
 					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
 						main_window_hide_search_history();
-					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
+					else /*if(gtk_widget_has_focus(update_viewer_sexy_entry_get_widget()))*/
 						update_viewer_hide_previous_updates();
 					return TRUE;
 				
 				case GDK_Down: case GDK_KP_Down:
 					if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget())))
 						main_window_show_search_history();
-					else /*if(gtk_widget_has_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))*/
+					else /*if(gtk_widget_has_focus(update_viewer_sexy_entry_get_widget()))*/
 						update_viewer_show_previous_updates();
 					return TRUE;
 				
@@ -202,8 +202,8 @@ static gboolean hotkey_process(GtkWidget *widget, GdkEventKey *event){
 					return TRUE;
 				
 				case GDK_U:	case GDK_u:
-					/* calls: update_viewer_sexy_select(); */
-					gtk_widget_grab_focus(GTK_WIDGET(update_viewer_sexy_entry_get_widget()));
+					/* calls: update_viewer_sexy_select(update_viewer_sexy_entry_get_widget()); */
+					gtk_widget_grab_focus(update_viewer_sexy_entry_get_widget());
 					return FALSE;
 				
 				case GDK_asciitilde:	case GDK_ampersand:

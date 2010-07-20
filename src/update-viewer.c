@@ -1035,7 +1035,7 @@ static void update_viewer_compact_view_display(gboolean compact){
 	if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->update_composition_vbox)))
 		gtk_widget_show(GTK_WIDGET(update_viewer->update_composition_vbox));
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 }/*update_viewer_compact_view_display(TRUE); */
 
 static void update_viewer_scale(gboolean compact){
@@ -1184,7 +1184,7 @@ static void update_viewer_selected_update_buttons_show(OnlineService *service, c
 	if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->update_composition_vbox)))
 		gtk_widget_show(GTK_WIDGET(update_viewer->update_composition_vbox));
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 }/*update_viewer_selected_update_buttons_show(service|NULL, user_name|NULL, TRUE|FALSE);*/
 
 static void update_viewer_bind_hotkeys(GtkBuilder *ui){
@@ -1311,7 +1311,7 @@ static void update_viewer_sexy_init(void){
 	
 	gtk_widget_show(GTK_WIDGET(update_viewer->sexy_update));
 	update_viewer_sexy_entry_setup(update_viewer);
-	g_signal_connect_after(update_viewer->followers_combo_box, "changed", G_CALLBACK(update_viewer_sexy_select), update_viewer->followers_combo_box);
+	g_signal_connect_after(update_viewer->followers_combo_box, "changed", (GCallback)update_viewer_sexy_select, NULL);
 	
 	update_viewer_update_view_reorder();
 }/*update_viewer_sexy_init();*/
@@ -1380,13 +1380,13 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 	}
 	
 	if(!((reply || forwarding) && user_name && service)){
-		update_viewer_sexy_select();
+		update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 		return FALSE;
 	}
 	
 	gboolean prefix_added=FALSE;
 	if(forwarding && !update_viewer_sexy_entry_clear()){
-		update_viewer_sexy_select();
+		update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 		return FALSE;
 	}
 	
@@ -1402,7 +1402,7 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 	uber_free(users_at);
 	
 	if(!forwarding){
-		update_viewer_sexy_select();
+		update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 		return prefix_added;
 	}
 	
@@ -1411,7 +1411,7 @@ gboolean update_viewer_set_in_reply_to_data(OnlineService *service, UpdateType u
 	update_viewer_sexy_append_string(update_viewer->viewing_update_text, FALSE, FALSE);
 	update_viewer_sexy_append_string("\"", FALSE, FALSE);
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 	return prefix_added;
 }/*update_viewer_set_in_reply_to_data(user->user_name|NULL, None|Homepage|Replies|DMs|etc, service, 1212154, TRUE|FALSE, TRUE|FALSE);*/
 
@@ -1537,7 +1537,7 @@ void update_viewer_view_update(OnlineService *service, const gdouble id, const g
 		uberchick_label_set_markup(update_viewer->sexy_update, service, update_type, user_name, user_id, id, sexy_update, TRUE, TRUE);
 	
 	debug("Selecting 'sexy_entry' for entering a new update");
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 }/*update_viewer_view_update(service, update_id, user_id, user_name, nick_name, date, sexy_update, text_update, pixbuf, Timelines|DMs|Replies|None, 0.0|status->retweeted_status->id, status->retweeted_status->user_name, status->retweeted_status->nick_name);*/
 
 static void update_viewer_insert_shortened_uri(GtkButton *shorten_uri_button, UpdateViewer *update_viewer){
@@ -1642,7 +1642,7 @@ static void update_viewer_sexy_set(gchar *text){
 	
 	gtk_entry_set_text(GTK_ENTRY(update_viewer->sexy_entry), (text ?text :(gchar *)""));
 	update_viewer_sexy_entry_update_remaining_character_count();
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 }/*update_viewer_sexy_set(NULL|"an phase or update");*/
 
 void update_viewer_sexy_prefix_char(const char c){
@@ -1714,7 +1714,7 @@ static gboolean update_viewer_sexy_puts(const gchar *str, gint position_after, g
 	if(free_string) uber_free(string);
 	
 	update_viewer_sexy_entry_update_remaining_character_count();
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 	return TRUE;
 }/*update_viewer_sexy_puts("string", 0...139, TRUE|FALSE, TRUE|FALSE);*/
 
@@ -1815,7 +1815,7 @@ void update_viewer_new_update(void){
 		gtk_toggle_button_set_active(update_viewer->best_friend_toggle_button, FALSE);
 	
 	geometry_load();
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(GTK_WIDGET(update_viewer->sexy_entry));
 }/*update_viewer_new_update();*/
 
 static void update_viewer_sexy_send(OnlineService *service, const gchar *user_name){
@@ -2043,9 +2043,9 @@ void update_viewer_beep(void){
 #endif
 }/*update_viewer_beep();*/
 
-SexySpellEntry *update_viewer_sexy_entry_get_widget(void){
+GtkWidget *update_viewer_sexy_entry_get_widget(void){
 	if(!update_viewer->sexy_entry) return NULL;
-	return update_viewer->sexy_entry;
+	return GTK_WIDGET(update_viewer->sexy_entry);
 }/*update_viewer_sexy_entry_get_widget();*/
 
 void update_viewer_select_all(void){
@@ -2053,7 +2053,8 @@ void update_viewer_select_all(void){
 	gtk_editable_select_region(GTK_EDITABLE(update_viewer->sexy_entry), 0, -1);
 }/*update_viewer_select_all();*/
 
-void update_viewer_sexy_select(void){
+void update_viewer_sexy_select(GtkWidget *widget){
+	if(widget && GTK_IS_WIDGET(GTK_WIDGET(widget)) && GTK_EDITABLE(widget) && GTK_IS_EDITABLE(GTK_EDITABLE(widget)) && gtk_widget_has_focus(GTK_WIDGET(widget)) ) return;
 	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer->sexy_entry))) return;
 	if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))) return;
 	if(gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE))

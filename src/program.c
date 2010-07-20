@@ -161,6 +161,7 @@ gboolean program_init(int argc, char **argv){
 	online_services_init();
 	
 	www_init();
+	images_init();
 	groups_init();
 	
 	main_window_create();

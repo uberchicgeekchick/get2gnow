@@ -66,7 +66,10 @@
 #include "debug.h"
 
 static gchar *images_missing_image_filename=NULL;
+static GRegex *images_extension_regex=NULL;
+static GSList *gdk_pixbuf_formats=NULL;
 
+static void images_gdk_format_add_if_writable(GdkPixbufFormat *data, GSList **list);
 
 static gboolean images_set_unknown_image_filename(gchar *unknown_image_file);
 static void images_fetch_unknown_image_filename(void);
@@ -78,14 +81,40 @@ static void images_validate_filename(gchar **image_filename);
 static GdkPixbuf *images_get_scaled_pixbuf_from_filename(gchar *image_filename, gint width, gint height);
 
 
+void images_init(void){
+	images_fetch_unknown_image_filename();
+	
+	GSList *formats=gdk_pixbuf_get_formats();
+	gdk_pixbuf_formats=NULL;
+	g_slist_foreach(formats, (GFunc)images_gdk_format_add_if_writable, &gdk_pixbuf_formats);
+	g_slist_free(formats);
+	
+	GError *error=NULL;
+	const gchar *g_regex_pattern="^.*[.]([^.]+)$";
+	images_extension_regex=g_regex_new(g_regex_pattern, G_REGEX_DOLLAR_ENDONLY|G_REGEX_OPTIMIZE, G_REGEX_MATCH_NEWLINE_ANY, &error);
+	if(error){
+		images_extension_regex=NULL;
+		debug("**ERROR:** creating image extension/type finding GRegex using the pattern %s.  GError message: %s", g_regex_pattern, error->message);
+		g_error_free(error);
+		uber_regex_unref(images_extension_regex);
+	}
+}/*images_init();*/
+
+
+static void images_gdk_format_add_if_writable(GdkPixbufFormat *data, GSList **list){
+	  if(gdk_pixbuf_format_is_writable(data))
+		  *list=g_slist_prepend(*list, data);
+}/*g_slist_foreach(formats, images_gdk_format_add_if_writable, &gdk_pixbuf_formats);*/
+
 
 void images_deinit(void){
+	if(gdk_pixbuf_formats)
+		g_slist_free(gdk_pixbuf_formats);
 	images_unset_unknown_image_filename();
+	uber_regex_unref(images_extension_regex);
 }/*images_deinit();*/
 
 gchar *images_get_unknown_image_filename(void){
-	if(!images_missing_image_filename)
-		images_fetch_unknown_image_filename();
 	return g_strdup(images_missing_image_filename);
 }/*images_get_unknown_image_filename();*/
 
@@ -159,6 +188,47 @@ gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar
 	
 	debug("Saved image: <%s> to file: [%s]", image_uri, image_file);
 	(*image_filename)=g_strdup(image_file);
+	
+	GdkPixbuf *pixbuf=NULL;
+	GError *error=NULL;
+	if(!(pixbuf=gdk_pixbuf_new_from_file_at_scale(*image_filename, ImagesDefault, ImagesDefault, TRUE, &error))){
+		debug("Image error: %s (%d x %d); error message: %s", *image_filename, ImagesDefault, ImagesDefault, error->message);
+		if(error)
+			g_error_free(error);
+	}else{
+		gchar *image_type=NULL;
+		if(!(image_type=g_regex_replace(images_extension_regex, *image_filename, -1, 0, "\\1", 0, NULL))){
+			debug("**ERROR:** failed to determine image type of: <%s>", *image_filename);
+		}else{
+			if(!strcasecmp(image_type, "jpg")){
+				uber_free(image_type);
+				image_type=g_strdup("jpeg");
+			}else{
+				gchar *image_type_lower=NULL;
+				image_type_lower=g_utf8_strdown(image_type, -1);
+				uber_free(image_type);
+				image_type=image_type_lower;
+				image_type_lower=NULL;
+			}
+			GSList *formats=NULL;
+			for(formats=g_slist_nth(gdk_pixbuf_formats, 0); formats->data; formats=formats->next){
+				//gdk_format=(GdkPixbufFormat)formats->data;
+				if(!strcasecmp(image_type, gdk_pixbuf_format_get_name(formats->data))){
+					error=NULL;
+					if(!(gdk_pixbuf_save(pixbuf, *image_filename, image_type, &error, NULL))){
+						debug("**ERROR:** failed to save resized image to: <%s>; error message: %s", *image_filename, error->message);
+					}else{
+						debug("Saved resized image to: <%s>", *image_filename);
+					}
+					if(error)
+						g_error_free(error);
+					break;
+				}
+			}
+			//g_slist_free(formats);
+		}
+		uber_object_unref(pixbuf);
+	}
 	return TRUE;
 }/*images_save_image(service, xml, image_uri, image_file);*/
 

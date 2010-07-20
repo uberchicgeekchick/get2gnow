@@ -319,7 +319,7 @@ void best_friends_buttons_set_sensitive(void){
 		gtk_widget_set_sensitive((GtkWidget *)buttons->data, sensitive);
 	g_list_free(buttons);
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*best_friends_buttons_set_sensitive();*/
 
 static void best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_view, BestFriendWidgets *best_friend_widgets){
@@ -329,7 +329,7 @@ static void best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_
 	gdouble newest_update_id=0.0, unread_update_id=0.0;
 	if(!((best_friends_get_selected(&service, &user_name, &user_name_with_markup, &newest_update_id, &unread_update_id)) && service && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(user_name))){
 		debug("Cannot load best friends' updates.  Invalid OnlineService or empty user_name");
-		update_viewer_sexy_select();
+		update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 		return;
 	}
 	
@@ -340,7 +340,7 @@ static void best_friends_tree_view_row_activated(GtkTreeView *best_friends_tree_
 	
 	uber_free(user_name);
 	uber_free(user_name_with_markup);
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*best_friends_tree_view_row_activated(best_friend_widgets->tree_view, best_friend_widgets);*/
 
 static void best_friends_button_clicked(GtkButton *button){
@@ -352,63 +352,33 @@ static void best_friends_button_clicked(GtkButton *button){
 	if(!((best_friends_get_selected(&service, &user_name, &user_name_with_markup, &newest_update_id, &unread_update_id)) && service && G_STR_N_EMPTY(user_name) && G_STR_N_EMPTY(user_name_with_markup))){
 		if(button==best_friend_widgets->drop_button){
 			online_service_request_popup_best_friend_drop();
-			return;
+		}else{
+			debug("Error processig best friends action.  Invalid OnlineService or empty user_name");
+			update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 		}
-		debug("Cannot load best friends request.  Invalid OnlineService or empty user_name");
-		if(user_name) uber_free(user_name);
-		if(user_name_with_markup) uber_free(user_name_with_markup);
-		update_viewer_sexy_select();
+		uber_free(user_name);
+		uber_free(user_name_with_markup);
 		return;
 	}
-	uber_free(user_name_with_markup);
 	
-	if(button==best_friend_widgets->view_updates_button){
+	if(button==best_friend_widgets->view_updates_button)
 		online_service_request_view_updates(service, main_window_get_window(), user_name);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		return;
-	}
-	
-	if(button==best_friend_widgets->view_updates_new_button){
+	else if(button==best_friend_widgets->view_updates_new_button)
 		online_service_request_view_updates_new(service, main_window_get_window(), user_name);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		return;
-	}
-	
-	if(button==best_friend_widgets->drop_button){
+	else if(button==best_friend_widgets->drop_button)
 		best_friends_drop(service, main_window_get_window(), user_name);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		return;
-	}
-	
-	if(button==best_friend_widgets->view_profile_button){
+	else if(button==best_friend_widgets->view_profile_button)
 		online_service_request_view_profile(service, main_window_get_window(), user_name);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		return;
-	}
-	
-	if(button==best_friend_widgets->send_at_message_button){
+	else if(button==best_friend_widgets->send_at_message_button)
 		update_viewer_set_in_reply_to_data(service, update_viewer_get_update_update_type(), user_name, NULL, unread_update_id, unread_update_id, TRUE, FALSE, FALSE);
-		uber_free(user_name);
-		return;
-	}
-	
-	if(button==best_friend_widgets->send_dm_button){
+	else if(button==best_friend_widgets->send_dm_button)
 		update_viewer_best_friends_start_dm(service, user_name);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		return;
-	}
-	
-	if(button==best_friend_widgets->mark_as_read_button){
+	else if(button==best_friend_widgets->mark_as_read_button)
 		best_friends_tree_store_mark_as_read(service, user_name, newest_update_id);
-		update_viewer_sexy_select();
-		uber_free(user_name);
-		return;
-	}
+	
+	uber_free(user_name);
+	uber_free(user_name_with_markup);
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*best_friends_button_clicked(button);*/
 
 gboolean best_friends_load(OnlineService *service){
@@ -617,7 +587,7 @@ static void best_friends_open_all_unread_updates(GtkToolButton *open_all_unread_
 		online_service_request_view_updates_new(service, main_window_get_window(), user_name);
 		uber_free(user_name);
 	}
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*best_friends_open_all_unread_updates(best_friend_widgets->open_all_as_read_button, best_friend_widgets);*/
 
 static void best_friends_mark_all_unread_updates_as_read(GtkToolButton *mark_all_unread_updates_as_read_tool_button, BestFriendWidgets *best_friend_widgets){
@@ -651,7 +621,7 @@ static void best_friends_mark_all_unread_updates_as_read(GtkToolButton *mark_all
 		best_friends_tree_store_mark_as_read(service, user_name, newest_update_id);
 		uber_free(user_name);
 	}
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*best_friends_mark_all_unread_updates_as_read(best_friend_widgets->mark_all_unread_updates_as_read_tool_button, best_friend_widgets);*/
 
 

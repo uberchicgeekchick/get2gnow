@@ -101,13 +101,13 @@ void update_viewer_compact_view_toggled(GtkToggleButton *compact_toggle_button);
 void update_viewer_set_embed_toggle_and_image(void);
 
 /* BEGIN: UBERCHICK_HISTORY METHODS */
-SexySpellEntry *update_viewer_sexy_entry_get_widget(void);
+GtkWidget *update_viewer_sexy_entry_get_widget(void);
 
 void update_viewer_hide_previous_updates(void);
 void update_viewer_show_previous_updates(void);
 
 void update_viewer_send(GtkWidget *activated_widget);
-void update_viewer_sexy_select(void);
+void update_viewer_sexy_select(GtkWidget *widget);
 
 void update_viewer_beep(void);
 

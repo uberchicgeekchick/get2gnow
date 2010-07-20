@@ -331,11 +331,11 @@ void online_service_request_main(OnlineService *service, RequestAction action, G
 	if(request->action!=ShortenURI)
 		online_service_request(service, request->method, request->uri, NULL, online_service_request_main_quit, request, NULL);
 	else{
-		gtk_widget_set_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget()), FALSE);
+		gtk_widget_set_sensitive(update_viewer_sexy_entry_get_widget(), FALSE);
 		online_service_request_uri(service, request->method, request->uri, 0, NULL, online_service_request_main_quit, request, request->get_rest_xml);
 	}
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*online_service_request_main(service, parent_window, Follow|UnFollow|ViewProfile|ViewUpdates|..., user_name|update_id);*/
 
 static void online_service_request_open_timeline_tab(OnlineService *service, RequestAction action, const gchar *get_rest_xml){
@@ -376,8 +376,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 		main_window_statusbar_printf("Failed to %s on %s.  Error %s (%d).", request->message, service->guid, xml->reason_phrase, xml->status_code);
 		online_service_request_free(request);
 		uber_free(error_message);
-		if(request->action==ShortenURI && !gtk_widget_is_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))
-			gtk_widget_set_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget()), TRUE);
+		if(request->action==ShortenURI && !gtk_widget_is_sensitive(update_viewer_sexy_entry_get_widget()))
+			gtk_widget_set_sensitive(update_viewer_sexy_entry_get_widget(), TRUE);
 		return NULL;
 	}
 	uber_free(error_message);
@@ -473,8 +473,8 @@ void *online_service_request_main_quit(SoupSession *session, SoupMessage *xml, O
 				update_viewer_sexy_insert_string(shortened_uri, FALSE, FALSE);
 				uber_free(shortened_uri);
 			}
-			if(!gtk_widget_is_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget())))
-				gtk_widget_set_sensitive(GTK_WIDGET(update_viewer_sexy_entry_get_widget()), TRUE);
+			if(!gtk_widget_is_sensitive(update_viewer_sexy_entry_get_widget()))
+				gtk_widget_set_sensitive(update_viewer_sexy_entry_get_widget(), TRUE);
 			break;
 		case SelectService:
 		case ViewProfile:

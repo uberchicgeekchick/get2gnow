@@ -1885,7 +1885,7 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 	GtkTreeIter		*iter=g_new0(GtkTreeIter, 1);
 	if(!((sel=gtk_tree_view_get_selection(GTK_TREE_VIEW(this->sexy_tree_view))) && gtk_tree_selection_get_selected(sel, NULL, iter))){
 		uber_free(iter);
-		update_viewer_sexy_select();
+		update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 		return;
 	}
 	
@@ -1954,7 +1954,7 @@ static void uberchick_tree_view_update_selected(SexyTreeView *uberchick_tree_vie
 	if(pixbuf) uber_object_unref(pixbuf);
 	uber_free(iter);
 	
-	update_viewer_sexy_select();
+	update_viewer_sexy_select(update_viewer_sexy_entry_get_widget());
 }/*uberchick_tree_view_update_selected(uberchick_tree_view_sexy_tree_view, uberchick_tree_view);*/
 
 static void uberchick_tree_view_iter_mark_as_read(UberChickTreeView *uberchick_tree_view, GtkTreeIter *iter, OnlineService *service, const gchar *user_name, gdouble update_id){
