@@ -2054,7 +2054,7 @@ void update_viewer_select_all(void){
 }/*update_viewer_select_all();*/
 
 void update_viewer_sexy_select(GtkWidget *widget){
-	if(widget && GTK_IS_WIDGET(GTK_WIDGET(widget)) && GTK_EDITABLE(widget) && GTK_IS_EDITABLE(GTK_EDITABLE(widget)) && gtk_widget_has_focus(GTK_WIDGET(widget)) ) return;
+	if(widget && GTK_IS_WIDGET(GTK_WIDGET(widget)) && GTK_IS_EDITABLE(widget) && gtk_widget_has_focus(GTK_WIDGET(widget)) ) return;
 	if(gtk_widget_has_focus(GTK_WIDGET(update_viewer->sexy_entry))) return;
 	if(gtk_widget_has_focus(GTK_WIDGET(main_window_sexy_search_entry_get_widget()))) return;
 	if(gconfig_if_bool(PREFS_UPDATE_VIEWER_DIALOG, FALSE))

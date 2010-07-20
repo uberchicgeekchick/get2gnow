@@ -75,6 +75,8 @@ static gboolean images_set_unknown_image_filename(gchar *unknown_image_file);
 static void images_fetch_unknown_image_filename(void);
 static void images_unset_unknown_image_filename(void);
 
+static gboolean images_save_resized_image(const gchar *image_filename);
+
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
 static void images_validate_filename(gchar **image_filename);
@@ -189,48 +191,76 @@ gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar
 	debug("Saved image: <%s> to file: [%s]", image_uri, image_file);
 	(*image_filename)=g_strdup(image_file);
 	
+	gboolean resized_saved=FALSE;
+	if(!(images_save_resized_image(*image_filename)))
+		resized_saved=FALSE;
+	else
+		resized_saved=TRUE;
+	
+	return TRUE;
+}/*images_save_resized_image(image_filename);*/
+	
+static gboolean images_save_resized_image(const gchar *image_filename){
 	GdkPixbuf *pixbuf=NULL;
 	GError *error=NULL;
-	if(!(pixbuf=gdk_pixbuf_new_from_file_at_scale(*image_filename, ImagesDefault, ImagesDefault, TRUE, &error))){
-		debug("Image error: %s (%d x %d); error message: %s", *image_filename, ImagesDefault, ImagesDefault, error->message);
+	if(!(pixbuf=gdk_pixbuf_new_from_file_at_scale(image_filename, ImagesDefault, ImagesDefault, TRUE, &error))){
+		debug("Image error: %s (%d x %d); error message: %s", image_filename, ImagesDefault, ImagesDefault, error->message);
 		if(error)
 			g_error_free(error);
-	}else{
-		gchar *image_type=NULL;
-		if(!(image_type=g_regex_replace(images_extension_regex, *image_filename, -1, 0, "\\1", 0, NULL))){
-			debug("**ERROR:** failed to determine image type of: <%s>", *image_filename);
-		}else{
-			if(!strcasecmp(image_type, "jpg")){
-				uber_free(image_type);
-				image_type=g_strdup("jpeg");
-			}else{
-				gchar *image_type_lower=NULL;
-				image_type_lower=g_utf8_strdown(image_type, -1);
-				uber_free(image_type);
-				image_type=image_type_lower;
-				image_type_lower=NULL;
-			}
-			GSList *formats=NULL;
-			for(formats=g_slist_nth(gdk_pixbuf_formats, 0); formats->data; formats=formats->next){
-				//gdk_format=(GdkPixbufFormat)formats->data;
-				if(!strcasecmp(image_type, gdk_pixbuf_format_get_name(formats->data))){
-					error=NULL;
-					if(!(gdk_pixbuf_save(pixbuf, *image_filename, image_type, &error, NULL))){
-						debug("**ERROR:** failed to save resized image to: <%s>; error message: %s", *image_filename, error->message);
-					}else{
-						debug("Saved resized image to: <%s>", *image_filename);
-					}
-					if(error)
-						g_error_free(error);
-					break;
-				}
-			}
-			//g_slist_free(formats);
-		}
-		uber_object_unref(pixbuf);
+		if(pixbuf)
+			uber_object_unref(pixbuf);
+		return FALSE;
 	}
-	return TRUE;
-}/*images_save_image(service, xml, image_uri, image_file);*/
+	
+	gchar *image_type=NULL;
+	if(!(image_type=g_regex_replace(images_extension_regex, image_filename, -1, 0, "\\1", 0, NULL))){
+		debug("**ERROR:** failed to determine image type of: <%s>", image_filename);
+		if(image_type)
+			uber_free(image_type);
+		if(pixbuf)
+			uber_object_unref(pixbuf);
+		return FALSE;
+	}
+	
+	if(!strcasecmp(image_type, "jpg")){
+		uber_free(image_type);
+		image_type=g_strdup("jpeg");
+	}else{
+		gchar *image_type_lower=NULL;
+		image_type_lower=g_utf8_strdown(image_type, -1);
+		uber_free(image_type);
+		image_type=image_type_lower;
+		image_type_lower=NULL;
+	}
+	
+	GSList *formats=NULL;
+	for(formats=g_slist_nth(gdk_pixbuf_formats, 0); formats->data; formats=formats->next){
+		//gdk_format=(GdkPixbufFormat)formats->data;
+		if(!strcasecmp(image_type, gdk_pixbuf_format_get_name(formats->data))){
+			error=NULL;
+			if(!(gdk_pixbuf_save(pixbuf, image_filename, image_type, &error, NULL))){
+				debug("**ERROR:** failed to save resized image to: <%s>; error message: %s", image_filename, error->message);
+			}else{
+				debug("Saved resized image to: <%s>", image_filename);
+			}
+			if(error)
+				g_error_free(error);
+			if(pixbuf)
+				uber_object_unref(pixbuf);
+			uber_free(image_type);
+			return TRUE;
+		}
+		//g_slist_free(formats);
+	}
+	
+	uber_free(image_type);
+	
+	if(pixbuf)
+		uber_object_unref(pixbuf);
+	
+	return FALSE;
+}/*images_save_resized_image(image_filename);*/
+
 
 static void images_validate_filename(gchar **image_filename){
 	if(!G_STR_EMPTY(*image_filename))
