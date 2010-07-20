@@ -76,6 +76,7 @@ static void images_fetch_unknown_image_filename(void);
 static void images_unset_unknown_image_filename(void);
 
 static gboolean images_save_resized_image(const gchar *image_filename);
+static gboolean images_save_xml_contents(gchar **image_filename, SoupMessage *xml);
 
 static void images_validate_width(gint *width);
 static void images_validate_height(gint *height);
@@ -161,6 +162,8 @@ static void images_unset_unknown_image_filename(void){
 }/*images_unset_unknown_image_file();*/
 
 gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar *image_uri, const gchar *image_file, gchar **image_filename){
+	(*image_filename)=NULL;
+	
 	gchar *error_message=NULL;
 	if(!(xml_error_check(service, image_uri, xml, &error_message))){
 		debug("Failed to download and save image: <%s> to file: [%s]", image_uri, image_file);
@@ -177,29 +180,41 @@ gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar
 		return FALSE;
 	}
 	
-	if(!(g_file_set_contents(
-				image_file,
-					xml->response_body->data,
-					xml->response_body->length,
-				NULL
-	))){
+	(*image_filename)=g_strdup(image_file);
+	if(!(images_save_xml_contents(image_filename, xml))){
 		debug("Failed to download and save image: <%s> to file: [%s]", image_uri, image_file);
-		(*image_filename)=images_get_unknown_image_filename();
 		return FALSE;
 	}
 	
 	debug("Saved image: <%s> to file: [%s]", image_uri, image_file);
-	(*image_filename)=g_strdup(image_file);
 	
 	gboolean resized_saved=FALSE;
-	if(!(images_save_resized_image(*image_filename)))
+	if(!(images_save_resized_image(*image_filename))){
+		debug("Failed to save resized image.  Re-saving unscaled image to file: <%s>", *image_filename);
+		if(!(images_save_xml_contents(image_filename, xml)))
+			debug("Failed to re-save unscaled image to file: <%s>", *image_filename);
+		else
+			debug("Re-saved unscaled image to file: <%s>", *image_filename);
 		resized_saved=FALSE;
-	else
+	}else
 		resized_saved=TRUE;
 	
 	return TRUE;
-}/*images_save_resized_image(image_filename);*/
+}/*images_save_image(image_filename);*/
 	
+static gboolean images_save_xml_contents(gchar **image_filename, SoupMessage *xml){
+	if(!(g_file_set_contents(
+				(*image_filename),
+					xml->response_body->data,
+					xml->response_body->length,
+				NULL
+	))){
+		uber_free(*image_filename);
+		(*image_filename)=images_get_unknown_image_filename();
+	}
+	return TRUE;
+}/*images_save_xml_contents();*/
+
 static gboolean images_save_resized_image(const gchar *image_filename){
 	GdkPixbuf *pixbuf=NULL;
 	GError *error=NULL;
@@ -238,17 +253,23 @@ static gboolean images_save_resized_image(const gchar *image_filename){
 		//gdk_format=(GdkPixbufFormat)formats->data;
 		if(!strcasecmp(image_type, gdk_pixbuf_format_get_name(formats->data))){
 			error=NULL;
+			gboolean resized_saved=FALSE;
 			if(!(gdk_pixbuf_save(pixbuf, image_filename, image_type, &error, NULL))){
 				debug("**ERROR:** failed to save resized image to: <%s>; error message: %s", image_filename, error->message);
+				if(resized_saved)
+					resized_saved=FALSE;
 			}else{
 				debug("Saved resized image to: <%s>", image_filename);
+				if(!resized_saved)
+					resized_saved=TRUE;
 			}
 			if(error)
 				g_error_free(error);
 			if(pixbuf)
 				uber_object_unref(pixbuf);
 			uber_free(image_type);
-			return TRUE;
+			
+			return resized_saved;
 		}
 		//g_slist_free(formats);
 	}
