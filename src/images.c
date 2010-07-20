@@ -237,6 +237,12 @@ static gboolean images_save_resized_image(const gchar *image_filename){
 		return FALSE;
 	}
 	
+	if(!strcasecmp(image_type, "gif")){
+		uber_free(image_type);
+		uber_object_unref(pixbuf);
+		return FALSE;
+	}
+	
 	if(!strcasecmp(image_type, "jpg")){
 		uber_free(image_type);
 		image_type=g_strdup("jpeg");
