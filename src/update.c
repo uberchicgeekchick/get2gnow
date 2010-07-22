@@ -151,12 +151,10 @@ gboolean update_notify_on_timeout(UserStatus *status){
 		return FALSE;
 	}
 	
-	if(g_file_test(status->user->image_file, G_FILE_TEST_EXISTS|G_FILE_TEST_IS_REGULAR)){
-		GdkPixbuf *pixbuf=NULL;
-		if( (pixbuf=images_get_default_pixbuf_from_filename(status->user->image_file)) ){
-			notify_notification_set_icon_from_pixbuf(notify_notification, pixbuf);
-			uber_object_unref(pixbuf);
-		}
+	GdkPixbuf *pixbuf=NULL;
+	if( (pixbuf=images_get_default_pixbuf_from_filename((gchar *)notification_icon_file_name)) ){
+		notify_notification_set_icon_from_pixbuf(notify_notification, pixbuf);
+		uber_object_unref(pixbuf);
 	}
 	notify_notification_set_hint_string(notify_notification, "suppress-sound", "");
 	notify_notification_set_timeout(notify_notification, 10000);
