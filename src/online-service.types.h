@@ -88,6 +88,20 @@ enum _MicroBloggingService{
 };
 
 struct _OnlineService{
+	gchar				*key;
+	gchar				*guid;
+	
+	gboolean			https;
+	gchar				*uri;
+	gchar				*server;
+	gchar				*path;
+	
+	gchar				*oauth_key;
+	
+	gchar				*user_name;
+	gchar				*nick_name;
+	gchar				*password;
+	
 	gboolean			processing;
 	guint				processing_timer;
 	GList				*processing_queue;
@@ -110,17 +124,6 @@ struct _OnlineService{
 	
 	gboolean			enabled;
 	gboolean			auto_connect;
-	
-	gchar				*key;
-	gchar				*guid;
-	
-	gboolean			https;
-	gchar				*uri;
-	gchar				*server;
-	gchar				*path;
-	gchar				*user_name;
-	gchar				*nick_name;
-	gchar				*password;
 	
 	GSList				*best_friends;
 	gint				best_friends_total;

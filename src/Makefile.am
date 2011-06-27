@@ -42,6 +42,7 @@ get2gnow_SOURCES = 														\
 	main.c						main.h									\
 	main-window.c					main-window.h								\
 	network.c					network.h								\
+	liboauth.c					liboauth.h								\
 	online-services.typedefs.h			online-services.rest-uri.defines.h					\
 	online-service.c				online-service.typedefs.h		online-service.h		\
 	online-service-request.c		online-service-request.types.h		online-service-request.h		\

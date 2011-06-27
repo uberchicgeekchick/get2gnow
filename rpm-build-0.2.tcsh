@@ -88,7 +88,7 @@ archive_rpm:
 
 create_deb:
 	cd "${projects_path}";
-	if(! -x `which alien` )	\
+	if(! -x "`which alien`" )	\
 		goto store_packages;
 	
 	${use_sudo}alien --to-deb --keep-version "./${package_string}-${package_release}.${MACHTYPE}.rpm";

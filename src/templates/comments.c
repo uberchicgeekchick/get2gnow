@@ -93,6 +93,8 @@
 /********************************************************************************
  *              Debugging information static objects, and local defines         *
  ********************************************************************************/
+#define	DEBUG_DOMAINS	"Network:Updates:Requests:Users:Authentication:Settings:Setup:Start-Up"
+#include "debug.h"
 
 
 /********************************************************************************

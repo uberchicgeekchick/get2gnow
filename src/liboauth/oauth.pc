@@ -1,0 +1,12 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: oauth
+Description: OAuth - server to server secure API authentication  
+Requires.private:  libcurl libcrypto
+Version: 0.8.9
+Libs: -L${libdir} -loauth
+Libs.private: -lm  -lcurl -lcrypto
+Cflags: -I${includedir} 

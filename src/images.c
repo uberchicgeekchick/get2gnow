@@ -187,7 +187,10 @@ gboolean images_save_image(OnlineService *service, SoupMessage *xml, const gchar
 	}
 	
 	debug("Saved image: <%s> to file: [%s]", image_uri, image_file);
+	return TRUE;
 	
+	/*TODO:
+	 * 	implement better method for saving resized avatars.*/
 	gboolean resized_saved=FALSE;
 	if(!(images_save_resized_image(*image_filename))){
 		debug("Failed to save resized image.  Re-saving unscaled image to file: <%s>", *image_filename);
@@ -237,7 +240,7 @@ static gboolean images_save_resized_image(const gchar *image_filename){
 		return FALSE;
 	}
 	
-	if(!strcasecmp(image_type, "gif")){
+	if(!( G_STR_N_EMPTY(image_type) && g_str_n_equal(image_type, image_filename) && strcasecmp(image_type, "gif") )){
 		uber_free(image_type);
 		uber_object_unref(pixbuf);
 		return FALSE;

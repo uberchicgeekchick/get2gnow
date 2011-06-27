@@ -1,8 +1,8 @@
-AC_INIT([get2gnow], ["030401"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
+AC_INIT([get2gnow], ["030901"], [http://bugzilla.gnome.org/enter_bug.cgi?product=get2gnow], [get2gnow])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (C) 2009 Kaity G. B.])
 
-PACKAGE_RELEASE="a11"
+PACKAGE_RELEASE="a00"
 PACKAGE_RELEASE_VERSION="${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 VERSION="${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 
@@ -83,6 +83,7 @@ PKG_CHECK_MODULES(get2gnow,
 	gnome-doc-utils-devel >= $GNOME_DOC_UTILS_DEVEL_VERSION_REQUIRED
 	gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	libsexy
+	oauth
 	openssl
 	libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	libnotify

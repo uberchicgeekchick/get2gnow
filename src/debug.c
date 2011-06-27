@@ -258,14 +258,14 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 	FILE *debug_output_fp=NULL;
 	
 	va_list args;
-	va_start(args, msg);
+	/*va_start(args, msg);*/
 	
 	debug_domains_check(domains);
 	gboolean error=g_str_has_prefix(msg, "**ERROR:**"); gboolean warning=g_str_has_prefix(msg, "**WARNING:**"); gboolean notice=g_str_has_prefix(msg, "**NOTICE:**"); gboolean debug=g_str_has_prefix(msg, "**DEBUG:**");
 	
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
-			if(all_domains || !strcasecmp(debug_domains[x], debug_environment[y]))
+			if(all_domains || !strcasecmp(source_code, debug_environment[y]) || !strcasecmp(debug_domains[x], debug_environment[y]))
 				debug_output_fp=stdout;
 			else if(debug_domains[x+1] || debug_environment[y+1])
 				continue;
@@ -280,15 +280,24 @@ void debug_printf(const gchar *domains, const gchar *source_code, const gchar *m
 			const gchar *prefix=(error ?" error" :(warning ?" warning" : (notice ?" notice" :(debug?" debug" :NULL))));
 			
 			if(error || warning || notice){
+				va_start(args, msg);
 				debug_message_fprintf(stderr, prefix, source_code, method, line_number, msg, args);
 				va_end(args);
-				va_start(args, msg);
 			}else if(debug){
+				va_start(args, msg);
 				debug_message_fprintf(stdout, prefix, source_code, method, line_number, msg, args);
 				va_end(args);
-				va_start(args, msg);
 			}
 			
+			va_start(args, msg);
+			debug_message_fprintf(debug_output_fp, prefix, source_code, method, line_number, msg, args);
+			va_end(args);
+			
+			if(debug_output_fp==debug_log_rotate())
+				return;
+			
+			debug_output_fp=debug_log_rotate();
+			va_start(args, msg);
 			debug_message_fprintf(debug_output_fp, prefix, source_code, method, line_number, msg, args);
 			va_end(args);
 			
@@ -329,7 +338,6 @@ static void debug_message_fprintf(FILE *fp, const gchar *prefix, const gchar *so
 		g_vfprintf(fp, msg, args);
 	else
 		g_vfprintf(fp, g_strrstr(msg, ":** ")+sizeof(":**"), args);
-	va_end(args);
 	g_fprintf(fp, " @ %s %s\n", __DATE__, __TIME__);
 }/*debug_massage_fprintf(stdout|fp, prefix, source_code, method, line_number, msg, args);*/
 
@@ -345,10 +353,8 @@ gboolean debug_if_domain(const gchar *domains){
 	
 	for(guint x=0; debug_domains[x]; x++){
 		for(guint y=0; debug_environment[y]; y++) {
-			if(strcasecmp(debug_domains[x], debug_environment[y]))
-				continue;
-			
-			return TRUE;
+			if(!strcasecmp(debug_domains[x], debug_environment[y]))
+				return TRUE;
 		}
 	}
 	return FALSE;

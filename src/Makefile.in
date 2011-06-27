@@ -67,6 +67,7 @@ get2gnow_SOURCES = 														\
 	main.c						main.h									\
 	main-window.c					main-window.h								\
 	network.c					network.h								\
+	liboauth.c					liboauth.h								\
 	online-services.typedefs.h			online-services.rest-uri.defines.h					\
 	online-service.c				online-service.typedefs.h		online-service.h		\
 	online-service-request.c		online-service-request.types.h		online-service-request.h		\
@@ -116,6 +117,7 @@ get2gnow_OBJECTS =						\
 	main.$(OBJEXT)						\
 	main-window.$(OBJEXT)					\
 	network.$(OBJEXT)					\
+	liboauth.$(OBJEXT)					\
 	online-service.$(OBJEXT)				\
 	online-service-request.$(OBJEXT)			\
 	online-service-requested-resource.$(OBJEXT)		\
@@ -444,6 +446,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-window.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liboauth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online-service-requested-resource.Po@am__quote@

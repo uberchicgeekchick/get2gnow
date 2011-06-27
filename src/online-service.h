@@ -104,7 +104,7 @@ gboolean online_service_refresh(OnlineService *service);
 gboolean online_service_reconnect(OnlineService *service);
 void online_service_disconnect(OnlineService *service, gboolean temporary, gboolean no_state_change);
 
-gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri);
+gchar *online_service_request_uri_create(OnlineService *service, RequestMethod request_method, const gchar *uri);
 
 void online_service_fetch_profile(OnlineService *service, const gchar *user_name, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_user_parser_func);
 

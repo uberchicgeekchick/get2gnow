@@ -733,8 +733,8 @@ SHELL=${CONFIG_SHELL-/bin/sh}
 PACKAGE="get2gnow"
 PACKAGE_NAME="get2gnow"
 PACKAGE_TARNAME="get2gnow"
-PACKAGE_VERSION="030401"
-PACKAGE_RELEASE="a11"
+PACKAGE_VERSION="030901"
+PACKAGE_RELEASE="a00"
 PACKAGE_RELEASE_VERSION="${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 VERSION="${PACKAGE_VERSION}${PACKAGE_RELEASE}"
 PACKAGE_PREFIX="${prefix}"
@@ -22990,6 +22990,7 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gnome-doc-utils >= \$GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
@@ -23006,6 +23007,7 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23025,6 +23027,7 @@ if test -n "$get2gnow_CFLAGS"; then
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23051,6 +23054,7 @@ if test -n "$get2gnow_LIBS"; then
 	    gnome-doc-utils >= \$GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= \$LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= \$GTK_VERSION_REQUIRED
@@ -23067,6 +23071,7 @@ if test -n "$get2gnow_LIBS"; then
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23086,6 +23091,7 @@ if test -n "$get2gnow_LIBS"; then
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23119,6 +23125,7 @@ fi
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23136,6 +23143,7 @@ fi
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23156,6 +23164,7 @@ fi
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED
@@ -23182,6 +23191,7 @@ echo "$as_me: error: Package requirements (
 	    gnome-doc-utils >= $GNOME_DOC_UTILS_VERSION_REQUIRED
 	    openssl
 	    libsexy
+	    oauth
 	    libsoup-2.4 >= $LIBSOUP_VERSION_REQUIRED
 	    libnotify
 	    gtk+-2.0 >= $GTK_VERSION_REQUIRED

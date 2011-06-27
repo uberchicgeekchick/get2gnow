@@ -80,6 +80,10 @@ G_BEGIN_DECLS
 #define API_DESTROY_STEP1				"/statuses/%s.xml"
 #define API_DESTROY_STEP2				"/statuses/destroy/%s.xml"
 
+#define API_OAUTH_REQUEST_TOKEN_URL			"/oauth/request_token"
+#define API_OAUTH_ACCESS_TOKEN_URL			"/oauth/access_token"
+#define API_OAUTH_AUTHORIZE_URL				"/oauth/authorize"
+
 #define API_TIMELINE_MINE				"/statuses/user_timeline.xml"
 #define API_TIMELINE_USER				"/statuses/user_timeline/%s.xml"
 #define API_TIMELINE_USER_UNREAD			API_TIMELINE_USER "?since_id=%f"

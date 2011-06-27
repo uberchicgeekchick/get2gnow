@@ -295,6 +295,17 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	service->uri=g_strdup(uri);
 	
 	service->user_name=g_strdup(user_name);
+	
+	service->oauth_key=NULL;
+	
+	service->guid=g_strdup_printf("%s@%s", service->user_name, service->uri);
+	
+	gchar *encoded_user_name=g_uri_escape_string(service->user_name, NULL, TRUE);
+	gchar *encoded_uri=g_uri_escape_string(service->uri, NULL, TRUE);
+	service->key=g_strdup_printf("%s@%s", encoded_user_name, encoded_uri);
+	uber_free(encoded_user_name);
+	uber_free(encoded_uri);
+	
 	service->user_profile=NULL;
 	service->nick_name=NULL;
 	
@@ -339,14 +350,6 @@ static OnlineService *online_service_constructor(const gchar *uri, const gchar *
 	
 	service->friends=service->followers=service->friends_and_followers=NULL;
 	service->timer=timer_new();
-	
-	service->guid=g_strdup_printf("%s@%s", service->user_name, service->uri);
-	
-	gchar *encoded_user_name=g_uri_escape_string(service->user_name, NULL, TRUE);
-	gchar *encoded_uri=g_uri_escape_string(service->uri, NULL, TRUE);
-	service->key=g_strdup_printf("%s@%s", encoded_user_name, encoded_uri);
-	uber_free(encoded_user_name);
-	uber_free(encoded_uri);
 	
 	gchar **parsed_uri=g_strsplit(service->uri, "/", 2);
 	service->server=g_strdup(parsed_uri[0]);
@@ -539,12 +542,12 @@ gboolean online_service_connect(OnlineService *service){
 		return (service->connected=FALSE);
 	}
 	
+	proxy_attach_online_service(service);
+	
 	debug("Adding authenticating callback for: '%s'. user_name: %s, password: %s", service->guid, service->user_name, service->password);
 	g_signal_connect(service->session, "authenticate", (GCallback)online_service_http_authenticate, service);
 	
 	online_service_cookie_jar_open(service);
-	
-	proxy_attach_online_service(service);
 	
 	return (service->connected=TRUE);
 }/*online_service_connect(service);*/
@@ -747,21 +750,35 @@ gboolean online_service_reconnect(OnlineService *service){
 	return online_service_connect(service);
 }/*online_service_reconnect(service);*/
 
-gchar *online_service_request_uri_create(OnlineService *service, const gchar *uri){
+gchar *online_service_request_uri_create(OnlineService *service, RequestMethod request_method, const gchar *uri){
 	if(G_STR_EMPTY(uri)){
 		debug("**ERROR:** Cannot create an OnlineServiceRequest from an empty URI");
 		return NULL;
 	}
-	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :""), (g_strstr_len(uri, -1, "search.") && service->micro_blogging_service==Twitter ?"search." :""), service->uri, ((!g_str_has_prefix(uri, "/search/") && service->micro_blogging_service!=Twitter) ?"/api" :""), (G_STR_N_EMPTY(uri) ?uri :""));
-}/*online_service_request_uri_create(service, uri);*/
+	const char *uri_prefix=NULL;
+	if(service->micro_blogging_service==Twitter){
+		if(!g_strstr_len(uri, -1, "search.")){
+			if(request_method==QUEUE || request_method==POST)
+				uri_prefix="api.";
+		}else{
+			uri_prefix="search.";
+		}
+	}
+	
+	const char *uri_suffix=NULL;
+	if(!g_str_has_prefix(uri, "/search/") && service->micro_blogging_service!=Twitter)
+		uri_suffix="/api";
+	
+	return g_strdup_printf("http%s://%s%s%s%s", (service->https ?"s" :""), (G_STR_N_EMPTY(uri_prefix) ?uri_prefix :""), service->uri, (G_STR_N_EMPTY(uri_suffix) ?uri_suffix :""), (G_STR_N_EMPTY(uri) ?uri :""));
+}/*online_service_request_uri_create(service, (GET|POST|QUEUE), uri);*/
 
 SoupMessage *online_service_request(OnlineService *service, RequestMethod request_method, const gchar *uri, OnlineServiceSoupSessionCallbackReturnProcessorFunc online_service_soup_session_callback_return_processor_func, OnlineServiceSoupSessionCallbackFunc callback, gpointer user_data, gpointer form_data){
 	if(!service) return NULL;
 	if(!(G_STR_N_EMPTY(uri) && service->enabled)) return NULL;
 	if(request_method==POST && !service->post_to_enabled) return NULL;
 	
-	gchar *new_uri=online_service_request_uri_create(service, uri);
-	debug("Creating new service request for: '%s', requesting: %s", service->guid, new_uri);
+	gchar *new_uri=online_service_request_uri_create(service, request_method, uri);
+	debug("<%s>: requesting online service uri: <%s>", service->guid, new_uri);
 	SoupMessage *xml=online_service_request_uri(service, request_method, (const gchar *)new_uri, 0, online_service_soup_session_callback_return_processor_func, callback, user_data, form_data);
 	g_free(new_uri);
 	return xml;

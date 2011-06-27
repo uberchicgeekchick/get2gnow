@@ -246,7 +246,7 @@ struct _UpdateViewer{
 	GtkScrolledWindow	*online_services_accounts_scrolled_window;
 	gint			online_services_accounts_total;
 	gint			online_services_accounts_with_post_to_enabled;
-	gint			online_services_accounts_with_post_to_enabled_toggle_enabled;
+	gint			online_services_accounts_with_post_to_toggle_enabled;
 	SexyTreeView		*online_services_accounts_sexy_tree_view;
 	GtkTreeStore		*online_services_accounts_tree_store;
 	GtkTreeViewColumn	*online_services_accounts_sexy_tree_view_key_tree_view_column;
@@ -696,7 +696,7 @@ static void update_viewer_postable_online_services_setup(UpdateViewer *update_vi
 	
 	update_viewer->online_services_accounts_total=-1;
 	update_viewer->online_services_accounts_with_post_to_enabled=-1;
-	update_viewer->online_services_accounts_with_post_to_enabled_toggle_enabled=-1;
+	update_viewer->online_services_accounts_with_post_to_toggle_enabled=-1;
 	
 	gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_vbox));
 	gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
@@ -838,14 +838,14 @@ static void update_viewer_online_service_check_button_set_status(GtkTreeIter *it
 	if(service->post_to_enabled!=post_to_enabled)
 		service->post_to_enabled=post_to_enabled;
 	
-	gboolean post_to_enabled_toggle_enabled=TRUE;
+	gboolean post_to_toggle_enabled=TRUE;
 	if(!(service->enabled && service->connected && service->authenticated))
-		post_to_enabled_toggle_enabled=FALSE;
+		post_to_toggle_enabled=FALSE;
 	
-	if(post_to_enabled)
-		update_viewer->online_services_accounts_with_post_to_enabled_toggle_enabled++;
+	if(post_to_toggle_enabled)
+		update_viewer->online_services_accounts_with_post_to_toggle_enabled++;
 	
-	if(update_viewer->online_services_accounts_with_post_to_enabled_toggle_enabled>0 && post_to_enabled_toggle_enabled){
+	if(update_viewer->online_services_accounts_with_post_to_toggle_enabled>0 && post_to_toggle_enabled){
 		if(!gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_view_toggle_button))){
 			gtk_widget_show(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 			debug("Displaying %s's postable OnlineService(s) container", GETTEXT_PACKAGE);
@@ -857,15 +857,15 @@ static void update_viewer_online_service_check_button_set_status(GtkTreeIter *it
 	}
 	
 	gchar *post_to_enabled_info_string=g_strdup_printf("<%s>&lt;%s&gt;'s status will%s be updated.</%s>", (!post_to_enabled ?"i" :"b"), service->key, (!post_to_enabled ?" not" :""), (!post_to_enabled ?"i" :"b"));
-	debug("Updating <%s>'s post_to_enabled status will%s be updated and changing it will be %sabled", service->key, (!post_to_enabled ?" not" :""), (post_to_enabled_toggle_enabled ?"en" :"dis"));
-	if(!post_to_enabled_toggle_enabled)
+	debug("Updating <%s>'s post_to_enabled status will%s be updated and changing it will be %sabled", service->key, (!post_to_enabled ?" not" :""), (post_to_toggle_enabled ?"en" :"dis"));
+	if(!post_to_toggle_enabled)
 		debug("**DEBUG:** Disabling toggling of posting to <%s> enabled: %s; connected: %s; authenticated: %s", service->key, (service->enabled ?"TRUE" :"FALSE"), (service->connected ?"TRUE" :"FALSE"), (service->authenticated ?"TRUE" :"FALSE"));
 	
 	gtk_tree_store_set(
 				update_viewer->online_services_accounts_tree_store, iter,
 					POSTABLE_ONLINE_SERVICE, service,
 					POSTABLE_ONLINE_SERVICE_KEY, service->key,
-      					POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED, post_to_enabled_toggle_enabled,
+      					POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED, post_to_toggle_enabled,
 					POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, post_to_enabled,
 					POSTABLE_ONLINE_SERVICE_URI, service->uri,
 					POSTABLE_ONLINE_SERVICE_INFO_STRING, post_to_enabled_info_string,
@@ -886,11 +886,11 @@ gboolean update_viewer_postable_online_service_delete(OnlineService *service){
 		}
 		
 		OnlineService *service_at_index=NULL;
-		gboolean post_to_enabled=TRUE, post_to_enabled_toggle_enabled=TRUE;
+		gboolean post_to_enabled=TRUE, post_to_toggle_enabled=TRUE;
 		gtk_tree_model_get(
 				GTK_TREE_MODEL(update_viewer->online_services_accounts_tree_store), iter,
       					POSTABLE_ONLINE_SERVICE, &service_at_index,
-      					POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED, post_to_enabled_toggle_enabled,
+      					POSTABLE_ONLINE_SERVICE_POST_TOGGLE_ENABLED, post_to_toggle_enabled,
 					POSTABLE_ONLINE_SERVICE_POST_TO_ENABLED, post_to_enabled,
 				-1
 		);
@@ -906,10 +906,10 @@ gboolean update_viewer_postable_online_service_delete(OnlineService *service){
 		if(post_to_enabled)
 			update_viewer->online_services_accounts_with_post_to_enabled--;
 		
-		if(post_to_enabled_toggle_enabled)
-			update_viewer->online_services_accounts_with_post_to_enabled_toggle_enabled--;
+		if(post_to_toggle_enabled)
+			update_viewer->online_services_accounts_with_post_to_toggle_enabled--;
 		
-		if(update_viewer->online_services_accounts_with_post_to_enabled_toggle_enabled<1){
+		if(update_viewer->online_services_accounts_with_post_to_toggle_enabled<1){
 			if(gtk_widget_is_visible(GTK_WIDGET(update_viewer->online_services_view_toggle_button))){
 				gtk_widget_hide(GTK_WIDGET(update_viewer->online_services_view_toggle_button));
 				debug("Hiding %s's postable OnlineService(s) container", GETTEXT_PACKAGE);
